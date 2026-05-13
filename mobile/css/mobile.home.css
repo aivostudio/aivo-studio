@@ -837,3 +837,79 @@ body{
     0 18px 42px rgba(0,0,0,.26),
     0 0 26px rgba(201,87,188,.14) !important;
 }
+/* Mobile Home - full page premium color flow */
+body{
+  background:
+    radial-gradient(760px 520px at 50% -8%, rgba(37,99,235,.24), transparent 62%),
+    radial-gradient(720px 560px at 18% 22%, rgba(124,92,255,.20), transparent 64%),
+    radial-gradient(760px 620px at 82% 48%, rgba(56,189,248,.14), transparent 66%),
+    radial-gradient(820px 680px at 50% 88%, rgba(201,87,188,.38), transparent 70%),
+    linear-gradient(180deg,#070914 0%,#07192a 32%,#10102c 58%,#260721 100%) !important;
+}
+
+.mobile-shell{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg,
+      rgba(7,9,20,.16) 0%,
+      rgba(7,25,42,.30) 32%,
+      rgba(16,16,44,.34) 58%,
+      rgba(201,87,188,.18) 100%
+    ) !important;
+}
+
+.mobile-shell::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(520px 360px at 50% 6%, rgba(95,208,255,.12), transparent 64%),
+    radial-gradient(520px 380px at 8% 36%, rgba(124,92,255,.18), transparent 66%),
+    radial-gradient(560px 420px at 92% 54%, rgba(95,208,255,.11), transparent 68%),
+    radial-gradient(680px 520px at 50% 88%, rgba(201,87,188,.30), transparent 72%);
+  filter:saturate(1.16);
+}
+
+.mobile-home-section{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  margin-left:-14px;
+  margin-right:-14px;
+  padding-left:14px;
+  padding-right:14px;
+  background:
+    linear-gradient(180deg,
+      rgba(8,18,34,.10) 0%,
+      rgba(10,28,44,.24) 28%,
+      rgba(26,17,48,.34) 62%,
+      rgba(201,87,188,.20) 100%
+    ) !important;
+}
+
+.mobile-home-section::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(420px 260px at 16% 18%, rgba(95,208,255,.13), transparent 66%),
+    radial-gradient(520px 360px at 86% 34%, rgba(124,92,255,.16), transparent 68%),
+    radial-gradient(620px 420px at 50% 82%, rgba(201,87,188,.28), transparent 72%);
+}
+
+.mobile-home-section::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  opacity:.18;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(255,255,255,.08) 42%, transparent 68%);
+  transform:translateX(-35%);
+}
