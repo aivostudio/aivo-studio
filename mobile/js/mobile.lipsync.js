@@ -1581,8 +1581,10 @@
         resultsEl.hidden = false;
       }
 
-      mobileLipsyncViewMode = "current";
+          mobileLipsyncViewMode = "current";
       renderMobileLipsyncResults("current");
+
+      let refundState = null;
 
       try {
         if (state.photoFile && !state.photoUrl) {
@@ -1604,7 +1606,7 @@
         const creditCost = calculateCredits();
         const consumeRequestId = "mobile-lipsync:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
-        const refundState = {
+               refundState = {
           consumed: false,
           refunded: false,
           creditCost: creditCost,
