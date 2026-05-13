@@ -727,11 +727,27 @@
 
       if (!job) return;
 
-      if (videoUrl) {
+         if (videoUrl) {
         job.videoUrl = videoUrl;
         job.status = "ready";
         job.title = job.title || "Dudak senkron video hazır";
-       renderMobileLipsyncResults("current");
+
+        if (jobId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
+          fetch("/api/lipsync/finalize", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json"
+            },
+            body: JSON.stringify({
+              job_id: jobId
+            })
+          }).catch(function(err){
+            console.warn("[MOBILE LIPSYNC][FINALIZE BACKGROUND ERROR]", err);
+          });
+        }
+
+        renderMobileLipsyncResults("current");
         setStatus("Dudak senkron video hazır.");
         clearMobileLipsyncLoading();
         showMobileLipsyncToast("success", "Dudak senkron video hazır.");
