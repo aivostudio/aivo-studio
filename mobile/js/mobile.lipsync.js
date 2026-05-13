@@ -701,7 +701,7 @@
     .then(function(res){
       return res.json();
     })
-    .then(function(data){
+    .then(async function(data){
       console.log("[MOBILE LIPSYNC][POLL]", data);
 
       const status = String(
