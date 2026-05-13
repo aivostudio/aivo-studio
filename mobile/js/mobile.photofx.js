@@ -908,13 +908,18 @@ async function uploadMobilePhotoFxFile(file, kind){
       const creditCost = computeCredit();
       const consumeRequestId = "mobile-photofx:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
-      const refundState = {
+        const refundState = {
         consumed: false,
         refunded: false,
         creditCost: creditCost,
         requestId: consumeRequestId,
         transactionId: ""
       };
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = "Üretiliyor...";
+      generateBtn.classList.add("is-loading", "is-pressed");
+      generateBtn.setAttribute("aria-busy", "true");
 
       try {
         const consumeResult = await consumeMobilePhotoFxCredits(creditCost, consumeRequestId);
@@ -930,10 +935,7 @@ async function uploadMobilePhotoFxFile(file, kind){
         return;
       }
 
-         generateBtn.disabled = true;
-      generateBtn.textContent = "Üretiliyor...";
-      generateBtn.classList.add("is-loading", "is-pressed");
-      generateBtn.setAttribute("aria-busy", "true");
+        
 
       const tempJobId = "mobile-photofx-" + Date.now();
 
