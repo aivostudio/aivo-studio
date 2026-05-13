@@ -958,7 +958,144 @@ return;
         return;
       }
 
-          const confirmStemsBtn = e.target.closest('[data-mobile-sheet-action="confirm-stems"]');
+        const confirmStemsBtn = e.target.closest('[data-mobile-sheet-action="confirm-stems"]');
+      if (confirmStemsBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!audioUrl) {
+          if (statusEl) statusEl.textContent = "Kanal ayırma için ses dosyası bulunamadı.";
+          closeSheet();
+          return;
+        }
+
+        let refundCtx = null;
+
+        confirmStemsBtn.disabled = true;
+        confirmStemsBtn.textContent = "Kredi kontrol ediliyor...";
+
+        try {
+          refundCtx = await consumeMobileMusicCreditsForStems();
+
+          if (window.toast?.success) {
+            window.toast.success("5 kredi düşüldü");
+          }
+        } catch (creditErr) {
+          console.warn("[MOBILE MUSIC][STEMS CREDIT ERROR]", creditErr);
+
+          if (statusEl) {
+            statusEl.textContent = "Yetersiz kredi.";
+          }
+
+          if (window.toast?.warning) {
+            window.toast.warning("Yetersiz kredi");
+          }
+
+          confirmStemsBtn.disabled = false;
+          confirmStemsBtn.textContent = "Onayla (5 Kredi)";
+          return;
+        }
+
+        confirmStemsBtn.textContent = "Başlatılıyor...";
+
+        if (itemEl) {
+          const subTextEl = itemEl.querySelector(".mobile-library-sub");
+          if (subTextEl) {
+            subTextEl.textContent = "Kanallar hazırlanıyor";
+          }
+
+          itemEl.dataset.stemsStatus = "processing";
+        }
+
+        try {
+          const res = await fetch("/api/music/stems", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify({
+              audio_url: audioUrl,
+              job_id: stemsJobId
+            })
+          });
+
+          const data = await res.json();
+          const stemsPredictionId = String(data.id || data.prediction_id || "");
+
+          if (!res.ok || !data || data.ok === false) {
+            const refunded = await refundMobileMusicCredits(refundCtx, "mobile_music_stems_failed", {
+              error: String(data?.error || "stems_start_failed"),
+              job_id: stemsJobId
+            });
+
+            if (statusEl) {
+              statusEl.textContent = refunded
+                ? "Kanal ayırma başlatılamadı. Kredi iade edildi."
+                : "Kanal ayırma başlatılamadı.";
+            }
+
+            closeSheet();
+            return;
+          }
+
+          sheet.querySelector(".mobile-music-sheet").innerHTML = `
+            <div class="mobile-music-sheet-handle"></div>
+
+            <div class="mobile-music-sheet-head">
+              <div>
+                <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
+                <div class="mobile-music-sheet-title">İşlem başlatıldı</div>
+              </div>
+
+              <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                ×
+              </button>
+            </div>
+
+            <div class="mobile-music-confirm-text">
+              Kanal ayırma hazırlanıyor. Sonuçlar hazır olunca bu müzik kartında gösterilecek.
+            </div>
+          `;
+
+          if (itemEl) {
+            const subTextEl = itemEl.querySelector(".mobile-library-sub");
+            if (subTextEl) {
+              subTextEl.textContent = "Kanallar hazırlanıyor";
+            }
+
+            itemEl.dataset.stemsStatus = "processing";
+            itemEl.dataset.stemsPredictionId = stemsPredictionId;
+            itemEl.dataset.stemsRefundRequestId = refundCtx?.request_id || "";
+            itemEl.dataset.stemsRefundTransactionId = refundCtx?.related_transaction_id || "";
+          }
+
+          if (statusEl) {
+            statusEl.textContent = "Kanal ayırma başlatıldı.";
+          }
+
+          if (window.toast?.success) {
+            window.toast.success("Kanal ayırma başlatıldı.");
+          }
+
+          pollMobileStemsPrediction(stemsPredictionId);
+          return;
+        } catch (err) {
+          const refunded = await refundMobileMusicCredits(refundCtx, "mobile_music_stems_connection_failed", {
+            error: String(err?.message || err || "stems_connection_failed"),
+            job_id: stemsJobId
+          });
+
+          if (statusEl) {
+            statusEl.textContent = refunded
+              ? "Kanal ayırma bağlantı hatası. Kredi iade edildi."
+              : "Kanal ayırma bağlantı hatası.";
+          }
+
+          closeSheet();
+          return;
+        }
+      }
       if (confirmStemsBtn) {
         e.preventDefault();
         e.stopPropagation();
