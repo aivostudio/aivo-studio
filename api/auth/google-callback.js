@@ -32,7 +32,8 @@ export default async function handler(req, res) {
       return res.redirect(302, `/?tf=error&tm=${msg}`);
     }
 
-      let returnTo = "/studio.v2.html";
+    let returnTo = "/studio.v2.html";
+    let fallbackLogin = "/?open=login";
 
     const cookieHeader = String(req.headers?.cookie || "");
     const cookiePairs = cookieHeader
