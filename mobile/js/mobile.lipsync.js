@@ -1727,14 +1727,20 @@
                mobileLipsyncViewMode = "current";
         renderMobileLipsyncResults("current");
 
-        await refundMobileLipsyncCredits(refundState, "mobile_lipsync_generate_failed", {
+           const refunded = await refundMobileLipsyncCredits(refundState, "mobile_lipsync_generate_failed", {
           error: String(err?.message || err?.error || err || "generate_failed"),
           payload: err?.payload || null
         });
 
-        const message = mapMobileLipsyncErrorMessage(err?.payload || err);
+        const message = refunded
+          ? "İşlem başarısız oldu, kredi iade edildi."
+          : mapMobileLipsyncErrorMessage(err?.payload || err);
+
         setStatus(message);
-        showMobileLipsyncToast("error", message);
+
+        if (!refunded) {
+          showMobileLipsyncToast("error", message);
+        }
       } finally {
         generateBtn.disabled = false;
         syncGenerateButton();
