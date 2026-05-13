@@ -731,13 +731,19 @@
         return;
       }
 
-      if (status.includes("fail") || status.includes("error") || status.includes("cancel")) {
+         if (status.includes("fail") || status.includes("error") || status.includes("cancel")) {
         job.status = "error";
         job.title = "Dudak senkron video oluşturulamadı";
-      renderMobileLipsyncResults("current");
+        renderMobileLipsyncResults("current");
         setStatus("Dudak senkron video oluşturulamadı.");
         clearMobileLipsyncLoading();
-        showMobileLipsyncToast("error", "Dudak senkron video oluşturulamadı.");
+
+        await refundMobileLipsyncCredits(job.refundState, "mobile_lipsync_poll_failed", {
+          error: "poll_failed",
+          status: status,
+          response: data
+        });
+
         return;
       }
 
@@ -1716,8 +1722,13 @@
           }
         }
 
-        mobileLipsyncViewMode = "current";
+               mobileLipsyncViewMode = "current";
         renderMobileLipsyncResults("current");
+
+        await refundMobileLipsyncCredits(refundState, "mobile_lipsync_generate_failed", {
+          error: String(err?.message || err?.error || err || "generate_failed"),
+          payload: err?.payload || null
+        });
 
         const message = mapMobileLipsyncErrorMessage(err?.payload || err);
         setStatus(message);
