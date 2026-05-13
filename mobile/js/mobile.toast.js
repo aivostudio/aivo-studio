@@ -137,7 +137,9 @@
     warning: function(message, opts){ return show(message, "warning", opts); },
     info: function(message, opts){ return show(message, "info", opts); },
     loading: function(message, opts){ return show(message, "loading", { duration: 0, ...(opts || {}) }); },
-    clear: closeToast
+    clear: closeToast,
+    dismiss: closeToast,
+    remove: closeToast
   };
 
   window.toast = window.mobileToast;
