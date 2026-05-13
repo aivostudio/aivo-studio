@@ -81,17 +81,30 @@ export default async function handler(req, res) {
     // verify tokenı temizle
     await delSafe(verifyKey);
 
-    // ✅ RESİMDEKİ STANDARD: verify success -> index + open login + verified + email + (from varsa taşı)
-    const from = req.query?.from ? String(req.query.from) : "";
-    const email = verifiedEmail;
-    const qs =
-      `open=login&verified=1&email=${encodeURIComponent(email)}` +
-      (from ? `&from=${encodeURIComponent(from)}` : "");
+   // ✅ Verify success redirect
+const from = req.query?.from ? String(req.query.from) : "";
+const returnToRaw = req.query?.returnTo ? String(req.query.returnTo) : "";
+const email = verifiedEmail;
 
-    res.statusCode = 302;
-    res.setHeader("Location", `/?${qs}`);
-    res.end();
-    return;
+if (returnToRaw && returnToRaw.includes("mobile")) {
+  const joiner = returnToRaw.includes("?") ? "&" : "?";
+  const mobileLocation =
+    `${returnToRaw}${joiner}verified=1&email=${encodeURIComponent(email)}`;
+
+  res.statusCode = 302;
+  res.setHeader("Location", mobileLocation);
+  res.end();
+  return;
+}
+
+const qs =
+  `open=login&verified=1&email=${encodeURIComponent(email)}` +
+  (from ? `&from=${encodeURIComponent(from)}` : "");
+
+res.statusCode = 302;
+res.setHeader("Location", `/?${qs}`);
+res.end();
+return;
   } catch (e) {
     return json(res, 500, {
       ok: false,
