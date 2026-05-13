@@ -1424,7 +1424,66 @@ miniAudioEl.play().then(function(){
       raw: data
     };
   }
+   async function consumeMobileMusicCreditsForStems(){
+    const amount = 5;
+    const action = "studio_music_stems";
+    const requestId = "mobile-music-stems:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
+    const res = await fetch("/api/credits/consume-ledger", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "content-type": "application/json",
+        "accept": "application/json"
+      },
+      body: JSON.stringify({
+        app: "music",
+        action: action,
+        cost: amount,
+        request_id: requestId,
+        reason: action
+      })
+    });
+
+    const data = await res.json().catch(function(){ return null; });
+
+    if (!res.ok || !data || data.ok === false) {
+      throw new Error("insufficient_credit");
+    }
+
+    await refreshMobileMusicCredits();
+
+    return {
+      app: "music",
+      action: action,
+      amount: amount,
+      request_id: requestId,
+      related_transaction_id: String(
+        data?.transaction_id ||
+        data?.transaction?.id ||
+        data?.related_transaction_id ||
+        data?.credit_transaction_id ||
+        ""
+      ),
+      idempotency_key: String(
+        data?.transaction_id ||
+        data?.transaction?.id ||
+        data?.related_transaction_id ||
+        data?.credit_transaction_id ||
+        ""
+      )
+        ? "mobile-music-stems-refund:" + String(
+            data?.transaction_id ||
+            data?.transaction?.id ||
+            data?.related_transaction_id ||
+            data?.credit_transaction_id ||
+            ""
+          )
+        : "",
+      refunded: false,
+      raw: data
+    };
+  }
   async function refundMobileMusicCredits(refundCtx, reason, extraMeta){
     if (!refundCtx || refundCtx.refunded) return false;
 
