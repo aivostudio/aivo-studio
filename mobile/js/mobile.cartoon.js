@@ -1430,7 +1430,8 @@ function bindUploads(){
           return;
         }
 
-        characterBtn.disabled = true;
+               characterBtn.disabled = true;
+        characterBtn.textContent = "Üretiliyor...";
         characterBtn.classList.add("is-loading", "is-pressed");
         characterBtn.setAttribute("aria-busy", "true");
 
@@ -1546,7 +1547,8 @@ function bindUploads(){
           return;
         }
 
-        generateBtn.disabled = true;
+               generateBtn.disabled = true;
+        generateBtn.textContent = "Üretiliyor...";
         generateBtn.classList.add("is-loading", "is-pressed");
         generateBtn.setAttribute("aria-busy", "true");
 
