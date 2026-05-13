@@ -777,6 +777,11 @@ mobileVideoViewMode = "current";
 if (resultsEl) {
   resultsEl.hidden = false;
 }
+generateBtn.disabled = true;
+generateBtn.textContent = "Üretiliyor...";
+generateBtn.classList.add("is-loading", "is-pressed");
+generateBtn.setAttribute("aria-busy", "true");
+
 mobileVideoViewMode = "current";
 renderMobileVideoResults();
 setStatus("Video hazırlanıyor...");
