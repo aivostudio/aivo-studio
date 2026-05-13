@@ -144,7 +144,7 @@ export default async function handler(req, res) {
     const token = crypto.randomBytes(32).toString("hex");
     const now = Date.now();
     const appBase = env("APP_BASE_URL", "https://aivo.tr");
-    const verifyUrl = `${appBase}/api/auth/verify?token=${token}`;
+  const verifyUrl = `${appBase}/api/auth/verify?token=${token}&returnTo=/login.mobile.html?returnTo=/studio.mobile.html`;
 
     // ✅ password hash
     const passwordHash = await bcrypt.hash(password, 10);
