@@ -420,7 +420,96 @@
   position:relative;
   overflow:hidden;
 }
+.mobile-cover-icon{
+  position:relative;
+  overflow:hidden;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
 
+.mobile-cover-icon::before{
+  content:"";
+  width:22px;
+  height:22px;
+  display:block;
+  background:var(--cover-icon-gradient,linear-gradient(135deg,#7dd3fc,#a78bfa,#fb5cc8));
+  -webkit-mask-repeat:no-repeat;
+  mask-repeat:no-repeat;
+  -webkit-mask-position:center;
+  mask-position:center;
+  -webkit-mask-size:contain;
+  mask-size:contain;
+  filter:drop-shadow(0 0 7px var(--cover-icon-glow,rgba(168,85,247,.45)));
+}
+
+.mobile-cover-icon::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:999px;
+  background:radial-gradient(circle,rgba(255,255,255,.24),transparent 64%);
+  opacity:.45;
+  pointer-events:none;
+}
+
+.mobile-quality-left{
+  align-items:center !important;
+  padding-top:0 !important;
+}
+
+.mobile-quality-ico.mobile-cover-icon{
+  width:44px !important;
+  height:44px !important;
+  flex:0 0 44px !important;
+}
+
+.mobile-style-ico.mobile-cover-icon{
+  width:30px !important;
+  height:30px !important;
+  flex:0 0 30px !important;
+}
+
+.mobile-style-ico.mobile-cover-icon::before{
+  width:17px;
+  height:17px;
+}
+
+.mobile-cover-icon-artist,
+.mobile-cover-icon-artistic{
+  --cover-icon-gradient:linear-gradient(135deg,#5eead4 0%,#60a5fa 38%,#c084fc 72%,#f472b6 100%);
+  --cover-icon-glow:rgba(192,132,252,.55);
+}
+
+.mobile-cover-icon-cinematic{
+  --cover-icon-gradient:linear-gradient(135deg,#fef3c7 0%,#fbbf24 28%,#fb7185 62%,#a78bfa 100%);
+  --cover-icon-glow:rgba(251,191,36,.42);
+}
+
+.mobile-cover-icon-realistic{
+  --cover-icon-gradient:linear-gradient(135deg,#93c5fd 0%,#60a5fa 48%,#c084fc 100%);
+  --cover-icon-glow:rgba(96,165,250,.48);
+}
+
+.mobile-cover-icon-photo{
+  --cover-icon-gradient:linear-gradient(135deg,#67e8f9 0%,#38bdf8 44%,#e879f9 100%);
+  --cover-icon-glow:rgba(56,189,248,.45);
+}
+
+.mobile-cover-icon-cartoon{
+  --cover-icon-gradient:linear-gradient(135deg,#fde68a 0%,#fb7185 42%,#c084fc 100%);
+  --cover-icon-glow:rgba(251,113,133,.48);
+}
+
+.mobile-cover-icon-abstract{
+  --cover-icon-gradient:linear-gradient(135deg,#a7f3d0 0%,#22d3ee 40%,#a78bfa 100%);
+  --cover-icon-glow:rgba(34,211,238,.42);
+}
+
+.mobile-cover-icon-anime{
+  --cover-icon-gradient:linear-gradient(135deg,#f9a8d4 0%,#f472b6 34%,#c084fc 72%,#93c5fd 100%);
+  --cover-icon-glow:rgba(244,114,182,.5);
+}
 .mobile-cover-icon::before{
   content:"";
   width:21px;
