@@ -782,3 +782,23 @@
 .mobile-quality-title{
   padding-top:10px !important;
 }
+/* Mobile Cover top quality icon alignment */
+.mobile-quality-left{
+  gap:14px !important;
+  padding-left:22px !important;
+}
+
+.mobile-quality-ico.mobile-cover-icon{
+  width:38px !important;
+  height:38px !important;
+  flex:0 0 38px !important;
+}
+
+.mobile-quality-ico.mobile-cover-icon::before{
+  width:18px !important;
+  height:18px !important;
+}
+
+.mobile-quality-title{
+  padding-top:8px !important;
+}
