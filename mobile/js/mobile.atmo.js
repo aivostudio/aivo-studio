@@ -1210,9 +1210,14 @@ function setFileLabel(input, file){
           return;
         }
 
-        let creditCtx = null;
+              let creditCtx = null;
 
-               try {
+        basicGenerateBtn.disabled = true;
+        basicGenerateBtn.textContent = "Üretiliyor...";
+        basicGenerateBtn.classList.add("is-loading", "is-pressed");
+        basicGenerateBtn.setAttribute("aria-busy", "true");
+
+        try {
           creditCtx = await consumeMobileAtmoCredits("basic");
           mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
         } catch (creditErr) {
