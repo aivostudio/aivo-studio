@@ -754,3 +754,12 @@
   text-align:left !important;
   white-space:nowrap !important;
 }
+/* Mobile Cover quality credit badge spacing */
+.mobile-quality-pill .mobile-quality-credit{
+  top:16px !important;
+  right:20px !important;
+}
+
+.mobile-quality-title{
+  padding-top:18px !important;
+}
