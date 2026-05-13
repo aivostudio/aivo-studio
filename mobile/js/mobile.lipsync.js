@@ -1620,7 +1620,7 @@
           refundState.consumed = true;
           refundState.transactionId = consumeResult.transactionId || "";
 
-          showMobileLipsyncToast("success", creditCost + " kredi kullanıldı.");
+           showMobileLipsyncToast("success", creditCost + " kredi düşüldü.");
         } catch (creditErr) {
           console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
           setStatus("Yetersiz kredi.");
