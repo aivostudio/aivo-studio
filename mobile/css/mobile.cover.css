@@ -571,3 +571,53 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-1.7-4.2-1.7-7.2S12 3 12 3s1.7 7.8 1.7 10.8S12 21 12 21Z'/%3E%3Cpath d='M3 12s4.2-1.7 7.2-1.7S21 12 21 12s-7.8 1.7-10.8 1.7S3 12 3 12Z'/%3E%3Cpath d='M5.8 5.8s4.1 1.8 6.2 3.9 6.2 8.5 6.2 8.5-6.4-4.1-8.5-6.2-3.9-6.2-3.9-6.2Z'/%3E%3Cpath d='M18.2 5.8s-4.1 1.8-6.2 3.9-6.2 8.5-6.2 8.5 6.4-4.1 8.5-6.2 3.9-6.2 3.9-6.2Z'/%3E%3Ccircle cx='12' cy='12' r='1.5'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-1.7-4.2-1.7-7.2S12 3 12 3s1.7 7.8 1.7 10.8S12 21 12 21Z'/%3E%3Cpath d='M3 12s4.2-1.7 7.2-1.7S21 12 21 12s-7.8 1.7-10.8 1.7S3 12 3 12Z'/%3E%3Cpath d='M5.8 5.8s4.1 1.8 6.2 3.9 6.2 8.5 6.2 8.5-6.4-4.1-8.5-6.2-3.9-6.2-3.9-6.2Z'/%3E%3Cpath d='M18.2 5.8s-4.1 1.8-6.2 3.9-6.2 8.5-6.2 8.5 6.4-4.1 8.5-6.2 3.9-6.2 3.9-6.2Z'/%3E%3Ccircle cx='12' cy='12' r='1.5'/%3E%3C/svg%3E");
 }
+/* Mobile Cover icon alignment fix */
+.mobile-quality-left{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  gap:18px !important;
+  padding-top:0 !important;
+  padding-left:28px !important;
+}
+
+.mobile-quality-ico.mobile-cover-icon{
+  width:44px !important;
+  height:44px !important;
+  flex:0 0 44px !important;
+  margin:0 !important;
+}
+
+.mobile-quality-title{
+  display:flex !important;
+  align-items:center !important;
+  min-height:44px !important;
+  line-height:1 !important;
+}
+
+.mobile-style-card{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+}
+
+.mobile-style-ico.mobile-cover-icon{
+  width:30px !important;
+  height:30px !important;
+  flex:0 0 30px !important;
+  margin:0 !important;
+}
+
+.mobile-style-text{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:30px !important;
+}
+
+.mobile-style-title{
+  display:flex !important;
+  align-items:center !important;
+  line-height:1 !important;
+}
