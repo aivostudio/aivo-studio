@@ -1915,5 +1915,32 @@ if (data.verified !== true) {
   }
 });
 </script>
+  <script>
+(function AIVO_MOBILE_PRESENCE_PING(){
+  try {
+    function ping(){
+      fetch("/api/presence/ping", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          source: "mobile",
+          page: "/studio.mobile.html"
+        })
+      }).catch(function(){});
+    }
+
+    ping();
+    setInterval(ping, 30000);
+
+    document.addEventListener("visibilitychange", function(){
+      if (!document.hidden) ping();
+    });
+  } catch (err) {}
+})();
+</script>
 </body>
 </html>
