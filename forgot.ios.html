@@ -32,22 +32,23 @@
 
     a{color:inherit;text-decoration:none}
 
-    .mobile-forgot-shell{
-      width:min(430px,100%);
-      min-height:100vh;
-      margin:0 auto;
-      padding:18px 22px 26px;
-      display:flex;
-      flex-direction:column;
-    }
+   .mobile-forgot-shell{
+  width:min(430px,100%);
+  min-height:100vh;
+  margin:0 auto;
+  padding:calc(18px + env(safe-area-inset-top)) 22px max(22px, env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+}
 
-    .mobile-forgot-topbar{
-      height:46px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:34px;
-    }
+   .mobile-forgot-topbar{
+  height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+  padding-top:22px;
+}
 
     .mobile-forgot-logo img{
       width:82px;
