@@ -1356,7 +1356,18 @@
       const statusBox = currentModal.querySelector("[data-mobile-lipsync-record-status]");
 
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      recorder = new MediaRecorder(stream);
+        const preferredMimeType =
+        MediaRecorder.isTypeSupported("audio/mp4")
+          ? "audio/mp4"
+          : MediaRecorder.isTypeSupported("audio/aac")
+            ? "audio/aac"
+            : MediaRecorder.isTypeSupported("audio/webm")
+              ? "audio/webm"
+              : "";
+
+      recorder = preferredMimeType
+        ? new MediaRecorder(stream, { mimeType: preferredMimeType })
+        : new MediaRecorder(stream);
       chunks = [];
       startedAt = Date.now();
 
@@ -1367,8 +1378,19 @@
       });
 
          recorder.addEventListener("stop", function(){
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const file = new File([blob], "aivo-kayit-" + Date.now() + ".webm", { type: "audio/webm" });
+             const recordedMimeType = recorder?.mimeType || preferredMimeType || "audio/webm";
+        const recordedExt = recordedMimeType.includes("mp4")
+          ? "m4a"
+          : recordedMimeType.includes("aac")
+            ? "aac"
+            : "webm";
+
+        const blob = new Blob(chunks, { type: recordedMimeType });
+        const file = new File(
+          [blob],
+          "aivo-kayit-" + Date.now() + "." + recordedExt,
+          { type: recordedMimeType }
+        );
         const durationSeconds = Math.max(1, Math.ceil((Date.now() - startedAt) / 1000));
         const previewUrl = URL.createObjectURL(blob);
 
