@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>AIVO Mobile — Şifremi Unuttum</title>
+  <meta name="robots" content="noindex,nofollow" />
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+  <style>
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      width:100%;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#070914;
+      color:#fff;
+      overflow-x:hidden;
+    }
+
+    body{
+      background:
+        radial-gradient(520px 360px at 18% 0%, rgba(139,92,246,.34), transparent 62%),
+        radial-gradient(520px 360px at 92% 18%, rgba(56,189,248,.20), transparent 62%),
+        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.18), transparent 65%),
+        #070914;
+    }
+
+    a{color:inherit;text-decoration:none}
+
+    .mobile-forgot-shell{
+      width:min(430px,100%);
+      min-height:100vh;
+      margin:0 auto;
+      padding:18px 22px 26px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .mobile-forgot-topbar{
+      height:46px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:34px;
+    }
+
+    .mobile-forgot-logo img{
+      width:82px;
+      height:auto;
+      display:block;
+    }
+
+    .mobile-forgot-back{
+      width:42px;
+      height:42px;
+      padding:0;
+      border-radius:15px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.18), transparent 34%),
+        linear-gradient(135deg, rgba(139,92,246,.28), rgba(56,189,248,.10));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 12px 26px rgba(0,0,0,.24);
+      font-size:0;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .mobile-forgot-back::before{
+      content:"";
+      width:25px;
+      height:25px;
+      display:block;
+      background:linear-gradient(135deg,#f472ff,#60eaff);
+      filter:drop-shadow(0 0 10px rgba(139,92,246,.78));
+      -webkit-mask:center / contain no-repeat;
+      mask:center / contain no-repeat;
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5L8 12l7 7'/%3E%3Cpath d='M9 12h11'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5L8 12l7 7'/%3E%3Cpath d='M9 12h11'/%3E%3C/svg%3E");
+    }
+
+    .mobile-forgot-hero{
+      text-align:center;
+      padding:12px 6px 22px;
+    }
+
+    .mobile-forgot-badge{
+      width:max-content;
+      max-width:100%;
+      margin:0 auto 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.78);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .mobile-forgot-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8);
+      box-shadow:0 0 0 4px rgba(56,189,248,.16);
+    }
+
+    .mobile-forgot-hero h1{
+      margin:0;
+      font-size:34px;
+      line-height:.96;
+      letter-spacing:-.065em;
+      font-weight:950;
+    }
+
+    .mobile-forgot-grad{
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8,#ec4899);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .mobile-forgot-hero p{
+      max-width:310px;
+      margin:10px auto 0;
+      color:rgba(255,255,255,.70);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:650;
+    }
+
+    .mobile-forgot-card{
+      margin-top:14px;
+      padding:16px;
+      border-radius:28px;
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.24), transparent 62%),
+        radial-gradient(220px 120px at 100% 0%, rgba(56,189,248,.14), transparent 62%),
+        rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 22px 60px rgba(0,0,0,.34);
+    }
+
+    .mobile-forgot-field label{
+      display:block;
+      margin:0 0 6px;
+      color:rgba(255,255,255,.82);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .mobile-forgot-field input{
+      width:100%;
+      min-height:48px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.085);
+      color:#fff;
+      outline:none;
+      padding:0 14px;
+      font:inherit;
+      font-size:15px;
+      font-weight:750;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+      caret-color:#fff;
+    }
+
+    .mobile-forgot-field input:focus{
+      border-color:rgba(139,92,246,.76);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 0 4px rgba(139,92,246,.18);
+    }
+
+    .mobile-forgot-field input::placeholder{
+      color:rgba(255,255,255,.38);
+    }
+
+    .mobile-forgot-submit{
+      width:100%;
+      min-height:54px;
+      margin-top:14px;
+      border:0;
+      border-radius:18px;
+      background:linear-gradient(135deg,#8b5cf6,#4f7cff,#ec4899);
+      color:#fff;
+      font:inherit;
+      font-size:15px;
+      font-weight:950;
+      box-shadow:0 16px 38px rgba(139,92,246,.30);
+    }
+
+    .mobile-forgot-submit:disabled{
+      opacity:.58;
+    }
+
+    .mobile-forgot-message{
+      min-height:18px;
+      margin-top:12px;
+      color:rgba(255,255,255,.70);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:750;
+      text-align:center;
+    }
+
+    .mobile-forgot-message.is-error{
+      color:#fca5a5;
+    }
+
+    .mobile-forgot-message.is-ok{
+      color:#86efac;
+    }
+
+    .mobile-forgot-actions{
+      margin-top:12px;
+      padding:14px;
+      border-radius:20px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      font-weight:850;
+    }
+
+    .mobile-forgot-actions a{
+      color:#c4b5fd;
+      font-weight:950;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="mobile-forgot-shell">
+    <header class="mobile-forgot-topbar">
+      <a class="mobile-forgot-logo" href="/index.mobile.html" aria-label="AIVO">
+        <img src="/aivo-logo.png" alt="AIVO">
+      </a>
+
+      <a class="mobile-forgot-back" href="/login.mobile.html?returnTo=/studio.mobile.html">Geri</a>
+    </header>
+
+    <section class="mobile-forgot-hero">
+      <div class="mobile-forgot-badge">
+        <span class="mobile-forgot-dot"></span>
+        AIVO Mobile Studio
+      </div>
+
+      <h1>
+        Şifreni <span class="mobile-forgot-grad">sıfırla.</span>
+      </h1>
+
+      <p>
+        E-posta adresini gir. Hesabın kayıtlıysa sana şifre sıfırlama bağlantısı gönderilecek.
+      </p>
+    </section>
+
+    <section class="mobile-forgot-card">
+      <form id="mobileForgotForm">
+        <div class="mobile-forgot-field">
+          <label for="mobileForgotEmail">E-posta</label>
+          <input id="mobileForgotEmail" type="email" placeholder="ornek@email.com" autocomplete="email" required>
+        </div>
+
+        <button class="mobile-forgot-submit" id="mobileForgotBtn" type="submit">
+          Sıfırlama Linki Gönder
+        </button>
+
+        <div class="mobile-forgot-message" id="mobileForgotMessage"></div>
+      </form>
+    </section>
+
+    <div class="mobile-forgot-actions">
+      <a href="/index.mobile.html">Vitrine dön</a>
+      <a href="/login.mobile.html?returnTo=/studio.mobile.html">Girişe dön</a>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const form = document.getElementById("mobileForgotForm");
+      const email = document.getElementById("mobileForgotEmail");
+      const btn = document.getElementById("mobileForgotBtn");
+      const message = document.getElementById("mobileForgotMessage");
+
+      function setMessage(text, type){
+        message.textContent = text || "";
+        message.classList.remove("is-error", "is-ok");
+        if (type) message.classList.add(type);
+      }
+
+      form.addEventListener("submit", async function(e){
+        e.preventDefault();
+
+        const cleanEmail = String(email.value || "").trim().toLowerCase();
+
+        if (!cleanEmail || !cleanEmail.includes("@")) {
+          setMessage("Lütfen geçerli bir e-posta gir.", "is-error");
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Gönderiliyor...";
+        setMessage("", "");
+
+        try {
+          await fetch("/api/auth/forgot", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+          body: JSON.stringify({
+          email: cleanEmail,
+          source: "mobile"
+           })
+          });
+
+          setMessage("Eğer e-posta sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi.", "is-ok");
+        } catch (err) {
+          setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Sıfırlama Linki Gönder";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
