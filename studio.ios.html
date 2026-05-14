@@ -1986,5 +1986,47 @@ if (data.verified !== true) {
   } catch (err) {}
 })();
 </script>
+  <script>
+(function AIVO_IOS_STUDIO_ACTIVITY(){
+  function hitTraffic(){
+    try {
+      fetch("/api/traffic/hit", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          source: "ios",
+          page: "/studio.ios.html"
+        })
+      }).catch(function(){});
+    } catch (err) {}
+  }
+
+  function pingPresence(){
+    try {
+      fetch("/api/presence/ping", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          source: "ios",
+          page: "/studio.ios.html"
+        })
+      }).catch(function(){});
+    } catch (err) {}
+  }
+
+  hitTraffic();
+  pingPresence();
+
+  setInterval(pingPresence, 30000);
+})();
+</script>
 </body>
 </html>
