@@ -2039,7 +2039,15 @@ try {
 } catch (err) {}
 
 setTimeout(function(){
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+  if (typeof window.aivoMobileShowLogin === "function") {
+    window.aivoMobileShowLogin();
+  }
+
+  if (history && typeof history.replaceState === "function") {
+    history.replaceState({}, "", "/studio.mobile.html");
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }, 650);
 
 return;
