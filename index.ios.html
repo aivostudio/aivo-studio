@@ -42,20 +42,25 @@
       color:inherit;
     }
 
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:50;
-      height:64px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 18px;
-      background:rgba(8,10,22,.74);
-      border-bottom:1px solid rgba(255,255,255,.08);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
-    }
+ .topbar{
+  position:sticky;
+  top:0;
+  z-index:90;
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:calc(66px + env(safe-area-inset-top)) 18px 18px;
+  background:
+    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
+    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
+    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
+  border-bottom:0;
+  box-shadow:none;
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
+}
 
     .logo{
       display:flex;
