@@ -1172,22 +1172,33 @@ async function uploadMobilePhotoFxFile(file, kind){
 
       if (!job) return;
 
-      if (act === "play") {
+         if (act === "play") {
         const video = card.querySelector("video");
         if (!video) return;
 
         video.muted = false;
         video.volume = 1;
 
-        if (video.paused) {
-          video.play().catch(function(){});
+        function syncPlayButton(){
+          const isPlaying = !video.paused && !video.ended;
+          btn.classList.toggle("is-playing", isPlaying);
+          btn.setAttribute("data-playing", isPlaying ? "true" : "false");
+          btn.setAttribute("aria-label", isPlaying ? "Duraklat" : "Oynat");
+        }
+
+        video.onplay = syncPlayButton;
+        video.onpause = syncPlayButton;
+        video.onended = syncPlayButton;
+
+        if (video.paused || video.ended) {
+          video.play().then(syncPlayButton).catch(syncPlayButton);
         } else {
           video.pause();
+          syncPlayButton();
         }
 
         return;
       }
-
       if (act === "sound") {
         const video = card.querySelector("video");
         if (!video) return;
