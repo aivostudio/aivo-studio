@@ -705,5 +705,23 @@ try {
   });
 })();
 </script>
+  <script>
+(function AIVO_IOS_INDEX_TRAFFIC_HIT(){
+  try {
+    fetch("/api/traffic/hit", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        source: "ios",
+        page: "/index.ios.html"
+      })
+    }).catch(function(){});
+  } catch (err) {}
+})();
+</script>
 </body>
 </html>
