@@ -1683,3 +1683,10 @@ window.mobileAtmoHydrate = async function(){
   margin-left:auto !important;
   margin-right:auto !important;
 }
+/* ATMO pro section headings center */
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] > .mobile-atmo-block-title,
+.mobile-atmo-panel[data-mobile-atmo-panel="pro"] > .mobile-atmo-block-sub{
+  text-align:center !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
