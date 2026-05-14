@@ -504,11 +504,11 @@
 
   <script>
     (function(){
-      const url = new URL(location.href);
-    const rawReturnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
-const returnTo = rawReturnTo.includes("mobile")
+  const url = new URL(location.href);
+const rawReturnTo = url.searchParams.get("returnTo") || "/studio.ios.html";
+const returnTo = rawReturnTo.includes("studio.ios.html")
   ? rawReturnTo
-  : "/studio.mobile.html";
+  : "/studio.ios.html";
       const card = document.getElementById("mobileLoginCard");
       const form = document.getElementById("mobileLoginForm");
       const tabs = Array.from(document.querySelectorAll(".mobile-login-tab"));
