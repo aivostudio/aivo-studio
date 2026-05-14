@@ -1746,7 +1746,7 @@ try {
 } catch (err) {}
 
 setTimeout(function(){
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+ window.location.replace(getAivoMobileLoginUrl());
 }, 650);
 
 return;
@@ -1884,6 +1884,18 @@ if (tool === "atmo") {
   }
 });
   })();
+  function getAivoMobileLoginUrl(extraQuery){
+  var isIosApp = false;
+
+  try {
+    isIosApp = localStorage.getItem("aivo_ios_app") === "1";
+  } catch (err) {}
+
+  var base = isIosApp ? "/login.ios.html" : "/login.mobile.html";
+  var query = extraQuery || "returnTo=/studio.mobile.html";
+
+  return base + "?" + query;
+}
   window.addEventListener("pageshow", async function(event){
   if (!event.persisted) return;
 
@@ -1894,23 +1906,23 @@ if (tool === "atmo") {
     });
 
    if (!res.ok) {
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+ window.location.replace(getAivoMobileLoginUrl());
   return;
 }
 
     const data = await res.json();
 
 if (!data || data.ok === false || !data.email) {
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+ window.location.replace(getAivoMobileLoginUrl());
   return;
 }
 
 if (data.verified !== true) {
-  window.location.replace("/login.mobile.html?tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.mobile.html");
+ window.location.replace(getAivoMobileLoginUrl("tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.mobile.html"));
   return;
 }
   } catch (err) {
-   window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+ window.location.replace(getAivoMobileLoginUrl());
   }
 });
 </script>
