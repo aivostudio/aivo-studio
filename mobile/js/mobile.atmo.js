@@ -1676,3 +1676,10 @@ window.mobileAtmoHydrate = async function(){
 };
   window.mobileAtmoState = state;
 })();
+/* ATMO basic section headings center */
+.mobile-atmo-panel[data-mobile-atmo-panel="basic"] > .mobile-atmo-block-title,
+.mobile-atmo-panel[data-mobile-atmo-panel="basic"] > .mobile-atmo-block-sub{
+  text-align:center !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
