@@ -238,26 +238,88 @@
     const shareBtn = card.querySelector('[data-action="share-cover"]');
     const deleteBtn = card.querySelector('[data-action="delete-cover"]');
 
-    if (openBtn) {
+      if (openBtn) {
       openBtn.addEventListener("click", function(){
         if (!imageUrl) return;
-        window.open(imageUrl, "_blank", "noopener");
+
+        const oldViewer = document.querySelector("[data-mobile-cover-viewer]");
+        if (oldViewer) oldViewer.remove();
+
+        const viewer = document.createElement("div");
+        viewer.setAttribute("data-mobile-cover-viewer", "true");
+        viewer.style.cssText = [
+          "position:fixed",
+          "inset:0",
+          "z-index:99999",
+          "display:flex",
+          "align-items:center",
+          "justify-content:center",
+          "padding:18px",
+          "background:rgba(3,5,14,.92)",
+          "backdrop-filter:blur(18px)",
+          "-webkit-backdrop-filter:blur(18px)"
+        ].join(";");
+
+        viewer.innerHTML = `
+          <button type="button" aria-label="Kapat" style="
+            position:absolute;
+            right:18px;
+            top:calc(18px + env(safe-area-inset-top));
+            width:46px;
+            height:46px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.18);
+            background:rgba(255,255,255,.10);
+            color:#fff;
+            font-size:28px;
+            font-weight:900;
+            line-height:1;
+          ">×</button>
+
+          <img src="${safe(imageUrl)}" alt="AIVO kapak görseli" style="
+            width:100%;
+            max-width:430px;
+            max-height:82vh;
+            object-fit:contain;
+            border-radius:24px;
+            box-shadow:0 24px 80px rgba(0,0,0,.48);
+          ">
+        `;
+
+        viewer.addEventListener("click", function(ev){
+          if (ev.target === viewer || ev.target.tagName === "BUTTON") {
+            viewer.remove();
+          }
+        });
+
+        document.body.appendChild(viewer);
       });
     }
 
-    if (downloadBtn) {
+     if (downloadBtn) {
       downloadBtn.addEventListener("click", function(){
         if (!imageUrl) return;
 
-        const proxied = "/api/media/proxy?url=" + encodeURIComponent(imageUrl) + "&filename=cover.jpg";
+        const proxied =
+          "/api/media/proxy?url=" +
+          encodeURIComponent(imageUrl) +
+          "&filename=" +
+          encodeURIComponent("aivo-kapak.jpg");
 
         const a = document.createElement("a");
         a.href = proxied;
-        a.download = "cover.jpg";
+        a.download = "aivo-kapak.jpg";
         a.rel = "noopener";
+        a.style.display = "none";
+
         document.body.appendChild(a);
         a.click();
-        a.remove();
+
+        setTimeout(function(){
+          try {
+            a.remove();
+          } catch (err) {}
+        }, 1500);
       });
     }
 
