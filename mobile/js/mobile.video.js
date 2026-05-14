@@ -1,201 +1,770 @@
-(function(){
-  const mount = document.getElementById("mobileVideoMount");
-  const root = mount
-    ? mount.querySelector("#mobileVideoSection")
-    : document.getElementById("mobileVideoSection");
+console.log("[video.module] loaded ✅", new Date().toISOString());
 
-  if (!root || root.__mobileVideoBound) return;
-  root.__mobileVideoBound = true;
+(function () {
+  // ===============================
+  // Global guard (tek kez)
+  // ===============================
+  if (window.__AIVO_VIDEO_MODULE_V2__) return;
+  window.__AIVO_VIDEO_MODULE_V2__ = true;
 
-  const promptEl = root.querySelector("#mobileVideoPrompt");
-  const promptCountEl = root.querySelector("#mobileVideoPromptCount");
-  const imagePromptEl = root.querySelector("#mobileVideoImagePrompt");
-  const imagePromptCountEl = root.querySelector("#mobileVideoImagePromptCount");
-  const imageFileEl = root.querySelector("#mobileVideoImageFile");
+  const ROOT_SEL = 'section[data-module="video"]';
+  const POLL_MS = 2000;
+  const POLL_MAX = 120; // 4 dk
 
-  const durationEl = root.querySelector("#mobileVideoDuration");
-  const ratioEl = root.querySelector("#mobileVideoRatio");
-  const motionEl = root.querySelector("#mobileVideoMotion");
-  const qualityEl = root.querySelector("#mobileVideoQuality");
+  // ===============================
+  // Policy helpers (Video)
+  // ===============================
+  const VIDEO_HARD_BLOCK_TERMS = [
+    "deepfake",
+    "face swap",
+    "replace face",
+    "swap face",
+    "yuzunu koy",
+    "yüzünü koy",
+    "yuzunu ekle",
+    "yüzünü ekle",
+    "yuzunu kullan",
+    "yüzünü kullan",
+    "suratini kullan"
+  ];
 
-  const generateBtn = root.querySelector("#mobileVideoGenerateBtn");
-  const statusEl = root.querySelector("#mobileVideoStatus");
-  const resultsEl = root.querySelector("#mobileVideoResults");
+  const VIDEO_HARD_BLOCK_PATTERNS = [
+    /\bgibi\b/i,
+    /\btarzında\b/i,
+    /\btarzinda\b/i,
+    /\bstilinde\b/i,
+    /\bin the style of\b/i,
+    /\blike\b/i,
+    /\bbirebir\b/i,
+    /\baynısı\b/i,
+    /\baynisi\b/i,
+    /\bface of\b/i,
+    /\bwith the face of\b/i,
+    /\bimpersonat(e|ion)\b/i
+  ];
 
- const mobileVideoCurrentJobs = [];
-const mobileVideoLibraryJobs = [];
-const mobileVideoDeletedIds = new Set();
-let mobileVideoViewMode = "current";
-const state = {
-  mode: "text",
-  prompt: "",
-  imagePrompt: "",
-  imageFile: null,
-  imageUrl: "",
-  duration: "5",
-  ratio: "16:9",
-  motion: "balanced",
-  quality: "standard"
-};
-  function esc(value){
-    return String(value == null ? "" : value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+  const VIDEO_PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "kilicdaroglu",
+    "kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "imamoglu",
+    "imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "bahceli",
+    "bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "aksener",
+    "akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "ozel",
+    "özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "demirtas",
+    "demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "ozdag",
+    "özdağ",
+    "fatih erbakan",
+    "temel karamollaoglu",
+    "temel karamollaoğlu",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "davutoglu",
+    "davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "simsek",
+    "şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "soylu",
+    "bekir bozdag",
+    "bekir bozdağ",
+    "bozdag",
+    "bozdağ",
+    "numan kurtulmus",
+    "numan kurtulmuş",
+    "kurtulmus",
+    "kurtulmuş",
+    "omer celik",
+    "ömer çelik",
+    "celik",
+    "çelik",
+    "binali yildirim",
+    "binali yıldırım",
+    "abdullah gul",
+    "abdullah gül",
+    "gul",
+    "gül",
+    "ahmet necdet sezer",
+    "turgut ozal",
+    "turgut özal",
+    "ismet inonu",
+    "ismet inönü",
+    "inonu",
+    "inönü",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "kemal ataturk",
+    "cumhurbaskani",
+    "cumhurbaşkanı",
+    "cumhurbaskani yardimcisi",
+    "cumhurbaşkanı yardımcısı",
+    "bakan",
+    "milletvekili",
+    "belediye baskani",
+    "belediye başkanı",
+    "vali",
+    "kaymakam",
+    "siyasetci",
+    "siyasetçi",
+    "politikaci",
+    "politikacı",
+    "kamu figuru",
+    "kamu figürü",
+    "devlet buyugu",
+    "devlet büyüğü",
+    "donald trump",
+    "trump",
+    "jd vance",
+    "j d vance",
+    "vance",
+    "keir starmer",
+    "starmer",
+    "emmanuel macron",
+    "macron",
+    "friedrich merz",
+    "merz",
+    "frank walter steinmeier",
+    "frank-walter steinmeier",
+    "steinmeier",
+    "giorgia meloni",
+    "meloni",
+    "sergio mattarella",
+    "mattarella",
+    "pedro sanchez",
+    "pedro sánchez",
+    "sanchez",
+    "sánchez",
+    "felipe vi",
+    "mark carney",
+    "carney",
+    "claudia sheinbaum",
+    "sheinbaum",
+    "javier milei",
+    "milei",
+    "luiz inacio lula da silva",
+    "luiz inácio lula da silva",
+    "lula",
+    "lula da silva",
+    "vladimir putin",
+    "putin",
+    "mikhail mishustin",
+    "mishustin",
+    "volodymyr zelenskyy",
+    "zelenskyy",
+    "zelensky",
+    "yulia svyrydenko",
+    "svyrydenko",
+    "xi jinping",
+    "jinping",
+    "li qiang",
+    "narendra modi",
+    "modi",
+    "droupadi murmu",
+    "murmu",
+    "benjamin netanyahu",
+    "netanyahu",
+    "isaac herzog",
+    "herzog",
+    "masoud pezeshkian",
+    "pezeshkian",
+    "mojtaba khamenei",
+    "khamenei",
+    "mohammed bin salman",
+    "muhammed bin salman",
+    "mbs",
+    "salman",
+    "king salman",
+    "sheikh mohamed bin zayed al nahyan",
+    "mohamed bin zayed",
+    "mbz",
+    "sheikh mohammed bin rashid al maktoum",
+    "mohammed bin rashid",
+    "bin rashid",
+    "abdullah ii",
+    "king abdullah",
+    "jafar hassan",
+    "abdel fattah el sisi",
+    "abdel fattah al sisi",
+    "sisi",
+    "mostafa madbouly",
+    "madbouly",
+    "abiy ahmed",
+    "abiy",
+    "william ruto",
+    "ruto",
+    "paul kagame",
+    "kagame",
+    "samia suluhu hassan",
+    "samia suluhu",
+    "samia",
+    "cyril ramaphosa",
+    "ramaphosa",
+    "bola tinubu",
+    "tinubu",
+    "bassirou diomaye faye",
+    "diomaye faye",
+    "ousmane sonko",
+    "sonko",
+    "john mahama",
+    "mahama",
+    "netumbo nandi ndaitwah",
+    "netumbo nandi-ndaitwah",
+    "nandi ndaitwah",
+    "hassan sheikh mohamud",
+    "hassan sheikh",
+    "hamza abdi barre",
+    "kais saied",
+    "kais saïed",
+    "saied",
+    "saïed",
+    "mohamed muizzu",
+    "muizzu",
+    "anwar ibrahim",
+    "anwar",
+    "prabowo subianto",
+    "prabowo",
+    "lawrence wong",
+    "wong",
+    "tharman shanmugaratnam",
+    "tharman",
+    "lee jae myung",
+    "lee jae-myung",
+    "shigeru ishiba",
+    "ishiba",
+    "naruhito",
+    "anura kumara dissanayake",
+    "dissanayake",
+    "paetongtarn shinawatra",
+    "shinawatra",
+    "maha vajiralongkorn",
+    "to lam",
+    "tô lâm",
+    "luong cuong",
+    "lương cường",
+    "pham minh chinh",
+    "phạm minh chính",
+    "hun manet",
+    "hun sen",
+    "norodom sihamoni",
+    "thongloun sisoulith",
+    "sisoulith",
+    "sonexay siphandone",
+    "shehbaz sharif",
+    "sharif",
+    "asif ali zardari",
+    "zardari",
+    "muhammad yunus",
+    "yunus",
+    "kassym jomart tokayev",
+    "kassym-jomart tokayev",
+    "tokayev",
+    "shavkat mirziyoyev",
+    "mirziyoyev",
+    "sadyr japarov",
+    "japarov",
+    "emomali rahmon",
+    "rahmon",
+    "nikol pashinyan",
+    "pashinyan",
+    "ilham aliyev",
+    "aliyev",
+    "irakli kobakhidze",
+    "kobakhidze",
+    "mikheil kavelashvili",
+    "kavelashvili",
+    "maia sandu",
+    "sandu",
+    "aleksandar vucic",
+    "aleksandar vučić",
+    "vucic",
+    "vučić",
+    "robert fico",
+    "fico",
+    "peter pellegrini",
+    "pellegrini",
+    "andrej plenkovic",
+    "andrej plenković",
+    "plenkovic",
+    "plenković",
+    "petr pavel",
+    "pavel",
+    "donald tusk",
+    "tusk",
+    "andrzej duda",
+    "duda",
+    "viktor orban",
+    "viktor orbán",
+    "orban",
+    "orbán",
+    "nicusor dan",
+    "nicușor dan",
+    "ilie bolojan",
+    "bolojan",
+    "boyko borisov",
+    "borisov",
+    "rumen radev",
+    "radev",
+    "kyriakos mitsotakis",
+    "mitsotakis",
+    "edi rama",
+    "rama",
+    "zoran milanovic",
+    "zoran milanović",
+    "milanovic",
+    "milanović",
+    "andrej babis",
+    "andrej babiš",
+    "babis",
+    "babiš",
+    "micheal martin",
+    "martin",
+    "rodrigo chaves",
+    "chaves",
+    "gustavo petro",
+    "petro",
+    "daniel noboa",
+    "noboa",
+    "nayib bukele",
+    "bukele",
+    "bernardo arevalo",
+    "bernardo arévalo",
+    "arevalo",
+    "arévalo",
+    "xiomara castro",
+    "castro",
+    "daniel ortega",
+    "ortega",
+    "rosario murillo",
+    "murillo",
+    "laurentino cortizo",
+    "cortizo",
+    "jose raul mulino",
+    "josé raúl mulino",
+    "mulino",
+    "luis abinader",
+    "abinader",
+    "irfaan ali",
+    "ali",
+    "chan santokhi",
+    "santokhi",
+    "nicolas maduro",
+    "nicolás maduro",
+    "maduro",
+    "yamandu orsi",
+    "yamandú orsi",
+    "orsi",
+    "prime minister",
+    "president",
+    "king",
+    "queen",
+    "chancellor",
+    "taoiseach",
+    "premier",
+    "head of state",
+    "head of government",
+    "basbakan",
+    "başbakan"
+  ];
+
+  const VIDEO_ARTIST_NAME_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "hande yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "haluk levent",
+    "baris manco",
+    "barış manço",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "uzi",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  function qs(sel, root = document) {
+    return root.querySelector(sel);
   }
 
-  function safeText(value){
-    return String(value || "").trim();
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 
-const MOBILE_VIDEO_TOAST = {
-  loadingId: null
-};
+  function normalizeVideoPolicyText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-function mobileVideoToast(type, message, options){
-  const text = safeText(message);
-  if (!text) return null;
+  function buildVideoPolicyPhraseRegex(term) {
+    const normalized = normalizeVideoPolicyText(term);
+    if (!normalized) return null;
 
-  try {
-    const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-    const fn = api && typeof api[type] === "function" ? api[type] : null;
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+      .join("\\s+");
 
-    if (fn) {
-      return fn.call(api, text, options || {});
-    }
+    return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+  }
 
-    if (api && typeof api.show === "function") {
-      return api.show({
-        type: type || "info",
-        message: text,
-        ...(options || {})
+  function isVideoPolicyBlocked(raw) {
+    const text = normalizeVideoPolicyText(raw);
+
+    const hasBlockedTerm =
+      VIDEO_HARD_BLOCK_TERMS.some((term) => {
+        const rx = buildVideoPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      VIDEO_PUBLIC_FIGURE_TERMS.some((term) => {
+        const rx = buildVideoPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
+      }) ||
+      VIDEO_ARTIST_NAME_TERMS.some((term) => {
+        const rx = buildVideoPolicyPhraseRegex(term);
+        return rx ? rx.test(text) : false;
       });
-    }
 
-    if (window.Toast && typeof window.Toast.show === "function") {
-      return window.Toast.show(text, type || "info");
-    }
-  } catch (err) {}
-
-  return null;
-}
-
-function mobileVideoLoading(message){
-  MOBILE_VIDEO_TOAST.loadingId = mobileVideoToast("loading", message, {
-    persist: true,
-    autoClose: false,
-    source: "mobile_video"
-  });
-
-  return MOBILE_VIDEO_TOAST.loadingId;
-}
-
-function clearMobileVideoLoading(){
-  const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-
-  try {
-    if (MOBILE_VIDEO_TOAST.loadingId && api) {
-      if (typeof api.dismiss === "function") {
-        api.dismiss(MOBILE_VIDEO_TOAST.loadingId);
-      } else if (typeof api.remove === "function") {
-        api.remove(MOBILE_VIDEO_TOAST.loadingId);
-      }
-    }
-  } catch (err) {}
-
-  MOBILE_VIDEO_TOAST.loadingId = null;
-
-  if (generateBtn) {
-    generateBtn.disabled = false;
-    generateBtn.classList.remove("is-loading", "is-pressed");
-    generateBtn.removeAttribute("aria-busy");
-    syncCreditButton();
-  }
-}
-  function setStatus(message){
-    if (statusEl) statusEl.textContent = safeText(message);
+    const hasBlockedPattern = VIDEO_HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
+    return !!raw && (hasBlockedTerm || hasBlockedPattern);
   }
 
-  function computeCredit(){
-    const duration = String(state.duration || "5");
-    let total = 20;
+  function getVideoCreateButton(root) {
+    return (
+      qs("#videoGenerateTextBtn", root) ||
+      qs("#videoGenerateImageBtn", root) ||
+      null
+    );
+  }
 
-    if (duration === "8") total = 25;
-    if (duration === "10") total = 30;
+  function ensureVideoPolicyNote(root, btn) {
+    if (!root || !btn) return null;
 
-    if (state.quality === "high") total += 5;
+    const mountPoint = btn.parentElement || root;
+    let note = qs("#videoPolicyNote", root);
+
+    if (!note) {
+      note = document.createElement("div");
+      note.id = "videoPolicyNote";
+      note.style.display = "none";
+      note.style.marginTop = "14px";
+      note.style.padding = "14px 16px";
+      note.style.borderRadius = "18px";
+      note.style.background = "rgba(255,90,120,.10)";
+      note.style.border = "1px solid rgba(255,120,150,.24)";
+      note.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,.04)";
+      note.style.textAlign = "center";
+      note.style.fontSize = "14px";
+      note.style.fontWeight = "800";
+      note.style.lineHeight = "1.65";
+      note.style.color = "rgba(255,245,248,.96)";
+    }
+
+    if (note.parentElement !== mountPoint) {
+      mountPoint.appendChild(note);
+    }
+
+    return note;
+  }
+
+  function resetVideoPolicyUI(root) {
+    if (!root) return;
+
+    const promptEls = [
+      qs("#videoPrompt", root),
+      qs("#videoImagePrompt", root)
+    ].filter(Boolean);
+
+    const buttons = [
+      qs("#videoGenerateTextBtn", root),
+      qs("#videoGenerateImageBtn", root)
+    ].filter(Boolean);
+
+    const note = qs("#videoPolicyNote", root);
+
+    promptEls.forEach((el) => {
+      el.style.borderColor = "";
+      el.style.boxShadow = "";
+    });
+
+    buttons.forEach((btn) => {
+      btn.style.background = "";
+      btn.style.borderColor = "";
+      btn.style.boxShadow = "";
+      btn.style.cursor = "";
+      btn.style.filter = "";
+    });
+
+    if (note) {
+      note.style.display = "none";
+      note.textContent = "";
+    }
+  }
+
+  function emitVideoJobCreated(meta) {
+    try {
+      window.dispatchEvent(new CustomEvent("aivo:video:job_created", { detail: meta }));
+    } catch (e) {
+      console.warn("[video] emit failed", e);
+    }
+  }
+
+  // ===============================
+  // Duration + credit helpers (Video UI: 5 / 8 / 10)
+  // ===============================
+  function clampDuration(n) {
+    const allowed = [5, 8, 10];
+    const num = Number(n);
+
+    if (!Number.isFinite(num)) return 5;
+    if (allowed.includes(num)) return num;
+
+    return allowed.reduce((prev, curr) =>
+      Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev
+    );
+  }
+
+  function getVideoMode(root) {
+    const activeTab =
+      root?.querySelector('[data-video-tab].is-active')?.dataset?.videoTab ||
+      root?.dataset?.videoMode ||
+      "text";
+
+    return activeTab === "image" ? "image" : "text";
+  }
+
+  function getVideoBaseCredit(duration) {
+    const d = clampDuration(duration);
+    if (d === 8) return 25;
+    if (d === 10) return 30;
+    return 20;
+  }
+
+  function getVideoCredit(root) {
+    const duration = clampDuration(Number(qs("#videoDuration", root)?.value || 5));
+    const audioEnabled = !!qs("#audioEnabled", root)?.checked;
+
+    let total = getVideoBaseCredit(duration);
+
+    if (audioEnabled) {
+      total += 5;
+    }
 
     return total;
   }
 
-  function syncCreditButton(){
-    if (!generateBtn) return;
-    const credit = computeCredit();
-    generateBtn.textContent = "🎬 Video Oluştur (" + credit + " Kredi)";
-    generateBtn.setAttribute("data-credit-cost", String(credit));
+  function syncVideoCreditUI(root) {
+    if (!root) return;
+
+    const credit = getVideoCredit(root);
+
+    const textBtn = qs("#videoGenerateTextBtn", root);
+    const imageBtn = qs("#videoGenerateImageBtn", root);
+
+    const textBadge =
+      qs('[data-video-subview="text"] .badge-beta', root) ||
+      qs("#videoGenerateTextBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
+      null;
+
+    const imageBadge =
+      qs('[data-video-subview="image"] .badge-beta', root) ||
+      qs("#videoGenerateImageBtn", root)?.closest(".card")?.querySelector(".badge-beta") ||
+      null;
+
+    if (textBtn) {
+      textBtn.dataset.creditCost = String(credit);
+      textBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+    }
+
+    if (imageBtn) {
+      imageBtn.dataset.creditCost = String(credit);
+      imageBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+    }
+
+    if (textBadge) {
+      textBadge.textContent = `${credit} Kredi`;
+    }
+
+    if (imageBadge) {
+      imageBadge.textContent = `${credit} Kredi`;
+    }
   }
 
-  function pickVideoUrl(data){
-    return String(
-      data.video_url ||
-      data.final_url ||
-      data.url ||
-      data.video?.url ||
-      data.output?.video?.url ||
-      data.meta?.final_video_url ||
-      data.meta?.preview_video_url ||
-      data.outputs?.[0]?.url ||
-      data.outputs?.[0]?.video_url ||
-      ""
-    ).trim();
+  // ===============================
+  // Robust JSON POST (500'lerde text dönebilir)
+  // ===============================
+  async function postJSON(url, payload) {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await r.text().catch(() => "");
+    let j = null;
+    try {
+      j = text ? JSON.parse(text) : null;
+    } catch (_) {
+      j = null;
+    }
+
+    if (!r.ok) {
+      const err =
+        (j && (j.error || j.message)) ||
+        (text ? text.slice(0, 180) : "") ||
+        `request_failed_${r.status}`;
+      throw err;
+    }
+
+    if (!j) throw "bad_json_response";
+    return j;
   }
 
-  async function refreshMobileVideoCreditsUI(){
+  // ===============================
+  // Poll job -> PPE.apply (video only)
+  // ===============================
+  function isReadyStatus(s) {
+    const v = String(s || "").toLowerCase();
+    return v === "ready" || v === "done" || v === "completed" || v === "success";
+  }
+
+  function pickVideoOutputs(outputs) {
+    if (!Array.isArray(outputs)) return [];
+    return outputs.filter((o) => {
+      if (!o) return false;
+      if (o.type && o.type !== "video") return false;
+      const app = o.meta?.app || o.app || o.module;
+      return !app || app === "video";
+    });
+  }
+
+  async function refreshVideoCreditsUI() {
     try {
       const creditGetRes = await fetch("/api/credits/get", {
-        method: "GET",
         credentials: "include",
         cache: "no-store",
-        headers: {
-          "accept": "application/json"
-        }
+        headers: { "accept": "application/json" }
       });
 
-      const creditGetData = await creditGetRes.json().catch(function(){
-        return null;
-      });
+      const creditGetData = await creditGetRes.json().catch(() => null);
 
-      const nextCredits = creditGetData?.credits ?? creditGetData?.balance ?? creditGetData?.credit;
-
-      if (creditGetData && creditGetData.ok && typeof nextCredits === "number") {
+      if (creditGetData?.ok && typeof creditGetData.credits === "number") {
         const topCreditCountEl = document.getElementById("topCreditCount");
         if (topCreditCountEl) {
-          topCreditCountEl.textContent = String(nextCredits);
+          topCreditCountEl.textContent = String(creditGetData.credits);
         }
-
-        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
-        mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
-        });
 
         if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-          window.AIVO_STORE_V1.setCredits(nextCredits);
+          window.AIVO_STORE_V1.setCredits(creditGetData.credits);
         }
       }
-    } catch (err) {}
+    } catch (_) {}
 
-    try {
-      if (typeof window.syncCreditsUI === "function") {
-        window.syncCreditsUI({ force: true });
-      }
-    } catch (err) {}
+    try { window.syncCreditsUI?.({ force: true }); } catch {}
   }
-  async function consumeMobileVideoCredits(creditCost){
-    const requestId = "mobile-video:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
-    const res = await fetch("/api/credits/consume-ledger", {
+  async function consumeVideoCredits({ creditCost, creditReason }) {
+    const consumeRequestId = `video:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+
+    const creditRes = await fetch("/api/credits/consume-ledger", {
       method: "POST",
       credentials: "include",
       headers: {
@@ -204,50 +773,56 @@ function clearMobileVideoLoading(){
       },
       body: JSON.stringify({
         app: "video",
-        action: "mobile_video_generate",
+        action: creditReason,
         cost: creditCost,
-        request_id: requestId,
-        reason: "mobile_video_generate"
+        request_id: consumeRequestId,
+        reason: creditReason
       })
     });
 
-    const data = await res.json().catch(function(){
-      return {
-        ok: false,
-        error: "non_json_response"
-      };
-    });
+    let creditData = null;
+    try {
+      creditData = await creditRes.json();
+    } catch {
+      creditData = { ok: false, error: "non_json_response", status: creditRes.status };
+    }
 
-       if (!res.ok || !data || !data.ok) {
-      mobileVideoToast("warning", "Yetersiz kredi.");
+    if (!creditRes.ok || !creditData?.ok) {
+      const to = encodeURIComponent(
+        location.pathname + location.search + location.hash
+      );
 
-      location.hash = "#credits";
-
-      const creditsNav =
-        document.querySelector('.bottom-nav a[href="#credits"]') ||
-        document.querySelector('[data-mobile-nav="credits"]') ||
-        document.querySelector('[data-mobile-tab="credits"]');
-
-      if (creditsNav) {
-        creditsNav.click();
-      }
+      location.href =
+        "/fiyatlandirma.html?from=studio&reason=insufficient_credit&to=" + to;
 
       return null;
     }
 
-    await refreshMobileVideoCreditsUI();
+    const transactionId =
+      creditData?.transaction_id ||
+      creditData?.transaction?.id ||
+      null;
+
+    await refreshVideoCreditsUI();
 
     return {
-      requestId: requestId,
-      transactionId: data.transaction_id || data.transaction?.id || null
+      consumeRequestId,
+      transactionId
     };
   }
 
-  async function refundMobileVideoCredits(ctx){
-    if (!ctx || !ctx.requestId || !ctx.transactionId || !ctx.creditCost) return false;
+  async function refundVideoCredits({
+    creditCost,
+    creditReason,
+    consumeRequestId,
+    transactionId,
+    reason,
+    meta = {}
+  }) {
+    if (!consumeRequestId || !transactionId || creditCost <= 0) return false;
 
     try {
-      const res = await fetch("/api/credits/refund", {
+      const refundRes = await fetch("/api/credits/refund", {
         method: "POST",
         credentials: "include",
         headers: {
@@ -256,926 +831,991 @@ function clearMobileVideoLoading(){
         },
         body: JSON.stringify({
           app: "video",
-          action: "mobile_video_generate",
-          amount: ctx.creditCost,
-          request_id: ctx.requestId,
-          related_transaction_id: ctx.transactionId,
-          reason: ctx.reason || "mobile_video_failed",
-          meta: ctx.meta || {}
+          action: creditReason,
+          amount: creditCost,
+          request_id: consumeRequestId,
+          related_transaction_id: transactionId,
+          reason,
+          meta
         })
       });
 
-      const data = await res.json().catch(function(){
-        return null;
-      });
+      const refundData = await refundRes.json().catch(() => null);
 
-      if (res.ok && data && data.ok && (data.refunded || data.deduped || data.skipped)) {
-        await refreshMobileVideoCreditsUI();
-        mobileVideoToast("error", "İşlem başarısız oldu, kredi iade edildi.");
+      if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
+        await refreshVideoCreditsUI();
+        try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
         return true;
       }
-    } catch (err) {
-      console.error("[MOBILE VIDEO][REFUND ERROR]", err);
+    } catch (refundErr) {
+      console.error("[video] refund failed =", refundErr);
     }
 
     return false;
   }
 
-function renderMobileVideoResults(){
-  if (!resultsEl) return;
+  async function pollJob(job_id, refundCtx = null) {
+    for (let i = 0; i < POLL_MAX; i++) {
+      await sleep(POLL_MS);
 
-  const sourceJobs = mobileVideoViewMode === "library"
-    ? mobileVideoLibraryJobs
-    : mobileVideoCurrentJobs;
+      const r = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(job_id)}`);
+      const text = await r.text().catch(() => "");
+      let j = null;
+      try { j = text ? JSON.parse(text) : null; } catch (_) { j = null; }
 
-  const items = sourceJobs.filter(function(job){
-    return !mobileVideoDeletedIds.has(job.id);
-  });
+      if (!j || !j.ok) continue;
 
-  if (!items.length) {
-    resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Henüz mobil video başlatılmadı.";
+      const ready = isReadyStatus(j.status);
+      const outs = pickVideoOutputs(j.outputs);
+
+      if (ready && outs.length) {
+        const normalizedOutputs = outs.map((o) => ({
+          ...o,
+          meta: { ...(o.meta || {}), app: "video" },
+        }));
+
+        window.PPE?.apply?.({
+          state: "COMPLETED",
+          outputs: normalizedOutputs,
+        });
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:video:job_ready", {
+            detail: {
+              app: "video",
+              job_id,
+              status: String(j.status || "ready").toLowerCase(),
+              mode: refundCtx?.mode || "",
+              video: {
+                url:
+                  normalizedOutputs[0]?.url ||
+                  normalizedOutputs[0]?.video_url ||
+                  normalizedOutputs[0]?.archive_url ||
+                  ""
+              },
+              outputs: normalizedOutputs,
+              raw: j
+            }
+          })
+        );
+
+        try { window.toast?.success?.("Video hazır"); } catch {}
+        return;
+      }
+
+      if (String(j.status || "").toLowerCase() === "error") {
+        if (refundCtx) {
+          await refundVideoCredits({
+            creditCost: refundCtx.creditCost,
+            creditReason: refundCtx.creditReason,
+            consumeRequestId: refundCtx.consumeRequestId,
+            transactionId: refundCtx.transactionId,
+            reason: "video_job_failed",
+            meta: {
+              source: "video.poll",
+              mode: refundCtx.mode,
+              duration: refundCtx.duration,
+              aspect_ratio: refundCtx.ratio,
+              prompt: refundCtx.prompt || "",
+              image_url: refundCtx.image_url || "",
+              job_id,
+              error: String(j.error || "video_job_error")
+            }
+          });
+        }
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:video:job_failed", {
+            detail: {
+              app: "video",
+              job_id,
+              status: "error",
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
+        window.dispatchEvent(
+          new CustomEvent("aivo:video:job_remove", {
+            detail: {
+              app: "video",
+              job_id,
+              remove_placeholder: true,
+              raw: j
+            }
+          })
+        );
+
+        throw j.error || "video_job_error";
+      }
+    }
+
+    if (refundCtx) {
+      await refundVideoCredits({
+        creditCost: refundCtx.creditCost,
+        creditReason: refundCtx.creditReason,
+        consumeRequestId: refundCtx.consumeRequestId,
+        transactionId: refundCtx.transactionId,
+        reason: "video_poll_timeout",
+        meta: {
+          source: "video.poll",
+          mode: refundCtx.mode,
+          duration: refundCtx.duration,
+          aspect_ratio: refundCtx.ratio,
+          prompt: refundCtx.prompt || "",
+          image_url: refundCtx.image_url || "",
+          job_id,
+          error: "video_poll_timeout"
+        }
+      });
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:video:job_failed", {
+        detail: {
+          app: "video",
+          job_id,
+          status: "timeout",
+          remove_placeholder: true,
+          raw: { ok: false, error: "video_poll_timeout" }
+        }
+      })
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("aivo:video:job_remove", {
+        detail: {
+          app: "video",
+          job_id,
+          remove_placeholder: true,
+          raw: { ok: false, error: "video_poll_timeout" }
+        }
+      })
+    );
+
+    throw "video_poll_timeout";
+  }
+
+  // ===============================
+  // Collect UI values safely (root-aware)
+  // ===============================
+  function getRoot() {
+    return document.querySelector(ROOT_SEL) || document;
+  }
+
+  function buildCommonPayload(root) {
+    const durationRaw = Number(qs("#videoDuration", root)?.value || 5);
+    const duration = clampDuration(durationRaw);
+
+    return {
+      app: "video",
+      model: "gen4.5",
+      duration,
+      ratio: qs("#videoRatio", root)?.value || "16:9",
+      resolution: Number(qs("#videoResolution", root)?.value || 720),
+      audio: !!qs("#audioEnabled", root)?.checked,
+      credit_cost: getVideoCredit(root),
+    };
+  }
+
+  function buildVideoPolicyText(root, mode = "text") {
+    const common = buildCommonPayload(root);
+
+    const textPrompt = String(qs("#videoPrompt", root)?.value || "").trim();
+    const imagePrompt = String(qs("#videoImagePrompt", root)?.value || "").trim();
+
+    return [
+      mode === "image" ? imagePrompt : textPrompt,
+      common?.model,
+      common?.ratio,
+      common?.duration,
+      common?.resolution
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  async function createText() {
+    const root = getRoot();
+
+    const prompt = (qs("#videoPrompt", root)?.value || "").trim();
+    const policyText = buildVideoPolicyText(root, "text");
+    const createBtn = qs("#videoGenerateTextBtn", root);
+    const policyNote = ensureVideoPolicyNote(root, createBtn);
+
+    if (isVideoPolicyBlocked(policyText)) {
+      const promptEl = qs("#videoPrompt", root);
+
+      if (promptEl) {
+        promptEl.style.borderColor = "rgba(255,110,140,.92)";
+        promptEl.style.boxShadow =
+          "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+        promptEl.focus();
+      }
+
+      if (createBtn) {
+        createBtn.style.background =
+          "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+        createBtn.style.borderColor = "rgba(255,110,140,.95)";
+        createBtn.style.boxShadow =
+          "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+        createBtn.style.cursor = "not-allowed";
+        createBtn.style.filter = "saturate(1.05)";
+      }
+
+      if (policyNote) {
+        policyNote.textContent =
+          "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+        policyNote.style.display = "block";
+      }
+
+      return;
+    }
+
+    if (!prompt) {
+      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+      const promptEl = qs("#videoPrompt", root);
+      if (promptEl) promptEl.focus();
+      return;
+    }
+
+    const payload = {
+      ...buildCommonPayload(root),
+      mode: "text",
+      prompt,
+    };
+
+    const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
+    const creditReason = "studio_video_text_generate";
+
+    const consumed = await consumeVideoCredits({ creditCost, creditReason });
+    if (!consumed) return;
+
+    try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+
+    try {
+      const j = await postJSON("/api/providers/runway/video/create", payload);
+      const job = j.job || j;
+
+      job.app = "video";
+      window.AIVO_JOBS?.upsert?.(job);
+
+      const job_id = job.job_id || job.id;
+      console.log("[video] created(text)", { job_id, job, creditCost });
+
+      emitVideoJobCreated({
+        app: "video",
+        job_id,
+        createdAt: Date.now(),
+        mode: "text",
+        prompt,
+        model: payload.model,
+        ratio: payload.ratio,
+        duration: payload.duration,
+        resolution: payload.resolution,
+        audio: payload.audio,
+        credit_cost: creditCost,
+        request_id: consumed.consumeRequestId
+      });
+
+      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+
+      await pollJob(job_id, {
+        mode: "text",
+        prompt,
+        image_url: "",
+        duration: payload.duration,
+        ratio: payload.ratio,
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId
+      });
+    } catch (err) {
+      console.error("[video] create(text) error =", err);
+
+      const refunded = await refundVideoCredits({
+        creditCost,
+        creditReason,
+        consumeRequestId: consumed.consumeRequestId,
+        transactionId: consumed.transactionId,
+        reason: "video_text_create_failed",
+        meta: {
+          source: "video.create",
+          mode: "text",
+          duration: payload.duration,
+          aspect_ratio: payload.ratio,
+          prompt,
+          error: String(err?.message || err || "video_text_create_failed")
+        }
+      });
+
+      if (!refunded) {
+        throw err;
+      }
+    }
+  }
+async function createImage() {
+  const root = getRoot();
+  resetVideoPolicyUI(root);
+
+  const input = qs("#videoImageInput", root);
+  const file = input?.files?.[0];
+  const uploadStatus = String(input?.dataset?.uploadStatus || "empty").trim();
+  const uploadedImageUrl = String(input?.dataset?.uploadUrl || "").trim();
+  const uploadErrorReason = String(input?.dataset?.uploadErrorReason || "").trim();
+
+  const policyText = buildVideoPolicyText(root, "image");
+  const createBtn = qs("#videoGenerateImageBtn", root);
+  const policyNote = ensureVideoPolicyNote(root, createBtn);
+
+  if (isVideoPolicyBlocked(policyText)) {
+    const promptEl = qs("#videoImagePrompt", root);
+
+    if (promptEl) {
+      promptEl.style.borderColor = "rgba(255,110,140,.92)";
+      promptEl.style.boxShadow =
+        "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
+      promptEl.focus();
+    }
+
+    if (createBtn) {
+      createBtn.style.background =
+        "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
+      createBtn.style.borderColor = "rgba(255,110,140,.95)";
+      createBtn.style.boxShadow =
+        "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
+      createBtn.style.cursor = "not-allowed";
+      createBtn.style.filter = "saturate(1.05)";
+    }
+
+    if (policyNote) {
+      policyNote.textContent =
+        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+      policyNote.style.display = "block";
+    }
+
     return;
   }
 
-  resultsEl.className = "mobile-video-results";
-
-  resultsEl.innerHTML = items.map(function(job){
-    const ready = !!job.videoUrl;
-
-    return `
-      <article class="mobile-video-card" data-mobile-video-job="${esc(job.id)}">
-        <div class="mobile-video-media">
-          ${
-            ready
-              ? `<video class="mobile-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-              : `<div class="mobile-video-loading"><span>Hazırlanıyor…</span></div>`
-          }
-
-          <div class="mobile-video-actions">
-            <button type="button" data-mobile-video-act="download" ${ready ? "" : "disabled"}>⬇</button>
-            <button type="button" data-mobile-video-act="share" ${ready ? "" : "disabled"}>↗</button>
-            <button type="button" data-mobile-video-act="sound" ${ready ? "" : "disabled"}>🔇</button>
-            <button type="button" data-mobile-video-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
-            <button type="button" data-mobile-video-act="delete">🗑</button>
-          </div>
-
-          ${
-            ready
-              ? `<button class="mobile-video-play" type="button" data-mobile-video-act="play">▶</button>`
-              : ``
-          }
-        </div>
-
-        <div class="mobile-video-title">${esc(job.title || "Video")}</div>
-      </article>
-    `;
-  }).join("");
-}
-  function pollMobileVideoJob(jobId, refundCtx){
-    if (!jobId) return;
-
-    fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store"
-    })
-    .then(function(res){
-      return res.json();
-    })
-    .then(async function(data){
-      console.log("[MOBILE VIDEO][POLL]", data);
-
-      const status = String(
-        data.status ||
-        data.db_status ||
-        data.state ||
-        ""
-      ).toLowerCase();
-
-      const videoUrl = pickVideoUrl(data);
-
-      const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-        return item.id === jobId;
-      });
-
-      if (!job) return;
-
- if (videoUrl) {
-  job.videoUrl = videoUrl;
-  job.status = "ready";
-  job.title = job.title || "Video hazır";
-  renderMobileVideoResults();
-  setStatus("Video hazır.");
-  clearMobileVideoLoading();
-  mobileVideoToast("success", "Video hazır");
-  return;
-}
-
-    if (status.includes("fail") || status.includes("error")) {
-  job.status = "error";
-  job.title = "Video oluşturulamadı";
-  renderMobileVideoResults();
-  setStatus("Video oluşturulamadı.");
-
-  await refundMobileVideoCredits({
-    requestId: refundCtx?.requestId,
-    transactionId: refundCtx?.transactionId,
-    creditCost: refundCtx?.creditCost,
-    reason: "mobile_video_job_failed",
-    meta: {
-      source: "mobile.video.poll",
-      job_id: jobId,
-      error: data.error || "mobile_video_job_error"
-    }
-  });
-
-  clearMobileVideoLoading();
-  mobileVideoToast("error", "Video oluşturulamadı");
-  return;
-}
-      setTimeout(function(){
-        pollMobileVideoJob(jobId, refundCtx);
-      }, 3000);
-    })
-    .catch(function(err){
-      console.error("[MOBILE VIDEO][POLL ERROR]", err);
-
-      setTimeout(function(){
-        pollMobileVideoJob(jobId, refundCtx);
-      }, 4000);
-    });
+  if (!file) {
+    try {
+      window.toast?.info?.("Resim seçmelisin");
+    } catch {}
+    return;
   }
 
-  async function uploadMobileVideoFile(file){
-    if (!file) return "";
+  if (uploadStatus === "uploading") {
+    try {
+      window.toast?.info?.("Görsel hâlâ yükleniyor");
+    } catch {}
+    return;
+  }
 
-    const presignRes = await fetch("/api/r2/scan-and-presign", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        app: "video",
-        kind: "image",
-        filename: file.name,
-        contentType: file.type,
-        prompt: state.prompt,
-        title: file.name,
-        description: state.prompt || file.name,
-        source: "mobile_video_upload"
-      })
+  if (uploadStatus === "policy_blocked") {
+    try {
+      window.toast?.error?.("Bu görsel kullanılamaz.");
+    } catch {}
+    return;
+  }
+
+  if (uploadStatus !== "ready" || !uploadedImageUrl) {
+    try {
+      window.toast?.error?.("Yükleme hatası");
+    } catch {}
+    console.warn("[video] create(image) blocked: upload not ready", {
+      uploadStatus,
+      uploadErrorReason
+    });
+    return;
+  }
+
+  const prompt = (qs("#videoImagePrompt", root)?.value || "").trim();
+
+  const payload = {
+    ...buildCommonPayload(root),
+    mode: "image",
+    prompt,
+    image_url: uploadedImageUrl
+  };
+
+  const creditCost = Number(payload.credit_cost || getVideoCredit(root) || 0);
+  const creditReason = "studio_video_image_generate";
+
+  const consumed = await consumeVideoCredits({ creditCost, creditReason });
+  if (!consumed) return;
+
+  try {
+    window.toast?.success?.(`${creditCost} kredi düşüldü`);
+  } catch {}
+
+  try {
+    const j = await postJSON("/api/providers/runway/video/create", payload);
+    const job = j.job || j;
+
+    job.app = "video";
+    window.AIVO_JOBS?.upsert?.(job);
+
+    const job_id = job.job_id || job.id;
+    console.log("[video] created(image)", { job_id, job, creditCost, image_url: payload.image_url });
+
+    emitVideoJobCreated({
+      app: "video",
+      job_id,
+      createdAt: Date.now(),
+      mode: "image",
+      model: payload.model,
+      prompt: payload.prompt || "",
+      image_url: payload.image_url,
+      ratio: payload.ratio,
+      duration: payload.duration,
+      resolution: payload.resolution,
+      audio: payload.audio,
+      credit_cost: creditCost,
+      request_id: consumed.consumeRequestId
     });
 
-    const data = await presignRes.json().catch(function(){
-      return {};
+    try {
+      window.toast?.success?.("Video hazırlanıyor");
+    } catch {}
+
+    await pollJob(job_id, {
+      mode: "image",
+      prompt: payload.prompt || "",
+      image_url: payload.image_url || "",
+      duration: payload.duration,
+      ratio: payload.ratio,
+      creditCost,
+      creditReason,
+      consumeRequestId: consumed.consumeRequestId,
+      transactionId: consumed.transactionId
+    });
+  } catch (err) {
+    console.error("[video] create(image) error =", err);
+
+    const refunded = await refundVideoCredits({
+      creditCost,
+      creditReason,
+      consumeRequestId: consumed.consumeRequestId,
+      transactionId: consumed.transactionId,
+      reason: "video_image_create_failed",
+      meta: {
+        source: "video.create",
+        mode: "image",
+        duration: payload.duration,
+        aspect_ratio: payload.ratio,
+        prompt: payload.prompt || "",
+        image_url: payload.image_url || "",
+        error: String(err?.message || err || "video_image_create_failed")
+      }
     });
 
-    if (!presignRes.ok || !data.ok || !data.uploadUrl && !data.upload_url) {
-      throw new Error(data.error || "presign_failed");
+    if (!refunded) {
+      throw err;
+    }
+  }
+}
+  function bindVideoPricingUI(root) {
+    if (!root || root.__videoPricingBound) return;
+    root.__videoPricingBound = true;
+
+    const durationEl = qs("#videoDuration", root);
+    const audioEl = qs("#audioEnabled", root);
+    const ratioEl = qs("#videoRatio", root);
+    const resolutionEl = qs("#videoResolution", root);
+
+    function applyInitialDefaults() {
+      if (durationEl && !durationEl.dataset.videoDefaultApplied) {
+        durationEl.value = "5";
+        durationEl.dataset.videoDefaultApplied = "1";
+      }
+
+      if (audioEl && !audioEl.dataset.videoDefaultApplied) {
+        audioEl.checked = false;
+        audioEl.dataset.videoDefaultApplied = "1";
+      }
     }
 
-    const uploadUrl = data.uploadUrl || data.upload_url;
-    const publicUrl = data.publicUrl || data.public_url || data.url;
-    const key = data.key || data.objectKey || "";
+    function syncDurationDefault() {
+      if (!durationEl) return;
+      const next = clampDuration(Number(durationEl.value || 5));
+      durationEl.value = String(next);
+    }
 
-    const uploadRes = await fetch(uploadUrl, {
+    function refreshPricing() {
+      applyInitialDefaults();
+      syncDurationDefault();
+      syncVideoCreditUI(root);
+    }
+
+    if (durationEl) {
+      durationEl.addEventListener("change", refreshPricing);
+      durationEl.addEventListener("input", refreshPricing);
+    }
+
+    if (audioEl) {
+      let lastAudioState = !!audioEl.checked;
+
+      function handleAudioToast() {
+        const nextAudioState = !!audioEl.checked;
+
+        if (nextAudioState === lastAudioState) return;
+        lastAudioState = nextAudioState;
+
+        if (nextAudioState) {
+          try { window.toast?.success?.("Ses üretimi açıldı · +5 kredi"); } catch {}
+        } else {
+          try { window.toast?.success?.("Ses üretimi kapatıldı · -5 kredi"); } catch {}
+        }
+      }
+
+      audioEl.addEventListener("change", () => {
+        handleAudioToast();
+        refreshPricing();
+      });
+
+      audioEl.addEventListener("input", () => {
+        handleAudioToast();
+        refreshPricing();
+      });
+    }
+
+    if (ratioEl) {
+      ratioEl.addEventListener("change", refreshPricing);
+    }
+
+    if (resolutionEl) {
+      resolutionEl.addEventListener("change", refreshPricing);
+    }
+
+    refreshPricing();
+  }
+
+  // ===============================
+  // Buttons (event delegation)
+  // ===============================
+  function withLoading(btn, fn) {
+    if (!btn) return;
+    btn.disabled = true;
+    const prev = btn.textContent;
+    btn.textContent = "Üretiliyor...";
+    btn.classList.add("is-loading");
+
+    return Promise.resolve()
+      .then(fn)
+      .catch((err) => {
+        console.error(err);
+        alert(String(err));
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = prev;
+        btn.classList.remove("is-loading");
+      });
+  }
+
+  document.addEventListener(
+    "click",
+    (e) => {
+      const tBtn = e.target.closest("#videoGenerateTextBtn");
+      if (tBtn) {
+        e.preventDefault();
+        return withLoading(tBtn, createText);
+      }
+
+      const iBtn = e.target.closest("#videoGenerateImageBtn");
+      if (iBtn) {
+        e.preventDefault();
+        return withLoading(iBtn, createImage);
+      }
+    },
+    true
+  );
+
+  // ===============================
+  // Prompt counters + policy reset (bind once)
+  // ===============================
+  function bindPromptCounter(root) {
+    const textPromptEl = qs("#videoPrompt", root);
+    const imagePromptEl = qs("#videoImagePrompt", root);
+
+    const textCounterEl =
+      qs("#videoPromptCount", root) ||
+      qs('[data-role="videoPromptCount"]', root) ||
+      Array.from(root.querySelectorAll("*")).find((el) =>
+        (el.textContent || "").trim() === "0 / 1000"
+      );
+
+    if (textPromptEl && textCounterEl && !textPromptEl.__countBound) {
+      textPromptEl.__countBound = true;
+
+      function updateText() {
+        const n = (textPromptEl.value || "").length;
+        textCounterEl.textContent = `${n} / 1000`;
+      }
+
+      textPromptEl.addEventListener("input", () => {
+        resetVideoPolicyUI(root);
+        updateText();
+        syncVideoCreditUI(root);
+      });
+
+      textPromptEl.addEventListener("change", () => {
+        resetVideoPolicyUI(root);
+        updateText();
+        syncVideoCreditUI(root);
+      });
+
+      updateText();
+    }
+
+    if (imagePromptEl && !imagePromptEl.__countBound) {
+      imagePromptEl.__countBound = true;
+
+      imagePromptEl.addEventListener("input", () => {
+        resetVideoPolicyUI(root);
+        syncVideoCreditUI(root);
+      });
+
+      imagePromptEl.addEventListener("change", () => {
+        resetVideoPolicyUI(root);
+        syncVideoCreditUI(root);
+      });
+    }
+  }
+
+  // ===============================
+  // Tabs + Image upload UX (bind once per root)
+  // ===============================
+function bindTabs(root) {
+  if (!root || root.__videoTabsBound) return;
+
+  const tabText = root.querySelector('[data-video-tab="text"]');
+  const tabImage = root.querySelector('[data-video-tab="image"]');
+  const viewText = root.querySelector('[data-video-subview="text"]');
+  const viewImage = root.querySelector('[data-video-subview="image"]');
+
+  if (!tabText || !tabImage || !viewText || !viewImage) return;
+
+  root.__videoTabsBound = true;
+
+  function getImageUploadRefs() {
+    return {
+      input: root.querySelector("#videoImageInput"),
+      fb: root.querySelector("#videoImageFeedback"),
+      name: root.querySelector("#videoImageName"),
+      clearBtn: root.querySelector("#videoImageClearBtn"),
+      bar: root.querySelector("#videoImageBar"),
+      pct: root.querySelector("#videoImagePct")
+    };
+  }
+
+  function setImageUploadState(next = {}) {
+    const { input, fb, name, clearBtn, bar, pct } = getImageUploadRefs();
+    if (!input) return;
+
+    const status = String(next.status || "empty").trim();
+    const uploadUrl = String(next.uploadUrl || "").trim();
+    const fileName = String(next.fileName || "").trim();
+    const errorReason = String(next.errorReason || "").trim();
+    const fileSizeText = next.fileSizeText ? String(next.fileSizeText) : "";
+
+    input.dataset.uploadStatus = status;
+    input.dataset.uploadUrl = uploadUrl;
+    input.dataset.uploadErrorReason = errorReason;
+
+    if (status === "empty") {
+      input.style.pointerEvents = "auto";
+      if (fb) fb.style.display = "none";
+      if (name) name.textContent = "";
+      if (bar) bar.style.width = "0%";
+      if (pct) pct.textContent = "0%";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (fb) fb.style.display = "block";
+
+    if (status === "uploading") {
+      input.style.pointerEvents = "none";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Yükleniyor...`;
+      }
+      if (bar) bar.style.width = "35%";
+      if (pct) pct.textContent = "35%";
+      if (clearBtn) clearBtn.style.display = "none";
+      return;
+    }
+
+    if (status === "ready") {
+      input.style.pointerEvents = "auto";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Hazır ✓`;
+      }
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+
+    if (status === "policy_blocked") {
+      input.style.pointerEvents = "auto";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Bu görsel kullanılamaz`;
+      }
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+
+    if (status === "error") {
+      input.style.pointerEvents = "auto";
+      if (name) {
+        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Yükleme hatası`;
+      }
+      if (bar) bar.style.width = "100%";
+      if (pct) pct.textContent = "100%";
+      if (clearBtn) {
+        clearBtn.style.display = "inline-grid";
+        clearBtn.style.placeItems = "center";
+      }
+      return;
+    }
+  }
+
+  async function uploadVideoFileWithPolicy(file, kind = "image") {
+    if (!file) throw new Error("missing_file");
+
+    const contentType = file.type || "application/octet-stream";
+    const filename = file.name || `video-input-${Date.now()}`;
+    const promptText = String(qs("#videoImagePrompt", root)?.value || "").trim();
+
+    const presign = await postJSON("/api/r2/scan-and-presign", {
+      app: "video",
+      kind,
+      filename,
+      contentType,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      source: "video_image_upload"
+    });
+
+    const uploadUrl = String(
+      presign.uploadUrl ||
+      presign.upload_url ||
+      ""
+    ).trim();
+
+    const publicUrl = String(
+      presign.publicUrl ||
+      presign.public_url ||
+      presign.url ||
+      ""
+    ).trim();
+
+    const key = String(
+      presign.key ||
+      presign.objectKey ||
+      ""
+    ).trim();
+
+    if (!uploadUrl || !publicUrl || !key) {
+      throw new Error("video_image_missing_upload_urls");
+    }
+
+    const putRes = await fetch(uploadUrl, {
       method: "PUT",
-      headers: data.required_headers || {
-        "Content-Type": file.type
+      headers: {
+        "Content-Type": contentType
       },
       body: file
     });
 
-    if (!uploadRes.ok) {
-      throw new Error("r2_upload_failed");
+    if (!putRes.ok) {
+      throw new Error(`video_image_r2_put_failed_${putRes.status}`);
     }
 
-    const scanRes = await fetch("/api/r2/scan-upload", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        app: "video",
-        key: key,
-        filename: file.name,
-        contentType: file.type,
-        public_url: publicUrl,
-        prompt: state.prompt,
-        title: file.name,
-        description: state.prompt || file.name,
-        source: "mobile_video_upload"
-      })
-    });
-
-    const scanData = await scanRes.json().catch(function(){
-      return {};
-    });
-
-    if (!scanRes.ok || scanData.decision && String(scanData.decision).toLowerCase() !== "allow") {
-      throw new Error(scanData.error || "media_policy_blocked");
-    }
-
-    return scanData.public_url || publicUrl;
-  }
-
-  function setFileLabel(input, file, statusText){
-    const label = input && input.closest("label");
-    if (!label) return;
-
-    const textEl = label.querySelector("b");
-    const oldClear = label.querySelector(".mobile-video-file-clear");
-    if (oldClear) oldClear.remove();
-
-    if (textEl) {
-      textEl.textContent = statusText || (file ? "Görsel ✓" : "Görsel Yükle");
-    }
-
-    label.classList.toggle("has-file", !!file);
-
-    if (!file) return;
-
-    const clearBtn = document.createElement("button");
-    clearBtn.type = "button";
-    clearBtn.className = "mobile-video-file-clear";
-    clearBtn.setAttribute("data-mobile-video-clear-file", "mobileVideoImageFile");
-    clearBtn.textContent = "×";
-    label.appendChild(clearBtn);
-  }
-
-  function bindFileClearButton(){
-    root.addEventListener("click", function(e){
-      const btn = e.target.closest("[data-mobile-video-clear-file]");
-      if (!btn) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!imageFileEl) return;
-
-      const hadImage = !!state.imageFile || !!state.imageUrl;
-
-      imageFileEl.value = "";
-      state.imageFile = null;
-      state.imageUrl = "";
-
-      setFileLabel(imageFileEl, null);
-      setStatus("Görsel kaldırıldı.");
-
-      if (hadImage) {
-        mobileVideoToast("success", "Görsel kaldırıldı");
-      }
-    });
-  }
-
-  function bindUpload(){
-    if (!imageFileEl) return;
-
-    imageFileEl.addEventListener("change", async function(){
-      const file = imageFileEl.files && imageFileEl.files[0] ? imageFileEl.files[0] : null;
-
-      state.imageFile = file;
-      state.imageUrl = "";
-
-      setFileLabel(imageFileEl, file, file ? "Yükleniyor..." : "");
-      if (!file) return;
-
-     setStatus("Görsel yükleniyor...");
-mobileVideoLoading("Görsel güvenlik kontrolünden geçiriliyor...");
-
-      try {
-        const publicUrl = await uploadMobileVideoFile(file);
-        state.imageUrl = publicUrl;
-        setFileLabel(imageFileEl, file);
-       clearMobileVideoLoading();
-setStatus("Görsel yüklendi.");
-mobileVideoToast("success", "Görsel eklendi");
-      } catch (err) {
-        console.error("[MOBILE VIDEO][UPLOAD ERROR]", err);
-
-        state.imageFile = null;
-        state.imageUrl = "";
-        imageFileEl.value = "";
-       clearMobileVideoLoading();
-        setFileLabel(imageFileEl, null);
-        setStatus("Görsel yüklenemedi.");
-
-        const errText = String(err?.message || err || "").toLowerCase();
-       const isPolicyBlocked =
-  errText.includes("media_policy") ||
-  errText.includes("public_figure") ||
-  errText.includes("public figure") ||
-  errText.includes("public_figure_image_blocked") ||
-  errText.includes("figure_image_blocked") ||
-  errText.includes("image_blocked") ||
-  errText.includes("celebrity") ||
-  errText.includes("protected_person") ||
-  errText.includes("impersonation") ||
-  errText.includes("blocked");
-
-mobileVideoToast(
-  "error",
-  isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası"
-);
-      }
-    });
-  }
-
-  function bindPrompt(){
-    function updateTextPrompt(){
-      if (!promptEl) return;
-
-      const value = String(promptEl.value || "");
-      state.prompt = value.trim();
-
-      if (promptCountEl) {
-        promptCountEl.textContent = String(value.length);
-      }
-    }
-
-    function updateImagePrompt(){
-      if (!imagePromptEl) return;
-
-      const value = String(imagePromptEl.value || "");
-      state.imagePrompt = value.trim();
-
-      if (imagePromptCountEl) {
-        imagePromptCountEl.textContent = String(value.length);
-      }
-    }
-
-    if (promptEl) {
-      promptEl.addEventListener("input", updateTextPrompt);
-      promptEl.addEventListener("change", updateTextPrompt);
-    }
-
-    if (imagePromptEl) {
-      imagePromptEl.addEventListener("input", updateImagePrompt);
-      imagePromptEl.addEventListener("change", updateImagePrompt);
-    }
-
-    updateTextPrompt();
-    updateImagePrompt();
-  }
-  function bindModeTabs(){
-  const modeButtons = Array.from(root.querySelectorAll("[data-mobile-video-mode]"));
-  const panels = Array.from(root.querySelectorAll("[data-mobile-video-panel]"));
-
-  if (!modeButtons.length || !panels.length) return;
-
-  function setMode(mode){
-    const nextMode = mode === "image" ? "image" : "text";
-    state.mode = nextMode;
-
-    modeButtons.forEach(function(btn){
-      const active = btn.getAttribute("data-mobile-video-mode") === nextMode;
-      btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-selected", active ? "true" : "false");
-    });
-
-    panels.forEach(function(panel){
-      const active = panel.getAttribute("data-mobile-video-panel") === nextMode;
-      panel.hidden = !active;
-    });
-
-    setStatus("");
-  }
-
-  modeButtons.forEach(function(btn){
-    btn.addEventListener("click", function(){
-      setMode(btn.getAttribute("data-mobile-video-mode"));
-    });
-  });
-
-  setMode(state.mode || "text");
-}
-  function bindControls(){
-    if (durationEl) {
-      durationEl.addEventListener("change", function(){
-        state.duration = safeText(durationEl.value) || "5";
-        syncCreditButton();
-      });
-      state.duration = safeText(durationEl.value) || "5";
-    }
-
-    if (ratioEl) {
-      ratioEl.addEventListener("change", function(){
-        state.ratio = safeText(ratioEl.value) || "16:9";
-      });
-      state.ratio = safeText(ratioEl.value) || "16:9";
-    }
-
-    if (motionEl) {
-      motionEl.addEventListener("change", function(){
-        state.motion = safeText(motionEl.value) || "balanced";
-      });
-      state.motion = safeText(motionEl.value) || "balanced";
-    }
-
-    if (qualityEl) {
-      let lastQuality = safeText(qualityEl.value) || "standard";
-
-      qualityEl.addEventListener("change", function(){
-        const nextQuality = safeText(qualityEl.value) || "standard";
-        state.quality = nextQuality;
-
-        if (nextQuality !== lastQuality) {
-          if (nextQuality === "high") {
-            mobileVideoToast("success", "Yüksek kalite seçildi · +5 kredi");
-          } else if (lastQuality === "high") {
-            mobileVideoToast("success", "Standart kalite seçildi · -5 kredi");
-          }
-        }
-
-        lastQuality = nextQuality;
-        syncCreditButton();
-      });
-
-      state.quality = lastQuality;
-    }
-  }
-
-function buildPayload(){
-  const mode = state.mode === "image" ? "image" : "text";
-  const activePrompt = mode === "image" ? state.imagePrompt : state.prompt;
-
-  return {
-    app: "video",
-    mode: mode,
-    prompt: activePrompt,
-    image_url: mode === "image" ? state.imageUrl : "",
-    duration: Number(state.duration || 5),
-    ratio: state.ratio || "16:9",
-    resolution: state.quality === "high" ? 1080 : 720,
-    motion: state.motion || "balanced",
-    quality: state.quality || "standard",
-    credit_cost: computeCredit(),
-    meta: {
+    const scanData = await postJSON("/api/r2/scan-upload", {
       app: "video",
-      source: "mobile",
-      mode: mode,
-      image_url: mode === "image" ? state.imageUrl : "",
-      aspect_ratio: state.ratio || "16:9",
-      ratio: state.ratio || "16:9",
-      duration: Number(state.duration || 5),
-      motion: state.motion || "balanced",
-      quality: state.quality || "standard"
+      key,
+      filename,
+      contentType,
+      public_url: publicUrl,
+      prompt: promptText,
+      title: filename,
+      description: promptText || filename,
+      source: "video_image_upload"
+    });
+
+    const decision = String(scanData?.decision || "allow").trim().toLowerCase();
+    const finalUrl = String(scanData?.public_url || publicUrl).trim();
+
+    if (decision && decision !== "allow") {
+      throw new Error(`media_policy_${decision}`);
     }
-  };
-}
 
-  function bindGenerate(){
-    if (!generateBtn) return;
+    if (!finalUrl) {
+      throw new Error("video_image_missing_public_url");
+    }
 
-     generateBtn.addEventListener("click", async function(){
-      if (state.mode === "image") {
-        if (imagePromptEl) {
-          state.imagePrompt = safeText(imagePromptEl.value);
+    return {
+      url: finalUrl,
+      key,
+      decision
+    };
+  }
 
-          if (imagePromptCountEl) {
-            imagePromptCountEl.textContent =
-              String(String(imagePromptEl.value || "").length);
-          }
-        }
-      } else {
-        if (promptEl) {
-          state.prompt = safeText(promptEl.value);
+  function bindImageUploadUX() {
+    const { input, clearBtn } = getImageUploadRefs();
+    if (!input || input.__uxBound) return;
 
-          if (promptCountEl) {
-            promptCountEl.textContent =
-              String(String(promptEl.value || "").length);
-          }
-        }
-      }
+    input.__uxBound = true;
+    input.dataset.uploadStatus = input.dataset.uploadStatus || "empty";
+    input.dataset.uploadUrl = input.dataset.uploadUrl || "";
+    input.dataset.uploadErrorReason = input.dataset.uploadErrorReason || "";
 
-      const payload = buildPayload();
+    if (clearBtn && !clearBtn.__bound) {
+      clearBtn.__bound = true;
 
-      if (!safeText(payload.prompt)) {
-        setStatus("Lütfen prompt yaz.");
+      clearBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation?.();
 
-        mobileVideoToast("info", "Prompt yazmalısın");
+        input.value = "";
+        resetVideoPolicyUI(root);
 
-        if (state.mode === "image") {
-          if (imagePromptEl) imagePromptEl.focus();
-        } else {
-          if (promptEl) promptEl.focus();
-        }
+        setImageUploadState({
+          status: "empty",
+          uploadUrl: "",
+          fileName: "",
+          errorReason: ""
+        });
+      });
+    }
 
+    input.addEventListener("change", async () => {
+      const f = input.files?.[0];
+      resetVideoPolicyUI(root);
+
+      if (!f) {
+        setImageUploadState({
+          status: "empty",
+          uploadUrl: "",
+          fileName: "",
+          errorReason: ""
+        });
         return;
       }
 
-if (payload.mode === "image" && !payload.image_url) {
-  setStatus("Lütfen referans görsel yükle.");
-  mobileVideoToast("warning", "Lütfen referans görsel yükle.");
-  return;
-}
+      const fileSizeText = `${(f.size / 1024 / 1024).toFixed(2)}MB`;
 
-      const creditCost = Number(payload.credit_cost || computeCredit() || 0);
-      const tempJobId = "mobile-video-" + Date.now();
-
-  mobileVideoCurrentJobs.length = 0;
-
-mobileVideoCurrentJobs.unshift({
-  id: tempJobId,
-  status: "processing",
-  title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "Video",
-  videoUrl: "",
-  payload: payload
-});
-
-mobileVideoViewMode = "current";
-
-if (resultsEl) {
-  resultsEl.hidden = false;
-}
-generateBtn.disabled = true;
-generateBtn.textContent = "Üretiliyor...";
-generateBtn.classList.add("is-loading", "is-pressed");
-generateBtn.setAttribute("aria-busy", "true");
-
-mobileVideoViewMode = "current";
-renderMobileVideoResults();
-setStatus("Video hazırlanıyor...");
-mobileVideoLoading("Video hazırlanıyor...");
-
-      let consumed = null;
+      setImageUploadState({
+        status: "uploading",
+        uploadUrl: "",
+        fileName: f.name,
+        fileSizeText,
+        errorReason: ""
+      });
 
       try {
-        consumed = await consumeMobileVideoCredits(creditCost);
-       if (!consumed) {
-  const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-    return item.id === tempJobId;
-  });
+        const uploaded = await uploadVideoFileWithPolicy(f, "image");
 
-  if (job) {
-    job.status = "error";
-    job.title = "Yetersiz kredi";
-  }
-
-  renderMobileVideoResults();
-  setStatus("Yetersiz kredi.");
-  clearMobileVideoLoading();
-  return;
-}
-
-        mobileVideoToast("success", creditCost + " kredi kullanıldı.");
-
-        const res = await fetch("/api/providers/runway/video/create", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          credentials: "include",
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json().catch(function(){
-          return {};
-        });
-
-        console.log("[MOBILE VIDEO][CREATE RESPONSE]", data);
-
-        const realJobId = String(
-          data.job_id ||
-          data.job?.job_id ||
-          data.job?.id ||
-          data.id ||
-          ""
-        ).trim();
-
-        if (!res.ok || !data.ok || !realJobId) {
-          const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-            return item.id === tempJobId;
-          });
-
-          if (job) {
-            job.status = "error";
-            job.title = "Video başlatılamadı";
-          }
-
-          renderMobileVideoResults();
-          setStatus("Video başlatılamadı.");
-
-          await refundMobileVideoCredits({
-            requestId: consumed.requestId,
-            transactionId: consumed.transactionId,
-            creditCost: creditCost,
-            reason: "mobile_video_create_failed",
-            meta: {
-              source: "mobile.video.create",
-              prompt: payload.prompt || "",
-              image_url: payload.image_url || "",
-              duration: payload.duration,
-              ratio: payload.ratio,
-              error: data.error || "mobile_video_create_failed"
-            }
-          });
-
-         clearMobileVideoLoading();
-        mobileVideoToast("error", "Video başlatılamadı");
-         return;
-        }
-
-        const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-          return item.id === tempJobId;
-        });
-
-        if (job) {
-          job.id = realJobId;
-          job.status = "processing";
-          job.payload = {
-            ...payload,
-            job_id: realJobId
-          };
-        }
-
-        renderMobileVideoResults();
-        setStatus("Video kuyruğa alındı.");
-        mobileVideoToast("success", "Video kuyruğa alındı");
-
-        pollMobileVideoJob(realJobId, {
-          requestId: consumed.requestId,
-          transactionId: consumed.transactionId,
-          creditCost: creditCost
+        setImageUploadState({
+          status: "ready",
+          uploadUrl: uploaded.url,
+          fileName: f.name,
+          fileSizeText,
+          errorReason: ""
         });
       } catch (err) {
-        console.error("[MOBILE VIDEO][CREATE ERROR]", err);
+        const errText = String(err?.message || err || "").toLowerCase();
+        const isPolicyBlocked =
+          errText.includes("media_policy") ||
+          errText.includes("public_figure") ||
+          errText.includes("celebrity") ||
+          errText.includes("protected_person");
 
-        const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-          return item.id === tempJobId;
+        setImageUploadState({
+          status: isPolicyBlocked ? "policy_blocked" : "error",
+          uploadUrl: "",
+          fileName: f.name,
+          fileSizeText,
+          errorReason: errText
         });
 
-        if (job) {
-          job.status = "error";
-          job.title = "Video başlatılamadı";
-        }
-
-        renderMobileVideoResults();
-        setStatus("Video başlatılamadı.");
-
-        if (consumed) {
-          await refundMobileVideoCredits({
-            requestId: consumed.requestId,
-            transactionId: consumed.transactionId,
-            creditCost: creditCost,
-            reason: "mobile_video_create_exception",
-            meta: {
-              source: "mobile.video.create",
-              prompt: payload.prompt || "",
-              image_url: payload.image_url || "",
-              duration: payload.duration,
-              ratio: payload.ratio,
-              error: String(err?.message || err || "mobile_video_create_exception")
-            }
-          });
-        }
-
-       clearMobileVideoLoading();
-mobileVideoToast("error", "Video oluşturma hatası");
-      }
-    });
-  }
-
-  async function hydrateMobileVideoLibrary(){
-    if (!resultsEl) return;
-
-    resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Videolar yükleniyor...";
-
-    try {
-      const res = await fetch("/api/jobs/list?app=video", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "accept": "application/json"
-        },
-        cache: "no-store"
-      });
-
-      const data = await res.json().catch(function(){
-        return {};
-      });
-
-      const rows = Array.isArray(data?.items)
-        ? data.items
-        : Array.isArray(data?.jobs)
-          ? data.jobs
-          : Array.isArray(data)
-            ? data
-            : [];
-
-  mobileVideoLibraryJobs.length = 0;
-
-    rows.forEach(function(row){
-        const outputs = Array.isArray(row.outputs) ? row.outputs : [];
-
-        const firstVideoOutput = outputs.find(function(output){
-          return output && (
-            output.url ||
-            output.video_url ||
-            output.videoUrl ||
-            output.src
+        try {
+          window.toast?.error?.(
+            isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası"
           );
-        });
+        } catch {}
 
-        const videoUrl = String(
-          row.video_url ||
-          row.videoUrl ||
-          row.final_url ||
-          row.finalVideoUrl ||
-          row.output_url ||
-          row.outputUrl ||
-          row.url ||
-          row.result_url ||
-          row.resultUrl ||
-          row.preview_url ||
-          row.previewUrl ||
-          row.meta?.video_url ||
-          row.meta?.videoUrl ||
-          row.meta?.final_video_url ||
-          row.meta?.finalVideoUrl ||
-          row.meta?.final_url ||
-          row.meta?.output_url ||
-          row.meta?.outputUrl ||
-          row.meta?.result_url ||
-          row.meta?.resultUrl ||
-          row.meta?.preview_video_url ||
-          row.meta?.previewVideoUrl ||
-          row.data?.video_url ||
-          row.data?.videoUrl ||
-          row.data?.final_url ||
-          row.data?.output_url ||
-          row.data?.result_url ||
-          row.outputs?.video_url ||
-          row.outputs?.videoUrl ||
-          row.outputs?.final_video_url ||
-          row.outputs?.finalVideoUrl ||
-          row.outputs?.final_url ||
-          row.outputs?.output_url ||
-          row.outputs?.result_url ||
-          firstVideoOutput?.url ||
-          firstVideoOutput?.video_url ||
-          firstVideoOutput?.videoUrl ||
-          firstVideoOutput?.final_video_url ||
-          firstVideoOutput?.finalVideoUrl ||
-          firstVideoOutput?.src ||
-          ""
-        ).trim();
-
-        const jobId = String(row.id || row.job_id || row.jobId || "").trim();
-
-        if (!jobId || !videoUrl) return;
-
-     mobileVideoLibraryJobs.push({
-  id: jobId,
-  title: row.title || row.prompt || row.meta?.prompt || "Video",
-  videoUrl: videoUrl,
-  status: "ready",
-  payload: row
-});
-      });
-
-      mobileVideoViewMode = "library";
-      renderMobileVideoResults();
-    } catch (err) {
-      console.error("[MOBILE VIDEO][HYDRATE ERROR]", err);
-      resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Videolar yüklenemedi.";
-    }
-  }
-
-  function bindResultActions(){
-    if (!resultsEl || resultsEl.__mobileVideoActionsBound) return;
-    resultsEl.__mobileVideoActionsBound = true;
-
-    resultsEl.addEventListener("click", function(e){
-      const btn = e.target.closest("[data-mobile-video-act]");
-      if (!btn) return;
-
-      const card = btn.closest("[data-mobile-video-job]");
-      if (!card) return;
-
-      const act = btn.getAttribute("data-mobile-video-act");
-      const id = card.getAttribute("data-mobile-video-job");
-
-      const job =mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-        return item.id === id;
-      });
-
-      if (!job) return;
-
-      if (act === "play") {
-        const video = card.querySelector("video");
-        if (!video) return;
-
-        video.muted = false;
-        video.volume = 1;
-
-        if (video.paused) {
-          video.play().catch(function(){});
-        } else {
-          video.pause();
-        }
-
-        return;
-      }
-
-      if (act === "sound") {
-        const video = card.querySelector("video");
-        if (!video) return;
-
-        video.muted = !video.muted;
-        btn.textContent = video.muted ? "🔇" : "🔊";
-
-        if (!video.paused) {
-          video.play().catch(function(){});
-        }
-
-        return;
-      }
-
-      if (act === "fullscreen") {
-        const video = card.querySelector("video");
-        if (!video) return;
-
-        if (video.requestFullscreen) {
-          video.requestFullscreen().catch(function(){});
-        }
-
-        return;
-      }
-
-      if (act === "download") {
-        if (!job.videoUrl) return;
-
-        const directUrl = String(job.videoUrl || "").split("#")[0];
-
-        const downloadUrl =
-          "/api/media/proxy?url=" +
-          encodeURIComponent(directUrl) +
-          "&filename=" +
-          encodeURIComponent("aivo-video.mp4");
-
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.setAttribute("aria-hidden", "true");
-        iframe.src = downloadUrl;
-
-        document.body.appendChild(iframe);
-        mobileVideoToast("success", "İndirme başlatıldı.");
-
-        setTimeout(function(){
-          try {
-            iframe.remove();
-          } catch (err) {}
-        }, 15000);
-
-        return;
-      }
-
-      if (act === "share") {
-        if (!job.videoUrl) return;
-
-        if (navigator.share) {
-          navigator.share({
-            title: "AIVO Video",
-            url: job.videoUrl
-          }).then(function(){
-            mobileVideoToast("success", "Paylaşım açıldı.");
-          }).catch(function(){});
-        } else if (navigator.clipboard) {
-          navigator.clipboard.writeText(job.videoUrl).then(function(){
-            mobileVideoToast("success", "Link kopyalandı.");
-          }).catch(function(){});
-        }
-
-        return;
-      }
-
-      if (act === "delete") {
-        mobileVideoDeletedIds.add(id);
-        renderMobileVideoResults();
-        mobileVideoToast("success", "Video silindi.");
-        return;
+        console.error("[video] image upload error =", err);
       }
     });
   }
 
-   bindPrompt();
-   bindModeTabs();
-   bindControls();
-   bindUpload();
-   bindFileClearButton();
-   bindGenerate();
-  bindResultActions();
-  syncCreditButton();
+  function setMode(mode) {
+    const isText = mode === "text";
+    tabText.classList.toggle("is-active", isText);
+    tabImage.classList.toggle("is-active", !isText);
 
-window.mobileVideoShowCurrent = function(){
-  mobileVideoViewMode = "current";
-  renderMobileVideoResults();
-};
-window.mobileVideoHydrate = hydrateMobileVideoLibrary;
+    viewText.classList.toggle("is-active", isText);
+    viewImage.classList.toggle("is-active", !isText);
+
+    viewText.style.display = isText ? "" : "none";
+    viewImage.style.display = !isText ? "" : "none";
+
+    resetVideoPolicyUI(root);
+
+    if (mode === "image") bindImageUploadUX();
+
+    root.dataset.videoMode = mode;
+    syncVideoCreditUI(root);
+    console.log("[video.tabs] mode =", mode);
+  }
+
+  tabText.addEventListener("click", (e) => {
+    e.preventDefault();
+    setMode("text");
+  });
+
+  tabImage.addEventListener("click", (e) => {
+    e.preventDefault();
+    setMode("image");
+  });
+
+  setMode(root.dataset.videoMode || "text");
+  bindImageUploadUX();
+  console.log("[video.tabs] bound ✅");
+}
+  // ===============================
+  // Single observer: root geldiğinde bind et, sonra hafif çalışsın
+  // ===============================
+  function tryBindAll() {
+    const root = document.querySelector(ROOT_SEL);
+    if (!root) return;
+
+    bindTabs(root);
+    bindPromptCounter(root);
+    bindVideoPricingUI(root);
+  }
+
+  // İlk çalıştır
+  tryBindAll();
+
+  // Router/mount sonrası için tek observer
+  const obs = new MutationObserver(() => tryBindAll());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+
+  console.log("[VIDEO] module READY (create + poll + PPE) ✅");
 })();
