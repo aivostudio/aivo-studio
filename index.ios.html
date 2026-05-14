@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIVO Mobile</title>
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      width:100%;
+      min-height:100%;
+      max-width:100%;
+      overflow-x:hidden;
+      font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+      background:#070914;
+      color:#fff;
+    }
+
+    html{
+      position:relative;
+    }
+
+    body{
+      background:
+        radial-gradient(520px 360px at 20% 6%, rgba(139,92,246,.34), transparent 62%),
+        radial-gradient(520px 360px at 90% 18%, rgba(56,189,248,.20), transparent 62%),
+        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.18), transparent 65%),
+        #070914;
+      overflow-x:hidden;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px;
+      background:rgba(8,10,22,.74);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .logo img{
+      width:92px;
+      height:auto;
+      display:block;
+      filter:drop-shadow(0 10px 24px rgba(139,92,246,.20));
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .pill{
+      min-height:36px;
+      padding:0 14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      border:1px solid rgba(139,92,246,.48);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.94);
+      font-weight:900;
+      font-size:13px;
+      white-space:nowrap;
+      box-shadow:0 10px 26px rgba(0,0,0,.22);
+    }
+
+    .wrap{
+  width:min(430px,100%);
+  margin:0 auto;
+  padding:22px 16px 132px;
+}
+  .hero{
+  position:relative;
+  padding:18px 0 8px;
+  text-align:center;
+  overflow:hidden;
+}
+
+    .hero .badge{
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .hero .sub{
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:-44px -24px auto -24px;
+      height:340px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(139,92,246,.26), transparent 42%),
+        radial-gradient(circle at 80% 30%, rgba(56,189,248,.20), transparent 42%),
+        radial-gradient(circle at 50% 100%, rgba(236,72,153,.16), transparent 48%);
+      filter:blur(30px);
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    .badge{
+      width:max-content;
+      max-width:100%;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+      font-weight:900;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8);
+      box-shadow:0 0 0 4px rgba(56,189,248,.16);
+    }
+
+  h1{
+  margin:14px 0 10px;
+  font-size:40px;
+  line-height:.92;
+  letter-spacing:-.07em;
+  font-weight:950;
+}
+
+    .grad{
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8,#ec4899);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .sub{
+  margin:0;
+  color:rgba(255,255,255,.76);
+  font-weight:700;
+  line-height:1.48;
+  font-size:14px;
+  max-width:320px;
+}
+
+ .cta-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:16px;
+}
+
+      .btn{
+      min-height:50px;
+      border:0;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:15px;
+      cursor:pointer;
+      transition:transform .16s ease, filter .16s ease, border-color .16s ease;
+    }
+
+    .btn:active{
+      transform:scale(.985);
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+      box-shadow:0 18px 46px rgba(139,92,246,.32);
+    }
+
+    .btn-ghost{
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.13);
+      color:#fff;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+      .video-card{
+      margin-top:18px;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(240px 120px at 0% 0%, rgba(139,92,246,.18), transparent 62%),
+        rgba(255,255,255,.05);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 24px 70px rgba(0,0,0,.38);
+    }
+
+   .video-head{
+  padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+      .video-title{
+     font-weight:950;
+    font-size:14px;
+      letter-spacing:-.02em;
+    }
+
+    .video-sub{
+      margin-top:4px;
+      color:rgba(255,255,255,.66);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
+    ..sound{
+    border:0;
+    border-radius:999px;
+    padding:7px 11px;
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+      font-weight:900;
+      white-space:nowrap;
+      box-shadow:0 12px 28px rgba(139,92,246,.24);
+    }
+
+    video{
+      display:block;
+      width:100%;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#000;
+    }
+
+    .section-title{
+      position:relative;
+      margin:30px 0 14px;
+      font-size:22px;
+      line-height:1.1;
+      letter-spacing:-.04em;
+      text-align:center;
+      font-weight:950;
+    }
+
+    .section-title::after{
+      content:"";
+      display:block;
+      width:74px;
+      height:3px;
+      margin:10px auto 0;
+      border-radius:999px;
+      background:linear-gradient(90deg,#8b5cf6,#38bdf8,#ec4899);
+      opacity:.92;
+    }
+
+    .modules{
+      display:grid;
+      gap:12px;
+    }
+
+    .mod-card{
+      position:relative;
+      min-height:86px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:16px 18px 16px 16px;
+      border-radius:24px;
+      background:
+        radial-gradient(180px 90px at 0% 0%, rgba(139,92,246,.22), transparent 62%),
+        linear-gradient(135deg,rgba(255,255,255,.085),rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.09),
+        0 18px 42px rgba(0,0,0,.25);
+      transition:transform .18s ease, background .18s ease, border-color .18s ease;
+      overflow:hidden;
+    }
+
+    .mod-card::after{
+      content:"›";
+      position:absolute;
+      right:18px;
+      top:50%;
+      transform:translateY(-50%);
+      color:rgba(255,255,255,.42);
+      font-size:30px;
+      font-weight:400;
+      line-height:1;
+    }
+
+    .mod-card:active{
+      transform:scale(.985);
+      border-color:rgba(255,255,255,.22);
+    }
+
+    .ico{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.20), transparent 34%),
+        linear-gradient(135deg, rgba(139,92,246,.30), rgba(56,189,248,.10));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 12px 26px rgba(0,0,0,.26);
+      flex:0 0 auto;
+      font-size:0;
+      position:relative;
+    }
+
+    .ico::before{
+      content:"";
+      width:18px;
+      height:18px;
+      border-radius:6px;
+      background:linear-gradient(135deg,#ffffff,#8b5cf6,#38bdf8);
+      opacity:.92;
+      box-shadow:0 0 18px rgba(139,92,246,.42);
+    }
+
+    .mod-card b{
+      display:block;
+      padding-right:24px;
+      font-size:15.5px;
+      margin-bottom:4px;
+      line-height:1.15;
+      font-weight:950;
+      letter-spacing:-.025em;
+    }
+
+    .mod-card span{
+      display:block;
+      padding-right:24px;
+      color:rgba(255,255,255,.66);
+      font-size:12.5px;
+      line-height:1.38;
+      font-weight:650;
+    }
+
+   .bottom-nav{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:18px;
+      z-index:80;
+      width:min(406px,calc(100% - 24px));
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:10px;
+      border-radius:24px;
+      background:rgba(8,10,22,.84);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 -16px 42px rgba(0,0,0,.34);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .bottom-nav a{
+      min-height:48px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:13px;
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .bottom-nav a:first-child{
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      box-shadow:0 14px 34px rgba(139,92,246,.30);
+      border-color:rgba(255,255,255,.12);
+    }
+        .tool-icon{
+      position:relative;
+      width:54px;
+      height:54px;
+      border-radius:20px;
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 25% 18%, rgba(255,255,255,.20), transparent 34%),
+        linear-gradient(135deg, rgba(139,92,246,.34), rgba(56,189,248,.10));
+      border:1px solid rgba(255,255,255,.15);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        inset 0 -16px 30px rgba(0,0,0,.18),
+        0 12px 26px rgba(0,0,0,.28);
+      overflow:hidden;
+    }
+
+       .tool-icon::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:31px;
+      height:31px;
+      display:block;
+      background:linear-gradient(135deg,#f472ff,#60eaff);
+      filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
+      -webkit-mask:center / contain no-repeat;
+      mask:center / contain no-repeat;
+      transform:translate(-50%,-50%);
+    }
+
+    .tool-icon-music::before{
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-cover::before{
+      background:linear-gradient(135deg,#f472ff,#7dd3ff);
+      -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.9' stroke='white'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8 15l3-3 2 2 3-4 2 2'/%3E%3Cpath d='M17.5 6.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z' fill='white' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+      mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.9' stroke='white'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8 15l3-3 2 2 3-4 2 2'/%3E%3Cpath d='M17.5 6.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z' fill='white' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+
+    .tool-icon-photofx::before{
+      background:linear-gradient(135deg,#ffd36a,#f472ff);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-video::before{
+      background:linear-gradient(135deg,#8d7cff,#60eaff);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-lipsync::before{
+      background:linear-gradient(135deg,#60eaff,#22c55e);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4a7 7 0 0 0 0 14'/%3E%3Cpath d='M12 4v14'/%3E%3Cpath d='M16 8c1.5 1 2.3 2.3 2.3 4s-.8 3-2.3 4'/%3E%3Cpath d='M19 6c2 1.6 3 3.6 3 6s-1 4.4-3 6'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4a7 7 0 0 0 0 14'/%3E%3Cpath d='M12 4v14'/%3E%3Cpath d='M16 8c1.5 1 2.3 2.3 2.3 4s-.8 3-2.3 4'/%3E%3Cpath d='M19 6c2 1.6 3 3.6 3 6s-1 4.4-3 6'/%3E%3C/svg%3E");
+    }
+        .tool-icon-atmo::before{
+      background:linear-gradient(135deg,#a78bfa,#60eaff);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A5 5 0 0 0 6 18z'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M10 23h4'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A5 5 0 0 0 6 18z'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M10 23h4'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-cartoon::before{
+      background:linear-gradient(135deg,#ffb86c,#ff7ccf 52%,#ffd36a);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7.5' cy='7.2' r='2.7'/%3E%3Ccircle cx='16.5' cy='7.2' r='2.7'/%3E%3Cpath d='M5.2 11.2c0-4.2 3.1-6.3 6.8-6.3s6.8 2.1 6.8 6.3v3.1c0 3.4-2.8 5.8-6.8 5.8s-6.8-2.4-6.8-5.8v-3.1z'/%3E%3Ccircle cx='9.4' cy='12.7' r='.7' fill='%23000'/%3E%3Ccircle cx='14.6' cy='12.7' r='.7' fill='%23000'/%3E%3Cpath d='M11 15.2h2'/%3E%3Cpath d='M10.3 16.3c1.1.9 2.3.9 3.4 0'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7.5' cy='7.2' r='2.7'/%3E%3Ccircle cx='16.5' cy='7.2' r='2.7'/%3E%3Cpath d='M5.2 11.2c0-4.2 3.1-6.3 6.8-6.3s6.8 2.1 6.8 6.3v3.1c0 3.4-2.8 5.8-6.8 5.8s-6.8-2.4-6.8-5.8v-3.1z'/%3E%3Ccircle cx='9.4' cy='12.7' r='.7' fill='%23000'/%3E%3Ccircle cx='14.6' cy='12.7' r='.7' fill='%23000'/%3E%3Cpath d='M11 15.2h2'/%3E%3Cpath d='M10.3 16.3c1.1.9 2.3.9 3.4 0'/%3E%3C/svg%3E");
+    }
+    .sound{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:0;
+  border-radius:999px;
+  padding:8px 13px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  font-weight:950;
+  white-space:nowrap;
+  box-shadow:0 12px 28px rgba(139,92,246,.28);
+}
+
+.sound-icon{
+  position:relative;
+  width:18px;
+  height:18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+}
+
+.sound-icon::before{
+  content:"";
+  width:18px;
+  height:18px;
+  display:block;
+  background:linear-gradient(135deg,#fff,#60eaff,#f472ff);
+  filter:drop-shadow(0 0 8px rgba(244,114,255,.68));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10v4h4l5 4V6l-5 4H4z'/%3E%3Cpath d='M17 9c1 1 1.5 2 1.5 3s-.5 2-1.5 3'/%3E%3Cpath d='M19.5 6.5C21 8 22 9.8 22 12s-1 4-2.5 5.5'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10v4h4l5 4V6l-5 4H4z'/%3E%3Cpath d='M17 9c1 1 1.5 2 1.5 3s-.5 2-1.5 3'/%3E%3Cpath d='M19.5 6.5C21 8 22 9.8 22 12s-1 4-2.5 5.5'/%3E%3C/svg%3E");
+}
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+ <a class="logo" href="/index.mobile.html" aria-label="AIVO">
+      <img src="/aivo-logo.png" alt="AIVO">
+    </a>
+
+    <div class="top-actions">
+    <a class="pill" href="/login.mobile.html?returnTo=/studio.mobile.html">Giriş Yap</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="badge">
+        <span class="dot"></span>
+        AIVO Mobile Studio
+      </div>
+
+      <h1>
+        AIVO Studio <span class="grad">cebinde.</span>
+      </h1>
+
+      <p class="sub">
+        Müzik, kapak, video ve çizgifilm üretimini mobilde başlat. Fikrini yaz, AIVO üretimi senin için hazırlasın.
+      </p>
+
+      <div class="cta-row">
+     <a class="btn btn-primary" href="/login.mobile.html?returnTo=/studio.mobile.html">Studio’ya Gir →</a>
+<a class="btn btn-ghost" href="/login.mobile.html?returnTo=/studio.mobile.html#credits">Fiyatları Gör</a>
+      </div>
+
+      <div class="video-card">
+        <div class="video-head">
+          <div>
+            <div class="video-title">Görselden Video Klip</div>
+            <div class="video-sub">Görselini hareketli klip sahnesine dönüştür</div>
+          </div>
+
+        <button class="sound" type="button" id="soundBtn">
+        <span class="sound-icon" aria-hidden="true"></span>
+       <span class="sound-label">Ses</span>
+       </button>
+         </div>
+
+        <video
+          id="demoVideo"
+          src="https://media.aivo.tr/outputs/home/image-to-video/image-to-video-preview-1777719387477.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto">
+        </video>
+      </div>
+    </section>
+
+    <h2 class="section-title">Mobilde öne çıkanlar</h2>
+
+    <section class="modules">
+     <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-music" aria-hidden="true"></span>
+        <div>
+          <b>AI Müzik Üret</b>
+          <span>Şarkı fikrini yaz, mobilde üretimi başlat.</span>
+        </div>
+      </a>
+
+  <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-photofx" aria-hidden="true"></span>
+        <div>
+          <b>AI Foto Efekt Video Clip</b>
+          <span>Fotoğrafını kısa, dikkat çekici video klibe dönüştür.</span>
+        </div>
+      </a>
+
+    <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-cover" aria-hidden="true"></span>
+        <div>
+          <b>AI Kapak Üret</b>
+          <span>Kapak, afiş ve sosyal medya görseli oluştur.</span>
+        </div>
+      </a>
+
+    <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-video" aria-hidden="true"></span>
+        <div>
+          <b>AI Resimden Video Üret</b>
+          <span>Tek görseli sosyal medya uyumlu videoya çevir.</span>
+        </div>
+      </a>
+
+          <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
+        <div>
+          <b>AI Dudak Senkron Video</b>
+          <span>Fotoğrafını konuştur, tanıtım videosuna dönüştür.</span>
+        </div>
+      </a>
+
+    <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-atmo" aria-hidden="true"></span>
+        <div>
+          <b>AI Atmosfer Video</b>
+          <span>Loop sahne, yağmur, kar, ışık ve sinematik atmosfer oluştur.</span>
+        </div>
+      </a>
+
+   <a class="mod-card" href="/login.mobile.html?returnTo=/studio.mobile.html#tools">
+        <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
+        <div>
+          <b>AI Çocuk Çizgifilm</b>
+          <span>Karakter ve sahne fikrini mobilde çizgifilme dönüştür.</span>
+        </div>
+      </a>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+  <a href="/login.mobile.html?returnTo=/studio.mobile.html">Üretime Başla</a>
+<a href="/login.mobile.html?returnTo=/studio.mobile.html">Keşfet</a>
+  </nav>
+
+  <script>
+    (function(){
+      var btn = document.getElementById("soundBtn");
+      var video = document.getElementById("demoVideo");
+      if (!btn || !video) return;
+
+      btn.addEventListener("click", function(){
+        video.muted = !video.muted;
+
+        if (!video.muted) {
+          video.currentTime = 0;
+          video.play().catch(function(){});
+          btn.textContent = "🔊 Ses";
+        } else {
+          btn.textContent = "🔇 Ses";
+        }
+      });
+    })();
+  </script>
+    <script>
+  (function AIVO_MOBILE_TRAFFIC_HIT(){
+    try {
+      var page =
+        window.location.pathname +
+        window.location.search;
+
+      fetch("/api/traffic/hit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        keepalive: true,
+        body: JSON.stringify({
+          page: page || "/index.mobile.html"
+        })
+      }).catch(function(){});
+    } catch (err) {}
+  })();
+  </script>
+</body>
+</html>
