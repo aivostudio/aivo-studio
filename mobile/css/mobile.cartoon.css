@@ -1020,3 +1020,19 @@ background:
   backdrop-filter:blur(12px) !important;
   -webkit-backdrop-filter:blur(12px) !important;
 }
+/* CARTOON play icon restore */
+.mobile-cartoon-video-play::before,
+.mobile-cartoon-play::before,
+.mobile-cartoon-card-play::before{
+  content:"" !important;
+  width:28px !important;
+  height:28px !important;
+  display:block !important;
+  margin:auto !important;
+  background:linear-gradient(135deg,#ffffff,#a78bfa,#60eaff) !important;
+  filter:drop-shadow(0 0 10px rgba(139,92,246,.52)) !important;
+  -webkit-mask:center / contain no-repeat !important;
+  mask:center / contain no-repeat !important;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5v14l11-7L8 5z'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5v14l11-7L8 5z'/%3E%3C/svg%3E") !important;
+}
