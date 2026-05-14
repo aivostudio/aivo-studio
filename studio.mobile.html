@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AIVO Mobile Studio</title>
 
   <link rel="icon" href="/favicon.ico">
@@ -55,7 +55,7 @@
   width:min(430px,100%);
   min-height:100vh;
   margin:0 auto;
-  padding:0 14px 84px;
+  padding:12px 14px 84px;
 }
 
 .topbar{
@@ -68,8 +68,9 @@
   justify-content:space-between;
   gap:10px;
 
-   margin:0 -14px 14px;
-   padding:calc(66px + env(safe-area-inset-top)) 14px 18px;
+  margin:-12px -14px 14px;
+  padding:12px 14px 20px;
+
   background:
     linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
     radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
@@ -1746,7 +1747,7 @@ try {
 } catch (err) {}
 
 setTimeout(function(){
- window.location.replace(getAivoMobileLoginUrl());
+  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
 }, 650);
 
 return;
@@ -1884,18 +1885,6 @@ if (tool === "atmo") {
   }
 });
   })();
-  function getAivoMobileLoginUrl(extraQuery){
-  var isIosApp = false;
-
-  try {
-    isIosApp = localStorage.getItem("aivo_ios_app") === "1";
-  } catch (err) {}
-
-  var base = isIosApp ? "/login.ios.html" : "/login.mobile.html";
-  var query = extraQuery || "returnTo=/studio.mobile.html";
-
-  return base + "?" + query;
-}
   window.addEventListener("pageshow", async function(event){
   if (!event.persisted) return;
 
@@ -1906,23 +1895,23 @@ if (tool === "atmo") {
     });
 
    if (!res.ok) {
- window.location.replace(getAivoMobileLoginUrl());
+  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
   return;
 }
 
     const data = await res.json();
 
 if (!data || data.ok === false || !data.email) {
- window.location.replace(getAivoMobileLoginUrl());
+  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
   return;
 }
 
 if (data.verified !== true) {
- window.location.replace(getAivoMobileLoginUrl("tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.mobile.html"));
+  window.location.replace("/login.mobile.html?tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.mobile.html");
   return;
 }
   } catch (err) {
- window.location.replace(getAivoMobileLoginUrl());
+   window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
   }
 });
 </script>
