@@ -415,9 +415,9 @@
 <body>
   <main class="mobile-login-shell">
   <header class="mobile-login-topbar">
-  <a class="mobile-login-back" href="/index.mobile.html" aria-label="Ana sayfaya dön">Geri</a>
+<a class="mobile-login-back" href="/index.ios.html" aria-label="Ana sayfaya dön">Geri</a>
 
-  <a class="mobile-login-logo" href="/index.mobile.html" aria-label="AIVO">
+<a class="mobile-login-logo" href="/index.ios.html" aria-label="AIVO">
     <img src="/aivo-logo.png" alt="AIVO">
   </a>
 </header>
@@ -679,7 +679,7 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
          setMessage("Giriş başarılı.", "is-ok");
 
          setTimeout(function(){
-       window.location.href = "/studio.mobile.html";
+     window.location.href = returnTo;
         }, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
