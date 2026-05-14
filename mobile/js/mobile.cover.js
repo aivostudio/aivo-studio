@@ -220,10 +220,10 @@
 
         <div class="mobile-cover-overlay">
           <div class="mobile-cover-overlay-actions">
-            <button class="mobile-cover-overlay-btn" type="button" data-action="open-cover" title="Görüntüle">👁</button>
-            <button class="mobile-cover-overlay-btn" type="button" data-action="download-cover" title="İndir">↓</button>
-            <button class="mobile-cover-overlay-btn" type="button" data-action="share-cover" title="Paylaş">↗</button>
-            <button class="mobile-cover-overlay-btn is-danger" type="button" data-action="delete-cover" title="Sil">🗑</button>
+           <button class="mobile-cover-overlay-btn" type="button" data-action="open-cover" data-mobile-cover-act="fullscreen" title="Görüntüle">👁</button>
+<button class="mobile-cover-overlay-btn" type="button" data-action="download-cover" data-mobile-cover-act="download" title="İndir">↓</button>
+<button class="mobile-cover-overlay-btn" type="button" data-action="share-cover" data-mobile-cover-act="share" title="Paylaş">↗</button>
+<button class="mobile-cover-overlay-btn is-danger" type="button" data-action="delete-cover" data-mobile-cover-act="delete" title="Sil">🗑</button>
           </div>
         </div>
       </div>
