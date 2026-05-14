@@ -425,12 +425,23 @@ function bindMobileCartoonResultActions(){
       return;
     }
 
-    if (act === "fullscreen") {
+       if (act === "fullscreen") {
       const video = card.querySelector("video");
       if (!video) return;
 
       if (video.requestFullscreen) {
         video.requestFullscreen().catch(function(){});
+        return;
+      }
+
+      if (video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+        return;
+      }
+
+      if (video.webkitRequestFullscreen) {
+        video.webkitRequestFullscreen();
+        return;
       }
 
       return;
@@ -447,18 +458,20 @@ function bindMobileCartoonResultActions(){
         "&filename=" +
         encodeURIComponent("aivo-cizgifilm-video.mp4");
 
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      iframe.setAttribute("aria-hidden", "true");
-      iframe.src = downloadUrl;
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = "aivo-cizgifilm-video.mp4";
+      a.rel = "noopener";
+      a.style.display = "none";
 
-      document.body.appendChild(iframe);
+      document.body.appendChild(a);
+      a.click();
 
       setTimeout(function(){
         try {
-          iframe.remove();
+          a.remove();
         } catch (err) {}
-      }, 15000);
+      }, 1500);
 
       return;
     }
