@@ -699,3 +699,9 @@
   backdrop-filter:blur(12px) !important;
   -webkit-backdrop-filter:blur(12px) !important;
 }
+/* PHOTOFX play/pause state */
+.mobile-photofx-video-play.is-playing::before,
+.mobile-photofx-video-play[data-playing="true"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5z'/%3E%3Cpath d='M13 5h4v14h-4V5z'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5z'/%3E%3Cpath d='M13 5h4v14h-4V5z'/%3E%3C/svg%3E") !important;
+}
