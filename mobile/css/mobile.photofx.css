@@ -679,13 +679,23 @@
   justify-content:center !important;
   text-indent:0 !important;
 }
-/* PHOTOFX play button - match Lipsync purple style */
-.mobile-photofx-video-play[data-mobile-photofx-act="play"],
+/* PHOTOFX play button - match Lipsync reference */
 .mobile-photofx-video-play{
-  background:linear-gradient(135deg,rgba(139,92,246,.92),rgba(236,72,153,.72)) !important;
-  border:1px solid rgba(255,255,255,.18) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 0 28px rgba(139,92,246,.34),
-    0 14px 34px rgba(0,0,0,.34) !important;
+  position:absolute !important;
+  left:50% !important;
+  top:52% !important;
+  transform:translate(-50%,-50%) !important;
+  width:62px !important;
+  height:62px !important;
+  border-radius:999px !important;
+  z-index:5 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  background:rgba(20,20,32,.58) !important;
+  color:transparent !important;
+  font-size:0 !important;
+  backdrop-filter:blur(12px) !important;
+  -webkit-backdrop-filter:blur(12px) !important;
 }
