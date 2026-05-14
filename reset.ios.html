@@ -249,9 +249,10 @@
       font-weight:950;
     }
   </style>
-</head>
+</style>
 
-<body>
+<script src="/mobile/js/mobile.toast.js?v=1" defer></script>
+</head>
   <main class="mobile-reset-shell">
     <header class="mobile-reset-topbar">
       <a class="mobile-reset-back" href="/login.ios.html?returnTo=/studio.ios.html" aria-label="Girişe dön">Geri</a>
@@ -313,11 +314,26 @@
       const btn = document.getElementById("mobileResetBtn");
       const message = document.getElementById("mobileResetMessage");
 
-      function setMessage(text, type){
-        message.textContent = text || "";
-        message.classList.remove("is-error", "is-ok");
-        if (type) message.classList.add(type);
-      }
+     function setMessage(text, type){
+  message.textContent = "";
+  message.classList.remove("is-error", "is-ok");
+
+  if (!text) return;
+
+  const toastType = type === "is-error"
+    ? "error"
+    : type === "is-ok"
+      ? "success"
+      : "info";
+
+  if (window.mobileToast && typeof window.mobileToast.show === "function") {
+    window.mobileToast.show(text, toastType);
+    return;
+  }
+
+  message.textContent = text;
+  if (type) message.classList.add(type);
+}
 
       if (!token) {
         setMessage("Sıfırlama bağlantısı geçersiz.", "is-error");
