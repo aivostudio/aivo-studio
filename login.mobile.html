@@ -685,7 +685,7 @@ const returnTo = rawReturnTo.includes("mobile")
          setMessage("Giriş başarılı.", "is-ok");
 
          setTimeout(function(){
-         location.replace(returnTo);
+        window.location.href = "https://aivo.tr/studio.mobile.html";
         }, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
