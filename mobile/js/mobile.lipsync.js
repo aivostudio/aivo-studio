@@ -1597,12 +1597,22 @@
           });
         }
 
-        if (inlineAudio.paused) {
-          inlineAudio.play().catch(function(){});
-          playBtn.textContent = "❚❚";
+            function syncInlineAudioButton(){
+          const isPlaying = inlineAudio && !inlineAudio.paused && !inlineAudio.ended;
+          playBtn.classList.toggle("is-playing", isPlaying);
+          playBtn.setAttribute("data-playing", isPlaying ? "true" : "false");
+          playBtn.textContent = isPlaying ? "❚❚" : "▶";
+        }
+
+        inlineAudio.onplay = syncInlineAudioButton;
+        inlineAudio.onpause = syncInlineAudioButton;
+        inlineAudio.onended = syncInlineAudioButton;
+
+        if (inlineAudio.paused || inlineAudio.ended) {
+          inlineAudio.play().then(syncInlineAudioButton).catch(syncInlineAudioButton);
         } else {
           inlineAudio.pause();
-          playBtn.textContent = "▶";
+          syncInlineAudioButton();
         }
 
         return;
