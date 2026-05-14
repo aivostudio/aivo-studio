@@ -1884,17 +1884,9 @@ if (tool === "atmo") {
   }
 });
   })();
-  function getAivoMobileLoginUrl(extraQuery){
-  var isIosApp = false;
-
-  try {
-    isIosApp = localStorage.getItem("aivo_ios_app") === "1";
-  } catch (err) {}
-
-  var base = isIosApp ? "/login.ios.html" : "/login.mobile.html";
-  var query = extraQuery || "returnTo=/studio.mobile.html";
-
-  return base + "?" + query;
+function getAivoMobileLoginUrl(extraQuery){
+  var query = extraQuery || "returnTo=/studio.ios.html";
+  return "/login.ios.html?" + query;
 }
   window.addEventListener("pageshow", async function(event){
   if (!event.persisted) return;
