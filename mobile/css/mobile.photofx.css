@@ -679,3 +679,13 @@
   justify-content:center !important;
   text-indent:0 !important;
 }
+/* PHOTOFX play button - match Lipsync purple style */
+.mobile-photofx-video-play[data-mobile-photofx-act="play"],
+.mobile-photofx-video-play{
+  background:linear-gradient(135deg,rgba(139,92,246,.92),rgba(236,72,153,.72)) !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 28px rgba(139,92,246,.34),
+    0 14px 34px rgba(0,0,0,.34) !important;
+}
