@@ -281,58 +281,57 @@ function clearMobileVideoLoading(){
     return false;
   }
 
-  function renderMobileVideoResults(){
-    if (!resultsEl) return;
+function renderMobileVideoResults(){
+  if (!resultsEl) return;
 
-   const sourceJobs = mobileVideoViewMode === "library"
-  ? mobileVideoLibraryJobs
-  : mobileVideoCurrentJobs;
+  const sourceJobs = mobileVideoViewMode === "library"
+    ? mobileVideoLibraryJobs
+    : mobileVideoCurrentJobs;
 
-const items = sourceJobs.filter(function(job){
-  return !mobileVideoDeletedIds.has(job.id);
-});
+  const items = sourceJobs.filter(function(job){
+    return !mobileVideoDeletedIds.has(job.id);
+  });
 
-    if (!items.length) {
-      resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Henüz mobil video başlatılmadı.";
-      return;
-    }
-
-    resultsEl.className = "mobile-photofx-results";
-
-    resultsEl.innerHTML = items.map(function(job){
-      const ready = !!job.videoUrl;
-
-      return `
-        <article class="mobile-photofx-video-card" data-mobile-video-job="${esc(job.id)}">
-          <div class="mobile-photofx-video-media">
-            ${
-              ready
-                ? `<video class="mobile-photofx-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-                : `<div class="mobile-photofx-video-loading"><span>Hazırlanıyor…</span></div>`
-            }
-
-            <div class="mobile-photofx-video-actions">
-              <button type="button" data-mobile-video-act="download" ${ready ? "" : "disabled"}>⬇</button>
-              <button type="button" data-mobile-video-act="share" ${ready ? "" : "disabled"}>↗</button>
-              <button type="button" data-mobile-video-act="sound" ${ready ? "" : "disabled"}>🔇</button>
-              <button type="button" data-mobile-video-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
-              <button type="button" data-mobile-video-act="delete">🗑</button>
-            </div>
-
-            ${
-              ready
-                ? `<button class="mobile-photofx-video-play" type="button" data-mobile-video-act="play">▶</button>`
-                : ``
-            }
-          </div>
-
-          <div class="mobile-photofx-video-title">${esc(job.title || "Video")}</div>
-        </article>
-      `;
-    }).join("");
+  if (!items.length) {
+    resultsEl.className = "empty-card";
+    resultsEl.innerHTML = "Henüz mobil video başlatılmadı.";
+    return;
   }
 
+  resultsEl.className = "mobile-video-results";
+
+  resultsEl.innerHTML = items.map(function(job){
+    const ready = !!job.videoUrl;
+
+    return `
+      <article class="mobile-video-card" data-mobile-video-job="${esc(job.id)}">
+        <div class="mobile-video-media">
+          ${
+            ready
+              ? `<video class="mobile-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
+              : `<div class="mobile-video-loading"><span>Hazırlanıyor…</span></div>`
+          }
+
+          <div class="mobile-video-actions">
+            <button type="button" data-mobile-video-act="download" ${ready ? "" : "disabled"}>⬇</button>
+            <button type="button" data-mobile-video-act="share" ${ready ? "" : "disabled"}>↗</button>
+            <button type="button" data-mobile-video-act="sound" ${ready ? "" : "disabled"}>🔇</button>
+            <button type="button" data-mobile-video-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+            <button type="button" data-mobile-video-act="delete">🗑</button>
+          </div>
+
+          ${
+            ready
+              ? `<button class="mobile-video-play" type="button" data-mobile-video-act="play">▶</button>`
+              : ``
+          }
+        </div>
+
+        <div class="mobile-video-title">${esc(job.title || "Video")}</div>
+      </article>
+    `;
+  }).join("");
+}
   function pollMobileVideoJob(jobId, refundCtx){
     if (!jobId) return;
 
