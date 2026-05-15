@@ -1093,3 +1093,35 @@ background:
   max-width:100%;
   min-width:0;
 }
+#mobileCartoonSection select.field-input{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  height:46px !important;
+  min-height:46px !important;
+  padding:0 34px 0 12px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  background-color:#070814 !important;
+  background-image:none !important;
+}
+
+#mobileCartoonSection .mobile-cartoon-mini-box{
+  overflow:hidden !important;
+}
+
+#mobileCartoonSection .mobile-cartoon-form-grid--two,
+#mobileCartoonSection .mobile-cartoon-form-grid--three{
+  width:100% !important;
+  max-width:100% !important;
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+
+#mobileCartoonSection .mobile-cartoon-form-grid--two > *,
+#mobileCartoonSection .mobile-cartoon-form-grid--three > *{
+  min-width:0 !important;
+  max-width:100% !important;
+}
