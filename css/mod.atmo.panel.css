@@ -385,3 +385,15 @@
 .atmoCard .svcHeroPlay::before{
   display:block !important;
 }
+/* ===== ATMO PANEL — center play button like cartoon cards ===== */
+.atmoCard .svcHeroPlay{
+  left:50% !important;
+  top:50% !important;
+  right:auto !important;
+  bottom:auto !important;
+  transform:translate(-50%, -50%) !important;
+  width:72px !important;
+  height:72px !important;
+  border-radius:999px !important;
+  z-index:9 !important;
+}
