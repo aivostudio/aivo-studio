@@ -1062,3 +1062,34 @@ background:
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5z'/%3E%3Cpath d='M13 5h4v14h-4V5z'/%3E%3C/svg%3E") !important;
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5z'/%3E%3Cpath d='M13 5h4v14h-4V5z'/%3E%3C/svg%3E") !important;
 }
+#mobileCartoonSection,
+#mobileCartoonSection *{
+  box-sizing:border-box;
+}
+
+#mobileCartoonSection{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.mobile-cartoon-panel{
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.mobile-cartoon-mini-box,
+.mobile-cartoon-form-grid,
+.mobile-cartoon-form-grid > *{
+  min-width:0;
+  max-width:100%;
+}
+
+.mobile-cartoon-form-grid .field-input,
+.mobile-cartoon-form-grid select,
+.mobile-cartoon-form-grid input{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
