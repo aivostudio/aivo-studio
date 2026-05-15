@@ -1090,32 +1090,3 @@
   background: linear-gradient(90deg,#60eaff,#a855f7,#ff5fb7);
   box-shadow: 0 0 18px rgba(168,85,247,.45);
 }
-/* MUSIC PLAYER — PROGRESS THUMB FINAL */
-
-.aivo-player-card.is-playing .aivo-progress{
-  overflow: visible !important;
-}
-
-.aivo-player-card.is-playing .aivo-progress i{
-  position: relative !important;
-  display: block !important;
-  overflow: visible !important;
-}
-
-.aivo-player-card.is-playing .aivo-progress i::after{
-  content: "";
-  position: absolute;
-  right: 0;
-  top: 50%;
-  width: 18px;
-  height: 18px;
-  transform: translate(50%, -50%);
-  border-radius: 999px;
-  background: #ffffff;
-  border: 3px solid rgba(255,255,255,.95);
-  box-shadow:
-    0 0 0 9px rgba(255,95,183,.22),
-    0 0 22px rgba(168,85,247,.55),
-    0 8px 22px rgba(0,0,0,.35);
-  pointer-events: none;
-}
