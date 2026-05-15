@@ -694,8 +694,7 @@ window.selectedJobId = window.selectedJobId || "";
         </div>
 
          <div class="aivo-player-actions">
-          <button class="aivo-action" data-action="seek_back" title="10 saniye geri" aria-label="10 saniye geri">⏪</button>
-          <button class="aivo-action" data-action="seek_forward" title="10 saniye ileri" aria-label="10 saniye ileri">⏩</button>
+        
 
           <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Parçaları Ayır" aria-label="Parçaları Ayır">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
