@@ -693,19 +693,8 @@ window.selectedJobId = window.selectedJobId || "";
           <div class="aivo-player-controls">${stemsControls}</div>
         </div>
 
-             <div class="aivo-player-actions">
-          <button class="aivo-action" data-action="seek_back" title="10 saniye geri" aria-label="10 saniye geri">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
-              <path d="M11 7 6 12l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M18 7l-5 5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <button class="aivo-action" data-action="seek_forward" title="10 saniye ileri" aria-label="10 saniye ileri">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
-              <path d="m13 7 5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="m6 7 5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
+         <div class="aivo-player-actions">
+        
 
           <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Parçaları Ayır" aria-label="Parçaları Ayır">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
@@ -1570,16 +1559,7 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       });
       return;
     }
-      if (act === "toggle-play") return togglePlayFromCard(card);
-
-    if (act === "seek_back" || act === "seek_forward") {
-      if (!audioEl || !Number.isFinite(audioEl.duration) || audioEl.duration <= 0) return;
-      const delta = act === "seek_back" ? -10 : 10;
-      audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, audioEl.currentTime + delta));
-      updateProgressUI();
-      return;
-    }
-
+    if (act === "toggle-play") return togglePlayFromCard(card);
     if (act === "stems") return actionStems(card);
     if (act === "lyrics") return actionLyrics(card);
     if (act === "download") return actionDownload(card);
