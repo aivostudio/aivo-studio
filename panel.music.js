@@ -693,8 +693,19 @@ window.selectedJobId = window.selectedJobId || "";
           <div class="aivo-player-controls">${stemsControls}</div>
         </div>
 
-         <div class="aivo-player-actions">
-        
+             <div class="aivo-player-actions">
+          <button class="aivo-action" data-action="seek_back" title="10 saniye geri" aria-label="10 saniye geri">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+              <path d="M11 7 6 12l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M18 7l-5 5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="aivo-action" data-action="seek_forward" title="10 saniye ileri" aria-label="10 saniye ileri">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+              <path d="m13 7 5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="m6 7 5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
 
           <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Parçaları Ayır" aria-label="Parçaları Ayır">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
