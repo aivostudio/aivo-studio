@@ -1058,3 +1058,28 @@
   background: linear-gradient(90deg,#60eaff,#a855f7,#ff5fb7);
   box-shadow: 0 0 18px rgba(168,85,247,.45);
 }
+/* MUSIC PLAYER — PROGRESS KNOB */
+
+.aivo-player-card.is-playing .aivo-progress{
+  overflow: visible !important;
+}
+
+.aivo-player-card.is-playing .aivo-progress i{
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.aivo-player-card.is-playing .aivo-progress i::after{
+  content: "";
+  position: absolute;
+  right: -9px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow:
+    0 0 0 8px rgba(255,95,183,.20),
+    0 8px 20px rgba(0,0,0,.35);
+}
