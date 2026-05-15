@@ -268,3 +268,44 @@
     transform:rotate(360deg);
   }
 }
+/* =========================================================
+   DESKTOP MUSIC PLAYER — left thumbnail music note icon
+   Safe override: play tile gets mobile-style music icon
+   ========================================================= */
+
+#rightPanelHost .aivo-player-btn{
+  position:relative !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 25% 18%, rgba(255,255,255,.20), transparent 34%),
+    linear-gradient(135deg, rgba(139,92,246,.72), rgba(56,189,248,.20)) !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -18px 30px rgba(0,0,0,.20),
+    0 12px 26px rgba(0,0,0,.28) !important;
+  color:transparent !important;
+}
+
+#rightPanelHost .aivo-player-btn .icon-play,
+#rightPanelHost .aivo-player-btn .icon-pause{
+  display:none !important;
+}
+
+#rightPanelHost .aivo-player-btn::before{
+  content:"";
+  width:28px;
+  height:28px;
+  display:block;
+  background:linear-gradient(135deg,#f472ff,#60eaff);
+  filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+#rightPanelHost .aivo-player-card.is-playing .aivo-player-btn::before{
+  width:24px;
+  height:24px;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5zm6 0h4v14h-4V5z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5zm6 0h4v14h-4V5z'/%3E%3C/svg%3E");
+}
