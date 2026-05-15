@@ -2567,3 +2567,55 @@
     0 0 0 3px rgba(255, 80, 120, 0.16),
     0 0 28px rgba(255, 80, 120, 0.18) !important;
 }
+/* LIPSYNC HEADER — slim premium match with other modules */
+
+.main-panel[data-module="lipsync"] .lipsync-info-card{
+  position:relative !important;
+  overflow:hidden !important;
+  padding:12px 24px 11px !important;
+  border-radius:20px !important;
+  text-align:center !important;
+  background:
+    radial-gradient(420px 160px at 50% 0%, rgba(244,114,255,.18), transparent 62%),
+    radial-gradient(360px 150px at 10% 15%, rgba(96,234,255,.11), transparent 60%),
+    linear-gradient(135deg, rgba(139,92,246,.22), rgba(255,255,255,.04)) !important;
+  border:1px solid rgba(167,139,250,.32) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -12px 24px rgba(0,0,0,.09),
+    0 8px 18px rgba(0,0,0,.14),
+    0 0 14px rgba(139,92,246,.07) !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-info-card::before{
+  content:"";
+  width:22px;
+  height:22px;
+  display:block;
+  margin:0 auto 6px;
+  background:linear-gradient(135deg,#f472ff,#60eaff);
+  filter:drop-shadow(0 0 7px rgba(139,92,246,.48));
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5Z'/%3E%3Cpath d='M5 10.5a7 7 0 0 0 14 0'/%3E%3Cpath d='M12 17.5V21'/%3E%3Cpath d='M8.5 21h7'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5Z'/%3E%3Cpath d='M5 10.5a7 7 0 0 0 14 0'/%3E%3Cpath d='M12 17.5V21'/%3E%3Cpath d='M8.5 21h7'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-info-title{
+  margin:0 0 4px !important;
+  font-size:25px !important;
+  line-height:1.02 !important;
+  font-weight:950 !important;
+  letter-spacing:-.04em !important;
+  color:transparent !important;
+  background:linear-gradient(135deg,#ffffff 0%,#e9d5ff 42%,#f472ff 68%,#60eaff 100%) !important;
+  -webkit-background-clip:text !important;
+  background-clip:text !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-info-text{
+  max-width:760px !important;
+  margin:0 auto !important;
+  color:rgba(255,255,255,.74) !important;
+  font-size:12px !important;
+  line-height:1.2 !important;
+  font-weight:720 !important;
+}
