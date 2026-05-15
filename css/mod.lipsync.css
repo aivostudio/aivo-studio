@@ -2619,3 +2619,69 @@
   line-height:1.2 !important;
   font-weight:720 !important;
 }
+/* LIPSYNC DESKTOP — mobile-style premium form icons */
+
+.main-panel[data-module="lipsync"] .lipsync-icon-btn,
+.main-panel[data-module="lipsync"] .lipsync-photo-icon,
+.main-panel[data-module="lipsync"] .lipsync-voice-play-inline{
+  position:relative !important;
+  overflow:hidden !important;
+  color:transparent !important;
+  font-size:0 !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-icon-btn svg,
+.main-panel[data-module="lipsync"] .lipsync-photo-icon svg{
+  display:none !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-icon-btn::before,
+.main-panel[data-module="lipsync"] .lipsync-photo-icon::before,
+.main-panel[data-module="lipsync"] .lipsync-voice-play-inline::before{
+  content:"" !important;
+  display:block !important;
+  margin:auto !important;
+  background:linear-gradient(135deg,#ffffff 0%,#60eaff 52%,#ec4899 100%) !important;
+  filter:drop-shadow(0 0 10px rgba(96,234,255,.42)) !important;
+  -webkit-mask:center / contain no-repeat !important;
+  mask:center / contain no-repeat !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-icon-btn::before{
+  width:25px !important;
+  height:25px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-photo-icon::before{
+  width:34px !important;
+  height:34px !important;
+}
+
+.main-panel[data-module="lipsync"] .lipsync-voice-play-inline::before{
+  width:23px !important;
+  height:23px !important;
+}
+
+/* Ses kaydet */
+.main-panel[data-module="lipsync"] .lipsync-icon-btn[data-lipsync-record-open]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5z'/%3E%3Cpath d='M5.5 10.5a6.5 6.5 0 0 0 13 0'/%3E%3Cpath d='M12 17v4'/%3E%3Cpath d='M8.5 21h7'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5z'/%3E%3Cpath d='M5.5 10.5a6.5 6.5 0 0 0 13 0'/%3E%3Cpath d='M12 17v4'/%3E%3Cpath d='M8.5 21h7'/%3E%3C/svg%3E") !important;
+}
+
+/* Ses yükle */
+.main-panel[data-module="lipsync"] .lipsync-icon-btn[data-lipsync-upload-open]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4'/%3E%3Cpath d='M7 9l5-5 5 5'/%3E%3Cpath d='M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.15' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4'/%3E%3Cpath d='M7 9l5-5 5 5'/%3E%3Cpath d='M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16'/%3E%3C/svg%3E") !important;
+}
+
+/* Fotoğraf yükle */
+.main-panel[data-module="lipsync"] .lipsync-photo-icon::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='4.5' width='17' height='15' rx='3'/%3E%3Cpath d='M8 14l2.5-2.5 2.2 2.2 2.8-3.5L20.5 16'/%3E%3Cpath d='M8.2 8.5h.1'/%3E%3Cpath d='M12 19.5v-7'/%3E%3Cpath d='M9.2 15.3L12 12.5l2.8 2.8'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='4.5' width='17' height='15' rx='3'/%3E%3Cpath d='M8 14l2.5-2.5 2.2 2.2 2.8-3.5L20.5 16'/%3E%3Cpath d='M8.2 8.5h.1'/%3E%3Cpath d='M12 19.5v-7'/%3E%3Cpath d='M9.2 15.3L12 12.5l2.8 2.8'/%3E%3C/svg%3E") !important;
+}
+
+/* Ses önizleme play */
+.main-panel[data-module="lipsync"] .lipsync-voice-play-inline::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5v14l11-7L8 5z'/%3E%3C/svg%3E") !important;
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5v14l11-7L8 5z'/%3E%3C/svg%3E") !important;
+}
