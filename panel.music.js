@@ -876,11 +876,7 @@ async function togglePlayFromCard(card){
   bindEqBarsForCurrentJob();
 
   try {
-    const playSrc = src.includes("/api/media/proxy")
-      ? src
-      : `/api/media/proxy?url=${encodeURIComponent(src)}&filename=music.mp3`;
-
-    if (A.src !== playSrc) A.src = playSrc;
+    if (A.src !== src) A.src = src;
     await A.play();
   } catch (e) {
     console.warn("[panel.music] play failed", {
@@ -1818,43 +1814,13 @@ const familyWasAlreadyReady =
     ["ready", "done", "completed", "success", "succeeded"].includes(rawStatus) ? "ready" :
     (["error", "failed", "fail"].includes(rawStatus) ? "error" : "processing");
 
-  const rawOutputs =
-    Array.isArray(row?.outputs) && row.outputs.length
-      ? row.outputs
-      : Array.isArray(meta?.outputs) && meta.outputs.length
-        ? meta.outputs
-        : Array.isArray(meta?.music_outputs) && meta.music_outputs.length
-          ? meta.music_outputs
-          : [];
-
-  const firstAudioOutput = rawOutputs.find((output) => {
-    return output && (
-      output.audio_url ||
-      output.url ||
-      output.archive_url ||
-      output.raw_url ||
-      output.src
-    );
-  }) || null;
-
   const audioSrc = String(
     meta?.audio_src ||
     meta?.audioUrl ||
-    meta?.audio_url ||
-    meta?.url ||
-    meta?.final_audio_url ||
     row?.audio_src ||
     row?.audioUrl ||
-    row?.audio_url ||
-    row?.url ||
-    row?.output_url ||
     row?.result?.audio?.src ||
     row?.result?.src ||
-    firstAudioOutput?.audio_url ||
-    firstAudioOutput?.url ||
-    firstAudioOutput?.archive_url ||
-    firstAudioOutput?.raw_url ||
-    firstAudioOutput?.src ||
     ""
   ).trim();
 
