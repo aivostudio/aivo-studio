@@ -489,8 +489,24 @@ background:
 }
 
 .mobile-cartoon-form-grid--three{
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:7px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+
+.mobile-cartoon-form-grid--three .field-label{
+  white-space:normal;
+}
+
+.mobile-cartoon-form-grid--three .field-input{
+  width:100%;
+  min-width:0;
+  height:44px;
+  min-height:44px;
+  padding:0 9px;
+  font-size:11px;
+  line-height:1;
+  appearance:auto;
+  -webkit-appearance:menulist;
 }
 
 .mobile-cartoon-form-grid .mobile-cartoon-mini-box{
