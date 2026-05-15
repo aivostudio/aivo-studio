@@ -200,3 +200,21 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M6 7l1 14h10l1-14'/%3E%3Cpath d='M9 7V4h6v3'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M6 7l1 14h10l1-14'/%3E%3Cpath d='M9 7V4h6v3'/%3E%3C/svg%3E");
 }
+/* FIX: Music ready tag vertical center with action buttons */
+#rightPanelHost .aivo-player-titleRow{
+  align-items:center !important;
+}
+
+#rightPanelHost .aivo-player-tags{
+  align-self:center !important;
+  margin-top:0 !important;
+  transform:translateY(1px) !important;
+}
+
+#rightPanelHost .aivo-tag{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:24px !important;
+  line-height:1 !important;
+}
