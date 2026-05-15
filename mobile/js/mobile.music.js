@@ -318,9 +318,16 @@ if (downloadEl) {
     a.href = proxied;
     a.download = filename;
     a.rel = "noopener";
+      a.style.display = "none";
+
     document.body.appendChild(a);
     a.click();
-    a.remove();
+
+    setTimeout(function(){
+      try {
+        a.remove();
+      } catch (err) {}
+    }, 1500);
   });
 }
 
@@ -942,9 +949,16 @@ return;
             a.href = proxied;
             a.download = filename;
             a.rel = "noopener";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+              a.style.display = "none";
+
+              document.body.appendChild(a);
+              a.click();
+
+               setTimeout(function(){
+              try {
+             a.remove();
+             } catch (err) {}
+            }, 1500);
           });
         });
 
