@@ -615,35 +615,8 @@
       const card = btn.closest(".svcCard");
       const video = card?.querySelector(".svcVideo");
       const media = card?.querySelector(".svcMedia");
-      let target = video || media;
-
+      const target = video || media;
       if (!target) return;
-
-      if (video) {
-        const lazyUrl = String(video.dataset.videoUrl || "").trim();
-        const wasHidden = getComputedStyle(video).display === "none";
-
-        if (!video.src && lazyUrl) {
-          video.preload = "metadata";
-          video.src = lazyUrl;
-          try { video.load(); } catch (_) {}
-        }
-
-        video.style.display = "block";
-        target = video;
-
-        const restoreVideoDisplay = () => {
-          if (wasHidden && video.paused) {
-            video.style.display = "none";
-          }
-
-          document.removeEventListener("fullscreenchange", restoreVideoDisplay);
-          document.removeEventListener("webkitfullscreenchange", restoreVideoDisplay);
-        };
-
-        document.addEventListener("fullscreenchange", restoreVideoDisplay);
-        document.addEventListener("webkitfullscreenchange", restoreVideoDisplay);
-      }
 
       try {
         if (document.fullscreenElement) {
