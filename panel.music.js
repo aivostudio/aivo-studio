@@ -876,7 +876,11 @@ async function togglePlayFromCard(card){
   bindEqBarsForCurrentJob();
 
   try {
-    if (A.src !== src) A.src = src;
+    const playSrc = src.includes("/api/media/proxy")
+      ? src
+      : `/api/media/proxy?url=${encodeURIComponent(src)}&filename=music.mp3`;
+
+    if (A.src !== playSrc) A.src = playSrc;
     await A.play();
   } catch (e) {
     console.warn("[panel.music] play failed", {
