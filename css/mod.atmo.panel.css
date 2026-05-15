@@ -385,8 +385,9 @@
 .atmoCard .svcHeroPlay::before{
   display:block !important;
 }
-/* ===== ATMO PANEL — center play button like cartoon cards ===== */
-.atmoCard .svcHeroPlay{
+/* ===== ATMO PANEL — force shared video play center ===== */
+.atmoPanel .svcCard .svcOverlay .svcHeroPlay{
+  position:absolute !important;
   left:50% !important;
   top:50% !important;
   right:auto !important;
