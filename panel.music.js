@@ -1570,7 +1570,16 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       });
       return;
     }
-    if (act === "toggle-play") return togglePlayFromCard(card);
+      if (act === "toggle-play") return togglePlayFromCard(card);
+
+    if (act === "seek_back" || act === "seek_forward") {
+      if (!audioEl || !Number.isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+      const delta = act === "seek_back" ? -10 : 10;
+      audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, audioEl.currentTime + delta));
+      updateProgressUI();
+      return;
+    }
+
     if (act === "stems") return actionStems(card);
     if (act === "lyrics") return actionLyrics(card);
     if (act === "download") return actionDownload(card);
