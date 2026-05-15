@@ -328,3 +328,63 @@
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5zm6 0h4v14h-4V5z'/%3E%3C/svg%3E") center/contain no-repeat !important;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M7 5h4v14H7V5zm6 0h4v14h-4V5z'/%3E%3C/svg%3E") center/contain no-repeat !important;
 }
+/* =========================================================
+   DESKTOP MUSIC PLAYER — stem channel icons
+   Replace emoji stems with neon mask icons
+   ========================================================= */
+
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic{
+  position:relative !important;
+  font-size:0 !important;
+  color:transparent !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 25% 18%, rgba(255,255,255,.14), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.04)) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -10px 18px rgba(0,0,0,.16),
+    0 8px 18px rgba(0,0,0,.22) !important;
+}
+
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic::before{
+  content:"";
+  width:17px;
+  height:17px;
+  display:block;
+  background:linear-gradient(135deg,#ffffff,#d8b4fe,#60eaff);
+  filter:drop-shadow(0 0 8px rgba(139,92,246,.58));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+/* Vocals */
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic[title*="Vocals"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z'/%3E%3Cpath d='M19 10v1a7 7 0 0 1-14 0v-1'/%3E%3Cpath d='M12 18v3'/%3E%3Cpath d='M8 21h8'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z'/%3E%3Cpath d='M19 10v1a7 7 0 0 1-14 0v-1'/%3E%3Cpath d='M12 18v3'/%3E%3Cpath d='M8 21h8'/%3E%3C/svg%3E");
+}
+
+/* Drums */
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic[title*="Drums"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='9' rx='6' ry='3'/%3E%3Cpath d='M6 9v6c0 1.7 2.7 3 6 3s6-1.3 6-3V9'/%3E%3Cpath d='M7 4l4 3'/%3E%3Cpath d='M17 4l-4 3'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='12' cy='9' rx='6' ry='3'/%3E%3Cpath d='M6 9v6c0 1.7 2.7 3 6 3s6-1.3 6-3V9'/%3E%3Cpath d='M7 4l4 3'/%3E%3Cpath d='M17 4l-4 3'/%3E%3C/svg%3E");
+}
+
+/* Bass */
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic[title*="Bass"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 18V6'/%3E%3Cpath d='M9 18V9'/%3E%3Cpath d='M13 18V4'/%3E%3Cpath d='M17 18v-7'/%3E%3Cpath d='M21 18V8'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 18V6'/%3E%3Cpath d='M9 18V9'/%3E%3Cpath d='M13 18V4'/%3E%3Cpath d='M17 18v-7'/%3E%3Cpath d='M21 18V8'/%3E%3C/svg%3E");
+}
+
+/* Guitar */
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic[title*="Guitar"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 6l3-3 3 3-3 3'/%3E%3Cpath d='M18 6L9 15'/%3E%3Cpath d='M7 13l4 4'/%3E%3Cpath d='M5 15l4 4'/%3E%3Cpath d='M4 20l2-2'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 6l3-3 3 3-3 3'/%3E%3Cpath d='M18 6L9 15'/%3E%3Cpath d='M7 13l4 4'/%3E%3Cpath d='M5 15l4 4'/%3E%3Cpath d='M4 20l2-2'/%3E%3C/svg%3E");
+}
+
+/* Piano */
+#rightPanelHost .aivo-stems-icons .aivo-stem-ic[title*="Piano"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6h16v12H4z'/%3E%3Cpath d='M8 6v12'/%3E%3Cpath d='M12 6v12'/%3E%3Cpath d='M16 6v12'/%3E%3Cpath d='M6 6v6'/%3E%3Cpath d='M10 6v6'/%3E%3Cpath d='M14 6v6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6h16v12H4z'/%3E%3Cpath d='M8 6v12'/%3E%3Cpath d='M12 6v12'/%3E%3Cpath d='M16 6v12'/%3E%3Cpath d='M6 6v6'/%3E%3Cpath d='M10 6v6'/%3E%3Cpath d='M14 6v6'/%3E%3C/svg%3E");
+}
