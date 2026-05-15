@@ -723,30 +723,30 @@ function render() {
               ' data-preview-url="' + esc(previewUrlResolved) + '"' +
               ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
             '>' +
-        window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-  id: safeStr(job.job_id || ""),
-  title: promptLine || "—",
-  sub: metaLine,
-  badgeText: badge.text,
-  badgeKind: isPlayableNow
-    ? "ready"
-    : (badge.kind === "bad" ? "error" : "loading"),
-  videoUrl,
-  posterUrl: safeStr(
-    job?.poster_url ||
-    job?.thumbnail_url ||
-    job?.thumb_url ||
-    job?.meta?.poster_url ||
-    job?.meta?.thumbnail_url ||
-    job?.meta?.thumb_url ||
-    ""
-  ),
-  ratio: portrait ? "9:16" : "16:9",
-  ready: isPlayableNow,
-  canDownload: !!finalUrl,
-  canShare: isPlayableNow,
-  canDelete: true
-}).replaceAll('data-svc-act="fullscreen"', 'data-svc-act="fs"') +
+              window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+                id: safeStr(job.job_id || ""),
+                title: promptLine || "—",
+                sub: metaLine,
+                badgeText: badge.text,
+                badgeKind: isPlayableNow
+                  ? "ready"
+                  : (badge.kind === "bad" ? "error" : "loading"),
+                videoUrl,
+              posterUrl: safeStr(
+               job?.poster_url ||
+               job?.thumbnail_url ||
+               job?.thumb_url ||
+              job?.meta?.poster_url ||
+              job?.meta?.thumbnail_url ||
+              job?.meta?.thumb_url ||
+               ""
+             ),
+                ratio: portrait ? "9:16" : "16:9",
+                ready: isPlayableNow,
+                canDownload: !!finalUrl,
+                canShare: isPlayableNow,
+                canDelete: true
+              }) +
             '</div>'
           )
         : "";
@@ -777,11 +777,9 @@ function render() {
         return;
       }
 
-       if (act === "fs" || act === "fullscreen") {
+      if (act === "fs") {
         const video = cardEl?.querySelector("video");
-        const media = cardEl?.querySelector(".svcMedia");
-        const target = video || media;
-        if (!target) return;
+        if (!video) return;
 
         try {
           if (document.fullscreenElement) {
@@ -789,17 +787,13 @@ function render() {
             return;
           }
 
-          if (video && typeof video.webkitEnterFullscreen === "function") {
-            video.webkitEnterFullscreen();
-            return;
-          }
-
-          if (target.requestFullscreen) {
-            await target.requestFullscreen().catch(() => {});
+          if (video.requestFullscreen) {
+            await video.requestFullscreen().catch(() => {});
           }
         } catch {}
         return;
       }
+
       if (act === "download") {
         const dlUrl = finalUrl || url || previewUrl;
         if (!dlUrl) return;
