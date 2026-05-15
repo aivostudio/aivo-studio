@@ -1152,3 +1152,39 @@
   font-weight:720 !important;
   opacity:1 !important;
 }
+/* VIDEO HEADER — slimmer final tuning */
+
+#moduleHost[data-active-module="video"] .page-head,
+.main-panel[data-module="video"] .page-head{
+  border-radius:20px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -12px 24px rgba(0,0,0,.09),
+    0 8px 18px rgba(0,0,0,.14),
+    0 0 14px rgba(139,92,246,.07) !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__box,
+.main-panel[data-module="video"] .page-head__box{
+  padding:12px 24px 11px !important;
+  border-radius:18px !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__box::before,
+.main-panel[data-module="video"] .page-head__box::before{
+  width:22px !important;
+  height:22px !important;
+  margin-bottom:6px !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__title,
+.main-panel[data-module="video"] .page-head__title{
+  font-size:25px !important;
+  margin-bottom:4px !important;
+}
+
+#moduleHost[data-active-module="video"] .page-head__sub,
+.main-panel[data-module="video"] .page-head__sub{
+  font-size:12px !important;
+  line-height:1.2 !important;
+}
