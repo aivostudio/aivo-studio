@@ -777,9 +777,11 @@ function render() {
         return;
       }
 
-      if (act === "fs") {
+       if (act === "fs" || act === "fullscreen") {
         const video = cardEl?.querySelector("video");
-        if (!video) return;
+        const media = cardEl?.querySelector(".svcMedia");
+        const target = video || media;
+        if (!target) return;
 
         try {
           if (document.fullscreenElement) {
@@ -787,13 +789,17 @@ function render() {
             return;
           }
 
-          if (video.requestFullscreen) {
-            await video.requestFullscreen().catch(() => {});
+          if (video && typeof video.webkitEnterFullscreen === "function") {
+            video.webkitEnterFullscreen();
+            return;
+          }
+
+          if (target.requestFullscreen) {
+            await target.requestFullscreen().catch(() => {});
           }
         } catch {}
         return;
       }
-
       if (act === "download") {
         const dlUrl = finalUrl || url || previewUrl;
         if (!dlUrl) return;
