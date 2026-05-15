@@ -613,9 +613,9 @@
       e.stopImmediatePropagation();
 
       const card = btn.closest(".svcCard");
-      const video = card?.querySelector(".svcVideo");
       const media = card?.querySelector(".svcMedia");
-      const target = video || media;
+      const target = media;
+
       if (!target) return;
 
       try {
