@@ -1749,3 +1749,9 @@ section[data-module="cover"] .style-card[data-style="Soyut"] .style-card-ico::be
 section[data-module="cover"] .style-card[data-style="Anime"] .style-card-ico::before{
   background:linear-gradient(135deg,#f9a8d4,#f472b6,#c084fc,#93c5fd) !important;
 }
+/* COVER FORM — Cinematic icon red/pink tuning */
+
+section[data-module="cover"] .quality-pill[data-quality="ultra"] .qp-ico::before{
+  background:linear-gradient(135deg,#ffffff,#fb7185,#ef4444,#ec4899) !important;
+  filter:drop-shadow(0 0 10px rgba(239,68,68,.58)) !important;
+}
