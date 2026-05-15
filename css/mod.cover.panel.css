@@ -227,3 +227,89 @@
   padding: 10px !important;
   gap: 10px !important;
 }
+/* =========================================================
+   COVER PANEL — mobile-style neon overlay action icons
+   Safe override: fullscreen / download / share / delete
+   ========================================================= */
+
+.coverSide .cpOverlayBtns,
+#rightPanelHost .cpOverlayBtns{
+  padding:10px 12px !important;
+  gap:12px !important;
+  border-radius:22px !important;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,.12), transparent 34%),
+    linear-gradient(135deg, rgba(20,20,28,.52), rgba(60,32,48,.38)) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.35) !important;
+  backdrop-filter:blur(16px) !important;
+  -webkit-backdrop-filter:blur(16px) !important;
+}
+
+.coverSide .cpOverlayBtns .cpBtn,
+#rightPanelHost .cpOverlayBtns .cpBtn{
+  position:relative !important;
+  width:44px !important;
+  height:44px !important;
+  border-radius:15px !important;
+  overflow:hidden !important;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255,255,255,.16), transparent 34%),
+    linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.035)) !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  color:transparent !important;
+  font-size:0 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 -12px 22px rgba(0,0,0,.18),
+    0 10px 24px rgba(0,0,0,.22) !important;
+}
+
+.coverSide .cpOverlayBtns .cpBtn svg,
+#rightPanelHost .cpOverlayBtns .cpBtn svg{
+  display:none !important;
+}
+
+.coverSide .cpOverlayBtns .cpBtn::before,
+#rightPanelHost .cpOverlayBtns .cpBtn::before{
+  content:"";
+  width:22px;
+  height:22px;
+  display:block;
+  background:linear-gradient(135deg,#ffffff,#c4b5fd,#60eaff);
+  filter:drop-shadow(0 0 9px rgba(139,92,246,.58));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+/* 1: Görüntüle / Fullscreen */
+.coverSide .cpOverlayBtns .cpBtn[data-act="open"]::before,
+#rightPanelHost .cpOverlayBtns .cpBtn[data-act="open"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H3v5'/%3E%3Cpath d='M16 3h5v5'/%3E%3Cpath d='M8 21H3v-5'/%3E%3Cpath d='M16 21h5v-5'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3H3v5'/%3E%3Cpath d='M16 3h5v5'/%3E%3Cpath d='M8 21H3v-5'/%3E%3Cpath d='M16 21h5v-5'/%3E%3C/svg%3E");
+}
+
+/* 2: İndir */
+.coverSide .cpOverlayBtns .cpBtn[data-act="download"]::before,
+#rightPanelHost .cpOverlayBtns .cpBtn[data-act="download"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12'/%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3Cpath d='M5 21h14'/%3E%3C/svg%3E");
+}
+
+/* 3: Paylaş */
+.coverSide .cpOverlayBtns .cpBtn[data-act="share"]::before,
+#rightPanelHost .cpOverlayBtns .cpBtn[data-act="share"]::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17L17 7'/%3E%3Cpath d='M9 7h8v8'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17L17 7'/%3E%3Cpath d='M9 7h8v8'/%3E%3C/svg%3E");
+}
+
+/* 4: Sil */
+.coverSide .cpOverlayBtns .cpBtn[data-act="delete"]::before,
+#rightPanelHost .cpOverlayBtns .cpBtn[data-act="delete"]::before{
+  background:linear-gradient(135deg,#ffffff,#fb7185,#ec4899);
+  filter:drop-shadow(0 0 10px rgba(236,72,153,.58));
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M6 7l1 14h10l1-14'/%3E%3Cpath d='M9 7V4h6v3'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16'/%3E%3Cpath d='M10 11v6'/%3E%3Cpath d='M14 11v6'/%3E%3Cpath d='M6 7l1 14h10l1-14'/%3E%3Cpath d='M9 7V4h6v3'/%3E%3C/svg%3E");
+}
