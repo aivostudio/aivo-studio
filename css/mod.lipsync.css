@@ -2685,3 +2685,23 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5v14l11-7L8 5z'/%3E%3C/svg%3E") !important;
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M8 5v14l11-7L8 5z'/%3E%3C/svg%3E") !important;
 }
+/* LIPSYNC DESKTOP — icon color correction */
+
+.main-panel[data-module="lipsync"] .lipsync-icon-btn::before,
+.main-panel[data-module="lipsync"] .lipsync-photo-icon::before{
+  background:linear-gradient(135deg,#ffffff 0%,#a78bfa 48%,#60eaff 100%) !important;
+  filter:drop-shadow(0 0 7px rgba(96,234,255,.32)) !important;
+}
+
+/* Ses önizleme pembe butonda boğulmasın */
+.main-panel[data-module="lipsync"] .lipsync-voice-play-inline::before{
+  background:#ffffff !important;
+  filter:none !important;
+  opacity:.95 !important;
+}
+
+/* Select içindeki ekstra/parazit ikon hissini bastır */
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap::before,
+.main-panel[data-module="lipsync"] .lipsync-voice-select-wrap::after{
+  display:none !important;
+}
