@@ -615,8 +615,24 @@
       const card = btn.closest(".svcCard");
       const video = card?.querySelector(".svcVideo");
       const media = card?.querySelector(".svcMedia");
-      const target = video || media;
+      let target = video || media;
+
       if (!target) return;
+
+      if (video) {
+        const lazyUrl = String(video.dataset.videoUrl || "").trim();
+
+        if (!video.src && lazyUrl) {
+          video.preload = "metadata";
+          video.style.display = "block";
+          video.src = lazyUrl;
+          try { video.load(); } catch (_) {}
+        } else {
+          video.style.display = "block";
+        }
+
+        target = video;
+      }
 
       try {
         if (document.fullscreenElement) {
