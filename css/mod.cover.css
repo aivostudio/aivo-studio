@@ -1718,3 +1718,34 @@ section[data-module="cover"] .style-card[data-style="Anime"] .style-card-ico::be
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-1.7-4.2-1.7-7.2S12 3 12 3s1.7 7.8 1.7 10.8S12 21 12 21Z'/%3E%3Cpath d='M3 12s4.2-1.7 7.2-1.7S21 12 21 12s-7.8 1.7-10.8 1.7S3 12 3 12Z'/%3E%3Cpath d='M5.8 5.8s4.1 1.8 6.2 3.9 6.2 8.5 6.2 8.5-6.4-4.1-8.5-6.2-3.9-6.2-3.9-6.2Z'/%3E%3Cpath d='M18.2 5.8s-4.1 1.8-6.2 3.9-6.2 8.5-6.2 8.5 6.4-4.1 8.5-6.2 3.9-6.2 3.9-6.2Z'/%3E%3Ccircle cx='12' cy='12' r='1.5'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-1.7-4.2-1.7-7.2S12 3 12 3s1.7 7.8 1.7 10.8S12 21 12 21Z'/%3E%3Cpath d='M3 12s4.2-1.7 7.2-1.7S21 12 21 12s-7.8 1.7-10.8 1.7S3 12 3 12Z'/%3E%3Cpath d='M5.8 5.8s4.1 1.8 6.2 3.9 6.2 8.5 6.2 8.5-6.4-4.1-8.5-6.2-3.9-6.2-3.9-6.2Z'/%3E%3Cpath d='M18.2 5.8s-4.1 1.8-6.2 3.9-6.2 8.5-6.2 8.5 6.4-4.1 8.5-6.2 3.9-6.2 3.9-6.2Z'/%3E%3Ccircle cx='12' cy='12' r='1.5'/%3E%3C/svg%3E");
 }
+/* COVER FORM — icon color tuning */
+
+section[data-module="cover"] .quality-pill[data-quality="artist"] .qp-ico::before{
+  background:linear-gradient(135deg,#5eead4,#60a5fa,#c084fc) !important;
+}
+
+section[data-module="cover"] .quality-pill[data-quality="ultra"] .qp-ico::before{
+  background:linear-gradient(135deg,#ffffff,#fbbf24,#fb7185,#ec4899) !important;
+  filter:drop-shadow(0 0 9px rgba(251,113,133,.55)) !important;
+}
+
+section[data-module="cover"] .style-card[data-style="Gerçekçi"] .style-card-ico::before,
+section[data-module="cover"] .style-card[data-style="Fotoğrafik"] .style-card-ico::before{
+  background:linear-gradient(135deg,#67e8f9,#38bdf8,#a78bfa) !important;
+}
+
+section[data-module="cover"] .style-card[data-style="Sanatsal"] .style-card-ico::before{
+  background:linear-gradient(135deg,#5eead4,#60a5fa,#c084fc,#f472b6) !important;
+}
+
+section[data-module="cover"] .style-card[data-style="Çizgi Film"] .style-card-ico::before{
+  background:linear-gradient(135deg,#fde68a,#fb7185,#c084fc) !important;
+}
+
+section[data-module="cover"] .style-card[data-style="Soyut"] .style-card-ico::before{
+  background:linear-gradient(135deg,#a7f3d0,#22d3ee,#a78bfa) !important;
+}
+
+section[data-module="cover"] .style-card[data-style="Anime"] .style-card-ico::before{
+  background:linear-gradient(135deg,#f9a8d4,#f472b6,#c084fc,#93c5fd) !important;
+}
