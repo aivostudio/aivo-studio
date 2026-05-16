@@ -630,9 +630,37 @@ body {
       if (r.status === 200) {
         var me = await r.json();
 
-        try {
+               try {
+          var nextEmail = String((me && me.email) || "").trim().toLowerCase();
+
+          var firstName = String(
+            (me && (me.first_name || me.firstName || me.name)) ||
+            (nextEmail && nextEmail.includes("@") ? nextEmail.split("@")[0] : "Kullanıcı")
+          ).trim();
+
+          var surname = String(
+            (me && (me.last_name || me.lastName || me.surname)) ||
+            ""
+          ).trim();
+
+          var fullName = String(
+            firstName && surname ? firstName + " " + surname : firstName
+          ).trim();
+
           localStorage.setItem("aivo_logged_in", "1");
-          localStorage.setItem("aivo_user_email", String((me && me.email) || "").trim().toLowerCase());
+          localStorage.setItem("aivo_user_email", nextEmail);
+          localStorage.setItem("aivo_profile_name", "");
+          localStorage.setItem("aivo_profile_surname", "");
+          localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+            loggedIn: true,
+            email: nextEmail,
+            name: firstName,
+            first_name: firstName,
+            surname: surname,
+            last_name: surname,
+            full_name: fullName,
+            ts: Date.now()
+          }));
         } catch (e) {}
 
         var st = document.getElementById("aivo-auth-gate-style");
