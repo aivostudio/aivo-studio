@@ -907,9 +907,36 @@
     </section>
   </main>
 
-  <nav class="bottom-nav">
-  <a href="/studio.mobile.html">Üretime Başla</a>
-<a href="/studio.mobile.html">Keşfet</a>
+  <nav class="bottom-nav" id="mobileGuestBottomNav">
+    <a href="/studio.mobile.html">Üretime Başla</a>
+    <a href="#mobilePricing">Keşfet</a>
+  </nav>
+
+  <nav class="bottom-nav mobile-app-bottom-nav" id="mobileAppBottomNav" hidden>
+    <a class="active" href="/studio.mobile.html#home">
+      <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+      <b>Ana Sayfa</b>
+    </a>
+
+    <a href="/studio.mobile.html#productions">
+      <span class="nav-icon nav-icon-productions" aria-hidden="true"></span>
+      <b>Üretimler</b>
+    </a>
+
+    <a href="/studio.mobile.html#tools">
+      <span class="nav-icon nav-icon-tools" aria-hidden="true"></span>
+      <b>Araçlar</b>
+    </a>
+
+    <a href="/studio.mobile.html#credits">
+      <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
+      <b>Krediler</b>
+    </a>
+
+    <a href="/studio.mobile.html#account">
+      <span class="nav-icon nav-icon-account" aria-hidden="true"></span>
+      <b>Hesabım</b>
+    </a>
   </nav>
 
   <script>
@@ -939,18 +966,29 @@
 
     if (!loginPill || !creditPill || !buyCreditPill) return;
 
-    function showGuest(){
-      loginPill.hidden = false;
-      creditPill.hidden = true;
-      buyCreditPill.hidden = true;
-    }
+   function showGuest(){
+  loginPill.hidden = false;
+  creditPill.hidden = true;
+  buyCreditPill.hidden = true;
 
-    function showUser(){
-      loginPill.hidden = true;
-      creditPill.hidden = false;
-      buyCreditPill.hidden = false;
-    }
+  const guestBottomNav = document.getElementById("mobileGuestBottomNav");
+  const appBottomNav = document.getElementById("mobileAppBottomNav");
 
+  if (guestBottomNav) guestBottomNav.hidden = false;
+  if (appBottomNav) appBottomNav.hidden = true;
+}
+
+   function showUser(){
+  loginPill.hidden = true;
+  creditPill.hidden = false;
+  buyCreditPill.hidden = false;
+
+  const guestBottomNav = document.getElementById("mobileGuestBottomNav");
+  const appBottomNav = document.getElementById("mobileAppBottomNav");
+
+  if (guestBottomNav) guestBottomNav.hidden = true;
+  if (appBottomNav) appBottomNav.hidden = false;
+}
     fetch("/api/auth/me", {
       credentials: "include",
       cache: "no-store"
