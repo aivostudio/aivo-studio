@@ -722,12 +722,14 @@ body {
         document.documentElement.style.visibility = "visible";
 
         try {
+            try {
           document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
             detail: { me: me }
           }));
         } catch (e) {}
 
         return;
+      }
 
       goLogin();
     })
