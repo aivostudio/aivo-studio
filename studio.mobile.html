@@ -547,8 +547,125 @@
   line-height:1.45;
   font-weight:650;
 }
+   </style>
+
+  <!-- ✅ MOBILE AUTH GATE (desktop gate'in mobile uyarlanmış kopyası) -->
+  <style id="aivo-auth-gate-style">
+    html { visibility: hidden; }
   </style>
 
+  <script>
+  (function AIVO_STUDIO_HARD_GATE(){
+    if (window.__AIVO_STUDIO_HARD_GATE__) return;
+    window.__AIVO_STUDIO_HARD_GATE__ = true;
+
+    function goIndexLogin(){
+      location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
+    }
+
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ try{ ctrl.abort(); }catch(e){} }, 2500);
+
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      signal: ctrl.signal
+    })
+    .then(async function(r){
+      clearTimeout(t);
+
+      if (r.status === 200) {
+        const me = await r.json();
+
+        try {
+          var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+          var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
+          var nextEmail = String((me && me.email) || "").trim().toLowerCase();
+
+          function firstNonEmpty() {
+            for (var i = 0; i < arguments.length; i++) {
+              var v = arguments[i];
+              if (v != null && String(v).trim()) return String(v).trim();
+            }
+            return "";
+          }
+
+          function emailToName(email) {
+            var normalized = String(email || "").trim().toLowerCase();
+            if (!normalized || normalized.indexOf("@") === -1) return "";
+            return normalized.split("@")[0].trim();
+          }
+
+          function scopedKey(baseKey, email) {
+            var normalized = String(email || "").trim().toLowerCase();
+            if (!normalized) return baseKey;
+            return baseKey + ":" + normalized;
+          }
+
+          if (prevEmail && prevEmail !== nextEmail) {
+            localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
+            localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
+          }
+
+          var firstName = firstNonEmpty(
+            me && me.first_name,
+            me && me.firstName,
+            me && me.name,
+            emailToName(nextEmail),
+            "Kullanıcı"
+          );
+
+          var surname = firstNonEmpty(
+            me && me.last_name,
+            me && me.lastName,
+            me && me.surname,
+            ""
+          );
+
+          var fullName = firstNonEmpty(
+            firstName && surname ? (firstName + " " + surname) : "",
+            firstName,
+            "Kullanıcı"
+          );
+
+          localStorage.setItem("aivo_logged_in", "1");
+          localStorage.setItem("aivo_user_email", nextEmail);
+          localStorage.setItem("aivo_profile_name", "");
+          localStorage.setItem("aivo_profile_surname", "");
+          localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+            loggedIn: true,
+            email: nextEmail,
+            name: firstName,
+            first_name: firstName,
+            surname: surname,
+            last_name: surname,
+            full_name: fullName,
+            ts: Date.now()
+          }));
+          localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
+          localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
+        } catch (e) {}
+
+        var st = document.getElementById("aivo-auth-gate-style");
+        if (st) st.remove();
+        document.documentElement.style.visibility = "visible";
+
+        try {
+          document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+            detail: { me: me }
+          }));
+        } catch (e) {}
+
+        return;
+      }
+
+      goIndexLogin();
+    })
+    .catch(function(){
+      goIndexLogin();
+    });
+  })();
+  </script>
 </head>
 
 <body>
