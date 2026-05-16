@@ -97,8 +97,8 @@ padding:58px 14px 20px;
     }
 
 .credit-pill{
-  min-height:30px;
-  padding:0 10px;
+  min-height:26px;
+  padding:0 7px;
   border-radius:999px;
   display:inline-flex;
   align-items:center;
@@ -106,13 +106,35 @@ padding:58px 14px 20px;
   background:rgba(255,255,255,.065);
   border:1px solid rgba(255,255,255,.13);
   color:rgba(255,255,255,.92);
-  font-size:11px;
+  font-size:12px;
   font-weight:850;
   letter-spacing:-.015em;
   white-space:nowrap;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
     0 8px 18px rgba(0,0,0,.16);
+}
+    [data-mobile-top-credits]{
+  animation:aivoStudioCreditAiGlow 7s ease-in-out infinite;
+}
+
+@keyframes aivoStudioCreditAiGlow{
+  0%, 100%{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 8px 18px rgba(0,0,0,.16);
+    border-color:rgba(255,255,255,.13);
+    filter:brightness(1);
+  }
+
+  50%{
+    box-shadow:
+      inset 0 0 16px rgba(236,72,153,.16),
+      0 8px 18px rgba(0,0,0,.16),
+      0 0 18px rgba(139,92,246,.36);
+    border-color:rgba(236,72,153,.62);
+    filter:brightness(1.08);
+  }
 }
 
 .topbar-credit-actions{
@@ -135,7 +157,7 @@ padding:58px 14px 20px;
 }
 
 .credit-balance-pill{
-  min-width:82px;
+  min-width:auto;
 }
 
     .hero{
