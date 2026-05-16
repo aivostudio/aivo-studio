@@ -1,6 +1,6 @@
 .aivo-assistant-launcher {
   position: fixed;
-  right: 16px;
+  right: max(16px, calc((100vw - 430px) / 2 + 16px));
   bottom: calc(88px + env(safe-area-inset-bottom));
   z-index: 9999;
   border: 1px solid rgba(255,255,255,.14);
@@ -20,8 +20,8 @@
 
 .aivo-assistant-panel {
   position: fixed;
-  right: 26px;
-  left: 26px;
+  left: max(26px, calc((100vw - 430px) / 2 + 26px));
+  right: max(26px, calc((100vw - 430px) / 2 + 26px));
   bottom: calc(126px + env(safe-area-inset-bottom));
   z-index: 9999;
   width: auto;
@@ -212,7 +212,7 @@
   }
 
   .aivo-assistant-launcher {
-    right: 16px;
+    right: max(16px, calc((100vw - 430px) / 2 + 16px));
     bottom: calc(88px + env(safe-area-inset-bottom));
   }
 }
