@@ -60,26 +60,26 @@
 }
 
 .topbar{
-  position:fixed;
-  left:0;
-  right:0;
+  position:sticky;
   top:0;
-  z-index:120;
-  width:min(430px,100%);
-  margin:0 auto;
-  min-height:86px;
+  z-index:90;
+
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
+
+  margin:-12px -14px 14px;
+  padding:12px 14px 20px;
   background:
-    linear-gradient(180deg, rgba(7,9,20,.82), rgba(36,27,75,.48), rgba(36,27,75,0));
+    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
+    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
+    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
   border-bottom:0;
   box-shadow:none;
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-  pointer-events:auto;
+
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
 }
     .logo{
       display:flex;
