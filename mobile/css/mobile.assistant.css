@@ -1,2 +1,238 @@
-/* AIVO Mobile Assistant styles */
-/* Desktop assistant.widget.js içindeki gömülü CSS buraya taşınacak. */
+/* AIVO Mobile Assistant */
+
+#mobileAssistantRoot{
+  position:relative;
+  z-index:120;
+}
+
+body.aivo-mobile-assistant-open{
+  overflow:hidden;
+  touch-action:none;
+}
+
+.aivo-assistant-launcher{
+  position:fixed;
+  right:16px;
+  bottom:calc(92px + env(safe-area-inset-bottom));
+  z-index:130;
+  min-height:42px;
+  padding:0 14px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,.24), transparent 32%),
+    linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  font:900 12px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:-.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 14px 34px rgba(139,92,246,.34),
+    0 10px 28px rgba(0,0,0,.34);
+  cursor:pointer;
+}
+
+.aivo-assistant-launcher:active{
+  transform:scale(.97);
+}
+
+.aivo-assistant-panel{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:140;
+  width:min(430px,100%);
+  max-height:calc(86vh - env(safe-area-inset-top));
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-radius:28px 28px 0 0;
+  border:1px solid rgba(255,255,255,.13);
+  border-bottom:0;
+  background:
+    radial-gradient(260px 140px at 12% 0%, rgba(139,92,246,.26), transparent 66%),
+    radial-gradient(260px 140px at 92% 0%, rgba(236,72,153,.20), transparent 66%),
+    rgba(8,10,24,.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 -20px 70px rgba(0,0,0,.54);
+  backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
+  transform:translateY(110%);
+  opacity:0;
+  pointer-events:none;
+  transition:transform .24s ease, opacity .24s ease;
+}
+
+.aivo-assistant-panel.is-open{
+  transform:translateY(0);
+  opacity:1;
+  pointer-events:auto;
+}
+
+.aivo-assistant-header{
+  padding:16px 16px 12px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.aivo-assistant-title-wrap{
+  min-width:0;
+}
+
+.aivo-assistant-title{
+  margin:0;
+  color:#fff;
+  font:950 17px/1.15 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  letter-spacing:-.035em;
+}
+
+.aivo-assistant-subtitle{
+  margin:5px 0 0;
+  color:rgba(255,255,255,.58);
+  font:650 11px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+.aivo-assistant-close{
+  width:36px;
+  height:36px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  background:rgba(255,255,255,.07);
+  color:#fff;
+  font-size:20px;
+  line-height:1;
+}
+
+.aivo-assistant-quick{
+  padding:10px 12px 0;
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+.aivo-assistant-quick::-webkit-scrollbar{
+  display:none;
+}
+
+.aivo-assistant-chip{
+  flex:0 0 auto;
+  min-height:34px;
+  padding:0 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.065);
+  color:#fff;
+  font:850 11px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  white-space:nowrap;
+}
+
+.aivo-assistant-messages{
+  flex:1;
+  min-height:240px;
+  overflow:auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  -webkit-overflow-scrolling:touch;
+}
+
+.aivo-assistant-message{
+  max-width:86%;
+  padding:10px 12px;
+  border-radius:17px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  font:500 13px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+.aivo-assistant-message.user{
+  align-self:flex-end;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  border-bottom-right-radius:7px;
+  box-shadow:0 10px 24px rgba(139,92,246,.22);
+}
+
+.aivo-assistant-message.assistant{
+  align-self:flex-start;
+  background:rgba(255,255,255,.075);
+  color:rgba(255,255,255,.92);
+  border:1px solid rgba(255,255,255,.075);
+  border-bottom-left-radius:7px;
+}
+
+.aivo-assistant-message.system{
+  align-self:center;
+  max-width:94%;
+  background:transparent;
+  color:rgba(255,255,255,.52);
+  font-size:10px;
+  padding:2px 7px;
+}
+
+.aivo-assistant-form{
+  padding:10px 12px calc(12px + env(safe-area-inset-bottom));
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
+  border-top:1px solid rgba(255,255,255,.08);
+  background:rgba(8,10,24,.72);
+}
+
+.aivo-assistant-input{
+  flex:1;
+  min-width:0;
+  height:44px;
+  min-height:44px;
+  max-height:118px;
+  padding:12px 13px;
+  resize:none;
+  border-radius:17px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.065);
+  color:#fff;
+  outline:none;
+  overflow-y:auto;
+  box-sizing:border-box;
+  font:600 13px/1.35 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+
+.aivo-assistant-input::placeholder{
+  color:rgba(255,255,255,.38);
+}
+
+.aivo-assistant-send{
+  flex:0 0 auto;
+  height:44px;
+  min-width:74px;
+  padding:0 13px;
+  border:0;
+  border-radius:17px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  font:950 12px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  box-shadow:0 10px 26px rgba(139,92,246,.24);
+}
+
+.aivo-assistant-send[disabled],
+.aivo-assistant-input[disabled]{
+  opacity:.58;
+}
+
+@media (max-height:700px){
+  .aivo-assistant-panel{
+    max-height:92vh;
+  }
+
+  .aivo-assistant-messages{
+    min-height:190px;
+  }
+}
