@@ -907,9 +907,12 @@
     </section>
   </main>
 
-  <nav class="bottom-nav">
-  <a href="/studio.mobile.html">Üretime Başla</a>
-<a href="/studio.mobile.html">Keşfet</a>
+   <nav class="bottom-nav" id="mobileIndexBottomNav" hidden>
+    <a href="/studio.mobile.html#home">Ana Sayfa</a>
+    <a href="/studio.mobile.html#productions">Üretimler</a>
+    <a href="/studio.mobile.html#tools">Araçlar</a>
+    <a href="/studio.mobile.html#credits">Krediler</a>
+    <a href="/studio.mobile.html#account">Hesabım</a>
   </nav>
 
   <script>
@@ -945,11 +948,16 @@
       buyCreditPill.hidden = true;
     }
 
-    function showUser(){
-      loginPill.hidden = true;
-      creditPill.hidden = false;
-      buyCreditPill.hidden = false;
-    }
+   function showUser(){
+  loginPill.hidden = true;
+  creditPill.hidden = false;
+  buyCreditPill.hidden = false;
+
+  const bottomNav = document.getElementById("mobileIndexBottomNav");
+  if (bottomNav) {
+    bottomNav.hidden = false;
+  }
+}
 
     fetch("/api/auth/me", {
       credentials: "include",
