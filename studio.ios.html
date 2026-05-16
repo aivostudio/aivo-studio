@@ -2324,5 +2324,20 @@ if (data.verified !== true) {
   hitTraffic();
 })();
 </script>
+  <script>
+(function AIVO_STUDIO_CREDIT_PILL_TAP_HELPER(){
+  const pill = document.querySelector("[data-mobile-credit-balance]");
+  if (!pill) return;
+
+  pill.addEventListener("click", function(){
+    pill.classList.add("is-credit-focus");
+
+    window.clearTimeout(pill.__aivoCreditFocusTimer);
+    pill.__aivoCreditFocusTimer = window.setTimeout(function(){
+      pill.classList.remove("is-credit-focus");
+    }, 2000);
+  });
+})();
+</script>
 </body>
 </html>
