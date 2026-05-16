@@ -409,11 +409,72 @@
       border:1px solid rgba(255,255,255,.08);
     }
 
-    .bottom-nav a:first-child{
-      background:linear-gradient(135deg,#8b5cf6,#ec4899);
-      box-shadow:0 14px 34px rgba(139,92,246,.30);
-      border-color:rgba(255,255,255,.12);
-    }
+  .bottom-nav a:first-child{
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  box-shadow:0 14px 34px rgba(139,92,246,.30);
+  border-color:rgba(255,255,255,.12);
+}
+
+.mobile-app-bottom-nav{
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  padding:10px 8px;
+}
+
+.mobile-app-bottom-nav a{
+  min-height:58px;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  font-size:10px;
+  font-weight:900;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.mobile-app-bottom-nav a.active{
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  box-shadow:0 14px 34px rgba(139,92,246,.26);
+  border-color:rgba(255,255,255,.12);
+}
+
+.mobile-app-bottom-nav b{
+  margin:0;
+  font-size:10px;
+  line-height:1;
+}
+
+.nav-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  border-radius:6px;
+  background:linear-gradient(135deg,#fff,#d8b4fe,#67e8f9);
+  opacity:.95;
+}
+
+.nav-icon-home{
+  clip-path:polygon(50% 0%,100% 38%,100% 100%,0 100%,0 38%);
+}
+
+.nav-icon-productions{
+  clip-path:polygon(0 0,100% 0,100% 100%,0 100%,18% 50%);
+}
+
+.nav-icon-tools{
+  clip-path:polygon(50% 0%,61% 35%,100% 50%,61% 65%,50% 100%,39% 65%,0 50%,39% 35%);
+}
+
+.nav-icon-credits{
+  clip-path:inset(0 round 4px);
+}
+
+.nav-icon-account{
+  clip-path:circle(48% at 50% 50%);
+}
         .tool-icon{
       position:relative;
       width:54px;
