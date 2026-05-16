@@ -534,8 +534,10 @@
       <img src="/aivo-logo.png" alt="AIVO">
     </a>
 
-    <div class="top-actions">
-    <a class="pill" href="/studio.mobile.html">Giriş Yap</a>
+       <div class="top-actions">
+      <a class="pill" id="mobileLoginPill" href="/studio.mobile.html">Giriş Yap</a>
+      <span class="pill" id="mobileCreditPill" hidden>Kredi --</span>
+      <a class="pill" id="mobileBuyCreditPill" href="#mobilePricing" hidden>Kredi Al</a>
     </div>
   </header>
 
@@ -925,6 +927,47 @@
         }
       });
     })();
+  </script>
+    <script>
+  (function AIVO_MOBILE_INDEX_AUTH_UI(){
+    const loginPill = document.getElementById("mobileLoginPill");
+    const creditPill = document.getElementById("mobileCreditPill");
+    const buyCreditPill = document.getElementById("mobileBuyCreditPill");
+
+    if (!loginPill || !creditPill || !buyCreditPill) return;
+
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store"
+    })
+    .then(function(res){
+      if (!res.ok) return null;
+      return res.json();
+    })
+    .then(function(me){
+      if (!me || !me.email) return;
+
+      loginPill.hidden = true;
+      creditPill.hidden = false;
+      buyCreditPill.hidden = false;
+
+      return fetch("/api/credits/get", {
+        credentials: "include",
+        cache: "no-store"
+      });
+    })
+    .then(function(res){
+      if (!res || !res.ok) return null;
+      return res.json();
+    })
+    .then(function(data){
+      if (!data) return;
+
+      const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+      creditPill.textContent = "Kredi " + creditValue;
+    })
+    .catch(function(){});
+  })();
   </script>
     <script>
   (function AIVO_MOBILE_TRAFFIC_HIT(){
