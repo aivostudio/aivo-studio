@@ -101,6 +101,26 @@ font-size:12px;
       white-space:nowrap;
       box-shadow:0 10px 26px rgba(0,0,0,.22);
     }
+  #mobileBuyCreditPill{
+  animation:aivoCreditAiGlow 7s ease-in-out infinite;
+}
+
+@keyframes aivoCreditAiGlow{
+  0%, 100%{
+    box-shadow:0 10px 26px rgba(0,0,0,.22);
+    border-color:rgba(139,92,246,.48);
+    filter:brightness(1);
+  }
+
+  50%{
+    box-shadow:
+      0 10px 26px rgba(0,0,0,.22),
+      0 0 18px rgba(139,92,246,.36),
+      inset 0 0 16px rgba(236,72,153,.16);
+    border-color:rgba(236,72,153,.62);
+    filter:brightness(1.08);
+  }
+}
 
 .wrap{
   width:min(430px,100%);
