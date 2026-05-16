@@ -55,22 +55,22 @@
   z-index:120;
   width:min(430px,100%);
   margin:0 auto;
-  min-height:64px;
+  min-height:86px;
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:calc(56px + env(safe-area-inset-top)) 18px 14px;
-  background:#241b4b;
+  padding:calc(18px + env(safe-area-inset-top)) 18px 12px;
+  background:linear-gradient(180deg, rgba(7,9,20,.82), rgba(36,27,75,.48), rgba(36,27,75,0));
   border-bottom:0;
   box-shadow:none;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
 }
 .logo{
   display:flex;
   align-items:center;
   gap:8px;
-  position:relative;
-top:18px;
 }
 
   .logo img{
@@ -83,8 +83,6 @@ top:18px;
   display:flex;
   align-items:center;
   gap:5px;
-  position:relative;
-  top:18px;
 }
 
   .pill{
