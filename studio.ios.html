@@ -1884,7 +1884,9 @@ if (policyBackBtn) {
     });
   } catch (err) {}
 
-  try {
+   try {
+    localStorage.removeItem("aivo_logged_in");
+    localStorage.removeItem("aivo_user_email");
     localStorage.removeItem("aivo_auth_unified_v1");
     localStorage.removeItem("aivo_profile_name");
     localStorage.removeItem("aivo_profile_surname");
