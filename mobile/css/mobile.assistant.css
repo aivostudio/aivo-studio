@@ -20,14 +20,14 @@
 
 .aivo-assistant-panel {
   position: fixed;
-  right: 18px;
-  left: 18px;
-  bottom: calc(134px + env(safe-area-inset-bottom));
+  right: 26px;
+  left: 26px;
+  bottom: calc(126px + env(safe-area-inset-bottom));
   z-index: 9999;
   width: auto;
-  max-width: none;
-  height: 440px;
-  max-height: calc(100vh - 210px);
+  max-width: 378px;
+  height: 48vh;
+  max-height: 430px;
   display: none;
   flex-direction: column;
   overflow: hidden;
@@ -202,13 +202,13 @@
 
 @media (max-width: 640px) {
   .aivo-assistant-panel {
-    right: 18px;
-    left: 18px;
-    bottom: calc(134px + env(safe-area-inset-bottom));
+    right: 26px;
+    left: 26px;
+    bottom: calc(126px + env(safe-area-inset-bottom));
     width: auto;
-    max-width: none;
-    height: 58vh;
-    max-height: calc(100vh - 210px);
+    max-width: 378px;
+    height: 48vh;
+    max-height: 430px;
   }
 
   .aivo-assistant-launcher {
