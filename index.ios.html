@@ -705,6 +705,262 @@
         </div>
       </a>
     </section>
+    <section id="mobilePricing" class="mobile-pricing">
+  <style>
+    .mobile-pricing{
+      margin-top:34px;
+      padding:20px 0 8px;
+    }
+
+    .mobile-pricing-hero{
+      padding:22px 18px;
+      border-radius:26px;
+      text-align:center;
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.26), transparent 62%),
+        radial-gradient(220px 120px at 100% 0%, rgba(56,189,248,.16), transparent 62%),
+        rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 18px 42px rgba(0,0,0,.24);
+    }
+
+    .mobile-pricing-pill{
+      width:max-content;
+      margin:0 auto 10px;
+      padding:8px 13px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:12px;
+      font-weight:950;
+      color:rgba(255,255,255,.82);
+    }
+
+    .mobile-pricing-title{
+      margin:0;
+      font-size:30px;
+      line-height:1;
+      letter-spacing:-.055em;
+      font-weight:950;
+    }
+
+    .mobile-pricing-sub{
+      margin:10px auto 0;
+      max-width:320px;
+      color:rgba(255,255,255,.68);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:750;
+    }
+
+    .mobile-price-list{
+      display:grid;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .mobile-price-card{
+      padding:18px;
+      border-radius:26px;
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.20), transparent 62%),
+        linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 18px 42px rgba(0,0,0,.24);
+    }
+
+    .mobile-price-card.is-popular{
+      border-color:rgba(236,72,153,.46);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 0 0 1px rgba(236,72,153,.12), 0 20px 48px rgba(0,0,0,.28);
+    }
+
+    .mobile-price-badge{
+      width:max-content;
+      max-width:100%;
+      padding:7px 11px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+      font-weight:950;
+    }
+
+    .mobile-price-name{
+      margin:14px 0 10px;
+      font-size:22px;
+      line-height:1.1;
+      font-weight:950;
+      letter-spacing:-.035em;
+    }
+
+    .mobile-price-amount{
+      margin:0;
+      font-size:42px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.055em;
+    }
+
+    .mobile-price-amount span{
+      font-size:18px;
+      color:rgba(255,255,255,.62);
+      letter-spacing:-.03em;
+    }
+
+    .mobile-price-metric{
+      margin:8px 0 14px;
+      color:rgba(255,255,255,.62);
+      font-size:13px;
+      font-weight:850;
+    }
+
+    .mobile-price-list-items{
+      margin:14px 0 18px;
+      padding:14px 0 0;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:grid;
+      gap:9px;
+    }
+
+    .mobile-price-list-items div{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+      font-weight:850;
+    }
+
+    .mobile-price-list-items div::before{
+      content:"✓";
+      width:22px;
+      height:22px;
+      border-radius:9px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      color:#fff;
+      font-size:13px;
+      flex:0 0 auto;
+    }
+
+    .mobile-price-btn{
+      width:100%;
+      min-height:52px;
+      border:0;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+      font-size:15px;
+      font-weight:950;
+      box-shadow:0 18px 42px rgba(139,92,246,.28);
+    }
+
+    .mobile-pricing-info{
+      margin-top:16px;
+      padding:18px;
+      border-radius:26px;
+      text-align:center;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.70);
+      font-size:13px;
+      line-height:1.5;
+      font-weight:750;
+    }
+
+    .mobile-pricing-info strong{
+      display:block;
+      margin-bottom:8px;
+      color:#fff;
+      font-size:18px;
+      font-weight:950;
+    }
+  </style>
+
+  <div class="mobile-pricing-hero">
+    <div class="mobile-pricing-pill">AIVO Krediler</div>
+    <h2 class="mobile-pricing-title">Kredi Paketleri</h2>
+    <p class="mobile-pricing-sub">Sana uygun paketi seç, üretime giriş yaptıktan sonra devam et.</p>
+  </div>
+
+  <div class="mobile-price-list">
+    <article class="mobile-price-card">
+      <div class="mobile-price-badge">Başlangıç</div>
+      <h3 class="mobile-price-name">Yeni Kullanıcı</h3>
+      <p class="mobile-price-amount">199₺ <span>/ 25 kredi</span></p>
+      <div class="mobile-price-metric">Kredi başına ₺7.96</div>
+      <div class="mobile-price-list-items">
+        <div>25 Kredi</div>
+        <div>Temel kalite üretim</div>
+        <div>Standart hız</div>
+        <div>Kapak + Müzik</div>
+        <div>Anında Aktivasyon</div>
+        <div>Güvenli Ödeme</div>
+      </div>
+      <a class="mobile-price-btn" href="/studio.ios.html#credits">Paketi seç</a>
+    </article>
+
+    <article class="mobile-price-card is-popular">
+      <div class="mobile-price-badge">★ En Popüler</div>
+      <h3 class="mobile-price-name">Standart Paket</h3>
+      <p class="mobile-price-amount">699₺ <span>/ 100 kredi</span></p>
+      <div class="mobile-price-metric">Kredi başına ₺6.99</div>
+      <div class="mobile-price-list-items">
+        <div>100 Kredi</div>
+        <div>Daha hızlı üretim</div>
+        <div>Öncelikli sıra</div>
+        <div>Müzik + Kapak</div>
+        <div>Anında Aktivasyon</div>
+        <div>Güvenli Ödeme</div>
+      </div>
+      <a class="mobile-price-btn" href="/studio.ios.html#credits">Paketi seç</a>
+    </article>
+
+    <article class="mobile-price-card">
+      <div class="mobile-price-badge">Pro</div>
+      <h3 class="mobile-price-name">Yaratıcı Üretici</h3>
+      <p class="mobile-price-amount">1.299₺ <span>/ 200 kredi</span></p>
+      <div class="mobile-price-metric">Kredi başına ₺6.49</div>
+      <div class="mobile-price-list-items">
+        <div>200 Kredi</div>
+        <div>Premium kalite</div>
+        <div>Öncelikli destek</div>
+        <div>Ticari kullanım</div>
+        <div>Kapak + Müzik + Video</div>
+        <div>Güvenli Ödeme</div>
+      </div>
+      <a class="mobile-price-btn" href="/studio.ios.html#credits">Paketi seç</a>
+    </article>
+
+    <article class="mobile-price-card">
+      <div class="mobile-price-badge">Stüdyo</div>
+      <h3 class="mobile-price-name">Stüdyo / Ajans</h3>
+      <p class="mobile-price-amount">2.999₺ <span>/ 500 kredi</span></p>
+      <div class="mobile-price-metric">Kredi başına ₺6.00</div>
+      <div class="mobile-price-list-items">
+        <div>500 Kredi</div>
+        <div>Takım kullanımı</div>
+        <div>Özel destek</div>
+        <div>Ticari kullanım</div>
+        <div>Yüksek hacimli üretim</div>
+        <div>Güvenli Ödeme</div>
+      </div>
+      <a class="mobile-price-btn" href="/studio.ios.html#credits">Paketi seç</a>
+    </article>
+  </div>
+
+  <div class="mobile-pricing-info">
+    <strong>Bilgilendirme</strong>
+    Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına tanımlanır ve AIVO Studio’da üretim için kullanılır.
+  </div>
+</section>
   </main>
 
   <nav class="bottom-nav" id="mobileGuestBottomNav">
