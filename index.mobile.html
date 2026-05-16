@@ -528,6 +528,73 @@
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10v4h4l5 4V6l-5 4H4z'/%3E%3Cpath d='M17 9c1 1 1.5 2 1.5 3s-.5 2-1.5 3'/%3E%3Cpath d='M19.5 6.5C21 8 22 9.8 22 12s-1 4-2.5 5.5'/%3E%3C/svg%3E");
   mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10v4h4l5 4V6l-5 4H4z'/%3E%3Cpath d='M17 9c1 1 1.5 2 1.5 3s-.5 2-1.5 3'/%3E%3Cpath d='M19.5 6.5C21 8 22 9.8 22 12s-1 4-2.5 5.5'/%3E%3C/svg%3E");
 }
+    #mobileAppBottomNav.mobile-app-bottom-nav{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  z-index:80 !important;
+  width:min(430px,100%) !important;
+  height:74px !important;
+  margin:0 auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,1fr) !important;
+  gap:0 !important;
+  padding:7px 10px calc(7px + env(safe-area-inset-bottom)) !important;
+  border-radius:0 !important;
+  background:rgba(5,7,16,.94) !important;
+  border:0 !important;
+  border-top:1px solid rgba(139,92,246,.28) !important;
+  box-shadow:0 -16px 36px rgba(0,0,0,.32) !important;
+  backdrop-filter:blur(18px) !important;
+  -webkit-backdrop-filter:blur(18px) !important;
+}
+
+#mobileAppBottomNav[hidden]{
+  display:none !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a{
+  min-height:54px !important;
+  border-radius:16px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  background:transparent !important;
+  border:0 !important;
+  color:rgba(255,255,255,.52) !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  box-shadow:none !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a span{
+  width:38px !important;
+  height:38px !important;
+  border-radius:999px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:rgba(255,255,255,.075) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a b{
+  font-size:10px !important;
+  line-height:1 !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a.active{
+  color:#fff !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a.active span{
+  background:linear-gradient(135deg,#8b5cf6,#ec4899) !important;
+  border-color:rgba(255,255,255,.18) !important;
+  box-shadow:0 0 22px rgba(139,92,246,.34) !important;
+}
   </style>
 </head>
 
