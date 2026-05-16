@@ -1178,5 +1178,50 @@
   });
 })();
 </script>
+<script>
+(function AIVO_MOBILE_STUDIO_TRANSITION_COVER(){
+  document.addEventListener("click", function(e){
+    const link = e.target.closest('a[href^="/studio.mobile.html"]');
+    if (!link) return;
+
+    let cover = document.getElementById("aivoStudioTransitionCover");
+
+    if (!cover) {
+      cover = document.createElement("div");
+      cover.id = "aivoStudioTransitionCover";
+      cover.innerHTML = '<div class="aivo-studio-transition-logo">AIVO</div>';
+      document.body.appendChild(cover);
+    }
+
+    cover.hidden = false;
+  }, true);
+})();
+</script>
+
+<style>
+#aivoStudioTransitionCover{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#070914;
+}
+
+#aivoStudioTransitionCover[hidden]{
+  display:none !important;
+}
+
+.aivo-studio-transition-logo{
+  font-size:28px;
+  font-weight:950;
+  letter-spacing:-.06em;
+  background:linear-gradient(135deg,#38bdf8,#8b5cf6,#ec4899);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+</style>
 </body>
 </html>
