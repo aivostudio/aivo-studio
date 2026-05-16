@@ -26,8 +26,7 @@
   const launcher = document.createElement("button");
   launcher.type = "button";
   launcher.className = "aivo-assistant-launcher";
-  launcher.textContent = "Kredi AI";
-
+  launcher.textContent = "AI Yardım";
   const panel = document.createElement("section");
   panel.className = "aivo-assistant-panel";
   panel.innerHTML = `
