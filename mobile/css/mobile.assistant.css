@@ -207,7 +207,7 @@
     bottom: calc(126px + env(safe-area-inset-bottom));
     width: auto;
     max-width: 378px;
-    height: 48vh;
+   height: 44vh;
     max-height: 430px;
   }
 
