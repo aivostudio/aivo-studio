@@ -600,6 +600,26 @@ body {
   touch-action:manipulation;
 }
   </style>
+<script>
+(function AIVO_MOBILE_START_ROUTE(){
+  try {
+    const hash = window.location.hash;
+
+    if (hash && hash !== "#home") {
+      document.documentElement.classList.add("aivo-hash-routing-pending");
+    }
+
+    if (hash === "#credits") document.documentElement.classList.add("aivo-start-credits");
+    if (hash === "#music") document.documentElement.classList.add("aivo-start-music");
+    if (hash === "#cover") document.documentElement.classList.add("aivo-start-cover");
+    if (hash === "#photofx") document.documentElement.classList.add("aivo-start-photofx");
+    if (hash === "#video") document.documentElement.classList.add("aivo-start-video");
+    if (hash === "#lipsync") document.documentElement.classList.add("aivo-start-lipsync");
+    if (hash === "#atmo") document.documentElement.classList.add("aivo-start-atmo");
+    if (hash === "#cartoon") document.documentElement.classList.add("aivo-start-cartoon");
+  } catch (err) {}
+})();
+</script>
 </head>
 
 <body>
