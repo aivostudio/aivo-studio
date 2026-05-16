@@ -115,8 +115,12 @@
     </form>
   `;
 
-  document.body.appendChild(launcher);
-  document.body.appendChild(panel);
+  const mobileAssistantRoot =
+    document.getElementById("mobileAssistantRoot") ||
+    document.body;
+
+  mobileAssistantRoot.appendChild(launcher);
+  mobileAssistantRoot.appendChild(panel);
 
   const closeBtn = panel.querySelector(".aivo-assistant-close");
   const quickButtons = Array.from(panel.querySelectorAll(".aivo-assistant-chip"));
