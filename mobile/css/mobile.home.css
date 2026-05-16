@@ -766,3 +766,6 @@ body{
 .mobile-home-section::before{
   display:none !important;
 }
+#mobileToolsMount .mobile-tools-grid{
+  margin-top:18px;
+}
