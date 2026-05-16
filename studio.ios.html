@@ -2068,7 +2068,8 @@ if (backBtn) {
 if (window.location.hash === "#credits" && creditsNav) {
   creditsNav.click();
 }
-   if (window.location.hash === "#productions" && productionsNav) {
+
+if (window.location.hash === "#productions" && productionsNav) {
   productionsNav.click();
 }
 
@@ -2079,6 +2080,9 @@ if (window.location.hash === "#tools" && toolsNav) {
 if (window.location.hash === "#account" && accountNav) {
   accountNav.click();
 }
+
+document.documentElement.classList.remove("aivo-hash-routing-pending");
+document.documentElement.style.visibility = "visible";
 
 if (window.location.hash === "#music") {
   activeMobileModule = "music";
