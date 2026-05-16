@@ -995,30 +995,22 @@
     });
   })();
   </script>
-  <script>
+<script>
 (function AIVO_MOBILE_PRICING_CTA_AUTH(){
   const pricingCta = document.getElementById("mobilePricingCta");
   if (!pricingCta) return;
 
   pricingCta.addEventListener("click", function(e){
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store"
-    })
-    .then(function(res){
-      if (!res.ok) return null;
-      return res.json();
-    })
-    .then(function(me){
-      const user = me && (me.user || me);
-      const email = String(user && user.email ? user.email : "").trim();
+    try {
+      const isLoggedIn =
+        localStorage.getItem("aivo_logged_in") === "1" ||
+        String(localStorage.getItem("aivo_user_email") || "").includes("@");
 
-      if (!email) return;
+      if (!isLoggedIn) return;
 
       e.preventDefault();
       window.location.href = "/studio.mobile.html#credits";
-    })
-    .catch(function(){});
+    } catch (err) {}
   });
 })();
 </script>
