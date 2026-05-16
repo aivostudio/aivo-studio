@@ -836,6 +836,9 @@ try {
   const loggedIn = hasSession();
 
   if (loggedIn) {
+    if (guestBottomNav) guestBottomNav.hidden = true;
+    if (appBottomNav) appBottomNav.hidden = false;
+
     if (loginPill) loginPill.hidden = true;
 
     if (creditPill) {
@@ -864,6 +867,9 @@ try {
       pricingBtn.href = "/studio.ios.html#credits";
     }
   } else {
+    if (guestBottomNav) guestBottomNav.hidden = false;
+    if (appBottomNav) appBottomNav.hidden = true;
+
     if (loginPill) {
       loginPill.hidden = false;
       loginPill.href = "/studio.ios.html";
