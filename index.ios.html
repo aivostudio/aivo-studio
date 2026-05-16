@@ -1068,76 +1068,96 @@ try {
   } catch (err) {}
 })();
 </script>
-  <script>
-(function () {
-  function hasSession() {
-    try {
-      return !!(
-        localStorage.getItem("aivo_auth_unified_v1") ||
-        localStorage.getItem("aivo_token") ||
-        document.cookie.includes("aivo_session")
-      );
-    } catch (e) {
-      return false;
-    }
-  }
-
+<script>
+(function AIVO_IOS_INDEX_AUTH_UI(){
   const loginPill = document.getElementById("mobileLoginPill");
   const creditPill = document.getElementById("mobileCreditPill");
   const buyCreditPill = document.getElementById("mobileBuyCreditPill");
-  const pricingBtn = document.getElementById("mobilePricingCta");
+  const pricingCta = document.getElementById("mobilePricingCta");
   const guestBottomNav = document.getElementById("mobileGuestBottomNav");
   const appBottomNav = document.getElementById("mobileAppBottomNav");
 
-  const loggedIn = hasSession();
+  if (!loginPill || !creditPill || !buyCreditPill) return;
 
-  if (loggedIn) {
-    if (guestBottomNav) guestBottomNav.hidden = true;
-    if (appBottomNav) appBottomNav.hidden = false;
+  function showGuest(){
+    loginPill.hidden = false;
+    creditPill.hidden = true;
+    buyCreditPill.hidden = true;
 
-    if (loginPill) loginPill.hidden = true;
-
-    if (creditPill) {
-      creditPill.hidden = false;
-
-      try {
-        const raw = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
-        const credits =
-          raw.credits ??
-          raw.credit ??
-          raw.balance ??
-          "--";
-
-        creditPill.textContent = "Kredi " + credits;
-      } catch (e) {
-        creditPill.textContent = "Kredi --";
-      }
-    }
-
-    if (buyCreditPill) {
-      buyCreditPill.hidden = false;
-      buyCreditPill.href = "/studio.ios.html#credits";
-    }
-
-    if (pricingBtn) {
-      pricingBtn.href = "/studio.ios.html#credits";
-    }
-  } else {
     if (guestBottomNav) guestBottomNav.hidden = false;
     if (appBottomNav) appBottomNav.hidden = true;
 
-    if (loginPill) {
-      loginPill.hidden = false;
-      loginPill.href = "/studio.ios.html";
-    }
-
-    if (creditPill) creditPill.hidden = true;
-    if (buyCreditPill) buyCreditPill.hidden = true;
-
-    if (pricingBtn) {
-      pricingBtn.href = "#mobilePricing";
+    if (pricingCta) {
+      pricingCta.setAttribute("href", "#mobilePricing");
     }
   }
+
+  function showUser(){
+    loginPill.hidden = true;
+    creditPill.hidden = false;
+    buyCreditPill.hidden = false;
+
+    if (guestBottomNav) guestBottomNav.hidden = true;
+    if (appBottomNav) appBottomNav.hidden = false;
+
+    if (pricingCta) {
+      pricingCta.setAttribute("href", "/studio.ios.html#credits");
+    }
+  }
+
+  try {
+    const quickLoggedIn =
+      localStorage.getItem("aivo_logged_in") === "1" ||
+      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+
+    if (quickLoggedIn) {
+      showUser();
+    }
+  } catch (err) {}
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store"
+  })
+  .then(function(res){
+    if (!res.ok) {
+      showGuest();
+      return null;
+    }
+
+    return res.json();
+  })
+  .then(function(me){
+    if (!me) return;
+
+    const user = me.user || me;
+    const email = String(user.email || "").trim();
+
+    if (!email) {
+      showGuest();
+      return;
+    }
+
+    showUser();
+
+    return fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store"
+    });
+  })
+  .then(function(res){
+    if (!res || !res.ok) return null;
+    return res.json();
+  })
+  .then(function(data){
+    if (!data) return;
+
+    const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+    creditPill.textContent = "Kredi " + creditValue;
+  })
+  .catch(function(){
+    showGuest();
+  });
 })();
 </script>
 </body>
