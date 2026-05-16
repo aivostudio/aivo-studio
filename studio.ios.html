@@ -2268,24 +2268,7 @@ if (data.verified !== true) {
   }
 });
 </script>
-<script>
-(function AIVO_MOBILE_HASH_READY(){
-  try {
-    function unlock(){
-      if (!document.documentElement.classList.contains("aivo-hash-routing-pending")) return;
 
-      document.documentElement.classList.remove("aivo-hash-routing-pending");
-      document.documentElement.style.visibility = "visible";
-    }
-
-    window.addEventListener("load", function(){
-      setTimeout(unlock, 450);
-    });
-
-    setTimeout(unlock, 2200);
-  } catch (err) {}
-})();
-</script>
 <script>
 (function AIVO_MOBILE_PRESENCE_PING(){
   try {
