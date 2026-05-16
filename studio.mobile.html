@@ -1941,6 +1941,62 @@ if (backBtn) {
     if (window.location.hash === "#credits" && creditsNav) {
   creditsNav.click();
 }
+    if (window.location.hash === "#music") {
+  activeMobileModule = "music";
+  homeMount.hidden = true;
+  showMusic();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#cover") {
+  activeMobileModule = "cover";
+  homeMount.hidden = true;
+  showCover();
+  setCoverLibraryOnly(false);
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#photofx") {
+  activeMobileModule = "photofx";
+  homeMount.hidden = true;
+  showPhotoFx();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#video") {
+  activeMobileModule = "video";
+  homeMount.hidden = true;
+  showVideo();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#lipsync") {
+  activeMobileModule = "lipsync";
+  homeMount.hidden = true;
+  showLipsync();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#atmo") {
+  activeMobileModule = "atmo";
+  homeMount.hidden = true;
+  showAtmo();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#cartoon") {
+  activeMobileModule = "cartoon";
+  homeMount.hidden = true;
+  showCartoon();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 document.addEventListener("click", function(e){
   const btn = e.target.closest("[data-mobile-tool]");
   if (!btn) return;
