@@ -534,8 +534,10 @@
       <img src="/aivo-logo.png" alt="AIVO">
     </a>
 
-    <div class="top-actions">
-    <a class="pill" href="/login.ios.html?returnTo=/studio.ios.html">Giriş Yap</a>
+       <div class="top-actions">
+      <a class="pill" id="mobileLoginPill" href="/studio.ios.html" hidden>Giriş Yap</a>
+      <span class="pill" id="mobileCreditPill" hidden>Kredi --</span>
+      <a class="pill" id="mobileBuyCreditPill" href="/studio.ios.html#credits" hidden>Kredi Al</a>
     </div>
   </header>
 
@@ -554,11 +556,10 @@
         Müzik, kapak, video ve çizgifilm üretimini mobilde başlat. Fikrini yaz, AIVO üretimi senin için hazırlasın.
       </p>
 
-      <div class="cta-row">
-     <a class="btn btn-primary" href="/login.ios.html?returnTo=/studio.ios.html">Studio’ya Gir →</a>
-<a class="btn btn-ghost" href="/login.ios.html?returnTo=/studio.ios.html#credits">Fiyatları Gör</a>
+          <div class="cta-row">
+        <a class="btn btn-primary" href="/studio.ios.html">Studio’ya Gir →</a>
+        <a class="btn btn-ghost" id="mobilePricingCta" href="#mobilePricing">Fiyatları Gör</a>
       </div>
-
       <div class="video-card">
         <div class="video-head">
           <div>
@@ -721,6 +722,70 @@ try {
       })
     }).catch(function(){});
   } catch (err) {}
+})();
+</script>
+  <script>
+(function () {
+  function hasSession() {
+    try {
+      return !!(
+        localStorage.getItem("aivo_auth_unified_v1") ||
+        localStorage.getItem("aivo_token") ||
+        document.cookie.includes("aivo_session")
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  const loginPill = document.getElementById("mobileLoginPill");
+  const creditPill = document.getElementById("mobileCreditPill");
+  const buyCreditPill = document.getElementById("mobileBuyCreditPill");
+  const pricingBtn = document.getElementById("mobilePricingCta");
+
+  const loggedIn = hasSession();
+
+  if (loggedIn) {
+    if (loginPill) loginPill.hidden = true;
+
+    if (creditPill) {
+      creditPill.hidden = false;
+
+      try {
+        const raw = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+        const credits =
+          raw.credits ??
+          raw.credit ??
+          raw.balance ??
+          "--";
+
+        creditPill.textContent = "Kredi " + credits;
+      } catch (e) {
+        creditPill.textContent = "Kredi --";
+      }
+    }
+
+    if (buyCreditPill) {
+      buyCreditPill.hidden = false;
+      buyCreditPill.href = "/studio.ios.html#credits";
+    }
+
+    if (pricingBtn) {
+      pricingBtn.href = "/studio.ios.html#credits";
+    }
+  } else {
+    if (loginPill) {
+      loginPill.hidden = false;
+      loginPill.href = "/studio.ios.html";
+    }
+
+    if (creditPill) creditPill.hidden = true;
+    if (buyCreditPill) buyCreditPill.hidden = true;
+
+    if (pricingBtn) {
+      pricingBtn.href = "#mobilePricing";
+    }
+  }
 })();
 </script>
 </body>
