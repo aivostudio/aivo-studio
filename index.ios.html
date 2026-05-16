@@ -1290,38 +1290,6 @@ try {
   });
 })();
 </script>
-  <script>
-(function AIVO_IOS_STUDIO_NAV_COVER(){
-  try {
-    function ensureCover(){
-      var cover = document.getElementById("aivoIosStudioNavCover");
 
-      if (cover) return cover;
-
-      cover = document.createElement("div");
-      cover.id = "aivoIosStudioNavCover";
-      cover.style.position = "fixed";
-      cover.style.inset = "0";
-      cover.style.zIndex = "999999";
-      cover.style.background = "#070914";
-      cover.style.opacity = "0";
-      cover.style.pointerEvents = "none";
-      cover.style.transition = "opacity 80ms linear";
-
-      document.body.appendChild(cover);
-      return cover;
-    }
-
-    document.addEventListener("click", function(e){
-      var link = e.target.closest('a[href^="/studio.ios.html"]');
-      if (!link) return;
-
-      var cover = ensureCover();
-      cover.style.opacity = "1";
-      cover.style.pointerEvents = "auto";
-    }, true);
-  } catch (err) {}
-})();
-</script>
 </body>
 </html>
