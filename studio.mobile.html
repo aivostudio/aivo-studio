@@ -2067,101 +2067,24 @@ if (window.location.hash === "#cartoon") {
   setActiveNav(toolsNav);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-    function applyMobileHashRoute(){
-  const hash = String(window.location.hash || "#home");
-
-  if (hash === "#home" && homeNav) {
-    homeNav.click();
-    return;
-  }
-
-  if (hash === "#productions" && productionsNav) {
-    productionsNav.click();
-    return;
-  }
-
-  if (hash === "#tools" && toolsNav) {
-    toolsNav.click();
-    return;
-  }
-
-  if (hash === "#credits" && creditsNav) {
-    creditsNav.click();
-    return;
-  }
-
-  if (hash === "#account" && accountNav) {
-    accountNav.click();
-    return;
-  }
-
-  if (hash === "#music") {
-    activeMobileModule = "music";
-    homeMount.hidden = true;
-    showMusic();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#cover") {
-    activeMobileModule = "cover";
-    homeMount.hidden = true;
-    showCover();
-    setCoverLibraryOnly(false);
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#photofx") {
-    activeMobileModule = "photofx";
-    homeMount.hidden = true;
-    showPhotoFx();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#video") {
-    activeMobileModule = "video";
-    homeMount.hidden = true;
-    showVideo();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#lipsync") {
-    activeMobileModule = "lipsync";
-    homeMount.hidden = true;
-    showLipsync();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#atmo") {
-    activeMobileModule = "atmo";
-    homeMount.hidden = true;
-    showAtmo();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#cartoon") {
-    activeMobileModule = "cartoon";
-    homeMount.hidden = true;
-    showCartoon();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  if (window.location.hash === "#credits" && creditsNav) {
+  creditsNav.click();
 }
 
-applyMobileHashRoute();
+if (window.location.hash === "#productions" && productionsNav) {
+  productionsNav.click();
+}
+
+if (window.location.hash === "#tools" && toolsNav) {
+  toolsNav.click();
+}
+
+if (window.location.hash === "#account" && accountNav) {
+  accountNav.click();
+}
+
 document.documentElement.classList.remove("aivo-hash-routing-pending");
-window.addEventListener("hashchange", applyMobileHashRoute);
+document.documentElement.style.visibility = "visible";
 document.addEventListener("click", function(e){
   const btn = e.target.closest("[data-mobile-tool]");
   if (!btn) return;
