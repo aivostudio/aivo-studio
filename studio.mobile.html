@@ -514,6 +514,14 @@
   display:none !important;
 }
 
+html.aivo-start-credits .hero,
+html.aivo-start-credits #mobileHomeMount{
+  display:none !important;
+}
+
+html.aivo-start-credits #mobileCreditsMount{
+  display:block !important;
+}
 #mobileHomeMount .section-title{
   margin-top:16px;
 }
@@ -666,6 +674,15 @@
     });
   })();
   </script>
+  <script>
+(function AIVO_MOBILE_START_ROUTE(){
+  try {
+    if (window.location.hash === "#credits") {
+      document.documentElement.classList.add("aivo-start-credits");
+    }
+  } catch (err) {}
+})();
+</script>
 </head>
 
 <body>
