@@ -754,7 +754,9 @@ body {
         var st = document.getElementById("aivo-auth-gate-style");
         if (st) st.remove();
 
-        document.documentElement.style.visibility = "visible";
+      if (!document.documentElement.classList.contains("aivo-hash-routing-pending")) {
+       document.documentElement.style.visibility = "visible";
+      }
 
         try {
           
