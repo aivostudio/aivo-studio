@@ -1102,6 +1102,15 @@
   if (guestBottomNav) guestBottomNav.hidden = true;
   if (appBottomNav) appBottomNav.hidden = false;
 }
+    try {
+  const quickLoggedIn =
+    localStorage.getItem("aivo_logged_in") === "1" ||
+    String(localStorage.getItem("aivo_user_email") || "").includes("@");
+
+  if (quickLoggedIn) {
+    showUser();
+  }
+} catch (err) {}
     fetch("/api/auth/me", {
       credentials: "include",
       cache: "no-store"
