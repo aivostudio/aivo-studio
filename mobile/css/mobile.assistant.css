@@ -1,19 +1,18 @@
 .aivo-assistant-launcher {
   position: fixed;
-  right: 14px;
-  bottom: calc(92px + env(safe-area-inset-bottom));
+  right: 16px;
+  bottom: calc(88px + env(safe-area-inset-bottom));
   z-index: 9999;
   border: 1px solid rgba(255,255,255,.14);
   background: linear-gradient(135deg, #7c4dff 0%, #ff4fa3 100%);
   color: #fff;
   border-radius: 999px;
-  padding: 11px 15px;
-  font: 700 12px/1 Inter, Arial, sans-serif;
+  padding: 9px 13px;
+  font: 700 11px/1 Inter, Arial, sans-serif;
   box-shadow: 0 10px 26px rgba(0,0,0,.30);
   cursor: pointer;
   transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
 }
-
 .aivo-assistant-launcher:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 34px rgba(0,0,0,.36);
@@ -21,18 +20,18 @@
 
 .aivo-assistant-panel {
   position: fixed;
-  right: 12px;
-  left: 12px;
-  bottom: calc(146px + env(safe-area-inset-bottom));
+  right: 18px;
+  left: 18px;
+  bottom: calc(134px + env(safe-area-inset-bottom));
   z-index: 9999;
   width: auto;
   max-width: none;
-  height: 520px;
-  max-height: calc(100vh - 190px);
+  height: 440px;
+  max-height: calc(100vh - 210px);
   display: none;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 24px;
+  border-radius: 22px;
   border: 1px solid rgba(255,255,255,.10);
   background:
     radial-gradient(circle at top left, rgba(124,77,255,.16), transparent 34%),
@@ -203,17 +202,17 @@
 
 @media (max-width: 640px) {
   .aivo-assistant-panel {
-    right: 12px;
-    left: 12px;
-    bottom: calc(146px + env(safe-area-inset-bottom));
+    right: 18px;
+    left: 18px;
+    bottom: calc(134px + env(safe-area-inset-bottom));
     width: auto;
     max-width: none;
-    height: 68vh;
-    max-height: calc(100vh - 190px);
+    height: 58vh;
+    max-height: calc(100vh - 210px);
   }
 
   .aivo-assistant-launcher {
-    right: 12px;
-    bottom: calc(92px + env(safe-area-inset-bottom));
+    right: 16px;
+    bottom: calc(88px + env(safe-area-inset-bottom));
   }
 }
