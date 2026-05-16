@@ -1176,6 +1176,20 @@ document.body.appendChild(contactScript);
     accountContactMount.innerHTML = '<div class="empty-card">İletişim bölümü yüklenemedi.</div>';
   }
 }
+        if (window.location.hash === "#credits") {
+      homeMount.hidden = true;
+      musicMount.hidden = true;
+      coverMount.hidden = true;
+      atmoMount.hidden = true;
+      if (cartoonMount) cartoonMount.hidden = true;
+      if (photofxMount) photofxMount.hidden = true;
+      if (videoMount) videoMount.hidden = true;
+      if (lipsyncMount) lipsyncMount.hidden = true;
+      if (toolsMount) toolsMount.hidden = true;
+      if (accountMount) accountMount.hidden = true;
+      if (policyMount) policyMount.hidden = true;
+      if (creditsMount) creditsMount.hidden = false;
+    }
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
  const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
