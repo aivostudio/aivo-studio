@@ -33,11 +33,11 @@
     position:relative;
   }
 
-body{
+ body{
   background:
+    linear-gradient(180deg, #241b4b 0px, #241b4b 250px, #070914 520px),
     radial-gradient(520px 360px at 20% 6%, rgba(139,92,246,.34), transparent 62%),
     radial-gradient(520px 360px at 90% 18%, rgba(56,189,248,.20), transparent 62%),
-    radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.18), transparent 65%),
     #070914;
   overflow-x:hidden;
 }
@@ -50,16 +50,16 @@ body{
 .topbar{
   position:sticky;
   top:0;
-  z-index:50;
-  height:64px;
+  z-index:90;
+  min-height:64px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 18px;
-  background:rgba(8,10,22,.74);
-  border-bottom:1px solid rgba(255,255,255,.08);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
+  gap:10px;
+  padding:calc(56px + env(safe-area-inset-top)) 18px 14px;
+  background:#241b4b;
+  border-bottom:0;
+  box-shadow:none;
 }
 
     .logo{
@@ -68,12 +68,11 @@ body{
       gap:8px;
     }
 
- .logo img{
-  width:92px;
+  .logo img{
+  width:74px;
   height:auto;
   display:block;
   filter:drop-shadow(0 10px 24px rgba(139,92,246,.20));
-}rop-shadow(0 10px 24px rgba(139,92,246,.20));
 }
 
     .top-actions{
