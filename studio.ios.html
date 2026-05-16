@@ -1883,9 +1883,54 @@ if (backBtn) {
 }
   });
 }
-    if (window.location.hash === "#credits" && creditsNav) {
+if (window.location.hash === "#credits" && creditsNav) {
   creditsNav.click();
 }
+
+if (window.location.hash === "#music") {
+  activeMobileModule = "music";
+  showMusic();
+  setActiveNav(toolsNav);
+}
+
+if (window.location.hash === "#cover") {
+  activeMobileModule = "cover";
+  showCover();
+  setCoverLibraryOnly(false);
+  setActiveNav(toolsNav);
+}
+
+if (window.location.hash === "#atmo") {
+  activeMobileModule = "atmo";
+  showAtmo();
+  setAtmoLibraryOnly(false);
+  setActiveNav(toolsNav);
+}
+
+if (window.location.hash === "#cartoon") {
+  activeMobileModule = "cartoon";
+  showCartoon();
+  setActiveNav(toolsNav);
+}
+
+if (window.location.hash === "#photofx") {
+  activeMobileModule = "photofx";
+  showPhotoFx();
+  setActiveNav(toolsNav);
+}
+
+if (window.location.hash === "#video") {
+  activeMobileModule = "video";
+  showVideo();
+  setActiveNav(toolsNav);
+}
+
+if (window.location.hash === "#lipsync") {
+  activeMobileModule = "lipsync";
+  showLipsync();
+  setActiveNav(toolsNav);
+}
+
 document.addEventListener("click", function(e){
   const btn = e.target.closest("[data-mobile-tool]");
   if (!btn) return;
