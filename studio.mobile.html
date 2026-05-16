@@ -703,6 +703,10 @@ html.aivo-start-cartoon #mobileCartoonMount{
   try {
     const hash = window.location.hash;
 
+    if (hash && hash !== "#home") {
+      document.documentElement.classList.add("aivo-hash-routing-pending");
+    }
+
     if (hash === "#credits") document.documentElement.classList.add("aivo-start-credits");
     if (hash === "#music") document.documentElement.classList.add("aivo-start-music");
     if (hash === "#cover") document.documentElement.classList.add("aivo-start-cover");
