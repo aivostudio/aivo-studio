@@ -1721,7 +1721,7 @@ if (policyBackBtn) {
   window.scrollTo({ top: 0, behavior: "smooth" });
   return;
 }
-    if (logoutBtn) {
+if (logoutBtn) {
   e.preventDefault();
 
   try {
@@ -1733,24 +1733,30 @@ if (policyBackBtn) {
   } catch (err) {}
 
   try {
+    localStorage.removeItem("aivo_logged_in");
+    localStorage.removeItem("aivo_user_email");
     localStorage.removeItem("aivo_auth_unified_v1");
     localStorage.removeItem("aivo_profile_name");
     localStorage.removeItem("aivo_profile_surname");
     localStorage.removeItem("aivo_mobile_active_tab");
     localStorage.removeItem("aivo_mobile_account_state");
+
+    sessionStorage.clear();
+
+    localStorage.setItem("aivo_mobile_force_login", "1");
   } catch (err) {}
 
-try {
-  if (window.mobileToast) {
-    window.mobileToast.success("Çıkış yapıldı.");
-  }
-} catch (err) {}
+  try {
+    if (window.mobileToast) {
+      window.mobileToast.success("Çıkış yapıldı.");
+    }
+  } catch (err) {}
 
-setTimeout(function(){
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
-}, 650);
+  setTimeout(function(){
+    window.location.replace("/index.mobile.html");
+  }, 650);
 
-return;
+  return;
 }
     if (settingsBtn) {
   e.preventDefault();
