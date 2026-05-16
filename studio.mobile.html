@@ -2137,6 +2137,7 @@ if (window.location.hash === "#cartoon") {
 }
 
 applyMobileHashRoute();
+document.documentElement.classList.remove("aivo-hash-routing-pending");
 window.addEventListener("hashchange", applyMobileHashRoute);
 document.addEventListener("click", function(e){
   const btn = e.target.closest("[data-mobile-tool]");
