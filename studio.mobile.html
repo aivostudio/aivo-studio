@@ -1332,7 +1332,16 @@ hydrateTopCreditBalance();
 
 document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
   navItem.addEventListener("click", function(){
-    document.documentElement.classList.remove("aivo-start-credits");
+    document.documentElement.classList.remove(
+      "aivo-start-credits",
+      "aivo-start-music",
+      "aivo-start-cover",
+      "aivo-start-photofx",
+      "aivo-start-video",
+      "aivo-start-lipsync",
+      "aivo-start-atmo",
+      "aivo-start-cartoon"
+    );
 
     if (policyMount) {
       policyMount.hidden = true;
