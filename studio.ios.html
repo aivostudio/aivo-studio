@@ -785,6 +785,9 @@ body {
       document.documentElement.classList.add("aivo-hash-routing-pending");
     }
 
+    if (hash === "#productions") document.documentElement.classList.add("aivo-start-productions");
+    if (hash === "#tools") document.documentElement.classList.add("aivo-start-tools");
+    if (hash === "#account") document.documentElement.classList.add("aivo-start-account");
     if (hash === "#credits") document.documentElement.classList.add("aivo-start-credits");
     if (hash === "#music") document.documentElement.classList.add("aivo-start-music");
     if (hash === "#cover") document.documentElement.classList.add("aivo-start-cover");
