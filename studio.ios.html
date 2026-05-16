@@ -2283,13 +2283,16 @@ if (data.verified !== true) {
   try {
     function unlock(){
       document.documentElement.classList.remove("aivo-hash-routing-pending");
+      document.documentElement.style.visibility = "visible";
     }
 
-    window.addEventListener("load", function(){
-      setTimeout(unlock, 120);
-    });
+    window.addEventListener("aivo:ios-route-ready", unlock, { once: true });
 
-    setTimeout(unlock, 1800);
+    setTimeout(function(){
+      if (document.documentElement.classList.contains("aivo-hash-routing-pending")) {
+        unlock();
+      }
+    }, 2200);
   } catch (err) {}
 })();
 </script>
