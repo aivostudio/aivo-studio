@@ -931,7 +931,7 @@
       });
     })();
   </script>
-    <script>
+  <script>
   (function AIVO_MOBILE_INDEX_AUTH_UI(){
     const loginPill = document.getElementById("mobileLoginPill");
     const creditPill = document.getElementById("mobileCreditPill");
@@ -939,20 +939,41 @@
 
     if (!loginPill || !creditPill || !buyCreditPill) return;
 
+    function showGuest(){
+      loginPill.hidden = false;
+      creditPill.hidden = true;
+      buyCreditPill.hidden = true;
+    }
+
+    function showUser(){
+      loginPill.hidden = true;
+      creditPill.hidden = false;
+      buyCreditPill.hidden = false;
+    }
+
     fetch("/api/auth/me", {
       credentials: "include",
       cache: "no-store"
     })
     .then(function(res){
-      if (!res.ok) return null;
+      if (!res.ok) {
+        showGuest();
+        return null;
+      }
       return res.json();
     })
     .then(function(me){
-      if (!me || !me.email) return;
+      if (!me) return;
 
-      loginPill.hidden = true;
-      creditPill.hidden = false;
-      buyCreditPill.hidden = false;
+      const user = me.user || me;
+      const email = String(user.email || "").trim();
+
+      if (!email) {
+        showGuest();
+        return null;
+      }
+
+      showUser();
 
       return fetch("/api/credits/get", {
         credentials: "include",
@@ -969,28 +990,9 @@
       const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
       creditPill.textContent = "Kredi " + creditValue;
     })
-    .catch(function(){});
-  })();
-  </script>
-    <script>
-  (function AIVO_MOBILE_TRAFFIC_HIT(){
-    try {
-      var page =
-        window.location.pathname +
-        window.location.search;
-
-      fetch("/api/traffic/hit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        keepalive: true,
-        body: JSON.stringify({
-          page: page || "/index.mobile.html"
-        })
-      }).catch(function(){});
-    } catch (err) {}
+    .catch(function(){
+      showGuest();
+    });
   })();
   </script>
 </body>
