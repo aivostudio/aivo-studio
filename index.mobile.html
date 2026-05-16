@@ -561,7 +561,7 @@
 
       <div class="cta-row">
      <a class="btn btn-primary" href="/studio.mobile.html">Studio’ya Gir →</a>
-<a class="btn btn-ghost" id="mobilePricingCta" href="#mobilePricing">Fiyatları Gör</a>
+<a class="btn btn-ghost" href="#mobilePricing">Fiyatları Gör</a>
       </div>
 
       <div class="video-card">
@@ -935,7 +935,7 @@
   (function AIVO_MOBILE_INDEX_AUTH_UI(){
     const loginPill = document.getElementById("mobileLoginPill");
     const creditPill = document.getElementById("mobileCreditPill");
-   const pricingCta = document.getElementById("mobilePricingCta");
+    const buyCreditPill = document.getElementById("mobileBuyCreditPill");
 
     if (!loginPill || !creditPill || !buyCreditPill) return;
 
@@ -945,15 +945,11 @@
       buyCreditPill.hidden = true;
     }
 
-   function showUser(){
-  loginPill.hidden = true;
-  creditPill.hidden = false;
-  buyCreditPill.hidden = false;
-
-  if (pricingCta) {
-    pricingCta.href = "/studio.mobile.html#credits";
-  }
-}
+    function showUser(){
+      loginPill.hidden = true;
+      creditPill.hidden = false;
+      buyCreditPill.hidden = false;
+    }
 
     fetch("/api/auth/me", {
       credentials: "include",
