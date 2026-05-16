@@ -1994,6 +1994,21 @@ if (data.verified !== true) {
 });
 </script>
 <script>
+(function AIVO_MOBILE_HASH_READY(){
+  try {
+    function unlock(){
+      document.documentElement.classList.remove("aivo-hash-routing-pending");
+    }
+
+    window.addEventListener("load", function(){
+      setTimeout(unlock, 120);
+    });
+
+    setTimeout(unlock, 1800);
+  } catch (err) {}
+})();
+</script>
+<script>
 (function AIVO_MOBILE_PRESENCE_PING(){
   try {
     let presenceEmail = "";
