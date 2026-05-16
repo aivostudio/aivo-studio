@@ -48,9 +48,13 @@
   }
 
 .topbar{
-  position:sticky;
+  position:fixed;
+  left:0;
+  right:0;
   top:0;
-  z-index:90;
+  z-index:120;
+  width:min(430px,100%);
+  margin:0 auto;
   min-height:64px;
   display:flex;
   align-items:center;
@@ -103,7 +107,7 @@ font-size:12px;
 .wrap{
   width:min(430px,100%);
   margin:0 auto;
-  padding:22px 16px 132px;
+  padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
 }
   .hero{
   position:relative;
