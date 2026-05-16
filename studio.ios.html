@@ -600,6 +600,56 @@ body {
   touch-action:manipulation;
 }
   </style>
+
+  <style id="aivo-auth-gate-style">
+    html { visibility: hidden; }
+  </style>
+
+  <script>
+  (function AIVO_IOS_STUDIO_HARD_GATE(){
+    if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
+    window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
+
+    function goLogin(){
+      location.replace("/login.ios.html?returnTo=/studio.ios.html");
+    }
+
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){
+      try { ctrl.abort(); } catch (e) {}
+    }, 2500);
+
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      signal: ctrl.signal
+    })
+    .then(async function(r){
+      clearTimeout(t);
+
+      if (r.status === 200) {
+        var me = await r.json();
+
+        try {
+          localStorage.setItem("aivo_logged_in", "1");
+          localStorage.setItem("aivo_user_email", String((me && me.email) || "").trim().toLowerCase());
+        } catch (e) {}
+
+        var st = document.getElementById("aivo-auth-gate-style");
+        if (st) st.remove();
+
+        document.documentElement.style.visibility = "visible";
+        return;
+      }
+
+      goLogin();
+    })
+    .catch(function(){
+      goLogin();
+    });
+  })();
+  </script>
+
 <script>
 (function AIVO_MOBILE_START_ROUTE(){
   try {
