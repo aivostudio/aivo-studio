@@ -1431,9 +1431,12 @@ function showLipsync(){
   }
 }
     
-   if (homeNav) {
+if (homeNav) {
   homeNav.addEventListener("click", function(e){
     e.preventDefault();
+
+    activeMobileModule = "music";
+
     showHome();
     setActiveNav(homeNav);
   });
