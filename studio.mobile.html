@@ -1304,6 +1304,8 @@ hydrateTopCreditBalance();
 
 document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
   navItem.addEventListener("click", function(){
+    document.documentElement.classList.remove("aivo-start-credits");
+
     if (policyMount) {
       policyMount.hidden = true;
     }
