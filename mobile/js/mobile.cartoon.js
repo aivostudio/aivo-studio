@@ -1630,28 +1630,45 @@ function bindUploads(){
 }
   function bindButtons(){
     if (characterBtn) {
-         characterBtn.addEventListener("click", async function(){
-             if (!state.characterPrompt) {
-          setStatus("Lütfen karakter tanımı yaz.");
-          mobileCartoonToast("warning", "Lütfen karakter tanımı yaz.");
+      characterBtn.addEventListener("click", async function(){
+        if (!state.characterPrompt) {
+          setStatus(cartoonText(
+            "Lütfen karakter tanımı yaz.",
+            "Please enter a character description."
+          ));
+          mobileCartoonToast("warning", cartoonText(
+            "Lütfen karakter tanımı yaz.",
+            "Please enter a character description."
+          ));
           return;
         }
 
-             let creditCtx = null;
+        let creditCtx = null;
 
         characterBtn.disabled = true;
-        characterBtn.textContent = "Üretiliyor...";
+        characterBtn.textContent = cartoonText("Üretiliyor...", "Generating...");
         characterBtn.classList.add("is-loading", "is-pressed");
         characterBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileCartoonCredits("character");
-          mobileCartoonToast("success", getCartoonCharacterCredit() + " kredi kullanıldı.");
+          mobileCartoonToast("success", cartoonText(
+            cartoonCreditsText(getCartoonCharacterCredit()) + " kullanıldı.",
+            cartoonCreditsText(getCartoonCharacterCredit()) + " used."
+          ));
         } catch (creditErr) {
-             
           console.warn("[MOBILE CARTOON][CHARACTER CREDIT ERROR]", creditErr);
-          setStatus("Yetersiz kredi.");
-          mobileCartoonToast("warning", "Yetersiz kredi.");
+
+          setStatus(cartoonText(
+            "Yetersiz kredi.",
+            "Insufficient credits."
+          ));
+          mobileCartoonToast("warning", cartoonText(
+            "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...",
+            "Insufficient credits. Redirecting you to Credits..."
+          ));
+
+          clearMobileCartoonLoading();
 
           location.hash = "#credits";
 
@@ -1667,9 +1684,10 @@ function bindUploads(){
           return;
         }
 
-             
-
-        mobileCartoonLoading("Karakter oluşturuluyor...");
+        mobileCartoonLoading(cartoonText(
+          "Karakter oluşturuluyor...",
+          "Character is being created..."
+        ));
 
         const tempCharacterId = "mobile-cartoon-character-" + Date.now();
         const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
@@ -1683,16 +1701,19 @@ function bindUploads(){
           libraryEl.insertAdjacentHTML("afterbegin", `
             <article class="mobile-cartoon-character-card" data-mobile-cartoon-character="${tempCharacterId}">
               <div class="mobile-cartoon-character-thumb">
-              <div class="mobile-cartoon-character-loading">Hazırlanıyor...</div>
+                <div class="mobile-cartoon-character-loading">${cartoonText("Hazırlanıyor...", "Preparing...")}</div>
               </div>
-              <div class="mobile-cartoon-character-name">${esc(state.characterPrompt || "Karakter")}</div>
+              <div class="mobile-cartoon-character-name">${esc(state.characterPrompt || cartoonText("Karakter", "Character"))}</div>
             </article>
           `);
         }
 
         renderCharacterLibraryLoading();
 
-        setStatus("Karakter oluşturuluyor...");
+        setStatus(cartoonText(
+          "Karakter oluşturuluyor...",
+          "Character is being created..."
+        ));
 
         const payload = {
           app: "cartoon",
@@ -1726,16 +1747,22 @@ function bindUploads(){
 
           console.log("[MOBILE CARTOON][CHARACTER CREATE RESPONSE]", data);
 
-                               if (!res.ok || !data.ok || !data.job_id) {
+          if (!res.ok || !data.ok || !data.job_id) {
             const refundCtx = {
               ...creditCtx,
               job_id: "",
               provider_job_id: safeText(data.request_id || data.requestId || "")
             };
 
-            setStatus("Karakter oluşturulamadı.");
+            setStatus(cartoonText(
+              "Karakter oluşturulamadı.",
+              "Character could not be created."
+            ));
             clearMobileCartoonLoading();
-            mobileCartoonToast("error", "Karakter oluşturulamadı.");
+            mobileCartoonToast("error", cartoonText(
+              "Karakter oluşturulamadı.",
+              "Character could not be created."
+            ));
 
             refundMobileCartoonCredits(refundCtx, "mobile_cartoon_character_create_failed", {
               error: "character_create_failed",
@@ -1745,20 +1772,39 @@ function bindUploads(){
             return;
           }
 
-            const refundCtx = {
-          ...creditCtx,
-          job_id: String(data.job_id),
-          provider_job_id: safeText(data.request_id || data.requestId || "")
-        };
+          const refundCtx = {
+            ...creditCtx,
+            job_id: String(data.job_id),
+            provider_job_id: safeText(data.request_id || data.requestId || "")
+          };
 
-       setStatus("Karakter oluşturuluyor...");
-       mobileCartoonLoading("Karakter oluşturuluyor...");
-        pollMobileCartoonCharacterJob(String(data.job_id), tempCharacterId, payload.name || state.characterPrompt || "Karakter", refundCtx);
-              } catch (err) {
+          setStatus(cartoonText(
+            "Karakter oluşturuluyor...",
+            "Character is being created..."
+          ));
+          mobileCartoonLoading(cartoonText(
+            "Karakter oluşturuluyor...",
+            "Character is being created..."
+          ));
+
+          pollMobileCartoonCharacterJob(
+            String(data.job_id),
+            tempCharacterId,
+            payload.name || state.characterPrompt || cartoonText("Karakter", "Character"),
+            refundCtx
+          );
+        } catch (err) {
           console.error("[MOBILE CARTOON][CHARACTER CREATE ERROR]", err);
-                   setStatus("Karakter oluşturulamadı.");
+
+          setStatus(cartoonText(
+            "Karakter oluşturulamadı.",
+            "Character could not be created."
+          ));
           clearMobileCartoonLoading();
-          mobileCartoonToast("error", "Karakter oluşturulamadı.");
+          mobileCartoonToast("error", cartoonText(
+            "Karakter oluşturulamadı.",
+            "Character could not be created."
+          ));
 
           refundMobileCartoonCredits(creditCtx, "mobile_cartoon_character_create_exception", {
             error: "character_create_exception",
@@ -1767,22 +1813,35 @@ function bindUploads(){
         }
       });
     }
-         if (generateBtn) {
+
+    if (generateBtn) {
       generateBtn.addEventListener("click", async function(){
-               let creditCtx = null;
+        let creditCtx = null;
 
         generateBtn.disabled = true;
-        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.textContent = cartoonText("Üretiliyor...", "Generating...");
         generateBtn.classList.add("is-loading", "is-pressed");
         generateBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileCartoonCredits("basic");
-          mobileCartoonToast("success", getCartoonBasicCredit() + " kredi kullanıldı.");
-              } catch (creditErr) {
+          mobileCartoonToast("success", cartoonText(
+            cartoonCreditsText(getCartoonBasicCredit()) + " kullanıldı.",
+            cartoonCreditsText(getCartoonBasicCredit()) + " used."
+          ));
+        } catch (creditErr) {
           console.warn("[MOBILE CARTOON][BASIC CREDIT ERROR]", creditErr);
-          setStatus("Yetersiz kredi.");
-          mobileCartoonToast("warning", "Yetersiz kredi.");
+
+          setStatus(cartoonText(
+            "Yetersiz kredi.",
+            "Insufficient credits."
+          ));
+          mobileCartoonToast("warning", cartoonText(
+            "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...",
+            "Insufficient credits. Redirecting you to Credits..."
+          ));
+
+          clearMobileCartoonLoading();
 
           location.hash = "#credits";
 
@@ -1798,28 +1857,32 @@ function bindUploads(){
           return;
         }
 
-           
+        const tempJobId = "mobile-cartoon-" + Date.now();
 
-              const tempJobId = "mobile-cartoon-" + Date.now();
+        setStatus(cartoonText(
+          "Çizgifilm sahnesi hazırlanıyor...",
+          "Cartoon scene is being prepared..."
+        ));
+        mobileCartoonLoading(cartoonText(
+          "Çizgifilm sahnesi hazırlanıyor...",
+          "Cartoon scene is being prepared..."
+        ));
 
-        setStatus("Çizgifilm sahnesi hazırlanıyor...");
-            mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
+        mobileCartoonJobs.unshift({
+          id: tempJobId,
+          scope: "current",
+          status: "processing",
+          title: state.scenePrompt || cartoonText("Çizgifilm sahnesi", "Cartoon scene"),
+          videoUrl: ""
+        });
 
-   mobileCartoonJobs.unshift({
-  id: tempJobId,
-  scope: "current",
-  status: "processing",
-  title: state.scenePrompt || "Çizgifilm sahnesi",
-  videoUrl: ""
-});
+        mobileCartoonViewMode = "current";
 
-mobileCartoonViewMode = "current";
+        if (resultsEl) {
+          resultsEl.hidden = false;
+        }
 
-if (resultsEl) {
-  resultsEl.hidden = false;
-}
-
-renderMobileCartoonResults();
+        renderMobileCartoonResults();
 
         const payload = {
           app: "cartoon",
@@ -1856,7 +1919,7 @@ renderMobileCartoonResults();
 
           console.log("[MOBILE CARTOON][BASIC CREATE RESPONSE]", data);
 
-                 if (!res.ok || !data.ok || !data.job_id) {
+          if (!res.ok || !data.ok || !data.job_id) {
             const refundCtx = {
               ...creditCtx,
               job_id: "",
@@ -1869,13 +1932,23 @@ renderMobileCartoonResults();
 
             if (job) {
               job.status = "error";
-              job.title = "Çizgifilm video başlatılamadı";
+              job.title = cartoonText(
+                "Çizgifilm video başlatılamadı",
+                "Cartoon video could not be started"
+              );
             }
 
-              renderMobileCartoonResults();
-                      setStatus("Çizgifilm video başlatılamadı.");
+            renderMobileCartoonResults();
+
+            setStatus(cartoonText(
+              "Çizgifilm video başlatılamadı.",
+              "Cartoon video could not be started."
+            ));
             clearMobileCartoonLoading();
-            mobileCartoonToast("error", "Çizgifilm video başlatılamadı.");
+            mobileCartoonToast("error", cartoonText(
+              "Çizgifilm video başlatılamadı.",
+              "Cartoon video could not be started."
+            ));
 
             refundMobileCartoonCredits(refundCtx, "mobile_cartoon_basic_create_failed", {
               error: "basic_create_failed",
@@ -1884,13 +1957,14 @@ renderMobileCartoonResults();
 
             return;
           }
+
           const realJobId = String(data.job_id || "").trim();
 
           const job = mobileCartoonJobs.find(function(item){
             return item.id === tempJobId;
           });
 
-                 const refundCtx = {
+          const refundCtx = {
             ...creditCtx,
             job_id: realJobId,
             provider_job_id: safeText(data.request_id || data.requestId || "")
@@ -1903,10 +1977,18 @@ renderMobileCartoonResults();
           }
 
           renderMobileCartoonResults();
-          setStatus("Çizgifilm sahnesi hazırlanıyor...");
-          mobileCartoonLoading("Çizgifilm sahnesi hazırlanıyor...");
+
+          setStatus(cartoonText(
+            "Çizgifilm sahnesi hazırlanıyor...",
+            "Cartoon scene is being prepared..."
+          ));
+          mobileCartoonLoading(cartoonText(
+            "Çizgifilm sahnesi hazırlanıyor...",
+            "Cartoon scene is being prepared..."
+          ));
+
           pollMobileCartoonJob(realJobId);
-             } catch (err) {
+        } catch (err) {
           console.error("[MOBILE CARTOON][BASIC CREATE ERROR]", err);
 
           const job = mobileCartoonJobs.find(function(item){
@@ -1915,13 +1997,23 @@ renderMobileCartoonResults();
 
           if (job) {
             job.status = "error";
-            job.title = "Çizgifilm video başlatılamadı";
+            job.title = cartoonText(
+              "Çizgifilm video başlatılamadı",
+              "Cartoon video could not be started"
+            );
           }
 
           renderMobileCartoonResults();
-                   setStatus("Çizgifilm video başlatılamadı.");
+
+          setStatus(cartoonText(
+            "Çizgifilm video başlatılamadı.",
+            "Cartoon video could not be started."
+          ));
           clearMobileCartoonLoading();
-          mobileCartoonToast("error", "Çizgifilm video başlatılamadı.");
+          mobileCartoonToast("error", cartoonText(
+            "Çizgifilm video başlatılamadı.",
+            "Cartoon video could not be started."
+          ));
 
           refundMobileCartoonCredits(creditCtx, "mobile_cartoon_basic_create_exception", {
             error: "basic_create_exception",
