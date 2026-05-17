@@ -297,38 +297,42 @@
   </select>
 </div>
 
-   <div class="mobile-cartoon-upload-grid">
+<div class="mobile-cartoon-upload-grid">
   <label class="mobile-cartoon-upload-card mobile-cartoon-upload-logo" for="mobileCartoonLogoFile">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+    <span class="mobile-cartoon-upload-badge" data-i18n="cartoon.credit10">+10 Kredi</span>
     <input id="mobileCartoonLogoFile" type="file" accept="image/*" hidden>
     <span class="mobile-cartoon-upload-icon" aria-hidden="true"></span>
-    <span class="mobile-cartoon-upload-btn">Logo Seç</span>
+    <span class="mobile-cartoon-upload-btn" data-i18n="cartoon.selectLogo">Logo Seç</span>
     <button id="mobileCartoonLogoClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonLogoText">Dosya seçilmedi</small>
+    <small id="mobileCartoonLogoText" data-i18n="cartoon.noFile">Dosya seçilmedi</small>
   </label>
 
   <label class="mobile-cartoon-upload-card mobile-cartoon-upload-audio" for="mobileCartoonAudioFile">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+    <span class="mobile-cartoon-upload-badge" data-i18n="cartoon.credit10">+10 Kredi</span>
     <input id="mobileCartoonAudioFile" type="file" accept="audio/*" hidden>
     <span class="mobile-cartoon-upload-icon" aria-hidden="true"></span>
-    <span class="mobile-cartoon-upload-btn">Audio Seç</span>
+    <span class="mobile-cartoon-upload-btn" data-i18n="cartoon.selectAudio">Audio Seç</span>
     <button id="mobileCartoonAudioClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonAudioText">Dosya seçilmedi</small>
+    <small id="mobileCartoonAudioText" data-i18n="cartoon.noFile">Dosya seçilmedi</small>
   </label>
 
   <label class="mobile-cartoon-upload-card mobile-cartoon-upload-image" for="mobileCartoonCustomFile">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+    <span class="mobile-cartoon-upload-badge" data-i18n="cartoon.credit10">+10 Kredi</span>
     <input id="mobileCartoonCustomFile" type="file" accept="image/*" hidden>
     <span class="mobile-cartoon-upload-icon" aria-hidden="true"></span>
-    <span class="mobile-cartoon-upload-btn">Resim Seç</span>
+    <span class="mobile-cartoon-upload-btn" data-i18n="cartoon.selectImage">Resim Seç</span>
     <button id="mobileCartoonCustomClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonCustomText">Dosya seçilmedi</small>
+    <small id="mobileCartoonCustomText" data-i18n="cartoon.noFile">Dosya seçilmedi</small>
   </label>
 </div>
 
-      <button id="mobileCartoonGenerateBtn" class="generate-btn" type="button">
-        🎬 Sahneyi Oluştur (30 Kredi)
-      </button>
+<button
+  id="mobileCartoonGenerateBtn"
+  class="generate-btn"
+  type="button"
+  data-i18n="cartoon.generateScene">
+  🎬 Sahneyi Oluştur (30 Kredi)
+</button>
 
       <div id="mobileCartoonStatus" class="mobile-status"></div>
     </div>
