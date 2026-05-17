@@ -500,62 +500,70 @@ if (deleteEl) {
   sheet.id = "mobileMusicLyricsSheet";
   sheet.className = "mobile-music-sheet-backdrop";
 
-  sheet.innerHTML = `
-    <div class="mobile-music-sheet" role="dialog" aria-modal="true">
-      <div class="mobile-music-sheet-handle"></div>
+     sheet.innerHTML = `
+      <div class="mobile-music-sheet" role="dialog" aria-modal="true">
+        <div class="mobile-music-sheet-handle"></div>
 
-      <div class="mobile-music-sheet-head">
-        <div>
-                   <div class="mobile-music-sheet-kicker">
-            ${musicText(
-              "Şarkı Sözleri",
-              "Lyrics"
-            )}
+        <div class="mobile-music-sheet-head">
+          <div>
+            <div class="mobile-music-sheet-kicker">
+              ${musicText(
+                "Diğer işlemler",
+                "More actions"
+              )}
+            </div>
+            <div class="mobile-music-sheet-title">${safe(title)}</div>
           </div>
-          <div class="mobile-music-sheet-title">${safe(title)}</div>
+
+          <button
+            class="mobile-music-sheet-close"
+            type="button"
+            aria-label="${musicText("Kapat", "Close")}"
+          >
+            ×
+          </button>
         </div>
 
-            <button
-          class="mobile-music-sheet-close"
-          type="button"
-          aria-label="${musicText("Kapat", "Close")}"
-        >
-          ×
-        </button>
-      </div>
-
-      <div class="mobile-music-confirm-text" style="max-height:48vh; overflow:auto; text-align:left !important; white-space:pre-wrap;">
-             ${lyrics
-          ? safe(lyrics)
-          : musicText(
-              "Bu müzik için kayıtlı şarkı sözü bulunamadı.",
-              "No lyrics were found for this music."
-            )}
-      </div>
-
-      ${
-        lyrics
-          ? `
-            <div class="mobile-music-confirm-actions">
-                         <button class="mobile-music-confirm-cancel" type="button" data-mobile-lyrics-action="share">
+        ${
+          currentStemsStatus === "processing"
+            ? `
+              <div class="mobile-music-confirm-text">
                 ${musicText(
-                  "Paylaş",
-                  "Share"
+                  "Kanallar hazırlanıyor. Bu işlem zaten başlatıldı.",
+                  "Channels are being prepared. This process has already started."
                 )}
-              </button>
-
-              <button class="mobile-music-confirm-submit" type="button" data-mobile-lyrics-action="copy">
-                ${musicText(
-                  "Kopyala",
-                  "Copy"
-                )}
-              </button>
-            </div>
-          `
-          : ""
-      }
-    </div>
-  `;
+              </div>
+            `
+            : currentStemsStatus === "ready"
+              ? `
+                <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="channels">
+                  <span>
+                    <strong>${musicText("Kanallar", "Channels")}</strong>
+                    <small>
+                      ${musicText(
+                        "Hazır dosyaları görüntüle",
+                        "View ready files"
+                      )}
+                    </small>
+                  </span>
+                </button>
+              `
+              : `
+                <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="stems">
+                  <span>
+                    <strong>${musicText("Kanal Ayırma", "Stem Separation")}</strong>
+                    <small>
+                      ${musicText(
+                        "Bu işlem 5 kredi kullanır",
+                        "This action uses 5 credits"
+                      )}
+                    </small>
+                  </span>
+                </button>
+              `
+        }
+      </div>
+    `;
 
   function closeSheet(){
     sheet.remove();
@@ -808,27 +816,49 @@ if (shareBtn) {
 
               <div class="mobile-music-sheet-head">
                 <div>
-                  <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
-                  <div class="mobile-music-sheet-title">Kanallar hazır</div>
+                  <div class="mobile-music-sheet-kicker">
+                    ${musicText(
+                      "Kanal Ayırma",
+                      "Stem Separation"
+                    )}
+                  </div>
+
+                  <div class="mobile-music-sheet-title">
+                    ${musicText(
+                      "Kanallar hazır",
+                      "Channels ready"
+                    )}
+                  </div>
                 </div>
 
-                <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                <button
+                  class="mobile-music-sheet-close"
+                  type="button"
+                  aria-label="${musicText("Kapat", "Close")}"
+                >
                   ×
                 </button>
               </div>
 
               <div class="mobile-music-confirm-text">
-                Kanal ayırma tamamlandı. Bir sonraki adımda bu dosyaları kart içine indirebilir hale getireceğiz.
+                ${musicText(
+                  "Kanal ayırma tamamlandı. Bir sonraki adımda bu dosyaları kart içine indirebilir hale getireceğiz.",
+                  "Stem separation completed. In the next step, these files will be downloadable inside the card."
+                )}
               </div>
             `;
 
-                      if (itemEl) {
+            if (itemEl) {
               const subTextEl = itemEl.querySelector(".mobile-library-sub");
+
               if (subTextEl) {
-                subTextEl.textContent = "Kanallar hazır";
+                subTextEl.textContent = musicText(
+                  "Kanallar hazır",
+                  "Channels ready"
+                );
               }
 
-                 itemEl.dataset.stemsStatus = "ready";
+              itemEl.dataset.stemsStatus = "ready";
               itemEl.dataset.stemsOutput = JSON.stringify(data.output || {});
 
               try {
@@ -840,15 +870,23 @@ if (shareBtn) {
               } catch (err) {}
             }
 
-          if (statusEl) {
-  statusEl.textContent = "Kanal ayırma tamamlandı.";
-}
+            if (statusEl) {
+              statusEl.textContent = musicText(
+                "Kanal ayırma tamamlandı.",
+                "Stem separation completed."
+              );
+            }
 
-if (window.toast?.success) {
-  window.toast.success("Kanallar hazır.");
-}
+            if (window.toast?.success) {
+              window.toast.success(
+                musicText(
+                  "Kanallar hazır.",
+                  "Channels ready."
+                )
+              );
+            }
 
-return;
+            return;
           }
 
           if (status === "failed" || status === "canceled" || status === "cancelled") {
@@ -857,28 +895,55 @@ return;
 
               <div class="mobile-music-sheet-head">
                 <div>
-                  <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
-                  <div class="mobile-music-sheet-title">İşlem başarısız</div>
+                  <div class="mobile-music-sheet-kicker">
+                    ${musicText(
+                      "Kanal Ayırma",
+                      "Stem Separation"
+                    )}
+                  </div>
+
+                  <div class="mobile-music-sheet-title">
+                    ${musicText(
+                      "İşlem başarısız",
+                      "Process failed"
+                    )}
+                  </div>
                 </div>
 
-                <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                <button
+                  class="mobile-music-sheet-close"
+                  type="button"
+                  aria-label="${musicText("Kapat", "Close")}"
+                >
                   ×
                 </button>
               </div>
 
               <div class="mobile-music-confirm-text">
-                Kanal ayırma tamamlanamadı. Lütfen tekrar dene.
+                ${musicText(
+                  "Kanal ayırma tamamlanamadı. Lütfen tekrar dene.",
+                  "Stem separation could not be completed. Please try again."
+                )}
               </div>
             `;
-if (statusEl) {
-  statusEl.textContent = "Kanal ayırma başarısız.";
-}
 
-if (window.toast?.error) {
-  window.toast.error("Kanal ayırma başarısız.");
-}
+            if (statusEl) {
+              statusEl.textContent = musicText(
+                "Kanal ayırma başarısız.",
+                "Stem separation failed."
+              );
+            }
 
-return;
+            if (window.toast?.error) {
+              window.toast.error(
+                musicText(
+                  "Kanal ayırma başarısız.",
+                  "Stem separation failed."
+                )
+              );
+            }
+
+            return;
           }
 
           if (tries < 60) {
