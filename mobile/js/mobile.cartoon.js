@@ -462,7 +462,12 @@ function bindMobileCartoonResultActions(){
         const isPlaying = !video.paused && !video.ended;
         btn.classList.toggle("is-playing", isPlaying);
         btn.setAttribute("data-playing", isPlaying ? "true" : "false");
-        btn.setAttribute("aria-label", isPlaying ? "Duraklat" : "Oynat");
+             btn.setAttribute(
+          "aria-label",
+          isPlaying
+            ? cartoonText("Duraklat", "Pause")
+            : cartoonText("Oynat", "Play")
+        );
       }
 
       video.onplay = syncPlayButton;
