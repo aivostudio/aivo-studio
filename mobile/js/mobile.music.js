@@ -1887,11 +1887,17 @@ if (window.toast?.loading) {
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
 
-      if (msg === "insufficient_credit") {
-        statusEl.textContent = "Yetersiz kredi.";
+        if (msg === "insufficient_credit") {
+        statusEl.textContent = musicText(
+          "Yetersiz kredi.",
+          "Insufficient credits."
+        );
 
         if (window.toast?.warning) {
-          window.toast.warning("Yetersiz kredi");
+          window.toast.warning(musicText(
+            "Yetersiz kredi",
+            "Insufficient credits"
+          ));
         }
 
               location.hash = "#credits";
