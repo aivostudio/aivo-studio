@@ -255,21 +255,41 @@ libraryRows.forEach(function(row){
               ${isReady ? "▶" : "…"}
             </button>
 
-         <button class="mobile-library-play mobile-library-download" type="button" title="İndir" aria-label="İndir">
-         ↓
+                 <button
+           class="mobile-library-play mobile-library-download"
+           type="button"
+           title="${musicText("İndir", "Download")}"
+           aria-label="${musicText("İndir", "Download")}"
+         >
+           ↓
          </button>
 
-         <button class="mobile-library-play mobile-library-delete" type="button" title="Sil" aria-label="Sil">
-         ×
-        </button>
+         <button
+           class="mobile-library-play mobile-library-delete"
+           type="button"
+           title="${musicText("Sil", "Delete")}"
+           aria-label="${musicText("Sil", "Delete")}"
+         >
+           ×
+         </button>
 
-        <button class="mobile-library-play mobile-library-lyrics mobile-action-lyrics" type="button" title="Şarkı Sözleri" aria-label="Şarkı Sözleri">
-         lyrics
-        </button>
+         <button
+           class="mobile-library-play mobile-library-lyrics mobile-action-lyrics"
+           type="button"
+           title="${musicText("Şarkı Sözleri", "Lyrics")}"
+           aria-label="${musicText("Şarkı Sözleri", "Lyrics")}"
+         >
+           lyrics
+         </button>
 
-        <button class="mobile-library-play mobile-library-more" type="button" title="Diğer işlemler" aria-label="Diğer işlemler">
-         ...
-        </button>
+         <button
+           class="mobile-library-play mobile-library-more"
+           type="button"
+           title="${musicText("Diğer işlemler", "More actions")}"
+           aria-label="${musicText("Diğer işlemler", "More actions")}"
+         >
+           ...
+         </button>
           </div>
         `;
 
