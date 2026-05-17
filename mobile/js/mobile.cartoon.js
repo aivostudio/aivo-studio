@@ -480,21 +480,41 @@ function bindMobileCartoonCharacterActions(){
       return;
     }
 
-       if (act === "select") {
+      if (act === "select") {
       state.customCharacterUrl = imageUrl;
       syncMainCharacterDisabled();
-      setStatus("Karakter Basit Mod için seçildi.");
-      mobileCartoonToast("success", "Karakter Basit Mod için seçildi.");
+
+      setStatus(cartoonText(
+        "Karakter Basit Mod için seçildi.",
+        "Character selected for Basic Mode."
+      ));
+
+      mobileCartoonToast("success", cartoonText(
+        "Karakter Basit Mod için seçildi.",
+        "Character selected for Basic Mode."
+      ));
+
       return;
     }
+
     if (act === "delete") {
       card.remove();
 
       if (!libraryEl.querySelector(".mobile-cartoon-character-card")) {
-        libraryEl.innerHTML = '<div class="mobile-cartoon-character-empty">Henüz mobil karakter oluşturulmadı.</div>';
+        libraryEl.innerHTML =
+          '<div class="mobile-cartoon-character-empty">' +
+          cartoonText(
+            "Henüz mobil karakter oluşturulmadı.",
+            "No mobile characters created yet."
+          ) +
+          '</div>';
       }
 
-      mobileCartoonToast("success", "Karakter silindi.");
+      mobileCartoonToast("success", cartoonText(
+        "Karakter silindi.",
+        "Character deleted."
+      ));
+
       return;
     }
   });
@@ -626,10 +646,16 @@ function bindMobileCartoonResultActions(){
       return;
     }
 
-      if (act === "delete") {
+        if (act === "delete") {
       mobileCartoonDeletedIds.add(id);
+
       renderMobileCartoonResults();
-      mobileCartoonToast("success", "Video silindi.");
+
+      mobileCartoonToast("success", cartoonText(
+        "Video silindi.",
+        "Video deleted."
+      ));
+
       return;
     }
   });
