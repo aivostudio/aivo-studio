@@ -1920,9 +1920,12 @@ if (deleteBtn) {
               deleteBtn.addEventListener("click", function(){
                 card.remove();
 
-                if (!resultsEl.querySelector(".aivo-player-card")) {
+                     if (!resultsEl.querySelector(".aivo-player-card")) {
                   resultsEl.className = "empty-card";
-                  resultsEl.innerHTML = "Henüz mobil müzik üretimi başlatılmadı.";
+                  resultsEl.innerHTML = musicText(
+                    "Henüz mobil müzik üretimi başlatılmadı.",
+                    "No mobile music generation has been started yet."
+                  );
                   statusEl.textContent = "";
                 }
               });
