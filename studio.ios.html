@@ -1281,7 +1281,9 @@ try {
     }
 
     accountProfileMount.innerHTML = await accountProfileRes.text();
-
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountProfileMount);
+}
     const accountScript = document.createElement("script");
     accountScript.src = "/mobile/js/mobile.account.js?v=1";
     accountScript.defer = true;
@@ -1363,6 +1365,9 @@ if (!accountContactRes.ok) {
 }
 
 accountContactMount.innerHTML = await accountContactRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountContactMount);
+}
 
 const contactScript = document.createElement("script");
 contactScript.src = "/mobile/js/mobile.contact.js?v=1";
