@@ -1459,8 +1459,17 @@ if (shareBtn) {
   }
 
   function loadMiniPlayer(payload){
-    const title = String(payload.title || "Yeni müzik");
-    const sub = String(payload.sub || "AIVO");
+    const title = String(
+      payload.title || musicText(
+        "Yeni müzik",
+        "New music"
+      )
+    );
+
+    const sub = String(
+      payload.sub || "AIVO"
+    );
+
     const audioUrl = String(payload.audioUrl || "");
 
     if (!audioUrl) return;
