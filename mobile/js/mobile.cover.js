@@ -54,6 +54,55 @@
     countEl.textContent = String((promptEl.value || "").length) + " / 1000";
   }
 
+  function coverText(key, fallback){
+    if (typeof window.t === "function") {
+      const value = window.t(key);
+      if (value && value !== key) return value;
+    }
+
+    return fallback;
+  }
+
+  function coverGenerateText(){
+    if (window.AIVO_LANG === "en") {
+      return "🖼️ Generate Cover (" + selectedCredit + " Credits)";
+    }
+
+    return "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
+  }
+
+  function getCoverStylePrompt(btn){
+    const style = String(btn && btn.getAttribute("data-style") || "").trim();
+
+    if (window.AIVO_LANG === "en") {
+      if (style === "Gerçekçi") {
+        return "Spotify album cover, realistic portrait, studio lighting, premium, sharp detail, 1:1";
+      }
+
+      if (style === "Sanatsal") {
+        return "Artistic album cover, oil paint texture, dramatic lighting, deep colors, 1:1";
+      }
+
+      if (style === "Çizgi Film") {
+        return "Cartoon album cover, vibrant colors, bold outline, fun character style, 1:1";
+      }
+
+      if (style === "Soyut") {
+        return "Abstract album cover, geometric shapes, soft gradients, modern design, 1:1";
+      }
+
+      if (style === "Fotoğrafik") {
+        return "Photographic album cover, cinematic lighting, depth of field, premium photography aesthetic, 1:1";
+      }
+
+      if (style === "Anime") {
+        return "Anime album cover, Japanese manga style, soft lighting, clean lines, 1:1";
+      }
+    }
+
+    return String(btn && btn.getAttribute("data-prompt") || "").trim();
+  }
+
   function setQuality(btn){
     const q = String(btn.getAttribute("data-quality") || "artist");
     const credit = Number(btn.getAttribute("data-credit-cost") || (q === "ultra" ? 9 : 6));
@@ -70,11 +119,16 @@
     if (creditEl) creditEl.textContent = String(selectedCredit);
 
     generateBtn.setAttribute("data-credit-cost", String(selectedCredit));
-    generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
+    generateBtn.textContent = coverGenerateText();
 
-     if (selectedQuality === "ultra") {
+    if (selectedQuality === "ultra") {
       promptEl.value = "";
-      promptEl.placeholder = "Cinematic mod için sahneyi kendin yaz. Örn: gece şehirde yalnız yürüyen karakter, neon ışıklar, sinematik atmosfer";
+      promptEl.placeholder = coverText(
+        "cover.ultraPlaceholder",
+        window.AIVO_LANG === "en"
+          ? "Write the scene yourself for Cinematic mode. E.g. a lonely character walking through a night city, neon lights, cinematic atmosphere"
+          : "Cinematic mod için sahneyi kendin yaz. Örn: gece şehirde yalnız yürüyen karakter, neon ışıklar, sinematik atmosfer"
+      );
       updatePromptCount();
       return;
     }
@@ -83,13 +137,28 @@
       return item.classList.contains("is-active");
     });
 
-    const stylePrompt = activeStyleBtn
-      ? String(activeStyleBtn.getAttribute("data-prompt") || "").trim()
-      : "";
+    const stylePrompt = activeStyleBtn ? getCoverStylePrompt(activeStyleBtn) : "";
 
     if (stylePrompt) {
       promptEl.value = stylePrompt;
       promptEl.placeholder = "";
+      updatePromptCount();
+    }
+  }
+
+  function setStyle(btn){
+    selectedStyle = String(btn.getAttribute("data-style") || "");
+
+    styleBtns.forEach(function(item){
+      const on = item === btn;
+      item.classList.toggle("is-active", on);
+      item.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+
+    const stylePrompt = getCoverStylePrompt(btn);
+
+    if (stylePrompt) {
+      promptEl.value = stylePrompt;
       updatePromptCount();
     }
   }
