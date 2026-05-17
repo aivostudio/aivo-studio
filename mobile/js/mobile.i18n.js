@@ -444,7 +444,20 @@
       "atmo.generatePro": "✨ Süper Atmosfer Video Oluştur (45 Kredi)",
 
       "atmo.latestTitle": "Son atmosfer videoları",
-      "atmo.empty": "Henüz mobil atmosfer videosu başlatılmadı.",
+    "atmo.empty": "Henüz mobil atmosfer videosu başlatılmadı.",
+
+      "cartoon.title": "AI Çocuk Çizgifilm",
+      "cartoon.subtitle": "Karakter oluştur veya tek sahnelik kısa çizgifilm videosu üret.",
+      "cartoon.desktopInfo": "Hikaye modu ve montaj stüdyosu gelişmiş düzenleme için Desktop Studio’da kullanılabilir.",
+
+      "cartoon.modeLabel": "Çizgifilm modu",
+      "cartoon.characterMode": "Karakter",
+      "cartoon.sceneMode": "Tek Sahne",
+
+      "cartoon.characterTitle": "Karakter Oluştur",
+      "cartoon.characterSub": "Kısa bir tanım yaz, AIVO çizgifilm karakterini oluştursun.",
+      "cartoon.characterPrompt": "Karakter Tanımı",
+      "cartoon.characterPromptPlaceholder": "Örn: sarı yağmurluklu sevimli küçük tavşan",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -901,7 +914,20 @@
       "atmo.generatePro": "✨ Create Super Atmosphere Video (45 Credits)",
 
       "atmo.latestTitle": "Latest atmosphere videos",
-      "atmo.empty": "No mobile atmosphere video has been started yet.",
+    "atmo.empty": "No mobile atmosphere video has been started yet.",
+
+      "cartoon.title": "AI Kids Cartoon",
+      "cartoon.subtitle": "Create a character or generate a short single-scene cartoon video.",
+      "cartoon.desktopInfo": "Story mode and montage studio are available in Desktop Studio for advanced editing.",
+
+      "cartoon.modeLabel": "Cartoon mode",
+      "cartoon.characterMode": "Character",
+      "cartoon.sceneMode": "Single Scene",
+
+      "cartoon.characterTitle": "Create Character",
+      "cartoon.characterSub": "Write a short description and let AIVO create the cartoon character.",
+      "cartoon.characterPrompt": "Character Description",
+      "cartoon.characterPromptPlaceholder": "E.g. cute little rabbit with a yellow raincoat",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
