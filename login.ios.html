@@ -576,6 +576,15 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
       const terms = document.getElementById("mobileTerms");
 
       let mode = "login";
+      function tt(key, fallback){
+  try {
+    if (typeof window.t === "function") {
+      return window.t(key);
+    }
+  } catch (_) {}
+
+  return fallback;
+}
 
   function setMessage(text, type){
   message.textContent = "";
@@ -614,18 +623,18 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
           tab.classList.toggle("is-active", tab.getAttribute("data-mode") === mode);
         });
 
-       submitBtn.textContent = mode === "login"
-  ? window.t("login.submit.login")
-  : window.t("login.submit.register");
+  submitBtn.textContent = mode === "login"
+  ? tt("login.submit.login", "Giriş Yap")
+  : tt("login.submit.register", "Hesap Oluştur");
 
 footerText.textContent = mode === "login"
-  ? window.t("login.footer.new")
-  : window.t("login.footer.haveAccount");
+  ? tt("login.footer.new", "AIVO’da yeni misin?")
+  : tt("login.footer.haveAccount", "Zaten hesabın var mı?");
 
 switchBtn.textContent = mode === "login"
-  ? window.t("login.footer.create")
-  : window.t("login.footer.login");
-
+  ? tt("login.footer.create", "Ücretsiz hesap oluştur →")
+  : tt("login.footer.login", "Giriş yap →");
+        
         password.setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
         setMessage("", "");
       }
@@ -649,10 +658,13 @@ switchBtn.textContent = mode === "login"
         const cleanEmail = String(email.value || "").trim().toLowerCase();
         const cleanPassword = String(password.value || "");
 
-        if (!cleanEmail || !cleanEmail.includes("@") || !cleanPassword) {
-          setMessage("E-posta ve şifre gerekli.", "is-error");
-          return;
-        }
+       if (!cleanEmail || !cleanEmail.includes("@") || !cleanPassword) {
+  setMessage(
+    tt("login.error.emailPasswordRequired", "E-posta ve şifre gerekli."),
+    "is-error"
+  );
+  return;
+}
 
         if (mode === "register") {
           if (!String(firstName.value || "").trim() || !String(lastName.value || "").trim()) {
@@ -713,7 +725,10 @@ switchBtn.textContent = mode === "login"
           if (err === "email_not_verified") {
           setMessage("E-posta doğrulaması gerekiyor. Lütfen e-postandaki doğrulama bağlantısına tıkla.", "is-error");
            } else if (err === "invalid_credentials" || err === "user_not_found") {
-          setMessage("E-posta veya şifre hatalı.", "is-error");
+         setMessage(
+  tt("login.error.invalidCredentials", "E-posta veya şifre hatalı."),
+  "is-error"
+);
           } else if (err === "user_exists" || err === "email_exists" || err === "email_already_registered") {
           setMessage("Bu e-posta ile hesap zaten var.", "is-error");
             } else {
@@ -733,7 +748,10 @@ switchBtn.textContent = mode === "login"
   return;
 }
 
-         setMessage("Giriş başarılı.", "is-ok");
+        setMessage(
+  tt("login.success.login", "Giriş başarılı."),
+  "is-ok"
+);
 
          setTimeout(function(){
      window.location.href = returnTo;
