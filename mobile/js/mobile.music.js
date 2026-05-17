@@ -1873,25 +1873,52 @@ miniAudioEl.play().then(function(){
               ? (title || "Yeni müzik")
               : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
 card.innerHTML = `
-  <button class="mobile-ready-thumb" type="button" data-action="mobile-play" title="Oynat" aria-label="Oynat">
+  <button
+    class="mobile-ready-thumb"
+    type="button"
+    data-action="mobile-play"
+    title="${musicText("Oynat", "Play")}"
+    aria-label="${musicText("Oynat", "Play")}"
+  >
     ♫
   </button>
 
   <div class="mobile-ready-meta">
     <div class="mobile-ready-title">${safe(cardTitle)}</div>
-    <div class="mobile-ready-sub">Müzik hazır</div>
+
+    <div class="mobile-ready-sub">
+      ${musicText(
+        "Müzik hazır",
+        "Music is ready"
+      )}
+    </div>
+
     <audio class="aivo-audio" preload="metadata" src="${safe(audioUrl)}"></audio>
   </div>
 
   <div class="mobile-ready-actions">
-  <a class="mobile-ready-action" href="#" data-action="mobile-download" title="İndir" aria-label="İndir">
+    <a
+      class="mobile-ready-action"
+      href="#"
+      data-action="mobile-download"
+      title="${musicText("İndir", "Download")}"
+      aria-label="${musicText("İndir", "Download")}"
+    >
       ↓
     </a>
-    <button class="mobile-ready-action" type="button" data-action="mobile-remove" title="Sil" aria-label="Sil">
+
+    <button
+      class="mobile-ready-action"
+      type="button"
+      data-action="mobile-remove"
+      title="${musicText("Sil", "Delete")}"
+      aria-label="${musicText("Sil", "Delete")}"
+    >
       ×
     </button>
   </div>
-`;const playBtn = card.querySelector('[data-action="mobile-play"]');
+`;
+const playBtn = card.querySelector('[data-action="mobile-play"]');
 const downloadBtn = card.querySelector('[data-action="mobile-download"]');
 const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
