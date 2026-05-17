@@ -705,16 +705,33 @@ async function uploadMobilePhotoFxFile(file, kind){
           setFileLabel(input, file);
           syncCreditButton();
 
-          if (item.urlKey === "imageUrl") {
-            setStatus(isEn ? "Image added." : "Resim eklendi.");
-            mobilePhotoFxToast("success", isEn ? "Image added" : "Resim eklendi");
-          } else if (item.urlKey === "logoUrl") {
-            setStatus(isEn ? "Logo added." : "Logo eklendi.");
-            mobilePhotoFxToast("success", isEn ? "Logo added · +10 credits" : "Logo eklendi · +10 kredi");
-          } else if (item.urlKey === "audioUrl") {
-            setStatus(isEn ? "Music added." : "Müzik eklendi.");
-            mobilePhotoFxToast("success", isEn ? "Music added · +10 credits" : "Müzik eklendi · +10 kredi");
-          }
+       if (item.urlKey === "imageUrl") {
+  setStatus(isEn ? "Reference image added." : "Referans görsel eklendi.");
+  mobilePhotoFxToast(
+    "success",
+    isEn
+      ? "Reference image added · Free"
+      : "Referans görsel eklendi · Ücretsiz"
+  );
+
+} else if (item.urlKey === "logoUrl") {
+  setStatus(isEn ? "Logo added." : "Logo eklendi.");
+  mobilePhotoFxToast(
+    "success",
+    isEn
+      ? "Logo added · +10 Credits"
+      : "Logo eklendi · +10 Kredi"
+  );
+
+} else if (item.urlKey === "audioUrl") {
+  setStatus(isEn ? "Audio added." : "Ses eklendi.");
+  mobilePhotoFxToast(
+    "success",
+    isEn
+      ? "Audio added · +10 Credits"
+      : "Ses eklendi · +10 Kredi"
+  );
+}
         } catch (err) {
           console.error("[MOBILE PHOTOFX][UPLOAD ERROR]", err);
           clearMobilePhotoFxLoading();
