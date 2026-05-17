@@ -197,8 +197,13 @@ const sub = credits > 0
       ? openBase + "?email=" + encodeURIComponent(email) + "&id=" + encodeURIComponent(id)
       : "";
 
-    const actionText = type === "refund" ? "İade Belgesini Aç" : "Faturayı Görüntüle";
-    const typeText = type === "refund" ? "İade" : "Satın Alım";
+    const actionText = type === "refund"
+  ? (window.t ? window.t("invoices.openRefund") : "İade Belgesini Aç")
+  : (window.t ? window.t("invoices.openInvoice") : "Faturayı Görüntüle");
+
+const typeText = type === "refund"
+  ? (window.t ? window.t("invoices.typeRefund") : "İade")
+  : (window.t ? window.t("invoices.typePurchase") : "Satın Alım");
 
     return `
       <article class="mobile-invoice-card" data-mobile-invoice-type="${escapeHtml(type)}">
