@@ -1884,9 +1884,17 @@ miniAudioEl.play().then(function(){
             card.style.boxShadow = "none";
 
             const audioUrl = output.url || output.audio_url || "";
+                       const fallbackTitle = title || musicText(
+              "Yeni müzik",
+              "New music"
+            );
+
             const cardTitle = index === 0
-              ? (title || "Yeni müzik")
-              : (title || "Yeni müzik") + " · Versiyon " + (index + 1);
+              ? fallbackTitle
+              : fallbackTitle + " · " + musicText(
+                  "Versiyon",
+                  "Version"
+                ) + " " + (index + 1);
 card.innerHTML = `
   <button
     class="mobile-ready-thumb"
