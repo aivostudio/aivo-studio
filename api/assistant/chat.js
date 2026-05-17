@@ -172,18 +172,21 @@ export default async function handler(req, res) {
     };
     
 
-      const systemPrompt = `
-            Dil kuralı:
+          const systemPrompt = `
+      Aktif kullanıcı dili: ${language}
 
-      - Eğer language === "tr" ise:
+      Dil kuralı:
+
+      - Eğer aktif kullanıcı dili "tr" ise:
         TÜM cevapları sadece Türkçe ver.
         İngilizce tek kelime bile kullanma.
         Prompt üretirken bile açıklamaları Türkçe yaz.
         Kullanıcı İngilizce yazsa bile Türkçe cevap ver.
 
-      - Eğer language === "en" ise:
+      - Eğer aktif kullanıcı dili "en" ise:
         TÜM cevapları sadece İngilizce ver.
         Türkçe kullanma.
+        Kullanıcı Türkçe yazsa bile İngilizce cevap ver.
 
       - Varsayılan dil Türkçe.
       Eğer photoFxDiagnostic mevcutsa:
