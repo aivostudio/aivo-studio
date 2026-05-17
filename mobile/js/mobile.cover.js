@@ -453,12 +453,13 @@
           topCreditCountEl.textContent = String(nextCredits);
         }
 
-              const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
         mobileCreditEls.forEach(function(el){
           el.textContent = window.AIVO_LANG === "en"
             ? "Credits " + nextCredits
             : "Kredi " + nextCredits;
         });
+
         if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
           window.AIVO_STORE_V1.setCredits(nextCredits);
         }
@@ -583,7 +584,11 @@
         await refreshMobileCoverCredits();
 
         if (data.refunded && window.toast?.error) {
-          window.toast.error("İşlem başarısız oldu, kredi iade edildi.");
+          window.toast.error(
+            window.AIVO_LANG === "en"
+              ? "The process failed, credits were refunded."
+              : "İşlem başarısız oldu, kredi iade edildi."
+          );
         }
 
         return true;
@@ -596,27 +601,29 @@
 
     return false;
   }
- qualityBtns.forEach(function(btn){
-  btn.addEventListener("click", function(){
-    setQuality(btn);
 
-    if (window.toast?.success) {
-      if (selectedQuality === "ultra") {
-        window.toast.success(
-          window.AIVO_LANG === "en"
-            ? "Cinematic Ultra HD selected · 9 credits"
-            : "Cinematic Ultra HD seçildi · 9 kredi"
-        );
-      } else {
-        window.toast.success(
-          window.AIVO_LANG === "en"
-            ? "Artist selected · 6 credits"
-            : "Artist seçildi · 6 kredi"
-        );
+  qualityBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      setQuality(btn);
+
+      if (window.toast?.success) {
+        if (selectedQuality === "ultra") {
+          window.toast.success(
+            window.AIVO_LANG === "en"
+              ? "Cinematic Ultra HD selected · 9 credits"
+              : "Cinematic Ultra HD seçildi · 9 kredi"
+          );
+        } else {
+          window.toast.success(
+            window.AIVO_LANG === "en"
+              ? "Artist selected · 6 credits"
+              : "Artist seçildi · 6 kredi"
+          );
+        }
       }
-    }
+    });
   });
-});
+
   styleBtns.forEach(function(btn){
     btn.addEventListener("click", function(){
       setStyle(btn);
@@ -625,16 +632,23 @@
 
   promptEl.addEventListener("input", updatePromptCount);
   promptEl.addEventListener("change", updatePromptCount);
+
   generateBtn.addEventListener("click", async function(){
     const prompt = String(promptEl.value || "").trim();
     const count = Number(countSelect?.value || 1) || 1;
     const ratio = String(ratioSelect?.value || "1:1");
 
     if (!prompt) {
-      statusEl.textContent = "Prompt yazmadan kapak üretimi başlatılamaz.";
+      statusEl.textContent = window.AIVO_LANG === "en"
+        ? "Cover generation cannot start without a prompt."
+        : "Prompt yazmadan kapak üretimi başlatılamaz.";
 
       if (window.toast?.warning) {
-        window.toast.warning("Prompt yazmadan kapak üretimi başlatılamaz.");
+        window.toast.warning(
+          window.AIVO_LANG === "en"
+            ? "Cover generation cannot start without a prompt."
+            : "Prompt yazmadan kapak üretimi başlatılamaz."
+        );
       }
 
       return;
@@ -643,27 +657,49 @@
     let refundCtx = null;
 
     generateBtn.disabled = true;
-    generateBtn.textContent = "Üretiliyor...";
+    generateBtn.textContent = window.AIVO_LANG === "en"
+      ? "Generating..."
+      : "Üretiliyor...";
     generateBtn.classList.add("is-loading");
-    statusEl.textContent = "Kredi kontrol ediliyor...";
+    statusEl.textContent = window.AIVO_LANG === "en"
+      ? "Checking credits..."
+      : "Kredi kontrol ediliyor...";
 
     if (window.toast?.loading) {
-      window.toast.loading("Kapak üretimi başlatılıyor...");
+      window.toast.loading(
+        window.AIVO_LANG === "en"
+          ? "Starting cover generation..."
+          : "Kapak üretimi başlatılıyor..."
+      );
     }
 
     try {
       refundCtx = await consumeCredits(selectedCredit);
 
-      statusEl.textContent = "Kapak üretimi başlatıldı...";
+      statusEl.textContent = window.AIVO_LANG === "en"
+        ? "Cover generation started..."
+        : "Kapak üretimi başlatıldı...";
 
       if (window.toast?.success) {
         if (selectedCredit === 9) {
-          window.toast.success("9 kredi düşüldü");
+          window.toast.success(
+            window.AIVO_LANG === "en"
+              ? "9 credits used"
+              : "9 kredi düşüldü"
+          );
         } else {
-          window.toast.success("6 kredi düşüldü");
+          window.toast.success(
+            window.AIVO_LANG === "en"
+              ? "6 credits used"
+              : "6 kredi düşüldü"
+          );
         }
 
-        window.toast.success("Kapak üretimi başladı");
+        window.toast.success(
+          window.AIVO_LANG === "en"
+            ? "Cover generation started"
+            : "Kapak üretimi başladı"
+        );
       }
 
       resultsEl.hidden = false;
@@ -687,22 +723,34 @@
         resultsEl.appendChild(renderCoverCard(item, index));
       });
 
-      statusEl.textContent = "Kapak hazır.";
+      statusEl.textContent = window.AIVO_LANG === "en"
+        ? "Cover is ready."
+        : "Kapak hazır.";
 
       if (window.toast?.success) {
-        window.toast.success("Kapak hazır");
+        window.toast.success(
+          window.AIVO_LANG === "en"
+            ? "Cover is ready"
+            : "Kapak hazır"
+        );
       }
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
 
       if (msg === "insufficient_credit") {
-        statusEl.textContent = "Kredi yetersiz. Paket sayfasına yönlendiriliyorsun...";
+        statusEl.textContent = window.AIVO_LANG === "en"
+          ? "Insufficient credits. Redirecting you to packages..."
+          : "Kredi yetersiz. Paket sayfasına yönlendiriliyorsun...";
 
         if (window.toast?.warning) {
-          window.toast.warning("Kredi yetersiz. Paketler açılıyor...");
+          window.toast.warning(
+            window.AIVO_LANG === "en"
+              ? "Insufficient credits. Opening packages..."
+              : "Kredi yetersiz. Paketler açılıyor..."
+          );
         }
 
-               location.hash = "#credits";
+        location.hash = "#credits";
 
         const creditsNav =
           document.querySelector('.bottom-nav a[href="#credits"]') ||
@@ -716,7 +764,7 @@
         return;
       }
 
-        const refunded = await refundMobileCoverCredits(refundCtx, "mobile_cover_generate_failed", {
+      const refunded = await refundMobileCoverCredits(refundCtx, "mobile_cover_generate_failed", {
         error:msg,
         quality:selectedQuality,
         ratio:ratio,
@@ -724,18 +772,38 @@
       });
 
       statusEl.textContent = refunded
-        ? "Kapak üretilemedi. Kredi iade edildi."
-        : "Kapak üretilemedi: " + msg;
+        ? (
+            window.AIVO_LANG === "en"
+              ? "Cover could not be generated. Credits were refunded."
+              : "Kapak üretilemedi. Kredi iade edildi."
+          )
+        : (
+            window.AIVO_LANG === "en"
+              ? "Cover could not be generated: " + msg
+              : "Kapak üretilemedi: " + msg
+          );
 
       if (!refunded && window.toast?.error) {
-        window.toast.error("Kapak üretilemedi.");
+        window.toast.error(
+          window.AIVO_LANG === "en"
+            ? "Cover could not be generated."
+            : "Kapak üretilemedi."
+        );
       }
 
       resultsEl.className = "empty-card";
       resultsEl.innerHTML = refunded
-        ? "Kapak üretilemedi. Kredi iade edildi."
-        : "Kapak üretilemedi. Kredi iadesi kontrol edildi.";
-       } finally {
+        ? (
+            window.AIVO_LANG === "en"
+              ? "Cover could not be generated. Credits were refunded."
+              : "Kapak üretilemedi. Kredi iade edildi."
+          )
+        : (
+            window.AIVO_LANG === "en"
+              ? "Cover could not be generated. Credit refund was checked."
+              : "Kapak üretilemedi. Kredi iadesi kontrol edildi."
+          );
+    } finally {
       generateBtn.disabled = false;
       generateBtn.textContent = coverGenerateText();
       generateBtn.classList.remove("is-loading");
@@ -744,7 +812,9 @@
 
   async function hydrateCoverLibrary(){
     resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Kapaklar yükleniyor...";
+    resultsEl.innerHTML = window.AIVO_LANG === "en"
+      ? "Covers are loading..."
+      : "Kapaklar yükleniyor...";
 
     try {
       const res = await fetch("/api/jobs/list?app=cover", {
@@ -767,14 +837,16 @@
 
       if (!rows.length) {
         resultsEl.className = "empty-card";
-        resultsEl.innerHTML = "Henüz mobil kapak üretimi başlatılmadı.";
+        resultsEl.innerHTML = window.AIVO_LANG === "en"
+          ? "No mobile cover generation has been started yet."
+          : "Henüz mobil kapak üretimi başlatılmadı.";
         return;
       }
 
       resultsEl.className = "";
       resultsEl.innerHTML = "";
 
-    rows.forEach(function(row, index){
+      rows.forEach(function(row, index){
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
         const firstImageOutput = outputs.find(function(output){
@@ -813,11 +885,15 @@
 
       if (!resultsEl.querySelector(".mobile-cover-result-card")) {
         resultsEl.className = "empty-card";
-        resultsEl.innerHTML = "Henüz mobil kapak üretimi başlatılmadı.";
+        resultsEl.innerHTML = window.AIVO_LANG === "en"
+          ? "No mobile cover generation has been started yet."
+          : "Henüz mobil kapak üretimi başlatılmadı.";
       }
     } catch (err) {
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Kapaklar yüklenemedi.";
+      resultsEl.innerHTML = window.AIVO_LANG === "en"
+        ? "Covers could not be loaded."
+        : "Kapaklar yüklenemedi.";
     }
   }
 
@@ -827,6 +903,4 @@
 
   if (qualityBtns[0]) setQuality(qualityBtns[0]);
   if (styleBtns[0]) setStyle(styleBtns[0]);
-
- 
 })();
