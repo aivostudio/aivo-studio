@@ -110,7 +110,9 @@
     const hint = $("#mobileCreditsKvkkHint");
 
     if (hint) {
-      hint.textContent = "Devam etmek için KVKK onayını işaretlemelisin.";
+         hint.textContent =
+        (window.aivoI18n && window.aivoI18n.t("credits.kvkkHint")) ||
+        "You must confirm the KVKK consent to continue.";
       hint.style.display = "block";
     }
 
@@ -132,12 +134,16 @@
     if (isLoading) {
       button.dataset.originalText = button.textContent;
       button.disabled = true;
-      button.textContent = "Ödeme hazırlanıyor...";
+        button.textContent =
+        (window.aivoI18n && window.aivoI18n.t("credits.paymentLoading")) ||
+        "Preparing payment...";
       return;
     }
 
     button.disabled = false;
-    button.textContent = button.dataset.originalText || "Paketi seç";
+     button.textContent =
+      button.dataset.originalText ||
+      ((window.aivoI18n && window.aivoI18n.t("credits.pack.select")) || "Select package");
   }
 
   function submitGatewayForm(gateway){
@@ -170,7 +176,10 @@
     const pack = PLAN_MAP[planKey];
 
     if (!pack) {
-      alert("Geçersiz paket seçimi.");
+       alert(
+        (window.aivoI18n && window.aivoI18n.t("credits.invalidPackage")) ||
+        "Invalid package selection."
+      );
       return;
     }
 
@@ -223,7 +232,10 @@
       submitGatewayForm(data.gateway);
     } catch (err) {
       console.error("[AIVO mobile credits] checkout failed:", err);
-      alert("Ödeme başlatılamadı. Lütfen tekrar dene.");
+        alert(
+        (window.aivoI18n && window.aivoI18n.t("credits.paymentFailed")) ||
+        "Payment could not be started. Please try again."
+      );
       setButtonLoading(button, false);
     }
   }
