@@ -89,7 +89,7 @@
     toast.className = "mobile-toast";
     toast.dataset.type = data.type;
 
-     const title = data.title || (
+       const title = data.title || (
       data.type === "success" ? tt("toast.title.success", "Başarılı") :
       data.type === "error" ? tt("toast.title.error", "Hata") :
       data.type === "warning" ? tt("toast.title.warning", "Uyarı") :
