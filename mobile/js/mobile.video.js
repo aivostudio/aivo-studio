@@ -141,6 +141,8 @@ const state = {
   }
 
   function mobileVideoLoading(message){
+    clearMobileVideoLoading();
+
     MOBILE_VIDEO_TOAST.loadingId = mobileVideoToast("loading", message, {
       persist: true,
       autoClose: false,
