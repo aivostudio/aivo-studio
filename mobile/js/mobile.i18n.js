@@ -67,6 +67,12 @@
       "toast.title.warning": "Uyarı",
       "toast.title.loading": "İşleniyor",
       "toast.title.info": "Bilgi",
+      "assistant.launcher": "AI Yardım",
+      "assistant.title": "AIVO AI Yardım",
+      "assistant.subtitle": "Hızlı yönlendirme, paket, kredi ve prompt desteği",
+      "assistant.placeholder": "Sorunu ya da yapmak istediğini yaz...",
+     "assistant.send": "Gönder",
+     "assistant.wait": "Bekle...",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
