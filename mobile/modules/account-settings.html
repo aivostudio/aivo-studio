@@ -365,41 +365,63 @@
   </div>
 </div>
 
-  <div class="mobile-settings-pane" data-mobile-settings-pane="data" hidden>
-    <div class="mobile-settings-card">
-      <div class="mobile-settings-card-head">
-        <div>
-          <h4>Veri Hakları</h4>
-          <p>Kişisel verilerine erişim ve talep işlemleri.</p>
-        </div>
+<div class="mobile-settings-pane" data-mobile-settings-pane="data" hidden>
+  <div class="mobile-settings-card">
+    <div class="mobile-settings-card-head">
+      <div>
+        <h4 data-i18n="settings.data.title">
+          Veri Hakları
+        </h4>
+
+        <p data-i18n="settings.data.subtitle">
+          Kişisel verilerine erişim ve talep işlemleri.
+        </p>
       </div>
-
-      <div class="mobile-settings-field">
-        <label>Export formatı</label>
-        <select data-mobile-setting="data_export_format">
-          <option value="json" selected>JSON</option>
-          <option value="zip" disabled>ZIP yakında</option>
-        </select>
-      </div>
-
-      <button class="mobile-settings-primary" type="button" data-mobile-settings-export>
-        Verilerimi İndir
-      </button>
-
-      <div class="mobile-settings-field">
-        <label>Düzeltme talebi</label>
-        <textarea rows="3" placeholder="Düzeltme talebini kısaca yaz..." data-mobile-setting="data_rectification_note"></textarea>
-      </div>
-
-      <label class="mobile-settings-row mobile-settings-row-danger">
-        <span>
-          <b>Silme talebini anladım</b>
-          <small>Bu işlem ileride hesabının kalıcı silinmesini başlatabilir.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="data_delete_ack">
-      </label>
     </div>
+
+    <div class="mobile-settings-field">
+      <label data-i18n="settings.data.exportFormat">
+        Export formatı
+      </label>
+
+      <select data-mobile-setting="data_export_format">
+        <option value="json" selected>JSON</option>
+        <option value="zip" disabled data-i18n="settings.data.zipSoon">ZIP yakında</option>
+      </select>
+    </div>
+
+    <button class="mobile-settings-primary" type="button" data-mobile-settings-export data-i18n="settings.data.download">
+      Verilerimi İndir
+    </button>
+
+    <div class="mobile-settings-field">
+      <label data-i18n="settings.data.rectification">
+        Düzeltme talebi
+      </label>
+
+      <textarea
+        rows="3"
+        data-i18n-placeholder="settings.data.rectificationPlaceholder"
+        placeholder="Düzeltme talebini kısaca yaz..."
+        data-mobile-setting="data_rectification_note"
+      ></textarea>
+    </div>
+
+    <label class="mobile-settings-row mobile-settings-row-danger">
+      <span>
+        <b data-i18n="settings.data.deleteAck">
+          Silme talebini anladım
+        </b>
+
+        <small data-i18n="settings.data.deleteAckDesc">
+          Bu işlem ileride hesabının kalıcı silinmesini başlatabilir.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="data_delete_ack">
+    </label>
   </div>
+</div>
 
   <button class="mobile-settings-primary" type="button" data-mobile-settings-save>
     Ayarları Kaydet
