@@ -909,15 +909,15 @@ async function uploadMobilePhotoFxFile(file, kind){
     generateBtn.addEventListener("click", async function(){
       const payload = buildPayload();
 
-      if (!payload.image_url) {
-        setStatus("Lütfen referans görsel yükle.");
-        mobilePhotoFxToast("warning", "Lütfen bir ana görsel seç.");
+         if (!payload.image_url) {
+        setStatus(isEn ? "Please upload a reference image." : "Lütfen referans görsel yükle.");
+        mobilePhotoFxToast("warning", isEn ? "Please select a main image." : "Lütfen bir ana görsel seç.");
         return;
       }
 
       if (!payload.prompt) {
-        setStatus("Lütfen prompt yaz.");
-        mobilePhotoFxToast("info", "Prompt yazmalısın");
+        setStatus(isEn ? "Please write a prompt." : "Lütfen prompt yaz.");
+        mobilePhotoFxToast("info", isEn ? "You need to write a prompt." : "Prompt yazmalısın");
         if (promptEl) promptEl.focus();
         return;
       }
