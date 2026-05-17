@@ -463,10 +463,10 @@
   
   function syncGenerateButton(){
     if (!generateBtn) return;
-
     const hasSpeech = Boolean(safeText(state.script) || state.audioFile);
     const credits = calculateCredits();
     const policyBlocked = Boolean(safeText(state.script) && hasLipsyncBadLanguage(state.script));
+    const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
 
     if (policyBlocked) {
       generateBtn.disabled = true;
