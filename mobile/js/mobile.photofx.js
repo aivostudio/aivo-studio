@@ -736,7 +736,12 @@ async function uploadMobilePhotoFxFile(file, kind){
   errText.includes("impersonation") ||
   errText.includes("blocked");
 
-          mobilePhotoFxToast("error", isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası");
+             mobilePhotoFxToast(
+            "error",
+            isPolicyBlocked
+              ? (isEn ? "This image cannot be used." : "Bu görsel kullanılamaz.")
+              : (isEn ? "Upload error" : "Yükleme hatası")
+          );
         }
       });
     });
