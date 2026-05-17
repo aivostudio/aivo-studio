@@ -1038,12 +1038,17 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
   state[stateKey] = file;
   state[urlKey] = "";
 
-   if (textEl) {
-    textEl.textContent = file ? "Yükleniyor..." : "Dosya seçilmedi";
+  if (textEl) {
+    textEl.textContent = file
+      ? cartoonText("Yükleniyor...", "Uploading...")
+      : cartoonText("Dosya seçilmedi", "No file selected");
   }
 
-   if (file) {
-    mobileCartoonLoading("Dosya güvenlik kontrolünden geçiriliyor...");
+  if (file) {
+    mobileCartoonLoading(cartoonText(
+      "Dosya güvenlik kontrolünden geçiriliyor...",
+      "File is being checked for safety..."
+    ));
   }
 
   if (clearBtn) {
@@ -1055,11 +1060,15 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
   if (!file) return;
 
   try {
-       const url = await uploadCartoonFile(file);
+    const url = await uploadCartoonFile(file);
     clearMobileCartoonLoading();
     state[urlKey] = url;
+
     if (textEl) {
-      textEl.textContent = file.name + " yüklendi";
+      textEl.textContent = cartoonText(
+        file.name + " yüklendi",
+        file.name + " uploaded"
+      );
     }
   } catch (err) {
     console.error("[MOBILE CARTOON][UPLOAD ERROR]", err);
@@ -1074,7 +1083,10 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
     }
 
     if (textEl) {
-      textEl.textContent = "Yükleme başarısız";
+      textEl.textContent = cartoonText(
+        "Yükleme başarısız",
+        "Upload failed"
+      );
     }
 
     if (clearBtn) {
@@ -1108,13 +1120,25 @@ async function setUploadState(input, clearBtn, textEl, stateKey, urlKey){
       errText.includes("blocked");
 
     if (isPolicyBlocked) {
-      setStatus("Bu görsel kullanılamaz.");
-      mobileCartoonToast("error", "Bu görsel kullanılamaz.");
+      setStatus(cartoonText(
+        "Bu görsel kullanılamaz.",
+        "This image cannot be used."
+      ));
+      mobileCartoonToast("error", cartoonText(
+        "Bu görsel kullanılamaz.",
+        "This image cannot be used."
+      ));
       return;
     }
 
-    setStatus("Dosya yüklenemedi. Lütfen tekrar dene.");
-    mobileCartoonToast("error", "Yükleme hatası");
+    setStatus(cartoonText(
+      "Dosya yüklenemedi. Lütfen tekrar dene.",
+      "File could not be uploaded. Please try again."
+    ));
+    mobileCartoonToast("error", cartoonText(
+      "Yükleme hatası",
+      "Upload error"
+    ));
   }
 }
 
@@ -1125,7 +1149,10 @@ function clearUpload(input, clearBtn, textEl, stateKey, urlKey){
   state[urlKey] = "";
 
   if (textEl) {
-    textEl.textContent = "Dosya seçilmedi";
+    textEl.textContent = cartoonText(
+      "Dosya seçilmedi",
+      "No file selected"
+    );
   }
 
   if (clearBtn) {
