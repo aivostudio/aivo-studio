@@ -1953,6 +1953,14 @@ function setFileLabel(input, file){
   function syncMobileAtmoLocalizedUi(){
     syncMobileAtmoCreditButtons();
 
+    const badgeMap = {
+      mobileAtmoLogoFile: "atmo.badgePlus10",
+      mobileAtmoAudioFile: "atmo.badgePlus10",
+      mobileAtmoProImageFile: "atmo.badgeFree",
+      mobileAtmoProLogoFile: "atmo.badgePlus10",
+      mobileAtmoProAudioFile: "atmo.badgePlus10"
+    };
+
     [
       "#mobileAtmoImageFile",
       "#mobileAtmoLogoFile",
@@ -1963,6 +1971,16 @@ function setFileLabel(input, file){
     ].forEach(function(selector){
       const input = root.querySelector(selector);
       if (!input) return;
+
+      const label = input.closest("label");
+      const badgeKey = badgeMap[input.id];
+
+      if (label && badgeKey) {
+        label.setAttribute(
+          "data-atmo-cost-label",
+          typeof window.t === "function" ? window.t(badgeKey) : label.getAttribute("data-atmo-cost-label")
+        );
+      }
 
       const hasFile = Boolean(input.files && input.files[0]);
       setFileLabel(input, hasFile ? input.files[0] : null);
