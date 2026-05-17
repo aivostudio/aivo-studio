@@ -713,63 +713,71 @@ if (shareBtn) {
     sheet.id = "mobileMusicMoreSheet";
     sheet.className = "mobile-music-sheet-backdrop";
 
-    sheet.innerHTML = `
-    <div class="mobile-music-sheet" role="dialog" aria-modal="true">
-      <div class="mobile-music-sheet-handle"></div>
+     sheet.innerHTML = `
+      <div class="mobile-music-sheet" role="dialog" aria-modal="true">
+        <div class="mobile-music-sheet-handle"></div>
 
-      <div class="mobile-music-sheet-head">
-        <div>
-          <div class="mobile-music-sheet-kicker">
-            ${musicText(
-              "Şarkı Sözleri",
-              "Lyrics"
-            )}
+        <div class="mobile-music-sheet-head">
+          <div>
+            <div class="mobile-music-sheet-kicker">
+              ${musicText(
+                "Diğer işlemler",
+                "More actions"
+              )}
+            </div>
+
+            <div class="mobile-music-sheet-title">${safe(title)}</div>
           </div>
 
-          <div class="mobile-music-sheet-title">${safe(title)}</div>
+          <button
+            class="mobile-music-sheet-close"
+            type="button"
+            aria-label="${musicText("Kapat", "Close")}"
+          >
+            ×
+          </button>
         </div>
 
-        <button
-          class="mobile-music-sheet-close"
-          type="button"
-          aria-label="${musicText("Kapat", "Close")}"
-        >
-          ×
-        </button>
-      </div>
-
-      <div class="mobile-music-confirm-text" style="max-height:48vh; overflow:auto; text-align:left !important; white-space:pre-wrap;">
-        ${lyrics
-          ? safe(lyrics)
-          : musicText(
-              "Bu müzik için kayıtlı şarkı sözü bulunamadı.",
-              "No lyrics were found for this music."
-            )}
-      </div>
-
-      ${
-        lyrics
-          ? `
-            <div class="mobile-music-confirm-actions">
-              <button class="mobile-music-confirm-cancel" type="button" data-mobile-lyrics-action="share">
+        ${
+          currentStemsStatus === "processing"
+            ? `
+              <div class="mobile-music-confirm-text">
                 ${musicText(
-                  "Paylaş",
-                  "Share"
+                  "Kanallar hazırlanıyor. Bu işlem zaten başlatıldı.",
+                  "Channels are being prepared. This process has already started."
                 )}
-              </button>
-
-              <button class="mobile-music-confirm-submit" type="button" data-mobile-lyrics-action="copy">
-                ${musicText(
-                  "Kopyala",
-                  "Copy"
-                )}
-              </button>
-            </div>
-          `
-          : ""
-      }
-    </div>
-  `;
+              </div>
+            `
+            : currentStemsStatus === "ready"
+              ? `
+                <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="channels">
+                  <span>
+                    <strong>${musicText("Kanallar", "Channels")}</strong>
+                    <small>
+                      ${musicText(
+                        "Hazır dosyaları görüntüle",
+                        "View ready files"
+                      )}
+                    </small>
+                  </span>
+                </button>
+              `
+              : `
+                <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="stems">
+                  <span>
+                    <strong>${musicText("Kanal Ayırma", "Stem Separation")}</strong>
+                    <small>
+                      ${musicText(
+                        "Bu işlem 5 kredi kullanır",
+                        "This action uses 5 credits"
+                      )}
+                    </small>
+                  </span>
+                </button>
+              `
+        }
+      </div>
+    `;
        function closeSheet(){
       sheet.remove();
       document.body.classList.remove("mobile-sheet-open");
