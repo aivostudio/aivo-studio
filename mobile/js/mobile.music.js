@@ -718,11 +718,20 @@ if (shareBtn) {
 
         <div class="mobile-music-sheet-head">
           <div>
-            <div class="mobile-music-sheet-kicker">Diğer işlemler</div>
+                      <div class="mobile-music-sheet-kicker">
+              ${musicText(
+                "Diğer işlemler",
+                "More actions"
+              )}
+            </div>
             <div class="mobile-music-sheet-title">${safe(title)}</div>
           </div>
 
-          <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+                  <button
+            class="mobile-music-sheet-close"
+            type="button"
+            aria-label="${musicText("Kapat", "Close")}"
+          >
             ×
           </button>
         </div>
@@ -730,16 +739,24 @@ if (shareBtn) {
         ${
           currentStemsStatus === "processing"
             ? `
-              <div class="mobile-music-confirm-text">
-                Kanallar hazırlanıyor. Bu işlem zaten başlatıldı.
+                           <div class="mobile-music-confirm-text">
+                ${musicText(
+                  "Kanallar hazırlanıyor. Bu işlem zaten başlatıldı.",
+                  "Channels are being prepared. This process has already started."
+                )}
               </div>
             `
             : currentStemsStatus === "ready"
               ? `
                 <button class="mobile-music-sheet-action mobile-action-stems" type="button" data-mobile-sheet-action="channels">
                   <span>
-                    <strong>Kanallar</strong>
-                    <small>Hazır dosyaları görüntüle</small>
+                   <strong>${musicText("Kanallar", "Channels")}</strong>
+                    <small>
+                      ${musicText(
+                        "Hazır dosyaları görüntüle",
+                        "View ready files"
+                      )}
+                    </small>
                   </span>
                 </button>
               `
