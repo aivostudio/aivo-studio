@@ -734,9 +734,9 @@
       resultsEl.innerHTML = refunded
         ? "Kapak üretilemedi. Kredi iade edildi."
         : "Kapak üretilemedi. Kredi iadesi kontrol edildi.";
-    } finally {
+       } finally {
       generateBtn.disabled = false;
-      generateBtn.textContent = "🖼️ Kapak Üret (" + selectedCredit + " Kredi)";
+      generateBtn.textContent = coverGenerateText();
       generateBtn.classList.remove("is-loading");
     }
   });
