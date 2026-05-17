@@ -306,7 +306,9 @@ const state = {
 
         const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
         mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
+          el.textContent = isMobileVideoEn()
+            ? "Credits " + nextCredits
+            : "Kredi " + nextCredits;
         });
 
         if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
@@ -403,7 +405,10 @@ const state = {
 
       if (res.ok && data && data.ok && (data.refunded || data.deduped || data.skipped)) {
         await refreshMobileVideoCreditsUI();
-        mobileVideoToast("error", "İşlem başarısız oldu, kredi iade edildi.");
+        mobileVideoToast("error", mobileVideoText(
+          "İşlem başarısız oldu, kredi iade edildi.",
+          "The process failed, credits were refunded."
+        ));
         return true;
       }
     } catch (err) {
@@ -416,17 +421,20 @@ const state = {
   function renderMobileVideoResults(){
     if (!resultsEl) return;
 
-   const sourceJobs = mobileVideoViewMode === "library"
-  ? mobileVideoLibraryJobs
-  : mobileVideoCurrentJobs;
+    const sourceJobs = mobileVideoViewMode === "library"
+      ? mobileVideoLibraryJobs
+      : mobileVideoCurrentJobs;
 
-const items = sourceJobs.filter(function(job){
-  return !mobileVideoDeletedIds.has(job.id);
-});
+    const items = sourceJobs.filter(function(job){
+      return !mobileVideoDeletedIds.has(job.id);
+    });
 
     if (!items.length) {
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Henüz mobil video başlatılmadı.";
+      resultsEl.innerHTML = mobileVideoText(
+        "Henüz video üretimi yok.",
+        "No video has been created yet."
+      );
       return;
     }
 
@@ -441,7 +449,7 @@ const items = sourceJobs.filter(function(job){
             ${
               ready
                 ? `<video class="mobile-photofx-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-                : `<div class="mobile-photofx-video-loading"><span>Hazırlanıyor…</span></div>`
+                : `<div class="mobile-photofx-video-loading"><span>${mobileVideoText("Hazırlanıyor…", "Preparing…")}</span></div>`
             }
 
             <div class="mobile-photofx-video-actions">
@@ -459,7 +467,7 @@ const items = sourceJobs.filter(function(job){
             }
           </div>
 
-          <div class="mobile-photofx-video-title">${esc(job.title || "Video")}</div>
+          <div class="mobile-photofx-video-title">${esc(job.title || mobileVideoText("Video", "Video"))}</div>
         </article>
       `;
     }).join("");
@@ -494,39 +502,62 @@ const items = sourceJobs.filter(function(job){
 
       if (!job) return;
 
- if (videoUrl) {
-  job.videoUrl = videoUrl;
-  job.status = "ready";
-  job.title = job.title || "Video hazır";
-  renderMobileVideoResults();
-  setStatus("Video hazır.");
-  clearMobileVideoLoading();
-  mobileVideoToast("success", "Video hazır");
-  return;
-}
+      if (videoUrl) {
+        job.videoUrl = videoUrl;
+        job.status = "ready";
+        job.title = job.title || mobileVideoText(
+          "Video hazır",
+          "Video is ready"
+        );
 
-    if (status.includes("fail") || status.includes("error")) {
-  job.status = "error";
-  job.title = "Video oluşturulamadı";
-  renderMobileVideoResults();
-  setStatus("Video oluşturulamadı.");
+        renderMobileVideoResults();
+        setStatus(mobileVideoText(
+          "Video hazır.",
+          "Video is ready."
+        ));
+        clearMobileVideoLoading();
+        mobileVideoToast("success", mobileVideoText(
+          "Video hazır.",
+          "Video is ready."
+        ));
+        return;
+      }
 
-  await refundMobileVideoCredits({
-    requestId: refundCtx?.requestId,
-    transactionId: refundCtx?.transactionId,
-    creditCost: refundCtx?.creditCost,
-    reason: "mobile_video_job_failed",
-    meta: {
-      source: "mobile.video.poll",
-      job_id: jobId,
-      error: data.error || "mobile_video_job_error"
-    }
-  });
+      if (
+        status.includes("fail") ||
+        status.includes("error") ||
+        status.includes("cancel")
+      ) {
+        job.status = "error";
+        job.title = mobileVideoText(
+          "Video oluşturulamadı",
+          "Video could not be created"
+        );
 
-  clearMobileVideoLoading();
-  mobileVideoToast("error", "Video oluşturulamadı");
-  return;
-}
+        renderMobileVideoResults();
+        setStatus(mobileVideoText(
+          "Video oluşturulamadı.",
+          "Video could not be created."
+        ));
+
+        await refundMobileVideoCredits({
+          requestId: refundCtx?.requestId,
+          transactionId: refundCtx?.transactionId,
+          creditCost: refundCtx?.creditCost,
+          reason: "mobile_video_job_failed",
+          meta: {
+            source: "mobile.video.poll",
+            job_id: jobId,
+            error: data.error || "mobile_video_job_error",
+            status: status,
+            response: data
+          }
+        });
+
+        clearMobileVideoLoading();
+        return;
+      }
+
       setTimeout(function(){
         pollMobileVideoJob(jobId, refundCtx);
       }, 3000);
@@ -539,7 +570,6 @@ const items = sourceJobs.filter(function(job){
       }, 4000);
     });
   }
-
   async function uploadMobileVideoFile(file){
     if (!file) return "";
 
