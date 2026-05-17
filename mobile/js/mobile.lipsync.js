@@ -479,11 +479,13 @@
     generateBtn.disabled = false;
 
     if (!hasSpeech) {
-      generateBtn.textContent = "Dudak Senkron Video Üret";
+      generateBtn.textContent = isEn ? "Create Lip Sync Video" : "Dudak Senkron Video Üret";
       return;
     }
 
-    generateBtn.textContent = "Dudak Senkron Video Üret (" + credits + " Kredi)";
+    generateBtn.textContent = isEn
+      ? "Create Lip Sync Video (" + credits + " Credits)"
+      : "Dudak Senkron Video Üret (" + credits + " Kredi)";
   }
 
   function isMobileLipsyncLibraryView(){
