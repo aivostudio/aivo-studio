@@ -29,6 +29,10 @@ export default async function handler(req, res) {
     const action = typeof body?.action === "string" ? body.action.trim() : "";
     const actionContext =
       typeof body?.actionContext === "string" ? body.actionContext.trim() : "";
+        const language =
+      typeof body?.language === "string" && body.language.trim()
+        ? body.language.trim().toLowerCase()
+        : "tr";
     const currentPanel =
       typeof body?.currentPanel === "string" ? body.currentPanel.trim() : "";
     const currentCardType =
@@ -166,8 +170,22 @@ export default async function handler(req, res) {
           ? body.videoDiagnostic
           : null,
     };
+    
 
       const systemPrompt = `
+            Dil kuralı:
+
+      - Eğer language === "tr" ise:
+        TÜM cevapları sadece Türkçe ver.
+        İngilizce tek kelime bile kullanma.
+        Prompt üretirken bile açıklamaları Türkçe yaz.
+        Kullanıcı İngilizce yazsa bile Türkçe cevap ver.
+
+      - Eğer language === "en" ise:
+        TÜM cevapları sadece İngilizce ver.
+        Türkçe kullanma.
+
+      - Varsayılan dil Türkçe.
       Eğer photoFxDiagnostic mevcutsa:
 
 - mode === "create" ise:
