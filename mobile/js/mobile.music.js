@@ -1898,8 +1898,16 @@ const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 if (playBtn) {
   playBtn.addEventListener("click", function(){
     loadMiniPlayer({
-      title: cardTitle,
-      sub: index === 0 ? "Orijinal" : "Versiyon " + (index + 1),
+          title: cardTitle,
+      sub: index === 0
+        ? musicText(
+            "Orijinal",
+            "Original"
+          )
+        : musicText(
+            "Versiyon",
+            "Version"
+          ) + " " + (index + 1),
       audioUrl
     });
   });
