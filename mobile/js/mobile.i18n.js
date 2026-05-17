@@ -62,6 +62,11 @@
 
       "toast.languageChanged": "Dil güncellendi.",
       "toast.settingsSaved": "Ayarlar kaydedildi.",
+      "toast.title.success": "Başarılı",
+       "toast.title.error": "Hata",
+      "toast.title.warning": "Uyarı",
+      "toast.title.loading": "İşleniyor",
+      "toast.title.info": "Bilgi",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -136,6 +141,11 @@
 
       "toast.languageChanged": "Language updated.",
       "toast.settingsSaved": "Settings saved.",
+      "toast.title.success": "Success",
+       "toast.title.error": "Error",
+       "toast.title.warning": "Warning",
+      "toast.title.loading": "Processing",
+      "toast.title.info": "Info",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
