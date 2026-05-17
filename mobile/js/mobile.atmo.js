@@ -1831,7 +1831,7 @@ function setFileLabel(input, file){
 
         renderMobileAtmoResults();
 
-        setStatus(atmoText(
+             setStatus(atmoText(
           "Süper atmosfer video hazırlanıyor...",
           "Super atmosphere video is being prepared..."
         ));
@@ -1844,11 +1844,11 @@ function setFileLabel(input, file){
           credentials: "include",
           body: JSON.stringify(payload)
         })
-            .then(function(res){
+        .then(function(res){
           return res.json();
         })
         .then(function(data){
-          console.log("[MOBILE ATMO][BASIC RESPONSE]", data);
+          console.log("[MOBILE ATMO][PRO RESPONSE]", data);
 
           const realJobId = String(
             data.job_id ||
@@ -1893,7 +1893,7 @@ function setFileLabel(input, file){
               "Generation started but a valid job_id could not be received."
             ));
 
-            console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
+            console.warn("[MOBILE ATMO][PRO NO UUID]", data);
 
             refundMobileAtmoCredits(refundCtx, "mobile_atmo_missing_job_id", {
               error: "missing_job_id",
@@ -1916,34 +1916,34 @@ function setFileLabel(input, file){
           renderMobileAtmoResults();
 
           setStatus(atmoText(
-            "Atmosfer video hazırlanıyor...",
-            "Atmosphere video is being prepared..."
+            "Süper atmosfer video hazırlanıyor...",
+            "Super atmosphere video is being prepared..."
           ));
 
           mobileAtmoLoading(atmoText(
-            "Atmosfer video hazırlanıyor...",
-            "Atmosphere video is being prepared..."
+            "Süper atmosfer video hazırlanıyor...",
+            "Super atmosphere video is being prepared..."
           ));
 
           pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
-          console.error("[MOBILE ATMO][BASIC ERROR]", err);
+          console.error("[MOBILE ATMO][PRO ERROR]", err);
 
           setStatus(atmoText(
-            "Atmosfer üretimi başlatılamadı.",
-            "Atmosphere generation could not be started."
+            "Süper atmosfer üretimi başlatılamadı.",
+            "Super atmosphere generation could not be started."
           ));
 
           clearMobileAtmoLoading();
 
           mobileAtmoToast("error", atmoText(
-            "Atmosfer üretimi başlatılamadı.",
-            "Atmosphere generation could not be started."
+            "Süper atmosfer üretimi başlatılamadı.",
+            "Super atmosphere generation could not be started."
           ));
 
-          refundMobileAtmoCredits(creditCtx, "mobile_atmo_basic_create_failed", {
-            error: String(err?.message || err || "basic_create_failed")
+          refundMobileAtmoCredits(creditCtx, "mobile_atmo_pro_create_failed", {
+            error: String(err?.message || err || "pro_create_failed")
           });
         });
       });
