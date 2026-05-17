@@ -595,14 +595,21 @@
 
     if (window.toast?.success) {
       if (selectedQuality === "ultra") {
-        window.toast.success("Cinematic Ultra HD seçildi · 9 kredi");
+        window.toast.success(
+          window.AIVO_LANG === "en"
+            ? "Cinematic Ultra HD selected · 9 credits"
+            : "Cinematic Ultra HD seçildi · 9 kredi"
+        );
       } else {
-        window.toast.success("Artist seçildi · 6 kredi");
+        window.toast.success(
+          window.AIVO_LANG === "en"
+            ? "Artist selected · 6 credits"
+            : "Artist seçildi · 6 kredi"
+        );
       }
     }
   });
 });
-
   styleBtns.forEach(function(btn){
     btn.addEventListener("click", function(){
       setStyle(btn);
