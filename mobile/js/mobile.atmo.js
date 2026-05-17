@@ -1623,7 +1623,7 @@ function setFileLabel(input, file){
           "Atmosphere video is being prepared..."
         ));
 
-        fetch("/api/jobs/create-atmo", {
+         fetch("/api/jobs/create-atmo", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -1637,7 +1637,7 @@ function setFileLabel(input, file){
         .then(function(data){
           console.log("[MOBILE ATMO][BASIC RESPONSE]", data);
 
-                  const realJobId = String(
+          const realJobId = String(
             data.job_id ||
             data.job?.job_id ||
             data.job?.id ||
@@ -1653,7 +1653,7 @@ function setFileLabel(input, file){
 
           if (!job) return;
 
-                                     if (!isUuid) {
+          if (!isUuid) {
             const refundCtx = {
               ...creditCtx,
               job_id: "",
@@ -1661,12 +1661,26 @@ function setFileLabel(input, file){
             };
 
             job.status = "error";
-            job.title = "Job ID alınamadı";
+            job.title = atmoText(
+              "Job ID alınamadı",
+              "Job ID could not be received"
+            );
+
             renderMobileAtmoResults();
-            setStatus("Üretim başladı ama gerçek job_id alınamadı.");
+
+            setStatus(atmoText(
+              "Üretim başladı ama gerçek job_id alınamadı.",
+              "Generation started but a valid job_id could not be received."
+            ));
+
             clearMobileAtmoLoading();
-            mobileAtmoToast("error", "Üretim başladı ama gerçek job_id alınamadı.");
-             console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
+
+            mobileAtmoToast("error", atmoText(
+              "Üretim başladı ama gerçek job_id alınamadı.",
+              "Generation started but a valid job_id could not be received."
+            ));
+
+            console.warn("[MOBILE ATMO][BASIC NO UUID]", data);
 
             refundMobileAtmoCredits(refundCtx, "mobile_atmo_missing_job_id", {
               error: "missing_job_id",
@@ -1686,16 +1700,38 @@ function setFileLabel(input, file){
           job.status = "processing";
           job.refundCtx = refundCtx;
 
-                  renderMobileAtmoResults();
-       setStatus("Atmosfer video hazırlanıyor...");
-       mobileAtmoLoading("Atmosfer video hazırlanıyor...");
-       pollMobileAtmoJob(realJobId);
+          renderMobileAtmoResults();
+
+          setStatus(atmoText(
+            "Atmosfer video hazırlanıyor...",
+            "Atmosphere video is being prepared..."
+          ));
+
+          mobileAtmoLoading(atmoText(
+            "Atmosfer video hazırlanıyor...",
+            "Atmosphere video is being prepared..."
+          ));
+
+          pollMobileAtmoJob(realJobId);
         })
         .catch(function(err){
           console.error("[MOBILE ATMO][BASIC ERROR]", err);
-          setStatus("Atmosfer üretimi başlatılamadı.");
+
+          setStatus(atmoText(
+            "Atmosfer üretimi başlatılamadı.",
+            "Atmosphere generation could not be started."
+          ));
+
           clearMobileAtmoLoading();
-          mobileAtmoToast("error", "Atmosfer üretimi başlatılamadı.");
+
+          mobileAtmoToast("error", atmoText(
+            "Atmosfer üretimi başlatılamadı.",
+            "Atmosphere generation could not be started."
+          ));
+
+          refundMobileAtmoCredits(creditCtx, "mobile_atmo_basic_create_failed", {
+            error: String(err?.message || err || "basic_create_failed")
+          });
         });
       });
     }
