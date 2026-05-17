@@ -419,9 +419,17 @@
           } catch (err) {}
         }
 
-        card.remove();
+             card.remove();
 
-               if (!resultsEl.querySelector(".mobile-cover-result-card")) {
+        if (window.toast?.success) {
+          window.toast.success(
+            window.AIVO_LANG === "en"
+              ? "Cover deleted."
+              : "Kapak silindi."
+          );
+        }
+
+        if (!resultsEl.querySelector(".mobile-cover-result-card")) {
           resultsEl.className = "empty-card";
           resultsEl.innerHTML = window.AIVO_LANG === "en"
             ? "No mobile cover generation has been started yet."
