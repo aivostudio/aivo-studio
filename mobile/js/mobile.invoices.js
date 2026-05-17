@@ -168,13 +168,25 @@ if (status === "canceled" || status === "cancelled") {
     const id = String(invoice.id || invoice.order_id || invoice.orderId || "").trim();
     const credits = getCredits(invoice);
 
-    const title = credits > 0
-      ? credits + " Kredilik Paket"
-      : (invoice.pack || invoice.pack_key || invoice.plan || invoice.title || "Kredi Paketi");
+  const title = credits > 0
+  ? credits + " " + (window.t ? window.t("invoices.creditPackage") : "Kredilik Paket")
+  : (
+      invoice.pack ||
+      invoice.pack_key ||
+      invoice.plan ||
+      invoice.title ||
+      (window.t ? window.t("invoices.defaultPackage") : "Kredi Paketi")
+    );
 
-    const sub = credits > 0
-      ? "Toplam " + credits + " kredi tanımı"
-      : "Satın alım detayı";
+const sub = credits > 0
+  ? (
+      (window.t ? window.t("invoices.totalCredits") : "Toplam") +
+      " " +
+      credits +
+      " " +
+      (window.t ? window.t("invoices.creditDefined") : "kredi tanımı")
+    )
+  : (window.t ? window.t("invoices.purchaseDetail") : "Satın alım detayı");
 
     const amount = formatMoney(getAmount(invoice));
     const date = formatDate(getCreatedAt(invoice));
