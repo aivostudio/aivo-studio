@@ -230,7 +230,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       }, 4000);
     });
   }
-    function bindMobileAtmoResultActions(){
+   function bindMobileAtmoResultActions(){
     if (!resultsEl || resultsEl.__mobileAtmoActionsBound) return;
     resultsEl.__mobileAtmoActionsBound = true;
 
@@ -249,7 +249,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
       if (!job) return;
 
-        if (act === "play") {
+      if (act === "play") {
         const video = card.querySelector("video");
         if (!video) return;
 
@@ -260,7 +260,12 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           const isPlaying = !video.paused && !video.ended;
           btn.classList.toggle("is-playing", isPlaying);
           btn.setAttribute("data-playing", isPlaying ? "true" : "false");
-          btn.setAttribute("aria-label", isPlaying ? "Duraklat" : "Oynat");
+          btn.setAttribute(
+            "aria-label",
+            isPlaying
+              ? atmoText("Duraklat", "Pause")
+              : atmoText("Oynat", "Play")
+          );
         }
 
         video.onplay = syncPlayButton;
@@ -276,7 +281,8 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         return;
       }
-            if (act === "sound") {
+
+      if (act === "sound") {
         const video = card.querySelector("video");
         if (!video) return;
 
@@ -289,7 +295,8 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         return;
       }
-         if (act === "fullscreen") {
+
+      if (act === "fullscreen") {
         const video = card.querySelector("video");
         if (!video) return;
 
@@ -311,7 +318,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         return;
       }
 
-          if (act === "download") {
+      if (act === "download") {
         if (!job.videoUrl) return;
 
         const directUrl = String(job.videoUrl || "").split("#")[0];
@@ -320,11 +327,11 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           "/api/media/proxy?url=" +
           encodeURIComponent(directUrl) +
           "&filename=" +
-          encodeURIComponent("aivo-atmosfer-video.mp4");
+          encodeURIComponent("aivo-atmosphere-video.mp4");
 
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = "aivo-atmosfer-video.mp4";
+        a.download = "aivo-atmosphere-video.mp4";
         a.rel = "noopener";
         a.style.display = "none";
 
@@ -345,7 +352,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         if (navigator.share) {
           navigator.share({
-            title: "AIVO Atmosfer Video",
+            title: atmoText("AIVO Atmosfer Video", "AIVO Atmosphere Video"),
             url: job.videoUrl
           }).catch(function(){});
         } else if (navigator.clipboard) {
@@ -355,10 +362,13 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         return;
       }
 
-          if (act === "delete") {
+      if (act === "delete") {
         mobileAtmoDeletedIds.add(id);
         renderMobileAtmoResults();
-        mobileAtmoToast("success", "Video silindi.");
+        mobileAtmoToast("success", atmoText(
+          "Video silindi.",
+          "Video deleted."
+        ));
         return;
       }
     });
