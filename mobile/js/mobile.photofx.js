@@ -396,7 +396,7 @@
             }
           </div>
 
-          <div class="mobile-photofx-video-title">${esc(job.title || "PhotoFX klip")}</div>
+          <div class="mobile-photofx-video-title">${esc(job.title || (String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip" : "PhotoFX klip"))}</div>
         </article>
       `;
     }).join("");
