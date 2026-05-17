@@ -1429,21 +1429,21 @@
     function createModal(){
       modal = document.createElement("div");
       modal.className = "mobile-lipsync-record-modal";
-      modal.innerHTML = `
+       modal.innerHTML = `
         <div class="mobile-lipsync-record-box">
           <button type="button" class="mobile-lipsync-record-close" data-mobile-lipsync-record-close>×</button>
 
-          <h3>Ses Kaydet</h3>
+          <h3>${mobileLipsyncText("Ses Kaydet", "Record Audio")}</h3>
 
           <div class="mobile-lipsync-record-tabs">
-            <button type="button" class="is-active">Ses Kaydı</button>
-            <button type="button" data-mobile-lipsync-record-upload>Ses Yükle</button>
+            <button type="button" class="is-active">${mobileLipsyncText("Ses Kaydı", "Audio Recording")}</button>
+            <button type="button" data-mobile-lipsync-record-upload>${mobileLipsyncText("Ses Yükle", "Upload Audio")}</button>
           </div>
 
           <div class="mobile-lipsync-record-screen">
             <div class="mobile-lipsync-record-spinner" data-mobile-lipsync-record-spinner></div>
-            <b data-mobile-lipsync-record-title>Mikrofon hazır</b>
-            <span data-mobile-lipsync-record-sub>Başlamak için kayıt butonuna bas.</span>
+            <b data-mobile-lipsync-record-title>${mobileLipsyncText("Mikrofon hazır", "Microphone ready")}</b>
+            <span data-mobile-lipsync-record-sub>${mobileLipsyncText("Başlamak için kayıt butonuna bas.", "Press the record button to start.")}</span>
           </div>
 
           <button type="button" class="mobile-lipsync-record-main" data-mobile-lipsync-record-main>
@@ -1451,7 +1451,7 @@
           </button>
 
           <div class="mobile-lipsync-record-status" data-mobile-lipsync-record-status>
-            Mikrofon hazır bekliyor...
+            ${mobileLipsyncText("Mikrofon hazır bekliyor...", "Microphone is ready and waiting...")}
           </div>
         </div>
       `;
@@ -1536,17 +1536,17 @@
           mainBtn.classList.remove("is-recording");
         }
 
-        if (screen) {
+             if (screen) {
           screen.innerHTML = `
             <div class="mobile-lipsync-record-preview">
               <button type="button" class="mobile-lipsync-record-play" data-mobile-lipsync-record-play>▶</button>
 
               <div class="mobile-lipsync-record-info">
                 <b>${file.name}</b>
-                <span>Kaydedilen ses hazır • ${durationSeconds} sn</span>
+                <span>${mobileLipsyncText("Kaydedilen ses hazır", "Recorded audio is ready")} • ${mobileLipsyncSecondsText(durationSeconds)}</span>
               </div>
 
-              <button type="button" class="mobile-lipsync-record-use" data-mobile-lipsync-record-use>Kullan</button>
+              <button type="button" class="mobile-lipsync-record-use" data-mobile-lipsync-record-use>${mobileLipsyncText("Kullan", "Use")}</button>
               <button type="button" class="mobile-lipsync-record-discard" data-mobile-lipsync-record-discard>×</button>
 
               <audio src="${previewUrl}" data-mobile-lipsync-record-audio></audio>
@@ -1555,7 +1555,10 @@
         }
 
         if (statusBox) {
-          statusBox.textContent = "🎙️ Kayıt hazır: " + file.name;
+          statusBox.textContent = mobileLipsyncText(
+            "🎙️ Kayıt hazır: " + file.name,
+            "🎙️ Recording is ready: " + file.name
+          );
         }
 
         const audio = currentModal.querySelector("[data-mobile-lipsync-record-audio]");
@@ -1603,20 +1606,26 @@
               counterEl.textContent = "0";
             }
 
-            if (audioNameEl) {
+                     if (audioNameEl) {
               audioNameEl.innerHTML = `
                 <span class="mobile-lipsync-inline-audio">
                   <button type="button" data-mobile-lipsync-inline-audio-play>▶</button>
                   <strong>${file.name}</strong>
-                  <em>${durationSeconds} sn</em>
+                  <em>${mobileLipsyncSecondsText(durationSeconds)}</em>
                   <button type="button" data-mobile-lipsync-inline-audio-remove>🗑</button>
                 </span>
               `;
             }
 
             syncGenerateButton();
-            setStatus("Ses kaydı eklendi.");
-            showMobileLipsyncToast("success", "Ses kaydı eklendi.");
+            setStatus(mobileLipsyncText(
+              "Ses kaydı eklendi.",
+              "Recorded audio added."
+            ));
+            showMobileLipsyncToast("success", mobileLipsyncText(
+              "Ses kaydı eklendi.",
+              "Recorded audio added."
+            ));
             URL.revokeObjectURL(previewUrl);
             closeModal();
           });
@@ -1625,10 +1634,13 @@
 
       recorder.start();
 
-      if (mainBtn) mainBtn.classList.add("is-recording");
-      if (titleEl) titleEl.textContent = "Kayıt alınıyor";
-      if (subEl) subEl.textContent = "Durdurmak için tekrar bas";
-      if (statusBox) statusBox.textContent = "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.";
+          if (mainBtn) mainBtn.classList.add("is-recording");
+      if (titleEl) titleEl.textContent = mobileLipsyncText("Kayıt alınıyor", "Recording");
+      if (subEl) subEl.textContent = mobileLipsyncText("Durdurmak için tekrar bas", "Press again to stop");
+      if (statusBox) statusBox.textContent = mobileLipsyncText(
+        "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.",
+        "🔴 Recording... Press again to stop."
+      );
     }
 
     recordOpenBtn.addEventListener("click", async function(e){
@@ -1656,8 +1668,14 @@
         }
       } catch (err) {
         console.error("[MOBILE LIPSYNC][RECORD ERROR]", err);
-        setStatus("Mikrofon izni alınamadı.");
-        showMobileLipsyncToast("error", "Mikrofon izni alınamadı.");
+               setStatus(mobileLipsyncText(
+          "Mikrofon izni alınamadı.",
+          "Microphone permission could not be granted."
+        ));
+        showMobileLipsyncToast("error", mobileLipsyncText(
+          "Mikrofon izni alınamadı.",
+          "Microphone permission could not be granted."
+        ));
       }
     });
   }
@@ -1759,11 +1777,20 @@
           audioInput.value = "";
         }
 
-        audioNameEl.textContent = "Ses yüklenmedi.";
+              audioNameEl.textContent = mobileLipsyncText(
+          "Ses yüklenmedi.",
+          "No audio uploaded."
+        );
 
         syncGenerateButton();
-        setStatus("Ses kaldırıldı.");
-        showMobileLipsyncToast("info", "Ses kaldırıldı.");
+        setStatus(mobileLipsyncText(
+          "Ses kaldırıldı.",
+          "Audio removed."
+        ));
+        showMobileLipsyncToast("info", mobileLipsyncText(
+          "Ses kaldırıldı.",
+          "Audio removed."
+        ));
       }
     });
   }
