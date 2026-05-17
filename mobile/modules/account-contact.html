@@ -1,44 +1,44 @@
 <section class="mobile-account-contact-section" id="mobileAccountContactSection">
   <div class="mobile-settings-hero">
-    <button class="mobile-account-back mobile-account-back--inside" type="button" data-mobile-account-back>
-      ← Hesabım
+    <button class="mobile-account-back mobile-account-back--inside" type="button" data-mobile-account-back data-i18n="common.back">
+      Back
     </button>
 
-    <div class="mobile-settings-kicker">AIVO Mobile Studio</div>
-    <h3>Bize Ulaşın</h3>
-    <p>Soru, öneri, ödeme, hesap veya üretim sorunları için bize yaz.</p>
+    <div class="mobile-settings-kicker" data-i18n="common.appName">AIVO Mobile Studio</div>
+    <h3 data-i18n="contact.title">Bize Ulaşın</h3>
+    <p data-i18n="contact.subtitle">Soru, öneri, ödeme, hesap veya üretim sorunları için bize yaz.</p>
   </div>
 
   <div class="mobile-settings-card">
     <div class="mobile-settings-card-head">
       <div>
-        <h4>Mesaj Gönder</h4>
-        <p>Destek ekibimize doğrudan mesaj bırak.</p>
+        <h4 data-i18n="contact.messageTitle">Mesaj Gönder</h4>
+        <p data-i18n="contact.messageSub">Destek ekibimize doğrudan mesaj bırak.</p>
       </div>
     </div>
 
     <form class="mobile-contact-form" data-mobile-contact-form>
       <label class="mobile-contact-field">
-        <span>Ad Soyad</span>
-        <input type="text" name="name" placeholder="Adını ve soyadını yaz" autocomplete="name">
+        <span data-i18n="contact.name">Ad Soyad</span>
+        <input type="text" name="name" data-i18n-placeholder="contact.namePlaceholder" placeholder="Adını ve soyadını yaz" autocomplete="name">
       </label>
 
       <label class="mobile-contact-field">
-        <span>E-posta</span>
-        <input type="email" name="email" placeholder="ornek@mail.com" autocomplete="email">
+        <span data-i18n="contact.email">E-posta</span>
+        <input type="email" name="email" data-i18n-placeholder="contact.emailPlaceholder" placeholder="ornek@mail.com" autocomplete="email">
       </label>
 
       <label class="mobile-contact-field">
-        <span>Konu</span>
-        <input type="text" name="subject" placeholder="Kısaca konu başlığı">
+        <span data-i18n="contact.subject">Konu</span>
+        <input type="text" name="subject" data-i18n-placeholder="contact.subjectPlaceholder" placeholder="Kısaca konu başlığı">
       </label>
 
       <label class="mobile-contact-field">
-        <span>Mesaj</span>
-        <textarea name="message" rows="5" placeholder="Bize nasıl yardımcı olabileceğimizi yaz"></textarea>
+        <span data-i18n="contact.message">Mesaj</span>
+        <textarea name="message" rows="5" data-i18n-placeholder="contact.messagePlaceholder" placeholder="Bize nasıl yardımcı olabileceğimizi yaz"></textarea>
       </label>
 
-      <button class="mobile-contact-submit" type="submit">
+      <button class="mobile-contact-submit" type="submit" data-i18n="contact.submit">
         Mesaj Gönder
       </button>
     </form>
@@ -47,14 +47,14 @@
   <div class="mobile-settings-card">
     <div class="mobile-settings-card-head">
       <div>
-        <h4>İletişim Bilgileri</h4>
-        <p>Genellikle 24 saat içinde dönüş yapıyoruz.</p>
+        <h4 data-i18n="contact.infoTitle">İletişim Bilgileri</h4>
+        <p data-i18n="contact.infoSub">Genellikle 24 saat içinde dönüş yapıyoruz.</p>
       </div>
     </div>
 
     <a class="mobile-settings-row mobile-settings-policy-row" href="mailto:info@aivo.tr">
       <span>
-        <b>E-posta</b>
+        <b data-i18n="contact.emailLabel">E-posta</b>
         <small>info@aivo.tr</small>
       </span>
       <strong>›</strong>
@@ -62,7 +62,7 @@
 
     <a class="mobile-settings-row mobile-settings-policy-row" href="https://wa.me/905336108900" target="_blank" rel="noopener">
       <span>
-        <b>WhatsApp Destek Hattı</b>
+        <b data-i18n="contact.whatsapp">WhatsApp Destek Hattı</b>
         <small>+90 533 610 89 00</small>
       </span>
       <strong>›</strong>
@@ -70,8 +70,8 @@
 
     <div class="mobile-settings-row">
       <span>
-        <b>Durum</b>
-        <small>Aktif destek kanalı açık.</small>
+        <b data-i18n="contact.status">Durum</b>
+        <small data-i18n="contact.statusText">Aktif destek kanalı açık.</small>
       </span>
     </div>
   </div>
