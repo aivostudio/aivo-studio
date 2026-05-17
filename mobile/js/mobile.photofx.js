@@ -928,15 +928,13 @@ async function uploadMobilePhotoFxFile(file, kind){
       const creditCost = computeCredit();
       const consumeRequestId = "mobile-photofx:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
-        const refundState = {
+          const refundState = {
         consumed: false,
         refunded: false,
         creditCost: creditCost,
         requestId: consumeRequestId,
         transactionId: ""
       };
-
-        const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
 
       generateBtn.disabled = true;
       generateBtn.textContent = isEn ? "Generating..." : "Üretiliyor...";
