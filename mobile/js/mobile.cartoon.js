@@ -577,7 +577,10 @@ async function hydrateMobileCartoonLibrary(){
   if (!resultsEl) return;
 
   resultsEl.className = "empty-card";
-  resultsEl.innerHTML = "Çizgifilm videoları yükleniyor...";
+  resultsEl.innerHTML = cartoonText(
+    "Çizgifilm videoları yükleniyor...",
+    "Cartoon videos are loading..."
+  );
 
   try {
     const res = await fetch("/api/jobs/list?app=cartoon", {
@@ -603,8 +606,8 @@ async function hydrateMobileCartoonLibrary(){
 
     mobileCartoonJobs.length = 0;
 
-   rows.forEach(function(row){
-            const mode = String(
+    rows.forEach(function(row){
+      const mode = String(
         row.mode ||
         row.meta?.mode ||
         row.data?.mode ||
@@ -613,6 +616,7 @@ async function hydrateMobileCartoonLibrary(){
       ).toLowerCase();
 
       if (mode === "character") return;
+
       const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
       const firstVideoOutput = outputs.find(function(output){
@@ -624,7 +628,7 @@ async function hydrateMobileCartoonLibrary(){
         );
       });
 
-        const videoUrl = String(
+      const videoUrl = String(
         row.video_url ||
         row.videoUrl ||
         row.final_url ||
@@ -672,25 +676,31 @@ async function hydrateMobileCartoonLibrary(){
 
       if (!jobId || !videoUrl) return;
 
-mobileCartoonJobs.push({
-  id: jobId,
-  scope: "library",
-  title: row.title || row.prompt || row.meta?.prompt || "Çizgifilm video",
-  videoUrl: videoUrl,
-  status: "ready",
-  payload: row
-});
+      mobileCartoonJobs.push({
+        id: jobId,
+        scope: "library",
+        title: row.title || row.prompt || row.meta?.prompt || cartoonText(
+          "Çizgifilm video",
+          "Cartoon video"
+        ),
+        videoUrl: videoUrl,
+        status: "ready",
+        payload: row
+      });
     });
 
     mobileCartoonViewMode = "library";
     renderMobileCartoonResults();
   } catch (err) {
     console.error("[MOBILE CARTOON][HYDRATE ERROR]", err);
+
     resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Çizgifilm videoları yüklenemedi.";
+    resultsEl.innerHTML = cartoonText(
+      "Çizgifilm videoları yüklenemedi.",
+      "Cartoon videos could not be loaded."
+    );
   }
 }
-
 async function hydrateMobileCartoonCharacterLibrary(){
   const libraryEl = root.querySelector("#mobileCartoonCharacterLibrary");
   if (!libraryEl) return;
