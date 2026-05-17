@@ -1800,21 +1800,29 @@
     generateBtn.addEventListener("click", async function(){
       clearMobileLipsyncLoading();
 
-          if (safeText(state.script) && hasLipsyncBadLanguage(state.script)) {
+      if (safeText(state.script) && hasLipsyncBadLanguage(state.script)) {
         syncGenerateButton();
         showMobileLipsyncToast("error", getLipsyncBadTextMessage());
         return;
       }
 
       if (!state.photoFile && !state.photoUrl) {
-        setStatus("Lütfen bir fotoğraf yükle.");
-        showMobileLipsyncToast("info", "Lütfen bir fotoğraf yükle.");
+        const message = mobileLipsyncText(
+          "Lütfen bir fotoğraf yükle.",
+          "Please upload a photo."
+        );
+        setStatus(message);
+        showMobileLipsyncToast("info", message);
         return;
       }
 
       if (!safeText(state.script) && !state.audioFile && !state.audioUrl) {
-        setStatus("Lütfen metin yaz veya ses dosyası yükle.");
-        showMobileLipsyncToast("info", "Lütfen metin yaz veya ses dosyası yükle.");
+        const message = mobileLipsyncText(
+          "Lütfen metin yaz veya ses dosyası yükle.",
+          "Please enter text or upload an audio file."
+        );
+        setStatus(message);
+        showMobileLipsyncToast("info", message);
         return;
       }
 
@@ -1822,23 +1830,39 @@
 
       if (estimatedSpeechSeconds > 60) {
         const durationMessage = state.audioFile
-          ? "Ses dosyası en fazla 60 saniye olabilir."
-          : "Bu metin yaklaşık " + estimatedSpeechSeconds + " saniye sürer. Maksimum süre 60 saniye.";
+          ? mobileLipsyncText(
+              "Ses dosyası en fazla 60 saniye olabilir.",
+              "Audio files can be up to 60 seconds long."
+            )
+          : mobileLipsyncText(
+              "Bu metin yaklaşık " + estimatedSpeechSeconds + " saniye sürer. Maksimum süre 60 saniye.",
+              "This text is approximately " + estimatedSpeechSeconds + " seconds long. The maximum duration is 60 seconds."
+            );
 
         setStatus(durationMessage);
         showMobileLipsyncToast("error", durationMessage);
         return;
       }
 
-              setStatus("Dudak senkron hazırlanıyor...");
-      showMobileLipsyncLoading("Dudak senkron hazırlanıyor...");
+      setStatus(mobileLipsyncText(
+        "Dudak senkron hazırlanıyor...",
+        "Lip sync is being prepared..."
+      ));
+      showMobileLipsyncLoading(mobileLipsyncText(
+        "Dudak senkron hazırlanıyor...",
+        "Lip sync is being prepared..."
+      ));
+
       const tempId = "mobile-lipsync-" + Date.now();
 
       mobileLipsyncCurrentJobs.length = 0;
 
       mobileLipsyncCurrentJobs.unshift({
         id: tempId,
-        title: "Dudak senkron hazırlanıyor",
+        title: mobileLipsyncText(
+          "Dudak senkron hazırlanıyor",
+          "Lip sync is being prepared"
+        ),
         videoUrl: "",
         status: "processing",
         payload: {}
@@ -1848,32 +1872,50 @@
         resultsEl.hidden = false;
       }
 
-          mobileLipsyncViewMode = "current";
+      mobileLipsyncViewMode = "current";
       renderMobileLipsyncResults("current");
 
       let refundState = null;
 
       try {
         if (state.photoFile && !state.photoUrl) {
-          setStatus("Fotoğraf yükleniyor...");
-          showMobileLipsyncLoading("Fotoğraf güvenlik kontrolünden geçiriliyor...");
+          setStatus(mobileLipsyncText(
+            "Fotoğraf yükleniyor...",
+            "Photo is uploading..."
+          ));
+          showMobileLipsyncLoading(mobileLipsyncText(
+            "Fotoğraf güvenlik kontrolünden geçiriliyor...",
+            "Photo is being checked for safety..."
+          ));
           state.photoUrl = await uploadMobileLipsyncFile(state.photoFile, "image");
-          showMobileLipsyncToast("success", "Fotoğraf yüklendi.");
+          showMobileLipsyncToast("success", mobileLipsyncText(
+            "Fotoğraf yüklendi.",
+            "Photo uploaded."
+          ));
         }
 
         if (state.audioFile && !state.audioUrl) {
-          setStatus("Ses yükleniyor...");
-          showMobileLipsyncLoading("Ses güvenlik kontrolünden geçiriliyor...");
+          setStatus(mobileLipsyncText(
+            "Ses yükleniyor...",
+            "Audio is uploading..."
+          ));
+          showMobileLipsyncLoading(mobileLipsyncText(
+            "Ses güvenlik kontrolünden geçiriliyor...",
+            "Audio is being checked for safety..."
+          ));
           state.audioUrl = await uploadMobileLipsyncFile(state.audioFile, "audio");
-          showMobileLipsyncToast("success", "Ses yüklendi.");
+          showMobileLipsyncToast("success", mobileLipsyncText(
+            "Ses yüklendi.",
+            "Audio uploaded."
+          ));
         }
 
-               const payload = buildPayload();
+        const payload = buildPayload();
 
         const creditCost = calculateCredits();
         const consumeRequestId = "mobile-lipsync:" + Date.now() + ":" + Math.random().toString(36).slice(2, 8);
 
-               refundState = {
+        refundState = {
           consumed: false,
           refunded: false,
           creditCost: creditCost,
@@ -1887,36 +1929,51 @@
           refundState.consumed = true;
           refundState.transactionId = consumeResult.transactionId || "";
 
-           showMobileLipsyncToast("success", creditCost + " kredi düşüldü.");
-           } catch (creditErr) {
-  console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
+          showMobileLipsyncToast("success", mobileLipsyncText(
+            creditCost + " kredi düşüldü.",
+            creditCost + " credits used."
+          ));
+        } catch (creditErr) {
+          console.warn("[MOBILE LIPSYNC][CREDIT ERROR]", creditErr);
 
-  setStatus("Yetersiz kredi.");
-  showMobileLipsyncToast("warning", "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...");
+          setStatus(mobileLipsyncText(
+            "Yetersiz kredi.",
+            "Insufficient credits."
+          ));
+          showMobileLipsyncToast("warning", mobileLipsyncText(
+            "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...",
+            "Insufficient credits. Redirecting you to Credits..."
+          ));
 
-  clearMobileLipsyncLoading();
+          clearMobileLipsyncLoading();
 
-    location.hash = "#credits";
+          location.hash = "#credits";
 
-  const creditsNav =
-    document.querySelector('.bottom-nav a[href="#credits"]') ||
-    document.querySelector('[data-mobile-nav="credits"]') ||
-    document.querySelector('[data-mobile-tab="credits"]');
+          const creditsNav =
+            document.querySelector('.bottom-nav a[href="#credits"]') ||
+            document.querySelector('[data-mobile-nav="credits"]') ||
+            document.querySelector('[data-mobile-tab="credits"]');
 
-  if (creditsNav) {
-    creditsNav.click();
-  }
+          if (creditsNav) {
+            creditsNav.click();
+          }
 
-  return;
-}
-                generateBtn.disabled = true;
-       generateBtn.textContent = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
-  ? "Generating..."
-  : "Üretiliyor...";
+          return;
+        }
+
+        generateBtn.disabled = true;
+        generateBtn.textContent = mobileLipsyncText("Üretiliyor...", "Generating...");
         generateBtn.classList.add("is-loading", "is-pressed");
         generateBtn.setAttribute("aria-busy", "true");
-        setStatus("Üretim başlatılıyor...");
-        showMobileLipsyncLoading("Üretim başlatılıyor...");
+
+        setStatus(mobileLipsyncText(
+          "Üretim başlatılıyor...",
+          "Generation is starting..."
+        ));
+        showMobileLipsyncLoading(mobileLipsyncText(
+          "Üretim başlatılıyor...",
+          "Generation is starting..."
+        ));
 
         const res = await fetch("/api/lipsync/create", {
           method: "POST",
@@ -1960,19 +2017,30 @@
           return item.id === tempId;
         });
 
-              if (job) {
+        if (job) {
           job.id = realJobId || tempId;
           job.providerJobId = providerJobId;
           job.status = "processing";
-          job.title = "Dudak senkron video";
+          job.title = mobileLipsyncText(
+            "Dudak senkron video",
+            "Lip sync video"
+          );
           job.payload = payload;
           job.refundState = refundState;
         }
 
         mobileLipsyncViewMode = "current";
         renderMobileLipsyncResults("current");
-        setStatus("Dudak senkron video hazırlanıyor...");
-        showMobileLipsyncLoading("Dudak senkron video hazırlanıyor...");
+
+        setStatus(mobileLipsyncText(
+          "Dudak senkron video hazırlanıyor...",
+          "Lip sync video is being prepared..."
+        ));
+        showMobileLipsyncLoading(mobileLipsyncText(
+          "Dudak senkron video hazırlanıyor...",
+          "Lip sync video is being prepared..."
+        ));
+
         pollMobileLipsyncJob(realJobId || tempId, providerJobId);
       } catch (err) {
         console.error("[MOBILE LIPSYNC][GENERATE ERROR]", err);
@@ -1985,7 +2053,10 @@
 
         if (job) {
           job.status = "error";
-          job.title = "Dudak senkron başlatılamadı";
+          job.title = mobileLipsyncText(
+            "Dudak senkron başlatılamadı",
+            "Lip sync could not be started"
+          );
         }
 
         if (state.audioFile) {
@@ -2002,7 +2073,12 @@
             state.audioDurationSeconds = 0;
 
             if (audioInput) audioInput.value = "";
-            if (audioNameEl) audioNameEl.textContent = "Ses yüklenmedi.";
+            if (audioNameEl) {
+              audioNameEl.textContent = mobileLipsyncText(
+                "Ses yüklenmedi.",
+                "No audio uploaded."
+              );
+            }
             if (scriptEl) {
               scriptEl.disabled = false;
               scriptEl.classList.remove("has-audio");
@@ -2010,16 +2086,19 @@
           }
         }
 
-               mobileLipsyncViewMode = "current";
+        mobileLipsyncViewMode = "current";
         renderMobileLipsyncResults("current");
 
-           const refunded = await refundMobileLipsyncCredits(refundState, "mobile_lipsync_generate_failed", {
+        const refunded = await refundMobileLipsyncCredits(refundState, "mobile_lipsync_generate_failed", {
           error: String(err?.message || err?.error || err || "generate_failed"),
           payload: err?.payload || null
         });
 
         const message = refunded
-          ? "İşlem başarısız oldu, kredi iade edildi."
+          ? mobileLipsyncText(
+              "İşlem başarısız oldu, kredi iade edildi.",
+              "The process failed, credits were refunded."
+            )
           : mapMobileLipsyncErrorMessage(err?.payload || err);
 
         setStatus(message);
@@ -2027,7 +2106,7 @@
         if (!refunded) {
           showMobileLipsyncToast("error", message);
         }
-           } finally {
+      } finally {
       }
     });
   }
