@@ -52,19 +52,22 @@ function esc(value){
 function renderMobileCartoonResults(){
   if (!resultsEl) return;
 
- const items = mobileCartoonJobs.filter(function(job){
-  if (mobileCartoonDeletedIds.has(job.id)) return false;
+  const items = mobileCartoonJobs.filter(function(job){
+    if (mobileCartoonDeletedIds.has(job.id)) return false;
 
-  if (mobileCartoonViewMode === "current") {
-    return job.scope === "current";
-  }
+    if (mobileCartoonViewMode === "current") {
+      return job.scope === "current";
+    }
 
-  return job.scope === "library";
-});
+    return job.scope === "library";
+  });
 
   if (!items.length) {
     resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Henüz mobil çizgifilm videosu başlatılmadı.";
+    resultsEl.innerHTML = cartoonText(
+      "Henüz mobil çizgifilm videosu başlatılmadı.",
+      "No mobile cartoon video has been started yet."
+    );
     return;
   }
 
@@ -81,8 +84,8 @@ function renderMobileCartoonResults(){
             ready
               ? `<video class="mobile-cartoon-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
               : failed
-                ? `<div class="mobile-cartoon-video-loading"><span>Video çıktısı alınamadı</span></div>`
-                : `<div class="mobile-cartoon-video-loading"><span>Hazırlanıyor…</span></div>`
+                ? `<div class="mobile-cartoon-video-loading"><span>${cartoonText("Video çıktısı alınamadı", "Video output could not be retrieved")}</span></div>`
+                : `<div class="mobile-cartoon-video-loading"><span>${cartoonText("Hazırlanıyor…", "Preparing…")}</span></div>`
           }
 
           <div class="mobile-cartoon-video-actions">
@@ -100,7 +103,7 @@ function renderMobileCartoonResults(){
           }
         </div>
 
-        <div class="mobile-cartoon-video-title">${esc(job.title || "Çizgifilm video")}</div>
+        <div class="mobile-cartoon-video-title">${esc(job.title || cartoonText("Çizgifilm video", "Cartoon video"))}</div>
       </article>
     `;
   }).join("");
