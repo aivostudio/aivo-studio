@@ -1118,7 +1118,7 @@ html.aivo-ios-leaving body{
    <b data-i18n="nav.account">Hesabım</b>
   </a>
 </nav>
-
+  <script src="/mobile/js/mobile.i18n.js?v=2" defer></script>
   <script>
     (function(){
       var btn = document.getElementById("soundBtn");
@@ -1128,12 +1128,23 @@ html.aivo-ios-leaving body{
       btn.addEventListener("click", function(){
         video.muted = !video.muted;
 
+             var label = btn.querySelector(".sound-label");
+
         if (!video.muted) {
           video.currentTime = 0;
           video.play().catch(function(){});
-          btn.textContent = "🔊 Ses";
+
+          if (label) {
+            label.textContent = typeof window.t === "function"
+              ? window.t("index.soundOn")
+              : "Ses Açık";
+          }
         } else {
-          btn.textContent = "🔇 Ses";
+          if (label) {
+            label.textContent = typeof window.t === "function"
+              ? window.t("index.sound")
+              : "Ses";
+          }
         }
       });
     })();
@@ -1276,16 +1287,17 @@ try {
   .then(function(data){
     if (!data) return;
 
-    const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
-    creditPill.textContent = "Kredi " + creditValue;
+      const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+    creditPill.textContent = typeof window.t === "function"
+      ? window.t("top.creditValue", { count: creditValue })
+      : "Kredi " + creditValue;
   })
   .catch(function(){
     showGuest();
   });
 })();
 </script>
-   <script src="/mobile/js/mobile.i18n.js?v=2" defer></script>
-
   <script>
 (function AIVO_INDEX_CREDIT_PILL_TAP_HELPER(){
   const pill = document.getElementById("mobileCreditPill");
