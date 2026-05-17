@@ -1280,14 +1280,21 @@ async function refundMobileCartoonCredits(refundCtx, reason, extraMeta){
 function syncCartoonCredits(){
   const characterCredit = getCartoonCharacterCredit();
   const basicCredit = getCartoonBasicCredit();
+  const isEN = window.AIVO_LANG === "en";
 
   if (characterBtn) {
-    characterBtn.textContent = "🧩 Karakter Oluştur (" + characterCredit + " Kredi)";
+    characterBtn.textContent = isEN
+      ? "🧩 Create Character (" + characterCredit + " Credits)"
+      : "🧩 Karakter Oluştur (" + characterCredit + " Kredi)";
+
     characterBtn.setAttribute("data-credit-cost", String(characterCredit));
   }
 
   if (generateBtn) {
-    generateBtn.textContent = "🎬 Sahneyi Oluştur (" + basicCredit + " Kredi)";
+    generateBtn.textContent = isEN
+      ? "🎬 Create Scene (" + basicCredit + " Credits)"
+      : "🎬 Sahneyi Oluştur (" + basicCredit + " Kredi)";
+
     generateBtn.setAttribute("data-credit-cost", String(basicCredit));
   }
 }
