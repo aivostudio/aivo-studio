@@ -457,7 +457,23 @@
       "cartoon.characterTitle": "Karakter Oluştur",
       "cartoon.characterSub": "Kısa bir tanım yaz, AIVO çizgifilm karakterini oluştursun.",
       "cartoon.characterPrompt": "Karakter Tanımı",
-      "cartoon.characterPromptPlaceholder": "Örn: sarı yağmurluklu sevimli küçük tavşan",
+     "cartoon.characterPromptPlaceholder": "Örn: sarı yağmurluklu sevimli küçük tavşan",
+
+      "cartoon.characterType": "Tür",
+      "cartoon.typeAnimal": "Hayvan",
+      "cartoon.typeHuman": "İnsan",
+      "cartoon.typeFantasy": "Fantastik",
+      "cartoon.typeObject": "Nesne",
+      "cartoon.typeCustom": "Serbest",
+
+      "cartoon.characterName": "Karakter Adı",
+      "cartoon.characterNamePlaceholder": "Mini Tavşan",
+
+      "cartoon.characterStyle": "Stil",
+      "cartoon.styleCute3d": "Sevimli 3D",
+      "cartoon.styleSoftCartoon": "Yumuşak Çizgifilm",
+      "cartoon.stylePastel": "Pastel",
+      "cartoon.styleBrightKids": "Parlak Çocuk Stili",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -927,7 +943,23 @@
       "cartoon.characterTitle": "Create Character",
       "cartoon.characterSub": "Write a short description and let AIVO create the cartoon character.",
       "cartoon.characterPrompt": "Character Description",
-      "cartoon.characterPromptPlaceholder": "E.g. cute little rabbit with a yellow raincoat",
+    "cartoon.characterPromptPlaceholder": "E.g. cute little rabbit with a yellow raincoat",
+
+      "cartoon.characterType": "Type",
+      "cartoon.typeAnimal": "Animal",
+      "cartoon.typeHuman": "Human",
+      "cartoon.typeFantasy": "Fantasy",
+      "cartoon.typeObject": "Object",
+      "cartoon.typeCustom": "Custom",
+
+      "cartoon.characterName": "Character Name",
+      "cartoon.characterNamePlaceholder": "Mini Bunny",
+
+      "cartoon.characterStyle": "Style",
+      "cartoon.styleCute3d": "Cute 3D",
+      "cartoon.styleSoftCartoon": "Soft Cartoon",
+      "cartoon.stylePastel": "Pastel",
+      "cartoon.styleBrightKids": "Bright Kids Style",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
