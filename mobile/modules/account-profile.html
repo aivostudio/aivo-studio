@@ -1,118 +1,124 @@
 <section class="mobile-account-profile-page" id="mobileAccountProfilePage">
-<div class="mobile-profile-hero">
-  <button class="mobile-account-back mobile-account-back--inside" type="button" data-mobile-account-back>
-    ← Hesabım
-  </button>
+  <div class="mobile-profile-hero">
+    <button class="mobile-account-back mobile-account-back--inside" type="button" data-mobile-account-back>
+      ← Hesabım
+    </button>
 
-  <div class="mobile-profile-kicker">AIVO Mobile Studio</div>
-
-  <div class="mobile-profile-hero-main">
-    <div class="mobile-profile-avatar" data-mobile-profile-initial>
-      H
+    <div class="mobile-profile-kicker" data-i18n="common.appName">
+      AIVO Mobile Studio
     </div>
 
-    <div class="mobile-profile-head-text">
-      <h3 data-mobile-profile-name>
-        Harun Bey
-      </h3>
+    <div class="mobile-profile-hero-main">
+      <div class="mobile-profile-avatar" data-mobile-profile-initial>
+        H
+      </div>
 
-      <p data-mobile-profile-email>
-        harunerkezen@gmail.com
-      </p>
+      <div class="mobile-profile-head-text">
+        <h3 data-mobile-profile-name>
+          Harun Bey
+        </h3>
+
+        <p data-mobile-profile-email>
+          harunerkezen@gmail.com
+        </p>
+      </div>
+    </div>
+
+    <div class="mobile-profile-hero-sub" data-i18n="profile.heroSub">
+      Profil bilgilerini ve hesap güvenliğini mobilde hızlıca yönet.
     </div>
   </div>
-
-  <div class="mobile-profile-hero-sub">
-    Profil bilgilerini ve hesap güvenliğini mobilde hızlıca yönet.
-  </div>
-</div>
 
   <div class="mobile-profile-card">
-    <div class="mobile-profile-card-title">
+    <div class="mobile-profile-card-title" data-i18n="profile.infoTitle">
       Profil Bilgileri
     </div>
 
-    <div class="mobile-profile-card-sub">
+    <div class="mobile-profile-card-sub" data-i18n="profile.infoSub">
       Kişisel hesap bilgilerin
     </div>
 
     <div class="mobile-profile-form">
       <div class="mobile-profile-field">
-        <label>Ad</label>
-        <input type="text" placeholder="Adın" data-mobile-profile-name-input>
+        <label data-i18n="profile.firstName">Ad</label>
+        <input type="text" placeholder="Adın" data-i18n-placeholder="profile.firstNamePlaceholder" data-mobile-profile-name-input>
       </div>
 
       <div class="mobile-profile-field">
-        <label>Soyad</label>
-        <input type="text" placeholder="Soyadın" data-mobile-profile-surname-input>
+        <label data-i18n="profile.lastName">Soyad</label>
+        <input type="text" placeholder="Soyadın" data-i18n-placeholder="profile.lastNamePlaceholder" data-mobile-profile-surname-input>
       </div>
 
       <div class="mobile-profile-field">
-        <label>E-posta</label>
+        <label data-i18n="profile.email">E-posta</label>
         <input type="email" readonly aria-readonly="true" data-mobile-profile-email-input>
-        <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+        <small data-i18n="profile.emailLocked">Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
       </div>
 
-        <button class="mobile-profile-save" type="button" data-mobile-profile-save>
+      <button class="mobile-profile-save" type="button" data-mobile-profile-save data-i18n="profile.update">
         Profili Güncelle
       </button>
     </div>
   </div>
 
   <div class="mobile-profile-card">
-    <div class="mobile-profile-card-title">
+    <div class="mobile-profile-card-title" data-i18n="profile.securityTitle">
       Güvenlik
     </div>
 
-    <div class="mobile-profile-card-sub">
+    <div class="mobile-profile-card-sub" data-i18n="profile.securitySub">
       Şifre ve hesap güvenliği
     </div>
 
-    <div class="mobile-profile-security-text">
+    <div class="mobile-profile-security-text" data-i18n="profile.securityText">
       Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.
     </div>
 
-    <button class="mobile-profile-secondary-btn" type="button" data-mobile-password-open>
+    <button class="mobile-profile-secondary-btn" type="button" data-mobile-password-open data-i18n="profile.changePassword">
       Şifre Değiştir
     </button>
   </div>
+
   <div class="mobile-password-modal" data-mobile-password-modal hidden>
-  <div class="mobile-password-backdrop" data-mobile-password-close></div>
+    <div class="mobile-password-backdrop" data-mobile-password-close></div>
 
-  <div class="mobile-password-sheet">
-    <div class="mobile-password-head">
-      <div>
-        <div class="mobile-password-title">Şifre Değiştir</div>
-        <div class="mobile-password-sub">
-          Hesabını güvende tutmak için güçlü bir şifre kullan.
+    <div class="mobile-password-sheet">
+      <div class="mobile-password-head">
+        <div>
+          <div class="mobile-password-title" data-i18n="profile.changePassword">
+            Şifre Değiştir
+          </div>
+
+          <div class="mobile-password-sub" data-i18n="profile.passwordSub">
+            Hesabını güvende tutmak için güçlü bir şifre kullan.
+          </div>
         </div>
+
+        <button class="mobile-password-x" type="button" data-mobile-password-close>
+          ×
+        </button>
       </div>
 
-      <button class="mobile-password-x" type="button" data-mobile-password-close>
-        ×
-      </button>
-    </div>
+      <div class="mobile-password-form">
+        <div class="mobile-profile-field">
+          <label data-i18n="profile.currentPassword">Mevcut Şifre</label>
+          <input type="password" autocomplete="current-password" placeholder="Mevcut şifren" data-i18n-placeholder="profile.currentPasswordPlaceholder" data-mobile-password-current>
+        </div>
 
-    <div class="mobile-password-form">
-      <div class="mobile-profile-field">
-        <label>Mevcut Şifre</label>
-        <input type="password" autocomplete="current-password" placeholder="Mevcut şifren" data-mobile-password-current>
+        <div class="mobile-profile-field">
+          <label data-i18n="profile.newPassword">Yeni Şifre</label>
+          <input type="password" autocomplete="new-password" placeholder="Yeni şifre" data-i18n-placeholder="profile.newPasswordPlaceholder" data-mobile-password-new>
+        </div>
+
+        <div class="mobile-profile-field">
+          <label data-i18n="profile.repeatPassword">Yeni Şifre Tekrar</label>
+          <input type="password" autocomplete="new-password" placeholder="Yeni şifre tekrar" data-i18n-placeholder="profile.repeatPasswordPlaceholder" data-mobile-password-new2>
+        </div>
+
+        <button class="mobile-profile-save" type="button" data-mobile-password-submit data-i18n="profile.updatePassword">
+          Şifreyi Güncelle
+        </button>
       </div>
-
-      <div class="mobile-profile-field">
-        <label>Yeni Şifre</label>
-        <input type="password" autocomplete="new-password" placeholder="Yeni şifre" data-mobile-password-new>
-      </div>
-
-      <div class="mobile-profile-field">
-        <label>Yeni Şifre Tekrar</label>
-        <input type="password" autocomplete="new-password" placeholder="Yeni şifre tekrar" data-mobile-password-new2>
-      </div>
-
-      <button class="mobile-profile-save" type="button" data-mobile-password-submit>
-        Şifreyi Güncelle
-      </button>
     </div>
   </div>
-</div>
 </section>
