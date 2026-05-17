@@ -372,6 +372,15 @@ if (deleteEl) {
 
     item.remove();
 
+    if (window.toast?.success) {
+      window.toast.success(
+        musicText(
+          "Müzik silindi.",
+          "Music deleted."
+        )
+      );
+    }
+
     const deleteJobId =
       row.id ||
       row.job_id ||
@@ -397,7 +406,6 @@ if (deleteEl) {
     } catch (err) {}
   });
 }
-
         function activateLibraryRow(nextAudioUrl){
           resolvedAudioUrl = String(nextAudioUrl || "");
           isReady = !!resolvedAudioUrl;
