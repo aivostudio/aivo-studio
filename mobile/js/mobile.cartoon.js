@@ -161,7 +161,7 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
       card.setAttribute("data-mobile-cartoon-character", jobId);
       card.innerHTML = `
         <div class="mobile-cartoon-character-thumb">
-          <img src="${esc(imageUrl)}" alt="${esc(fallbackName || "Karakter")}">
+          <img src="${esc(imageUrl)}" alt="${esc(fallbackName || cartoonText("Karakter", "Character"))}">
           <div class="mobile-cartoon-character-actions">
             <button type="button" data-mobile-cartoon-character-act="preview" data-character-url="${esc(imageUrl)}">⛶</button>
             <button type="button" data-mobile-cartoon-character-act="download" data-character-url="${esc(imageUrl)}">⬇</button>
@@ -169,12 +169,18 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
             <button type="button" data-mobile-cartoon-character-act="delete">🗑</button>
           </div>
         </div>
-        <div class="mobile-cartoon-character-name">${esc(fallbackName || "Karakter")}</div>
+        <div class="mobile-cartoon-character-name">${esc(fallbackName || cartoonText("Karakter", "Character"))}</div>
       `;
 
-             setStatus("Karakter hazır.");
+      setStatus(cartoonText(
+        "Karakter hazır.",
+        "Character is ready."
+      ));
       clearMobileCartoonLoading();
-      mobileCartoonToast("success", "Karakter hazır.");
+      mobileCartoonToast("success", cartoonText(
+        "Karakter hazır.",
+        "Character is ready."
+      ));
       return;
     }
 
@@ -183,9 +189,15 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
         card.remove();
       }
 
-      setStatus("Karakter oluşturulamadı.");
+      setStatus(cartoonText(
+        "Karakter oluşturulamadı.",
+        "Character could not be created."
+      ));
       clearMobileCartoonLoading();
-      mobileCartoonToast("error", "Karakter oluşturulamadı.");
+      mobileCartoonToast("error", cartoonText(
+        "Karakter oluşturulamadı.",
+        "Character could not be created."
+      ));
 
       refundMobileCartoonCredits(refundCtx, "mobile_cartoon_character_poll_failed", {
         error: "character_poll_failed",
@@ -196,7 +208,8 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
 
       return;
     }
-       setTimeout(function(){
+
+    setTimeout(function(){
       pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, refundCtx);
     }, 3000);
   })
@@ -205,6 +218,128 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
 
     setTimeout(function(){
       pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, refundCtx);
+    }, 4000);
+  });
+}
+
+function pollMobileCartoonJob(jobId){
+  if (!jobId) return;
+
+  fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store"
+  })
+  .then(function(res){
+    return res.json();
+  })
+  .then(function(data){
+    console.log("[MOBILE CARTOON][POLL]", data);
+
+    const status = String(
+      data.status ||
+      data.db_status ||
+      data.state ||
+      ""
+    ).toLowerCase();
+
+    const videoUrl = pickCartoonVideoUrl(data);
+
+    const job = mobileCartoonJobs.find(function(item){
+      return item.id === jobId;
+    });
+
+    if (!job) return;
+
+    if (videoUrl) {
+      job.videoUrl = videoUrl;
+      job.status = "ready";
+      job.title = job.title || cartoonText(
+        "Çizgifilm video hazır",
+        "Cartoon video is ready"
+      );
+      renderMobileCartoonResults();
+
+      setStatus(cartoonText(
+        "Çizgifilm video hazır.",
+        "Cartoon video is ready."
+      ));
+      clearMobileCartoonLoading();
+      mobileCartoonToast("success", cartoonText(
+        "Çizgifilm video hazır.",
+        "Cartoon video is ready."
+      ));
+      return;
+    }
+
+    if (
+      (status.includes("ready") || status.includes("done") || status.includes("complete") || status.includes("success")) &&
+      !videoUrl
+    ) {
+      job.status = "error";
+      job.title = cartoonText(
+        "Video çıktısı alınamadı",
+        "Video output could not be retrieved"
+      );
+      renderMobileCartoonResults();
+
+      setStatus(cartoonText(
+        "Video çıktısı alınamadı.",
+        "Video output could not be retrieved."
+      ));
+      clearMobileCartoonLoading();
+      mobileCartoonToast("error", cartoonText(
+        "Video çıktısı alınamadı.",
+        "Video output could not be retrieved."
+      ));
+
+      refundMobileCartoonCredits(job.refundCtx, "mobile_cartoon_ready_no_output", {
+        error: "ready_no_output",
+        status: status,
+        job_id: jobId,
+        response: data
+      });
+
+      return;
+    }
+
+    if (status.includes("fail") || status.includes("error")) {
+      job.status = "error";
+      job.title = cartoonText(
+        "Çizgifilm video oluşturulamadı",
+        "Cartoon video could not be created"
+      );
+      renderMobileCartoonResults();
+
+      setStatus(cartoonText(
+        "Çizgifilm video oluşturulamadı.",
+        "Cartoon video could not be created."
+      ));
+      clearMobileCartoonLoading();
+      mobileCartoonToast("error", cartoonText(
+        "Çizgifilm video oluşturulamadı.",
+        "Cartoon video could not be created."
+      ));
+
+      refundMobileCartoonCredits(job.refundCtx, "mobile_cartoon_basic_poll_failed", {
+        error: "basic_poll_failed",
+        status: status,
+        job_id: jobId,
+        response: data
+      });
+
+      return;
+    }
+
+    setTimeout(function(){
+      pollMobileCartoonJob(jobId);
+    }, 3000);
+  })
+  .catch(function(err){
+    console.error("[MOBILE CARTOON][POLL ERROR]", err);
+
+    setTimeout(function(){
+      pollMobileCartoonJob(jobId);
     }, 4000);
   });
 }
