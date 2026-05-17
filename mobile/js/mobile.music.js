@@ -237,15 +237,15 @@ libraryRows.forEach(function(row){
               ${safe(title)}
             </div>
 
-                       <div class="mobile-library-sub">
+                 <div class="mobile-library-sub">
               ${
                 item.dataset.stemsStatus === "ready"
-                  ? "Kanallar hazır"
+                  ? musicText("Kanallar hazır", "Channels ready")
                   : item.dataset.stemsStatus === "processing"
-                    ? "Kanallar hazırlanıyor"
+                    ? musicText("Kanallar hazırlanıyor", "Channels are being prepared")
                     : isReady
-                      ? "Hazır"
-                      : "Hazırlanıyor"
+                      ? musicText("Hazır", "Ready")
+                      : musicText("Hazırlanıyor", "Preparing")
               }
             </div>
           </div>
@@ -375,7 +375,12 @@ if (deleteEl) {
           isReady = !!resolvedAudioUrl;
           item.dataset.aivoAudioUrl = String(resolvedAudioUrl || "");
 
-          if (subEl) subEl.textContent = isReady ? "Hazır" : "Hazırlanıyor";
+                  if (subEl) {
+            subEl.textContent = isReady
+              ? musicText("Hazır", "Ready")
+              : musicText("Hazırlanıyor", "Preparing");
+          }
+
           if (playEl) playEl.textContent = isReady ? "▶" : "…";
         }
 
@@ -501,29 +506,49 @@ if (deleteEl) {
 
       <div class="mobile-music-sheet-head">
         <div>
-          <div class="mobile-music-sheet-kicker">Şarkı Sözleri</div>
+                   <div class="mobile-music-sheet-kicker">
+            ${musicText(
+              "Şarkı Sözleri",
+              "Lyrics"
+            )}
+          </div>
           <div class="mobile-music-sheet-title">${safe(title)}</div>
         </div>
 
-        <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+            <button
+          class="mobile-music-sheet-close"
+          type="button"
+          aria-label="${musicText("Kapat", "Close")}"
+        >
           ×
         </button>
       </div>
 
       <div class="mobile-music-confirm-text" style="max-height:48vh; overflow:auto; text-align:left !important; white-space:pre-wrap;">
-        ${lyrics ? safe(lyrics) : "Bu müzik için kayıtlı şarkı sözü bulunamadı."}
+             ${lyrics
+          ? safe(lyrics)
+          : musicText(
+              "Bu müzik için kayıtlı şarkı sözü bulunamadı.",
+              "No lyrics were found for this music."
+            )}
       </div>
 
       ${
         lyrics
           ? `
             <div class="mobile-music-confirm-actions">
-              <button class="mobile-music-confirm-cancel" type="button" data-mobile-lyrics-action="share">
-                Paylaş
+                         <button class="mobile-music-confirm-cancel" type="button" data-mobile-lyrics-action="share">
+                ${musicText(
+                  "Paylaş",
+                  "Share"
+                )}
               </button>
 
               <button class="mobile-music-confirm-submit" type="button" data-mobile-lyrics-action="copy">
-                Kopyala
+                ${musicText(
+                  "Kopyala",
+                  "Copy"
+                )}
               </button>
             </div>
           `
@@ -572,9 +597,19 @@ if (copyBtn) {
       ta.remove();
     }
 
-    if (statusEl) statusEl.textContent = "Şarkı sözleri kopyalandı.";
+     if (statusEl) {
+      statusEl.textContent = musicText(
+        "Şarkı sözleri kopyalandı.",
+        "Lyrics copied."
+      );
+    }
   } catch (err) {
-    if (statusEl) statusEl.textContent = "Kopyalama başarısız.";
+    if (statusEl) {
+      statusEl.textContent = musicText(
+        "Kopyalama başarısız.",
+        "Copy failed."
+      );
+    }
   }
 
   return;
