@@ -1227,14 +1227,15 @@ function setFileLabel(input, file){
   if (!label) return;
 
   const labelMap = {
-    mobileAtmoLogoFile: "Logo Seç",
-    mobileAtmoAudioFile: "Audio Seç",
-    mobileAtmoProImageFile: "Referans",
-    mobileAtmoProLogoFile: "Logo",
-    mobileAtmoProAudioFile: "Audio"
+    mobileAtmoImageFile: atmoText("Resim Seç", "Select Image"),
+    mobileAtmoLogoFile: atmoText("Logo Seç", "Select Logo"),
+    mobileAtmoAudioFile: atmoText("Audio Seç", "Select Audio"),
+    mobileAtmoProImageFile: atmoText("Referans", "Reference"),
+    mobileAtmoProLogoFile: atmoText("Logo", "Logo"),
+    mobileAtmoProAudioFile: atmoText("Audio", "Audio")
   };
 
-  const cleanText = labelMap[input.id] || "Dosya Seç";
+  const cleanText = labelMap[input.id] || atmoText("Dosya Seç", "Select File");
   const nextText = file ? cleanText + " ✓" : cleanText;
 
   const oldClear = label.querySelector(".mobile-atmo-file-clear");
@@ -1253,6 +1254,7 @@ function setFileLabel(input, file){
   clearBtn.type = "button";
   clearBtn.className = "mobile-atmo-file-clear";
   clearBtn.setAttribute("data-mobile-atmo-clear-file", input.id);
+  clearBtn.setAttribute("aria-label", atmoText("Dosyayı kaldır", "Remove file"));
   clearBtn.textContent = "×";
   label.appendChild(clearBtn);
 }
