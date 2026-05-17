@@ -649,7 +649,11 @@ if (shareBtn) {
   e.preventDefault();
   e.stopPropagation();
 
-  const shareText = "AIVO Şarkı Sözleri - " + title + "\n\n" + lyrics;
+  const shareText =
+    musicText(
+      "AIVO Şarkı Sözleri",
+      "AIVO Lyrics"
+    ) + " - " + title + "\n\n" + lyrics;
 
   try {
     if (navigator.share && navigator.canShare) {
