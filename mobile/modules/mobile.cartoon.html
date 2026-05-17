@@ -170,27 +170,57 @@
   </div>
 </div>
 
-     <div class="mobile-cartoon-upload-grid mobile-cartoon-upload-grid--single">
+  <div class="mobile-cartoon-upload-grid mobile-cartoon-upload-grid--single">
   <label class="mobile-cartoon-upload-card mobile-cartoon-upload-image" for="mobileCartoonCharacterImage">
-    <span class="mobile-cartoon-upload-badge">+10 Kredi</span>
+    <span class="mobile-cartoon-upload-badge" data-i18n="cartoon.credit10">+10 Kredi</span>
+
     <input id="mobileCartoonCharacterImage" type="file" accept="image/*" hidden>
+
     <span class="mobile-cartoon-upload-icon" aria-hidden="true"></span>
-    <span class="mobile-cartoon-upload-btn">Resim Seç</span>
-    <button id="mobileCartoonCharacterImageClear" class="mobile-cartoon-upload-clear" type="button" hidden>×</button>
-    <small id="mobileCartoonCharacterImageText">Dosya seçilmedi</small>
+
+    <span class="mobile-cartoon-upload-btn" data-i18n="cartoon.selectImage">
+      Resim Seç
+    </span>
+
+    <button
+      id="mobileCartoonCharacterImageClear"
+      class="mobile-cartoon-upload-clear"
+      type="button"
+      hidden>×</button>
+
+    <small
+      id="mobileCartoonCharacterImageText"
+      data-i18n="cartoon.noFile">
+
+      Dosya seçilmedi
+    </small>
   </label>
 </div>
 
-      <button id="mobileCartoonCharacterBtn" class="generate-btn" type="button">
-        🧩 Karakter Oluştur (20 Kredi)
-      </button>
+<button
+  id="mobileCartoonCharacterBtn"
+  class="generate-btn"
+  type="button"
+  data-i18n="cartoon.generateCharacter">
 
-      <div id="mobileCartoonCharacterStatus" class="mobile-status"></div>
-      <div class="mobile-cartoon-character-library-wrap">
-  <h3 class="mobile-cartoon-block-title">Karakterlerim</h3>
+  🧩 Karakter Oluştur (20 Kredi)
+</button>
+
+<div id="mobileCartoonCharacterStatus" class="mobile-status"></div>
+
+<div class="mobile-cartoon-character-library-wrap">
+  <h3
+    class="mobile-cartoon-block-title"
+    data-i18n="cartoon.myCharacters">
+
+    Karakterlerim
+  </h3>
 
   <div id="mobileCartoonCharacterLibrary" class="mobile-cartoon-character-library">
-    <div class="mobile-cartoon-character-empty">
+    <div
+      class="mobile-cartoon-character-empty"
+      data-i18n="cartoon.noCharacters">
+
       Henüz mobil karakter oluşturulmadı.
     </div>
   </div>
