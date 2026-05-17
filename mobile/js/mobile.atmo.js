@@ -579,15 +579,34 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       const nextCredits = data.credits ?? data.balance ?? data.credit;
 
       if (typeof nextCredits === "number") {
+        const topCreditCountEl = document.getElementById("topCreditCount");
+
+        if (topCreditCountEl) {
+          topCreditCountEl.textContent = String(nextCredits);
+        }
+
         const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
 
         mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
+          el.textContent = isAtmoEn()
+            ? "Credits " + nextCredits
+            : "Kredi " + nextCredits;
         });
+
+        if (
+          window.AIVO_STORE_V1 &&
+          typeof window.AIVO_STORE_V1.setCredits === "function"
+        ) {
+          window.AIVO_STORE_V1.setCredits(nextCredits);
+        }
       }
     } catch (err) {
       console.warn("[MOBILE ATMO][CREDIT REFRESH FAILED]", err);
     }
+
+    try {
+      window.syncCreditsUI?.({ force: true });
+    } catch (err) {}
   }
 
   function getMobileAtmoCreditAction(mode){
@@ -778,7 +797,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         await refreshMobileAtmoCredits();
 
         if (data.refunded) {
-          mobileAtmoToast("success", "Kredi iade edildi.");
+          mobileAtmoToast("success", atmoText(
+            "Kredi iade edildi.",
+            "Credits refunded."
+          ));
         }
 
         return true;
@@ -811,20 +833,24 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   return baseCredit + logoExtra + audioExtra;
 }
   function syncMobileAtmoCreditButtons(){
-    const isEN = window.AIVO_LANG === "en";
+    const basicCredit = computeMobileAtmoCredit("basic");
+    const proCredit = computeMobileAtmoCredit("pro");
 
     if (basicGenerateBtn) {
-      basicGenerateBtn.textContent = isEN
-        ? "🎬 Generate Atmosphere Video (" + computeMobileAtmoCredit("basic") + " Credits)"
-        : "🎬 Atmosfer Video Oluştur (" + computeMobileAtmoCredit("basic") + " Kredi)";
+      basicGenerateBtn.textContent = atmoText(
+        "🎬 Atmosfer Video Oluştur (" + basicCredit + " Kredi)",
+        "🎬 Create Atmosphere Video (" + basicCredit + " Credits)"
+      );
     }
 
     if (proGenerateBtn) {
-      proGenerateBtn.textContent = isEN
-        ? "✨ Generate Super Atmosphere Video (" + computeMobileAtmoCredit("pro") + " Credits)"
-        : "✨ Süper Atmosfer Video Oluştur (" + computeMobileAtmoCredit("pro") + " Kredi)";
+      proGenerateBtn.textContent = atmoText(
+        "✨ Süper Atmosfer Video Oluştur (" + proCredit + " Kredi)",
+        "✨ Create Super Atmosphere Video (" + proCredit + " Credits)"
+      );
     }
   }
+
   function setStatus(message){
     const text = safeText(message);
 
