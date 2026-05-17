@@ -34,28 +34,31 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       .replaceAll("'", "&#39;");
   }
 
-  function renderMobileAtmoResults(){
+   function renderMobileAtmoResults(){
     if (!resultsEl) return;
 
-  const items = mobileAtmoJobs.filter(function(job){
-  if (mobileAtmoDeletedIds.has(job.id)) return false;
+    const items = mobileAtmoJobs.filter(function(job){
+      if (mobileAtmoDeletedIds.has(job.id)) return false;
 
-  if (mobileAtmoViewMode === "current") {
-    return job.scope === "current";
-  }
+      if (mobileAtmoViewMode === "current") {
+        return job.scope === "current";
+      }
 
-  return job.scope === "library";
-});
+      return job.scope === "library";
+    });
 
     if (!items.length) {
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Henüz mobil atmosfer videosu başlatılmadı.";
+      resultsEl.innerHTML = atmoText(
+        "Henüz mobil atmosfer videosu başlatılmadı.",
+        "No mobile atmosphere video has been started yet."
+      );
       return;
     }
 
     resultsEl.className = "mobile-atmo-results";
 
-      resultsEl.innerHTML = items.map(function(job){
+    resultsEl.innerHTML = items.map(function(job){
       const ready = !!job.videoUrl;
       const failed = String(job.status || "").toLowerCase() === "error";
 
@@ -66,9 +69,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
               ready
                 ? `<video class="mobile-atmo-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
                 : failed
-                  ? `<div class="mobile-atmo-video-loading"><span>Video çıktısı alınamadı</span></div>`
-                  : `<div class="mobile-atmo-video-loading"><span>Hazırlanıyor…</span></div>`
+                  ? `<div class="mobile-atmo-video-loading"><span>${atmoText("Video çıktısı alınamadı", "Video output could not be received")}</span></div>`
+                  : `<div class="mobile-atmo-video-loading"><span>${atmoText("Hazırlanıyor…", "Preparing…")}</span></div>`
             }
+
             <div class="mobile-atmo-video-actions">
               <button type="button" data-mobile-atmo-act="download" ${ready ? "" : "disabled"}>⬇</button>
               <button type="button" data-mobile-atmo-act="share" ${ready ? "" : "disabled"}>↗</button>
@@ -77,19 +81,19 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
               <button type="button" data-mobile-atmo-act="delete">🗑</button>
             </div>
 
-                    ${
+            ${
               ready
                 ? `<button class="mobile-atmo-video-play" type="button" data-mobile-atmo-act="play">▶</button>`
                 : ``
             }
           </div>
 
-          <div class="mobile-atmo-video-title">${esc(job.title || "Atmosfer video")}</div>
+          <div class="mobile-atmo-video-title">${esc(job.title || atmoText("Atmosfer video", "Atmosphere video"))}</div>
         </article>
       `;
     }).join("");
   }
-    function pollMobileAtmoJob(jobId){
+  function pollMobileAtmoJob(jobId){
     if (!jobId) return;
 
     fetch("/api/jobs/status?job_id=" + encodeURIComponent(jobId), {
@@ -126,26 +130,54 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
       if (!job) return;
 
-       if (videoUrl) {
+      if (videoUrl) {
         job.videoUrl = videoUrl;
         job.status = "ready";
-        job.title = job.title || "Atmosfer video hazır";
+        job.title = job.title || atmoText(
+          "Atmosfer video hazır",
+          "Atmosphere video is ready"
+        );
+
         renderMobileAtmoResults();
-        setStatus("Atmosfer video hazır.");
+
+        setStatus(atmoText(
+          "Atmosfer video hazır.",
+          "Atmosphere video is ready."
+        ));
+
         clearMobileAtmoLoading();
-        mobileAtmoToast("success", "Atmosfer video hazır.");
+
+        mobileAtmoToast("success", atmoText(
+          "Atmosfer video hazır.",
+          "Atmosphere video is ready."
+        ));
+
         return;
       }
-            if (
+
+      if (
         (status.includes("ready") || status.includes("done") || status.includes("complete") || status.includes("success")) &&
         !videoUrl
       ) {
         job.status = "error";
-        job.title = "Video çıktısı alınamadı";
+        job.title = atmoText(
+          "Video çıktısı alınamadı",
+          "Video output could not be received"
+        );
+
         renderMobileAtmoResults();
-        setStatus("Video çıktısı alınamadı.");
+
+        setStatus(atmoText(
+          "Video çıktısı alınamadı.",
+          "Video output could not be received."
+        ));
+
         clearMobileAtmoLoading();
-        mobileAtmoToast("error", "Video çıktısı alınamadı.");
+
+        mobileAtmoToast("error", atmoText(
+          "Video çıktısı alınamadı.",
+          "Video output could not be received."
+        ));
 
         refundMobileAtmoCredits(job.refundCtx, "mobile_atmo_ready_no_output", {
           error: "ready_no_output",
@@ -155,13 +187,27 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         return;
       }
+
       if (status.includes("fail") || status.includes("error")) {
         job.status = "error";
-        job.title = "Atmosfer video oluşturulamadı";
+        job.title = atmoText(
+          "Atmosfer video oluşturulamadı",
+          "Atmosphere video could not be created"
+        );
+
         renderMobileAtmoResults();
-        setStatus("Atmosfer video oluşturulamadı.");
+
+        setStatus(atmoText(
+          "Atmosfer video oluşturulamadı.",
+          "Atmosphere video could not be created."
+        ));
+
         clearMobileAtmoLoading();
-        mobileAtmoToast("error", "Atmosfer video oluşturulamadı.");
+
+        mobileAtmoToast("error", atmoText(
+          "Atmosfer video oluşturulamadı.",
+          "Atmosphere video could not be created."
+        ));
 
         refundMobileAtmoCredits(job.refundCtx, "mobile_atmo_poll_failed", {
           error: "poll_failed",
