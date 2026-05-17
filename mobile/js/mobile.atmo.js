@@ -798,12 +798,18 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   return baseCredit + logoExtra + audioExtra;
 }
   function syncMobileAtmoCreditButtons(){
+    const isEN = window.AIVO_LANG === "en";
+
     if (basicGenerateBtn) {
-      basicGenerateBtn.textContent = "🎬 Atmosfer Video Oluştur (" + computeMobileAtmoCredit("basic") + " Kredi)";
+      basicGenerateBtn.textContent = isEN
+        ? "🎬 Generate Atmosphere Video (" + computeMobileAtmoCredit("basic") + " Credits)"
+        : "🎬 Atmosfer Video Oluştur (" + computeMobileAtmoCredit("basic") + " Kredi)";
     }
 
     if (proGenerateBtn) {
-      proGenerateBtn.textContent = "✨ Süper Atmosfer Video Oluştur (" + computeMobileAtmoCredit("pro") + " Kredi)";
+      proGenerateBtn.textContent = isEN
+        ? "✨ Generate Super Atmosphere Video (" + computeMobileAtmoCredit("pro") + " Credits)"
+        : "✨ Süper Atmosfer Video Oluştur (" + computeMobileAtmoCredit("pro") + " Kredi)";
     }
   }
   function setStatus(message){
