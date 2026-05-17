@@ -60,11 +60,15 @@
     const time = toTime(value);
     if (!time) return "-";
 
-    return new Date(time).toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    });
+   const locale = String(window.AIVO_LANG || "").toLowerCase() === "en"
+  ? "en-US"
+  : "tr-TR";
+
+return new Date(time).toLocaleDateString(locale, {
+  day: "2-digit",
+  month: "long",
+  year: "numeric"
+});
   }
 
   function formatMoney(value){
