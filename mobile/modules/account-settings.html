@@ -210,79 +210,125 @@
   </div>
 </div>
 
-  <div class="mobile-settings-pane" data-mobile-settings-pane="privacy" hidden>
-    <div class="mobile-settings-card">
-      <div class="mobile-settings-card-head">
-        <div>
-          <h4>Gizlilik Ayarları</h4>
-          <p>Verilerinin nasıl kullanıldığını kontrol et.</p>
-        </div>
+<div class="mobile-settings-pane" data-mobile-settings-pane="privacy" hidden>
+  <div class="mobile-settings-card">
+    <div class="mobile-settings-card-head">
+      <div>
+        <h4 data-i18n="settings.privacyPane.title">
+          Gizlilik Ayarları
+        </h4>
+
+        <p data-i18n="settings.privacyPane.subtitle">
+          Verilerinin nasıl kullanıldığını kontrol et.
+        </p>
       </div>
-
-      <label class="mobile-settings-choice">
-        <input type="radio" name="mobile_profile_visibility" value="public" data-mobile-setting="profile_visibility">
-        <span>
-          <b>Herkese açık</b>
-          <small>Profilin herkes tarafından görülebilir.</small>
-        </span>
-      </label>
-
-      <label class="mobile-settings-choice">
-        <input type="radio" name="mobile_profile_visibility" value="private" data-mobile-setting="profile_visibility">
-        <span>
-          <b>Özel</b>
-          <small>Profilini sadece sen görebilirsin.</small>
-        </span>
-      </label>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Aktivite paylaşımı</b>
-          <small>Üretim aktiviten profilinde görünebilir.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="privacy_activity_share">
-      </label>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Anonim veri toplama</b>
-          <small>Uygulamayı geliştirmek için anonim kullanım verisi.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="privacy_analytics">
-      </label>
-      <button
-  class="mobile-settings-row mobile-settings-policy-row"
-  type="button"
-  data-mobile-language-picker
->
-  <span>
-    <b data-i18n="settings.language">Dil / Language</b>
-    <small data-i18n="settings.languageDesc">
-      Uygulama dilini seç.
-    </small>
-  </span>
-
-  <strong data-mobile-current-language>
-    Türkçe
-  </strong>
-</button>
- <button class="mobile-settings-row mobile-settings-policy-row" type="button" data-mobile-policy-privacy>
-  <span>
-    <b data-i18n="settings.privacy">Gizlilik Politikası</b>
-    <small data-i18n="settings.privacyDesc">KVKK, çerezler ve veri işleme bilgileri.</small>
-  </span>
-  <strong>›</strong>
-</button>
-
-<button class="mobile-settings-row mobile-settings-policy-row" type="button" data-mobile-policy-terms>
-  <span>
-    <b data-i18n="settings.terms">Kullanım Şartları</b>
-    <small data-i18n="settings.termsDesc">AIVO Mobile kullanım kuralları ve sorumluluklar.</small>
-  </span>
-  <strong>›</strong>
-</button>
     </div>
+
+    <label class="mobile-settings-choice">
+      <input type="radio" name="mobile_profile_visibility" value="public" data-mobile-setting="profile_visibility">
+
+      <span>
+        <b data-i18n="settings.privacyPane.public">
+          Herkese açık
+        </b>
+
+        <small data-i18n="settings.privacyPane.publicDesc">
+          Profilin herkes tarafından görülebilir.
+        </small>
+      </span>
+    </label>
+
+    <label class="mobile-settings-choice">
+      <input type="radio" name="mobile_profile_visibility" value="private" data-mobile-setting="profile_visibility">
+
+      <span>
+        <b data-i18n="settings.privacyPane.private">
+          Özel
+        </b>
+
+        <small data-i18n="settings.privacyPane.privateDesc">
+          Profilini sadece sen görebilirsin.
+        </small>
+      </span>
+    </label>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.privacyPane.activityShare">
+          Aktivite paylaşımı
+        </b>
+
+        <small data-i18n="settings.privacyPane.activityShareDesc">
+          Üretim aktiviten profilinde görünebilir.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="privacy_activity_share">
+    </label>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.privacyPane.analytics">
+          Anonim veri toplama
+        </b>
+
+        <small data-i18n="settings.privacyPane.analyticsDesc">
+          Uygulamayı geliştirmek için anonim kullanım verisi.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="privacy_analytics">
+    </label>
+
+    <button
+      class="mobile-settings-row mobile-settings-policy-row"
+      type="button"
+      data-mobile-language-picker
+    >
+      <span>
+        <b data-i18n="settings.language">
+          Dil / Language
+        </b>
+
+        <small data-i18n="settings.languageDesc">
+          Uygulama dilini seç.
+        </small>
+      </span>
+
+      <strong data-mobile-current-language data-i18n="language.tr">
+        Türkçe
+      </strong>
+    </button>
+
+    <button class="mobile-settings-row mobile-settings-policy-row" type="button" data-mobile-policy-privacy>
+      <span>
+        <b data-i18n="settings.privacy">
+          Gizlilik Politikası
+        </b>
+
+        <small data-i18n="settings.privacyDesc">
+          KVKK, çerezler ve veri işleme bilgileri.
+        </small>
+      </span>
+
+      <strong>›</strong>
+    </button>
+
+    <button class="mobile-settings-row mobile-settings-policy-row" type="button" data-mobile-policy-terms>
+      <span>
+        <b data-i18n="settings.terms">
+          Kullanım Şartları
+        </b>
+
+        <small data-i18n="settings.termsDesc">
+          AIVO Mobile kullanım kuralları ve sorumluluklar.
+        </small>
+      </span>
+
+      <strong>›</strong>
+    </button>
   </div>
+</div>
 
   <div class="mobile-settings-pane" data-mobile-settings-pane="security" hidden>
     <div class="mobile-settings-card">
