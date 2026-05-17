@@ -644,7 +644,12 @@ if (shareBtn) {
       document.execCommand("copy");
       ta.remove();
 
-      if (statusEl) statusEl.textContent = "Paylaşım desteklenmiyor, sözler kopyalandı.";
+        if (statusEl) {
+        statusEl.textContent = musicText(
+          "Paylaşım desteklenmiyor, sözler kopyalandı.",
+          "Sharing is not supported, lyrics copied."
+        );
+      }
     }
   } catch (err) {
     try {
@@ -660,7 +665,12 @@ if (shareBtn) {
       document.execCommand("copy");
       ta.remove();
 
-      if (statusEl) statusEl.textContent = "Paylaşım iptal edildi, sözler kopyalandı.";
+        if (statusEl) {
+        statusEl.textContent = musicText(
+          "Paylaşım iptal edildi, sözler kopyalandı.",
+          "Sharing cancelled, lyrics copied."
+        );
+      }
     } catch (copyErr) {}
   }
 
