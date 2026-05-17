@@ -795,6 +795,19 @@ async function hydrateMobileCartoonCharacterLibrary(){
     if (!text) return null;
 
     const normalizedType = type === "danger" ? "error" : type;
+    const key = normalizedType + ":" + text;
+    const now = Date.now();
+
+    if (
+      key === MOBILE_CARTOON_TOAST.lastKey &&
+      now - MOBILE_CARTOON_TOAST.lastAt < 1600
+    ) {
+      return null;
+    }
+
+    MOBILE_CARTOON_TOAST.lastKey = key;
+    MOBILE_CARTOON_TOAST.lastAt = now;
+
     const toastApi = getMobileCartoonToastApi();
 
     try {
@@ -827,8 +840,11 @@ async function hydrateMobileCartoonCharacterLibrary(){
       if (window.Toast && typeof window.Toast.show === "function") {
         window.Toast.show(text, { type: normalizedType });
       }
-    } catch (err) {}
+    } catch (err) {
+      console.warn("[MOBILE CARTOON][TOAST FALLBACK]", err);
+    }
 
+    setStatus(text);
     return null;
   }
 
