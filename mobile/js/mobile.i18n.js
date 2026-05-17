@@ -352,7 +352,99 @@
       "cover.engineDesc": "6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.",
 
       "cover.generate": "🖼️ Kapak Üret (6 Kredi)",
-      "cover.empty": "Henüz mobil kapak üretimi başlatılmadı.",
+    "cover.empty": "Henüz mobil kapak üretimi başlatılmadı.",
+
+      "atmo.title": "Atmosfer videosu üret",
+      "atmo.subtitle": "Kar, yağmur, sis, ışık ve sinematik sahne hissini mobilde hızlıca oluştur.",
+
+      "atmo.modeLabel": "Atmosfer modu",
+      "atmo.basicMode": "Basit Mod",
+      "atmo.proMode": "Süper Mod ✨",
+
+      "atmo.background": "Arka Mekan",
+      "atmo.backgroundSub": "Hazır sahne seç veya kendi atmosferini oluştur.",
+
+      "atmo.sceneWinterCafe": "Kış Kafe",
+      "atmo.sceneWinterCafeSub": "Neon ışıklar, kar, sıcak vibe.",
+
+      "atmo.sceneCozyCabin": "Dağ Evi",
+      "atmo.sceneCozyCabinSub": "Şömine, ahşap, cozy.",
+
+      "atmo.sceneLakeCabin": "Göl Kenarı",
+      "atmo.sceneLakeCabinSub": "Sakin, sinematik yansıma.",
+
+      "atmo.sceneCityNight": "Şehir Gecesi",
+      "atmo.sceneCityNightSub": "Bokeh, sokak lambaları.",
+
+      "atmo.sceneRainyWindow": "Yağmurlu Pencere",
+      "atmo.sceneRainyWindowSub": "Cam damlaları, loş ışık.",
+
+      "atmo.sceneOldStoneStreet": "Eski Taş Sokak",
+      "atmo.sceneOldStoneStreetSub": "Islak zemin, klip hissi.",
+
+      "atmo.atmosphere": "Atmosfer",
+      "atmo.atmosphereSub": "İstediğin kadar seç.",
+
+      "atmo.effectSnow": "❄️ Kar",
+      "atmo.effectRain": "🌧️ Yağmur",
+      "atmo.effectLeaf": "🍃 Yaprak",
+      "atmo.effectFog": "🌫️ Sis",
+      "atmo.effectLight": "✨ Işık",
+      "atmo.effectFire": "🔥 Ateş",
+      "atmo.effectWind": "🌬️ Rüzgar",
+
+      "atmo.duration": "Süre",
+      "atmo.duration4": "4 sn",
+      "atmo.duration6": "6 sn",
+      "atmo.duration8": "8 sn",
+      "atmo.duration10": "10 sn",
+      "atmo.duration12": "12 sn",
+      "atmo.duration15": "15 sn",
+
+      "atmo.aspectRatio": "En / Boy Oranı",
+      "atmo.ratioHorizontal": "Yatay (16:9)",
+      "atmo.ratioVertical": "Dikey (9:16)",
+      "atmo.ratioSquare": "Kare (1:1)",
+
+      "atmo.selectLogo": "Logo Seç",
+      "atmo.selectAudio": "Audio Seç",
+
+      "atmo.generateBasic": "🎬 Atmosfer Video Oluştur (30 Kredi)",
+
+      "atmo.proTitle": "Süper Mod",
+      "atmo.proSub": "Sahne, kamera ve atmosferi tek cümlede anlat.",
+
+      "atmo.prompt": "Prompt",
+      "atmo.promptPlaceholder": "Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik...",
+
+      "atmo.styleTitle": "Atmosfer Stili",
+
+      "atmo.styleWarm": "💡 Sıcak",
+      "atmo.styleCold": "❄️ Soğuk",
+      "atmo.styleGolden": "🌅 Golden Hour",
+      "atmo.styleNeon": "🟣 Neon",
+      "atmo.styleRomantic": "💜 Romantik",
+      "atmo.styleCinematic": "🎬 Sinematik",
+      "atmo.styleCozy": "🫶 Cozy",
+      "atmo.styleMystic": "🕯️ Gizemli",
+
+      "atmo.detailEffects": "Detay Efektler",
+
+      "atmo.detailGrain": "🎞️ Hafif Film Grain",
+      "atmo.detailGlow": "✨ Bloom / Lens Glow",
+      "atmo.detailVignette": "🌑 Vignette",
+      "atmo.detailSharpen": "🔍 Hafif Sharpen",
+      "atmo.detailMotionBlur": "🌀 Motion Blur",
+      "atmo.detailDust": "🎥 Film Dust",
+
+      "atmo.reference": "Referans",
+      "atmo.logo": "Logo",
+      "atmo.audio": "Audio",
+
+      "atmo.generatePro": "✨ Süper Atmosfer Video Oluştur (45 Kredi)",
+
+      "atmo.latestTitle": "Son atmosfer videoları",
+      "atmo.empty": "Henüz mobil atmosfer videosu başlatılmadı.",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -717,7 +809,99 @@
       "cover.engineDesc": "1 cover is generated with 6 credits. Quality upgrades may consume more credits.",
 
       "cover.generate": "🖼️ Generate Cover (6 Credits)",
-      "cover.empty": "No mobile cover generation has been started yet.",
+    "cover.empty": "No mobile cover generation has been started yet.",
+
+      "atmo.title": "Create atmosphere video",
+      "atmo.subtitle": "Quickly create snow, rain, fog, lighting and cinematic atmosphere scenes on mobile.",
+
+      "atmo.modeLabel": "Atmosphere mode",
+      "atmo.basicMode": "Basic Mode",
+      "atmo.proMode": "Super Mode ✨",
+
+      "atmo.background": "Background Scene",
+      "atmo.backgroundSub": "Choose a ready-made scene or create your own atmosphere.",
+
+      "atmo.sceneWinterCafe": "Winter Cafe",
+      "atmo.sceneWinterCafeSub": "Neon lights, snow and warm vibe.",
+
+      "atmo.sceneCozyCabin": "Mountain Cabin",
+      "atmo.sceneCozyCabinSub": "Fireplace, wood and cozy atmosphere.",
+
+      "atmo.sceneLakeCabin": "Lakeside",
+      "atmo.sceneLakeCabinSub": "Calm cinematic reflections.",
+
+      "atmo.sceneCityNight": "City Night",
+      "atmo.sceneCityNightSub": "Bokeh and street lights.",
+
+      "atmo.sceneRainyWindow": "Rainy Window",
+      "atmo.sceneRainyWindowSub": "Glass droplets and dim lighting.",
+
+      "atmo.sceneOldStoneStreet": "Old Stone Street",
+      "atmo.sceneOldStoneStreetSub": "Wet ground and music video vibe.",
+
+      "atmo.atmosphere": "Atmosphere",
+      "atmo.atmosphereSub": "Select as many as you want.",
+
+      "atmo.effectSnow": "❄️ Snow",
+      "atmo.effectRain": "🌧️ Rain",
+      "atmo.effectLeaf": "🍃 Leaves",
+      "atmo.effectFog": "🌫️ Fog",
+      "atmo.effectLight": "✨ Light",
+      "atmo.effectFire": "🔥 Fire",
+      "atmo.effectWind": "🌬️ Wind",
+
+      "atmo.duration": "Duration",
+      "atmo.duration4": "4 sec",
+      "atmo.duration6": "6 sec",
+      "atmo.duration8": "8 sec",
+      "atmo.duration10": "10 sec",
+      "atmo.duration12": "12 sec",
+      "atmo.duration15": "15 sec",
+
+      "atmo.aspectRatio": "Aspect Ratio",
+      "atmo.ratioHorizontal": "Horizontal (16:9)",
+      "atmo.ratioVertical": "Vertical (9:16)",
+      "atmo.ratioSquare": "Square (1:1)",
+
+      "atmo.selectLogo": "Select Logo",
+      "atmo.selectAudio": "Select Audio",
+
+      "atmo.generateBasic": "🎬 Create Atmosphere Video (30 Credits)",
+
+      "atmo.proTitle": "Super Mode",
+      "atmo.proSub": "Describe the scene, camera and atmosphere in one sentence.",
+
+      "atmo.prompt": "Prompt",
+      "atmo.promptPlaceholder": "E.g. neon city at night, purple-blue tones, slow camera, light fog, cinematic...",
+
+      "atmo.styleTitle": "Atmosphere Style",
+
+      "atmo.styleWarm": "💡 Warm",
+      "atmo.styleCold": "❄️ Cold",
+      "atmo.styleGolden": "🌅 Golden Hour",
+      "atmo.styleNeon": "🟣 Neon",
+      "atmo.styleRomantic": "💜 Romantic",
+      "atmo.styleCinematic": "🎬 Cinematic",
+      "atmo.styleCozy": "🫶 Cozy",
+      "atmo.styleMystic": "🕯️ Mystic",
+
+      "atmo.detailEffects": "Detail Effects",
+
+      "atmo.detailGrain": "🎞️ Light Film Grain",
+      "atmo.detailGlow": "✨ Bloom / Lens Glow",
+      "atmo.detailVignette": "🌑 Vignette",
+      "atmo.detailSharpen": "🔍 Light Sharpen",
+      "atmo.detailMotionBlur": "🌀 Motion Blur",
+      "atmo.detailDust": "🎥 Film Dust",
+
+      "atmo.reference": "Reference",
+      "atmo.logo": "Logo",
+      "atmo.audio": "Audio",
+
+      "atmo.generatePro": "✨ Create Super Atmosphere Video (45 Credits)",
+
+      "atmo.latestTitle": "Latest atmosphere videos",
+      "atmo.empty": "No mobile atmosphere video has been started yet.",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
