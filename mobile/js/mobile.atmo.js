@@ -1701,28 +1701,51 @@ function setFileLabel(input, file){
     }
 
     if (proGenerateBtn) {
-         proGenerateBtn.addEventListener("click", async function(){
+          proGenerateBtn.addEventListener("click", async function(){
         const payload = buildProPayload();
 
-               if (!payload.prompt) {
-          setStatus("Süper Mod için prompt yazmalısın.");
-          mobileAtmoToast("warning", "Süper Mod için prompt yazmalısın.");
+        if (!payload.prompt) {
+          setStatus(atmoText(
+            "Süper Mod için prompt yazmalısın.",
+            "You need to write a prompt for Super Mode."
+          ));
+          mobileAtmoToast("warning", atmoText(
+            "Süper Mod için prompt yazmalısın.",
+            "You need to write a prompt for Super Mode."
+          ));
           return;
         }
+
         let creditCtx = null;
 
         proGenerateBtn.disabled = true;
-        proGenerateBtn.textContent = "Üretiliyor...";
+        proGenerateBtn.textContent = atmoText(
+          "Üretiliyor...",
+          "Generating..."
+        );
         proGenerateBtn.classList.add("is-loading", "is-pressed");
         proGenerateBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileAtmoCredits("pro");
-          mobileAtmoToast("success", computeMobileAtmoCredit("pro") + " kredi kullanıldı.");
-              } catch (creditErr) {
+          mobileAtmoToast("success", atmoText(
+            computeMobileAtmoCredit("pro") + " kredi kullanıldı.",
+            computeMobileAtmoCredit("pro") + " credits used."
+          ));
+        } catch (creditErr) {
           console.warn("[MOBILE ATMO][PRO CREDIT ERROR]", creditErr);
-          setStatus("Yetersiz kredi.");
-          mobileAtmoToast("warning", "Yetersiz kredi.");
+
+          setStatus(atmoText(
+            "Yetersiz kredi.",
+            "Insufficient credits."
+          ));
+
+          mobileAtmoToast("warning", atmoText(
+            "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...",
+            "Insufficient credits. Redirecting you to Credits..."
+          ));
+
+          clearMobileAtmoLoading();
 
           location.hash = "#credits";
 
@@ -1738,39 +1761,46 @@ function setFileLabel(input, file){
           return;
         }
 
-                    
-
-        mobileAtmoLoading("Süper atmosfer video hazırlanıyor...");
+        mobileAtmoLoading(atmoText(
+          "Süper atmosfer video hazırlanıyor...",
+          "Super atmosphere video is being prepared..."
+        ));
 
         const tempId = "mobile-atmo-" + Date.now();
 
-      const proTitleWords = String(payload.prompt || "")
-  .trim()
-  .split(/\s+/)
-  .filter(Boolean)
-  .slice(0, 4);
-mobileAtmoJobs.length = 0;
+        const proTitleWords = String(payload.prompt || "")
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 4);
 
-mobileAtmoJobs.unshift({
-  id: tempId,
-  scope: "current",
-  title: proTitleWords.length ? proTitleWords.join(" ") + "..." : "Süper atmosfer video",
-  videoUrl: "",
-  payload: payload,
-  status: "processing"
-});
+        mobileAtmoJobs.length = 0;
 
-mobileAtmoViewMode = "current";
+        mobileAtmoJobs.unshift({
+          id: tempId,
+          scope: "current",
+          title: proTitleWords.length
+            ? proTitleWords.join(" ") + "..."
+            : atmoText("Süper atmosfer video", "Super atmosphere video"),
+          videoUrl: "",
+          payload: payload,
+          status: "processing"
+        });
 
-if (resultsEl) {
-  resultsEl.hidden = false;
-}
+        mobileAtmoViewMode = "current";
 
-renderMobileAtmoResults();
+        if (resultsEl) {
+          resultsEl.hidden = false;
+        }
 
-        setStatus("Süper atmosfer video hazırlanıyor...");
+        renderMobileAtmoResults();
 
-           fetch("/api/jobs/create-atmo", {
+        setStatus(atmoText(
+          "Süper atmosfer video hazırlanıyor...",
+          "Super atmosphere video is being prepared..."
+        ));
+
+        fetch("/api/jobs/create-atmo", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
