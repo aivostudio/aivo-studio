@@ -1018,7 +1018,7 @@ async function uploadMobilePhotoFxFile(file, kind){
           }
 
           renderMobilePhotoFxResults();
-          setStatus("PhotoFX klip başlatılamadı.");
+                 setStatus(isEn ? "PhotoFX clip could not be started." : "PhotoFX klip başlatılamadı.");
           clearMobilePhotoFxLoading();
 
           await refundMobilePhotoFxCredits(refundState, "mobile_photofx_create_failed", {
@@ -1057,7 +1057,7 @@ async function uploadMobilePhotoFxFile(file, kind){
         }
 
         renderMobilePhotoFxResults();
-        setStatus("PhotoFX klip başlatılamadı.");
+             setStatus(isEn ? "PhotoFX clip could not be started." : "PhotoFX klip başlatılamadı.");
         clearMobilePhotoFxLoading();
 
         await refundMobilePhotoFxCredits(refundState, "mobile_photofx_create_exception", {
@@ -1072,7 +1072,9 @@ async function uploadMobilePhotoFxFile(file, kind){
     if (!resultsEl) return;
 
     resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "PhotoFX klipleri yükleniyor...";
+     resultsEl.innerHTML = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+      ? "PhotoFX clips are loading..."
+      : "PhotoFX klipleri yükleniyor...";
 
     try {
       const res = await fetch("/api/jobs/list?app=photofx", {
@@ -1172,7 +1174,9 @@ async function uploadMobilePhotoFxFile(file, kind){
     } catch (err) {
       console.error("[MOBILE PHOTOFX][HYDRATE ERROR]", err);
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "PhotoFX klipleri yüklenemedi.";
+         resultsEl.innerHTML = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+        ? "PhotoFX clips could not be loaded."
+        : "PhotoFX klipleri yüklenemedi.";
     }
   }
 
