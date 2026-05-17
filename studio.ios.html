@@ -2423,9 +2423,7 @@ function getAivoMobileLoginUrl(extraQuery){
     const data = await res.json();
 
 if (!data || data.ok === false || !data.email) {
-  setTimeout(function(){
-    window.location.replace(getAivoMobileLoginUrl());
-  }, 900);
+  window.location.replace(getAivoMobileLoginUrl());
   return;
 }
 
