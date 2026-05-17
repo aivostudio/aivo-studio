@@ -711,7 +711,7 @@
 
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = "aivo-dudak-senkron-video.mp4";
+             a.download = "aivo-lip-sync-video.mp4";
         a.rel = "noopener";
         a.style.display = "none";
 
