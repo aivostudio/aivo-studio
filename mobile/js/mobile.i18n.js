@@ -178,6 +178,26 @@
       "assistant.placeholder": "Write your issue or what you want to do...",
       "assistant.send": "Send",
       "assistant.wait": "Please wait...",
+      "login.hero.before": "Sign into",
+"login.hero.grad": "Studio.",
+"login.hero.subtitle": "Sign in or create your free account to continue to the mobile creation studio.",
+
+"login.tab.login": "Sign In",
+"login.tab.register": "Register",
+
+"login.email": "Email",
+"login.emailPlaceholder": "example@email.com",
+
+"login.password": "Password",
+"login.passwordPlaceholder": "Your password",
+
+"login.submit.login": "Sign In",
+"login.submit.register": "Create Account",
+
+"login.footer.new": "New to AIVO?",
+"login.footer.haveAccount": "Already have an account?",
+"login.footer.create": "Create free account →",
+"login.footer.login": "Sign in →",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
