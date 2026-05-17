@@ -1215,7 +1215,12 @@ async function uploadMobilePhotoFxFile(file, kind){
           const isPlaying = !video.paused && !video.ended;
           btn.classList.toggle("is-playing", isPlaying);
           btn.setAttribute("data-playing", isPlaying ? "true" : "false");
-          btn.setAttribute("aria-label", isPlaying ? "Duraklat" : "Oynat");
+                btn.setAttribute(
+            "aria-label",
+            String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+              ? (isPlaying ? "Pause" : "Play")
+              : (isPlaying ? "Duraklat" : "Oynat")
+          );
         }
 
         video.onplay = syncPlayButton;
