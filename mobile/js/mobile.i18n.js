@@ -578,7 +578,10 @@
       "cartoon.selectLogo": "Logo Seç",
       "cartoon.selectAudio": "Audio Seç",
 
-      "cartoon.generateScene": "🎬 Sahneyi Oluştur (30 Kredi)",
+   "cartoon.generateScene": "🎬 Sahneyi Oluştur (30 Kredi)",
+
+      "cartoon.latestTitle": "Son çizgifilm videoları",
+      "cartoon.empty": "Henüz mobil çizgifilm videosu başlatılmadı.",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -1169,7 +1172,10 @@
       "cartoon.selectLogo": "Select Logo",
       "cartoon.selectAudio": "Select Audio",
 
-      "cartoon.generateScene": "🎬 Create Scene (30 Credits)",
+     "cartoon.generateScene": "🎬 Create Scene (30 Credits)",
+
+      "cartoon.latestTitle": "Latest cartoon videos",
+      "cartoon.empty": "No mobile cartoon video has been started yet.",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
