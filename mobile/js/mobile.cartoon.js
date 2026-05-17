@@ -175,15 +175,19 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
         <div class="mobile-cartoon-character-name">${esc(fallbackName || cartoonText("Karakter", "Character"))}</div>
       `;
 
-      setStatus(cartoonText(
-        "Karakter hazır.",
-        "Character is ready."
-      ));
-      clearMobileCartoonLoading();
-      mobileCartoonToast("success", cartoonText(
-        "Karakter hazır.",
-        "Character is ready."
-      ));
+     setStatus(cartoonText(
+  "Karakter hazır.",
+  "Character is ready."
+));
+
+mobileCartoonToast("success", cartoonText(
+  "Karakter hazır.",
+  "Character is ready."
+));
+
+setTimeout(function(){
+  clearMobileCartoonLoading();
+}, 800);
       return;
     }
 
