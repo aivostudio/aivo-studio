@@ -227,16 +227,17 @@
 </div>
     </div>
 
-    <div class="mobile-cartoon-view" data-mobile-cartoon-view="basic" hidden>
-      <h3 class="mobile-cartoon-block-title">Tek Sahne Üret</h3>
-      <p class="mobile-cartoon-block-sub">Karakter, sahne ve aksiyon seçerek kısa çizgifilm sahnesi oluştur.</p>
+ <div class="mobile-cartoon-view" data-mobile-cartoon-view="basic" hidden>
+  <h3 class="mobile-cartoon-block-title" data-i18n="cartoon.sceneTitle">Tek Sahne Üret</h3>
+  <p class="mobile-cartoon-block-sub" data-i18n="cartoon.sceneSub">Karakter, sahne ve aksiyon seçerek kısa çizgifilm sahnesi oluştur.</p>
 
-      <label class="field-label" for="mobileCartoonScenePrompt">Ek Prompt</label>
-      <textarea
-        id="mobileCartoonScenePrompt"
-        class="field-textarea mobile-cartoon-prompt"
-        maxlength="5000"
-        placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"></textarea>
+  <label class="field-label" for="mobileCartoonScenePrompt" data-i18n="cartoon.scenePrompt">Ek Prompt</label>
+  <textarea
+    id="mobileCartoonScenePrompt"
+    class="field-textarea mobile-cartoon-prompt"
+    maxlength="5000"
+    placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"
+    data-i18n-placeholder="cartoon.scenePromptPlaceholder"></textarea>
 
       <div class="mobile-cartoon-count">
         <span id="mobileCartoonSceneCount">0</span> / 5000
