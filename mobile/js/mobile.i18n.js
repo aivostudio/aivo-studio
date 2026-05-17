@@ -93,6 +93,9 @@
 "login.footer.haveAccount": "Zaten hesabın var mı?",
 "login.footer.create": "Ücretsiz hesap oluştur →",
 "login.footer.login": "Giriş yap →",
+      "login.error.emailPasswordRequired": "E-posta ve şifre gerekli.",
+"login.error.invalidCredentials": "E-posta veya şifre hatalı.",
+"login.success.login": "Giriş başarılı.",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -198,6 +201,9 @@
 "login.footer.haveAccount": "Already have an account?",
 "login.footer.create": "Create free account →",
 "login.footer.login": "Sign in →",
+      "login.error.emailPasswordRequired": "Email and password are required.",
+"login.error.invalidCredentials": "Incorrect email or password.",
+"login.success.login": "Login successful.",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
