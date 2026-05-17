@@ -46,48 +46,77 @@
   </button>
 </div>
 
-  <div class="mobile-settings-pane is-active" data-mobile-settings-pane="notifications">
-    <div class="mobile-settings-card">
-      <div class="mobile-settings-card-head">
-        <div>
-          <h4>Bildirim Ayarları</h4>
-          <p>Hangi bildirimleri almak istediğini seç.</p>
-        </div>
+ <div class="mobile-settings-pane is-active" data-mobile-settings-pane="notifications">
+  <div class="mobile-settings-card">
+    <div class="mobile-settings-card-head">
+      <div>
+        <h4 data-i18n="settings.notifications.title">
+          Bildirim Ayarları
+        </h4>
+
+        <p data-i18n="settings.notifications.subtitle">
+          Hangi bildirimleri almak istediğini seç.
+        </p>
       </div>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Müzik üretimi tamamlandığında</b>
-          <small>Şarkın hazır olduğunda e-posta al.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="notify_email_done">
-      </label>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Kredi azaldığında</b>
-          <small>Kredin azaldığında uyarı al.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="notify_email_lowcredit">
-      </label>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Haftalık rapor</b>
-          <small>Haftalık aktivite özetini al.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="notify_email_weekly">
-      </label>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Kampanyalar</b>
-          <small>Özel tekliflerden haberdar ol.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="notify_email_promos">
-      </label>
     </div>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.notifications.musicDone">
+          Müzik üretimi tamamlandığında
+        </b>
+
+        <small data-i18n="settings.notifications.musicDoneDesc">
+          Şarkın hazır olduğunda e-posta al.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="notify_email_done">
+    </label>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.notifications.lowCredit">
+          Kredi azaldığında
+        </b>
+
+        <small data-i18n="settings.notifications.lowCreditDesc">
+          Kredin azaldığında uyarı al.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="notify_email_lowcredit">
+    </label>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.notifications.weekly">
+          Haftalık rapor
+        </b>
+
+        <small data-i18n="settings.notifications.weeklyDesc">
+          Haftalık aktivite özetini al.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="notify_email_weekly">
+    </label>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.notifications.promos">
+          Kampanyalar
+        </b>
+
+        <small data-i18n="settings.notifications.promosDesc">
+          Özel tekliflerden haberdar ol.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="notify_email_promos">
+    </label>
   </div>
+</div>
 
   <div class="mobile-settings-pane" data-mobile-settings-pane="music" hidden>
     <div class="mobile-settings-card">
