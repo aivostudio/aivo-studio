@@ -254,8 +254,8 @@
           <div style="width:28px;height:28px;border-radius:999px;border:3px solid rgba(255,255,255,.32);border-top-color:#fff;animation:aivoSpin .85s linear infinite;"></div>
         </div>
         <div class="mobile-cover-result-meta">
-          <span>Hazırlanıyor</span>
-          <span>${i === 0 ? "Orijinal" : "Versiyon " + (i + 1)}</span>
+          <span>${window.AIVO_LANG === "en" ? "Preparing" : "Hazırlanıyor"}</span>
+          <span>${i === 0 ? (window.AIVO_LANG === "en" ? "Original" : "Orijinal") : (window.AIVO_LANG === "en" ? "Version " : "Versiyon ") + (i + 1)}</span>
         </div>
       `;
       resultsEl.appendChild(card);
@@ -270,22 +270,22 @@
 
     card.innerHTML = `
       <div class="mobile-cover-thumb-wrap">
-        <img src="${safe(imageUrl)}" alt="AIVO kapak görseli">
+        <img src="${safe(imageUrl)}" alt="${window.AIVO_LANG === "en" ? "AIVO cover image" : "AIVO kapak görseli"}">
 
-        <div class="mobile-cover-badge">Hazır</div>
+        <div class="mobile-cover-badge">${window.AIVO_LANG === "en" ? "Ready" : "Hazır"}</div>
 
         <div class="mobile-cover-overlay">
           <div class="mobile-cover-overlay-actions">
-           <button class="mobile-cover-overlay-btn" type="button" data-action="open-cover" data-mobile-cover-act="fullscreen" title="Görüntüle">👁</button>
-<button class="mobile-cover-overlay-btn" type="button" data-action="download-cover" data-mobile-cover-act="download" title="İndir">↓</button>
-<button class="mobile-cover-overlay-btn" type="button" data-action="share-cover" data-mobile-cover-act="share" title="Paylaş">↗</button>
-<button class="mobile-cover-overlay-btn is-danger" type="button" data-action="delete-cover" data-mobile-cover-act="delete" title="Sil">🗑</button>
+            <button class="mobile-cover-overlay-btn" type="button" data-action="open-cover" data-mobile-cover-act="fullscreen" title="${window.AIVO_LANG === "en" ? "View" : "Görüntüle"}">👁</button>
+            <button class="mobile-cover-overlay-btn" type="button" data-action="download-cover" data-mobile-cover-act="download" title="${window.AIVO_LANG === "en" ? "Download" : "İndir"}">↓</button>
+            <button class="mobile-cover-overlay-btn" type="button" data-action="share-cover" data-mobile-cover-act="share" title="${window.AIVO_LANG === "en" ? "Share" : "Paylaş"}">↗</button>
+            <button class="mobile-cover-overlay-btn is-danger" type="button" data-action="delete-cover" data-mobile-cover-act="delete" title="${window.AIVO_LANG === "en" ? "Delete" : "Sil"}">🗑</button>
           </div>
         </div>
       </div>
 
       <div class="mobile-cover-result-meta">
-        <span>${index === 0 ? "Kapak hazır" : "Versiyon " + (index + 1)}</span>
+        <span>${index === 0 ? (window.AIVO_LANG === "en" ? "Cover is ready" : "Kapak hazır") : (window.AIVO_LANG === "en" ? "Version " : "Versiyon ") + (index + 1)}</span>
       </div>
     `;
 
@@ -316,8 +316,8 @@
           "-webkit-backdrop-filter:blur(18px)"
         ].join(";");
 
-        viewer.innerHTML = `
-          <button type="button" aria-label="Kapat" style="
+            viewer.innerHTML = `
+          <button type="button" aria-label="${window.AIVO_LANG === "en" ? "Close" : "Kapat"}" style="
             position:absolute;
             right:18px;
             top:calc(18px + env(safe-area-inset-top));
@@ -332,7 +332,7 @@
             line-height:1;
           ">×</button>
 
-          <img src="${safe(imageUrl)}" alt="AIVO kapak görseli" style="
+          <img src="${safe(imageUrl)}" alt="${window.AIVO_LANG === "en" ? "AIVO cover image" : "AIVO kapak görseli"}" style="
             width:100%;
             max-width:430px;
             max-height:82vh;
@@ -379,7 +379,7 @@
       });
     }
 
-    if (shareBtn) {
+     if (shareBtn) {
       shareBtn.addEventListener("click", async function(){
         if (!imageUrl) return;
 
@@ -392,9 +392,13 @@
 
         try {
           await navigator.clipboard.writeText(imageUrl);
-          statusEl.textContent = "Kapak linki kopyalandı.";
+          statusEl.textContent = window.AIVO_LANG === "en"
+            ? "Cover link copied."
+            : "Kapak linki kopyalandı.";
         } catch (err) {
-          statusEl.textContent = "Paylaşım desteklenmiyor.";
+          statusEl.textContent = window.AIVO_LANG === "en"
+            ? "Sharing is not supported."
+            : "Paylaşım desteklenmiyor.";
         }
       });
     }
@@ -417,9 +421,11 @@
 
         card.remove();
 
-        if (!resultsEl.querySelector(".mobile-cover-result-card")) {
+               if (!resultsEl.querySelector(".mobile-cover-result-card")) {
           resultsEl.className = "empty-card";
-          resultsEl.innerHTML = "Henüz mobil kapak üretimi başlatılmadı.";
+          resultsEl.innerHTML = window.AIVO_LANG === "en"
+            ? "No mobile cover generation has been started yet."
+            : "Henüz mobil kapak üretimi başlatılmadı.";
           statusEl.textContent = "";
         }
       });
@@ -447,11 +453,12 @@
           topCreditCountEl.textContent = String(nextCredits);
         }
 
-        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+              const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
         mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
+          el.textContent = window.AIVO_LANG === "en"
+            ? "Credits " + nextCredits
+            : "Kredi " + nextCredits;
         });
-
         if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
           window.AIVO_STORE_V1.setCredits(nextCredits);
         }
