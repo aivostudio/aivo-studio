@@ -1310,6 +1310,9 @@ try {
     }
 
     accountInvoicesMount.innerHTML = await accountInvoicesRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountInvoicesMount);
+}
 
     const invoicesScript = document.createElement("script");
     invoicesScript.src = "/mobile/js/mobile.invoices.js?v=1";
