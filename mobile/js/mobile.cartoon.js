@@ -180,14 +180,12 @@ function pollMobileCartoonCharacterJob(jobId, tempCharacterId, fallbackName, ref
   "Character is ready."
 ));
 
+clearMobileCartoonLoading();
+
 mobileCartoonToast("success", cartoonText(
   "Karakter hazır.",
   "Character is ready."
 ));
-
-setTimeout(function(){
-  clearMobileCartoonLoading();
-}, 800);
       return;
     }
 
@@ -272,14 +270,12 @@ function pollMobileCartoonJob(jobId){
   "Cartoon video is ready."
 ));
 
+clearMobileCartoonLoading();
+
 mobileCartoonToast("success", cartoonText(
   "Çizgifilm video hazır.",
   "Cartoon video is ready."
 ));
-
-setTimeout(function(){
-  clearMobileCartoonLoading();
-}, 800);
       return;
     }
 
