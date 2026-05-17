@@ -1,9 +1,9 @@
 <section id="mobileHomeSection">
   <section class="mobile-music-card">
     <div class="mobile-music-hero">
-      <div class="mobile-music-kicker">AIVO Mobile Studio</div>
-      <h3>AI Müzik Üret</h3>
-      <p>Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.</p>
+      <div class="mobile-music-kicker" data-i18n="home.eyebrow">AIVO Mobile Studio</div>
+      <h3 data-i18n="music.title">AI Müzik Üret</h3>
+      <p data-i18n="music.subtitle">Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.</p>
     </div>
 
     <input
@@ -24,7 +24,7 @@
       style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;"
     >
 
-    <label class="field-label" for="musicTitle">Şarkı adı</label>
+    <label class="field-label" for="musicTitle" data-i18n="music.songTitle">Şarkı adı</label>
     <input
       id="musicTitle"
       name="aivo_mobile_song_title"
@@ -35,64 +35,78 @@
       autocorrect="off"
       spellcheck="false"
       placeholder="Örn: Gece Yolu"
+      data-i18n-placeholder="music.songTitlePlaceholder"
     >
 
-    <label class="field-label" for="musicPrompt">Prompt</label>
-    <textarea id="musicPrompt" class="field-textarea" placeholder="Ritim, mood, tür ve vokal detaylarını yaz..."></textarea>
+    <label class="field-label" for="musicPrompt" data-i18n="music.prompt">Prompt</label>
+    <textarea
+      id="musicPrompt"
+      class="field-textarea"
+      placeholder="Ritim, mood, tür ve vokal detaylarını yaz..."
+      data-i18n-placeholder="music.promptPlaceholder"
+    ></textarea>
 
-    <label class="field-label" for="musicLyrics">Şarkı sözleri <span class="optional">(isteğe bağlı)</span></label>
-    <textarea id="musicLyrics" class="field-textarea lyrics" placeholder="Şarkı sözlerini buraya yaz..."></textarea>
+    <label class="field-label" for="musicLyrics">
+      <span data-i18n="music.lyrics">Şarkı sözleri</span>
+      <span class="optional" data-i18n="music.optional">(isteğe bağlı)</span>
+    </label>
+    <textarea
+      id="musicLyrics"
+      class="field-textarea lyrics"
+      placeholder="Şarkı sözlerini buraya yaz..."
+      data-i18n-placeholder="music.lyricsPlaceholder"
+    ></textarea>
 
-   <div class="mobile-music-select-row">
-  <div class="mobile-music-select-field">
-    <label class="field-label" for="mobileMusicMood">Mood / Tür</label>
-    <select
-      id="mobileMusicMood"
-      name="mobile_track_style_select"
-      class="field-input"
-      autocomplete="off"
-    >
-      <option value="">Mood / tür seç</option>
-      <option value="pop, enerjik, Türkçe vokal">Pop, enerjik, Türkçe vokal</option>
-      <option value="rap, trap, güçlü beat">Rap / Trap</option>
-      <option value="arabesk, duygusal, Türkçe vokal">Arabesk / Duygusal</option>
-      <option value="slow, romantik, yumuşak vokal">Slow / Romantik</option>
-      <option value="elektronik, dans, club">Elektronik / Dans</option>
-      <option value="rock, gitar, güçlü vokal">Rock</option>
-    </select>
-  </div>
+    <div class="mobile-music-select-row">
+      <div class="mobile-music-select-field">
+        <label class="field-label" for="mobileMusicMood" data-i18n="music.moodGenre">Mood / Tür</label>
+        <select
+          id="mobileMusicMood"
+          name="mobile_track_style_select"
+          class="field-input"
+          autocomplete="off"
+        >
+          <option value="" data-i18n="music.selectMood">Mood / tür seç</option>
+          <option value="pop, enerjik, Türkçe vokal" data-i18n="music.moodPop">Pop, enerjik, Türkçe vokal</option>
+          <option value="rap, trap, güçlü beat" data-i18n="music.moodRap">Rap / Trap</option>
+          <option value="arabesk, duygusal, Türkçe vokal" data-i18n="music.moodArabesk">Arabesk / Duygusal</option>
+          <option value="slow, romantik, yumuşak vokal" data-i18n="music.moodSlow">Slow / Romantik</option>
+          <option value="elektronik, dans, club" data-i18n="music.moodElectronic">Elektronik / Dans</option>
+          <option value="rock, gitar, güçlü vokal" data-i18n="music.moodRock">Rock</option>
+        </select>
+      </div>
 
-  <div class="mobile-music-select-field">
-    <label class="field-label" for="mobileMusicVocal">Vokal Tipi</label>
-    <select
-      id="mobileMusicVocal"
-      name="mobile_vocal_type_select"
-      class="field-input"
-      autocomplete="off"
-    >
-      <option value="">Vokal tipini seç</option>
-      <option value="Erkek Vokal (AI)">Erkek Vokal (AI)</option>
-      <option value="Kadın Vokal (AI)">Kadın Vokal (AI)</option>
-      <option value="Enstrümantal (Vokalsiz)">Enstrümantal (Vokalsiz)</option>
-    </select>
-  </div>
-</div>
+      <div class="mobile-music-select-field">
+        <label class="field-label" for="mobileMusicVocal" data-i18n="music.vocalType">Vokal Tipi</label>
+        <select
+          id="mobileMusicVocal"
+          name="mobile_vocal_type_select"
+          class="field-input"
+          autocomplete="off"
+        >
+          <option value="" data-i18n="music.selectVocal">Vokal tipini seç</option>
+          <option value="Erkek Vokal (AI)" data-i18n="music.vocalMale">Erkek Vokal (AI)</option>
+          <option value="Kadın Vokal (AI)" data-i18n="music.vocalFemale">Kadın Vokal (AI)</option>
+          <option value="Enstrümantal (Vokalsiz)" data-i18n="music.vocalInstrumental">Enstrümantal (Vokalsiz)</option>
+        </select>
+      </div>
+    </div>
 
-    <button id="mobileMusicGenerateBtn" class="generate-btn" type="button">
+    <button id="mobileMusicGenerateBtn" class="generate-btn" type="button" data-i18n="music.generate">
       ♪ Müzik Üret (2 Kredi)
     </button>
 
     <div id="mobileMusicStatus" class="mobile-status"></div>
   </section>
 
-<div id="mobileMusicResults" hidden></div>
+  <div id="mobileMusicResults" hidden></div>
 </section>
 
 <section id="mobileProductionsSection" hidden>
-  <h2 class="section-title">Müzik Kütüphanem</h2>
+  <h2 class="section-title" data-i18n="music.libraryTitle">Müzik Kütüphanem</h2>
 
   <div id="mobileMusicLibrary" class="mobile-library-list">
-    <div class="empty-card">
+    <div class="empty-card" data-i18n="music.libraryLoading">
       Kütüphane yükleniyor...
     </div>
   </div>
@@ -109,11 +123,11 @@
     <div class="mini-cover">♪</div>
 
     <div class="mini-meta">
-      <div id="miniTitle" class="mini-title">Müzik seçilmedi</div>
+      <div id="miniTitle" class="mini-title" data-i18n="music.noMusicSelected">Müzik seçilmedi</div>
       <div id="miniSub" class="mini-sub">AIVO</div>
     </div>
 
-    <button id="miniPlayBtn" class="mini-btn" type="button">▶</button>
+    <button id="miniPlayBtn" class="mini-btn" type="button" data-i18n-label="music.play">▶</button>
   </div>
 
   <audio id="mobileMiniAudio" preload="metadata"></audio>
