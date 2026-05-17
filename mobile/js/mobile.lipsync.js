@@ -1765,7 +1765,9 @@
   return;
 }
                 generateBtn.disabled = true;
-        generateBtn.textContent = "Üretiliyor...";
+       generateBtn.textContent = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+  ? "Generating..."
+  : "Üretiliyor...";
         generateBtn.classList.add("is-loading", "is-pressed");
         generateBtn.setAttribute("aria-busy", "true");
         setStatus("Üretim başlatılıyor...");
