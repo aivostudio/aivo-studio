@@ -27,8 +27,7 @@
       {
         role: "assistant",
         content:
-          "Merhaba, ben AIVO yardımcı asistanıyım. İstersen modüller, paket seçimi, kredi sistemi, prompt yazımı ya da yaşadığın bir sorunda sana adım adım yardımcı olayım. Ne yapmak istiyorsun?"
-      }
+  tt("assistant.welcome", "Merhaba, ben AIVO yardımcı asistanıyım. İstersen modüller, paket seçimi, kredi sistemi, prompt yazımı ya da yaşadığın bir sorunda sana adım adım yardımcı olayım. Ne yapmak istiyorsun?")
     ]
   };
 
