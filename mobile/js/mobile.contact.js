@@ -9,7 +9,20 @@
   if (window.__AIVO_MOBILE_CONTACT__) return;
   window.__AIVO_MOBILE_CONTACT__ = true;
 
+  function tr(key){
+    if (typeof window.t === "function") {
+      return window.t(key);
+    }
+
+    return key;
+  }
+
   function toast(message){
+    if (window.mobileToast && typeof window.mobileToast.success === "function") {
+      window.mobileToast.success(message);
+      return;
+    }
+
     if (window.toast && typeof window.toast.success === "function") {
       window.toast.success(message);
       return;
@@ -39,16 +52,16 @@
       const message = String(form.elements.message?.value || "").trim();
 
       if (!name || !email || !subject || !message) {
-        toast("Lütfen tüm alanları doldur.");
+        toast(tr("contact.errorRequired"));
         return;
       }
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = "Gönderiliyor...";
+        submitBtn.textContent = tr("contact.sending");
       }
 
-         try {
+      try {
         const res = await fetch("/api/send-mail", {
           method: "POST",
           credentials: "include",
@@ -58,7 +71,7 @@
           body: JSON.stringify({
             name,
             email,
-            message: "Konu: " + subject + "\n\n" + message,
+            message: tr("contact.mailSubjectPrefix") + " " + subject + "\n\n" + message,
             source: "studio/contact"
           })
         });
@@ -71,14 +84,14 @@
           throw new Error(data.message || "contact_submit_failed");
         }
 
-        toast("Mesajın alındı. En kısa sürede dönüş yapacağız.");
+        toast(tr("contact.success"));
         form.reset();
       } catch (err) {
-        toast("Mesaj gönderilemedi. Lütfen tekrar dene.");
+        toast(tr("contact.errorSubmit"));
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = "Mesaj Gönder";
+          submitBtn.textContent = tr("contact.submit");
         }
       }
     });
