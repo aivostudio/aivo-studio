@@ -118,58 +118,97 @@
   </div>
 </div>
 
-  <div class="mobile-settings-pane" data-mobile-settings-pane="music" hidden>
-    <div class="mobile-settings-card">
-      <div class="mobile-settings-card-head">
-        <div>
-          <h4>Müzik Ayarları</h4>
-          <p>Çalma ve üretim tercihlerini ayarla.</p>
-        </div>
-      </div>
+<div class="mobile-settings-pane" data-mobile-settings-pane="music" hidden>
+  <div class="mobile-settings-card">
+    <div class="mobile-settings-card-head">
+      <div>
+        <h4 data-i18n="settings.music.title">
+          Müzik Ayarları
+        </h4>
 
-      <label class="mobile-settings-choice">
-        <input type="radio" name="mobile_music_quality" value="low" data-mobile-setting="music_quality">
-        <span>
-          <b>Düşük</b>
-          <small>128 kbps — daha hızlı üretim.</small>
-        </span>
-      </label>
-
-      <label class="mobile-settings-choice">
-        <input type="radio" name="mobile_music_quality" value="high" data-mobile-setting="music_quality">
-        <span>
-          <b>Yüksek</b>
-          <small>256 kbps — dengeli kalite.</small>
-        </span>
-      </label>
-
-      <label class="mobile-settings-choice">
-        <input type="radio" name="mobile_music_quality" value="studio" data-mobile-setting="music_quality">
-        <span>
-          <b>Studio</b>
-          <small>320 kbps — en yüksek kalite.</small>
-        </span>
-      </label>
-
-      <label class="mobile-settings-row">
-        <span>
-          <b>Otomatik çalma</b>
-          <small>Üretim tamamlanınca müzik otomatik oynatılsın.</small>
-        </span>
-        <input type="checkbox" data-mobile-setting="music_autoplay">
-      </label>
-
-      <div class="mobile-settings-field">
-        <label>Varsayılan ses seviyesi</label>
-        <div class="mobile-settings-range-top">
-          <span>Sessiz</span>
-          <b data-mobile-settings-volume-label>%80</b>
-          <span>Maksimum</span>
-        </div>
-        <input type="range" min="0" max="100" step="1" value="80" data-mobile-setting="music_volume">
+        <p data-i18n="settings.music.subtitle">
+          Çalma ve üretim tercihlerini ayarla.
+        </p>
       </div>
     </div>
+
+    <label class="mobile-settings-choice">
+      <input type="radio" name="mobile_music_quality" value="low" data-mobile-setting="music_quality">
+
+      <span>
+        <b data-i18n="settings.music.qualityLow">
+          Düşük
+        </b>
+
+        <small data-i18n="settings.music.qualityLowDesc">
+          128 kbps — daha hızlı üretim.
+        </small>
+      </span>
+    </label>
+
+    <label class="mobile-settings-choice">
+      <input type="radio" name="mobile_music_quality" value="high" data-mobile-setting="music_quality">
+
+      <span>
+        <b data-i18n="settings.music.qualityHigh">
+          Yüksek
+        </b>
+
+        <small data-i18n="settings.music.qualityHighDesc">
+          256 kbps — dengeli kalite.
+        </small>
+      </span>
+    </label>
+
+    <label class="mobile-settings-choice">
+      <input type="radio" name="mobile_music_quality" value="studio" data-mobile-setting="music_quality">
+
+      <span>
+        <b data-i18n="settings.music.qualityStudio">
+          Studio
+        </b>
+
+        <small data-i18n="settings.music.qualityStudioDesc">
+          320 kbps — en yüksek kalite.
+        </small>
+      </span>
+    </label>
+
+    <label class="mobile-settings-row">
+      <span>
+        <b data-i18n="settings.music.autoplay">
+          Otomatik çalma
+        </b>
+
+        <small data-i18n="settings.music.autoplayDesc">
+          Üretim tamamlanınca müzik otomatik oynatılsın.
+        </small>
+      </span>
+
+      <input type="checkbox" data-mobile-setting="music_autoplay">
+    </label>
+
+    <div class="mobile-settings-field">
+      <label data-i18n="settings.music.defaultVolume">
+        Varsayılan ses seviyesi
+      </label>
+
+      <div class="mobile-settings-range-top">
+        <span data-i18n="settings.music.silent">
+          Sessiz
+        </span>
+
+        <b data-mobile-settings-volume-label>%80</b>
+
+        <span data-i18n="settings.music.maximum">
+          Maksimum
+        </span>
+      </div>
+
+      <input type="range" min="0" max="100" step="1" value="80" data-mobile-setting="music_volume">
+    </div>
   </div>
+</div>
 
   <div class="mobile-settings-pane" data-mobile-settings-pane="privacy" hidden>
     <div class="mobile-settings-card">
