@@ -1,61 +1,91 @@
 <section id="mobileCoverSection">
   <section class="mobile-cover-card">
     <div class="mobile-cover-hero">
-      <div class="mobile-cover-kicker">AIVO Mobile Studio</div>
-      <h3>AI Kapak Üret</h3>
-      <p>Şarkın için premium kapak görselini mobilde oluştur.</p>
+      <div class="mobile-cover-kicker" data-i18n="home.eyebrow">AIVO Mobile Studio</div>
+      <h3 data-i18n="cover.title">AI Kapak Üret</h3>
+      <p data-i18n="cover.subtitle">Şarkın için premium kapak görselini mobilde oluştur.</p>
     </div>
-    <label class="field-label" for="coverPrompt">Prompt</label>
+
+    <label class="field-label" for="coverPrompt" data-i18n="cover.prompt">
+      Prompt
+    </label>
+
     <textarea
       id="coverPrompt"
       class="field-textarea mobile-cover-prompt"
       rows="4"
       maxlength="1000"
-      placeholder="Örn: Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer"></textarea>
+      placeholder="Örn: Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer"
+      data-i18n-placeholder="cover.promptPlaceholder"></textarea>
 
     <div class="mobile-cover-count" id="coverPromptCount">0 / 1000</div>
 
-    <label class="field-label">Kalite Seviyesi</label>
+    <label class="field-label" data-i18n="cover.qualityLevel">
+      Kalite Seviyesi
+    </label>
 
-    <div class="mobile-cover-quality" role="radiogroup" aria-label="Kalite Seviyesi">
+    <div
+      class="mobile-cover-quality"
+      role="radiogroup"
+      aria-label="Kalite Seviyesi"
+      data-i18n-label="cover.qualityLevel">
+
       <button
         class="mobile-quality-pill is-active"
         type="button"
         data-quality="artist"
         data-credit-cost="6"
         data-model="fal-ai/flux-2-pro">
-      <span class="mobile-quality-left">
-  <span class="mobile-quality-ico mobile-cover-icon mobile-cover-icon-artist"></span>
-  <span class="mobile-quality-title">Artist</span>
-</span>
-        <span class="mobile-quality-credit">6 Kredi</span>
+
+        <span class="mobile-quality-left">
+          <span class="mobile-quality-ico mobile-cover-icon mobile-cover-icon-artist"></span>
+          <span class="mobile-quality-title" data-i18n="cover.qualityArtist">Artist</span>
+        </span>
+
+        <span class="mobile-quality-credit" data-i18n="cover.credit6">
+          6 Kredi
+        </span>
       </button>
 
       <button
         class="mobile-quality-pill"
         type="button"
         data-quality="ultra"
-        data-credit-cost="9"
+        data-credit-cost="9">
+
         <span class="mobile-quality-left">
-  <span class="mobile-quality-ico mobile-cover-icon mobile-cover-icon-cinematic"></span>
-  <span class="mobile-quality-title">Cinematic</span>
-</span>
-        <span class="mobile-quality-credit">9 Kredi</span>
+          <span class="mobile-quality-ico mobile-cover-icon mobile-cover-icon-cinematic"></span>
+          <span class="mobile-quality-title" data-i18n="cover.qualityCinematic">Cinematic</span>
+        </span>
+
+        <span class="mobile-quality-credit" data-i18n="cover.credit9">
+          9 Kredi
+        </span>
       </button>
     </div>
 
-    <label class="field-label">Stil Seçenekleri</label>
+    <label class="field-label" data-i18n="cover.styleOptions">
+      Stil Seçenekleri
+    </label>
 
     <div class="mobile-cover-styles">
+
       <button
         class="mobile-style-card"
         type="button"
         data-style="Gerçekçi"
         data-prompt="Spotify albüm kapağı, gerçekçi portre, stüdyo ışığı, premium, keskin detay, 1:1">
-      <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-realistic"></span>
+
+        <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-realistic"></span>
+
         <span class="mobile-style-text">
-          <span class="mobile-style-title">Gerçekçi</span>
-          <span class="mobile-style-sub">Net, doğal ve yüksek detaylı kapaklar</span>
+          <span class="mobile-style-title" data-i18n="cover.styleRealistic">
+            Gerçekçi
+          </span>
+
+          <span class="mobile-style-sub" data-i18n="cover.styleRealisticSub">
+            Net, doğal ve yüksek detaylı kapaklar
+          </span>
         </span>
       </button>
 
@@ -64,10 +94,17 @@
         type="button"
         data-style="Sanatsal"
         data-prompt="Sanatsal albüm kapağı, yağlı boya dokusu, dramatik ışık, derin renkler, 1:1">
-       <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-artistic"></span>
+
+        <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-artistic"></span>
+
         <span class="mobile-style-text">
-          <span class="mobile-style-title">Sanatsal</span>
-          <span class="mobile-style-sub">Doku, ışık ve derin renklerle eser hissi</span>
+          <span class="mobile-style-title" data-i18n="cover.styleArtistic">
+            Sanatsal
+          </span>
+
+          <span class="mobile-style-sub" data-i18n="cover.styleArtisticSub">
+            Doku, ışık ve derin renklerle eser hissi
+          </span>
         </span>
       </button>
 
@@ -76,10 +113,17 @@
         type="button"
         data-style="Çizgi Film"
         data-prompt="Çizgi film albüm kapağı, canlı renkler, kalın kontur, eğlenceli karakter stili, 1:1">
-      <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-cartoon"></span>
+
+        <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-cartoon"></span>
+
         <span class="mobile-style-text">
-          <span class="mobile-style-title">Çizgi Film</span>
-          <span class="mobile-style-sub">Canlı tonlar ve karakter odaklı stil</span>
+          <span class="mobile-style-title" data-i18n="cover.styleCartoon">
+            Çizgi Film
+          </span>
+
+          <span class="mobile-style-sub" data-i18n="cover.styleCartoonSub">
+            Canlı tonlar ve karakter odaklı stil
+          </span>
         </span>
       </button>
 
@@ -88,10 +132,17 @@
         type="button"
         data-style="Soyut"
         data-prompt="Soyut albüm kapağı, geometrik şekiller, yumuşak geçişler, modern tasarım, 1:1">
-      <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-abstract"></span>
+
+        <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-abstract"></span>
+
         <span class="mobile-style-text">
-          <span class="mobile-style-title">Soyut</span>
-          <span class="mobile-style-sub">Geometrik formlar ve modern kompozisyon</span>
+          <span class="mobile-style-title" data-i18n="cover.styleAbstract">
+            Soyut
+          </span>
+
+          <span class="mobile-style-sub" data-i18n="cover.styleAbstractSub">
+            Geometrik formlar ve modern kompozisyon
+          </span>
         </span>
       </button>
 
@@ -100,10 +151,17 @@
         type="button"
         data-style="Fotoğrafik"
         data-prompt="Fotoğrafik albüm kapağı, sinematik ışık, alan derinliği, premium fotoğraf estetiği, 1:1">
-       <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-photo"></span>
+
+        <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-photo"></span>
+
         <span class="mobile-style-text">
-          <span class="mobile-style-title">Fotoğrafik</span>
-          <span class="mobile-style-sub">Sinematik ışık ve premium fotoğraf hissi</span>
+          <span class="mobile-style-title" data-i18n="cover.stylePhoto">
+            Fotoğrafik
+          </span>
+
+          <span class="mobile-style-sub" data-i18n="cover.stylePhotoSub">
+            Sinematik ışık ve premium fotoğraf hissi
+          </span>
         </span>
       </button>
 
@@ -112,40 +170,59 @@
         type="button"
         data-style="Anime"
         data-prompt="Anime albüm kapağı, japon manga stili, yumuşak ışık, temiz hatlar, 1:1">
+
         <span class="mobile-style-ico mobile-cover-icon mobile-cover-icon-anime"></span>
+
         <span class="mobile-style-text">
-          <span class="mobile-style-title">Anime</span>
-          <span class="mobile-style-sub">Manga dokusu ve temiz çizgiler</span>
+          <span class="mobile-style-title" data-i18n="cover.styleAnime">
+            Anime
+          </span>
+
+          <span class="mobile-style-sub" data-i18n="cover.styleAnimeSub">
+            Manga dokusu ve temiz çizgiler
+          </span>
         </span>
       </button>
     </div>
 
     <div class="mobile-cover-two">
+
       <div>
-        <label class="field-label" for="coverCount">Görüntü Sayısı</label>
+        <label class="field-label" for="coverCount" data-i18n="cover.imageCount">
+          Görüntü Sayısı
+        </label>
+
         <select class="field-input mobile-select" id="coverCount">
-          <option value="1">1 Görüntü</option>
-          <option value="2">2 Görüntü</option>
-          <option value="4">4 Görüntü</option>
+          <option value="1" data-i18n="cover.image1">1 Görüntü</option>
+          <option value="2" data-i18n="cover.image2">2 Görüntü</option>
+          <option value="4" data-i18n="cover.image4">4 Görüntü</option>
         </select>
       </div>
 
       <div>
-        <label class="field-label" for="coverRatio">En / Boy Oranı</label>
+        <label class="field-label" for="coverRatio" data-i18n="cover.aspectRatio">
+          En / Boy Oranı
+        </label>
+
         <select class="field-input mobile-select" id="coverRatio">
-          <option value="1:1">Kare (1:1)</option>
-          <option value="9:16">Dikey (9:16)</option>
-          <option value="16:9">Yatay (16:9)</option>
+          <option value="1:1" data-i18n="cover.ratioSquare">Kare (1:1)</option>
+          <option value="9:16" data-i18n="cover.ratioVertical">Dikey (9:16)</option>
+          <option value="16:9" data-i18n="cover.ratioHorizontal">Yatay (16:9)</option>
         </select>
       </div>
     </div>
 
     <div class="mobile-cover-engine">
       <div class="mobile-cover-engine-top">
-        <span>AIVO Kapak Motoru</span>
-        <span>Gerekli Kredi: <strong id="coverRequiredCredit">6</strong></span>
+        <span data-i18n="cover.engineTitle">AIVO Kapak Motoru</span>
+
+        <span>
+          <span data-i18n="cover.requiredCredit">Gerekli Kredi:</span>
+          <strong id="coverRequiredCredit">6</strong>
+        </span>
       </div>
-      <p>
+
+      <p data-i18n="cover.engineDesc">
         6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.
       </p>
     </div>
@@ -155,16 +232,20 @@
       id="coverGenerateBtn"
       type="button"
       data-generate="cover"
-      data-credit-cost="6">
+      data-credit-cost="6"
+      data-i18n="cover.generate">
+
       🖼️ Kapak Üret (6 Kredi)
     </button>
 
     <div id="mobileCoverStatus" class="mobile-status"></div>
   </section>
 
+  <div
+    id="mobileCoverResults"
+    class="empty-card"
+    data-i18n="cover.empty">
 
-
-  <div id="mobileCoverResults" class="empty-card">
     Henüz mobil kapak üretimi başlatılmadı.
   </div>
 </section>
