@@ -73,6 +73,26 @@
       "assistant.placeholder": "Sorunu ya da yapmak istediğini yaz...",
      "assistant.send": "Gönder",
      "assistant.wait": "Bekle...",
+      "login.hero.before": "Studio’ya",
+"login.hero.grad": "giriş.",
+"login.hero.subtitle": "Mobil üretim alanına devam etmek için giriş yap veya ücretsiz hesabını oluştur.",
+
+"login.tab.login": "Giriş Yap",
+"login.tab.register": "Kayıt Ol",
+
+"login.email": "E-posta",
+"login.emailPlaceholder": "ornek@email.com",
+
+"login.password": "Şifre",
+"login.passwordPlaceholder": "Şifreniz",
+
+"login.submit.login": "Giriş Yap",
+"login.submit.register": "Hesap Oluştur",
+
+"login.footer.new": "AIVO’da yeni misin?",
+"login.footer.haveAccount": "Zaten hesabın var mı?",
+"login.footer.create": "Ücretsiz hesap oluştur →",
+"login.footer.login": "Giriş yap →",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
