@@ -1164,10 +1164,10 @@ async function uploadMobilePhotoFxFile(file, kind){
 
         if (!jobId || !videoUrl) return;
 
-       mobilePhotoFxJobs.push({
+  mobilePhotoFxJobs.push({
   id: jobId,
   scope: "library",
-  title: row.title || row.prompt || row.meta?.prompt || "PhotoFX klip",
+  title: row.title || row.prompt || row.meta?.prompt || (String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip" : "PhotoFX klip"),
   videoUrl: videoUrl,
   status: "ready",
   payload: row
