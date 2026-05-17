@@ -760,7 +760,9 @@ switchBtn.textContent = mode === "login"
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
           submitBtn.disabled = false;
-          submitBtn.textContent = mode === "login" ? "Giriş Yap" : "Hesap Oluştur";
+         submitBtn.textContent = mode === "login"
+  ? tt("login.submit.login", "Giriş Yap")
+  : tt("login.submit.register", "Hesap Oluştur");
         }
       });
 
