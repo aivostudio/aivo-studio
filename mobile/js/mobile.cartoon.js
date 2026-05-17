@@ -890,8 +890,7 @@ async function hydrateMobileCartoonCharacterLibrary(){
     const text = safeText(message);
     if (!text) return null;
 
-  const normalizedType = type === "danger" ? "error" : type;
-const visualType = normalizedType === "loading" ? "info" : normalizedType;
+const normalizedType = type === "danger" ? "error" : type;
 const key = normalizedType + ":" + text;
     const now = Date.now();
 
@@ -909,13 +908,13 @@ const key = normalizedType + ":" + text;
 
     try {
       if (toastApi) {
-      if (typeof toastApi[visualType] === "function") {
-  return toastApi[visualType](text, options || {});
+if (typeof toastApi[normalizedType] === "function") {
+  return toastApi[normalizedType](text, options || {});
 }
 
         if (typeof toastApi.show === "function") {
           return toastApi.show({
-           type: visualType,
+        type: normalizedType,
             message: text,
             ...(options || {})
           });
@@ -923,7 +922,7 @@ const key = normalizedType + ":" + text;
 
         if (typeof toastApi.push === "function") {
           return toastApi.push({
-           type: visualType,
+         type: normalizedType,
             message: text,
             ...(options || {})
           });
