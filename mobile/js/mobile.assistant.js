@@ -27,10 +27,10 @@
       {
         role: "assistant",
         content:
-  tt("assistant.welcome", "Merhaba, ben AIVO yardımcı asistanıyım. İstersen modüller, paket seçimi, kredi sistemi, prompt yazımı ya da yaşadığın bir sorunda sana adım adım yardımcı olayım. Ne yapmak istiyorsun?")
+          tt("assistant.welcome", "Merhaba, ben AIVO yardımcı asistanıyım. İstersen modüller, paket seçimi, kredi sistemi, prompt yazımı ya da yaşadığın bir sorunda sana adım adım yardımcı olayım. Ne yapmak istiyorsun?")
+      }
     ]
   };
-
   const launcher = document.createElement("button");
   launcher.type = "button";
   launcher.className = "aivo-assistant-launcher";
@@ -46,7 +46,7 @@
       <button type="button" class="aivo-assistant-close" aria-label="Kapat">×</button>
     </div>
 
-    <div class="aivo-assistant-quick">
+     <div class="aivo-assistant-quick">
       <button
         type="button"
         class="aivo-assistant-chip"
@@ -55,7 +55,7 @@
         data-module=""
         data-action=""
         data-action-context="quick_modules_overview"
-      >Modülleri Anlat</button>
+      >${tt("assistant.quick.modules", "Modülleri Anlat")}</button>
 
       <button
         type="button"
@@ -65,7 +65,7 @@
         data-module="pricing"
         data-action="package_select"
         data-action-context="quick_pricing_recommendation"
-      >Paket Öner</button>
+      >${tt("assistant.quick.package", "Paket Öner")}</button>
 
       <button
         type="button"
@@ -75,9 +75,9 @@
         data-module="pricing"
         data-action="credit_info"
         data-action-context="quick_credit_info"
-      >Kredi Sistemi</button>
+      >${tt("assistant.quick.credits", "Kredi Sistemi")}</button>
 
-           <button
+      <button
         type="button"
         class="aivo-assistant-chip"
         data-prompt="Fikrimi güçlü, üretime hazır bir prompta çevir. Gerekirse eksikleri tamamla, modüle uygun yaz ve bana direkt kullanabileceğim en güçlü promptu ver."
@@ -85,7 +85,7 @@
         data-module=""
         data-action="prompt_help"
         data-action-context="quick_prompt_help_max"
-      >Prompt Güçlendir</button>
+      >${tt("assistant.quick.prompt", "Prompt Güçlendir")}</button>
 
       <button
         type="button"
@@ -95,7 +95,7 @@
         data-module=""
         data-action="troubleshoot"
         data-action-context="quick_troubleshoot"
-      >Sorun Çöz</button>
+      >${tt("assistant.quick.problem", "Sorun Çöz")}</button>
 
       <button
         type="button"
@@ -105,7 +105,7 @@
         data-module=""
         data-action="recommend_module"
         data-action-context="quick_tool_finder"
-      >Doğru Aracı Bul</button>
+      >${tt("assistant.quick.tool", "Doğru Aracı Bul")}</button>
     </div>
 
     <div class="aivo-assistant-messages" id="aivo-assistant-messages"></div>
