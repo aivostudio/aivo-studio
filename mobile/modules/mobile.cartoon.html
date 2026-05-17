@@ -1,34 +1,59 @@
 <section id="mobileCartoonSection">
   <section class="mobile-cartoon-panel">
-    <div class="mobile-cartoon-hero">
-      <div class="mobile-cartoon-kicker">AIVO Mobile Studio</div>
-      <h3>AI Çocuk Çizgifilm</h3>
-      <p>Karakter oluştur veya tek sahnelik kısa çizgifilm videosu üret.</p>
-    </div>
+   <div class="mobile-cartoon-hero">
+  <div class="mobile-cartoon-kicker" data-i18n="home.eyebrow">
+    AIVO Mobile Studio
+  </div>
 
-    <div class="mobile-cartoon-info">
-      Hikaye modu ve montaj stüdyosu gelişmiş düzenleme için Desktop Studio’da kullanılabilir.
-    </div>
+  <h3 data-i18n="cartoon.title">
+    AI Çocuk Çizgifilm
+  </h3>
 
-    <div class="mobile-cartoon-mode-tabs" role="tablist" aria-label="Çizgifilm modu">
-      <button class="mobile-cartoon-mode is-active" type="button" data-mobile-cartoon-mode="character">
-        Karakter
-      </button>
-      <button class="mobile-cartoon-mode" type="button" data-mobile-cartoon-mode="basic">
-        Tek Sahne
-      </button>
-    </div>
+  <p data-i18n="cartoon.subtitle">
+    Karakter oluştur veya tek sahnelik kısa çizgifilm videosu üret.
+  </p>
+</div>
+
+<div class="mobile-cartoon-info" data-i18n="cartoon.desktopInfo">
+  Hikaye modu ve montaj stüdyosu gelişmiş düzenleme için Desktop Studio’da kullanılabilir.
+</div>
+
+<div
+  class="mobile-cartoon-mode-tabs"
+  role="tablist"
+  aria-label="Çizgifilm modu"
+  data-i18n-label="cartoon.modeLabel">
+
+  <button
+    class="mobile-cartoon-mode is-active"
+    type="button"
+    data-mobile-cartoon-mode="character"
+    data-i18n="cartoon.characterMode">
+
+    Karakter
+  </button>
+
+  <button
+    class="mobile-cartoon-mode"
+    type="button"
+    data-mobile-cartoon-mode="basic"
+    data-i18n="cartoon.sceneMode">
+
+    Tek Sahne
+  </button>
+</div>
 
     <div class="mobile-cartoon-view is-active" data-mobile-cartoon-view="character">
-      <h3 class="mobile-cartoon-block-title">Karakter Oluştur</h3>
-      <p class="mobile-cartoon-block-sub">Kısa bir tanım yaz, AIVO çizgifilm karakterini oluştursun.</p>
+    <h3 class="mobile-cartoon-block-title" data-i18n="cartoon.characterTitle">Karakter Oluştur</h3>
+<p class="mobile-cartoon-block-sub" data-i18n="cartoon.characterSub">Kısa bir tanım yaz, AIVO çizgifilm karakterini oluştursun.</p>
 
-      <label class="field-label" for="mobileCartoonCharacterPrompt">Karakter Tanımı</label>
-      <textarea
-        id="mobileCartoonCharacterPrompt"
-        class="field-textarea mobile-cartoon-prompt"
-        maxlength="1000"
-        placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"></textarea>
+<label class="field-label" for="mobileCartoonCharacterPrompt" data-i18n="cartoon.characterPrompt">Karakter Tanımı</label>
+<textarea
+  id="mobileCartoonCharacterPrompt"
+  class="field-textarea mobile-cartoon-prompt"
+  maxlength="1000"
+  placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"
+  data-i18n-placeholder="cartoon.characterPromptPlaceholder"></textarea>
 
       <div class="mobile-cartoon-count">
         <span id="mobileCartoonCharacterCount">0</span> / 1000
