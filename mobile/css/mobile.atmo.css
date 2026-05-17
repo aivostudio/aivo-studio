@@ -673,7 +673,7 @@
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 6l12 12'/%3E%3Cpath d='M18 6L6 18'/%3E%3C/svg%3E") center/contain no-repeat;
 }
 .mobile-atmo-upload-btn::after{
-  content:"Ücretsiz";
+  content:attr(data-atmo-cost-label);
   position:absolute;
   left:50%;
   top:-27px;
@@ -698,7 +698,6 @@
 
 .mobile-atmo-upload-btn:has(input[id*="Logo"])::after,
 .mobile-atmo-upload-btn:has(input[id*="Audio"])::after{
-  content:"+10 Kredi";
   color:#fff;
   background:
     radial-gradient(circle at 25% 18%, rgba(255,255,255,.28), transparent 34%),
