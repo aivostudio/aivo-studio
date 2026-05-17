@@ -264,7 +264,9 @@ const typeText = type === "refund"
       empty.hidden = visibleCount > 0;
 
       if (visibleCount === 0) {
-        empty.textContent = "Bu filtre için fatura bulunamadı.";
+       empty.textContent = window.t
+  ? window.t("invoices.emptyFilter")
+  : "Bu filtre için fatura bulunamadı.";
       }
     }
   }
@@ -304,14 +306,18 @@ async function mobileInvoicesInit(){
   bindFilters(root);
 
   empty.hidden = false;
-  empty.textContent = "Faturalar yükleniyor...";
+empty.textContent = window.t
+  ? window.t("invoices.loading")
+  : "Faturalar yükleniyor...";
 
   const email = await resolveEmail();
   console.log("[AIVO_MOBILE_INVOICES] resolved_email:", email);
 
   if (!email) {
     empty.hidden = false;
-    empty.textContent = "Faturaları göstermek için oturum bilgisi bulunamadı.";
+    empty.textContent = window.t
+  ? window.t("invoices.sessionMissing")
+  : "Faturaları göstermek için oturum bilgisi bulunamadı.";
     return;
   }
 
@@ -347,7 +353,9 @@ async function mobileInvoicesInit(){
     if (!invoices.length) {
       list.innerHTML = "";
       empty.hidden = false;
-      empty.textContent = "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
+     empty.textContent = window.t
+  ? window.t("invoices.empty")
+  : "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
       return;
     }
 
@@ -365,7 +373,9 @@ async function mobileInvoicesInit(){
     console.error("[AIVO_MOBILE_INVOICES] render_failed:", err);
     list.innerHTML = "";
     empty.hidden = false;
-    empty.textContent = "Faturalar şu an yüklenemedi.";
+   empty.textContent = window.t
+  ? window.t("invoices.loadFailed")
+  : "Faturalar şu an yüklenemedi.";
   }
 }
 
