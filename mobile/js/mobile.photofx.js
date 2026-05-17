@@ -319,8 +319,9 @@
   function syncCreditButton(){
     if (!generateBtn) return;
 
-    const creditCost = computeCredit();
-   
+     const creditCost = computeCredit();
+    const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+
     const label = isEn
       ? "🎬 Create Clip (" + creditCost + " Credits)"
       : "🎬 Klip Oluştur (" + creditCost + " Kredi)";
