@@ -1530,10 +1530,13 @@ function syncMainCharacterDisabled(){
                const value = safeText(btn.getAttribute(attr));
         if (!value) return;
 
-        if (key === "mainCharacter" && hasCustomCharacterActive()) {
+              if (key === "mainCharacter" && hasCustomCharacterActive()) {
           state.mainCharacter = "";
           syncMainCharacterDisabled();
-          setStatus("Kendi resmin seçiliyken hazır ana karakter seçilemez.");
+          setStatus(cartoonText(
+            "Kendi resmin seçiliyken hazır ana karakter seçilemez.",
+            "Preset main character cannot be selected while your own image is active."
+          ));
           return;
         }
 
@@ -1565,11 +1568,13 @@ function syncMainCharacterDisabled(){
           return;
         }
 
-        if (state.helpers.length >= 3) {
-          setStatus("En fazla 3 yardımcı karakter seçebilirsin.");
+              if (state.helpers.length >= 3) {
+          setStatus(cartoonText(
+            "En fazla 3 yardımcı karakter seçebilirsin.",
+            "You can select up to 3 helper characters."
+          ));
           return;
         }
-
         state.helpers.push(value);
         btn.classList.add("is-active");
       });
