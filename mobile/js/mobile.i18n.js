@@ -535,7 +535,32 @@
       "cartoon.sceneSub": "Karakter, sahne ve aksiyon seçerek kısa çizgifilm sahnesi oluştur.",
 
       "cartoon.scenePrompt": "Ek Prompt",
-      "cartoon.scenePromptPlaceholder": "Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin",
+     "cartoon.scenePromptPlaceholder": "Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin",
+
+      "cartoon.mainCharacter": "Ana Karakter",
+      "cartoon.mainRedFish": "🐟 Kırmızı Balık",
+      "cartoon.mainChick": "🐥 Civciv",
+      "cartoon.mainDuck": "🦆 Ördek",
+
+      "cartoon.helperCharacters": "Yardımcı Karakterler",
+      "cartoon.helperSmallFish": "🐠 Küçük Balıklar",
+      "cartoon.helperFrog": "🐸 Kurbağa",
+      "cartoon.helperCrab": "🦀 Yengeç",
+
+      "cartoon.scene": "Sahne",
+      "cartoon.sceneUnderwater": "Deniz Altı",
+      "cartoon.scenePond": "Gölet",
+      "cartoon.sceneForest": "Orman",
+      "cartoon.sceneFarm": "Çiftlik",
+      "cartoon.sceneSky": "Gökyüzü",
+      "cartoon.sceneBeach": "Plaj",
+
+      "cartoon.action": "Aksiyon",
+      "cartoon.actionSwimming": "Yüzüyor",
+      "cartoon.actionJumping": "Zıplıyor",
+      "cartoon.actionPlaying": "Oynuyor",
+      "cartoon.actionLaughing": "Gülüyor",
+      "cartoon.actionDancing": "Dans Ediyor",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -1083,7 +1108,32 @@
       "cartoon.sceneSub": "Create a short cartoon scene by selecting character, scene and action.",
 
       "cartoon.scenePrompt": "Extra Prompt",
-      "cartoon.scenePromptPlaceholder": "E.g. look happy, add bubbles, move slowly",
+     "cartoon.scenePromptPlaceholder": "E.g. look happy, add bubbles, move slowly",
+
+      "cartoon.mainCharacter": "Main Character",
+      "cartoon.mainRedFish": "🐟 Red Fish",
+      "cartoon.mainChick": "🐥 Chick",
+      "cartoon.mainDuck": "🦆 Duck",
+
+      "cartoon.helperCharacters": "Helper Characters",
+      "cartoon.helperSmallFish": "🐠 Small Fish",
+      "cartoon.helperFrog": "🐸 Frog",
+      "cartoon.helperCrab": "🦀 Crab",
+
+      "cartoon.scene": "Scene",
+      "cartoon.sceneUnderwater": "Underwater",
+      "cartoon.scenePond": "Pond",
+      "cartoon.sceneForest": "Forest",
+      "cartoon.sceneFarm": "Farm",
+      "cartoon.sceneSky": "Sky",
+      "cartoon.sceneBeach": "Beach",
+
+      "cartoon.action": "Action",
+      "cartoon.actionSwimming": "Swimming",
+      "cartoon.actionJumping": "Jumping",
+      "cartoon.actionPlaying": "Playing",
+      "cartoon.actionLaughing": "Laughing",
+      "cartoon.actionDancing": "Dancing",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
