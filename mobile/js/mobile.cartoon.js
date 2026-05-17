@@ -554,7 +554,10 @@ function bindMobileCartoonResultActions(){
 
       if (navigator.share) {
         navigator.share({
-          title: "AIVO Çizgifilm Video",
+                  title: cartoonText(
+            "AIVO Çizgifilm Video",
+            "AIVO Cartoon Video"
+          ),
           url: job.videoUrl
         }).catch(function(){});
       } else if (navigator.clipboard) {
