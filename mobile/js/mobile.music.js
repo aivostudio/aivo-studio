@@ -2278,7 +2278,13 @@ if (window.toast?.loading) {
         resultsEl.appendChild(card);
       });
 
-      pollMobileMusicJob(pollJobId, title || "Yeni müzik");
+        pollMobileMusicJob(
+        pollJobId,
+        title || musicText(
+          "Yeni müzik",
+          "New music"
+        )
+      );
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
 
