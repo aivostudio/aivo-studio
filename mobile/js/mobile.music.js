@@ -107,7 +107,10 @@ rows.forEach(function(row){
     row.meta?.title ||
     row.title ||
     row.meta?.song_title ||
-    "Yeni müzik";
+    musicText(
+      "Yeni müzik",
+      "New music"
+    );
 
   const rawOutputs =
     Array.isArray(row.outputs) && row.outputs.length
