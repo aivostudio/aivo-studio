@@ -152,6 +152,12 @@
        "toast.title.warning": "Warning",
       "toast.title.loading": "Processing",
       "toast.title.info": "Info",
+      "assistant.launcher": "AI Help",
+       "assistant.title": "AIVO AI Assistant",
+      "assistant.subtitle": "Quick guidance, package, credit and prompt support",
+      "assistant.placeholder": "Write your issue or what you want to do...",
+      "assistant.send": "Send",
+      "assistant.wait": "Please wait...",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
