@@ -1334,6 +1334,9 @@ try {
     }
 
     accountSettingsMount.innerHTML = await accountSettingsRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountSettingsMount);
+}
 
     const settingsScript = document.createElement("script");
     settingsScript.src = "/mobile/js/mobile.settings.js?v=1";
