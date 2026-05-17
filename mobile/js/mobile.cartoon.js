@@ -758,7 +758,23 @@ async function hydrateMobileCartoonCharacterLibrary(){
     return String(value || "").trim();
   }
 
-   const MOBILE_CARTOON_TOAST = {
+  function isCartoonEn(){
+    return String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+  }
+
+  function cartoonText(tr, en){
+    return isCartoonEn() ? en : tr;
+  }
+
+  function cartoonCreditsText(count){
+    return isCartoonEn()
+      ? count + " Credits"
+      : count + " Kredi";
+  }
+
+  const MOBILE_CARTOON_TOAST = {
+    lastKey: "",
+    lastAt: 0,
     loadingId: null
   };
 
