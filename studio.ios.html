@@ -1218,6 +1218,10 @@ cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
 
   photofxMount.innerHTML = await photofxRes.text();
 
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(photofxMount);
+  }
+
 const photofxScript = document.createElement("script");
 photofxScript.src = "/mobile/js/mobile.photofx.js?v=5";
 photofxScript.defer = true;
@@ -1238,6 +1242,10 @@ try {
 
   videoMount.innerHTML = await videoRes.text();
 
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(videoMount);
+  }
+
   const videoScript = document.createElement("script");
   videoScript.src = "/mobile/js/mobile.video.js?v=1";
   videoScript.defer = true;
@@ -1257,6 +1265,10 @@ try {
   }
 
   lipsyncMount.innerHTML = await lipsyncRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(lipsyncMount);
+  }
 
   const lipsyncScript = document.createElement("script");
   lipsyncScript.src = "/mobile/js/mobile.lipsync.js?v=1";
