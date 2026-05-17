@@ -920,8 +920,10 @@ async function uploadMobilePhotoFxFile(file, kind){
         transactionId: ""
       };
 
+        const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+
       generateBtn.disabled = true;
-      generateBtn.textContent = "Üretiliyor...";
+      generateBtn.textContent = isEn ? "Generating..." : "Üretiliyor...";
       generateBtn.classList.add("is-loading", "is-pressed");
       generateBtn.setAttribute("aria-busy", "true");
 
@@ -931,7 +933,7 @@ async function uploadMobilePhotoFxFile(file, kind){
         refundState.consumed = true;
         refundState.transactionId = consumeResult.transactionId || "";
 
-        mobilePhotoFxToast("success", creditCost + " kredi kullanıldı.");
+        mobilePhotoFxToast("success", isEn ? creditCost + " credits used." : creditCost + " kredi kullanıldı.");
  
            } catch (creditErr) {
         console.warn("[MOBILE PHOTOFX][CREDIT ERROR]", creditErr);
@@ -972,9 +974,9 @@ async function uploadMobilePhotoFxFile(file, kind){
         resultsEl.hidden = false;
       }
 
-      renderMobilePhotoFxResults();
-      setStatus("PhotoFX klip hazırlanıyor...");
-      mobilePhotoFxLoading("PhotoFX klip hazırlanıyor...");
+          renderMobilePhotoFxResults();
+      setStatus(isEn ? "PhotoFX clip is being prepared..." : "PhotoFX klip hazırlanıyor...");
+      mobilePhotoFxLoading(isEn ? "PhotoFX clip is being prepared..." : "PhotoFX klip hazırlanıyor...");
 
       try {
         const res = await fetch("/api/providers/fal/photofx/create", {
@@ -1026,8 +1028,8 @@ async function uploadMobilePhotoFxFile(file, kind){
           job.refundState = refundState;
         }
 
-        renderMobilePhotoFxResults();
-        mobilePhotoFxLoading("Video hazırlanıyor...");
+               renderMobilePhotoFxResults();
+        mobilePhotoFxLoading(isEn ? "Video is being prepared..." : "Video hazırlanıyor...");
         pollMobilePhotoFxJob(realJobId);
       } catch (err) {
         console.error("[MOBILE PHOTOFX][CREATE ERROR]", err);
