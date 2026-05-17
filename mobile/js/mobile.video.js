@@ -141,7 +141,19 @@ const state = {
   }
 
   function mobileVideoLoading(message){
-    clearMobileVideoLoading();
+    const api = getMobileVideoToastApi();
+
+    try {
+      if (MOBILE_VIDEO_TOAST.loadingId && api) {
+        if (typeof api.dismiss === "function") {
+          api.dismiss(MOBILE_VIDEO_TOAST.loadingId);
+        } else if (typeof api.remove === "function") {
+          api.remove(MOBILE_VIDEO_TOAST.loadingId);
+        }
+      }
+    } catch (err) {}
+
+    MOBILE_VIDEO_TOAST.loadingId = null;
 
     MOBILE_VIDEO_TOAST.loadingId = mobileVideoToast("loading", message, {
       persist: true,
@@ -151,7 +163,6 @@ const state = {
 
     return MOBILE_VIDEO_TOAST.loadingId;
   }
-
   function clearMobileVideoLoading(){
     const api = getMobileVideoToastApi();
 
