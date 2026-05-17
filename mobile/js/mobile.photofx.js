@@ -206,7 +206,9 @@
 
         const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
         mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
+                el.textContent = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+            ? "Credits " + nextCredits
+            : "Kredi " + nextCredits;
         });
 
         if (
@@ -359,7 +361,9 @@
 
     if (!items.length) {
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Henüz mobil PhotoFX klip başlatılmadı.";
+       resultsEl.innerHTML = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+        ? "No mobile PhotoFX clip has been started yet."
+        : "Henüz mobil PhotoFX klip başlatılmadı.";
       return;
     }
 
@@ -374,7 +378,7 @@
             ${
               ready
                 ? `<video class="mobile-photofx-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-                : `<div class="mobile-photofx-video-loading"><span>Hazırlanıyor…</span></div>`
+                : `<div class="mobile-photofx-video-loading"><span>${String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Preparing…" : "Hazırlanıyor…"}</span></div>`
             }
 
             <div class="mobile-photofx-video-actions">
@@ -430,7 +434,7 @@
       if (videoUrl) {
         job.videoUrl = videoUrl;
         job.status = "ready";
-        job.title = job.title || "PhotoFX klip hazır";
+             job.title = job.title || (String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip is ready" : "PhotoFX klip hazır");
                renderMobilePhotoFxResults();
         setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip is ready." : "PhotoFX klip hazır.");
         clearMobilePhotoFxLoading();
@@ -446,7 +450,7 @@
         !videoUrl
       ) {
         job.status = "error";
-        job.title = "Video çıktısı alınamadı";
+           job.title = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Video output could not be received" : "Video çıktısı alınamadı";
         renderMobilePhotoFxResults();
              setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Video output could not be received." : "Video çıktısı alınamadı.");
         clearMobilePhotoFxLoading();
@@ -462,7 +466,7 @@
 
       if (status.includes("fail") || status.includes("error")) {
         job.status = "error";
-        job.title = "PhotoFX klip oluşturulamadı";
+            job.title = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip could not be created" : "PhotoFX klip oluşturulamadı";
         renderMobilePhotoFxResults();
               setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip could not be created." : "PhotoFX klip oluşturulamadı.");
         clearMobilePhotoFxLoading();
@@ -489,7 +493,7 @@
 
       if (job) {
         job.status = "error";
-        job.title = "PhotoFX klip kontrol edilemedi";
+             job.title = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip could not be checked" : "PhotoFX klip kontrol edilemedi";
         renderMobilePhotoFxResults();
              setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip could not be checked." : "PhotoFX klip kontrol edilemedi.");
         clearMobilePhotoFxLoading();
