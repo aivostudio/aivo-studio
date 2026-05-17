@@ -654,7 +654,10 @@ const state = {
     if (oldClear) oldClear.remove();
 
     if (textEl) {
-      textEl.textContent = statusText || (file ? "Görsel ✓" : "Görsel Yükle");
+      textEl.textContent = statusText || (file
+        ? mobileVideoText("Görsel ✓", "Image ✓")
+        : mobileVideoText("Görsel Yükle", "Upload Image")
+      );
     }
 
     label.classList.toggle("has-file", !!file);
@@ -665,6 +668,7 @@ const state = {
     clearBtn.type = "button";
     clearBtn.className = "mobile-video-file-clear";
     clearBtn.setAttribute("data-mobile-video-clear-file", "mobileVideoImageFile");
+    clearBtn.setAttribute("aria-label", mobileVideoText("Görseli kaldır", "Remove image"));
     clearBtn.textContent = "×";
     label.appendChild(clearBtn);
   }
@@ -686,10 +690,16 @@ const state = {
       state.imageUrl = "";
 
       setFileLabel(imageFileEl, null);
-      setStatus("Görsel kaldırıldı.");
+      setStatus(mobileVideoText(
+        "Görsel kaldırıldı.",
+        "Image removed."
+      ));
 
       if (hadImage) {
-        mobileVideoToast("success", "Görsel kaldırıldı");
+        mobileVideoToast("success", mobileVideoText(
+          "Görsel kaldırıldı.",
+          "Image removed."
+        ));
       }
     });
   }
@@ -703,46 +713,51 @@ const state = {
       state.imageFile = file;
       state.imageUrl = "";
 
-      setFileLabel(imageFileEl, file, file ? "Yükleniyor..." : "");
+      setFileLabel(imageFileEl, file, file
+        ? mobileVideoText("Yükleniyor...", "Uploading...")
+        : ""
+      );
+
       if (!file) return;
 
-     setStatus("Görsel yükleniyor...");
-mobileVideoLoading("Görsel güvenlik kontrolünden geçiriliyor...");
+      setStatus(mobileVideoText(
+        "Görsel yükleniyor...",
+        "Image is uploading..."
+      ));
+      mobileVideoLoading(mobileVideoText(
+        "Görsel güvenlik kontrolünden geçiriliyor...",
+        "Image is being checked for safety..."
+      ));
 
       try {
         const publicUrl = await uploadMobileVideoFile(file);
         state.imageUrl = publicUrl;
+
         setFileLabel(imageFileEl, file);
-       clearMobileVideoLoading();
-setStatus("Görsel yüklendi.");
-mobileVideoToast("success", "Görsel eklendi");
+        clearMobileVideoLoading();
+
+        setStatus(mobileVideoText(
+          "Görsel yüklendi.",
+          "Image uploaded."
+        ));
+        mobileVideoToast("success", mobileVideoText(
+          "Görsel eklendi.",
+          "Image added."
+        ));
       } catch (err) {
         console.error("[MOBILE VIDEO][UPLOAD ERROR]", err);
 
         state.imageFile = null;
         state.imageUrl = "";
         imageFileEl.value = "";
-       clearMobileVideoLoading();
+
+        clearMobileVideoLoading();
         setFileLabel(imageFileEl, null);
-        setStatus("Görsel yüklenemedi.");
 
-        const errText = String(err?.message || err || "").toLowerCase();
-       const isPolicyBlocked =
-  errText.includes("media_policy") ||
-  errText.includes("public_figure") ||
-  errText.includes("public figure") ||
-  errText.includes("public_figure_image_blocked") ||
-  errText.includes("figure_image_blocked") ||
-  errText.includes("image_blocked") ||
-  errText.includes("celebrity") ||
-  errText.includes("protected_person") ||
-  errText.includes("impersonation") ||
-  errText.includes("blocked");
+        const message = mapMobileVideoErrorMessage(err);
 
-mobileVideoToast(
-  "error",
-  isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası"
-);
+        setStatus(message);
+        mobileVideoToast("error", message);
       }
     });
   }
@@ -784,37 +799,38 @@ mobileVideoToast(
     updateImagePrompt();
   }
   function bindModeTabs(){
-  const modeButtons = Array.from(root.querySelectorAll("[data-mobile-video-mode]"));
-  const panels = Array.from(root.querySelectorAll("[data-mobile-video-panel]"));
+    const modeButtons = Array.from(root.querySelectorAll("[data-mobile-video-mode]"));
+    const panels = Array.from(root.querySelectorAll("[data-mobile-video-panel]"));
 
-  if (!modeButtons.length || !panels.length) return;
+    if (!modeButtons.length || !panels.length) return;
 
-  function setMode(mode){
-    const nextMode = mode === "image" ? "image" : "text";
-    state.mode = nextMode;
+    function setMode(mode){
+      const nextMode = mode === "image" ? "image" : "text";
+      state.mode = nextMode;
+
+      modeButtons.forEach(function(btn){
+        const active = btn.getAttribute("data-mobile-video-mode") === nextMode;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-selected", active ? "true" : "false");
+      });
+
+      panels.forEach(function(panel){
+        const active = panel.getAttribute("data-mobile-video-panel") === nextMode;
+        panel.hidden = !active;
+      });
+
+      setStatus("");
+    }
 
     modeButtons.forEach(function(btn){
-      const active = btn.getAttribute("data-mobile-video-mode") === nextMode;
-      btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.addEventListener("click", function(){
+        setMode(btn.getAttribute("data-mobile-video-mode"));
+      });
     });
 
-    panels.forEach(function(panel){
-      const active = panel.getAttribute("data-mobile-video-panel") === nextMode;
-      panel.hidden = !active;
-    });
-
-    setStatus("");
+    setMode(state.mode || "text");
   }
 
-  modeButtons.forEach(function(btn){
-    btn.addEventListener("click", function(){
-      setMode(btn.getAttribute("data-mobile-video-mode"));
-    });
-  });
-
-  setMode(state.mode || "text");
-}
   function bindControls(){
     if (durationEl) {
       durationEl.addEventListener("change", function(){
@@ -847,9 +863,15 @@ mobileVideoToast(
 
         if (nextQuality !== lastQuality) {
           if (nextQuality === "high") {
-            mobileVideoToast("success", "Yüksek kalite seçildi · +5 kredi");
+            mobileVideoToast("success", mobileVideoText(
+              "Yüksek kalite seçildi · +5 kredi",
+              "High quality selected · +5 credits"
+            ));
           } else if (lastQuality === "high") {
-            mobileVideoToast("success", "Standart kalite seçildi · -5 kredi");
+            mobileVideoToast("success", mobileVideoText(
+              "Standart kalite seçildi · -5 kredi",
+              "Standard quality selected · -5 credits"
+            ));
           }
         }
 
