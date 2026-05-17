@@ -164,22 +164,7 @@
       updatePromptCount();
     }
   }
-  function setStyle(btn){
-    selectedStyle = String(btn.getAttribute("data-style") || "");
 
-    styleBtns.forEach(function(item){
-      const on = item === btn;
-      item.classList.toggle("is-active", on);
-      item.setAttribute("aria-pressed", on ? "true" : "false");
-    });
-
-    const stylePrompt = String(btn.getAttribute("data-prompt") || "").trim();
-
-    if (stylePrompt) {
-      promptEl.value = stylePrompt;
-      updatePromptCount();
-    }
-  }
 
   function withCoverPrompt(raw, quality){
     const base = String(raw || "").trim();
