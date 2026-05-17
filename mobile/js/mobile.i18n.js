@@ -529,7 +529,13 @@
       "cartoon.generateCharacter": "🧩 Karakter Oluştur (20 Kredi)",
 
       "cartoon.myCharacters": "Karakterlerim",
-      "cartoon.noCharacters": "Henüz mobil karakter oluşturulmadı.",
+     "cartoon.noCharacters": "Henüz mobil karakter oluşturulmadı.",
+
+      "cartoon.sceneTitle": "Tek Sahne Üret",
+      "cartoon.sceneSub": "Karakter, sahne ve aksiyon seçerek kısa çizgifilm sahnesi oluştur.",
+
+      "cartoon.scenePrompt": "Ek Prompt",
+      "cartoon.scenePromptPlaceholder": "Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -1071,7 +1077,13 @@
       "cartoon.generateCharacter": "🧩 Create Character (20 Credits)",
 
       "cartoon.myCharacters": "My Characters",
-      "cartoon.noCharacters": "No mobile character has been created yet.",
+     "cartoon.noCharacters": "No mobile character has been created yet.",
+
+      "cartoon.sceneTitle": "Create Single Scene",
+      "cartoon.sceneSub": "Create a short cartoon scene by selecting character, scene and action.",
+
+      "cartoon.scenePrompt": "Extra Prompt",
+      "cartoon.scenePromptPlaceholder": "E.g. look happy, add bubbles, move slowly",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
