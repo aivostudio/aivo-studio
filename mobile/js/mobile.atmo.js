@@ -1525,29 +1525,51 @@ function setFileLabel(input, file){
 
   function bindGenerateButtons(){
     if (basicGenerateBtn) {
-        basicGenerateBtn.addEventListener("click", async function(){
+       basicGenerateBtn.addEventListener("click", async function(){
         const payload = buildBasicPayload();
 
-               if (!payload.scene && !payload.has_image) {
-          setStatus("Lütfen bir arka mekan seç veya resim yükle.");
-          mobileAtmoToast("warning", "Lütfen bir arka mekan seç veya resim yükle.");
+        if (!payload.scene && !payload.has_image) {
+          setStatus(atmoText(
+            "Lütfen bir arka mekan seç veya resim yükle.",
+            "Please select a background scene or upload an image."
+          ));
+          mobileAtmoToast("warning", atmoText(
+            "Lütfen bir arka mekan seç veya resim yükle.",
+            "Please select a background scene or upload an image."
+          ));
           return;
         }
 
-              let creditCtx = null;
+        let creditCtx = null;
 
         basicGenerateBtn.disabled = true;
-        basicGenerateBtn.textContent = "Üretiliyor...";
+        basicGenerateBtn.textContent = atmoText(
+          "Üretiliyor...",
+          "Generating..."
+        );
         basicGenerateBtn.classList.add("is-loading", "is-pressed");
         basicGenerateBtn.setAttribute("aria-busy", "true");
 
         try {
           creditCtx = await consumeMobileAtmoCredits("basic");
-          mobileAtmoToast("success", computeMobileAtmoCredit("basic") + " kredi kullanıldı.");
-               } catch (creditErr) {
+          mobileAtmoToast("success", atmoText(
+            computeMobileAtmoCredit("basic") + " kredi kullanıldı.",
+            computeMobileAtmoCredit("basic") + " credits used."
+          ));
+        } catch (creditErr) {
           console.warn("[MOBILE ATMO][BASIC CREDIT ERROR]", creditErr);
-          setStatus("Yetersiz kredi.");
-          mobileAtmoToast("warning", "Yetersiz kredi.");
+
+          setStatus(atmoText(
+            "Yetersiz kredi.",
+            "Insufficient credits."
+          ));
+
+          mobileAtmoToast("warning", atmoText(
+            "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...",
+            "Insufficient credits. Redirecting you to Credits..."
+          ));
+
+          clearMobileAtmoLoading();
 
           location.hash = "#credits";
 
@@ -1563,43 +1585,45 @@ function setFileLabel(input, file){
           return;
         }
 
-           
+        mobileAtmoLoading(atmoText(
+          "Atmosfer video hazırlanıyor...",
+          "Atmosphere video is being prepared..."
+        ));
 
-        mobileAtmoLoading("Atmosfer video hazırlanıyor...");
+        const tempId = "mobile-atmo-" + Date.now();
 
-                const tempId = "mobile-atmo-" + Date.now();
+        mobileAtmoJobs.length = 0;
 
+        mobileAtmoJobs.unshift({
+          id: tempId,
+          scope: "current",
+          title:
+            payload.scene === "winter_cafe" ? atmoText("Kış Kafe", "Winter Cafe") :
+            payload.scene === "cozy_cabin" ? atmoText("Dağ Evi", "Mountain Cabin") :
+            payload.scene === "lake_cabin" ? atmoText("Göl Kenarı", "Lakeside") :
+            payload.scene === "city_night" ? atmoText("Şehir Gecesi", "City Night") :
+            payload.scene === "rainy_window" ? atmoText("Yağmurlu Pencere", "Rainy Window") :
+            payload.scene === "old_stone_street" ? atmoText("Eski Taş Sokak", "Old Stone Street") :
+            atmoText("Atmosfer video", "Atmosphere video"),
+          videoUrl: "",
+          payload: payload,
+          status: "processing"
+        });
 
+        mobileAtmoViewMode = "current";
 
-mobileAtmoJobs.length = 0;
+        if (resultsEl) {
+          resultsEl.hidden = false;
+        }
 
-mobileAtmoJobs.unshift({
-  id: tempId,
-  scope: "current",
-  title:
-    payload.scene === "winter_cafe" ? "Kış Kafe" :
-    payload.scene === "cozy_cabin" ? "Dağ Evi" :
-    payload.scene === "lake_cabin" ? "Göl Kenarı" :
-    payload.scene === "city_night" ? "Şehir Gecesi" :
-    payload.scene === "rainy_window" ? "Yağmurlu Pencere" :
-    payload.scene === "old_stone_street" ? "Eski Taş Sokak" :
-    "Atmosfer video",
-  videoUrl: "",
-  payload: payload,
-  status: "processing"
-});
+        renderMobileAtmoResults();
 
-mobileAtmoViewMode = "current";
+        setStatus(atmoText(
+          "Atmosfer video hazırlanıyor...",
+          "Atmosphere video is being prepared..."
+        ));
 
-if (resultsEl) {
-  resultsEl.hidden = false;
-}
-
-renderMobileAtmoResults();
-
-        setStatus("Atmosfer video hazırlanıyor...");
-
-               fetch("/api/jobs/create-atmo", {
+        fetch("/api/jobs/create-atmo", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
