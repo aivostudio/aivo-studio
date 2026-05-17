@@ -573,7 +573,12 @@
       "cartoon.aspectRatio": "En / Boy Oranı",
       "cartoon.ratioHorizontal": "Yatay (16:9)",
       "cartoon.ratioVertical": "Dikey (9:16)",
-      "cartoon.ratioSquare": "Kare (1:1)",
+     "cartoon.ratioSquare": "Kare (1:1)",
+
+      "cartoon.selectLogo": "Logo Seç",
+      "cartoon.selectAudio": "Audio Seç",
+
+      "cartoon.generateScene": "🎬 Sahneyi Oluştur (30 Kredi)",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -1159,7 +1164,12 @@
       "cartoon.aspectRatio": "Aspect Ratio",
       "cartoon.ratioHorizontal": "Horizontal (16:9)",
       "cartoon.ratioVertical": "Vertical (9:16)",
-      "cartoon.ratioSquare": "Square (1:1)",
+     "cartoon.ratioSquare": "Square (1:1)",
+
+      "cartoon.selectLogo": "Select Logo",
+      "cartoon.selectAudio": "Select Audio",
+
+      "cartoon.generateScene": "🎬 Create Scene (30 Credits)",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
