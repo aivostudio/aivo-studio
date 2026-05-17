@@ -144,6 +144,11 @@
 "contact.whatsapp": "WhatsApp Destek Hattı",
 "contact.status": "Durum",
 "contact.statusText": "Aktif destek kanalı açık.",
+      "contact.errorRequired": "Lütfen tüm alanları doldur.",
+"contact.sending": "Gönderiliyor...",
+"contact.mailSubjectPrefix": "Konu:",
+"contact.success": "Mesajın alındı. En kısa sürede dönüş yapacağız.",
+"contact.errorSubmit": "Mesaj gönderilemedi. Lütfen tekrar dene.",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -300,6 +305,11 @@
 "contact.whatsapp": "WhatsApp Support Line",
 "contact.status": "Status",
 "contact.statusText": "Active support channel available.",
+      "contact.errorRequired": "Please fill in all fields.",
+"contact.sending": "Sending...",
+"contact.mailSubjectPrefix": "Subject:",
+"contact.success": "Your message has been received. We will get back to you as soon as possible.",
+"contact.errorSubmit": "Message could not be sent. Please try again.",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
