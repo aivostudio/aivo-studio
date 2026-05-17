@@ -1315,11 +1315,18 @@ function buildPayload(){
         video.muted = false;
         video.volume = 1;
 
-        function syncPlayButton(){
+             function syncPlayButton(){
           const isPlaying = !video.paused && !video.ended;
+
           btn.classList.toggle("is-playing", isPlaying);
           btn.setAttribute("data-playing", isPlaying ? "true" : "false");
-          btn.setAttribute("aria-label", isPlaying ? "Duraklat" : "Oynat");
+
+          btn.setAttribute(
+            "aria-label",
+            isPlaying
+              ? mobileVideoText("Duraklat", "Pause")
+              : mobileVideoText("Oynat", "Play")
+          );
         }
 
         video.onplay = syncPlayButton;
@@ -1391,7 +1398,10 @@ function buildPayload(){
         document.body.appendChild(a);
         a.click();
 
-        mobileVideoToast("success", "İndirme başlatıldı.");
+            mobileVideoToast("success", mobileVideoText(
+          "İndirme başlatıldı.",
+          "Download started."
+        ));
 
         setTimeout(function(){
           try {
@@ -1410,11 +1420,17 @@ function buildPayload(){
             title: "AIVO Video",
             url: job.videoUrl
           }).then(function(){
-            mobileVideoToast("success", "Paylaşım açıldı.");
+                mobileVideoToast("success", mobileVideoText(
+              "Paylaşım açıldı.",
+              "Share sheet opened."
+            ));
           }).catch(function(){});
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(job.videoUrl).then(function(){
-            mobileVideoToast("success", "Link kopyalandı.");
+                  mobileVideoToast("success", mobileVideoText(
+              "Link kopyalandı.",
+              "Link copied."
+            ));
           }).catch(function(){});
         }
 
@@ -1422,9 +1438,15 @@ function buildPayload(){
       }
 
       if (act === "delete") {
-        mobileVideoDeletedIds.add(id);
+             mobileVideoDeletedIds.add(id);
+
         renderMobileVideoResults();
-        mobileVideoToast("success", "Video silindi.");
+
+        mobileVideoToast("success", mobileVideoText(
+          "Video silindi.",
+          "Video deleted."
+        ));
+
         return;
       }
     });
