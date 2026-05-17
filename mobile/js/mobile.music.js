@@ -140,10 +140,12 @@ rows.forEach(function(row){
   for (let index = 0; index < versionCount; index += 1) {
     const output = audioOutputs[index] || null;
 
-    const versionTitle = index === 0
+      const versionTitle = index === 0
       ? baseTitle
-      : baseTitle + " · Versiyon " + (index + 1);
-
+      : baseTitle + " · " + musicText(
+          "Versiyon",
+          "Version"
+        ) + " " + (index + 1);
     libraryRows.push({
       ...row,
       title: versionTitle,
@@ -164,10 +166,13 @@ rows.forEach(function(row){
 });
 
 libraryRows.forEach(function(row){
-        const title =
+              const title =
           row.title ||
           row.prompt ||
-          "Yeni müzik";
+          musicText(
+            "Yeni müzik",
+            "New music"
+          );
 
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
