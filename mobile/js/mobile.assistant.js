@@ -8,6 +8,15 @@
 
   if (!hasSession) return;
   window.__AIVO_MOBILE_ASSISTANT__ = true;
+    function tt(key, fallback){
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
+
+    return fallback;
+  }
 
 
 
@@ -26,14 +35,14 @@
   const launcher = document.createElement("button");
   launcher.type = "button";
   launcher.className = "aivo-assistant-launcher";
-  launcher.textContent = "AI Yardım";
+  launcher.textContent = tt("assistant.launcher", "AI Yardım");
   const panel = document.createElement("section");
   panel.className = "aivo-assistant-panel";
   panel.innerHTML = `
     <div class="aivo-assistant-header">
       <div class="aivo-assistant-title-wrap">
-        <h3 class="aivo-assistant-title">AIVO AI Yardım</h3>
-        <p class="aivo-assistant-subtitle">Hızlı yönlendirme, paket, kredi ve prompt desteği</p>
+       <h3 class="aivo-assistant-title">${tt("assistant.title", "AIVO AI Yardım")}</h3>
+        <p class="aivo-assistant-subtitle">${tt("assistant.subtitle", "Hızlı yönlendirme, paket, kredi ve prompt desteği")}</p>
       </div>
       <button type="button" class="aivo-assistant-close" aria-label="Kapat">×</button>
     </div>
@@ -106,11 +115,13 @@
       <textarea
         class="aivo-assistant-input"
         id="aivo-assistant-input"
-        placeholder="Sorunu ya da yapmak istediğini yaz..."
+        placeholder="${tt("assistant.placeholder", "Sorunu ya da yapmak istediğini yaz...")}"
         rows="1"
         spellcheck="false"
       ></textarea>
-      <button type="submit" class="aivo-assistant-send" id="aivo-assistant-send">Gönder</button>
+           <button type="submit" class="aivo-assistant-send" id="aivo-assistant-send">
+        ${tt("assistant.send", "Gönder")}
+      </button>
     </form>
   `;
 
@@ -158,9 +169,10 @@
     state.loading = isLoading;
     inputEl.disabled = isLoading;
     sendEl.disabled = isLoading;
-    sendEl.textContent = isLoading ? "Bekle..." : "Gönder";
+    sendEl.textContent = isLoading
+      ? tt("assistant.wait", "Bekle...")
+      : tt("assistant.send", "Gönder");
   }
-
   function openPanel() {
     state.open = true;
     panel.classList.add("is-open");
