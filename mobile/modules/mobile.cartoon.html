@@ -59,38 +59,39 @@
         <span id="mobileCartoonCharacterCount">0</span> / 1000
       </div>
 
-      <div class="mobile-cartoon-form-grid mobile-cartoon-form-grid--two">
-        <div class="mobile-cartoon-mini-box">
-          <label class="field-label" for="mobileCartoonCharacterType">Tür</label>
-          <select id="mobileCartoonCharacterType" class="field-input">
-            <option value="animal" selected>Hayvan</option>
-            <option value="human">İnsan</option>
-            <option value="fantasy">Fantastik</option>
-            <option value="object">Nesne</option>
-            <option value="custom">Serbest</option>
-          </select>
-        </div>
+  <div class="mobile-cartoon-form-grid mobile-cartoon-form-grid--two">
+  <div class="mobile-cartoon-mini-box">
+    <label class="field-label" for="mobileCartoonCharacterType" data-i18n="cartoon.characterType">Tür</label>
+    <select id="mobileCartoonCharacterType" class="field-input">
+      <option value="animal" selected data-i18n="cartoon.typeAnimal">Hayvan</option>
+      <option value="human" data-i18n="cartoon.typeHuman">İnsan</option>
+      <option value="fantasy" data-i18n="cartoon.typeFantasy">Fantastik</option>
+      <option value="object" data-i18n="cartoon.typeObject">Nesne</option>
+      <option value="custom" data-i18n="cartoon.typeCustom">Serbest</option>
+    </select>
+  </div>
 
-        <div class="mobile-cartoon-mini-box">
-          <label class="field-label" for="mobileCartoonCharacterName">Karakter Adı</label>
-          <input
-            id="mobileCartoonCharacterName"
-            class="field-input"
-            type="text"
-            maxlength="80"
-            placeholder="Mini Tavşan">
-        </div>
-      </div>
+  <div class="mobile-cartoon-mini-box">
+    <label class="field-label" for="mobileCartoonCharacterName" data-i18n="cartoon.characterName">Karakter Adı</label>
+    <input
+      id="mobileCartoonCharacterName"
+      class="field-input"
+      type="text"
+      maxlength="80"
+      placeholder="Mini Tavşan"
+      data-i18n-placeholder="cartoon.characterNamePlaceholder">
+  </div>
+</div>
 
-      <div class="mobile-cartoon-mini-box">
-        <label class="field-label" for="mobileCartoonCharacterStyle">Stil</label>
-        <select id="mobileCartoonCharacterStyle" class="field-input">
-          <option value="cute-3d" selected>Sevimli 3D</option>
-          <option value="soft-cartoon">Yumuşak Çizgifilm</option>
-          <option value="pastel">Pastel</option>
-          <option value="bright-kids">Parlak Çocuk Stili</option>
-        </select>
-      </div>
+<div class="mobile-cartoon-mini-box">
+  <label class="field-label" for="mobileCartoonCharacterStyle" data-i18n="cartoon.characterStyle">Stil</label>
+  <select id="mobileCartoonCharacterStyle" class="field-input">
+    <option value="cute-3d" selected data-i18n="cartoon.styleCute3d">Sevimli 3D</option>
+    <option value="soft-cartoon" data-i18n="cartoon.styleSoftCartoon">Yumuşak Çizgifilm</option>
+    <option value="pastel" data-i18n="cartoon.stylePastel">Pastel</option>
+    <option value="bright-kids" data-i18n="cartoon.styleBrightKids">Parlak Çocuk Stili</option>
+  </select>
+</div>
 
       <h3 class="mobile-cartoon-block-title">Gelişmiş Özelleştirme</h3>
 
