@@ -51,15 +51,17 @@
       const subject = String(form.elements.subject?.value || "").trim();
       const message = String(form.elements.message?.value || "").trim();
 
-      if (!name || !email || !subject || !message) {
-        toast(tr("contact.errorRequired"));
-        return;
-      }
+   if (!name || !email || !subject || !message) {
+  toast(window.t ? window.t("contact.errorRequired") : "Lütfen tüm alanları doldur.");
+  return;
+}
 
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = tr("contact.sending");
-      }
+if (submitBtn) {
+  submitBtn.disabled = true;
+  submitBtn.textContent = window.t
+    ? window.t("contact.sending")
+    : "Gönderiliyor...";
+}
 
       try {
         const res = await fetch("/api/send-mail", {
