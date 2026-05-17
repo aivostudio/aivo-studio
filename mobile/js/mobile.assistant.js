@@ -322,8 +322,12 @@
     const runtime = readWindowRuntimeState();
     const domDetected = detectActiveAssistantModuleFromDOM();
 
-    const context = {
+      const context = {
       page: pathname,
+      language:
+        typeof window.AIVO_LANG === "string"
+          ? window.AIVO_LANG
+          : localStorage.getItem("aivo_mobile_language") || "tr",
       module: domDetected.module || "",
       intent: extraContext.intent || "",
       action: extraContext.action || "",
