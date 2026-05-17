@@ -1293,7 +1293,7 @@ if (shareBtn) {
           const data = await res.json();
           const stemsPredictionId = String(data.id || data.prediction_id || "");
 
-          if (!res.ok || !data || data.ok === false) {
+             if (!res.ok || !data || data.ok === false) {
             const refunded = await refundMobileMusicCredits(refundCtx, "mobile_music_stems_failed", {
               error: String(data?.error || "stems_start_failed"),
               job_id: stemsJobId
@@ -1301,8 +1301,14 @@ if (shareBtn) {
 
             if (statusEl) {
               statusEl.textContent = refunded
-                ? "Kanal ayırma başlatılamadı. Kredi iade edildi."
-                : "Kanal ayırma başlatılamadı.";
+                ? musicText(
+                    "Kanal ayırma başlatılamadı. Kredi iade edildi.",
+                    "Stem separation could not be started. Credits refunded."
+                  )
+                : musicText(
+                    "Kanal ayırma başlatılamadı.",
+                    "Stem separation could not be started."
+                  );
             }
 
             closeSheet();
@@ -1314,24 +1320,46 @@ if (shareBtn) {
 
             <div class="mobile-music-sheet-head">
               <div>
-                <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
-                <div class="mobile-music-sheet-title">İşlem başlatıldı</div>
+                <div class="mobile-music-sheet-kicker">
+                  ${musicText(
+                    "Kanal Ayırma",
+                    "Stem Separation"
+                  )}
+                </div>
+
+                <div class="mobile-music-sheet-title">
+                  ${musicText(
+                    "İşlem başlatıldı",
+                    "Process started"
+                  )}
+                </div>
               </div>
 
-              <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+              <button
+                class="mobile-music-sheet-close"
+                type="button"
+                aria-label="${musicText("Kapat", "Close")}"
+              >
                 ×
               </button>
             </div>
 
             <div class="mobile-music-confirm-text">
-              Kanal ayırma hazırlanıyor. Sonuçlar hazır olunca bu müzik kartında gösterilecek.
+              ${musicText(
+                "Kanal ayırma hazırlanıyor. Sonuçlar hazır olunca bu müzik kartında gösterilecek.",
+                "Stem separation is being prepared. Results will appear in this music card when ready."
+              )}
             </div>
           `;
 
           if (itemEl) {
             const subTextEl = itemEl.querySelector(".mobile-library-sub");
+
             if (subTextEl) {
-              subTextEl.textContent = "Kanallar hazırlanıyor";
+              subTextEl.textContent = musicText(
+                "Kanallar hazırlanıyor",
+                "Channels are being prepared"
+              );
             }
 
             itemEl.dataset.stemsStatus = "processing";
@@ -1341,11 +1369,19 @@ if (shareBtn) {
           }
 
           if (statusEl) {
-            statusEl.textContent = "Kanal ayırma başlatıldı.";
+            statusEl.textContent = musicText(
+              "Kanal ayırma başlatıldı.",
+              "Stem separation started."
+            );
           }
 
           if (window.toast?.success) {
-            window.toast.success("Kanal ayırma başlatıldı.");
+            window.toast.success(
+              musicText(
+                "Kanal ayırma başlatıldı.",
+                "Stem separation started."
+              )
+            );
           }
 
           pollMobileStemsPrediction(stemsPredictionId);
@@ -1358,8 +1394,14 @@ if (shareBtn) {
 
           if (statusEl) {
             statusEl.textContent = refunded
-              ? "Kanal ayırma bağlantı hatası. Kredi iade edildi."
-              : "Kanal ayırma bağlantı hatası.";
+              ? musicText(
+                  "Kanal ayırma bağlantı hatası. Kredi iade edildi.",
+                  "Stem separation connection error. Credits refunded."
+                )
+              : musicText(
+                  "Kanal ayırma bağlantı hatası.",
+                  "Stem separation connection error."
+                );
           }
 
           closeSheet();
