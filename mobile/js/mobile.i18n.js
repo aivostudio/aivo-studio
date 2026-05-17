@@ -520,7 +520,16 @@
       "cartoon.expressionExcited": "Heyecanlı",
       "cartoon.expressionCute": "Sevimli",
       "cartoon.expressionCalm": "Sakin",
-      "cartoon.expressionFunny": "Komik",
+    "cartoon.expressionFunny": "Komik",
+
+      "cartoon.credit10": "+10 Kredi",
+      "cartoon.selectImage": "Resim Seç",
+      "cartoon.noFile": "Dosya seçilmedi",
+
+      "cartoon.generateCharacter": "🧩 Karakter Oluştur (20 Kredi)",
+
+      "cartoon.myCharacters": "Karakterlerim",
+      "cartoon.noCharacters": "Henüz mobil karakter oluşturulmadı.",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -1053,7 +1062,16 @@
       "cartoon.expressionExcited": "Excited",
       "cartoon.expressionCute": "Cute",
       "cartoon.expressionCalm": "Calm",
-      "cartoon.expressionFunny": "Funny",
+     "cartoon.expressionFunny": "Funny",
+
+      "cartoon.credit10": "+10 Credits",
+      "cartoon.selectImage": "Select Image",
+      "cartoon.noFile": "No file selected",
+
+      "cartoon.generateCharacter": "🧩 Create Character (20 Credits)",
+
+      "cartoon.myCharacters": "My Characters",
+      "cartoon.noCharacters": "No mobile character has been created yet.",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
