@@ -1096,8 +1096,8 @@
         counterEl.textContent = String(String(scriptEl.value || "").length);
       }
 
-      if (state.script && hasLipsyncBadLanguage(state.script)) {
-        showMobileLipsyncToast("error", LIPSYNC_BAD_TEXT_MESSAGE);
+        if (state.script && hasLipsyncBadLanguage(state.script)) {
+        showMobileLipsyncToast("error", getLipsyncBadTextMessage());
       }
 
       syncGenerateButton();
