@@ -132,12 +132,33 @@
 
   function statusLabel(invoice){
     const status = String(invoice.status || "").toLowerCase();
+if (status === "paid" || status === "succeeded" || status === "success") {
+  return window.t ? window.t("invoices.statusPaid") : "Ödendi";
+}
 
-    if (status === "paid" || status === "succeeded" || status === "success") return "Ödendi";
-    if (status === "refunded" || status === "partial_refund" || status === "partially_refunded") return "İade Edildi";
-    if (status === "pending" || status === "open" || status === "processing") return "Beklemede";
-    if (status === "failed" || status === "error") return "Başarısız";
-    if (status === "canceled" || status === "cancelled") return "İptal";
+if (
+  status === "refunded" ||
+  status === "partial_refund" ||
+  status === "partially_refunded"
+) {
+  return window.t ? window.t("invoices.statusRefunded") : "İade Edildi";
+}
+
+if (
+  status === "pending" ||
+  status === "open" ||
+  status === "processing"
+) {
+  return window.t ? window.t("invoices.statusPending") : "Beklemede";
+}
+
+if (status === "failed" || status === "error") {
+  return window.t ? window.t("invoices.statusFailed") : "Başarısız";
+}
+
+if (status === "canceled" || status === "cancelled") {
+  return window.t ? window.t("invoices.statusCancelled") : "İptal";
+}
 
     return invoice.status || "-";
   }
