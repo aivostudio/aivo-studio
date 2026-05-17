@@ -977,31 +977,63 @@ if (shareBtn) {
         e.preventDefault();
         e.stopPropagation();
 
-        sheet.querySelector(".mobile-music-sheet").innerHTML = `
+          sheet.querySelector(".mobile-music-sheet").innerHTML = `
           <div class="mobile-music-sheet-handle"></div>
 
           <div class="mobile-music-sheet-head">
             <div>
-              <div class="mobile-music-sheet-kicker">Kanal Ayırma</div>
-              <div class="mobile-music-sheet-title">5 kredi kullanılacak</div>
+              <div class="mobile-music-sheet-kicker">
+                ${musicText(
+                  "Kanal Ayırma",
+                  "Stem Separation"
+                )}
+              </div>
+
+              <div class="mobile-music-sheet-title">
+                ${musicText(
+                  "5 kredi kullanılacak",
+                  "5 credits will be used"
+                )}
+              </div>
             </div>
 
-            <button class="mobile-music-sheet-close" type="button" aria-label="Kapat">
+            <button
+              class="mobile-music-sheet-close"
+              type="button"
+              aria-label="${musicText("Kapat", "Close")}"
+            >
               ×
             </button>
           </div>
 
           <div class="mobile-music-confirm-text">
-            Bu işlem başlamadan önce 5 kredi kullanır. Devam edilsin mi?
+            ${musicText(
+              "Bu işlem başlamadan önce 5 kredi kullanır. Devam edilsin mi?",
+              "This action uses 5 credits before starting. Continue?"
+            )}
           </div>
 
           <div class="mobile-music-confirm-actions">
-            <button class="mobile-music-confirm-cancel" type="button" data-mobile-sheet-action="cancel">
-              İptal
+            <button
+              class="mobile-music-confirm-cancel"
+              type="button"
+              data-mobile-sheet-action="cancel"
+            >
+              ${musicText(
+                "İptal",
+                "Cancel"
+              )}
             </button>
 
-            <button class="mobile-music-confirm-submit" type="button" data-mobile-sheet-action="confirm-stems">
-              Onayla (5 Kredi)
+            <button
+              class="mobile-music-confirm-submit"
+              type="button"
+              data-mobile-sheet-action="confirm-stems"
+            >
+              ${musicText(
+                "Onayla (5 Kredi)",
+                "Confirm (5 Credits)"
+              )}
             </button>
           </div>
         `;
