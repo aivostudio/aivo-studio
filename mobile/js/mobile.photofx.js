@@ -313,8 +313,15 @@
 
   function syncCreditButton(){
     if (!generateBtn) return;
-    generateBtn.textContent = "🎬 Klip Oluştur (" + computeCredit() + " Kredi)";
-    generateBtn.setAttribute("data-credit-cost", String(computeCredit()));
+
+    const creditCost = computeCredit();
+    const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+    const label = isEn
+      ? "🎬 Create Clip (" + creditCost + " Credits)"
+      : "🎬 Klip Oluştur (" + creditCost + " Kredi)";
+
+    generateBtn.textContent = label;
+    generateBtn.setAttribute("data-credit-cost", String(creditCost));
   }
 
   function pickVideoUrl(data){
