@@ -219,17 +219,17 @@ const typeText = type === "refund"
 
         <div class="mobile-invoice-meta">
           <div>
-            <small>Tarih</small>
+           <small>${window.t ? window.t("invoices.date") : "Tarih"}</small>
             <strong>${escapeHtml(date)}</strong>
           </div>
 
           <div>
-            <small>Durum</small>
+           <small>${window.t ? window.t("invoices.status") : "Durum"}</small>
             <strong>${escapeHtml(status)}</strong>
           </div>
 
           <div>
-            <small>Tutar</small>
+          <small>${window.t ? window.t("invoices.amount") : "Tutar"}</small>
             <strong>${escapeHtml(amount)}</strong>
           </div>
         </div>
