@@ -373,11 +373,14 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       }
     });
   }
-    async function hydrateMobileAtmoLibrary(){
+  async function hydrateMobileAtmoLibrary(){
     if (!resultsEl) return;
 
     resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Atmosfer videoları yükleniyor...";
+    resultsEl.innerHTML = atmoText(
+      "Atmosfer videoları yükleniyor...",
+      "Atmosphere videos are loading..."
+    );
 
     try {
       const res = await fetch("/api/jobs/list?app=atmo", {
@@ -403,7 +406,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
       mobileAtmoJobs.length = 0;
 
-   rows.forEach(function(row){
+      rows.forEach(function(row){
         const outputs = Array.isArray(row.outputs) ? row.outputs : [];
 
         const firstVideoOutput = outputs.find(function(output){
@@ -437,22 +440,29 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
         if (!jobId || !videoUrl) return;
 
-   mobileAtmoJobs.push({
-  id: jobId,
-  scope: "library",
-  title: row.title || row.prompt || row.meta?.prompt || "Atmosfer video",
-  videoUrl: videoUrl,
-  status: "ready",
-  payload: row
-});
+        mobileAtmoJobs.push({
+          id: jobId,
+          scope: "library",
+          title: row.title || row.prompt || row.meta?.prompt || atmoText(
+            "Atmosfer video",
+            "Atmosphere video"
+          ),
+          videoUrl: videoUrl,
+          status: "ready",
+          payload: row
+        });
       });
 
       mobileAtmoViewMode = "library";
       renderMobileAtmoResults();
     } catch (err) {
       console.error("[MOBILE ATMO][HYDRATE ERROR]", err);
+
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Atmosfer videoları yüklenemedi.";
+      resultsEl.innerHTML = atmoText(
+        "Atmosfer videoları yüklenemedi.",
+        "Atmosphere videos could not be loaded."
+      );
     }
   }
   const state = {
