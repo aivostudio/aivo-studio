@@ -130,10 +130,16 @@ function clearMobileVideoLoading(){
     return total;
   }
 
-  function syncCreditButton(){
+   function syncCreditButton(){
     if (!generateBtn) return;
+
     const credit = computeCredit();
-    generateBtn.textContent = "🎬 Video Oluştur (" + credit + " Kredi)";
+    const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+    const label = isEn
+      ? "🎬 Create Video (" + credit + " Credits)"
+      : "🎬 Video Oluştur (" + credit + " Kredi)";
+
+    generateBtn.textContent = label;
     generateBtn.setAttribute("data-credit-cost", String(credit));
   }
 
