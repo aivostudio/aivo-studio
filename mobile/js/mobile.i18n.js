@@ -1532,10 +1532,25 @@
       el.setAttribute("placeholder", translate(key));
     });
 
-    scope.querySelectorAll("[data-i18n-label]").forEach(function(el){
+      scope.querySelectorAll("[data-i18n-label]").forEach(function(el){
       var key = el.getAttribute("data-i18n-label");
       if (!key) return;
       el.setAttribute("aria-label", translate(key));
+    });
+
+    scope.querySelectorAll("[data-i18n-attr]").forEach(function(el){
+      var raw = el.getAttribute("data-i18n-attr");
+      if (!raw) return;
+
+      raw.split(";").forEach(function(pair){
+        var parts = pair.split(":");
+        var attr = String(parts[0] || "").trim();
+        var key = String(parts.slice(1).join(":") || "").trim();
+
+        if (!attr || !key) return;
+
+        el.setAttribute(attr, translate(key));
+      });
     });
   }
 
