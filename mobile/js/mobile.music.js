@@ -1749,11 +1749,16 @@ miniAudioEl.play().then(function(){
 
       const data = await res.json().catch(function(){ return null; });
 
-      if (res.ok && data && data.ok) {
+         if (res.ok && data && data.ok) {
         await refreshMobileMusicCredits();
 
         if (data.refunded && window.toast?.error) {
-          window.toast.error("İşlem başarısız oldu, kredi iade edildi.");
+          window.toast.error(
+            musicText(
+              "İşlem başarısız oldu, kredi iade edildi.",
+              "Process failed, credits refunded."
+            )
+          );
         }
 
         return true;
@@ -1787,30 +1792,34 @@ miniAudioEl.play().then(function(){
             })
           : [];
 
-        if ((data.state === "completed" || data.status === "completed") && outputs.length) {
-       statusEl.textContent = "";
+           if ((data.state === "completed" || data.status === "completed") && outputs.length) {
+          statusEl.textContent = "";
 
-      if (window.toast?.success) {
-       window.toast.success("Müzik hazır.");
-      }
+          if (window.toast?.success) {
+            window.toast.success(
+              musicText(
+                "Müzik hazır.",
+                "Music is ready."
+              )
+            );
+          }
 
-             if (productionsSectionEl) {
-        productionsSectionEl.hidden = false;
-      }
+          if (productionsSectionEl) {
+            productionsSectionEl.hidden = false;
+          }
 
-       resultsEl.hidden = false;
-      resultsEl.className = "";
+          resultsEl.hidden = false;
+          resultsEl.className = "";
 
-     if (!resultsEl.querySelector(".aivo-player-card")) {
-      resultsEl.innerHTML = "";
-    }
+          if (!resultsEl.querySelector(".aivo-player-card")) {
+            resultsEl.innerHTML = "";
+          }
 
-       resultsEl.querySelectorAll(".aivo-player-card.is-pending").forEach(function(card){
-         if (card.dataset.mobilePollJobId === String(jobId || "")) {
-        card.remove();
-      }
-      });
-
+          resultsEl.querySelectorAll(".aivo-player-card.is-pending").forEach(function(card){
+            if (card.dataset.mobilePollJobId === String(jobId || "")) {
+              card.remove();
+            }
+          });
             outputs.forEach(function(output, index){
             const card = document.createElement("div");
             card.className = "aivo-player-card is-ready";
