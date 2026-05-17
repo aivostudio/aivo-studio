@@ -267,15 +267,19 @@ function pollMobileCartoonJob(jobId){
       );
       renderMobileCartoonResults();
 
-      setStatus(cartoonText(
-        "Çizgifilm video hazır.",
-        "Cartoon video is ready."
-      ));
-      clearMobileCartoonLoading();
-      mobileCartoonToast("success", cartoonText(
-        "Çizgifilm video hazır.",
-        "Cartoon video is ready."
-      ));
+    setStatus(cartoonText(
+  "Çizgifilm video hazır.",
+  "Cartoon video is ready."
+));
+
+mobileCartoonToast("success", cartoonText(
+  "Çizgifilm video hazır.",
+  "Cartoon video is ready."
+));
+
+setTimeout(function(){
+  clearMobileCartoonLoading();
+}, 800);
       return;
     }
 
