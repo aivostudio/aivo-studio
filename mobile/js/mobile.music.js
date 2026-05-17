@@ -487,9 +487,12 @@ if (deleteEl) {
           item.classList.add("is-playing");
           if (playEl) playEl.textContent = "Ⅱ";
 
-          loadMiniPlayer({
+                  loadMiniPlayer({
             title,
-            sub:"AIVO Music",
+            sub: musicText(
+              "AIVO Müzik",
+              "AIVO Music"
+            ),
             audioUrl: resolvedAudioUrl
           });
         });
