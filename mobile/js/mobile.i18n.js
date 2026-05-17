@@ -1811,13 +1811,26 @@
     return DEFAULT_LANG;
   }
 
-  function getSavedLang(){
-    try {
-      return normalizeLang(localStorage.getItem(STORAGE_KEY) || "");
-    } catch (err) {
-      return DEFAULT_LANG;
+function getSavedLang(){
+  try {
+    var saved = normalizeLang(localStorage.getItem(STORAGE_KEY) || "");
+
+    if (saved && saved !== DEFAULT_LANG) {
+      return saved;
     }
+
+    var deviceLang =
+      (navigator.language || navigator.userLanguage || "en").toLowerCase();
+
+    if (deviceLang.indexOf("tr") === 0) {
+      return "tr";
+    }
+
+    return "en";
+  } catch (err) {
+    return "en";
   }
+}
 
   function setSavedLang(lang){
     var nextLang = normalizeLang(lang);
