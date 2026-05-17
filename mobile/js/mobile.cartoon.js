@@ -1880,7 +1880,10 @@ function bindUploads(){
           libraryEl.insertAdjacentHTML("afterbegin", `
             <article class="mobile-cartoon-character-card" data-mobile-cartoon-character="${tempCharacterId}">
               <div class="mobile-cartoon-character-thumb">
-                <div class="mobile-cartoon-character-loading">${cartoonText("Hazırlanıyor...", "Preparing...")}</div>
+               <div
+  class="mobile-cartoon-character-loading"
+  aria-label="${cartoonText("Karakter hazırlanıyor", "Character is preparing")}"
+></div>
               </div>
               <div class="mobile-cartoon-character-name">${esc(state.characterPrompt || cartoonText("Karakter", "Character"))}</div>
             </article>
