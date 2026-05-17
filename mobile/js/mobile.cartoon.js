@@ -1303,7 +1303,10 @@ async function refreshMobileCartoonCredits(){
       const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
 
       mobileCreditEls.forEach(function(el){
-        el.textContent = "Kredi " + nextCredits;
+           el.textContent = cartoonText(
+          "Kredi " + nextCredits,
+          "Credits " + nextCredits
+        );
       });
     }
   } catch (err) {
