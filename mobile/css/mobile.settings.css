@@ -657,3 +657,28 @@
   width:25px;
   height:25px;
 }
+.mobile-settings-policy-row [data-mobile-current-language]{
+  flex:0 0 auto;
+  max-width:120px;
+  min-width:72px;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.92);
+  font-size:13px;
+  line-height:1;
+  font-weight:900;
+  text-align:center;
+  opacity:1;
+  white-space:nowrap;
+}
+
+.mobile-settings-policy-row[data-mobile-language-picker]{
+  cursor:pointer;
+}
+
+.mobile-settings-policy-row[data-mobile-language-picker] strong:last-child{
+  font-size:13px;
+  line-height:1;
+}
