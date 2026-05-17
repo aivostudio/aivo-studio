@@ -1631,9 +1631,16 @@ function bindUploads(){
 
       await setUploadState(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
 
-          if (state.characterImageUrl) {
-        setStatus("Referans resim yüklendi. Gelişmiş seçenekler sıfırlandı.");
-        mobileCartoonToast("success", "Referans resim eklendi · +10 kredi");
+      if (state.characterImageUrl) {
+        setStatus(cartoonText(
+          "Referans resim yüklendi. Gelişmiş seçenekler sıfırlandı.",
+          "Reference image uploaded. Advanced options were reset."
+        ));
+
+        mobileCartoonToast("success", cartoonText(
+          "Referans resim eklendi · +10 kredi",
+          "Reference image added · +10 credits"
+        ));
       }
     });
   }
@@ -1642,19 +1649,36 @@ function bindUploads(){
     characterImageClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-          clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
+
+      clearUpload(characterImageEl, characterImageClearEl, characterImageTextEl, "characterImageFile", "characterImageUrl");
       syncCartoonCredits();
-      setStatus("Karakter referans görseli kaldırıldı.");
-      mobileCartoonToast("success", "Referans resim kaldırıldı · -10 kredi");
+
+      setStatus(cartoonText(
+        "Karakter referans görseli kaldırıldı.",
+        "Character reference image removed."
+      ));
+
+      mobileCartoonToast("success", cartoonText(
+        "Referans resim kaldırıldı · -10 kredi",
+        "Reference image removed · -10 credits"
+      ));
     });
   }
 
   if (audioFileEl) {
     audioFileEl.addEventListener("change", async function(){
       await setUploadState(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
+
       if (state.audioUrl) {
-        setStatus("Müzik eklendi.");
-        mobileCartoonToast("success", "Müzik eklendi · +10 kredi");
+        setStatus(cartoonText(
+          "Müzik eklendi.",
+          "Music added."
+        ));
+
+        mobileCartoonToast("success", cartoonText(
+          "Müzik eklendi · +10 kredi",
+          "Music added · +10 credits"
+        ));
       }
     });
   }
@@ -1663,19 +1687,36 @@ function bindUploads(){
     audioClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-           clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
+
+      clearUpload(audioFileEl, audioClearEl, audioTextEl, "audioFile", "audioUrl");
       syncCartoonCredits();
-      setStatus("Müzik kaldırıldı.");
-      mobileCartoonToast("success", "Müzik kaldırıldı · -10 kredi");
+
+      setStatus(cartoonText(
+        "Müzik kaldırıldı.",
+        "Music removed."
+      ));
+
+      mobileCartoonToast("success", cartoonText(
+        "Müzik kaldırıldı · -10 kredi",
+        "Music removed · -10 credits"
+      ));
     });
   }
 
   if (logoFileEl) {
     logoFileEl.addEventListener("change", async function(){
       await setUploadState(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
+
       if (state.logoUrl) {
-        setStatus("Logo eklendi.");
-        mobileCartoonToast("success", "Logo eklendi · +10 kredi");
+        setStatus(cartoonText(
+          "Logo eklendi.",
+          "Logo added."
+        ));
+
+        mobileCartoonToast("success", cartoonText(
+          "Logo eklendi · +10 kredi",
+          "Logo added · +10 credits"
+        ));
       }
     });
   }
@@ -1684,21 +1725,43 @@ function bindUploads(){
     logoClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-          clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
+
+      clearUpload(logoFileEl, logoClearEl, logoTextEl, "logoFile", "logoUrl");
       syncCartoonCredits();
-      setStatus("Logo kaldırıldı.");
-      mobileCartoonToast("success", "Logo kaldırıldı · -10 kredi");
+
+      setStatus(cartoonText(
+        "Logo kaldırıldı.",
+        "Logo removed."
+      ));
+
+      mobileCartoonToast("success", cartoonText(
+        "Logo kaldırıldı · -10 kredi",
+        "Logo removed · -10 credits"
+      ));
     });
   }
 
   if (customFileEl) {
     customFileEl.addEventListener("change", async function(){
       await setUploadState(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
-          if (state.customCharacterUrl) {
+
+      if (state.customCharacterUrl) {
         syncMainCharacterDisabled();
-        setStatus("Kendi karakter görselin yüklendi. Hazır ana karakter kapatıldı.");
-        mobileCartoonToast("success", "Resim eklendi · +10 kredi");
-        mobileCartoonToast("info", "Fotoğraf yüklendiği için preset ana karakter kapatıldı");
+
+        setStatus(cartoonText(
+          "Kendi karakter görselin yüklendi. Hazır ana karakter kapatıldı.",
+          "Your custom character image was uploaded. Preset main character was disabled."
+        ));
+
+        mobileCartoonToast("success", cartoonText(
+          "Resim eklendi · +10 kredi",
+          "Image added · +10 credits"
+        ));
+
+        mobileCartoonToast("info", cartoonText(
+          "Fotoğraf yüklendiği için preset ana karakter kapatıldı",
+          "Preset main character was disabled because a photo was uploaded"
+        ));
       }
     });
   }
@@ -1707,11 +1770,20 @@ function bindUploads(){
     customClearEl.addEventListener("click", function(e){
       e.preventDefault();
       e.stopPropagation();
-       clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
+
+      clearUpload(customFileEl, customClearEl, customTextEl, "customCharacterFile", "customCharacterUrl");
       syncCartoonCredits();
       syncMainCharacterDisabled();
-      setStatus("Kendi karakter görselin kaldırıldı.");
-      mobileCartoonToast("success", "Resim kaldırıldı · -10 kredi");
+
+      setStatus(cartoonText(
+        "Kendi karakter görselin kaldırıldı.",
+        "Your custom character image was removed."
+      ));
+
+      mobileCartoonToast("success", cartoonText(
+        "Resim kaldırıldı · -10 kredi",
+        "Image removed · -10 credits"
+      ));
     });
   }
 }
