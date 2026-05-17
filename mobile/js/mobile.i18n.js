@@ -560,7 +560,20 @@
       "cartoon.actionJumping": "Zıplıyor",
       "cartoon.actionPlaying": "Oynuyor",
       "cartoon.actionLaughing": "Gülüyor",
-      "cartoon.actionDancing": "Dans Ediyor",
+    "cartoon.actionDancing": "Dans Ediyor",
+
+      "cartoon.duration": "Süre",
+      "cartoon.duration4": "4 sn",
+      "cartoon.duration6": "6 sn",
+      "cartoon.duration8": "8 sn",
+      "cartoon.duration10": "10 sn",
+      "cartoon.duration12": "12 sn",
+      "cartoon.duration15": "15 sn",
+
+      "cartoon.aspectRatio": "En / Boy Oranı",
+      "cartoon.ratioHorizontal": "Yatay (16:9)",
+      "cartoon.ratioVertical": "Dikey (9:16)",
+      "cartoon.ratioSquare": "Kare (1:1)",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -1133,7 +1146,20 @@
       "cartoon.actionJumping": "Jumping",
       "cartoon.actionPlaying": "Playing",
       "cartoon.actionLaughing": "Laughing",
-      "cartoon.actionDancing": "Dancing",
+    "cartoon.actionDancing": "Dancing",
+
+      "cartoon.duration": "Duration",
+      "cartoon.duration4": "4 sec",
+      "cartoon.duration6": "6 sec",
+      "cartoon.duration8": "8 sec",
+      "cartoon.duration10": "10 sec",
+      "cartoon.duration12": "12 sec",
+      "cartoon.duration15": "15 sec",
+
+      "cartoon.aspectRatio": "Aspect Ratio",
+      "cartoon.ratioHorizontal": "Horizontal (16:9)",
+      "cartoon.ratioVertical": "Vertical (9:16)",
+      "cartoon.ratioSquare": "Square (1:1)",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
