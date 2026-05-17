@@ -1,20 +1,19 @@
 <section id="mobilePhotoFxSection">
   <section class="mobile-photofx-panel">
     <div class="mobile-photofx-hero">
-      <div class="mobile-photofx-kicker">AIVO Mobile Studio</div>
-      <h3>AI Foto Efekt Video Clip</h3>
-      <p>Tek fotoğrafını kısa, hareketli ve efektli sosyal medya klibine dönüştür.</p>
+      <div class="mobile-photofx-kicker" data-i18n="home.eyebrow">AIVO Mobile Studio</div>
+      <h3 data-i18n="photofx.title">AI Foto Efekt Video Clip</h3>
+      <p data-i18n="photofx.subtitle">Tek fotoğrafını kısa, hareketli ve efektli sosyal medya klibine dönüştür.</p>
     </div>
 
-   
-
-   <h3 class="mobile-photofx-block-title">Prompt</h3>
-<p class="mobile-photofx-block-sub">Klibin atmosferini kısaca yaz.</p>
+    <h3 class="mobile-photofx-block-title" data-i18n="photofx.promptTitle">Prompt</h3>
+    <p class="mobile-photofx-block-sub" data-i18n="photofx.promptSub">Klibin atmosferini kısaca yaz.</p>
 
     <textarea
       id="mobilePhotoFxPrompt"
       class="field-textarea mobile-photofx-prompt"
       maxlength="5000"
+      data-i18n-placeholder="photofx.promptPlaceholder"
       placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera yaklaşması, hafif glow, sinematik geçişler..."
     ></textarea>
 
@@ -22,14 +21,14 @@
       <span id="mobilePhotoFxPromptCount">0</span> / 5000
     </div>
 
-   <h3 class="mobile-photofx-block-title">Efekt Stili</h3>
-<p class="mobile-photofx-block-sub">İstersen birden fazla efekt seçebilirsin. Her seçim +5 kredi ekler.</p>
+    <h3 class="mobile-photofx-block-title" data-i18n="photofx.effectStyle">Efekt Stili</h3>
+    <p class="mobile-photofx-block-sub" data-i18n="photofx.effectStyleSub">İstersen birden fazla efekt seçebilirsin. Her seçim +5 kredi ekler.</p>
 
-<div class="mobile-photofx-credit-row">
-  <span class="mobile-photofx-credit-badge">+5 Kredi / Efekt</span>
-</div>
+    <div class="mobile-photofx-credit-row">
+      <span class="mobile-photofx-credit-badge" data-i18n="photofx.creditPerEffect">+5 Kredi / Efekt</span>
+    </div>
 
-<div class="mobile-photofx-style-grid">
+    <div class="mobile-photofx-style-grid">
       <button class="mobile-photofx-chip" type="button" data-photofx-style="neon-pulse">Neon Pulse</button>
       <button class="mobile-photofx-chip" type="button" data-photofx-style="shake-edit">Shake Edit</button>
       <button class="mobile-photofx-chip" type="button" data-photofx-style="glitch-scan">Glitch Scan</button>
@@ -41,112 +40,113 @@
       <button class="mobile-photofx-chip" type="button" data-photofx-style="festival-laser">Festival Laser</button>
     </div>
 
-    <h3 class="mobile-photofx-block-title">Klip Ayarları</h3>
-    <p class="mobile-photofx-block-sub">Süre, oran, hareket ve efekt gücünü seç.</p>
+    <h3 class="mobile-photofx-block-title" data-i18n="photofx.clipSettings">Klip Ayarları</h3>
+    <p class="mobile-photofx-block-sub" data-i18n="photofx.clipSettingsSub">Süre, oran, hareket ve efekt gücünü seç.</p>
 
     <div class="mobile-photofx-settings-grid">
       <label class="mobile-photofx-field">
-        <span class="field-label">Klip Süresi</span>
+        <span class="field-label" data-i18n="photofx.duration">Klip Süresi</span>
         <select id="mobilePhotoFxDuration" class="field-input">
-          <option value="6" selected>6 saniye</option>
-          <option value="8">8 saniye</option>
-          <option value="10">10 saniye</option>
-          <option value="12">12 saniye</option>
-          <option value="14">14 saniye</option>
-          <option value="16">16 saniye</option>
-          <option value="18">18 saniye</option>
-          <option value="20">20 saniye</option>
+          <option value="6" selected data-i18n="photofx.duration6">6 saniye</option>
+          <option value="8" data-i18n="photofx.duration8">8 saniye</option>
+          <option value="10" data-i18n="photofx.duration10">10 saniye</option>
+          <option value="12" data-i18n="photofx.duration12">12 saniye</option>
+          <option value="14" data-i18n="photofx.duration14">14 saniye</option>
+          <option value="16" data-i18n="photofx.duration16">16 saniye</option>
+          <option value="18" data-i18n="photofx.duration18">18 saniye</option>
+          <option value="20" data-i18n="photofx.duration20">20 saniye</option>
         </select>
       </label>
 
       <label class="mobile-photofx-field">
-        <span class="field-label">En / Boy Oranı</span>
+        <span class="field-label" data-i18n="photofx.aspectRatio">En / Boy Oranı</span>
         <select id="mobilePhotoFxRatio" class="field-input">
-        <option value="9:16">Dikey (9:16)</option>
-       <option value="16:9" selected>Yatay (16:9)</option>
-       <option value="1:1">Kare (1:1)</option>
+          <option value="9:16" data-i18n="photofx.ratioVertical">Dikey (9:16)</option>
+          <option value="16:9" selected data-i18n="photofx.ratioHorizontal">Yatay (16:9)</option>
+          <option value="1:1" data-i18n="photofx.ratioSquare">Kare (1:1)</option>
         </select>
       </label>
 
       <label class="mobile-photofx-field">
-        <span class="field-label">Hareket Seviyesi</span>
+        <span class="field-label" data-i18n="photofx.motionLevel">Hareket Seviyesi</span>
         <select id="mobilePhotoFxMotionLevel" class="field-input">
-          <option value="soft">Yumuşak</option>
-          <option value="balanced" selected>Dengeli</option>
-          <option value="strong">Güçlü</option>
+          <option value="soft" data-i18n="photofx.motionSoft">Yumuşak</option>
+          <option value="balanced" selected data-i18n="photofx.motionBalanced">Dengeli</option>
+          <option value="strong" data-i18n="photofx.motionStrong">Güçlü</option>
         </select>
       </label>
 
       <label class="mobile-photofx-field">
-        <span class="field-label">Efekt Gücü</span>
+        <span class="field-label" data-i18n="photofx.effectPower">Efekt Gücü</span>
         <select id="mobilePhotoFxEffectPower" class="field-input">
-          <option value="low">Hafif</option>
-          <option value="medium" selected>Orta</option>
-          <option value="high">Yüksek</option>
+          <option value="low" data-i18n="photofx.powerLow">Hafif</option>
+          <option value="medium" selected data-i18n="photofx.powerMedium">Orta</option>
+          <option value="high" data-i18n="photofx.powerHigh">Yüksek</option>
         </select>
       </label>
 
       <label class="mobile-photofx-field">
-        <span class="field-label">Renk Havası</span>
+        <span class="field-label" data-i18n="photofx.colorMood">Renk Havası</span>
         <select id="mobilePhotoFxColorMood" class="field-input">
-          <option value="original" selected>Orijinal</option>
-          <option value="cool">Soğuk</option>
-          <option value="warm">Sıcak</option>
-          <option value="neon">Neon</option>
-          <option value="dark">Karanlık</option>
-          <option value="cinematic">Sinematik</option>
+          <option value="original" selected data-i18n="photofx.colorOriginal">Orijinal</option>
+          <option value="cool" data-i18n="photofx.colorCool">Soğuk</option>
+          <option value="warm" data-i18n="photofx.colorWarm">Sıcak</option>
+          <option value="neon" data-i18n="photofx.colorNeon">Neon</option>
+          <option value="dark" data-i18n="photofx.colorDark">Karanlık</option>
+          <option value="cinematic" data-i18n="photofx.colorCinematic">Sinematik</option>
         </select>
       </label>
 
       <label class="mobile-photofx-field">
-        <span class="field-label">Geçiş Hızı</span>
+        <span class="field-label" data-i18n="photofx.transitionSpeed">Geçiş Hızı</span>
         <select id="mobilePhotoFxTransitionSpeed" class="field-input">
-          <option value="slow">Yavaş</option>
-          <option value="normal" selected>Normal</option>
-          <option value="fast">Hızlı</option>
+          <option value="slow" data-i18n="photofx.speedSlow">Yavaş</option>
+          <option value="normal" selected data-i18n="photofx.speedNormal">Normal</option>
+          <option value="fast" data-i18n="photofx.speedFast">Hızlı</option>
         </select>
       </label>
 
       <label class="mobile-photofx-field mobile-photofx-field-full">
-        <span class="field-label">Logo Yönü</span>
+        <span class="field-label" data-i18n="photofx.logoPosition">Logo Yönü</span>
         <select id="mobilePhotoFxLogoPosition" class="field-input">
-          <option value="top-left">Sol Üst</option>
-          <option value="top-right">Sağ Üst</option>
-          <option value="bottom-left">Sol Alt</option>
-          <option value="bottom-right" selected>Sağ Alt</option>
+          <option value="top-left" data-i18n="photofx.logoTopLeft">Sol Üst</option>
+          <option value="top-right" data-i18n="photofx.logoTopRight">Sağ Üst</option>
+          <option value="bottom-left" data-i18n="photofx.logoBottomLeft">Sol Alt</option>
+          <option value="bottom-right" selected data-i18n="photofx.logoBottomRight">Sağ Alt</option>
         </select>
       </label>
     </div>
 
- <div class="mobile-photofx-upload-grid mobile-photofx-upload-grid-extra">
-  <label class="mobile-photofx-upload-btn mobile-photofx-upload-image">
-    <input id="mobilePhotoFxImageFile" type="file" accept="image/*" hidden>
-    <span class="mobile-photofx-upload-icon" aria-hidden="true"></span>
-    <b>Referans</b>
-  </label>
+    <div class="mobile-photofx-upload-grid mobile-photofx-upload-grid-extra">
+      <label class="mobile-photofx-upload-btn mobile-photofx-upload-image">
+        <input id="mobilePhotoFxImageFile" type="file" accept="image/*" hidden>
+        <span class="mobile-photofx-upload-icon" aria-hidden="true"></span>
+        <b data-i18n="photofx.reference">Referans</b>
+      </label>
 
-  <label class="mobile-photofx-upload-btn mobile-photofx-upload-logo">
-    <input id="mobilePhotoFxLogoFile" type="file" accept="image/*" hidden>
-    <span class="mobile-photofx-upload-icon" aria-hidden="true"></span>
-    <b>Logo</b>
-  </label>
+      <label class="mobile-photofx-upload-btn mobile-photofx-upload-logo">
+        <input id="mobilePhotoFxLogoFile" type="file" accept="image/*" hidden>
+        <span class="mobile-photofx-upload-icon" aria-hidden="true"></span>
+        <b data-i18n="photofx.logo">Logo</b>
+      </label>
 
-  <label class="mobile-photofx-upload-btn mobile-photofx-upload-audio">
-    <input id="mobilePhotoFxAudioFile" type="file" accept="audio/*" hidden>
-    <span class="mobile-photofx-upload-icon" aria-hidden="true"></span>
-    <b>Audio</b>
-  </label>
-</div>
-    <button id="mobilePhotoFxGenerateBtn" class="generate-btn" type="button">
+      <label class="mobile-photofx-upload-btn mobile-photofx-upload-audio">
+        <input id="mobilePhotoFxAudioFile" type="file" accept="audio/*" hidden>
+        <span class="mobile-photofx-upload-icon" aria-hidden="true"></span>
+        <b data-i18n="photofx.audio">Audio</b>
+      </label>
+    </div>
+
+    <button id="mobilePhotoFxGenerateBtn" class="generate-btn" type="button" data-i18n="photofx.generate">
       🎬 Klip Oluştur (30 Kredi)
     </button>
 
     <div id="mobilePhotoFxStatus" class="mobile-status"></div>
   </section>
 
-  <h2 class="section-title">Son PhotoFX klipleri</h2>
+  <h2 class="section-title" data-i18n="photofx.latestTitle">Son PhotoFX klipleri</h2>
 
-  <div id="mobilePhotoFxResults" class="empty-card">
+  <div id="mobilePhotoFxResults" class="empty-card" data-i18n="photofx.empty">
     Henüz mobil PhotoFX klip başlatılmadı.
   </div>
 </section>
