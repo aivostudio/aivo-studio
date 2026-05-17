@@ -448,7 +448,7 @@
         job.status = "error";
         job.title = "Video çıktısı alınamadı";
         renderMobilePhotoFxResults();
-        setStatus("Video çıktısı alınamadı.");
+             setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Video output could not be received." : "Video çıktısı alınamadı.");
         clearMobilePhotoFxLoading();
 
         await refundMobilePhotoFxCredits(job.refundState, "mobile_photofx_ready_no_output", {
@@ -464,7 +464,7 @@
         job.status = "error";
         job.title = "PhotoFX klip oluşturulamadı";
         renderMobilePhotoFxResults();
-        setStatus("PhotoFX klip oluşturulamadı.");
+              setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip could not be created." : "PhotoFX klip oluşturulamadı.");
         clearMobilePhotoFxLoading();
 
         await refundMobilePhotoFxCredits(job.refundState, "mobile_photofx_poll_failed", {
@@ -491,7 +491,7 @@
         job.status = "error";
         job.title = "PhotoFX klip kontrol edilemedi";
         renderMobilePhotoFxResults();
-        setStatus("PhotoFX klip kontrol edilemedi.");
+             setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip could not be checked." : "PhotoFX klip kontrol edilemedi.");
         clearMobilePhotoFxLoading();
 
         await refundMobilePhotoFxCredits(job.refundState, "mobile_photofx_poll_exception", {
