@@ -73,8 +73,32 @@
     return String(value || "").trim();
   }
 
-  const LIPSYNC_BAD_TEXT_MESSAGE =
-    "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
+   function isMobileLipsyncEn(){
+    return String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+  }
+
+  function mobileLipsyncText(tr, en){
+    return isMobileLipsyncEn() ? en : tr;
+  }
+
+  function mobileLipsyncCreditsText(count){
+    return isMobileLipsyncEn()
+      ? count + " Credits"
+      : count + " Kredi";
+  }
+
+  function mobileLipsyncSecondsText(count){
+    return isMobileLipsyncEn()
+      ? count + " sec"
+      : count + " sn";
+  }
+
+  function getLipsyncBadTextMessage(){
+    return mobileLipsyncText(
+      "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.",
+      "Generation could not be started because this text contains inappropriate language. Please remove profanity, insults, or hateful content."
+    );
+  }
 
   const MOBILE_LIPSYNC_TOAST = {
     lastKey: "",
@@ -264,15 +288,21 @@
       raw.includes("bad_language_policy") ||
       raw.includes("uygunsuz dil")
     ) {
-      return LIPSYNC_BAD_TEXT_MESSAGE;
+      return getLipsyncBadTextMessage();
     }
 
     if (raw.includes("script_too_long")) {
-      return "Bu metin çok uzun. Lütfen daha kısa bir metin gir.";
+      return mobileLipsyncText(
+        "Bu metin çok uzun. Lütfen daha kısa bir metin gir.",
+        "This text is too long. Please enter a shorter script."
+      );
     }
 
     if (raw.includes("audio_too_long")) {
-      return "Ses dosyası en fazla 60 saniye olabilir.";
+      return mobileLipsyncText(
+        "Ses dosyası en fazla 60 saniye olabilir.",
+        "Audio files can be up to 60 seconds long."
+      );
     }
 
     if (
@@ -284,7 +314,10 @@
       raw.includes("kamu figürü") ||
       raw.includes("kamu figuru")
     ) {
-      return "Bu medya güvenlik politikası nedeniyle kullanılamaz.";
+      return mobileLipsyncText(
+        "Bu medya güvenlik politikası nedeniyle kullanılamaz.",
+        "This media cannot be used due to safety policy restrictions."
+      );
     }
 
     if (
@@ -292,18 +325,30 @@
       raw.includes("yetersiz") ||
       raw.includes("credit")
     ) {
-      return "Yetersiz kredi. Devam etmek için kredi yüklemelisin.";
+      return mobileLipsyncText(
+        "Yetersiz kredi. Devam etmek için kredi yüklemelisin.",
+        "Insufficient credits. Please purchase more credits to continue."
+      );
     }
 
     if (raw.includes("presign") || raw.includes("scan") || raw.includes("upload")) {
-      return "Yükleme sırasında sorun oluştu. Lütfen dosyayı kontrol edip tekrar dene.";
+      return mobileLipsyncText(
+        "Yükleme sırasında sorun oluştu. Lütfen dosyayı kontrol edip tekrar dene.",
+        "Upload failed. Please check your file and try again."
+      );
     }
 
     if (raw.includes("network") || raw.includes("failed to fetch")) {
-      return "Bağlantı sorunu oluştu. Lütfen tekrar dene.";
+      return mobileLipsyncText(
+        "Bağlantı sorunu oluştu. Lütfen tekrar dene.",
+        "Connection issue detected. Please try again."
+      );
     }
 
-    return safeText(err?.message || err?.detail || err) || "İşlem tamamlanamadı.";
+    return safeText(err?.message || err?.detail || err) || mobileLipsyncText(
+      "İşlem tamamlanamadı.",
+      "The operation could not be completed."
+    );
   }
 
   function setStatus(message){
@@ -354,9 +399,11 @@
           topCreditCountEl.textContent = String(nextCredits);
         }
 
-        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+              const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
         mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
+          el.textContent = isMobileLipsyncEn()
+            ? "Credits " + nextCredits
+            : "Kredi " + nextCredits;
         });
 
         if (
@@ -450,8 +497,14 @@
         data.ok &&
         (data.refunded || data.deduped || data.skipped)
       ) {
-        await refreshMobileLipsyncCredits();
-        showMobileLipsyncToast("error", "İşlem başarısız oldu, kredi iade edildi.");
+              await refreshMobileLipsyncCredits();
+        showMobileLipsyncToast(
+          "error",
+          mobileLipsyncText(
+            "İşlem başarısız oldu, kredi iade edildi.",
+            "The process failed, credits were refunded."
+          )
+        );
         return true;
       }
     } catch (err) {
@@ -466,12 +519,11 @@
     const hasSpeech = Boolean(safeText(state.script) || state.audioFile);
     const credits = calculateCredits();
     const policyBlocked = Boolean(safeText(state.script) && hasLipsyncBadLanguage(state.script));
-    const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
 
     if (policyBlocked) {
       generateBtn.disabled = true;
       generateBtn.classList.add("is-policy-blocked");
-      generateBtn.textContent = "Üretim Engellendi";
+      generateBtn.textContent = mobileLipsyncText("Üretim Engellendi", "Generation Blocked");
       return;
     }
 
@@ -479,13 +531,14 @@
     generateBtn.disabled = false;
 
     if (!hasSpeech) {
-      generateBtn.textContent = isEn ? "Create Lip Sync Video" : "Dudak Senkron Video Üret";
+      generateBtn.textContent = mobileLipsyncText("Dudak Senkron Video Üret", "Create Lip Sync Video");
       return;
     }
 
-    generateBtn.textContent = isEn
-      ? "Create Lip Sync Video (" + credits + " Credits)"
-      : "Dudak Senkron Video Üret (" + credits + " Kredi)";
+    generateBtn.textContent = mobileLipsyncText(
+      "Dudak Senkron Video Üret (" + credits + " Kredi)",
+      "Create Lip Sync Video (" + credits + " Credits)"
+    );
   }
 
   function isMobileLipsyncLibraryView(){
@@ -513,7 +566,10 @@
 
     if (!items.length) {
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Henüz dudak senkron video üretimi yok.";
+      resultsEl.innerHTML = mobileLipsyncText(
+        "Henüz dudak senkron video üretimi yok.",
+        "No lip sync video has been created yet."
+      );
       return;
     }
 
@@ -528,7 +584,7 @@
             ${
               ready
                 ? `<video class="mobile-lipsync-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
-                : `<div class="mobile-lipsync-video-loading"><span>Hazırlanıyor…</span></div>`
+                : `<div class="mobile-lipsync-video-loading"><span>${mobileLipsyncText("Hazırlanıyor…", "Preparing…")}</span></div>`
             }
 
             <div class="mobile-lipsync-video-actions">
@@ -546,7 +602,7 @@
             }
           </div>
 
-          <div class="mobile-lipsync-video-title">${esc(job.title || "Dudak senkron video")}</div>
+          <div class="mobile-lipsync-video-title">${esc(job.title || mobileLipsyncText("Dudak senkron video", "Lip sync video"))}</div>
         </article>
       `;
     }).join("");
@@ -584,7 +640,12 @@
           const isPlaying = !video.paused && !video.ended;
           btn.classList.toggle("is-playing", isPlaying);
           btn.setAttribute("data-playing", isPlaying ? "true" : "false");
-          btn.setAttribute("aria-label", isPlaying ? "Duraklat" : "Oynat");
+                btn.setAttribute(
+            "aria-label",
+            isPlaying
+              ? mobileLipsyncText("Duraklat", "Pause")
+              : mobileLipsyncText("Oynat", "Play")
+          );
         }
 
         video.onplay = syncPlayButton;
@@ -642,11 +703,11 @@
 
         const directUrl = String(job.videoUrl || "").split("#")[0];
 
-        const downloadUrl =
+              const downloadUrl =
           "/api/media/proxy?url=" +
           encodeURIComponent(directUrl) +
           "&filename=" +
-          encodeURIComponent("aivo-dudak-senkron-video.mp4");
+          encodeURIComponent("aivo-lip-sync-video.mp4");
 
         const a = document.createElement("a");
         a.href = downloadUrl;
@@ -670,8 +731,8 @@
         if (!job.videoUrl) return;
 
         if (navigator.share) {
-          navigator.share({
-            title: "AIVO Dudak Senkron Video",
+                  navigator.share({
+            title: mobileLipsyncText("AIVO Dudak Senkron Video", "AIVO Lip Sync Video"),
             url: job.videoUrl
           }).catch(function(){});
         } else if (navigator.clipboard) {
