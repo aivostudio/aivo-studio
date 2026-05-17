@@ -1322,7 +1322,8 @@
         const val = Number(speedEl.value || 1);
         state.voiceSpeed = Math.max(0.5, Math.min(1.5, val));
 
-           if (val < 0.9) speedLabelEl.textContent = mobileLipsyncText("Yavaş", "Slow");
+               if (speedLabelEl) {
+          if (val < 0.9) speedLabelEl.textContent = mobileLipsyncText("Yavaş", "Slow");
           else if (val > 1.1) speedLabelEl.textContent = mobileLipsyncText("Hızlı", "Fast");
           else speedLabelEl.textContent = mobileLipsyncText("Normal", "Normal");
         }
