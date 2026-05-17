@@ -1283,9 +1283,12 @@ miniAudioEl.play().then(function(){
           topCreditCountEl.textContent = String(nextCredits);
         }
 
-        const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
+              const mobileCreditEls = Array.from(document.querySelectorAll("[data-mobile-credit-balance]"));
         mobileCreditEls.forEach(function(el){
-          el.textContent = "Kredi " + nextCredits;
+          el.textContent = musicText(
+            "Kredi " + nextCredits,
+            "Credits " + nextCredits
+          );
         });
 
         if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
