@@ -823,7 +823,7 @@
           "Lip sync video is ready"
         );
 
-        if (jobId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
+       if (jobId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
           fetch("/api/lipsync/finalize", {
             method: "POST",
             credentials: "include",
