@@ -272,6 +272,45 @@ if (termsBtn) {
     e.preventDefault();
   });
 }
+     const languageBtn = qs("[data-mobile-language-picker]", root);
+
+if (languageBtn) {
+  const currentLanguageLabel = qs("[data-mobile-current-language]", root);
+
+  function hydrateLanguageLabel(){
+    const currentLang = String(window.AIVO_LANG || "tr").toLowerCase();
+
+    if (!currentLanguageLabel) return;
+
+    currentLanguageLabel.textContent =
+      currentLang === "en"
+        ? "English"
+        : "Türkçe";
+  }
+
+  hydrateLanguageLabel();
+
+  languageBtn.addEventListener("click", function(){
+    const currentLang = String(window.AIVO_LANG || "tr").toLowerCase();
+    const nextLang = currentLang === "tr" ? "en" : "tr";
+
+    if (typeof window.aivoSetLanguage === "function") {
+      window.aivoSetLanguage(nextLang);
+    }
+
+    hydrateLanguageLabel();
+
+    try {
+      if (window.mobileToast && typeof window.mobileToast.success === "function") {
+        window.mobileToast.success(window.t("toast.languageChanged"));
+      }
+    } catch (_) {}
+
+    setTimeout(function(){
+      window.location.reload();
+    }, 180);
+  });
+}
   }
 
   function mobileSettingsInit(){
