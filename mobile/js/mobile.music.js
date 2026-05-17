@@ -1170,8 +1170,14 @@ if (shareBtn) {
             const key = String(btn.dataset.stemKey || "");
             const url = pickStemUrl(key);
 
-            if (!url) {
-              if (statusEl) statusEl.textContent = "Bu kanal dosyası henüz bulunamadı.";
+                 if (!url) {
+              if (statusEl) {
+                statusEl.textContent = musicText(
+                  "Bu kanal dosyası henüz bulunamadı.",
+                  "This channel file was not found yet."
+                );
+              }
+
               return;
             }
 
