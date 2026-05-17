@@ -1016,9 +1016,9 @@ async function uploadMobilePhotoFxFile(file, kind){
             return item.id === tempJobId;
           });
 
-          if (job) {
+                   if (job) {
             job.status = "error";
-            job.title = "PhotoFX klip başlatılamadı";
+            job.title = isEn ? "PhotoFX clip could not be started" : "PhotoFX klip başlatılamadı";
           }
 
           renderMobilePhotoFxResults();
@@ -1055,10 +1055,10 @@ async function uploadMobilePhotoFxFile(file, kind){
           return item.id === tempJobId;
         });
 
-        if (job) {
-          job.status = "error";
-          job.title = "PhotoFX klip başlatılamadı";
-        }
+                if (job) {
+            job.status = "error";
+            job.title = isEn ? "PhotoFX clip could not be started" : "PhotoFX klip başlatılamadı";
+          }
 
         renderMobilePhotoFxResults();
              setStatus(isEn ? "PhotoFX clip could not be started." : "PhotoFX klip başlatılamadı.");
