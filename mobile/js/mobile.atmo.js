@@ -1258,7 +1258,7 @@ function setFileLabel(input, file){
   clearBtn.textContent = "×";
   label.appendChild(clearBtn);
 }
-    function bindFileClearButtons(){
+   function bindFileClearButtons(){
     root.addEventListener("click", function(e){
       const btn = e.target.closest("[data-mobile-atmo-clear-file]");
       if (!btn) return;
@@ -1286,18 +1286,36 @@ function setFileLabel(input, file){
       state[fileMapItem.target][fileMapItem.key] = null;
       state[fileMapItem.target][fileMapItem.urlKey] = "";
 
-               setFileLabel(input, null);
+      setFileLabel(input, null);
       syncMobileAtmoCreditButtons();
 
       if (fileMapItem.urlKey === "imageUrl") {
-        setStatus("Görsel kaldırıldı.");
-        mobileAtmoToast("success", "Görsel kaldırıldı");
+        setStatus(atmoText(
+          "Görsel kaldırıldı.",
+          "Image removed."
+        ));
+        mobileAtmoToast("success", atmoText(
+          "Görsel kaldırıldı.",
+          "Image removed."
+        ));
       } else if (fileMapItem.urlKey === "logoUrl") {
-        setStatus("Logo kaldırıldı.");
-        mobileAtmoToast("success", "Logo kaldırıldı · -10 kredi");
+        setStatus(atmoText(
+          "Logo kaldırıldı.",
+          "Logo removed."
+        ));
+        mobileAtmoToast("success", atmoText(
+          "Logo kaldırıldı · -10 kredi",
+          "Logo removed · -10 credits"
+        ));
       } else if (fileMapItem.urlKey === "audioUrl") {
-        setStatus("Müzik kaldırıldı.");
-        mobileAtmoToast("success", "Müzik kaldırıldı · -10 kredi");
+        setStatus(atmoText(
+          "Müzik kaldırıldı.",
+          "Music removed."
+        ));
+        mobileAtmoToast("success", atmoText(
+          "Müzik kaldırıldı · -10 kredi",
+          "Music removed · -10 credits"
+        ));
       }
     });
   }
@@ -1316,7 +1334,8 @@ function setFileLabel(input, file){
       if (!input) return;
 
       input.addEventListener("change", function(){
-              const file = input.files && input.files[0] ? input.files[0] : null;
+        const file = input.files && input.files[0] ? input.files[0] : null;
+
         state[item.target][item.key] = file;
         setFileLabel(input, file);
 
@@ -1327,73 +1346,117 @@ function setFileLabel(input, file){
               ? "logoUrl"
               : "audioUrl";
 
-              if (!file) {
+        if (!file) {
           state[item.target][urlKey] = "";
           syncMobileAtmoCreditButtons();
           return;
         }
-             setStatus("Dosya yükleniyor...");
-        mobileAtmoLoading("Dosya güvenlik kontrolünden geçiriliyor...");
+
+        setStatus(atmoText(
+          "Dosya yükleniyor...",
+          "File is uploading..."
+        ));
+
+        mobileAtmoLoading(atmoText(
+          "Dosya güvenlik kontrolünden geçiriliyor...",
+          "File is being checked for safety..."
+        ));
 
         uploadMobileAtmoFile(file, item.key)
-              .then(function(publicUrl){
-             clearMobileAtmoLoading();
-             state[item.target][urlKey] = publicUrl;
+          .then(function(publicUrl){
+            clearMobileAtmoLoading();
+
+            state[item.target][urlKey] = publicUrl;
             syncMobileAtmoCreditButtons();
 
             if (urlKey === "imageUrl") {
-              setStatus("Resim eklendi.");
-              mobileAtmoToast("success", "Resim eklendi");
+              setStatus(atmoText(
+                "Resim eklendi.",
+                "Image added."
+              ));
+              mobileAtmoToast("success", atmoText(
+                "Resim eklendi.",
+                "Image added."
+              ));
             } else if (urlKey === "logoUrl") {
-              setStatus("Logo eklendi.");
-              mobileAtmoToast("success", "Logo eklendi · +10 kredi");
+              setStatus(atmoText(
+                "Logo eklendi.",
+                "Logo added."
+              ));
+              mobileAtmoToast("success", atmoText(
+                "Logo eklendi · +10 kredi",
+                "Logo added · +10 credits"
+              ));
             } else if (urlKey === "audioUrl") {
-              setStatus("Müzik eklendi.");
-              mobileAtmoToast("success", "Müzik eklendi · +10 kredi");
+              setStatus(atmoText(
+                "Müzik eklendi.",
+                "Music added."
+              ));
+              mobileAtmoToast("success", atmoText(
+                "Müzik eklendi · +10 kredi",
+                "Music added · +10 credits"
+              ));
             }
           })
-     .catch(function(err){
-  console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
+          .catch(function(err){
+            console.error("[MOBILE ATMO][UPLOAD ERROR]", err);
 
-  clearMobileAtmoLoading();
+            clearMobileAtmoLoading();
 
-  state[item.target][urlKey] = "";
+            state[item.target][urlKey] = "";
 
-  syncMobileAtmoCreditButtons();
+            if (input) {
+              input.value = "";
+            }
 
-  const errText = String(
-    err?.message ||
-    err ||
-    ""
-  ).toLowerCase();
+            setFileLabel(input, null);
+            syncMobileAtmoCreditButtons();
 
-  const isPolicyBlocked =
-    errText.includes("media_policy") ||
-    errText.includes("public_figure") ||
-    errText.includes("public figure") ||
-    errText.includes("public_figure_image_blocked") ||
-    errText.includes("figure_image_blocked") ||
-    errText.includes("image_blocked") ||
-    errText.includes("celebrity") ||
-    errText.includes("protected_person") ||
-    errText.includes("kamu figürü") ||
-    errText.includes("kamu figuru") ||
-    errText.includes("tanınmış kişi") ||
-    errText.includes("taninmis kisi") ||
-    errText.includes("gerçek kişi") ||
-    errText.includes("gercek kisi") ||
-    errText.includes("impersonation") ||
-    errText.includes("blocked");
+            const errText = String(
+              err?.message ||
+              err ||
+              ""
+            ).toLowerCase();
 
-  if (isPolicyBlocked) {
-    setStatus("Bu görsel kullanılamaz.");
-    mobileAtmoToast("error", "Bu görsel kullanılamaz.");
-    return;
-  }
+            const isPolicyBlocked =
+              errText.includes("media_policy") ||
+              errText.includes("public_figure") ||
+              errText.includes("public figure") ||
+              errText.includes("public_figure_image_blocked") ||
+              errText.includes("figure_image_blocked") ||
+              errText.includes("image_blocked") ||
+              errText.includes("celebrity") ||
+              errText.includes("protected_person") ||
+              errText.includes("kamu figürü") ||
+              errText.includes("kamu figuru") ||
+              errText.includes("tanınmış kişi") ||
+              errText.includes("taninmis kisi") ||
+              errText.includes("gerçek kişi") ||
+              errText.includes("gercek kisi") ||
+              errText.includes("impersonation") ||
+              errText.includes("blocked");
 
-  setStatus("Dosya yüklenemedi.");
-  mobileAtmoToast("error", "Dosya yüklenemedi.");
-});
+            if (isPolicyBlocked) {
+              setStatus(atmoText(
+                "Bu görsel kullanılamaz.",
+                "This image cannot be used."
+              ));
+              mobileAtmoToast("error", atmoText(
+                "Bu görsel kullanılamaz.",
+                "This image cannot be used."
+              ));
+              return;
+            }
+
+            setStatus(atmoText(
+              "Dosya yüklenemedi.",
+              "File could not be uploaded."
+            ));
+            mobileAtmoToast("error", atmoText(
+              "Dosya yüklenemedi.",
+              "File could not be uploaded."
+            ));
+          });
       });
     });
   }
