@@ -1976,7 +1976,11 @@ const contactPanel = accountMount.querySelector("[data-mobile-account-contact]")
   try {
     const res = await fetch(policyUrl, { cache: "no-store" });
     if (!res.ok) throw new Error("policy_load_failed");
-    policyMount.innerHTML = await res.text();
+   policyMount.innerHTML = await res.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(policyMount);
+}
   } catch (err) {
     policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
   }
