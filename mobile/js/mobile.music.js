@@ -2058,31 +2058,59 @@ const isPolicyBlocked = blockedTerms.some(function(term){
 });
 
 if (isPolicyBlocked) {
-  statusEl.textContent = "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.";
+  statusEl.textContent = musicText(
+    "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.",
+    "Artist name, public figure, or imitation request detected."
+  );
 
   if (window.toast?.warning) {
-    window.toast.warning("Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.");
+    window.toast.warning(
+      musicText(
+        "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.",
+        "Artist name, public figure, or imitation request detected."
+      )
+    );
   }
 
   return;
 }
 
-   if (!prompt) {
-  statusEl.textContent = "Prompt yazmadan üretim başlatılamaz.";
+if (!prompt) {
+  statusEl.textContent = musicText(
+    "Prompt yazmadan üretim başlatılamaz.",
+    "Generation cannot start without a prompt."
+  );
 
   if (window.toast?.warning) {
-    window.toast.warning("Prompt yazmadan üretim başlatılamaz.");
+    window.toast.warning(
+      musicText(
+        "Prompt yazmadan üretim başlatılamaz.",
+        "Generation cannot start without a prompt."
+      )
+    );
   }
 
   return;
 }
 
 btn.disabled = true;
-btn.textContent = "Üretiliyor...";
-statusEl.textContent = "Müzik üretimi başlatılıyor...";
+btn.textContent = musicText(
+  "Üretiliyor...",
+  "Generating..."
+);
+
+statusEl.textContent = musicText(
+  "Müzik üretimi başlatılıyor...",
+  "Music generation is starting..."
+);
 
 if (window.toast?.loading) {
-  window.toast.loading("Müzik üretimi başlatılıyor...");
+  window.toast.loading(
+    musicText(
+      "Müzik üretimi başlatılıyor...",
+      "Music generation is starting..."
+    )
+  );
 }
 
     let refundCtx = null;
@@ -2091,7 +2119,12 @@ if (window.toast?.loading) {
       refundCtx = await consumeMobileMusicCredits();
 
       if (window.toast?.success) {
-        window.toast.success("2 kredi düşüldü");
+        window.toast.success(
+          musicText(
+            "2 kredi düşüldü",
+            "2 credits deducted"
+          )
+        );
       }
 
       const res = await fetch("/api/music/generate", {
@@ -2115,14 +2148,35 @@ if (window.toast?.loading) {
       if (!data || data.ok === false) {
         throw new Error(data && data.error ? data.error : "unknown_error");
       }
+      const jobId =
+        data.internal_job_id ||
+        data.db_job_id ||
+        data.provider_job_id ||
+        data.job_id ||
+        musicText(
+          "iş oluşturuldu",
+          "job created"
+        );
 
-      const jobId = data.internal_job_id || data.db_job_id || data.provider_job_id || data.job_id || "job oluşturuldu";
-      const pollJobId = data.provider_job_id || data.internal_job_id || data.db_job_id || data.job_id || jobId;
+      const pollJobId =
+        data.provider_job_id ||
+        data.internal_job_id ||
+        data.db_job_id ||
+        data.job_id ||
+        jobId;
 
-      statusEl.textContent = "Üretim kuyruğa alındı.";
+      statusEl.textContent = musicText(
+        "Üretim kuyruğa alındı.",
+        "Generation queued."
+      );
 
       if (window.toast?.success) {
-        window.toast.success("Üretim kuyruğa alındı.");
+        window.toast.success(
+          musicText(
+            "Üretim kuyruğa alındı.",
+            "Generation queued."
+          )
+        );
       }
 
       if (productionsSectionEl) {
@@ -2143,10 +2197,22 @@ if (window.toast?.loading) {
       resultsEl.hidden = false;
       resultsEl.className = "";
 
-      ["Orijinal", "Versiyon 2"].forEach(function(label, index){
+         [
+        musicText("Orijinal", "Original"),
+        musicText("Versiyon 2", "Version 2")
+      ].forEach(function(label, index){
+
+        const baseMusicTitle = title || musicText(
+          "Yeni müzik",
+          "New music"
+        );
+
         const cardTitle = index === 0
-          ? (title || "Yeni müzik")
-          : (title || "Yeni müzik") + " · Versiyon 2";
+          ? baseMusicTitle
+          : baseMusicTitle + " · " + musicText(
+              "Versiyon 2",
+              "Version 2"
+            );
 
         const card = document.createElement("div");
         card.className = "aivo-player-card is-pending";
@@ -2166,8 +2232,11 @@ if (window.toast?.loading) {
             <div class="aivo-player-title" style="font-size:14px;line-height:1.15;margin:0 0 5px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
               ${safe(cardTitle)}
             </div>
-            <div class="aivo-player-sub" style="font-size:11px;margin:0;color:#c084fc;animation:mobileBlink 1s ease-in-out infinite;text-shadow:0 0 12px rgba(192,132,252,.35);">
-              Hazırlanıyor
+                       <div class="aivo-player-sub" style="font-size:11px;margin:0;color:#c084fc;animation:mobileBlink 1s ease-in-out infinite;text-shadow:0 0 12px rgba(192,132,252,.35);">
+              ${musicText(
+                "Hazırlanıyor",
+                "Preparing"
+              )}
             </div>
           </div>
 
@@ -2212,16 +2281,31 @@ if (window.toast?.loading) {
         error: msg
       });
 
-      statusEl.textContent = refunded
-        ? "Müzik üretilemedi. Kredi iade edildi."
-        : "Müzik üretilemedi: " + msg;
+         statusEl.textContent = refunded
+        ? musicText(
+            "Müzik üretilemedi. Kredi iade edildi.",
+            "Music generation failed. Credits refunded."
+          )
+        : musicText(
+            "Müzik üretilemedi:",
+            "Music generation failed:"
+          ) + " " + msg;
 
       if (!refunded && window.toast?.error) {
-        window.toast.error("Müzik üretilemedi.");
+        window.toast.error(
+          musicText(
+            "Müzik üretilemedi.",
+            "Music generation failed."
+          )
+        );
       }
     } finally {
       btn.disabled = false;
-      btn.textContent = "Müzik Üret";
+
+      btn.textContent = musicText(
+        "Müzik Üret",
+        "Generate Music"
+      );
     }
   });
 })();
