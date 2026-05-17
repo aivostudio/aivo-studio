@@ -1483,8 +1483,11 @@ async function refundMobileCartoonCredits(refundCtx, reason, extraMeta){
     if (res.ok && data && data.ok) {
       await refreshMobileCartoonCredits();
 
-      if (data.refunded) {
-        mobileCartoonToast("success", "Kredi iade edildi.");
+         if (data.refunded) {
+        mobileCartoonToast("success", cartoonText(
+          "Kredi iade edildi.",
+          "Credits refunded."
+        ));
       }
 
       return true;
