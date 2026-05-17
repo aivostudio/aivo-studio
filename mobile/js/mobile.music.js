@@ -467,9 +467,12 @@ if (deleteEl) {
       });
 
     } catch (err) {
-      mobileMusicLibraryEl.innerHTML = `
+          mobileMusicLibraryEl.innerHTML = `
         <div class="empty-card">
-          Kütüphane yüklenemedi.
+          ${musicText(
+            "Kütüphane yüklenemedi.",
+            "Library could not be loaded."
+          )}
         </div>
       `;
     }
