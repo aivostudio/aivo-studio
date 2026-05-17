@@ -1950,6 +1950,27 @@ function setFileLabel(input, file){
     }
   }
 
+  function syncMobileAtmoLocalizedUi(){
+    syncMobileAtmoCreditButtons();
+
+    [
+      "#mobileAtmoImageFile",
+      "#mobileAtmoLogoFile",
+      "#mobileAtmoAudioFile",
+      "#mobileAtmoProImageFile",
+      "#mobileAtmoProLogoFile",
+      "#mobileAtmoProAudioFile"
+    ].forEach(function(selector){
+      const input = root.querySelector(selector);
+      if (!input) return;
+
+      const hasFile = Boolean(input.files && input.files[0]);
+      setFileLabel(input, hasFile ? input.files[0] : null);
+    });
+
+    renderMobileAtmoResults();
+  }
+
   bindModeTabs();
   bindBasicScenes();
   bindBasicEffects();
@@ -1959,12 +1980,17 @@ function setFileLabel(input, file){
   bindProDetails();
   bindProControls();
   bindFiles();
-    bindFileClearButtons();
+  bindFileClearButtons();
   bindGenerateButtons();
-   syncMobileAtmoCreditButtons();
- bindMobileAtmoResultActions();
+  bindMobileAtmoResultActions();
 
-    setMode("basic");
+  syncMobileAtmoLocalizedUi();
+
+  document.addEventListener("aivo:language-change", function(){
+    syncMobileAtmoLocalizedUi();
+  });
+
+  setMode("basic");
  
   window.mobileAtmoShowCurrent = function(){
   mobileAtmoViewMode = "current";
