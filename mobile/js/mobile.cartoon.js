@@ -1437,7 +1437,7 @@ async function refundMobileCartoonCredits(refundCtx, reason, extraMeta){
 function syncCartoonCredits(){
   const characterCredit = getCartoonCharacterCredit();
   const basicCredit = getCartoonBasicCredit();
-  const isEN = window.AIVO_LANG === "en";
+  const isEN = isCartoonEn();
 
   if (characterBtn) {
     characterBtn.textContent = isEN
