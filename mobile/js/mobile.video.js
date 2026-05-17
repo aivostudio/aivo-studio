@@ -50,74 +50,198 @@ const state = {
     return String(value || "").trim();
   }
 
-const MOBILE_VIDEO_TOAST = {
-  loadingId: null
-};
+  function isMobileVideoEn(){
+    return String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+  }
 
-function mobileVideoToast(type, message, options){
-  const text = safeText(message);
-  if (!text) return null;
+  function mobileVideoText(tr, en){
+    return isMobileVideoEn() ? en : tr;
+  }
 
-  try {
-    const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-    const fn = api && typeof api[type] === "function" ? api[type] : null;
+  function mobileVideoCreditsText(count){
+    return isMobileVideoEn()
+      ? count + " Credits"
+      : count + " Kredi";
+  }
 
-    if (fn) {
-      return fn.call(api, text, options || {});
+  const MOBILE_VIDEO_TOAST = {
+    lastKey: "",
+    lastAt: 0,
+    loadingId: null
+  };
+
+  function getMobileVideoToastApi(){
+    return (
+      window.mobileToast ||
+      window.MobileToast ||
+      window.AIVO_MOBILE_TOAST ||
+      window.aivoMobileToast ||
+      window.toast ||
+      window.AIVO_TOAST ||
+      null
+    );
+  }
+
+  function mobileVideoToast(type, message, options){
+    const text = safeText(message);
+    if (!text) return null;
+
+    const normalizedType = type === "danger" ? "error" : type || "info";
+    const key = normalizedType + ":" + text;
+    const now = Date.now();
+
+    if (
+      key === MOBILE_VIDEO_TOAST.lastKey &&
+      now - MOBILE_VIDEO_TOAST.lastAt < 1600
+    ) {
+      return null;
     }
 
-    if (api && typeof api.show === "function") {
-      return api.show({
-        type: type || "info",
-        message: text,
-        ...(options || {})
-      });
-    }
+    MOBILE_VIDEO_TOAST.lastKey = key;
+    MOBILE_VIDEO_TOAST.lastAt = now;
 
-    if (window.Toast && typeof window.Toast.show === "function") {
-      return window.Toast.show(text, type || "info");
-    }
-  } catch (err) {}
+    const api = getMobileVideoToastApi();
 
-  return null;
-}
+    try {
+      if (api) {
+        if (typeof api[normalizedType] === "function") {
+          return api[normalizedType](text, options || {});
+        }
 
-function mobileVideoLoading(message){
-  MOBILE_VIDEO_TOAST.loadingId = mobileVideoToast("loading", message, {
-    persist: true,
-    autoClose: false,
-    source: "mobile_video"
-  });
+        if (typeof api.show === "function") {
+          return api.show({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
 
-  return MOBILE_VIDEO_TOAST.loadingId;
-}
+        if (typeof api.push === "function") {
+          return api.push({
+            type: normalizedType,
+            message: text,
+            ...(options || {})
+          });
+        }
 
-function clearMobileVideoLoading(){
-  const api = window.mobileToast || window.toast || window.AIVO_TOAST;
-
-  try {
-    if (MOBILE_VIDEO_TOAST.loadingId && api) {
-      if (typeof api.dismiss === "function") {
-        api.dismiss(MOBILE_VIDEO_TOAST.loadingId);
-      } else if (typeof api.remove === "function") {
-        api.remove(MOBILE_VIDEO_TOAST.loadingId);
+        if (typeof api === "function") {
+          return api(text, normalizedType, options || {});
+        }
       }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        return window.Toast.show(text, normalizedType);
+      }
+    } catch (err) {
+      console.warn("[MOBILE VIDEO][TOAST FALLBACK]", err);
     }
-  } catch (err) {}
 
-  MOBILE_VIDEO_TOAST.loadingId = null;
-
-  if (generateBtn) {
-    generateBtn.disabled = false;
-    generateBtn.classList.remove("is-loading", "is-pressed");
-    generateBtn.removeAttribute("aria-busy");
-    syncCreditButton();
+    setStatus(text);
+    return null;
   }
-}
+
+  function mobileVideoLoading(message){
+    MOBILE_VIDEO_TOAST.loadingId = mobileVideoToast("loading", message, {
+      persist: true,
+      autoClose: false,
+      source: "mobile_video"
+    });
+
+    return MOBILE_VIDEO_TOAST.loadingId;
+  }
+
+  function clearMobileVideoLoading(){
+    const api = getMobileVideoToastApi();
+
+    try {
+      if (MOBILE_VIDEO_TOAST.loadingId && api) {
+        if (typeof api.dismiss === "function") {
+          api.dismiss(MOBILE_VIDEO_TOAST.loadingId);
+        } else if (typeof api.remove === "function") {
+          api.remove(MOBILE_VIDEO_TOAST.loadingId);
+        }
+      }
+    } catch (err) {}
+
+    MOBILE_VIDEO_TOAST.loadingId = null;
+
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.classList.remove("is-loading", "is-pressed");
+      generateBtn.removeAttribute("aria-busy");
+      syncCreditButton();
+    }
+  }
+
+  function mapMobileVideoErrorMessage(err){
+    const raw = String(
+      err?.message ||
+      err?.error ||
+      err?.detail ||
+      err ||
+      ""
+    ).toLowerCase();
+
+    if (
+      raw.includes("media_policy") ||
+      raw.includes("policy_reject") ||
+      raw.includes("public_figure") ||
+      raw.includes("public figure") ||
+      raw.includes("celebrity") ||
+      raw.includes("protected_person") ||
+      raw.includes("impersonation") ||
+      raw.includes("image_blocked") ||
+      raw.includes("blocked")
+    ) {
+      return mobileVideoText(
+        "Bu görsel güvenlik politikası nedeniyle kullanılamaz.",
+        "This image cannot be used due to safety policy restrictions."
+      );
+    }
+
+    if (
+      raw.includes("insufficient") ||
+      raw.includes("yetersiz") ||
+      raw.includes("credit")
+    ) {
+      return mobileVideoText(
+        "Yetersiz kredi. Devam etmek için kredi yüklemelisin.",
+        "Insufficient credits. Please purchase more credits to continue."
+      );
+    }
+
+    if (
+      raw.includes("presign") ||
+      raw.includes("scan") ||
+      raw.includes("upload") ||
+      raw.includes("r2")
+    ) {
+      return mobileVideoText(
+        "Yükleme sırasında sorun oluştu. Lütfen görseli kontrol edip tekrar dene.",
+        "Upload failed. Please check your image and try again."
+      );
+    }
+
+    if (
+      raw.includes("network") ||
+      raw.includes("failed to fetch")
+    ) {
+      return mobileVideoText(
+        "Bağlantı sorunu oluştu. Lütfen tekrar dene.",
+        "Connection issue detected. Please try again."
+      );
+    }
+
+    return safeText(err?.message || err?.detail || err) || mobileVideoText(
+      "İşlem tamamlanamadı.",
+      "The operation could not be completed."
+    );
+  }
+
   function setStatus(message){
-    if (statusEl) statusEl.textContent = safeText(message);
+    if (!statusEl) return;
+    statusEl.textContent = safeText(message);
   }
-
   function computeCredit(){
     const duration = String(state.duration || "5");
     let total = 20;
@@ -130,19 +254,18 @@ function clearMobileVideoLoading(){
     return total;
   }
 
-   function syncCreditButton(){
+  function syncCreditButton(){
     if (!generateBtn) return;
 
     const credit = computeCredit();
-    const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
-    const label = isEn
-      ? "🎬 Create Video (" + credit + " Credits)"
-      : "🎬 Video Oluştur (" + credit + " Kredi)";
 
-    generateBtn.textContent = label;
+    generateBtn.textContent = mobileVideoText(
+      "🎬 Video Oluştur (" + mobileVideoCreditsText(credit) + ")",
+      "🎬 Create Video (" + mobileVideoCreditsText(credit) + ")"
+    );
+
     generateBtn.setAttribute("data-credit-cost", String(credit));
   }
-
   function pickVideoUrl(data){
     return String(
       data.video_url ||
@@ -224,8 +347,11 @@ function clearMobileVideoLoading(){
       };
     });
 
-       if (!res.ok || !data || !data.ok) {
-      mobileVideoToast("warning", "Yetersiz kredi.");
+    if (!res.ok || !data || !data.ok) {
+      mobileVideoToast("warning", mobileVideoText(
+        "Yetersiz kredi. Krediler bölümüne yönlendiriliyorsun...",
+        "Insufficient credits. Redirecting you to Credits..."
+      ));
 
       location.hash = "#credits";
 
