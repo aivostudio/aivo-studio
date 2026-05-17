@@ -799,13 +799,13 @@ async function hydrateMobileCartoonCharacterLibrary(){
         return;
       }
 
-      const title = String(
+        const title = String(
         row.title ||
         row.name ||
         row.prompt ||
         row.meta?.name ||
         row.meta?.prompt ||
-        "Karakter"
+        cartoonText("Karakter", "Character")
       ).trim();
 
       libraryEl.insertAdjacentHTML("beforeend", `
