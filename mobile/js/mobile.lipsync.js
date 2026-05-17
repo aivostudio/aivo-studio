@@ -1716,9 +1716,9 @@
     generateBtn.addEventListener("click", async function(){
       clearMobileLipsyncLoading();
 
-      if (safeText(state.script) && hasLipsyncBadLanguage(state.script)) {
+          if (safeText(state.script) && hasLipsyncBadLanguage(state.script)) {
         syncGenerateButton();
-        showMobileLipsyncToast("error", LIPSYNC_BAD_TEXT_MESSAGE);
+        showMobileLipsyncToast("error", getLipsyncBadTextMessage());
         return;
       }
 
