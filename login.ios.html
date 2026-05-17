@@ -410,6 +410,7 @@
    </style>
 
   <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
+  <script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
 </head>
 
 <body>
@@ -422,27 +423,49 @@
   </a>
 </header>
 
-    <section class="mobile-login-hero">
-      <div class="mobile-login-badge">
-        <span class="mobile-login-dot"></span>
-        AIVO Mobile Studio
-      </div>
+<section class="mobile-login-hero">
+  <div class="mobile-login-badge">
+    <span class="mobile-login-dot"></span>
+    <span data-i18n="common.appName">
+      AIVO Mobile Studio
+    </span>
+  </div>
 
-      <h1>
-        Studio’ya <span class="mobile-login-grad">giriş.</span>
-      </h1>
+  <h1>
+    <span data-i18n="login.hero.before">
+      Studio’ya
+    </span>
 
-      <p>
-        Mobil üretim alanına devam etmek için giriş yap veya ücretsiz hesabını oluştur.
-      </p>
-    </section>
+    <span class="mobile-login-grad" data-i18n="login.hero.grad">
+      giriş.
+    </span>
+  </h1>
+
+  <p data-i18n="login.hero.subtitle">
+    Mobil üretim alanına devam etmek için giriş yap veya ücretsiz hesabını oluştur.
+  </p>
+</section>
 
     <section class="mobile-login-card is-login" id="mobileLoginCard">
-      <div class="mobile-login-tabs">
-        <button class="mobile-login-tab is-active" type="button" data-mode="login">Giriş Yap</button>
-        <button class="mobile-login-tab" type="button" data-mode="register">Kayıt Ol</button>
-      </div>
+     <div class="mobile-login-tabs">
+  <button
+    class="mobile-login-tab is-active"
+    type="button"
+    data-mode="login"
+    data-i18n="login.tab.login"
+  >
+    Giriş Yap
+  </button>
 
+  <button
+    class="mobile-login-tab"
+    type="button"
+    data-mode="register"
+    data-i18n="login.tab.register"
+  >
+    Kayıt Ol
+  </button>
+</div>
       
       <div class="mobile-login-sep"><span>VEYA EMAIL İLE DEVAM ET</span></div>
 
@@ -460,13 +483,35 @@
         </div>
 
         <div class="mobile-login-field">
-          <label for="mobileEmail">E-posta</label>
-          <input id="mobileEmail" name="email" type="email" placeholder="ornek@email.com" autocomplete="email" required>
+         <label for="mobileEmail" data-i18n="login.email">
+  E-posta
+</label>
+
+<input
+  id="mobileEmail"
+  name="email"
+  type="email"
+  placeholder="ornek@email.com"
+  data-i18n-placeholder="login.emailPlaceholder"
+  autocomplete="email"
+  required
+>
         </div>
 
         <div class="mobile-login-field">
-          <label for="mobilePassword">Şifre</label>
-          <input id="mobilePassword" name="password" type="password" placeholder="Şifreniz" autocomplete="current-password" required>
+         <label for="mobilePassword" data-i18n="login.password">
+  Şifre
+</label>
+
+<input
+  id="mobilePassword"
+  name="password"
+  type="password"
+  placeholder="Şifreniz"
+  data-i18n-placeholder="login.passwordPlaceholder"
+  autocomplete="current-password"
+  required
+>
         </div>
 
         <div class="mobile-login-field mobile-login-register-only">
@@ -488,17 +533,22 @@
           <span>Kullanım şartlarını kabul ediyorum</span>
         </label>
 
-        <button class="mobile-login-submit" type="submit" id="mobileSubmitBtn">
-          Giriş Yap
-        </button>
+        <button class="mobile-login-submit" type="submit" id="mobileSubmitBtn" data-i18n="login.submit.login">
+  Giriş Yap
+</button>
 
         <div class="mobile-login-message" id="mobileLoginMessage"></div>
       </form>
     </section>
 
     <div class="mobile-login-footer">
-      <span id="mobileFooterText">AIVO’da yeni misin?</span>
-      <button type="button" id="mobileSwitchBtn">Ücretsiz hesap oluştur →</button>
+     <span id="mobileFooterText" data-i18n="login.footer.new">
+  AIVO’da yeni misin?
+</span>
+
+<button type="button" id="mobileSwitchBtn" data-i18n="login.footer.create">
+  Ücretsiz hesap oluştur →
+</button>
     </div>
   </main>
 
@@ -564,10 +614,17 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
           tab.classList.toggle("is-active", tab.getAttribute("data-mode") === mode);
         });
 
-        submitBtn.textContent = mode === "login" ? "Giriş Yap" : "Hesap Oluştur";
-      
-        footerText.textContent = mode === "login" ? "AIVO’da yeni misin?" : "Zaten hesabın var mı?";
-        switchBtn.textContent = mode === "login" ? "Ücretsiz hesap oluştur →" : "Giriş yap →";
+       submitBtn.textContent = mode === "login"
+  ? window.t("login.submit.login")
+  : window.t("login.submit.register");
+
+footerText.textContent = mode === "login"
+  ? window.t("login.footer.new")
+  : window.t("login.footer.haveAccount");
+
+switchBtn.textContent = mode === "login"
+  ? window.t("login.footer.create")
+  : window.t("login.footer.login");
 
         password.setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
         setMessage("", "");
