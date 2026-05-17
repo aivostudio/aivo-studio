@@ -108,7 +108,7 @@
 }
 
 .mobile-photofx-upload-btn::after{
-  content:"Ücretsiz";
+  content:attr(data-badge);
   position:absolute;
   left:50%;
   top:-27px;
@@ -133,7 +133,6 @@
 
 .mobile-photofx-upload-logo::after,
 .mobile-photofx-upload-audio::after{
-  content:"+10 Kredi";
   color:#fff;
   background:
     radial-gradient(circle at 25% 18%, rgba(255,255,255,.28), transparent 34%),
@@ -144,7 +143,6 @@
     0 0 18px rgba(139,92,246,.30),
     0 8px 20px rgba(236,72,153,.18);
 }
-
 .mobile-photofx-upload-icon{
   width:30px;
   height:30px;
