@@ -435,6 +435,20 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     return String(value || "").trim();
   }
 
+  function isAtmoEn(){
+    return String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+  }
+
+  function atmoText(tr, en){
+    return isAtmoEn() ? en : tr;
+  }
+
+  function atmoCreditsText(count){
+    return isAtmoEn()
+      ? count + " Credits"
+      : count + " Kredi";
+  }
+
   const MOBILE_ATMO_TOAST = {
     lastKey: "",
     lastAt: 0,
@@ -519,7 +533,6 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
     return MOBILE_ATMO_TOAST.loadingId;
   }
-
   function resetMobileAtmoGenerateButtons(){
     [basicGenerateBtn, proGenerateBtn].forEach(function(btn){
       if (!btn) return;
