@@ -1128,6 +1128,16 @@ return;
     document.body.classList.add("mobile-sheet-open");
   }
 
+  function isMusicEn(){
+    return String(window.AIVO_LANG || "")
+      .toLowerCase()
+      .indexOf("en") === 0;
+  }
+
+  function musicText(tr, en){
+    return isMusicEn() ? en : tr;
+  }
+
   function safe(value){
     return String(value || "")
       .replace(/&/g, "&amp;")
