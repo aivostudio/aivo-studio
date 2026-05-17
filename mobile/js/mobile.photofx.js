@@ -301,7 +301,12 @@
         (data.refunded || data.deduped || data.skipped)
       ) {
         await refreshMobilePhotoFxCredits();
-        mobilePhotoFxToast("error", "İşlem başarısız oldu, kredi iade edildi.");
+             mobilePhotoFxToast(
+          "error",
+          String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+            ? "The process failed, credits were refunded."
+            : "İşlem başarısız oldu, kredi iade edildi."
+        );
         return true;
       }
     } catch (err) {
