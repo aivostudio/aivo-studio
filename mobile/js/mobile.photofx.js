@@ -979,7 +979,7 @@ async function uploadMobilePhotoFxFile(file, kind){
         id: tempJobId,
         scope: "current",
         status: "processing",
-        title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "PhotoFX klip",
+           title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || (isEn ? "PhotoFX clip" : "PhotoFX klip"),
         videoUrl: "",
         payload: payload,
         refundState: refundState
