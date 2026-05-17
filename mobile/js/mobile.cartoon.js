@@ -944,18 +944,15 @@ if (typeof toastApi[normalizedType] === "function") {
     return null;
   }
 
-  function mobileCartoonLoading(message){
-    clearMobileCartoonLoading({ keepButtons: true });
+function mobileCartoonLoading(message){
+  MOBILE_CARTOON_TOAST.loadingId = mobileCartoonToast("loading", message, {
+    persist: true,
+    autoClose: false,
+    source: "mobile_cartoon"
+  });
 
-    MOBILE_CARTOON_TOAST.loadingId = mobileCartoonToast("loading", message, {
-      persist: true,
-      autoClose: false,
-      source: "mobile_cartoon"
-    });
-
-    return MOBILE_CARTOON_TOAST.loadingId;
-  }
-
+  return MOBILE_CARTOON_TOAST.loadingId;
+}
   function resetMobileCartoonGenerateButtons(){
     [characterBtn, generateBtn].forEach(function(btn){
       if (!btn) return;
