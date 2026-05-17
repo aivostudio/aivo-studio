@@ -72,30 +72,32 @@
   }
 
   function getCoverStylePrompt(btn){
-    const style = String(btn && btn.getAttribute("data-style") || "").trim();
+    const key = String(
+      btn?.querySelector("[data-i18n]")?.getAttribute("data-i18n") || ""
+    ).trim();
 
     if (window.AIVO_LANG === "en") {
-      if (style === "Gerçekçi") {
+      if (key === "cover.styleRealistic") {
         return "Spotify album cover, realistic portrait, studio lighting, premium, sharp detail, 1:1";
       }
 
-      if (style === "Sanatsal") {
+      if (key === "cover.styleArtistic") {
         return "Artistic album cover, oil paint texture, dramatic lighting, deep colors, 1:1";
       }
 
-      if (style === "Çizgi Film") {
+      if (key === "cover.styleCartoon") {
         return "Cartoon album cover, vibrant colors, bold outline, fun character style, 1:1";
       }
 
-      if (style === "Soyut") {
+      if (key === "cover.styleAbstract") {
         return "Abstract album cover, geometric shapes, soft gradients, modern design, 1:1";
       }
 
-      if (style === "Fotoğrafik") {
+      if (key === "cover.stylePhoto") {
         return "Photographic album cover, cinematic lighting, depth of field, premium photography aesthetic, 1:1";
       }
 
-      if (style === "Anime") {
+      if (key === "cover.styleAnime") {
         return "Anime album cover, Japanese manga style, soft lighting, clean lines, 1:1";
       }
     }
