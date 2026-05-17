@@ -406,8 +406,10 @@
       "atmo.ratioVertical": "Dikey (9:16)",
       "atmo.ratioSquare": "Kare (1:1)",
 
-      "atmo.selectLogo": "Logo Seç",
+       "atmo.selectLogo": "Logo Seç",
       "atmo.selectAudio": "Audio Seç",
+      "atmo.badgeFree": "Ücretsiz",
+      "atmo.badgePlus10": "+10 Kredi",
 
       "atmo.generateBasic": "🎬 Atmosfer Video Oluştur (30 Kredi)",
 
@@ -1129,8 +1131,10 @@
       "atmo.ratioVertical": "Vertical (9:16)",
       "atmo.ratioSquare": "Square (1:1)",
 
-      "atmo.selectLogo": "Select Logo",
+          "atmo.selectLogo": "Select Logo",
       "atmo.selectAudio": "Select Audio",
+      "atmo.badgeFree": "Free",
+      "atmo.badgePlus10": "+10 Credits",
 
       "atmo.generateBasic": "🎬 Create Atmosphere Video (30 Credits)",
 
