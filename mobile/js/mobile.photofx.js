@@ -1273,7 +1273,12 @@ async function uploadMobilePhotoFxFile(file, kind){
         document.body.appendChild(a);
         a.click();
 
-        mobilePhotoFxToast("success", "İndirme başlatıldı.");
+            mobilePhotoFxToast(
+          "success",
+          String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+            ? "Download started."
+            : "İndirme başlatıldı."
+        );
 
         setTimeout(function(){
           try {
@@ -1294,7 +1299,12 @@ async function uploadMobilePhotoFxFile(file, kind){
           }).catch(function(){});
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(job.videoUrl).then(function(){
-            mobilePhotoFxToast("success", "Link kopyalandı.");
+                mobilePhotoFxToast(
+              "success",
+              String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+                ? "Link copied."
+                : "Link kopyalandı."
+            );
           }).catch(function(){});
         }
 
@@ -1304,7 +1314,12 @@ async function uploadMobilePhotoFxFile(file, kind){
       if (act === "delete") {
         mobilePhotoFxDeletedIds.add(id);
         renderMobilePhotoFxResults();
-        mobilePhotoFxToast("success", "Video silindi.");
+        mobilePhotoFxToast(
+          "success",
+          String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+            ? "Video deleted."
+            : "Video silindi."
+        );
         return;
       }
     });
