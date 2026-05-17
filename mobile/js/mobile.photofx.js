@@ -762,18 +762,20 @@ async function uploadMobilePhotoFxFile(file, kind){
 
         const exists = state.styles.includes(value);
 
+           const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+
         if (exists) {
           state.styles = state.styles.filter(function(item){
             return item !== value;
           });
           btn.classList.remove("is-active");
           btn.setAttribute("aria-pressed", "false");
-          mobilePhotoFxToast("success", value + " kaldırıldı · -5 kredi");
+          mobilePhotoFxToast("success", isEn ? value + " removed · -5 credits" : value + " kaldırıldı · -5 kredi");
         } else {
           state.styles.push(value);
           btn.classList.add("is-active");
           btn.setAttribute("aria-pressed", "true");
-          mobilePhotoFxToast("success", value + " seçildi · +5 kredi");
+          mobilePhotoFxToast("success", isEn ? value + " selected · +5 credits" : value + " seçildi · +5 kredi");
         }
 
         syncCreditButton();
