@@ -306,7 +306,53 @@
       "music.libraryTitle": "Müzik Kütüphanem",
       "music.libraryLoading": "Kütüphane yükleniyor...",
       "music.noMusicSelected": "Müzik seçilmedi",
-      "music.play": "Oynat",
+     "music.play": "Oynat",
+
+      "cover.title": "AI Kapak Üret",
+      "cover.subtitle": "Şarkın için premium kapak görselini mobilde oluştur.",
+      "cover.prompt": "Prompt",
+      "cover.promptPlaceholder": "Örn: Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer",
+      "cover.qualityLevel": "Kalite Seviyesi",
+      "cover.qualityArtist": "Artist",
+      "cover.qualityCinematic": "Cinematic",
+      "cover.credit6": "6 Kredi",
+      "cover.credit9": "9 Kredi",
+      "cover.styleOptions": "Stil Seçenekleri",
+
+      "cover.styleRealistic": "Gerçekçi",
+      "cover.styleRealisticSub": "Net, doğal ve yüksek detaylı kapaklar",
+
+      "cover.styleArtistic": "Sanatsal",
+      "cover.styleArtisticSub": "Doku, ışık ve derin renklerle eser hissi",
+
+      "cover.styleCartoon": "Çizgi Film",
+      "cover.styleCartoonSub": "Canlı tonlar ve karakter odaklı stil",
+
+      "cover.styleAbstract": "Soyut",
+      "cover.styleAbstractSub": "Geometrik formlar ve modern kompozisyon",
+
+      "cover.stylePhoto": "Fotoğrafik",
+      "cover.stylePhotoSub": "Sinematik ışık ve premium fotoğraf hissi",
+
+      "cover.styleAnime": "Anime",
+      "cover.styleAnimeSub": "Manga dokusu ve temiz çizgiler",
+
+      "cover.imageCount": "Görüntü Sayısı",
+      "cover.image1": "1 Görüntü",
+      "cover.image2": "2 Görüntü",
+      "cover.image4": "4 Görüntü",
+
+      "cover.aspectRatio": "En / Boy Oranı",
+      "cover.ratioSquare": "Kare (1:1)",
+      "cover.ratioVertical": "Dikey (9:16)",
+      "cover.ratioHorizontal": "Yatay (16:9)",
+
+      "cover.engineTitle": "AIVO Kapak Motoru",
+      "cover.requiredCredit": "Gerekli Kredi:",
+      "cover.engineDesc": "6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.",
+
+      "cover.generate": "🖼️ Kapak Üret (6 Kredi)",
+      "cover.empty": "Henüz mobil kapak üretimi başlatılmadı.",
 
       "empty.homeLoading": "Ana sayfa yükleniyor...",
       "empty.musicLoading": "Müzik modülü yükleniyor...",
@@ -625,7 +671,53 @@
       "music.libraryTitle": "My Music Library",
       "music.libraryLoading": "Loading library...",
       "music.noMusicSelected": "No music selected",
-      "music.play": "Play",
+    "music.play": "Play",
+
+      "cover.title": "Create AI Cover Art",
+      "cover.subtitle": "Generate premium cover artwork for your song on mobile.",
+      "cover.prompt": "Prompt",
+      "cover.promptPlaceholder": "E.g. mysterious woman walking in the night city, neon lights, cinematic atmosphere",
+      "cover.qualityLevel": "Quality Level",
+      "cover.qualityArtist": "Artist",
+      "cover.qualityCinematic": "Cinematic",
+      "cover.credit6": "6 Credits",
+      "cover.credit9": "9 Credits",
+      "cover.styleOptions": "Style Options",
+
+      "cover.styleRealistic": "Realistic",
+      "cover.styleRealisticSub": "Sharp, natural and highly detailed covers",
+
+      "cover.styleArtistic": "Artistic",
+      "cover.styleArtisticSub": "Artwork feel with texture, lighting and deep colors",
+
+      "cover.styleCartoon": "Cartoon",
+      "cover.styleCartoonSub": "Vibrant tones and character-focused style",
+
+      "cover.styleAbstract": "Abstract",
+      "cover.styleAbstractSub": "Geometric forms and modern composition",
+
+      "cover.stylePhoto": "Photographic",
+      "cover.stylePhotoSub": "Cinematic lighting and premium photography feel",
+
+      "cover.styleAnime": "Anime",
+      "cover.styleAnimeSub": "Manga texture and clean lines",
+
+      "cover.imageCount": "Image Count",
+      "cover.image1": "1 Image",
+      "cover.image2": "2 Images",
+      "cover.image4": "4 Images",
+
+      "cover.aspectRatio": "Aspect Ratio",
+      "cover.ratioSquare": "Square (1:1)",
+      "cover.ratioVertical": "Vertical (9:16)",
+      "cover.ratioHorizontal": "Horizontal (16:9)",
+
+      "cover.engineTitle": "AIVO Cover Engine",
+      "cover.requiredCredit": "Required Credits:",
+      "cover.engineDesc": "1 cover is generated with 6 credits. Quality upgrades may consume more credits.",
+
+      "cover.generate": "🖼️ Generate Cover (6 Credits)",
+      "cover.empty": "No mobile cover generation has been started yet.",
 
       "empty.homeLoading": "Loading home...",
       "empty.musicLoading": "Loading music module...",
