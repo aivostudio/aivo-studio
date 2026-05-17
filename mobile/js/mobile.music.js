@@ -1192,8 +1192,14 @@ if (shareBtn) {
         e.preventDefault();
         e.stopPropagation();
 
-        if (!audioUrl) {
-          if (statusEl) statusEl.textContent = "Kanal ayırma için ses dosyası bulunamadı.";
+             if (!audioUrl) {
+          if (statusEl) {
+            statusEl.textContent = musicText(
+              "Kanal ayırma için ses dosyası bulunamadı.",
+              "Audio file for stem separation was not found."
+            );
+          }
+
           closeSheet();
           return;
         }
@@ -1201,23 +1207,40 @@ if (shareBtn) {
         let refundCtx = null;
 
         confirmStemsBtn.disabled = true;
-        confirmStemsBtn.textContent = "Kredi kontrol ediliyor...";
+
+        confirmStemsBtn.textContent = musicText(
+          "Kredi kontrol ediliyor...",
+          "Checking credits..."
+        );
 
         try {
           refundCtx = await consumeMobileMusicCreditsForStems();
 
           if (window.toast?.success) {
-            window.toast.success("5 kredi düşüldü");
+            window.toast.success(
+              musicText(
+                "5 kredi düşüldü",
+                "5 credits deducted"
+              )
+            );
           }
         } catch (creditErr) {
           console.warn("[MOBILE MUSIC][STEMS CREDIT ERROR]", creditErr);
 
-                if (statusEl) {
-            statusEl.textContent = "Yetersiz kredi.";
+          if (statusEl) {
+            statusEl.textContent = musicText(
+              "Yetersiz kredi.",
+              "Insufficient credits."
+            );
           }
 
           if (window.toast?.warning) {
-            window.toast.warning("Yetersiz kredi");
+            window.toast.warning(
+              musicText(
+                "Yetersiz kredi",
+                "Insufficient credits"
+              )
+            );
           }
 
           closeSheet();
@@ -1236,12 +1259,19 @@ if (shareBtn) {
           return;
         }
 
-        confirmStemsBtn.textContent = "Başlatılıyor...";
+        confirmStemsBtn.textContent = musicText(
+          "Başlatılıyor...",
+          "Starting..."
+        );
 
         if (itemEl) {
           const subTextEl = itemEl.querySelector(".mobile-library-sub");
+
           if (subTextEl) {
-            subTextEl.textContent = "Kanallar hazırlanıyor";
+            subTextEl.textContent = musicText(
+              "Kanallar hazırlanıyor",
+              "Channels are being prepared"
+            );
           }
 
           itemEl.dataset.stemsStatus = "processing";
