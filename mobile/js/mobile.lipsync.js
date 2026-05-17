@@ -815,12 +815,15 @@
 
       if (!job) return;
 
-         if (videoUrl) {
+          if (videoUrl) {
         job.videoUrl = videoUrl;
         job.status = "ready";
-        job.title = job.title || "Dudak senkron video hazır";
+        job.title = job.title || mobileLipsyncText(
+          "Dudak senkron video hazır",
+          "Lip sync video is ready"
+        );
 
-        if (jobId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
+        if (jobId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
           fetch("/api/lipsync/finalize", {
             method: "POST",
             credentials: "include",
@@ -836,17 +839,29 @@
         }
 
         renderMobileLipsyncResults("current");
-        setStatus("Dudak senkron video hazır.");
+        setStatus(mobileLipsyncText(
+          "Dudak senkron video hazır.",
+          "Lip sync video is ready."
+        ));
         clearMobileLipsyncLoading();
-        showMobileLipsyncToast("success", "Dudak senkron video hazır.");
+        showMobileLipsyncToast("success", mobileLipsyncText(
+          "Dudak senkron video hazır.",
+          "Lip sync video is ready."
+        ));
         return;
       }
 
          if (status.includes("fail") || status.includes("error") || status.includes("cancel")) {
         job.status = "error";
-        job.title = "Dudak senkron video oluşturulamadı";
+        job.title = mobileLipsyncText(
+          "Dudak senkron video oluşturulamadı",
+          "Lip sync video could not be created"
+        );
         renderMobileLipsyncResults("current");
-        setStatus("Dudak senkron video oluşturulamadı.");
+        setStatus(mobileLipsyncText(
+          "Dudak senkron video oluşturulamadı.",
+          "Lip sync video could not be created."
+        ));
         clearMobileLipsyncLoading();
 
         await refundMobileLipsyncCredits(job.refundState, "mobile_lipsync_poll_failed", {
@@ -874,8 +889,11 @@
   async function hydrateMobileLipsyncLibrary(){
     if (!resultsEl) return;
 
-    resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Dudak senkron videoları yükleniyor...";
+      resultsEl.className = "empty-card";
+    resultsEl.innerHTML = mobileLipsyncText(
+      "Dudak senkron videoları yükleniyor...",
+      "Lip sync videos are loading..."
+    );
 
     try {
       const res = await fetch("/api/jobs/list?app=lipsync", {
@@ -945,9 +963,12 @@
 
         if (!jobId) return;
 
-              mobileLipsyncLibraryJobs.push({
+            mobileLipsyncLibraryJobs.push({
           id: jobId,
-          title: row.title || row.prompt || row.meta?.prompt || "Dudak senkron video",
+          title: row.title || row.prompt || row.meta?.prompt || mobileLipsyncText(
+            "Dudak senkron video",
+            "Lip sync video"
+          ),
           videoUrl: videoUrl,
           status: "ready",
           payload: row
@@ -959,8 +980,11 @@
       }
     } catch (err) {
       console.error("[MOBILE LIPSYNC][HYDRATE ERROR]", err);
-      resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Dudak senkron videoları yüklenemedi.";
+           resultsEl.className = "empty-card";
+      resultsEl.innerHTML = mobileLipsyncText(
+        "Dudak senkron videoları yüklenemedi.",
+        "Lip sync videos could not be loaded."
+      );
     }
   }
 
