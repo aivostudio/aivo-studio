@@ -678,13 +678,15 @@ async function uploadMobilePhotoFxFile(file, kind){
         state[item.fileKey] = file;
         state[item.urlKey] = "";
 
-        setFileLabel(input, file, file ? "Yükleniyor..." : "");
+            const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+
+        setFileLabel(input, file, file ? (isEn ? "Uploading..." : "Yükleniyor...") : "");
         syncCreditButton();
 
         if (!file) return;
 
-               setStatus("Dosya yükleniyor...");
-        mobilePhotoFxLoading("Dosya güvenlik kontrolünden geçiriliyor...");
+        setStatus(isEn ? "File is uploading..." : "Dosya yükleniyor...");
+        mobilePhotoFxLoading(isEn ? "File is being checked for safety..." : "Dosya güvenlik kontrolünden geçiriliyor...");
 
         try {
           const publicUrl = await uploadMobilePhotoFxFile(file, item.kind);
@@ -694,14 +696,14 @@ async function uploadMobilePhotoFxFile(file, kind){
           syncCreditButton();
 
           if (item.urlKey === "imageUrl") {
-            setStatus("Resim eklendi.");
-            mobilePhotoFxToast("success", "Resim eklendi");
+            setStatus(isEn ? "Image added." : "Resim eklendi.");
+            mobilePhotoFxToast("success", isEn ? "Image added" : "Resim eklendi");
           } else if (item.urlKey === "logoUrl") {
-            setStatus("Logo eklendi.");
-            mobilePhotoFxToast("success", "Logo eklendi · +10 kredi");
+            setStatus(isEn ? "Logo added." : "Logo eklendi.");
+            mobilePhotoFxToast("success", isEn ? "Logo added · +10 credits" : "Logo eklendi · +10 kredi");
           } else if (item.urlKey === "audioUrl") {
-            setStatus("Müzik eklendi.");
-            mobilePhotoFxToast("success", "Müzik eklendi · +10 kredi");
+            setStatus(isEn ? "Music added." : "Müzik eklendi.");
+            mobilePhotoFxToast("success", isEn ? "Music added · +10 credits" : "Müzik eklendi · +10 kredi");
           }
         } catch (err) {
           console.error("[MOBILE PHOTOFX][UPLOAD ERROR]", err);
@@ -713,7 +715,7 @@ async function uploadMobilePhotoFxFile(file, kind){
 
           setFileLabel(input, null);
           syncCreditButton();
-          setStatus("Dosya yüklenemedi.");
+          setStatus(isEn ? "File could not be uploaded." : "Dosya yüklenemedi.");
 
           const errText = String(err?.message || err || "").toLowerCase();
         const isPolicyBlocked =
