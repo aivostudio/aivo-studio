@@ -624,14 +624,16 @@ async function uploadMobilePhotoFxFile(file, kind){
 
       input.value = "";
 
+        const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
+
       if (inputId === "mobilePhotoFxImageFile") {
         const hadImage = !!state.imageFile || !!state.imageUrl;
         state.imageFile = null;
         state.imageUrl = "";
         setFileLabel(input, null);
         syncCreditButton();
-        setStatus("Resim silindi.");
-        if (hadImage) mobilePhotoFxToast("success", "Resim silindi");
+        setStatus(isEn ? "Image removed." : "Resim silindi.");
+        if (hadImage) mobilePhotoFxToast("success", isEn ? "Image removed" : "Resim silindi");
         return;
       }
 
@@ -641,8 +643,8 @@ async function uploadMobilePhotoFxFile(file, kind){
         state.logoUrl = "";
         setFileLabel(input, null);
         syncCreditButton();
-        setStatus("Logo kaldırıldı.");
-        if (hadLogo) mobilePhotoFxToast("success", "Logo kaldırıldı · -10 kredi");
+        setStatus(isEn ? "Logo removed." : "Logo kaldırıldı.");
+        if (hadLogo) mobilePhotoFxToast("success", isEn ? "Logo removed · -10 credits" : "Logo kaldırıldı · -10 kredi");
         return;
       }
 
@@ -652,8 +654,8 @@ async function uploadMobilePhotoFxFile(file, kind){
         state.audioUrl = "";
         setFileLabel(input, null);
         syncCreditButton();
-        setStatus("Müzik kaldırıldı.");
-        if (hadAudio) mobilePhotoFxToast("success", "Müzik kaldırıldı · -10 kredi");
+        setStatus(isEn ? "Music removed." : "Müzik kaldırıldı.");
+        if (hadAudio) mobilePhotoFxToast("success", isEn ? "Music removed · -10 credits" : "Müzik kaldırıldı · -10 kredi");
         return;
       }
     });
