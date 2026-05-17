@@ -906,7 +906,8 @@ async function uploadMobilePhotoFxFile(file, kind){
   function bindGenerate(){
     if (!generateBtn) return;
 
-    generateBtn.addEventListener("click", async function(){
+      generateBtn.addEventListener("click", async function(){
+      const isEn = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0;
       const payload = buildPayload();
 
          if (!payload.image_url) {
