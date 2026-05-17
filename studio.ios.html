@@ -1288,7 +1288,11 @@ try {
     throw new Error("mobile_credits_html_load_failed");
   }
 
-  creditsMount.innerHTML = await creditsRes.text();
+   creditsMount.innerHTML = await creditsRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(creditsMount);
+  }
 
   const creditsScript = document.createElement("script");
   creditsScript.src = "/mobile/js/mobile.credits.js?v=1";
