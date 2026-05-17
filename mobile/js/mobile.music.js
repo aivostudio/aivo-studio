@@ -59,9 +59,12 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
   async function hydrateMusicLibrary(){
     if (!mobileMusicLibraryEl) return;
 
-    mobileMusicLibraryEl.innerHTML = `
+      mobileMusicLibraryEl.innerHTML = `
       <div class="empty-card">
-        Kütüphane yükleniyor...
+        ${musicText(
+          "Kütüphane yükleniyor...",
+          "Library is loading..."
+        )}
       </div>
     `;
 
@@ -84,9 +87,12 @@ const moodEl = document.getElementById("mobileMusicMood") || document.getElement
             : [];
 
       if (!rows.length) {
-        mobileMusicLibraryEl.innerHTML = `
+            mobileMusicLibraryEl.innerHTML = `
           <div class="empty-card">
-            Henüz müzik bulunamadı.
+            ${musicText(
+              "Henüz müzik bulunamadı.",
+              "No music found yet."
+            )}
           </div>
         `;
         return;
