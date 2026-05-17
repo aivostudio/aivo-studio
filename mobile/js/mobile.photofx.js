@@ -937,9 +937,8 @@ async function uploadMobilePhotoFxFile(file, kind){
  
            } catch (creditErr) {
         console.warn("[MOBILE PHOTOFX][CREDIT ERROR]", creditErr);
-        setStatus("Yetersiz kredi.");
-        mobilePhotoFxToast("warning", "Yetersiz kredi.");
-
+              setStatus(isEn ? "Insufficient credits." : "Yetersiz kredi.");
+        mobilePhotoFxToast("warning", isEn ? "Insufficient credits." : "Yetersiz kredi.");
         location.hash = "#credits";
 
         const creditsNav =
