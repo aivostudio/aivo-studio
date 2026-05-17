@@ -1158,8 +1158,14 @@
         photoDrop.classList.add("has-photo");
       }
 
-      setStatus("Fotoğraf güvenlik kontrolünden geçiriliyor...");
-      showMobileLipsyncLoading("Fotoğraf güvenlik kontrolünden geçiriliyor...");
+          setStatus(mobileLipsyncText(
+        "Fotoğraf güvenlik kontrolünden geçiriliyor...",
+        "Photo is being checked for safety..."
+      ));
+      showMobileLipsyncLoading(mobileLipsyncText(
+        "Fotoğraf güvenlik kontrolünden geçiriliyor...",
+        "Photo is being checked for safety..."
+      ));
 
       try {
         const uploadedUrl = await uploadMobileLipsyncFile(file, "image");
@@ -1168,8 +1174,14 @@
 
         clearMobileLipsyncLoading();
 
-        setStatus("Fotoğraf hazır.");
-        showMobileLipsyncToast("success", "Fotoğraf hazır.");
+        setStatus(mobileLipsyncText(
+          "Fotoğraf hazır.",
+          "Photo is ready."
+        ));
+        showMobileLipsyncToast("success", mobileLipsyncText(
+          "Fotoğraf hazır.",
+          "Photo is ready."
+        ));
       } catch (err) {
         console.error("[MOBILE LIPSYNC][PHOTO UPLOAD ERROR]", err);
 
@@ -1216,8 +1228,14 @@
           photoDrop.classList.remove("has-photo");
         }
 
-        setStatus("Fotoğraf kaldırıldı.");
-        showMobileLipsyncToast("info", "Fotoğraf kaldırıldı.");
+               setStatus(mobileLipsyncText(
+          "Fotoğraf kaldırıldı.",
+          "Photo removed."
+        ));
+        showMobileLipsyncToast("info", mobileLipsyncText(
+          "Fotoğraf kaldırıldı.",
+          "Photo removed."
+        ));
       });
     }
   }
@@ -1248,17 +1266,23 @@
 
           if (audioNameEl) {
         audioNameEl.innerHTML = `
-          <span class="mobile-lipsync-inline-audio">
+                  <span class="mobile-lipsync-inline-audio">
             <button type="button" data-mobile-lipsync-inline-audio-play>▶</button>
-            <strong>${file.name || "Ses dosyası seçildi"}</strong>
-            <em>${state.audioDurationSeconds || 0} sn</em>
+            <strong>${file.name || mobileLipsyncText("Ses dosyası seçildi", "Audio file selected")}</strong>
+            <em>${mobileLipsyncSecondsText(state.audioDurationSeconds || 0)}</em>
             <button type="button" data-mobile-lipsync-inline-audio-remove>🗑</button>
           </span>
         `;
       }
 
-      setStatus("Ses dosyası seçildi.");
-      showMobileLipsyncToast("success", "Ses dosyası seçildi.");
+          setStatus(mobileLipsyncText(
+        "Ses dosyası seçildi.",
+        "Audio file selected."
+      ));
+      showMobileLipsyncToast("success", mobileLipsyncText(
+        "Ses dosyası seçildi.",
+        "Audio file selected."
+      ));
       syncGenerateButton();
     });
 
@@ -1298,10 +1322,9 @@
         const val = Number(speedEl.value || 1);
         state.voiceSpeed = Math.max(0.5, Math.min(1.5, val));
 
-        if (speedLabelEl) {
-          if (val < 0.9) speedLabelEl.textContent = "Yavaş";
-          else if (val > 1.1) speedLabelEl.textContent = "Hızlı";
-          else speedLabelEl.textContent = "Normal";
+           if (val < 0.9) speedLabelEl.textContent = mobileLipsyncText("Yavaş", "Slow");
+          else if (val > 1.1) speedLabelEl.textContent = mobileLipsyncText("Hızlı", "Fast");
+          else speedLabelEl.textContent = mobileLipsyncText("Normal", "Normal");
         }
       });
     }
@@ -1324,8 +1347,11 @@
         const voiceKey = safeText(state.voiceKey || voiceSelectEl?.value || "tranquil_tulin");
         const audioUrl = VOICE_PREVIEW_R2_URLS[voiceKey] || "";
 
-        if (!audioUrl) {
-          setStatus("Bu ses için ön izleme bulunamadı.");
+              if (!audioUrl) {
+          setStatus(mobileLipsyncText(
+            "Bu ses için ön izleme bulunamadı.",
+            "Preview is not available for this voice."
+          ));
           return;
         }
 
@@ -1355,8 +1381,14 @@
           console.error("[MOBILE LIPSYNC][VOICE PREVIEW ERROR]", err);
           previewVoiceBtn.textContent = "▶";
           window.__AIVO_MOBILE_LIPSYNC_VOICE_PREVIEW_AUDIO__ = null;
-          setStatus("Ses ön izlemesi çalınamadı.");
-          showMobileLipsyncToast("error", "Ses ön izlemesi çalınamadı.");
+                   setStatus(mobileLipsyncText(
+            "Ses ön izlemesi çalınamadı.",
+            "Voice preview could not be played."
+          ));
+          showMobileLipsyncToast("error", mobileLipsyncText(
+            "Ses ön izlemesi çalınamadı.",
+            "Voice preview could not be played."
+          ));
         }
       });
     }
