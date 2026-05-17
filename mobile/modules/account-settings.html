@@ -330,32 +330,40 @@
   </div>
 </div>
 
-  <div class="mobile-settings-pane" data-mobile-settings-pane="security" hidden>
-    <div class="mobile-settings-card">
-      <div class="mobile-settings-card-head">
-        <div>
-          <h4>Hesap & Güvenlik</h4>
-          <p>Oturum süresi ve güvenlik tercihlerini yönet.</p>
-        </div>
-      </div>
+<div class="mobile-settings-pane" data-mobile-settings-pane="security" hidden>
+  <div class="mobile-settings-card">
+    <div class="mobile-settings-card-head">
+      <div>
+        <h4 data-i18n="settings.security.title">
+          Hesap & Güvenlik
+        </h4>
 
-      <div class="mobile-settings-field">
-        <label>Otomatik çıkış zamanı</label>
-        <select data-mobile-setting="security_session_timeout">
-          <option value="off">Kapalı</option>
-          <option value="15m">15 dakika</option>
-          <option value="30m">30 dakika</option>
-          <option value="1h">1 saat</option>
-          <option value="6h">6 saat</option>
-          <option value="24h">24 saat</option>
-        </select>
-      </div>
-
-      <div class="mobile-settings-note">
-        Aktif cihazlar ve 2 adımlı doğrulama mobilde yakında açılacak.
+        <p data-i18n="settings.security.subtitle">
+          Oturum süresi ve güvenlik tercihlerini yönet.
+        </p>
       </div>
     </div>
+
+    <div class="mobile-settings-field">
+      <label data-i18n="settings.security.sessionTimeout">
+        Otomatik çıkış zamanı
+      </label>
+
+      <select data-mobile-setting="security_session_timeout">
+        <option value="off" data-i18n="settings.security.timeoutOff">Kapalı</option>
+        <option value="15m" data-i18n="settings.security.timeout15m">15 dakika</option>
+        <option value="30m" data-i18n="settings.security.timeout30m">30 dakika</option>
+        <option value="1h" data-i18n="settings.security.timeout1h">1 saat</option>
+        <option value="6h" data-i18n="settings.security.timeout6h">6 saat</option>
+        <option value="24h" data-i18n="settings.security.timeout24h">24 saat</option>
+      </select>
+    </div>
+
+    <div class="mobile-settings-note" data-i18n="settings.security.note">
+      Aktif cihazlar ve 2 adımlı doğrulama mobilde yakında açılacak.
+    </div>
   </div>
+</div>
 
   <div class="mobile-settings-pane" data-mobile-settings-pane="data" hidden>
     <div class="mobile-settings-card">
