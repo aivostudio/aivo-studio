@@ -9,6 +9,15 @@
     info: "i",
     loading: "..."
   };
+    function tt(key, fallback){
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
+
+    return fallback;
+  }
 
   let root = null;
   let activeToast = null;
@@ -80,12 +89,12 @@
     toast.className = "mobile-toast";
     toast.dataset.type = data.type;
 
-    const title = data.title || (
-      data.type === "success" ? "Başarılı" :
-      data.type === "error" ? "Hata" :
-      data.type === "warning" ? "Uyarı" :
-      data.type === "loading" ? "İşleniyor" :
-      "Bilgi"
+     const title = data.title || (
+      data.type === "success" ? tt("toast.title.success", "Başarılı") :
+      data.type === "error" ? tt("toast.title.error", "Hata") :
+      data.type === "warning" ? tt("toast.title.warning", "Uyarı") :
+      data.type === "loading" ? tt("toast.title.loading", "İşleniyor") :
+      tt("toast.title.info", "Bilgi")
     );
 
     toast.innerHTML = `
