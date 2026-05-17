@@ -1,27 +1,27 @@
 <section id="mobileLipsyncSection" class="mobile-lipsync-section">
   <section class="mobile-lipsync-panel">
     <div class="mobile-lipsync-hero">
-      <div class="mobile-lipsync-kicker">AIVO Mobile Studio</div>
-      <h3>AI Dudak Senkron Video</h3>
-      <p>Fotoğraf yükle, metin yaz veya ses ekle. AIVO konuşan video oluştursun.</p>
+      <div class="mobile-lipsync-kicker" data-i18n="home.eyebrow">AIVO Mobile Studio</div>
+      <h3 data-i18n="lipsync.title">AI Dudak Senkron Video</h3>
+      <p data-i18n="lipsync.subtitle">Fotoğraf yükle, metin yaz veya ses ekle. AIVO konuşan video oluştursun.</p>
     </div>
 
     <div class="mobile-lipsync-card">
       <div class="mobile-lipsync-block">
         <div class="mobile-lipsync-block-head">
           <div>
-            <h4>Konuşma</h4>
-            <p>Metin yaz veya hazır ses dosyası kullan.</p>
+            <h4 data-i18n="lipsync.speechTitle">Konuşma</h4>
+            <p data-i18n="lipsync.speechSub">Metin yaz veya hazır ses dosyası kullan.</p>
           </div>
 
           <div class="mobile-lipsync-actions">
-          <button type="button" class="mobile-lipsync-icon-btn mobile-lipsync-record-btn" data-mobile-lipsync-record-open aria-label="Ses kaydet">
-          <span aria-hidden="true">Ses kaydet</span>
-         </button>
+            <button type="button" class="mobile-lipsync-icon-btn mobile-lipsync-record-btn" data-mobile-lipsync-record-open data-i18n-label="lipsync.recordAudio">
+              <span aria-hidden="true" data-i18n="lipsync.recordAudio">Ses kaydet</span>
+            </button>
 
-        <button type="button" class="mobile-lipsync-icon-btn mobile-lipsync-upload-btn" data-mobile-lipsync-upload-open aria-label="Ses yükle">
-        <span aria-hidden="true">Ses yükle</span>
-       </button>
+            <button type="button" class="mobile-lipsync-icon-btn mobile-lipsync-upload-btn" data-mobile-lipsync-upload-open data-i18n-label="lipsync.uploadAudio">
+              <span aria-hidden="true" data-i18n="lipsync.uploadAudio">Ses yükle</span>
+            </button>
 
             <input id="mobileLipsyncAudioFile" type="file" accept="audio/*" data-mobile-lipsync-audio hidden>
           </div>
@@ -32,11 +32,12 @@
           class="mobile-lipsync-textarea"
           data-mobile-lipsync-script
           maxlength="1200"
+          data-i18n-placeholder="lipsync.scriptPlaceholder"
           placeholder="Ne konuşturmak istiyorsun? Metni buraya yaz..."
         ></textarea>
 
         <div class="mobile-lipsync-meta">
-          <span id="mobileLipsyncAudioName" data-mobile-lipsync-audio-name>Ses yüklenmedi.</span>
+          <span id="mobileLipsyncAudioName" data-mobile-lipsync-audio-name data-i18n="lipsync.noAudio">Ses yüklenmedi.</span>
           <b><span id="mobileLipsyncCounter">0</span> / 1200</b>
         </div>
       </div>
@@ -46,15 +47,15 @@
           <input id="mobileLipsyncPhotoFile" type="file" accept="image/*" data-mobile-lipsync-photo hidden>
 
           <div class="mobile-lipsync-photo-empty" data-mobile-lipsync-photo-empty>
-           <span class="mobile-lipsync-photo-icon mobile-lipsync-photo-upload-icon" aria-hidden="true">
-          Fotoğraf yükle
-          </span>
-            <strong>Fotoğraf yükle</strong>
-            <small>Yüz net görünmeli • JPG/PNG • En az 300×300 px</small>
+            <span class="mobile-lipsync-photo-icon mobile-lipsync-photo-upload-icon" aria-hidden="true" data-i18n="lipsync.uploadPhoto">
+              Fotoğraf yükle
+            </span>
+            <strong data-i18n="lipsync.uploadPhoto">Fotoğraf yükle</strong>
+            <small data-i18n="lipsync.photoHint">Yüz net görünmeli • JPG/PNG • En az 300×300 px</small>
           </div>
 
           <img class="mobile-lipsync-photo-preview" data-mobile-lipsync-photo-preview alt="">
-          <button type="button" class="mobile-lipsync-photo-remove" data-mobile-lipsync-photo-remove aria-label="Fotoğrafı kaldır">×</button>
+          <button type="button" class="mobile-lipsync-photo-remove" data-mobile-lipsync-photo-remove data-i18n-label="lipsync.removePhoto">×</button>
         </label>
 
         <div class="mobile-lipsync-select-grid">
@@ -71,52 +72,52 @@
       </div>
 
       <div class="mobile-lipsync-voice-card">
-        <label class="mobile-lipsync-label" for="mobileLipsyncVoice">Ses Seçimi</label>
+        <label class="mobile-lipsync-label" for="mobileLipsyncVoice" data-i18n="lipsync.voiceSelect">Ses Seçimi</label>
 
         <div class="mobile-lipsync-voice-row">
           <select id="mobileLipsyncVoice" class="mobile-lipsync-voice-select" data-mobile-lipsync-voice-select>
-            <option value="tranquil_tulin" data-voice-name="Tranquil Tülin" selected>Ses: Tranquil Tülin</option>
-            <option value="iker" data-voice-name="Iker">Ses: Iker</option>
-            <option value="deep_dieter" data-voice-name="Deep Dieter">Ses: Deep Dieter</option>
-            <option value="william" data-voice-name="William Prescott">Ses: William Prescott</option>
-            <option value="menon" data-voice-name="Menon">Ses: Menon</option>
-            <option value="knox" data-voice-name="Knox">Ses: Knox</option>
-            <option value="aaron" data-voice-name="Aaron">Ses: Aaron</option>
-            <option value="lily" data-voice-name="Lily">Ses: Lily</option>
-            <option value="april" data-voice-name="April">Ses: April</option>
-            <option value="tiffany" data-voice-name="Tiffany">Ses: Tiffany</option>
-            <option value="brianna" data-voice-name="Brianna">Ses: Brianna</option>
-            <option value="evelyn" data-voice-name="Evelyn Harper">Ses: Evelyn Harper</option>
-            <option value="laurel" data-voice-name="Laurel">Ses: Laurel</option>
-            <option value="seena" data-voice-name="Seena Professional">Ses: Seena Professional</option>
+            <option value="tranquil_tulin" data-voice-name="Tranquil Tülin" selected data-i18n="lipsync.voiceTranquilTulin">Ses: Tranquil Tülin</option>
+            <option value="iker" data-voice-name="Iker" data-i18n="lipsync.voiceIker">Ses: Iker</option>
+            <option value="deep_dieter" data-voice-name="Deep Dieter" data-i18n="lipsync.voiceDeepDieter">Ses: Deep Dieter</option>
+            <option value="william" data-voice-name="William Prescott" data-i18n="lipsync.voiceWilliam">Ses: William Prescott</option>
+            <option value="menon" data-voice-name="Menon" data-i18n="lipsync.voiceMenon">Ses: Menon</option>
+            <option value="knox" data-voice-name="Knox" data-i18n="lipsync.voiceKnox">Ses: Knox</option>
+            <option value="aaron" data-voice-name="Aaron" data-i18n="lipsync.voiceAaron">Ses: Aaron</option>
+            <option value="lily" data-voice-name="Lily" data-i18n="lipsync.voiceLily">Ses: Lily</option>
+            <option value="april" data-voice-name="April" data-i18n="lipsync.voiceApril">Ses: April</option>
+            <option value="tiffany" data-voice-name="Tiffany" data-i18n="lipsync.voiceTiffany">Ses: Tiffany</option>
+            <option value="brianna" data-voice-name="Brianna" data-i18n="lipsync.voiceBrianna">Ses: Brianna</option>
+            <option value="evelyn" data-voice-name="Evelyn Harper" data-i18n="lipsync.voiceEvelyn">Ses: Evelyn Harper</option>
+            <option value="laurel" data-voice-name="Laurel" data-i18n="lipsync.voiceLaurel">Ses: Laurel</option>
+            <option value="seena" data-voice-name="Seena Professional" data-i18n="lipsync.voiceSeena">Ses: Seena Professional</option>
           </select>
 
-          <button type="button" class="mobile-lipsync-preview-btn" data-mobile-lipsync-preview-voice>
+          <button type="button" class="mobile-lipsync-preview-btn" data-mobile-lipsync-preview-voice data-i18n-label="lipsync.previewVoice">
             ▶
           </button>
         </div>
       </div>
 
       <div class="mobile-lipsync-settings-card">
-        <div class="mobile-lipsync-settings-title">Ses Ayarları</div>
-        <p>Sadece metin üretiminde geçerlidir.</p>
+        <div class="mobile-lipsync-settings-title" data-i18n="lipsync.voiceSettings">Ses Ayarları</div>
+        <p data-i18n="lipsync.voiceSettingsSub">Sadece metin üretiminde geçerlidir.</p>
 
         <label class="mobile-lipsync-range">
-          <span>Hız <b data-mobile-lipsync-speed-label>Normal</b></span>
+          <span><span data-i18n="lipsync.speed">Hız</span> <b data-mobile-lipsync-speed-label data-i18n="lipsync.speedNormal">Normal</b></span>
           <input type="range" min="0.5" max="1.5" step="0.05" value="1" data-mobile-lipsync-voice-speed>
         </label>
 
         <label class="mobile-lipsync-range">
-          <span>Ses Seviyesi <b data-mobile-lipsync-volume-label>100%</b></span>
+          <span><span data-i18n="lipsync.volume">Ses Seviyesi</span> <b data-mobile-lipsync-volume-label>100%</b></span>
           <input type="range" min="0.5" max="1.5" step="0.05" value="1" data-mobile-lipsync-voice-volume>
         </label>
       </div>
 
-      <div class="mobile-lipsync-credit-card">
+      <div class="mobile-lipsync-credit-card" data-i18n="lipsync.creditInfo">
         Kredi, konuşma süresine göre hesaplanır. Her başlayan 2 sn = 3 kredi. Tek videoda maksimum 60 sn üretilebilir.
       </div>
 
-      <button id="mobileLipsyncGenerateBtn" class="generate-btn mobile-lipsync-generate-btn" type="button" data-mobile-lipsync-generate>
+      <button id="mobileLipsyncGenerateBtn" class="generate-btn mobile-lipsync-generate-btn" type="button" data-mobile-lipsync-generate data-i18n="lipsync.generate">
         Dudak Senkron Video Üret
       </button>
 
@@ -124,9 +125,9 @@
     </div>
   </section>
 
-  <h2 class="section-title">Dudak Senkron Kütüphanem</h2>
+  <h2 class="section-title" data-i18n="lipsync.libraryTitle">Dudak Senkron Kütüphanem</h2>
 
-  <div id="mobileLipsyncResults" class="empty-card">
+  <div id="mobileLipsyncResults" class="empty-card" data-i18n="lipsync.empty">
     Henüz dudak senkron video üretimi yok.
   </div>
 </section>
