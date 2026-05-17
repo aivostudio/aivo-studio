@@ -915,7 +915,7 @@ function buildPayload(){
   function bindGenerate(){
     if (!generateBtn) return;
 
-     generateBtn.addEventListener("click", async function(){
+    generateBtn.addEventListener("click", async function(){
       if (state.mode === "image") {
         if (imagePromptEl) {
           state.imagePrompt = safeText(imagePromptEl.value);
@@ -939,9 +939,13 @@ function buildPayload(){
       const payload = buildPayload();
 
       if (!safeText(payload.prompt)) {
-        setStatus("Lütfen prompt yaz.");
+        const message = mobileVideoText(
+          "Lütfen prompt yaz.",
+          "Please enter a prompt."
+        );
 
-        mobileVideoToast("info", "Prompt yazmalısın");
+        setStatus(message);
+        mobileVideoToast("info", message);
 
         if (state.mode === "image") {
           if (imagePromptEl) imagePromptEl.focus();
@@ -952,63 +956,92 @@ function buildPayload(){
         return;
       }
 
-if (payload.mode === "image" && !payload.image_url) {
-  setStatus("Lütfen referans görsel yükle.");
-  mobileVideoToast("warning", "Lütfen referans görsel yükle.");
-  return;
-}
+      if (payload.mode === "image" && !payload.image_url) {
+        const message = mobileVideoText(
+          "Lütfen referans görsel yükle.",
+          "Please upload a reference image."
+        );
+
+        setStatus(message);
+        mobileVideoToast("warning", message);
+        return;
+      }
 
       const creditCost = Number(payload.credit_cost || computeCredit() || 0);
       const tempJobId = "mobile-video-" + Date.now();
+      const activeTitle = payload.prompt.split(/\s+/).slice(0, 4).join(" ") || mobileVideoText("Video", "Video");
 
-  mobileVideoCurrentJobs.length = 0;
+      mobileVideoCurrentJobs.length = 0;
 
-mobileVideoCurrentJobs.unshift({
-  id: tempJobId,
-  status: "processing",
-  title: state.prompt.split(/\s+/).slice(0, 4).join(" ") || "Video",
-  videoUrl: "",
-  payload: payload
-});
+      mobileVideoCurrentJobs.unshift({
+        id: tempJobId,
+        status: "processing",
+        title: activeTitle,
+        videoUrl: "",
+        payload: payload
+      });
 
-mobileVideoViewMode = "current";
+      mobileVideoViewMode = "current";
 
-if (resultsEl) {
-  resultsEl.hidden = false;
-}
-generateBtn.disabled = true;
-generateBtn.textContent = String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
-  ? "Generating..."
-  : "Üretiliyor...";
-generateBtn.classList.add("is-loading", "is-pressed");
-generateBtn.setAttribute("aria-busy", "true");
+      if (resultsEl) {
+        resultsEl.hidden = false;
+      }
 
-mobileVideoViewMode = "current";
-renderMobileVideoResults();
-setStatus("Video hazırlanıyor...");
-mobileVideoLoading("Video hazırlanıyor...");
+      generateBtn.disabled = true;
+      generateBtn.textContent = mobileVideoText("Üretiliyor...", "Generating...");
+      generateBtn.classList.add("is-loading", "is-pressed");
+      generateBtn.setAttribute("aria-busy", "true");
+
+      renderMobileVideoResults();
+      setStatus(mobileVideoText(
+        "Video hazırlanıyor...",
+        "Video is being prepared..."
+      ));
+      mobileVideoLoading(mobileVideoText(
+        "Video hazırlanıyor...",
+        "Video is being prepared..."
+      ));
 
       let consumed = null;
 
       try {
         consumed = await consumeMobileVideoCredits(creditCost);
-       if (!consumed) {
-  const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
-    return item.id === tempJobId;
-  });
 
-  if (job) {
-    job.status = "error";
-    job.title = "Yetersiz kredi";
-  }
+        if (!consumed) {
+          const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
+            return item.id === tempJobId;
+          });
 
-  renderMobileVideoResults();
-  setStatus("Yetersiz kredi.");
-  clearMobileVideoLoading();
-  return;
-}
+          if (job) {
+            job.status = "error";
+            job.title = mobileVideoText(
+              "Yetersiz kredi",
+              "Insufficient credits"
+            );
+          }
 
-        mobileVideoToast("success", creditCost + " kredi kullanıldı.");
+          renderMobileVideoResults();
+          setStatus(mobileVideoText(
+            "Yetersiz kredi.",
+            "Insufficient credits."
+          ));
+          clearMobileVideoLoading();
+          return;
+        }
+
+        mobileVideoToast("success", mobileVideoText(
+          creditCost + " kredi düşüldü.",
+          creditCost + " credits used."
+        ));
+
+        setStatus(mobileVideoText(
+          "Üretim başlatılıyor...",
+          "Generation is starting..."
+        ));
+        mobileVideoLoading(mobileVideoText(
+          "Üretim başlatılıyor...",
+          "Generation is starting..."
+        ));
 
         const res = await fetch("/api/providers/runway/video/create", {
           method: "POST",
@@ -1040,11 +1073,17 @@ mobileVideoLoading("Video hazırlanıyor...");
 
           if (job) {
             job.status = "error";
-            job.title = "Video başlatılamadı";
+            job.title = mobileVideoText(
+              "Video başlatılamadı",
+              "Video could not be started"
+            );
           }
 
           renderMobileVideoResults();
-          setStatus("Video başlatılamadı.");
+          setStatus(mobileVideoText(
+            "Video başlatılamadı.",
+            "Video could not be started."
+          ));
 
           await refundMobileVideoCredits({
             requestId: consumed.requestId,
@@ -1061,9 +1100,8 @@ mobileVideoLoading("Video hazırlanıyor...");
             }
           });
 
-         clearMobileVideoLoading();
-        mobileVideoToast("error", "Video başlatılamadı");
-         return;
+          clearMobileVideoLoading();
+          return;
         }
 
         const job = mobileVideoCurrentJobs.concat(mobileVideoLibraryJobs).find(function(item){
@@ -1080,8 +1118,14 @@ mobileVideoLoading("Video hazırlanıyor...");
         }
 
         renderMobileVideoResults();
-        setStatus("Video kuyruğa alındı.");
-        mobileVideoToast("success", "Video kuyruğa alındı");
+        setStatus(mobileVideoText(
+          "Video kuyruğa alındı.",
+          "Video has been queued."
+        ));
+        mobileVideoLoading(mobileVideoText(
+          "Video hazırlanıyor...",
+          "Video is being prepared..."
+        ));
 
         pollMobileVideoJob(realJobId, {
           requestId: consumed.requestId,
@@ -1097,11 +1141,13 @@ mobileVideoLoading("Video hazırlanıyor...");
 
         if (job) {
           job.status = "error";
-          job.title = "Video başlatılamadı";
+          job.title = mobileVideoText(
+            "Video başlatılamadı",
+            "Video could not be started"
+          );
         }
 
         renderMobileVideoResults();
-        setStatus("Video başlatılamadı.");
 
         if (consumed) {
           await refundMobileVideoCredits({
@@ -1120,17 +1166,22 @@ mobileVideoLoading("Video hazırlanıyor...");
           });
         }
 
-       clearMobileVideoLoading();
-mobileVideoToast("error", "Video oluşturma hatası");
+        const message = mapMobileVideoErrorMessage(err);
+
+        setStatus(message);
+        clearMobileVideoLoading();
+        mobileVideoToast("error", message);
       }
     });
   }
-
   async function hydrateMobileVideoLibrary(){
     if (!resultsEl) return;
 
     resultsEl.className = "empty-card";
-    resultsEl.innerHTML = "Videolar yükleniyor...";
+    resultsEl.innerHTML = mobileVideoText(
+      "Videolar yükleniyor...",
+      "Videos are loading..."
+    );
 
     try {
       const res = await fetch("/api/jobs/list?app=video", {
@@ -1216,13 +1267,13 @@ mobileVideoToast("error", "Video oluşturma hatası");
 
         if (!jobId || !videoUrl) return;
 
-     mobileVideoLibraryJobs.push({
-  id: jobId,
-  title: row.title || row.prompt || row.meta?.prompt || "Video",
-  videoUrl: videoUrl,
-  status: "ready",
-  payload: row
-});
+         mobileVideoLibraryJobs.push({
+          id: jobId,
+          title: row.title || row.prompt || row.meta?.prompt || mobileVideoText("Video", "Video"),
+          videoUrl: videoUrl,
+          status: "ready",
+          payload: row
+        });
       });
 
       mobileVideoViewMode = "library";
@@ -1230,7 +1281,10 @@ mobileVideoToast("error", "Video oluşturma hatası");
     } catch (err) {
       console.error("[MOBILE VIDEO][HYDRATE ERROR]", err);
       resultsEl.className = "empty-card";
-      resultsEl.innerHTML = "Videolar yüklenemedi.";
+      resultsEl.innerHTML = mobileVideoText(
+        "Videolar yüklenemedi.",
+        "Videos could not be loaded."
+      );
     }
   }
 
