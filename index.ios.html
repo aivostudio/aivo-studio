@@ -726,6 +726,14 @@ html.aivo-ios-leaving body{
     if (href.indexOf("/studio.ios.html") !== 0) return;
 
     armDarkBridge();
+    try {
+  var targetUrl = new URL(href, window.location.origin);
+  if (targetUrl.hash) {
+    e.preventDefault();
+    sessionStorage.setItem("aivo_ios_pending_hash", targetUrl.hash);
+    window.location.href = "/studio.ios.html";
+  }
+} catch (err) {}
   }, true);
 })();
 </script>
