@@ -425,10 +425,10 @@
         job.videoUrl = videoUrl;
         job.status = "ready";
         job.title = job.title || "PhotoFX klip hazır";
-        renderMobilePhotoFxResults();
-        setStatus("PhotoFX klip hazır.");
+               renderMobilePhotoFxResults();
+        setStatus(String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip is ready." : "PhotoFX klip hazır.");
         clearMobilePhotoFxLoading();
-        mobilePhotoFxToast("success", "Video hazır");
+        mobilePhotoFxToast("success", String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Video is ready" : "Video hazır");
         return;
       }
 
