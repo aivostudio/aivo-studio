@@ -1068,7 +1068,11 @@ let accountMount = document.getElementById("mobileAccountMount");
     throw new Error("mobile_home_html_load_failed");
   }
 
-  homeMount.innerHTML = await homeRes.text();
+ homeMount.innerHTML = await homeRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(homeMount);
+}
 } catch (err) {
   homeMount.innerHTML = '<div class="empty-card">Ana sayfa yüklenemedi.</div>';
 }
@@ -1107,7 +1111,11 @@ let accountMount = document.getElementById("mobileAccountMount");
         throw new Error("mobile_music_html_load_failed");
       }
 
-      musicMount.innerHTML = await musicRes.text();
+    musicMount.innerHTML = await musicRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(musicMount);
+}
       setTimeout(function(){
   const moodInput =
     document.getElementById("mobileMusicMood") ||
@@ -1140,7 +1148,11 @@ let accountMount = document.getElementById("mobileAccountMount");
         throw new Error("mobile_cover_html_load_failed");
       }
 
-      coverMount.innerHTML = await coverRes.text();
+     coverMount.innerHTML = await coverRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(coverMount);
+}
 
       const coverScript = document.createElement("script");
       coverScript.src = "/mobile/js/mobile.cover.js?v=1";
@@ -1158,7 +1170,11 @@ let accountMount = document.getElementById("mobileAccountMount");
     throw new Error("mobile_atmo_html_load_failed");
   }
 
- atmoMount.innerHTML = await atmoRes.text();
+atmoMount.innerHTML = await atmoRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(atmoMount);
+}
 
 const atmoScript = document.createElement("script");
 atmoScript.src = "/mobile/js/mobile.atmo.js?v=1";
@@ -1176,7 +1192,11 @@ document.body.appendChild(atmoScript);
     throw new Error("mobile_cartoon_html_load_failed");
   }
 
-  cartoonMount.innerHTML = await cartoonRes.text();
+ cartoonMount.innerHTML = await cartoonRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(cartoonMount);
+}
 
   const cartoonScript = document.createElement("script");
 cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
