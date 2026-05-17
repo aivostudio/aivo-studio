@@ -1933,16 +1933,19 @@ if (deleteBtn) {
 
           return;
         }
-      } catch (err) {
-       const pollingError = "Polling hatası: " + String(err && err.message ? err.message : err);
+          } catch (err) {
+        const pollingError = musicText(
+          "Polling hatası:",
+          "Polling error:"
+        ) + " " + String(err && err.message ? err.message : err);
 
-       statusEl.textContent = pollingError;
+        statusEl.textContent = pollingError;
 
-      if (window.toast?.error) {
-       window.toast.error(pollingError);
-     }
+        if (window.toast?.error) {
+          window.toast.error(pollingError);
+        }
 
-     return;
+        return;
       }
 
       if (tries < 40) {
