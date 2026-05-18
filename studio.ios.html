@@ -2532,28 +2532,107 @@ if (data.verified !== true) {
   });
 })();
 </script>
-  <script>
-(function AIVO_IOS_IAP_PENDING_SAFE_MODE(){
-  if (window.__AIVO_IOS_IAP_PENDING_SAFE_MODE__) return;
-  window.__AIVO_IOS_IAP_PENDING_SAFE_MODE__ = true;
+<script>
+(function AIVO_IOS_IAP_PURCHASE_BRIDGE(){
+  if (window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__) return;
+  window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__ = true;
 
-  function showIapPendingMessage(){
-  const lang =
-  String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
-  String(localStorage.getItem("aivo_lang") || "").toLowerCase().startsWith("en")
-    ? "en"
-    : "tr";
+  const AIVO_IOS_IAP_PRODUCTS = {
+    "25": "tr.aivo.credits.25",
+    "100": "tr.aivo.credits.100",
+    "200": "tr.aivo.credits.200",
+    "500": "tr.aivo.credits.500"
+  };
 
-const message = lang === "en"
-  ? "Apple In-App Purchase is being prepared. Credit purchases will be available inside the iOS app soon."
-  : "Apple uygulama içi satın alma hazırlanıyor. Kredi satın alma yakında iOS içinde aktif olacak.";
+  function getLang(){
+    return (
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
+      String(localStorage.getItem("aivo_lang") || "").toLowerCase().startsWith("en")
+    ) ? "en" : "tr";
+  }
 
-    if (window.mobileToast && typeof window.mobileToast.info === "function") {
-      window.mobileToast.info(message);
+  function showToast(type, trMessage, enMessage){
+    const message = getLang() === "en" ? enMessage : trMessage;
+
+    if (window.mobileToast && typeof window.mobileToast[type] === "function") {
+      window.mobileToast[type](message);
       return;
     }
 
     alert(message);
+  }
+
+  function findProductId(target){
+    const text = String(target.textContent || "").toLowerCase();
+    const dataPlan = String(
+      target.getAttribute("data-plan") ||
+      target.getAttribute("data-package") ||
+      target.getAttribute("data-credits") ||
+      ""
+    ).trim();
+
+    const combined = (dataPlan + " " + text).toLowerCase();
+
+    if (combined.includes("500")) return AIVO_IOS_IAP_PRODUCTS["500"];
+    if (combined.includes("200")) return AIVO_IOS_IAP_PRODUCTS["200"];
+    if (combined.includes("100")) return AIVO_IOS_IAP_PRODUCTS["100"];
+    if (combined.includes("25")) return AIVO_IOS_IAP_PRODUCTS["25"];
+
+    return "";
+  }
+
+  async function startIosIapPurchase(productId){
+    if (!productId) {
+      showToast(
+        "error",
+        "Paket bilgisi bulunamadı.",
+        "Package information could not be found."
+      );
+      return;
+    }
+
+    showToast(
+      "info",
+      "Apple ödeme ekranı hazırlanıyor.",
+      "Preparing Apple payment screen."
+    );
+
+    if (
+      window.Capacitor &&
+      window.Capacitor.Plugins &&
+      window.Capacitor.Plugins.AivoIAP &&
+      typeof window.Capacitor.Plugins.AivoIAP.purchase === "function"
+    ) {
+      try {
+        const result = await window.Capacitor.Plugins.AivoIAP.purchase({
+          productId: productId
+        });
+
+        console.log("[AIVO iOS IAP] purchase result", result);
+
+        showToast(
+          "success",
+          "Satın alma tamamlandı. Kredi doğrulaması hazırlanıyor.",
+          "Purchase completed. Credit verification is being prepared."
+        );
+      } catch (err) {
+        console.error("[AIVO iOS IAP] purchase failed", err);
+
+        showToast(
+          "error",
+          "Satın alma tamamlanamadı.",
+          "Purchase could not be completed."
+        );
+      }
+
+      return;
+    }
+
+    showToast(
+      "info",
+      "Apple In-App Purchase altyapısı hazırlanıyor. Product ID: " + productId,
+      "Apple In-App Purchase integration is being prepared. Product ID: " + productId
+    );
   }
 
   function isPaymentUrl(value){
@@ -2575,12 +2654,16 @@ const message = lang === "en"
     const url = typeof input === "string" ? input : (input && input.url);
 
     if (isPaymentUrl(url)) {
-      showIapPendingMessage();
+      showToast(
+        "info",
+        "iOS içinde ödeme Apple In-App Purchase ile yapılacak.",
+        "Payments inside iOS will use Apple In-App Purchase."
+      );
 
       return Promise.resolve(new Response(JSON.stringify({
         ok: false,
-        ios_iap_pending: true,
-        message: "Apple uygulama içi satın alma hazırlanıyor."
+        ios_iap_required: true,
+        message: "Apple In-App Purchase required."
       }), {
         status: 409,
         headers: {
@@ -2606,28 +2689,36 @@ const message = lang === "en"
     const action = target.getAttribute("formaction") || "";
     const text = String(target.textContent || "").toLowerCase();
 
-    const looksLikePayment =
-      insideCredits ||
-      isPaymentUrl(href) ||
-      isPaymentUrl(action) ||
-      text.includes("satın") ||
-      text.includes("paketi seç") ||
-      text.includes("kredi al") ||
-      text.includes("buy") ||
-      text.includes("purchase");
-
     const isSafeCreditsNav =
       href === "#credits" ||
       href === "/studio.ios.html#credits" ||
       href === "studio.ios.html#credits";
 
-    if (!looksLikePayment || isSafeCreditsNav) return;
+    if (isSafeCreditsNav) return;
+
+    const looksLikePackageButton =
+      insideCredits &&
+      (
+        text.includes("select package") ||
+        text.includes("paketi seç") ||
+        text.includes("satın") ||
+        text.includes("buy") ||
+        text.includes("purchase") ||
+        text.includes("kredi al")
+      );
+
+    const looksLikeExternalPayment =
+      isPaymentUrl(href) ||
+      isPaymentUrl(action);
+
+    if (!looksLikePackageButton && !looksLikeExternalPayment) return;
 
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-    showIapPendingMessage();
+    const productId = findProductId(target);
+    startIosIapPurchase(productId);
   }, true);
 })();
 </script>
