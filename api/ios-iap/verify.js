@@ -83,9 +83,15 @@ export default async function handler(req, res) {
     const existingPurchase = await kvGet(idempotencyKey).catch(() => null);
 
     if (existingPurchase) {
-      const parsed = typeof existingPurchase === "string"
-        ? JSON.parse(existingPurchase)
-        : existingPurchase;
+   let parsed = {};
+
+try {
+  parsed = typeof existingPurchase === "string"
+    ? JSON.parse(existingPurchase)
+    : existingPurchase;
+} catch (err) {
+  parsed = {};
+}
 
       return res.status(200).json({
         ok: true,
