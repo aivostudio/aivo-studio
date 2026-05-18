@@ -157,7 +157,7 @@ const purchaseFingerprint = transactionId && purchaseDate
         parsed = {};
       }
 
-  return res.status(200).json({
+return res.status(200).json({
   ok: true,
   provider: "apple_iap",
   verified: true,
@@ -167,11 +167,6 @@ const purchaseFingerprint = transactionId && purchaseDate
   creditsAdded: 0,
   creditsBefore: parsed.creditsBefore,
   creditsAfter: parsed.creditsAfter,
-  debug: {
-    purchaseDate,
-    purchaseFingerprint,
-    idempotencyKey
-  },
   message: "Purchase already processed.",
 });
     }
