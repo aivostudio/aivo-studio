@@ -421,9 +421,3 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
   justify-content:center;
   text-align:left;
 }
-.mobile-credits-hero h2{
-  background:linear-gradient(135deg,#38bdf8,#8b5cf6,#ec4899);
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
-}
