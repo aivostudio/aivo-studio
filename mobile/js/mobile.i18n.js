@@ -1090,7 +1090,7 @@
       "credits.pack.select": "Select package",
       "credits.infoTitle": "Information",
       "credits.infoText": "Credit packages are one-time purchases. After purchase, credits are instantly assigned to your account and can be used for music, cover and video generation in AIVO Studio.",
-          "credits.kvkkAccept": "I have read and accept the KVKK Disclosure Text.",
+        "credits.kvkkAccept": "I accept the Privacy Disclosure and KVKK notice.",
       "credits.kvkkHint": "You must confirm the KVKK consent to continue.",
       "credits.paymentLoading": "Preparing payment...",
       "credits.invalidPackage": "Invalid package selection.",
