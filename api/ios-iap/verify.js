@@ -6,7 +6,13 @@ const kvGet = kv.kvGet;
 const kvSet = kv.kvSet;
 
 function sha256(value) {
-  async function verifyAppleReceipt(receipt) {
+  return crypto
+    .createHash("sha256")
+    .update(String(value || ""))
+    .digest("hex");
+}
+
+async function verifyAppleReceipt(receipt) {
   const productionUrl = "https://buy.itunes.apple.com/verifyReceipt";
   const sandboxUrl = "https://sandbox.itunes.apple.com/verifyReceipt";
 
@@ -32,11 +38,6 @@ function sha256(value) {
   }
 
   return data;
-}
-  return crypto
-    .createHash("sha256")
-    .update(String(value || ""))
-    .digest("hex");
 }
 
 export default async function handler(req, res) {
@@ -110,15 +111,15 @@ export default async function handler(req, res) {
     const existingPurchase = await kvGet(idempotencyKey).catch(() => null);
 
     if (existingPurchase) {
-   let parsed = {};
+      let parsed = {};
 
-try {
-  parsed = typeof existingPurchase === "string"
-    ? JSON.parse(existingPurchase)
-    : existingPurchase;
-} catch (err) {
-  parsed = {};
-}
+      try {
+        parsed = typeof existingPurchase === "string"
+          ? JSON.parse(existingPurchase)
+          : existingPurchase;
+      } catch (err) {
+        parsed = {};
+      }
 
       return res.status(200).json({
         ok: true,
@@ -133,16 +134,18 @@ try {
         message: "Purchase already processed.",
       });
     }
-   const appleVerifyData = await verifyAppleReceipt(receipt);
 
-if (!appleVerifyData || appleVerifyData.status !== 0) {
-  return res.status(400).json({
-    ok: false,
-    provider: "apple_iap",
-    error: "apple_receipt_not_verified",
-    appleStatus: appleVerifyData && appleVerifyData.status,
-  });
-}
+    const appleVerifyData = await verifyAppleReceipt(receipt);
+
+    if (!appleVerifyData || appleVerifyData.status !== 0) {
+      return res.status(400).json({
+        ok: false,
+        provider: "apple_iap",
+        error: "apple_receipt_not_verified",
+        appleStatus: appleVerifyData && appleVerifyData.status,
+      });
+    }
+
     const creditKey = `credits:${userId}`;
     const currentCredits = Number(await kvGet(creditKey).catch(() => 0)) || 0;
     const nextCredits = currentCredits + credits;
