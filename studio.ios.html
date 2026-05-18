@@ -2705,18 +2705,20 @@ window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
 
              console.log("[AIVO iOS IAP] verify response", verifyData);
 
-        if (verifyData && verifyData.ok && Number.isFinite(Number(verifyData.creditsAfter))) {
-          const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
-          if (topCreditBalance) {
-            topCreditBalance.textContent = "Kredi " + Number(verifyData.creditsAfter);
-          }
+       if (verifyData && verifyData.ok && Number.isFinite(Number(verifyData.creditsAfter))) {
+  const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
+  if (topCreditBalance) {
+    topCreditBalance.textContent = "Kredi " + Number(verifyData.creditsAfter);
+  }
 
-          showToast(
-            "success",
-            "Apple satın alma doğrulandı. Krediler eklendi.",
-            "Apple purchase verified. Credits added."
-          );
-        }
+  if (verifyData.deduped !== true && Number(verifyData.creditsAdded || 0) > 0) {
+    showToast(
+      "success",
+      "Apple satın alma doğrulandı. Krediler eklendi.",
+      "Apple purchase verified. Credits added."
+    );
+  }
+}
 
         return verifyData;
       } catch (verifyErr) {
