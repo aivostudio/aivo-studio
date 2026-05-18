@@ -2651,10 +2651,11 @@ if (data.verified !== true) {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
+                 body: JSON.stringify({
             productId: payloadProductId,
             transactionId: transactionId,
             receipt: receipt,
+            userId: String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase(),
             source: source,
             rawPayload: safePayload
           })
