@@ -33,16 +33,16 @@
     studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
   },
   us: {
-    starter: { price: "$4.99", amount: "/ 25 credits", metric: "$0.20 per credit" },
-    standard: { price: "$14.99", amount: "/ 100 credits", metric: "$0.15 per credit" },
-    pro: { price: "$29.99", amount: "/ 200 credits", metric: "$0.15 per credit" },
-    studio: { price: "$69.99", amount: "/ 500 credits", metric: "$0.14 per credit" }
+    starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
+    standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
+    pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
+    studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
   },
   eu: {
-    starter: { price: "€4.99", amount: "/ 25 credits", metric: "€0.20 per credit" },
-    standard: { price: "€14.99", amount: "/ 100 credits", metric: "€0.15 per credit" },
-    pro: { price: "€29.99", amount: "/ 200 credits", metric: "€0.15 per credit" },
-    studio: { price: "€69.99", amount: "/ 500 credits", metric: "€0.14 per credit" }
+    starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
+    standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
+    pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
+    studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
   }
 };
 
@@ -174,7 +174,7 @@ function applyMobileCreditPrices(){
     if (hint) {
          hint.textContent =
         (window.aivoI18n && window.aivoI18n.t("credits.kvkkHint")) ||
-        "You must confirm the KVKK consent to continue.";
+        "Devam etmek için KVKK onayını kabul etmelisin.";
       hint.style.display = "block";
     }
 
@@ -198,14 +198,14 @@ function applyMobileCreditPrices(){
       button.disabled = true;
         button.textContent =
         (window.aivoI18n && window.aivoI18n.t("credits.paymentLoading")) ||
-        "Preparing payment...";
+        "Ödeme hazırlanıyor...";
       return;
     }
 
     button.disabled = false;
      button.textContent =
       button.dataset.originalText ||
-      ((window.aivoI18n && window.aivoI18n.t("credits.pack.select")) || "Select package");
+      ((window.aivoI18n && window.aivoI18n.t("credits.pack.select")) || "Paketi seç");
   }
 
   function submitGatewayForm(gateway){
@@ -240,7 +240,7 @@ function applyMobileCreditPrices(){
     if (!pack) {
        alert(
         (window.aivoI18n && window.aivoI18n.t("credits.invalidPackage")) ||
-        "Invalid package selection."
+        "Geçersiz paket seçimi."
       );
       return;
     }
@@ -296,7 +296,7 @@ function applyMobileCreditPrices(){
       console.error("[AIVO mobile credits] checkout failed:", err);
         alert(
         (window.aivoI18n && window.aivoI18n.t("credits.paymentFailed")) ||
-        "Payment could not be started. Please try again."
+        "Ödeme başlatılamadı. Lütfen tekrar dene."
       );
       setButtonLoading(button, false);
     }
