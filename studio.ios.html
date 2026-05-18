@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>AIVO Mobile Studio</title>
 
   <link rel="icon" href="/favicon.ico">
@@ -22,7 +22,6 @@
   <link rel="stylesheet" href="/mobile/css/mobile.settings.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.policy.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.toast.css?v=1">
-  <link rel="stylesheet" href="/mobile/css/mobile.assistant.css?v=1">
 
   <style>
     *{box-sizing:border-box}
@@ -38,7 +37,6 @@
       color:#fff;
     }
 
-    
     body{
       background:
         radial-gradient(520px 360px at 20% 0%, rgba(139,92,246,.28), transparent 62%),
@@ -57,7 +55,7 @@
   width:min(430px,100%);
   min-height:100vh;
   margin:0 auto;
-  padding:12px 14px 84px;
+  padding:0 14px 84px;
 }
 
 .topbar{
@@ -70,8 +68,8 @@
   justify-content:space-between;
   gap:10px;
 
-  margin:-12px -14px 14px;
-padding:58px 14px 20px;
+  margin:0 -14px 10px;
+  padding:calc(18px + env(safe-area-inset-top)) 14px 12px;
   background:
     linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
     radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
@@ -98,8 +96,8 @@ padding:58px 14px 20px;
     }
 
 .credit-pill{
-  min-height:26px;
-  padding:0 7px;
+  min-height:30px;
+  padding:0 10px;
   border-radius:999px;
   display:inline-flex;
   align-items:center;
@@ -107,35 +105,13 @@ padding:58px 14px 20px;
   background:rgba(255,255,255,.065);
   border:1px solid rgba(255,255,255,.13);
   color:rgba(255,255,255,.92);
-  font-size:12px;
+  font-size:11px;
   font-weight:850;
   letter-spacing:-.015em;
   white-space:nowrap;
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
     0 8px 18px rgba(0,0,0,.16);
-}
-    [data-mobile-top-credits]{
-  animation:aivoStudioCreditAiGlow 7s ease-in-out infinite;
-}
-
-@keyframes aivoStudioCreditAiGlow{
-  0%, 100%{
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.08),
-      0 8px 18px rgba(0,0,0,.16);
-    border-color:rgba(255,255,255,.13);
-    filter:brightness(1);
-  }
-
-  50%{
-    box-shadow:
-      inset 0 0 16px rgba(236,72,153,.16),
-      0 8px 18px rgba(0,0,0,.16),
-      0 0 18px rgba(139,92,246,.36);
-    border-color:rgba(236,72,153,.62);
-    filter:brightness(1.08);
-  }
 }
 
 .topbar-credit-actions{
@@ -158,22 +134,9 @@ padding:58px 14px 20px;
 }
 
 .credit-balance-pill{
-  min-width:auto;
-}
-.credit-balance-pill{
-  cursor:pointer;
-  transition:transform .22s ease, box-shadow .22s ease, filter .22s ease;
+  min-width:82px;
 }
 
-.credit-balance-pill.is-credit-focus{
-  transform:scale(1.24);
-  z-index:3;
-  filter:brightness(1.18);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    0 14px 28px rgba(0,0,0,.26),
-    0 0 30px rgba(56,189,248,.42);
-}
     .hero{
       padding:12px 13px;
       border-radius:22px;
@@ -238,8 +201,8 @@ padding:58px 14px 20px;
       line-height:1.45;
       font-weight:650;
     }
-.mobile-account-panel{
-  margin-top:28px;
+  .mobile-account-panel{
+  margin-top:14px;
   padding:20px;
   border-radius:30px;
   min-height:auto;
@@ -289,42 +252,25 @@ padding:58px 14px 20px;
   color:rgba(255,255,255,.92);
 }
 
- .bottom-nav{
+   .bottom-nav{
   position:fixed;
   left:0;
   right:0;
   bottom:0;
   z-index:80;
   width:min(430px,100%);
-  height:78px;
+  height:74px;
   margin:0 auto;
   display:grid;
   grid-template-columns:repeat(5,1fr);
-  gap:0;
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
-    rgba(8,10,24,.58);
-  border-top:1px solid rgba(255,255,255,.10);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    inset 0 -18px 36px rgba(0,0,0,.20),
-    0 -10px 24px rgba(5,7,16,.54),
-    0 -28px 70px rgba(139,92,246,.10);
-  backdrop-filter:blur(34px) saturate(190%);
-  -webkit-backdrop-filter:blur(34px) saturate(190%);
-}
-
-.bottom-nav::before{
-  content:"";
-  position:absolute;
-  left:0;
-  right:0;
-  top:-18px;
-  height:18px;
-  background:linear-gradient(180deg, transparent, rgba(28,31,48,.38));
-  pointer-events:none;
-}
+      gap:0;
+      padding:7px 10px calc(7px + env(safe-area-inset-bottom));
+      background:rgba(5,7,16,.94);
+      border-top:1px solid rgba(139,92,246,.28);
+      box-shadow:0 -16px 36px rgba(0,0,0,.32);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
 
     .bottom-nav a{
       min-height:54px;
@@ -566,58 +512,7 @@ padding:58px 14px 20px;
     #mobileHomeMount[hidden]{
   display:none !important;
 }
-    
-html.aivo-start-tools .hero,
-html.aivo-start-account .hero,
-html.aivo-start-tools #mobileHomeMount,
-html.aivo-start-account #mobileHomeMount{
-  display:none !important;
-}
-  
 
-html.aivo-start-tools #mobileToolsMount,
-html.aivo-start-account #mobileAccountMount{
-  display:block !important;
-}
-html.aivo-start-credits .hero,
-html.aivo-start-music .hero,
-html.aivo-start-cover .hero,
-html.aivo-start-photofx .hero,
-html.aivo-start-video .hero,
-html.aivo-start-lipsync .hero,
-html.aivo-start-atmo .hero,
-html.aivo-start-cartoon .hero,
-html.aivo-start-credits #mobileHomeMount,
-html.aivo-start-music #mobileHomeMount,
-html.aivo-start-cover #mobileHomeMount,
-html.aivo-start-photofx #mobileHomeMount,
-html.aivo-start-video #mobileHomeMount,
-html.aivo-start-lipsync #mobileHomeMount,
-html.aivo-start-atmo #mobileHomeMount,
-html.aivo-start-cartoon #mobileHomeMount{
-  display:none !important;
-}
-
-html.aivo-start-credits #mobileCreditsMount,
-html.aivo-start-music #mobileMusicMount,
-html.aivo-start-cover #mobileCoverMount,
-html.aivo-start-photofx #mobilePhotoFxMount,
-html.aivo-start-video #mobileVideoMount,
-html.aivo-start-lipsync #mobileLipsyncMount,
-html.aivo-start-atmo #mobileAtmoMount,
-html.aivo-start-cartoon #mobileCartoonMount{
-  display:block !important;
-}
-
-html.aivo-hash-routing-pending{
-  visibility:visible !important;
-  background:#070914 !important;
-}
-
-html.aivo-hash-routing-pending body{
-  opacity:1 !important;
-  background:#070914 !important;
-}
 #mobileHomeMount .section-title{
   margin-top:16px;
 }
@@ -651,207 +546,38 @@ html.aivo-hash-routing-pending body{
   line-height:1.45;
   font-weight:650;
 }
-    /* iOS WKWebView input zoom hard fix */
-input,
-textarea,
-select {
-  font-size:16px !important;
-  -webkit-text-size-adjust:100%;
-  transform:none !important;
-}
-
-html,
-body {
-  -webkit-text-size-adjust:100%;
-  touch-action:manipulation;
-}
   </style>
-
-<style id="aivo-auth-gate-style">
-  html{
-    visibility:visible;
-    background:#070914 !important;
-  }
-
-  body{
-    opacity:1 !important;
-    background:#070914 !important;
-  }
-</style>
-
-  <script>
-  (function AIVO_IOS_STUDIO_HARD_GATE(){
-    if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
-    window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
-
-    function goLogin(){
-      location.replace("/login.ios.html?returnTo=/studio.ios.html");
-    }
-
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){
-      try { ctrl.abort(); } catch (e) {}
-    }, 2500);
-
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    })
-    .then(async function(r){
-      clearTimeout(t);
-
-      if (r.status === 200) {
-        var me = await r.json();
-
-             try {
-          var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
-          var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
-          var nextEmail = String((me && me.email) || "").trim().toLowerCase();
-
-          function firstNonEmpty() {
-            for (var i = 0; i < arguments.length; i++) {
-              var v = arguments[i];
-              if (v != null && String(v).trim()) return String(v).trim();
-            }
-            return "";
-          }
-
-          function emailToName(email) {
-            var normalized = String(email || "").trim().toLowerCase();
-            if (!normalized || normalized.indexOf("@") === -1) return "";
-            return normalized.split("@")[0].trim();
-          }
-
-          function scopedKey(baseKey, email) {
-            var normalized = String(email || "").trim().toLowerCase();
-            if (!normalized) return baseKey;
-            return baseKey + ":" + normalized;
-          }
-
-          if (prevEmail && prevEmail !== nextEmail) {
-            localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
-            localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
-          }
-
-          var firstName = firstNonEmpty(
-            me && me.first_name,
-            me && me.firstName,
-            me && me.name,
-            emailToName(nextEmail),
-            "Kullanıcı"
-          );
-
-          var surname = firstNonEmpty(
-            me && me.last_name,
-            me && me.lastName,
-            me && me.surname,
-            ""
-          );
-
-          var fullName = firstNonEmpty(
-            firstName && surname ? (firstName + " " + surname) : "",
-            firstName,
-            "Kullanıcı"
-          );
-
-          localStorage.setItem("aivo_logged_in", "1");
-          localStorage.setItem("aivo_user_email", nextEmail);
-          localStorage.setItem("aivo_profile_name", "");
-          localStorage.setItem("aivo_profile_surname", "");
-          localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
-            loggedIn: true,
-            email: nextEmail,
-            name: firstName,
-            first_name: firstName,
-            surname: surname,
-            last_name: surname,
-            full_name: fullName,
-            ts: Date.now()
-          }));
-          localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
-          localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
-        } catch (e) {}
-
-        var st = document.getElementById("aivo-auth-gate-style");
-        if (st) st.remove();
-
-    document.documentElement.style.visibility = "visible";
-
-        try {
-          
-          document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-            detail: { me: me }
-          }));
-        } catch (e) {}
-
-        return;
-      }
-
-      goLogin();
-    })
-    .catch(function(){
-      goLogin();
-    });
-  })();
-  </script>
-
-<script>
-(function AIVO_MOBILE_START_ROUTE(){
-  try {
-    const hash = window.location.hash;
-
-    if (hash && hash !== "#home") {
-      document.documentElement.classList.add("aivo-hash-routing-pending");
-    }
- 
-  if (hash === "#tools") document.documentElement.classList.add("aivo-start-tools");
-if (hash === "#account") document.documentElement.classList.add("aivo-start-account");
-if (hash === "#credits") document.documentElement.classList.add("aivo-start-credits");
-if (hash === "#music") document.documentElement.classList.add("aivo-start-music");
-    if (hash === "#cover") document.documentElement.classList.add("aivo-start-cover");
-    if (hash === "#photofx") document.documentElement.classList.add("aivo-start-photofx");
-    if (hash === "#video") document.documentElement.classList.add("aivo-start-video");
-    if (hash === "#lipsync") document.documentElement.classList.add("aivo-start-lipsync");
-    if (hash === "#atmo") document.documentElement.classList.add("aivo-start-atmo");
-    if (hash === "#cartoon") document.documentElement.classList.add("aivo-start-cartoon");
-  } catch (err) {}
-})();
-</script>
 </head>
 
 <body>
   <main class="mobile-shell">
     <header class="topbar">
-   <a class="logo" href="/index.ios.html" aria-label="AIVO">
-  <img src="/aivo-logo.png" alt="AIVO">
-</a>
+     <a class="logo" href="/index.ios.html" aria-label="AIVO">
+        <img src="/aivo-logo.png" alt="AIVO">
+      </a>
 
-  <div class="topbar-credit-actions">
-  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
+    <div class="topbar-credit-actions">
+  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance>
     Kredi --
   </span>
 
-  <a class="credit-pill" href="#credits" data-mobile-top-credits data-i18n="top.creditAI">
+  <a class="credit-pill" href="#credits" data-mobile-top-credits>
     Kredi Al
   </a>
 </div>
     </header>
 
-  <section class="hero">
-  <div class="eyebrow" data-i18n="home.eyebrow">
-    AIVO Mobile Studio
-  </div>
+    <section class="hero">
+      <div class="eyebrow">AIVO Mobile Studio</div>
 
-  <h1>
-    <span data-i18n="home.title.before">Cepte AI</span>
-    <span class="grad" data-i18n="home.title.grad">üretim.</span>
-  </h1>
+      <h1>
+        Cepte AI <span class="grad">üretim.</span>
+      </h1>
 
-  <p class="sub" data-i18n="home.subtitle">
-    Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.
-  </p>
-</section>
+      <p class="sub">
+        Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.
+      </p>
+    </section>
 
 <div id="mobileHomeMount">
   <div class="empty-card">Ana sayfa yükleniyor...</div>
@@ -888,44 +614,44 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 </div>
 
 <div id="mobileToolsMount" hidden>
- 
+  <h2 class="section-title">AI Araçlar</h2>
 
-<div class="mobile-tools-grid">
-  <button class="mobile-tool-card" type="button" data-mobile-tool="music">
-    <span class="tool-icon tool-icon-music" aria-hidden="true"></span>
-    <b data-i18n="tools.music">AI Müzik Üret</b>
-  </button>
+  <div class="mobile-tools-grid">
+    <button class="mobile-tool-card" type="button" data-mobile-tool="music">
+      <span class="tool-icon tool-icon-music" aria-hidden="true"></span>
+      <b>AI Müzik Üret</b>
+    </button>
 
-  <button class="mobile-tool-card" type="button" data-mobile-tool="cover">
-    <span class="tool-icon tool-icon-cover" aria-hidden="true"></span>
-    <b data-i18n="tools.cover">AI Kapak Üret</b>
-  </button>
+    <button class="mobile-tool-card" type="button" data-mobile-tool="cover">
+      <span class="tool-icon tool-icon-cover" aria-hidden="true"></span>
+      <b>AI Kapak Üret</b>
+    </button>
 
-  <button class="mobile-tool-card" type="button" data-mobile-tool="atmo">
-    <span class="tool-icon tool-icon-atmo" aria-hidden="true"></span>
-    <b data-i18n="tools.atmo">AI Atmosfer Video</b>
-  </button>
+    <button class="mobile-tool-card" type="button" data-mobile-tool="atmo">
+      <span class="tool-icon tool-icon-atmo" aria-hidden="true"></span>
+      <b>AI Atmosfer Video</b>
+    </button>
 
-  <button class="mobile-tool-card" type="button" data-mobile-tool="cartoon">
-    <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
-    <b data-i18n="tools.cartoon">AI Çocuk Çizgifilm</b>
-  </button>
+    <button class="mobile-tool-card" type="button" data-mobile-tool="cartoon">
+      <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
+      <b>AI Çocuk Çizgifilm</b>
+    </button>
 
-  <button class="mobile-tool-card" type="button" data-mobile-tool="photofx">
-    <span class="tool-icon tool-icon-photofx" aria-hidden="true"></span>
-    <b data-i18n="tools.photofx">AI Foto Efekt Video Clip</b>
-  </button>
+    <button class="mobile-tool-card" type="button" data-mobile-tool="photofx">
+      <span class="tool-icon tool-icon-photofx" aria-hidden="true"></span>
+      <b>AI Foto Efekt Video Clip</b>
+    </button>
 
-  <button class="mobile-tool-card" type="button" data-mobile-tool="video">
-    <span class="tool-icon tool-icon-video" aria-hidden="true"></span>
-    <b data-i18n="tools.video">AI Resimden Video Üret</b>
-  </button>
+    <button class="mobile-tool-card" type="button" data-mobile-tool="video">
+      <span class="tool-icon tool-icon-video" aria-hidden="true"></span>
+      <b>AI Resimden Video Üret</b>
+    </button>
 
-  <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">
-    <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
-    <b data-i18n="tools.lipsync">AI Dudak Senkron Video</b>
-  </button>
-</div>
+    <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">
+      <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
+      <b>AI Dudak Senkron Video</b>
+    </button>
+  </div>
 </div>
     <div id="mobilePolicyMount" hidden>
   <div class="empty-card">Yasal metin yükleniyor...</div>
@@ -935,28 +661,29 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 
 
   <div class="mobile-account-panel" data-mobile-account-menu>
-  <h3 data-i18n="account.panels">Paneller</h3>
+    <h3>Paneller</h3>
 
-  <button class="mobile-account-row" type="button" data-mobile-account-panel="profile" data-i18n="account.profile">
-    Profil
-  </button>
+    <button class="mobile-account-row" type="button" data-mobile-account-panel="profile">
+      Profil
+    </button>
 
-  <button class="mobile-account-row" type="button" data-mobile-account-panel="invoices" data-i18n="account.invoices">
-    Faturalarım
-  </button>
+    <button class="mobile-account-row" type="button" data-mobile-account-panel="invoices">
+      Faturalarım
+    </button>
 
-  <button class="mobile-account-row" type="button" data-mobile-account-panel="settings" data-i18n="account.settings">
-    Ayarlar
-  </button>
+   <button class="mobile-account-row" type="button" data-mobile-account-panel="settings">
+  Ayarlar
+</button>
 
-  <button class="mobile-account-row" type="button" data-mobile-account-panel="contact" data-i18n="account.contact">
-    Bize Ulaşın
-  </button>
+<button class="mobile-account-row" type="button" data-mobile-account-panel="contact">
+  Bize Ulaşın
+</button>
 
-  <button class="mobile-account-row mobile-account-row-danger" type="button" data-mobile-account-panel="logout" data-i18n="account.logout">
-    Çıkış Yap
-  </button>
-</div>
+<button class="mobile-account-row mobile-account-row-danger" type="button" data-mobile-account-panel="logout">
+  Çıkış Yap
+</button>
+  </div>
+
   <div data-mobile-account-profile hidden>
     <div id="mobileAccountProfileMount">
       <div class="empty-card">Profil modülü yükleniyor...</div>
@@ -985,30 +712,28 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <nav class="bottom-nav">
   <a class="active" href="#home">
     <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
-    <b data-i18n="nav.home">Ana Sayfa</b>
+    <b>Ana Sayfa</b>
   </a>
   <a href="#productions">
     <span class="nav-icon nav-icon-productions" aria-hidden="true"></span>
-    <b data-i18n="nav.productions">Üretimler</b>
+    <b>Üretimler</b>
   </a>
   <a href="#tools">
     <span class="nav-icon nav-icon-tools" aria-hidden="true"></span>
-    <b data-i18n="nav.tools">Araçlar</b>
+    <b>Araçlar</b>
   </a>
-  <a href="#credits">
-    <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
-    <b data-i18n="nav.credits">Krediler</b>
-  </a>
+<a href="#credits">
+  <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
+  <b>Krediler</b>
+</a>
   <a href="#account">
     <span class="nav-icon nav-icon-account" aria-hidden="true"></span>
-    <b data-i18n="nav.account">Hesabım</b>
+    <b>Hesabım</b>
   </a>
 </nav>
 <div id="mobileToastRoot" aria-live="polite" aria-atomic="true"></div>
-<div id="mobileAssistantRoot"></div>
-<script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
+
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
-<script src="/mobile/js/mobile.assistant.js?v=1" defer></script>
 
 <script>
 (function AIVO_MOBILE_URL_TOAST_READ(){
@@ -1071,11 +796,7 @@ let accountMount = document.getElementById("mobileAccountMount");
     throw new Error("mobile_home_html_load_failed");
   }
 
- homeMount.innerHTML = await homeRes.text();
-
-if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(homeMount);
-}
+  homeMount.innerHTML = await homeRes.text();
 } catch (err) {
   homeMount.innerHTML = '<div class="empty-card">Ana sayfa yüklenemedi.</div>';
 }
@@ -1114,11 +835,7 @@ if (typeof window.aivoApplyI18n === "function") {
         throw new Error("mobile_music_html_load_failed");
       }
 
-    musicMount.innerHTML = await musicRes.text();
-
-if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(musicMount);
-}
+      musicMount.innerHTML = await musicRes.text();
       setTimeout(function(){
   const moodInput =
     document.getElementById("mobileMusicMood") ||
@@ -1151,11 +868,7 @@ if (typeof window.aivoApplyI18n === "function") {
         throw new Error("mobile_cover_html_load_failed");
       }
 
-     coverMount.innerHTML = await coverRes.text();
-
-if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(coverMount);
-}
+      coverMount.innerHTML = await coverRes.text();
 
       const coverScript = document.createElement("script");
       coverScript.src = "/mobile/js/mobile.cover.js?v=1";
@@ -1173,11 +886,7 @@ if (typeof window.aivoApplyI18n === "function") {
     throw new Error("mobile_atmo_html_load_failed");
   }
 
-atmoMount.innerHTML = await atmoRes.text();
-
-if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(atmoMount);
-}
+ atmoMount.innerHTML = await atmoRes.text();
 
 const atmoScript = document.createElement("script");
 atmoScript.src = "/mobile/js/mobile.atmo.js?v=1";
@@ -1195,11 +904,7 @@ document.body.appendChild(atmoScript);
     throw new Error("mobile_cartoon_html_load_failed");
   }
 
- cartoonMount.innerHTML = await cartoonRes.text();
-
-if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(cartoonMount);
-}
+  cartoonMount.innerHTML = await cartoonRes.text();
 
   const cartoonScript = document.createElement("script");
 cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
@@ -1221,10 +926,6 @@ cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
 
   photofxMount.innerHTML = await photofxRes.text();
 
-  if (typeof window.aivoApplyI18n === "function") {
-    window.aivoApplyI18n(photofxMount);
-  }
-
 const photofxScript = document.createElement("script");
 photofxScript.src = "/mobile/js/mobile.photofx.js?v=5";
 photofxScript.defer = true;
@@ -1244,10 +945,6 @@ try {
   }
 
   videoMount.innerHTML = await videoRes.text();
-
-  if (typeof window.aivoApplyI18n === "function") {
-    window.aivoApplyI18n(videoMount);
-  }
 
   const videoScript = document.createElement("script");
   videoScript.src = "/mobile/js/mobile.video.js?v=1";
@@ -1269,10 +966,6 @@ try {
 
   lipsyncMount.innerHTML = await lipsyncRes.text();
 
-  if (typeof window.aivoApplyI18n === "function") {
-    window.aivoApplyI18n(lipsyncMount);
-  }
-
   const lipsyncScript = document.createElement("script");
   lipsyncScript.src = "/mobile/js/mobile.lipsync.js?v=1";
   lipsyncScript.defer = true;
@@ -1291,11 +984,7 @@ try {
     throw new Error("mobile_credits_html_load_failed");
   }
 
-   creditsMount.innerHTML = await creditsRes.text();
-
-  if (typeof window.aivoApplyI18n === "function") {
-    window.aivoApplyI18n(creditsMount);
-  }
+  creditsMount.innerHTML = await creditsRes.text();
 
   const creditsScript = document.createElement("script");
   creditsScript.src = "/mobile/js/mobile.credits.js?v=1";
@@ -1320,9 +1009,7 @@ try {
     }
 
     accountProfileMount.innerHTML = await accountProfileRes.text();
-    if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(accountProfileMount);
-}
+
     const accountScript = document.createElement("script");
     accountScript.src = "/mobile/js/mobile.account.js?v=1";
     accountScript.defer = true;
@@ -1349,9 +1036,6 @@ try {
     }
 
     accountInvoicesMount.innerHTML = await accountInvoicesRes.text();
-    if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(accountInvoicesMount);
-}
 
     const invoicesScript = document.createElement("script");
     invoicesScript.src = "/mobile/js/mobile.invoices.js?v=1";
@@ -1378,9 +1062,6 @@ try {
     }
 
     accountSettingsMount.innerHTML = await accountSettingsRes.text();
-    if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(accountSettingsMount);
-}
 
     const settingsScript = document.createElement("script");
     settingsScript.src = "/mobile/js/mobile.settings.js?v=1";
@@ -1407,10 +1088,6 @@ if (!accountContactRes.ok) {
 }
 
 accountContactMount.innerHTML = await accountContactRes.text();
-    if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(accountContactMount);
-}
-
 
 const contactScript = document.createElement("script");
 contactScript.src = "/mobile/js/mobile.contact.js?v=1";
@@ -1424,20 +1101,6 @@ document.body.appendChild(contactScript);
     accountContactMount.innerHTML = '<div class="empty-card">İletişim bölümü yüklenemedi.</div>';
   }
 }
-        if (window.location.hash === "#credits") {
-      homeMount.hidden = true;
-      musicMount.hidden = true;
-      coverMount.hidden = true;
-      atmoMount.hidden = true;
-      if (cartoonMount) cartoonMount.hidden = true;
-      if (photofxMount) photofxMount.hidden = true;
-      if (videoMount) videoMount.hidden = true;
-      if (lipsyncMount) lipsyncMount.hidden = true;
-      if (toolsMount) toolsMount.hidden = true;
-      if (accountMount) accountMount.hidden = true;
-      if (policyMount) policyMount.hidden = true;
-      if (creditsMount) creditsMount.hidden = false;
-    }
     const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
     const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
  const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
@@ -1491,20 +1154,6 @@ hydrateTopCreditBalance();
 
 document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
   navItem.addEventListener("click", function(){
-document.documentElement.classList.remove(
-  "aivo-start-productions",
-  "aivo-start-tools",
-  "aivo-start-account",
-  "aivo-start-credits",
-      "aivo-start-music",
-      "aivo-start-cover",
-      "aivo-start-photofx",
-      "aivo-start-video",
-      "aivo-start-lipsync",
-      "aivo-start-atmo",
-      "aivo-start-cartoon"
-    );
-
     if (policyMount) {
       policyMount.hidden = true;
     }
@@ -1682,12 +1331,9 @@ function showLipsync(){
   }
 }
     
-if (homeNav) {
+   if (homeNav) {
   homeNav.addEventListener("click", function(e){
     e.preventDefault();
-
-    activeMobileModule = "music";
-
     showHome();
     setActiveNav(homeNav);
   });
@@ -2016,11 +1662,7 @@ const contactPanel = accountMount.querySelector("[data-mobile-account-contact]")
   try {
     const res = await fetch(policyUrl, { cache: "no-store" });
     if (!res.ok) throw new Error("policy_load_failed");
-   policyMount.innerHTML = await res.text();
-
-if (typeof window.aivoApplyI18n === "function") {
-  window.aivoApplyI18n(policyMount);
-}
+    policyMount.innerHTML = await res.text();
   } catch (err) {
     policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
   }
@@ -2089,18 +1731,12 @@ if (policyBackBtn) {
     });
   } catch (err) {}
 
-    try {
-    localStorage.removeItem("aivo_logged_in");
-    localStorage.removeItem("aivo_user_email");
+  try {
     localStorage.removeItem("aivo_auth_unified_v1");
     localStorage.removeItem("aivo_profile_name");
     localStorage.removeItem("aivo_profile_surname");
     localStorage.removeItem("aivo_mobile_active_tab");
     localStorage.removeItem("aivo_mobile_account_state");
-
-    sessionStorage.clear();
-
-    localStorage.setItem("aivo_mobile_force_login", "1");
   } catch (err) {}
 
 try {
@@ -2144,163 +1780,9 @@ if (backBtn) {
 }
   });
 }
-if (window.location.hash === "#credits" && creditsNav) {
+    if (window.location.hash === "#credits" && creditsNav) {
   creditsNav.click();
 }
-
-if (window.location.hash === "#music") {
-  activeMobileModule = "music";
-  homeMount.hidden = true;
-  showMusic();
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-if (window.location.hash === "#cover") {
-  activeMobileModule = "cover";
-  homeMount.hidden = true;
-  showCover();
-  setCoverLibraryOnly(false);
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-if (window.location.hash === "#photofx") {
-  activeMobileModule = "photofx";
-  homeMount.hidden = true;
-  showPhotoFx();
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-if (window.location.hash === "#video") {
-  activeMobileModule = "video";
-  homeMount.hidden = true;
-  showVideo();
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-if (window.location.hash === "#lipsync") {
-  activeMobileModule = "lipsync";
-  homeMount.hidden = true;
-  showLipsync();
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-if (window.location.hash === "#atmo") {
-  activeMobileModule = "atmo";
-  homeMount.hidden = true;
-  showAtmo();
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-if (window.location.hash === "#cartoon") {
-  activeMobileModule = "cartoon";
-  homeMount.hidden = true;
-  showCartoon();
-  setActiveNav(toolsNav);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function applyMobileHashRoute(){
-  const hash = String(window.location.hash || "#home");
-
-  if (hash === "#home" && homeNav) {
-    homeNav.click();
-    return;
-  }
-
-  if (hash === "#productions" && productionsNav) {
-    productionsNav.click();
-    return;
-  }
-
-  if (hash === "#tools" && toolsNav) {
-    toolsNav.click();
-    return;
-  }
-
-  if (hash === "#credits" && creditsNav) {
-    creditsNav.click();
-    return;
-  }
-
-  if (hash === "#account" && accountNav) {
-    accountNav.click();
-    return;
-  }
-
-  if (hash === "#music") {
-    activeMobileModule = "music";
-    homeMount.hidden = true;
-    showMusic();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#cover") {
-    activeMobileModule = "cover";
-    homeMount.hidden = true;
-    showCover();
-    setCoverLibraryOnly(false);
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#photofx") {
-    activeMobileModule = "photofx";
-    homeMount.hidden = true;
-    showPhotoFx();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#video") {
-    activeMobileModule = "video";
-    homeMount.hidden = true;
-    showVideo();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#lipsync") {
-    activeMobileModule = "lipsync";
-    homeMount.hidden = true;
-    showLipsync();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#atmo") {
-    activeMobileModule = "atmo";
-    homeMount.hidden = true;
-    showAtmo();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (hash === "#cartoon") {
-    activeMobileModule = "cartoon";
-    homeMount.hidden = true;
-    showCartoon();
-    setActiveNav(toolsNav);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-}
-
-applyMobileHashRoute();
-document.documentElement.classList.remove("aivo-hash-routing-pending");
-window.addEventListener("hashchange", applyMobileHashRoute);
-
 document.addEventListener("click", function(e){
   const btn = e.target.closest("[data-mobile-tool]");
   if (!btn) return;
@@ -2403,12 +1885,8 @@ if (tool === "atmo") {
 });
   })();
 function getAivoMobileLoginUrl(extraQuery){
-  if (extraQuery) {
-    return "/login.ios.html?" + extraQuery;
-  }
-
-  var returnTo = "/studio.ios.html" + (window.location.hash || "");
-  return "/login.ios.html?returnTo=" + encodeURIComponent(returnTo);
+  var query = extraQuery || "returnTo=/studio.ios.html";
+  return "/login.ios.html?" + query;
 }
   window.addEventListener("pageshow", async function(event){
   if (!event.persisted) return;
@@ -2427,7 +1905,7 @@ function getAivoMobileLoginUrl(extraQuery){
     const data = await res.json();
 
 if (!data || data.ok === false || !data.email) {
-  window.location.replace(getAivoMobileLoginUrl());
+ window.location.replace(getAivoMobileLoginUrl());
   return;
 }
 
@@ -2440,7 +1918,6 @@ if (data.verified !== true) {
   }
 });
 </script>
-
 <script>
 (function AIVO_MOBILE_PRESENCE_PING(){
   try {
@@ -2495,43 +1972,7 @@ if (data.verified !== true) {
   } catch (err) {}
 })();
 </script>
-<script>
-(function AIVO_IOS_STUDIO_ACTIVITY(){
-  function hitTraffic(){
-    try {
-      fetch("/api/traffic/hit", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          source: "ios",
-          page: "/studio.ios.html"
-        })
-      }).catch(function(){});
-    } catch (err) {}
-  }
 
-  hitTraffic();
-})();
-</script>
-  <script>
-(function AIVO_STUDIO_CREDIT_PILL_TAP_HELPER(){
-  const pill = document.querySelector("[data-mobile-credit-balance]");
-  if (!pill) return;
-
-  pill.addEventListener("click", function(){
-    pill.classList.add("is-credit-focus");
-
-    window.clearTimeout(pill.__aivoCreditFocusTimer);
-    pill.__aivoCreditFocusTimer = window.setTimeout(function(){
-      pill.classList.remove("is-credit-focus");
-    }, 2000);
-  });
-})();
-</script>
 <script>
 (function AIVO_IOS_IAP_PURCHASE_BRIDGE(){
   if (window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__) return;
@@ -2611,192 +2052,12 @@ if (data.verified !== true) {
       return;
     }
 
-    async function sendIosIapVerifyPayload(source, payload){
-      try {
-        const safePayload = payload || {};
-        const transactionId = String(
-          safePayload.transactionId ||
-          safePayload.id ||
-          safePayload.originalTransactionId ||
-          ""
-        ).trim();
-
-        const receipt = String(
-          safePayload.receipt ||
-          safePayload.appStoreReceipt ||
-          safePayload.purchaseReceipt ||
-          safePayload.transactionReceipt ||
-          ""
-        ).trim();
-
-        const payloadProductId = String(
-          safePayload.productId ||
-          safePayload.product_id ||
-          productId ||
-          ""
-        ).trim();
-
-            const clientVerifyKey = [
-          "ios_iap_client_verify",
-          payloadProductId,
-          transactionId || receipt.slice(0, 80)
-        ].join(":");
-
-        window.__AIVO_IOS_IAP_VERIFY_KEYS__ = window.__AIVO_IOS_IAP_VERIFY_KEYS__ || {};
-
-        if (window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey]) {
-          console.log("[AIVO iOS IAP] duplicate client verify skipped", {
-            source: source,
-            productId: payloadProductId,
-            transactionId: transactionId,
-            hasReceipt: !!receipt
-          });
-          return {
-            ok: true,
-            deduped: true,
-            skippedClientDuplicate: true
-          };
-        }
-
-        window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = true;
-
-        console.log("[AIVO iOS IAP] transaction payload", {
-          source: source,
-          productId: payloadProductId,
-          transactionId: transactionId,
-          hasReceipt: !!receipt,
-          raw: safePayload
-        });
-
-        const verifyRes = await fetch("/api/ios-iap/verify", {
-          method: "POST",
-          credentials: "include",
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json"
-          },
-                 body: JSON.stringify({
-            productId: payloadProductId,
-            transactionId: transactionId,
-            receipt: receipt,
-            userId: String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase(),
-            source: source,
-            rawPayload: safePayload
-          })
-        });
-
-        const verifyData = await verifyRes.json().catch(function(){
-          return null;
-        });
-
-             console.log("[AIVO iOS IAP] verify response", verifyData);
-
-        if (verifyData && verifyData.ok && Number.isFinite(Number(verifyData.creditsAfter))) {
-          const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
-          if (topCreditBalance) {
-            topCreditBalance.textContent = "Kredi " + Number(verifyData.creditsAfter);
-          }
-
-          showToast(
-            "success",
-            "Apple satın alma doğrulandı. Krediler eklendi.",
-            "Apple purchase verified. Credits added."
-          );
-        }
-
-        return verifyData;
-      } catch (verifyErr) {
-        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
-        return null;
-      }
-    }
-
-    function setupIosIapListeners(){
-      if (window.__AIVO_IOS_IAP_LISTENERS_READY__) return;
-      window.__AIVO_IOS_IAP_LISTENERS_READY__ = true;
-
-      store.error(function(error){
-        console.error("[AIVO iOS IAP] store error", error);
-      });
-
-      try {
-        store.when().approved(function(transaction){
-          console.log("[AIVO iOS IAP] approved transaction", transaction);
-
-          sendIosIapVerifyPayload("approved", {
-            productId: transaction && transaction.products && transaction.products[0]
-              ? transaction.products[0].id
-              : productId,
-            transactionId: transaction && transaction.transactionId ? transaction.transactionId : "",
-            originalTransactionId: transaction && transaction.originalTransactionId ? transaction.originalTransactionId : "",
-            receipt: transaction && transaction.receipt ? transaction.receipt : "",
-            rawTransaction: transaction || null
-          });
-
-          if (transaction && typeof transaction.verify === "function") {
-            transaction.verify();
-          }
-        });
-
-        store.when().verified(function(receipt){
-          console.log("[AIVO iOS IAP] verified receipt", receipt);
-
-          sendIosIapVerifyPayload("verified", {
-            productId: receipt && receipt.transactions && receipt.transactions[0] && receipt.transactions[0].products && receipt.transactions[0].products[0]
-              ? receipt.transactions[0].products[0].id
-              : productId,
-            transactionId: receipt && receipt.transactions && receipt.transactions[0] && receipt.transactions[0].transactionId
-              ? receipt.transactions[0].transactionId
-              : "",
-            receipt: receipt && receipt.nativeData ? JSON.stringify(receipt.nativeData) : "",
-            rawReceipt: receipt || null
-          });
-
-          if (receipt && typeof receipt.finish === "function") {
-            receipt.finish();
-          }
-        });
-
-           store.when().updated(function(item){
-          console.log("[AIVO iOS IAP] updated item", item);
-
-          const products = item && item.products ? item.products : [];
-          const firstProduct = products && products[0] ? products[0] : null;
-
-          const nativeData = item && item.nativeData ? item.nativeData : {};
-          const appStoreReceipt = nativeData && nativeData.appStoreReceipt
-            ? nativeData.appStoreReceipt
-            : "";
-
-          const updatedProductId = firstProduct && firstProduct.id
-            ? firstProduct.id
-            : productId;
-
-          const updatedTransactionId = item && item.transactionId
-            ? item.transactionId
-            : "";
-
-                console.log("[AIVO iOS IAP] updated item ignored for credit write", {
-            productId: updatedProductId,
-            transactionId: updatedTransactionId,
-            hasReceipt: !!appStoreReceipt
-          });
-
-          return;
-        });
-      } catch (listenerErr) {
-        console.error("[AIVO iOS IAP] listener setup failed", listenerErr);
-      }
-    }
-
     try {
       showToast(
         "info",
         "Apple ödeme ekranı hazırlanıyor.",
         "Preparing Apple payment screen."
       );
-
-      setupIosIapListeners();
 
       if (!window.__AIVO_IOS_IAP_STORE_READY__) {
         Object.keys(AIVO_IOS_IAP_PRODUCTS).forEach(function(key){
@@ -2805,6 +2066,10 @@ if (data.verified !== true) {
             type: CdvPurchase.ProductType.CONSUMABLE,
             platform: CdvPurchase.Platform.APPLE_APPSTORE
           });
+        });
+
+        store.error(function(error){
+          console.error("[AIVO iOS IAP] store error", error);
         });
 
         await store.initialize([
@@ -2835,6 +2100,30 @@ if (data.verified !== true) {
       const result = await offer.order();
 
       console.log("[AIVO iOS IAP] order result", result);
+      try {
+        const verifyRes = await fetch("/api/ios-iap/verify", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            productId: productId,
+            transactionId: "",
+            receipt: "",
+            rawResult: result || null
+          })
+        });
+
+        const verifyData = await verifyRes.json().catch(function(){
+          return null;
+        });
+
+        console.log("[AIVO iOS IAP] verify response", verifyData);
+      } catch (verifyErr) {
+        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
+      }
 
       showToast(
         "success",
@@ -2939,5 +2228,6 @@ if (data.verified !== true) {
   }, true);
 })();
 </script>
+
 </body>
 </html>

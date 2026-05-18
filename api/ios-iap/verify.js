@@ -1,46 +1,3 @@
-const crypto = require("crypto");
-const kvMod = require("../_kv.js");
-
-const kv = kvMod?.default || kvMod || {};
-const kvGet = kv.kvGet;
-const kvSet = kv.kvSet;
-
-function sha256(value) {
-  return crypto
-    .createHash("sha256")
-    .update(String(value || ""))
-    .digest("hex");
-}
-
-
-async function verifyAppleReceipt(receipt) {
-  const productionUrl = "https://buy.itunes.apple.com/verifyReceipt";
-  const sandboxUrl = "https://sandbox.itunes.apple.com/verifyReceipt";
-
-  async function postToApple(url) {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        "receipt-data": receipt,
-        "exclude-old-transactions": true,
-      }),
-    });
-
-    return response.json();
-  }
-
-  let data = await postToApple(productionUrl);
-
-  if (data && data.status === 21007) {
-    data = await postToApple(sandboxUrl);
-  }
-
-  return data;
-}
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -54,12 +11,6 @@ export default async function handler(req, res) {
     const productId = String(body.productId || "").trim();
     const transactionId = String(body.transactionId || "").trim();
     const receipt = String(body.receipt || "").trim();
-
-    const userId = String(
-      body.userId ||
-      body.email ||
-      ""
-    ).trim().toLowerCase();
 
     const CREDIT_PACKAGES = {
       "tr.aivo.credits.25": 25,
@@ -84,96 +35,15 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!userId) {
-      return res.status(400).json({
-        ok: false,
-        error: "missing_user_id",
-      });
-    }
-
-    if (typeof kvGet !== "function" || typeof kvSet !== "function") {
-      return res.status(500).json({
-        ok: false,
-        error: "kv_not_ready",
-      });
-    }
-
-    const purchaseFingerprint = transactionId
-      ? `tx:${transactionId}`
-      : `receipt:${sha256(receipt)}`;
-
-    const idempotencyKey = [
-      "ios_iap",
-      userId,
-      productId,
-      purchaseFingerprint
-    ].join(":");
-
-    const existingPurchase = await kvGet(idempotencyKey).catch(() => null);
-
-    if (existingPurchase) {
-      let parsed = {};
-
-      try {
-        parsed = typeof existingPurchase === "string"
-          ? JSON.parse(existingPurchase)
-          : existingPurchase;
-      } catch (err) {
-        parsed = {};
-      }
-
-      return res.status(200).json({
-        ok: true,
-        provider: "apple_iap",
-        verified: true,
-        deduped: true,
-        productId,
-        transactionId,
-        creditsAdded: 0,
-        creditsBefore: parsed.creditsBefore,
-        creditsAfter: parsed.creditsAfter,
-        message: "Purchase already processed.",
-      });
-    }
-
-    const appleVerifyData = await verifyAppleReceipt(receipt);
-
-    if (!appleVerifyData || appleVerifyData.status !== 0) {
-      return res.status(400).json({
-        ok: false,
-        provider: "apple_iap",
-        error: "apple_receipt_not_verified",
-        appleStatus: appleVerifyData && appleVerifyData.status,
-      });
-    }
-
-    const creditKey = `credits:${userId}`;
-    const currentCredits = Number(await kvGet(creditKey).catch(() => 0)) || 0;
-    const nextCredits = currentCredits + credits;
-
-    await kvSet(creditKey, nextCredits);
-
-    await kvSet(idempotencyKey, JSON.stringify({
-      provider: "apple_iap",
-      productId,
-      transactionId,
-      creditsAdded: credits,
-      creditsBefore: currentCredits,
-      creditsAfter: nextCredits,
-      processedAt: new Date().toISOString()
-    }));
-
     return res.status(200).json({
       ok: true,
       provider: "apple_iap",
-      verified: true,
-      deduped: false,
       productId,
       transactionId,
-      creditsAdded: credits,
-      creditsBefore: currentCredits,
-      creditsAfter: nextCredits,
-      message: "Credits successfully added.",
+      credits,
+      verified: false,
+      pendingBackendVerification: true,
+      message: "iOS IAP payload received. Apple receipt verification and credit ledger write will be connected next.",
     });
   } catch (err) {
     return res.status(500).json({
