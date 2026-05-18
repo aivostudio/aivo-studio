@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>AIVO Mobile Studio</title>
 
   <link rel="icon" href="/favicon.ico">
@@ -1972,5 +1972,262 @@ if (data.verified !== true) {
   } catch (err) {}
 })();
 </script>
+
+<script>
+(function AIVO_IOS_IAP_PURCHASE_BRIDGE(){
+  if (window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__) return;
+  window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__ = true;
+
+  const AIVO_IOS_IAP_PRODUCTS = {
+    "25": "tr.aivo.credits.25",
+    "100": "tr.aivo.credits.100",
+    "200": "tr.aivo.credits.200",
+    "500": "tr.aivo.credits.500"
+  };
+
+  function getLang(){
+    return (
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
+      String(localStorage.getItem("aivo_lang") || "").toLowerCase().startsWith("en")
+    ) ? "en" : "tr";
+  }
+
+  function showToast(type, trMessage, enMessage){
+    const message = getLang() === "en" ? enMessage : trMessage;
+
+    if (window.mobileToast && typeof window.mobileToast[type] === "function") {
+      window.mobileToast[type](message);
+      return;
+    }
+
+    alert(message);
+  }
+
+  function findProductId(target){
+    const dataPlan = String(
+      target.getAttribute("data-plan") ||
+      target.getAttribute("data-package") ||
+      target.getAttribute("data-credits") ||
+      ""
+    ).trim();
+
+    const card = target.closest(
+      "[data-plan], [data-package], [data-credits], article, section, .mobile-credit-card, .mobile-price-card, .credit-card, .pricing-card"
+    );
+
+    const targetText = String(target.textContent || "").toLowerCase();
+    const cardText = String(card && card.textContent ? card.textContent : "").toLowerCase();
+
+    const combined = (dataPlan + " " + targetText + " " + cardText)
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+
+    if (/\b500\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["500"];
+    if (/\b200\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["200"];
+    if (/\b100\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["100"];
+    if (/\b25\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["25"];
+
+    return "";
+  }
+
+  async function startIosIapPurchase(productId){
+    if (!productId) {
+      showToast(
+        "error",
+        "Paket bilgisi bulunamadı.",
+        "Package information could not be found."
+      );
+      return;
+    }
+
+    const CdvPurchase = window.CdvPurchase;
+    const store = CdvPurchase && CdvPurchase.store;
+
+    if (!CdvPurchase || !store) {
+      showToast(
+        "info",
+        "Apple In-App Purchase altyapısı hazırlanıyor. Product ID: " + productId,
+        "Apple In-App Purchase integration is being prepared. Product ID: " + productId
+      );
+      return;
+    }
+
+    try {
+      showToast(
+        "info",
+        "Apple ödeme ekranı hazırlanıyor.",
+        "Preparing Apple payment screen."
+      );
+
+      if (!window.__AIVO_IOS_IAP_STORE_READY__) {
+        Object.keys(AIVO_IOS_IAP_PRODUCTS).forEach(function(key){
+          store.register({
+            id: AIVO_IOS_IAP_PRODUCTS[key],
+            type: CdvPurchase.ProductType.CONSUMABLE,
+            platform: CdvPurchase.Platform.APPLE_APPSTORE
+          });
+        });
+
+        store.error(function(error){
+          console.error("[AIVO iOS IAP] store error", error);
+        });
+
+        await store.initialize([
+          CdvPurchase.Platform.APPLE_APPSTORE
+        ]);
+
+        window.__AIVO_IOS_IAP_STORE_READY__ = true;
+      }
+
+      await store.update();
+
+      const product = store.get(
+        productId,
+        CdvPurchase.Platform.APPLE_APPSTORE
+      );
+
+      const offer = product && product.getOffer ? product.getOffer() : null;
+
+      if (!offer) {
+        showToast(
+          "error",
+          "Apple ürün bilgisi alınamadı: " + productId,
+          "Apple product information could not be loaded: " + productId
+        );
+        return;
+      }
+
+      const result = await offer.order();
+
+      console.log("[AIVO iOS IAP] order result", result);
+      try {
+        const verifyRes = await fetch("/api/ios-iap/verify", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            productId: productId,
+            transactionId: "",
+            receipt: "",
+            rawResult: result || null
+          })
+        });
+
+        const verifyData = await verifyRes.json().catch(function(){
+          return null;
+        });
+
+        console.log("[AIVO iOS IAP] verify response", verifyData);
+      } catch (verifyErr) {
+        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
+      }
+
+      showToast(
+        "success",
+        "Apple satın alma ekranı açıldı.",
+        "Apple purchase screen opened."
+      );
+    } catch (err) {
+      console.error("[AIVO iOS IAP] order failed", err);
+
+      showToast(
+        "error",
+        "Satın alma başlatılamadı.",
+        "Purchase could not be started."
+      );
+    }
+  }
+
+  function isPaymentUrl(value){
+    const url = String(value || "").toLowerCase();
+
+    return (
+      url.includes("/api/garanti/") ||
+      url.includes("/api/paytr/") ||
+      url.includes("/api/stripe/") ||
+      url.includes("garanti") ||
+      url.includes("paytr") ||
+      url.includes("stripe")
+    );
+  }
+
+  const originalFetch = window.fetch;
+
+  window.fetch = function(input, init){
+    const url = typeof input === "string" ? input : (input && input.url);
+
+    if (isPaymentUrl(url)) {
+      showToast(
+        "info",
+        "iOS içinde ödeme Apple In-App Purchase ile yapılacak.",
+        "Payments inside iOS will use Apple In-App Purchase."
+      );
+
+      return Promise.resolve(new Response(JSON.stringify({
+        ok: false,
+        ios_iap_required: true,
+        message: "Apple In-App Purchase required."
+      }), {
+        status: 409,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }));
+    }
+
+    return originalFetch.apply(this, arguments);
+  };
+
+  document.addEventListener("click", function(event){
+    const target = event.target && event.target.closest
+      ? event.target.closest("a, button")
+      : null;
+
+    if (!target) return;
+
+    const creditsMount = document.getElementById("mobileCreditsMount");
+    const insideCredits = creditsMount && creditsMount.contains(target);
+
+    const href = target.getAttribute("href") || "";
+    const action = target.getAttribute("formaction") || "";
+    const text = String(target.textContent || "").toLowerCase();
+
+    const isSafeCreditsNav =
+      href === "#credits" ||
+      href === "/studio.ios.html#credits" ||
+      href === "studio.ios.html#credits";
+
+    if (isSafeCreditsNav) return;
+
+    const looksLikePackageButton =
+      insideCredits &&
+      (
+        text.includes("select package") ||
+        text.includes("paketi seç") ||
+        text.includes("satın") ||
+        text.includes("buy") ||
+        text.includes("purchase") ||
+        text.includes("kredi al")
+      );
+
+    const looksLikeExternalPayment =
+      isPaymentUrl(href) ||
+      isPaymentUrl(action);
+
+    if (!looksLikePackageButton && !looksLikeExternalPayment) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const productId = findProductId(target);
+    startIosIapPurchase(productId);
+  }, true);
+})();
+</script>
+
 </body>
 </html>
