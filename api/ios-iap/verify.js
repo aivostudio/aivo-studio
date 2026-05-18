@@ -98,18 +98,45 @@ export default async function handler(req, res) {
       });
     }
 
- const purchaseDate = String(
+const rawPayload = body.rawPayload || {};
+const rawUpdatedItem = rawPayload.rawUpdatedItem || body.rawUpdatedItem || {};
+const rawTransactions = Array.isArray(rawUpdatedItem.transactions)
+  ? rawUpdatedItem.transactions
+  : [];
+
+const matchedTransaction = rawTransactions.find(function(tx){
+  const txProduct = tx && tx.products && tx.products[0]
+    ? tx.products[0]
+    : null;
+
+  const txProductId = txProduct && txProduct.id
+    ? String(txProduct.id).trim()
+    : "";
+
+  const txId = tx && tx.transactionId
+    ? String(tx.transactionId).trim()
+    : "";
+
+  return txId && txProductId === productId;
+});
+
+const purchaseDate = String(
   body.purchaseDate ||
-  body.rawUpdatedItem?.purchaseDate ||
+  rawUpdatedItem.purchaseDate ||
+  rawUpdatedItem.transactionDate ||
+  rawUpdatedItem.lastRenewalDate ||
+  (matchedTransaction && matchedTransaction.purchaseDate) ||
   body.rawResult?.purchaseDate ||
   ""
 ).trim();
 
-const purchaseFingerprint = transactionId
-  ? `tx:${transactionId}`
-  : purchaseDate
-    ? `xcode:${productId}:${purchaseDate}`
-    : `receipt:${sha256(receipt)}`;
+const purchaseFingerprint = transactionId && purchaseDate
+  ? `tx:${transactionId}:${purchaseDate}`
+  : transactionId
+    ? `tx:${transactionId}`
+    : purchaseDate
+      ? `xcode:${productId}:${purchaseDate}`
+      : `receipt:${sha256(receipt)}`;
     const idempotencyKey = [
       "ios_iap",
       userId,
