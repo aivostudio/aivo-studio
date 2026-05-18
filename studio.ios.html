@@ -2660,6 +2660,14 @@ if (data.verified !== true) {
 
         window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = true;
 
+        setTimeout(function(){
+  try {
+    if (window.__AIVO_IOS_IAP_VERIFY_KEYS__) {
+      delete window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey];
+    }
+  } catch (err) {}
+}, 3000);
+
         console.log("[AIVO iOS IAP] transaction payload", {
           source: source,
           productId: payloadProductId,
