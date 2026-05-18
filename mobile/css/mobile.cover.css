@@ -962,3 +962,8 @@
   text-overflow:ellipsis !important;
   white-space:nowrap !important;
 }
+/* Mobile Cover - quality title iOS fit */
+.mobile-quality-title{
+  font-size:15px !important;
+  letter-spacing:-.04em !important;
+}
