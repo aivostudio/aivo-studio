@@ -2563,7 +2563,6 @@ if (data.verified !== true) {
   }
 
   function findProductId(target){
-    const text = String(target.textContent || "").toLowerCase();
     const dataPlan = String(
       target.getAttribute("data-plan") ||
       target.getAttribute("data-package") ||
@@ -2571,12 +2570,21 @@ if (data.verified !== true) {
       ""
     ).trim();
 
-    const combined = (dataPlan + " " + text).toLowerCase();
+    const card = target.closest(
+      "[data-plan], [data-package], [data-credits], article, section, .mobile-credit-card, .mobile-price-card, .credit-card, .pricing-card"
+    );
 
-    if (combined.includes("500")) return AIVO_IOS_IAP_PRODUCTS["500"];
-    if (combined.includes("200")) return AIVO_IOS_IAP_PRODUCTS["200"];
-    if (combined.includes("100")) return AIVO_IOS_IAP_PRODUCTS["100"];
-    if (combined.includes("25")) return AIVO_IOS_IAP_PRODUCTS["25"];
+    const targetText = String(target.textContent || "").toLowerCase();
+    const cardText = String(card && card.textContent ? card.textContent : "").toLowerCase();
+
+    const combined = (dataPlan + " " + targetText + " " + cardText)
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+
+    if (/\b500\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["500"];
+    if (/\b200\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["200"];
+    if (/\b100\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["100"];
+    if (/\b25\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["25"];
 
     return "";
   }
