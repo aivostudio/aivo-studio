@@ -2644,21 +2644,16 @@ if (data.verified !== true) {
 
         window.__AIVO_IOS_IAP_VERIFY_KEYS__ = window.__AIVO_IOS_IAP_VERIFY_KEYS__ || {};
 
-        if (window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey]) {
-          console.log("[AIVO iOS IAP] duplicate client verify skipped", {
-            source: source,
-            productId: payloadProductId,
-            transactionId: transactionId,
-            hasReceipt: !!receipt
-          });
-          return {
-            ok: true,
-            deduped: true,
-            skippedClientDuplicate: true
-          };
-        }
+   if (window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey]) {
+  console.log("[AIVO iOS IAP] duplicate client verify detected but backend will handle idempotency", {
+    source: source,
+    productId: payloadProductId,
+    transactionId: transactionId,
+    hasReceipt: !!receipt
+  });
+}
 
-        window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = true;
+window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
 
         setTimeout(function(){
   try {
