@@ -2,6 +2,7 @@
   if (window.__AIVO_MOBILE_CREDITS__) return;
   window.__AIVO_MOBILE_CREDITS__ = true;
 
+ 
   const PLAN_MAP = {
     baslangic: {
       plan: "baslangic",
