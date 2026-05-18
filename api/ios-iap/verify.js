@@ -1,13 +1,16 @@
-const {
-  refundCredits,
-  consumeCredits
-} = require("../_lib/credits-ledger.js");
-
+const crypto = require("crypto");
 const kvMod = require("../_kv.js");
 
 const kv = kvMod?.default || kvMod || {};
 const kvGet = kv.kvGet;
 const kvSet = kv.kvSet;
+
+function sha256(value) {
+  return crypto
+    .createHash("sha256")
+    .update(String(value || ""))
+    .digest("hex");
+}
 
 export default async function handler(req, res) {
   try {
@@ -19,7 +22,6 @@ export default async function handler(req, res) {
     }
 
     const body = req.body || {};
-
     const productId = String(body.productId || "").trim();
     const transactionId = String(body.transactionId || "").trim();
     const receipt = String(body.receipt || "").trim();
@@ -29,11 +31,6 @@ export default async function handler(req, res) {
       body.email ||
       ""
     ).trim().toLowerCase();
-
-    const userUuid = String(
-      body.userUuid ||
-      ""
-    ).trim();
 
     const CREDIT_PACKAGES = {
       "tr.aivo.credits.25": 25,
@@ -72,19 +69,59 @@ export default async function handler(req, res) {
       });
     }
 
+    const purchaseFingerprint = transactionId
+      ? `tx:${transactionId}`
+      : `receipt:${sha256(receipt)}`;
+
+    const idempotencyKey = [
+      "ios_iap",
+      userId,
+      productId,
+      purchaseFingerprint
+    ].join(":");
+
+    const existingPurchase = await kvGet(idempotencyKey).catch(() => null);
+
+    if (existingPurchase) {
+      const parsed = typeof existingPurchase === "string"
+        ? JSON.parse(existingPurchase)
+        : existingPurchase;
+
+      return res.status(200).json({
+        ok: true,
+        provider: "apple_iap",
+        verified: true,
+        deduped: true,
+        productId,
+        transactionId,
+        creditsAdded: 0,
+        creditsBefore: parsed.creditsBefore,
+        creditsAfter: parsed.creditsAfter,
+        message: "Purchase already processed.",
+      });
+    }
+
     const creditKey = `credits:${userId}`;
-
-    const currentCredits =
-      Number(await kvGet(creditKey).catch(() => 0)) || 0;
-
+    const currentCredits = Number(await kvGet(creditKey).catch(() => 0)) || 0;
     const nextCredits = currentCredits + credits;
 
     await kvSet(creditKey, nextCredits);
+
+    await kvSet(idempotencyKey, JSON.stringify({
+      provider: "apple_iap",
+      productId,
+      transactionId,
+      creditsAdded: credits,
+      creditsBefore: currentCredits,
+      creditsAfter: nextCredits,
+      processedAt: new Date().toISOString()
+    }));
 
     return res.status(200).json({
       ok: true,
       provider: "apple_iap",
       verified: true,
+      deduped: false,
       productId,
       transactionId,
       creditsAdded: credits,
@@ -92,14 +129,11 @@ export default async function handler(req, res) {
       creditsAfter: nextCredits,
       message: "Credits successfully added.",
     });
-
   } catch (err) {
     return res.status(500).json({
       ok: false,
       error: "ios_iap_verify_failed",
-      detail: err && err.message
-        ? err.message
-        : "Unknown error",
+      detail: err && err.message ? err.message : "Unknown error",
     });
   }
 }
