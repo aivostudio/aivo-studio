@@ -2532,5 +2532,96 @@ if (data.verified !== true) {
   });
 })();
 </script>
+  <script>
+(function AIVO_IOS_IAP_PENDING_SAFE_MODE(){
+  if (window.__AIVO_IOS_IAP_PENDING_SAFE_MODE__) return;
+  window.__AIVO_IOS_IAP_PENDING_SAFE_MODE__ = true;
+
+  function showIapPendingMessage(){
+    const message = "Apple uygulama içi satın alma hazırlanıyor. Kredi satın alma yakında iOS içinde aktif olacak.";
+
+    if (window.mobileToast && typeof window.mobileToast.info === "function") {
+      window.mobileToast.info(message);
+      return;
+    }
+
+    alert(message);
+  }
+
+  function isPaymentUrl(value){
+    const url = String(value || "").toLowerCase();
+
+    return (
+      url.includes("/api/garanti/") ||
+      url.includes("/api/paytr/") ||
+      url.includes("/api/stripe/") ||
+      url.includes("garanti") ||
+      url.includes("paytr") ||
+      url.includes("stripe")
+    );
+  }
+
+  const originalFetch = window.fetch;
+
+  window.fetch = function(input, init){
+    const url = typeof input === "string" ? input : (input && input.url);
+
+    if (isPaymentUrl(url)) {
+      showIapPendingMessage();
+
+      return Promise.resolve(new Response(JSON.stringify({
+        ok: false,
+        ios_iap_pending: true,
+        message: "Apple uygulama içi satın alma hazırlanıyor."
+      }), {
+        status: 409,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }));
+    }
+
+    return originalFetch.apply(this, arguments);
+  };
+
+  document.addEventListener("click", function(event){
+    const target = event.target && event.target.closest
+      ? event.target.closest("a, button")
+      : null;
+
+    if (!target) return;
+
+    const creditsMount = document.getElementById("mobileCreditsMount");
+    const insideCredits = creditsMount && creditsMount.contains(target);
+
+    const href = target.getAttribute("href") || "";
+    const action = target.getAttribute("formaction") || "";
+    const text = String(target.textContent || "").toLowerCase();
+
+    const looksLikePayment =
+      insideCredits ||
+      isPaymentUrl(href) ||
+      isPaymentUrl(action) ||
+      text.includes("satın") ||
+      text.includes("paketi seç") ||
+      text.includes("kredi al") ||
+      text.includes("buy") ||
+      text.includes("purchase");
+
+    const isSafeCreditsNav =
+      href === "#credits" ||
+      href === "/studio.ios.html#credits" ||
+      href === "studio.ios.html#credits";
+
+    if (!looksLikePayment || isSafeCreditsNav) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    showIapPendingMessage();
+  }, true);
+})();
+</script>
 </body>
 </html>
