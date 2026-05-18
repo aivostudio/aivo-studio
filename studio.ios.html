@@ -2589,7 +2589,7 @@ if (data.verified !== true) {
     return "";
   }
 
-  async function startIosIapPurchase(productId){
+   async function startIosIapPurchase(productId){
     if (!productId) {
       showToast(
         "error",
@@ -2599,48 +2599,81 @@ if (data.verified !== true) {
       return;
     }
 
-    showToast(
-      "info",
-      "Apple ödeme ekranı hazırlanıyor.",
-      "Preparing Apple payment screen."
-    );
+    const CdvPurchase = window.CdvPurchase;
+    const store = CdvPurchase && CdvPurchase.store;
 
-    if (
-      window.Capacitor &&
-      window.Capacitor.Plugins &&
-      window.Capacitor.Plugins.AivoIAP &&
-      typeof window.Capacitor.Plugins.AivoIAP.purchase === "function"
-    ) {
-      try {
-        const result = await window.Capacitor.Plugins.AivoIAP.purchase({
-          productId: productId
-        });
-
-        console.log("[AIVO iOS IAP] purchase result", result);
-
-        showToast(
-          "success",
-          "Satın alma tamamlandı. Kredi doğrulaması hazırlanıyor.",
-          "Purchase completed. Credit verification is being prepared."
-        );
-      } catch (err) {
-        console.error("[AIVO iOS IAP] purchase failed", err);
-
-        showToast(
-          "error",
-          "Satın alma tamamlanamadı.",
-          "Purchase could not be completed."
-        );
-      }
-
+    if (!CdvPurchase || !store) {
+      showToast(
+        "info",
+        "Apple In-App Purchase altyapısı hazırlanıyor. Product ID: " + productId,
+        "Apple In-App Purchase integration is being prepared. Product ID: " + productId
+      );
       return;
     }
 
-    showToast(
-      "info",
-      "Apple In-App Purchase altyapısı hazırlanıyor. Product ID: " + productId,
-      "Apple In-App Purchase integration is being prepared. Product ID: " + productId
-    );
+    try {
+      showToast(
+        "info",
+        "Apple ödeme ekranı hazırlanıyor.",
+        "Preparing Apple payment screen."
+      );
+
+      if (!window.__AIVO_IOS_IAP_STORE_READY__) {
+        Object.keys(AIVO_IOS_IAP_PRODUCTS).forEach(function(key){
+          store.register({
+            id: AIVO_IOS_IAP_PRODUCTS[key],
+            type: CdvPurchase.ProductType.CONSUMABLE,
+            platform: CdvPurchase.Platform.APPLE_APPSTORE
+          });
+        });
+
+        store.error(function(error){
+          console.error("[AIVO iOS IAP] store error", error);
+        });
+
+        await store.initialize([
+          CdvPurchase.Platform.APPLE_APPSTORE
+        ]);
+
+        window.__AIVO_IOS_IAP_STORE_READY__ = true;
+      }
+
+      await store.update();
+
+      const product = store.get(
+        productId,
+        CdvPurchase.Platform.APPLE_APPSTORE
+      );
+
+      const offer = product && product.getOffer ? product.getOffer() : null;
+
+      if (!offer) {
+        showToast(
+          "error",
+          "Apple ürün bilgisi alınamadı: " + productId,
+          "Apple product information could not be loaded: " + productId
+        );
+        return;
+      }
+
+      const result = await offer.order();
+
+      console.log("[AIVO iOS IAP] order result", result);
+
+      showToast(
+        "success",
+        "Apple satın alma ekranı açıldı.",
+        "Apple purchase screen opened."
+      );
+    } catch (err) {
+      console.error("[AIVO iOS IAP] order failed", err);
+
+      showToast(
+        "error",
+        "Satın alma başlatılamadı.",
+        "Purchase could not be started."
+      );
+    }
   }
 
   function isPaymentUrl(value){
