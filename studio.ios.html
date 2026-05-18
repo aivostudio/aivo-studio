@@ -2776,13 +2776,16 @@ if (data.verified !== true) {
             ? item.transactionId
             : "";
 
-                console.log("[AIVO iOS IAP] updated item ignored for credit write", {
-            productId: updatedProductId,
-            transactionId: updatedTransactionId,
-            hasReceipt: !!appStoreReceipt
-          });
+          if (appStoreReceipt) {
+  sendIosIapVerifyPayload("updated", {
+    productId: updatedProductId,
+    transactionId: updatedTransactionId,
+    receipt: appStoreReceipt,
+    rawUpdatedItem: item || null
+  });
+}
 
-          return;
+return;
         });
       } catch (listenerErr) {
         console.error("[AIVO iOS IAP] listener setup failed", listenerErr);
