@@ -133,7 +133,16 @@ try {
         message: "Purchase already processed.",
       });
     }
+   const appleVerifyData = await verifyAppleReceipt(receipt);
 
+if (!appleVerifyData || appleVerifyData.status !== 0) {
+  return res.status(400).json({
+    ok: false,
+    provider: "apple_iap",
+    error: "apple_receipt_not_verified",
+    appleStatus: appleVerifyData && appleVerifyData.status,
+  });
+}
     const creditKey = `credits:${userId}`;
     const currentCredits = Number(await kvGet(creditKey).catch(() => 0)) || 0;
     const nextCredits = currentCredits + credits;
