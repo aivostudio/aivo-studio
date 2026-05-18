@@ -2636,6 +2636,30 @@ if (data.verified !== true) {
           ""
         ).trim();
 
+            const clientVerifyKey = [
+          "ios_iap_client_verify",
+          payloadProductId,
+          transactionId || receipt.slice(0, 80)
+        ].join(":");
+
+        window.__AIVO_IOS_IAP_VERIFY_KEYS__ = window.__AIVO_IOS_IAP_VERIFY_KEYS__ || {};
+
+        if (window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey]) {
+          console.log("[AIVO iOS IAP] duplicate client verify skipped", {
+            source: source,
+            productId: payloadProductId,
+            transactionId: transactionId,
+            hasReceipt: !!receipt
+          });
+          return {
+            ok: true,
+            deduped: true,
+            skippedClientDuplicate: true
+          };
+        }
+
+        window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = true;
+
         console.log("[AIVO iOS IAP] transaction payload", {
           source: source,
           productId: payloadProductId,
