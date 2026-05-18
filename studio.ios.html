@@ -2665,7 +2665,20 @@ if (data.verified !== true) {
           return null;
         });
 
-        console.log("[AIVO iOS IAP] verify response", verifyData);
+             console.log("[AIVO iOS IAP] verify response", verifyData);
+
+        if (verifyData && verifyData.ok && Number.isFinite(Number(verifyData.creditsAfter))) {
+          const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
+          if (topCreditBalance) {
+            topCreditBalance.textContent = "Kredi " + Number(verifyData.creditsAfter);
+          }
+
+          showToast(
+            "success",
+            "Apple satın alma doğrulandı. Krediler eklendi.",
+            "Apple purchase verified. Credits added."
+          );
+        }
 
         return verifyData;
       } catch (verifyErr) {
