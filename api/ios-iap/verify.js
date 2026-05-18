@@ -12,6 +12,7 @@ function sha256(value) {
     .digest("hex");
 }
 
+
 async function verifyAppleReceipt(receipt) {
   const productionUrl = "https://buy.itunes.apple.com/verifyReceipt";
   const sandboxUrl = "https://sandbox.itunes.apple.com/verifyReceipt";
