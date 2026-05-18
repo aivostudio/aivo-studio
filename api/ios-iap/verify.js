@@ -98,10 +98,18 @@ export default async function handler(req, res) {
       });
     }
 
-    const purchaseFingerprint = transactionId
-      ? `tx:${transactionId}`
-      : `receipt:${sha256(receipt)}`;
+ const purchaseDate = String(
+  body.purchaseDate ||
+  body.rawUpdatedItem?.purchaseDate ||
+  body.rawResult?.purchaseDate ||
+  ""
+).trim();
 
+const purchaseFingerprint = transactionId
+  ? `tx:${transactionId}`
+  : purchaseDate
+    ? `xcode:${productId}:${purchaseDate}`
+    : `receipt:${sha256(receipt)}`;
     const idempotencyKey = [
       "ios_iap",
       userId,
