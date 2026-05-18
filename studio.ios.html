@@ -2775,9 +2775,14 @@ window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
             ? firstProduct.id
             : productId;
 
-          const updatedTransactionId = item && item.transactionId
-            ? item.transactionId
-            : "";
+        const updatedTransactionId =
+  item && item.transactionId
+    ? item.transactionId
+    : nativeData && nativeData.transactionId
+      ? nativeData.transactionId
+      : nativeData && nativeData.transactions && nativeData.transactions[0] && nativeData.transactions[0].transactionId
+        ? nativeData.transactions[0].transactionId
+        : "";
 
           if (appStoreReceipt) {
   sendIosIapVerifyPayload("updated", {
