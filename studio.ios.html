@@ -2109,12 +2109,12 @@ if (data.verified !== true) {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            productId: productId,
-            transactionId: "",
-            receipt: "",
-            rawResult: result || null
-          })
+         body: JSON.stringify({
+  productId: productId,
+  transactionId: String(result && (result.transactionId || result.id || result.transaction && result.transaction.id) || "").trim(),
+  receipt: String(result && (result.receipt || result.transaction && result.transaction.receipt) || "").trim(),
+  rawResult: result || null
+})
         });
 
         const verifyData = await verifyRes.json().catch(function(){
