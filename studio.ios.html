@@ -2629,12 +2629,22 @@ if (data.verified !== true) {
           ""
         ).trim();
 
-        const payloadProductId = String(
-          safePayload.productId ||
-          safePayload.product_id ||
-          productId ||
-          ""
-        ).trim();
+       const payloadProductId = String(
+  safePayload.productId ||
+  safePayload.product_id ||
+  productId ||
+  ""
+).trim();
+
+const purchaseDate = String(
+  safePayload.purchaseDate ||
+  safePayload.rawUpdatedItem?.purchaseDate ||
+  safePayload.rawUpdatedItem?.transactionDate ||
+  safePayload.rawUpdatedItem?.lastRenewalDate ||
+  safePayload.rawTransaction?.purchaseDate ||
+  safePayload.rawReceipt?.transactions?.[0]?.purchaseDate ||
+  Date.now()
+).trim();
 
             const clientVerifyKey = [
           "ios_iap_client_verify",
@@ -2678,14 +2688,15 @@ window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
           headers: {
             "Content-Type": "application/json"
           },
-                 body: JSON.stringify({
-            productId: payloadProductId,
-            transactionId: transactionId,
-            receipt: receipt,
-            userId: String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase(),
-            source: source,
-            rawPayload: safePayload
-          })
+            body: JSON.stringify({
+  productId: payloadProductId,
+  transactionId: transactionId,
+  receipt: receipt,
+  purchaseDate: purchaseDate,
+  userId: String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase(),
+  source: source,
+  rawPayload: safePayload
+})
         });
 
         const verifyData = await verifyRes.json().catch(function(){
