@@ -2719,8 +2719,36 @@ if (data.verified !== true) {
           }
         });
 
-        store.when().updated(function(item){
+           store.when().updated(function(item){
           console.log("[AIVO iOS IAP] updated item", item);
+
+          const products = item && item.products ? item.products : [];
+          const firstProduct = products && products[0] ? products[0] : null;
+
+          const nativeData = item && item.nativeData ? item.nativeData : {};
+          const appStoreReceipt = nativeData && nativeData.appStoreReceipt
+            ? nativeData.appStoreReceipt
+            : "";
+
+          const updatedProductId = firstProduct && firstProduct.id
+            ? firstProduct.id
+            : productId;
+
+          const updatedTransactionId = item && item.transactionId
+            ? item.transactionId
+            : "";
+
+          if (!updatedProductId || (!updatedTransactionId && !appStoreReceipt)) {
+            return;
+          }
+
+          sendIosIapVerifyPayload("updated", {
+            productId: updatedProductId,
+            transactionId: updatedTransactionId,
+            receipt: appStoreReceipt,
+            nativeData: nativeData,
+            rawItem: item || null
+          });
         });
       } catch (listenerErr) {
         console.error("[AIVO iOS IAP] listener setup failed", listenerErr);
