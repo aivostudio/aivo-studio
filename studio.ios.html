@@ -2589,7 +2589,7 @@ if (data.verified !== true) {
     return "";
   }
 
-   async function startIosIapPurchase(productId){
+  async function startIosIapPurchase(productId){
     if (!productId) {
       showToast(
         "error",
@@ -2611,12 +2611,130 @@ if (data.verified !== true) {
       return;
     }
 
+    async function sendIosIapVerifyPayload(source, payload){
+      try {
+        const safePayload = payload || {};
+        const transactionId = String(
+          safePayload.transactionId ||
+          safePayload.id ||
+          safePayload.originalTransactionId ||
+          ""
+        ).trim();
+
+        const receipt = String(
+          safePayload.receipt ||
+          safePayload.appStoreReceipt ||
+          safePayload.purchaseReceipt ||
+          safePayload.transactionReceipt ||
+          ""
+        ).trim();
+
+        const payloadProductId = String(
+          safePayload.productId ||
+          safePayload.product_id ||
+          productId ||
+          ""
+        ).trim();
+
+        console.log("[AIVO iOS IAP] transaction payload", {
+          source: source,
+          productId: payloadProductId,
+          transactionId: transactionId,
+          hasReceipt: !!receipt,
+          raw: safePayload
+        });
+
+        const verifyRes = await fetch("/api/ios-iap/verify", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            productId: payloadProductId,
+            transactionId: transactionId,
+            receipt: receipt,
+            source: source,
+            rawPayload: safePayload
+          })
+        });
+
+        const verifyData = await verifyRes.json().catch(function(){
+          return null;
+        });
+
+        console.log("[AIVO iOS IAP] verify response", verifyData);
+
+        return verifyData;
+      } catch (verifyErr) {
+        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
+        return null;
+      }
+    }
+
+    function setupIosIapListeners(){
+      if (window.__AIVO_IOS_IAP_LISTENERS_READY__) return;
+      window.__AIVO_IOS_IAP_LISTENERS_READY__ = true;
+
+      store.error(function(error){
+        console.error("[AIVO iOS IAP] store error", error);
+      });
+
+      try {
+        store.when().approved(function(transaction){
+          console.log("[AIVO iOS IAP] approved transaction", transaction);
+
+          sendIosIapVerifyPayload("approved", {
+            productId: transaction && transaction.products && transaction.products[0]
+              ? transaction.products[0].id
+              : productId,
+            transactionId: transaction && transaction.transactionId ? transaction.transactionId : "",
+            originalTransactionId: transaction && transaction.originalTransactionId ? transaction.originalTransactionId : "",
+            receipt: transaction && transaction.receipt ? transaction.receipt : "",
+            rawTransaction: transaction || null
+          });
+
+          if (transaction && typeof transaction.verify === "function") {
+            transaction.verify();
+          }
+        });
+
+        store.when().verified(function(receipt){
+          console.log("[AIVO iOS IAP] verified receipt", receipt);
+
+          sendIosIapVerifyPayload("verified", {
+            productId: receipt && receipt.transactions && receipt.transactions[0] && receipt.transactions[0].products && receipt.transactions[0].products[0]
+              ? receipt.transactions[0].products[0].id
+              : productId,
+            transactionId: receipt && receipt.transactions && receipt.transactions[0] && receipt.transactions[0].transactionId
+              ? receipt.transactions[0].transactionId
+              : "",
+            receipt: receipt && receipt.nativeData ? JSON.stringify(receipt.nativeData) : "",
+            rawReceipt: receipt || null
+          });
+
+          if (receipt && typeof receipt.finish === "function") {
+            receipt.finish();
+          }
+        });
+
+        store.when().updated(function(item){
+          console.log("[AIVO iOS IAP] updated item", item);
+        });
+      } catch (listenerErr) {
+        console.error("[AIVO iOS IAP] listener setup failed", listenerErr);
+      }
+    }
+
     try {
       showToast(
         "info",
         "Apple ödeme ekranı hazırlanıyor.",
         "Preparing Apple payment screen."
       );
+
+      setupIosIapListeners();
 
       if (!window.__AIVO_IOS_IAP_STORE_READY__) {
         Object.keys(AIVO_IOS_IAP_PRODUCTS).forEach(function(key){
@@ -2625,10 +2743,6 @@ if (data.verified !== true) {
             type: CdvPurchase.ProductType.CONSUMABLE,
             platform: CdvPurchase.Platform.APPLE_APPSTORE
           });
-        });
-
-        store.error(function(error){
-          console.error("[AIVO iOS IAP] store error", error);
         });
 
         await store.initialize([
@@ -2659,30 +2773,7 @@ if (data.verified !== true) {
       const result = await offer.order();
 
       console.log("[AIVO iOS IAP] order result", result);
-           try {
-        const verifyRes = await fetch("/api/ios-iap/verify", {
-          method: "POST",
-          credentials: "include",
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            productId: productId,
-            transactionId: "",
-            receipt: "",
-            rawResult: result || null
-          })
-        });
 
-        const verifyData = await verifyRes.json().catch(function(){
-          return null;
-        });
-
-        console.log("[AIVO iOS IAP] verify response", verifyData);
-      } catch (verifyErr) {
-        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
-      }
       showToast(
         "success",
         "Apple satın alma ekranı açıldı.",
