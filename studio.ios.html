@@ -2659,7 +2659,30 @@ if (data.verified !== true) {
       const result = await offer.order();
 
       console.log("[AIVO iOS IAP] order result", result);
+           try {
+        const verifyRes = await fetch("/api/ios-iap/verify", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            productId: productId,
+            transactionId: "",
+            receipt: "",
+            rawResult: result || null
+          })
+        });
 
+        const verifyData = await verifyRes.json().catch(function(){
+          return null;
+        });
+
+        console.log("[AIVO iOS IAP] verify response", verifyData);
+      } catch (verifyErr) {
+        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
+      }
       showToast(
         "success",
         "Apple satın alma ekranı açıldı.",
