@@ -48,7 +48,7 @@
 function getMobilePriceRegion(){
   const lang = String(
     document.documentElement.lang ||
-    localStorage.getItem("aivo_mobile_lang") ||
+  localStorage.getItem("aivo_mobile_language")
     navigator.language ||
     "tr"
   ).toLowerCase();
@@ -317,11 +317,11 @@ function applyMobileCreditPrices(){
       startCheckout(planKey, button);
     });
   }
-
-  window.mobileCreditsInit = function(){
-    bindClicks();
-    hydrateCredits();
-  };
+window.mobileCreditsInit = function(){
+  bindClicks();
+  hydrateCredits();
+  applyMobileCreditPrices();
+};
 function boot(){
   bindClicks();
   hydrateCredits();
