@@ -427,3 +427,15 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
   background-clip:text;
   color:transparent;
 }
+.mobile-credits-hero{
+  min-height:156px !important;
+  padding:16px 16px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+.mobile-credits-hero h2{
+  margin:8px 0 8px !important;
+}
