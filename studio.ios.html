@@ -2775,14 +2775,30 @@ window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
             ? firstProduct.id
             : productId;
 
-        const updatedTransactionId =
+ const updatedTransactionId =
   item && item.transactionId
     ? item.transactionId
     : nativeData && nativeData.transactionId
       ? nativeData.transactionId
-      : nativeData && nativeData.transactions && nativeData.transactions[0] && nativeData.transactions[0].transactionId
-        ? nativeData.transactions[0].transactionId
-        : "";
+      : nativeData &&
+        nativeData.originalTransactionId
+        ? nativeData.originalTransactionId
+        : nativeData &&
+          nativeData.latest_receipt_info &&
+          nativeData.latest_receipt_info[0] &&
+          nativeData.latest_receipt_info[0].transaction_id
+          ? nativeData.latest_receipt_info[0].transaction_id
+          : nativeData &&
+            nativeData.transactions &&
+            nativeData.transactions[0] &&
+            nativeData.transactions[0].transactionId
+            ? nativeData.transactions[0].transactionId
+            : "";
+
+             console.log("[AIVO iOS IAP] extracted transaction id", {
+  transactionId: updatedTransactionId,
+  nativeData: nativeData
+});
 
           if (appStoreReceipt) {
   sendIosIapVerifyPayload("updated", {
