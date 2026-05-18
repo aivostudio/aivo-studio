@@ -428,16 +428,25 @@ body:has(#mobileCreditsMount:not([hidden])) .topbar .credit-pill{
   color:transparent;
 }
 .mobile-credits-hero{
-  padding:22px 18px !important;
-  border-radius:30px !important;
+  padding:12px 13px !important;
+  border-radius:22px !important;
+}
+
+.mobile-credits-pill{
+  margin-bottom:8px !important;
+  padding:6px 9px !important;
+  font-size:10px !important;
 }
 
 .mobile-credits-hero h2{
-  font-size:30px !important;
-  line-height:.98 !important;
-  margin:0 !important;
+  margin:0 0 6px !important;
+  font-size:24px !important;
+  line-height:1 !important;
+  letter-spacing:-.055em !important;
 }
 
 .mobile-credits-hero p{
-  margin:12px 0 0 !important;
+  margin:0 !important;
+  font-size:12px !important;
+  line-height:1.35 !important;
 }
