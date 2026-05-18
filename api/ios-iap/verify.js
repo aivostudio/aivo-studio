@@ -157,18 +157,23 @@ const purchaseFingerprint = transactionId && purchaseDate
         parsed = {};
       }
 
-      return res.status(200).json({
-        ok: true,
-        provider: "apple_iap",
-        verified: true,
-        deduped: true,
-        productId,
-        transactionId,
-        creditsAdded: 0,
-        creditsBefore: parsed.creditsBefore,
-        creditsAfter: parsed.creditsAfter,
-        message: "Purchase already processed.",
-      });
+  return res.status(200).json({
+  ok: true,
+  provider: "apple_iap",
+  verified: true,
+  deduped: true,
+  productId,
+  transactionId,
+  creditsAdded: 0,
+  creditsBefore: parsed.creditsBefore,
+  creditsAfter: parsed.creditsAfter,
+  debug: {
+    purchaseDate,
+    purchaseFingerprint,
+    idempotencyKey
+  },
+  message: "Purchase already processed.",
+});
     }
 
 const appleVerifyData = await verifyAppleReceipt(receipt);
