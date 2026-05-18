@@ -48,8 +48,8 @@
 
 function getMobilePriceRegion(){
   const lang = String(
+    localStorage.getItem("aivo_mobile_language") ||
     document.documentElement.lang ||
-  localStorage.getItem("aivo_mobile_language")
     navigator.language ||
     "tr"
   ).toLowerCase();
