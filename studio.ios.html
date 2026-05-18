@@ -573,10 +573,7 @@ html.aivo-start-tools #mobileHomeMount,
 html.aivo-start-account #mobileHomeMount{
   display:none !important;
 }
-    html.aivo-start-productions .hero,
-html.aivo-start-productions #mobileHomeMount{
-  display:none !important;
-}
+  
 
 html.aivo-start-tools #mobileToolsMount,
 html.aivo-start-account #mobileAccountMount{
@@ -807,7 +804,7 @@ body {
     if (hash && hash !== "#home") {
       document.documentElement.classList.add("aivo-hash-routing-pending");
     }
-  if (hash === "#productions") document.documentElement.classList.add("aivo-start-productions");
+ 
   if (hash === "#tools") document.documentElement.classList.add("aivo-start-tools");
 if (hash === "#account") document.documentElement.classList.add("aivo-start-account");
 if (hash === "#credits") document.documentElement.classList.add("aivo-start-credits");
