@@ -24,6 +24,67 @@
       credits: 500
     }
   };
+  const MOBILE_PRICE_MAP = {
+  tr: {
+    starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
+    standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
+    pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
+    studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
+  },
+  us: {
+    starter: { price: "$4.99", amount: "/ 25 credits", metric: "$0.20 per credit" },
+    standard: { price: "$14.99", amount: "/ 100 credits", metric: "$0.15 per credit" },
+    pro: { price: "$29.99", amount: "/ 200 credits", metric: "$0.15 per credit" },
+    studio: { price: "$69.99", amount: "/ 500 credits", metric: "$0.14 per credit" }
+  },
+  eu: {
+    starter: { price: "€4.99", amount: "/ 25 credits", metric: "€0.20 per credit" },
+    standard: { price: "€14.99", amount: "/ 100 credits", metric: "€0.15 per credit" },
+    pro: { price: "€29.99", amount: "/ 200 credits", metric: "€0.15 per credit" },
+    studio: { price: "€69.99", amount: "/ 500 credits", metric: "€0.14 per credit" }
+  }
+};
+
+function getMobilePriceRegion(){
+  const lang = String(
+    document.documentElement.lang ||
+    localStorage.getItem("aivo_mobile_lang") ||
+    navigator.language ||
+    "tr"
+  ).toLowerCase();
+
+  if (lang.startsWith("tr")) return "tr";
+
+  if (
+    lang.startsWith("de") ||
+    lang.startsWith("fr") ||
+    lang.startsWith("es") ||
+    lang.startsWith("it") ||
+    lang.startsWith("nl") ||
+    lang.startsWith("pt")
+  ) {
+    return "eu";
+  }
+
+  return "us";
+}
+
+function applyMobileCreditPrices(){
+  const region = getMobilePriceRegion();
+  const prices = MOBILE_PRICE_MAP[region] || MOBILE_PRICE_MAP.tr;
+
+  Object.keys(prices).forEach(function(key){
+    const item = prices[key];
+
+    const priceEl = document.querySelector('[data-mobile-price="' + key + '"]');
+    const amountEl = document.querySelector('[data-mobile-price-label="' + key + '"]');
+    const metricEl = document.querySelector('[data-mobile-price-metric="' + key + '"]');
+
+    if (priceEl) priceEl.textContent = item.price;
+    if (amountEl) amountEl.textContent = item.amount;
+    if (metricEl) metricEl.textContent = item.metric;
+  });
+}
 
   function $(selector, root){
     return (root || document).querySelector(selector);
@@ -261,11 +322,11 @@
     bindClicks();
     hydrateCredits();
   };
-
-  function boot(){
-    bindClicks();
-    hydrateCredits();
-  }
+function boot(){
+  bindClicks();
+  hydrateCredits();
+  applyMobileCreditPrices();
+}
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });
