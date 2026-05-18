@@ -6,6 +6,33 @@ const kvGet = kv.kvGet;
 const kvSet = kv.kvSet;
 
 function sha256(value) {
+  async function verifyAppleReceipt(receipt) {
+  const productionUrl = "https://buy.itunes.apple.com/verifyReceipt";
+  const sandboxUrl = "https://sandbox.itunes.apple.com/verifyReceipt";
+
+  async function postToApple(url) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "receipt-data": receipt,
+        "exclude-old-transactions": true,
+      }),
+    });
+
+    return response.json();
+  }
+
+  let data = await postToApple(productionUrl);
+
+  if (data && data.status === 21007) {
+    data = await postToApple(sandboxUrl);
+  }
+
+  return data;
+}
   return crypto
     .createHash("sha256")
     .update(String(value || ""))
