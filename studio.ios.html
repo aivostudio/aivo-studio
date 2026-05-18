@@ -801,10 +801,9 @@ body {
   try {
     const hash = window.location.hash;
 
-  if (hash && hash !== "#home") {
-  document.documentElement.classList.add("aivo-hash-routing-pending");
-  document.body.style.opacity = "0";
-}
+    if (hash && hash !== "#home") {
+      document.documentElement.classList.add("aivo-hash-routing-pending");
+    }
  
   if (hash === "#tools") document.documentElement.classList.add("aivo-start-tools");
 if (hash === "#account") document.documentElement.classList.add("aivo-start-account");
@@ -2304,7 +2303,6 @@ function applyMobileHashRoute(){
 
 applyMobileHashRoute();
 document.documentElement.classList.remove("aivo-hash-routing-pending");
-document.body.style.opacity = "1";
 window.addEventListener("hashchange", applyMobileHashRoute);
 
 document.addEventListener("click", function(e){
