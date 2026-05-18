@@ -1371,8 +1371,10 @@ try {
     });
   }
 
-  applyPrices();
-  document.addEventListener("aivo:language-change", applyPrices);
+ applyPrices();
+setTimeout(applyPrices, 0);
+setTimeout(applyPrices, 250);
+document.addEventListener("aivo:language-change", applyPrices);
 })();
 </script>
 </body>
