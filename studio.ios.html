@@ -2771,57 +2771,70 @@ window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
           }
         });
 
-           store.when().updated(function(item){
-          console.log("[AIVO iOS IAP] updated item", item);
+     store.when().updated(function(item){
+  console.log("[AIVO iOS IAP] updated item", item);
 
-          const products = item && item.products ? item.products : [];
-          const firstProduct = products && products[0] ? products[0] : null;
+  const nativeData = item && item.nativeData ? item.nativeData : {};
+  const appStoreReceipt = nativeData && nativeData.appStoreReceipt
+    ? nativeData.appStoreReceipt
+    : "";
 
-          const nativeData = item && item.nativeData ? item.nativeData : {};
-          const appStoreReceipt = nativeData && nativeData.appStoreReceipt
-            ? nativeData.appStoreReceipt
-            : "";
+  const transactions = Array.isArray(item && item.transactions)
+    ? item.transactions
+    : [];
 
-          const updatedProductId = firstProduct && firstProduct.id
-            ? firstProduct.id
-            : productId;
+  const creditTransaction = transactions.find(function(tx){
+    const txProduct = tx && tx.products && tx.products[0]
+      ? tx.products[0]
+      : null;
 
- const updatedTransactionId =
-  item && item.transactionId
-    ? item.transactionId
-    : nativeData && nativeData.transactionId
-      ? nativeData.transactionId
-      : nativeData &&
-        nativeData.originalTransactionId
-        ? nativeData.originalTransactionId
-        : nativeData &&
-          nativeData.latest_receipt_info &&
-          nativeData.latest_receipt_info[0] &&
-          nativeData.latest_receipt_info[0].transaction_id
-          ? nativeData.latest_receipt_info[0].transaction_id
-          : nativeData &&
-            nativeData.transactions &&
-            nativeData.transactions[0] &&
-            nativeData.transactions[0].transactionId
-            ? nativeData.transactions[0].transactionId
-            : "";
+    const txProductId = txProduct && txProduct.id
+      ? String(txProduct.id).trim()
+      : "";
 
-             console.log("[AIVO iOS IAP] extracted transaction id", {
-  transactionId: updatedTransactionId,
-  nativeData: nativeData
-});
+    const txId = tx && tx.transactionId
+      ? String(tx.transactionId).trim()
+      : "";
 
-          if (appStoreReceipt) {
+    return (
+      txId &&
+      txProductId &&
+      AIVO_IOS_IAP_PRODUCTS &&
+      Object.values(AIVO_IOS_IAP_PRODUCTS).includes(txProductId)
+    );
+  });
+
+  if (!creditTransaction || !appStoreReceipt) {
+    return;
+  }
+
+  const creditProduct = creditTransaction.products && creditTransaction.products[0]
+    ? creditTransaction.products[0]
+    : null;
+
+  const updatedProductId = creditProduct && creditProduct.id
+    ? String(creditProduct.id).trim()
+    : "";
+
+  const updatedTransactionId = String(creditTransaction.transactionId || "").trim();
+  const updatedPurchaseDate = String(creditTransaction.purchaseDate || "").trim();
+
+  console.log("[AIVO iOS IAP] extracted transaction id", {
+    transactionId: updatedTransactionId,
+    productId: updatedProductId,
+    purchaseDate: updatedPurchaseDate
+  });
+
   sendIosIapVerifyPayload("updated", {
     productId: updatedProductId,
     transactionId: updatedTransactionId,
+    purchaseDate: updatedPurchaseDate,
     receipt: appStoreReceipt,
     rawUpdatedItem: item || null
   });
-}
 
-return;
-        });
+  return;
+});
       } catch (listenerErr) {
         console.error("[AIVO iOS IAP] listener setup failed", listenerErr);
       }
