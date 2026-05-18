@@ -2783,27 +2783,39 @@ window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
     ? item.transactions
     : [];
 
-  const creditTransaction = transactions.find(function(tx){
-    const txProduct = tx && tx.products && tx.products[0]
-      ? tx.products[0]
-      : null;
+const creditTransactions = transactions.filter(function(tx){
+  const txProduct = tx && tx.products && tx.products[0]
+    ? tx.products[0]
+    : null;
 
-    const txProductId = txProduct && txProduct.id
-      ? String(txProduct.id).trim()
-      : "";
+  const txProductId = txProduct && txProduct.id
+    ? String(txProduct.id).trim()
+    : "";
 
-    const txId = tx && tx.transactionId
-      ? String(tx.transactionId).trim()
-      : "";
+  const txId = tx && tx.transactionId
+    ? String(tx.transactionId).trim()
+    : "";
 
-    return (
-      txId &&
-      txProductId &&
-      AIVO_IOS_IAP_PRODUCTS &&
-      Object.values(AIVO_IOS_IAP_PRODUCTS).includes(txProductId)
-    );
-  });
+  return (
+    txId &&
+    txProductId &&
+    AIVO_IOS_IAP_PRODUCTS &&
+    Object.values(AIVO_IOS_IAP_PRODUCTS).includes(txProductId)
+  );
+});
 
+creditTransactions.sort(function(a, b){
+  const aTime = new Date(a && a.purchaseDate ? a.purchaseDate : 0).getTime() || 0;
+  const bTime = new Date(b && b.purchaseDate ? b.purchaseDate : 0).getTime() || 0;
+
+  if (aTime !== bTime) {
+    return bTime - aTime;
+  }
+
+  return Number(b.transactionId || 0) - Number(a.transactionId || 0);
+});
+
+const creditTransaction = creditTransactions[0] || null;
   if (!creditTransaction || !appStoreReceipt) {
     return;
   }
