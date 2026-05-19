@@ -2331,35 +2331,7 @@ if (tool === "atmo") {
   }
 });
   })();
-  window.addEventListener("pageshow", async function(event){
-  if (!event.persisted) return;
 
-  try {
-    const res = await fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store"
-    });
-
-   if (!res.ok) {
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
-  return;
-}
-
-    const data = await res.json();
-
-if (!data || data.ok === false || !data.email) {
-  window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
-  return;
-}
-
-if (data.verified !== true) {
-  window.location.replace("/login.mobile.html?tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.mobile.html");
-  return;
-}
-  } catch (err) {
-   window.location.replace("/login.mobile.html?returnTo=/studio.mobile.html");
-  }
-});
 </script>
   <script>
 (function AIVO_MOBILE_TRAFFIC_HIT(){
