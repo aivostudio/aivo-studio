@@ -1118,7 +1118,7 @@ async function loadSoldCredits(options) {
     await loadUsers();
     await loadProductionStats();
     await loadDailyCreditStats();
-    await loadSoldCredits();
+  await loadSoldCredits({ silent: true });
     setInterval(function () {
   loadSoldCredits({ silent: false });
 }, 30000);
