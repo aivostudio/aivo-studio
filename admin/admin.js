@@ -367,6 +367,27 @@
 
     const whoEl = $("who");
     if (whoEl && state.email) whoEl.textContent = "Giriş: " + state.email;
+    const topUsersRefreshBtn = document.createElement("button");
+topUsersRefreshBtn.type = "button";
+topUsersRefreshBtn.textContent = "Üye Sayısını Güncelle";
+topUsersRefreshBtn.className = "btn";
+topUsersRefreshBtn.style.marginLeft = "12px";
+
+topUsersRefreshBtn.addEventListener("click", async function () {
+  topUsersRefreshBtn.disabled = true;
+  topUsersRefreshBtn.textContent = "Güncelleniyor...";
+
+  try {
+    await loadUsers();
+  } catch (_) {}
+
+  topUsersRefreshBtn.disabled = false;
+  topUsersRefreshBtn.textContent = "Üye Sayısını Güncelle";
+});
+
+if (whoEl && whoEl.parentElement) {
+  whoEl.parentElement.appendChild(topUsersRefreshBtn);
+}
 
     const btnCheck = $("btnCheck");
     if (btnCheck) {
