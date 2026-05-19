@@ -2293,6 +2293,28 @@ if (data.verified !== true) {
   }
 });
 </script>
+  <script>
+(function AIVO_MOBILE_TRAFFIC_HIT(){
+  try {
+    const page =
+      window.location.pathname +
+      window.location.search +
+      window.location.hash;
+
+    fetch("/api/traffic/hit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      keepalive: true,
+      body: JSON.stringify({
+        page: page || "/studio.mobile.html"
+      })
+    }).catch(function(){});
+  } catch (e) {}
+})();
+</script>
 <script>
 (function AIVO_MOBILE_PRESENCE_PING(){
   try {
@@ -2347,5 +2369,6 @@ if (data.verified !== true) {
   } catch (err) {}
 })();
 </script>
+  
 </body>
 </html>
