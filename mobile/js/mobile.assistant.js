@@ -1,9 +1,18 @@
 (function () {
-  if (window.__AIVO_MOBILE_ASSISTANT__) return;
-    // 🔒 AUTH CHECK – guest ise widget hiç oluşturma
+  const existingLauncher = document.querySelector(".aivo-assistant-launcher");
+  const existingPanel = document.querySelector(".aivo-assistant-panel");
+
+  if (window.__AIVO_MOBILE_ASSISTANT__ && existingLauncher && existingPanel) return;
+
+  if (window.__AIVO_MOBILE_ASSISTANT__ && (!existingLauncher || !existingPanel)) {
+    window.__AIVO_MOBILE_ASSISTANT__ = false;
+  }
+
+  // 🔒 AUTH CHECK – guest ise widget hiç oluşturma
   const hasSession =
     localStorage.getItem("aivo_auth_unified_v1") ||
     localStorage.getItem("aivo_token") ||
+    document.cookie.includes("aivo_sess") ||
     document.cookie.includes("aivo_session");
 
   if (!hasSession) return;
