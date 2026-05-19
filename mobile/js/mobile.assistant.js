@@ -8,14 +8,31 @@
     window.__AIVO_MOBILE_ASSISTANT__ = false;
   }
 
-  // 🔒 AUTH CHECK – guest ise widget hiç oluşturma
+  // 🔒 AUTH CHECK – auth henüz yazılmadıysa auth-ready event'ini bekle
   const hasSession =
     localStorage.getItem("aivo_auth_unified_v1") ||
     localStorage.getItem("aivo_token") ||
     document.cookie.includes("aivo_sess") ||
     document.cookie.includes("aivo_session");
 
-  if (!hasSession) return;
+  if (!hasSession) {
+    if (!window.__AIVO_MOBILE_ASSISTANT_WAITING_AUTH__) {
+      window.__AIVO_MOBILE_ASSISTANT_WAITING_AUTH__ = true;
+
+      document.addEventListener("aivo:auth-ready", function(){
+        window.__AIVO_MOBILE_ASSISTANT_WAITING_AUTH__ = false;
+        window.__AIVO_MOBILE_ASSISTANT__ = false;
+
+        const script = document.createElement("script");
+        script.src = "/mobile/js/mobile.assistant.js?v=4";
+        script.defer = true;
+        document.body.appendChild(script);
+      }, { once: true });
+    }
+
+    return;
+  }
+
   window.__AIVO_MOBILE_ASSISTANT__ = true;
     function tt(key, fallback){
     try {
