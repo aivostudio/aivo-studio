@@ -1030,6 +1030,19 @@ async function loadSoldCredits(options) {
     }
 
     if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
+    const btnUsersTopRefresh = $("btnUsersTopRefresh");
+
+if (btnUsersTopRefresh) {
+  btnUsersTopRefresh.addEventListener("click", async function () {
+    btnUsersTopRefresh.disabled = true;
+    btnUsersTopRefresh.textContent = "Güncelleniyor...";
+
+    await loadUsers();
+
+    btnUsersTopRefresh.disabled = false;
+    btnUsersTopRefresh.textContent = "Üye Güncelle";
+  });
+}
     if (usersSearch) usersSearch.addEventListener("input", () => renderUsers(filterUsers(usersRaw, usersSearch.value)));
 
     if (usersTable) {
