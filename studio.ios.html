@@ -2097,26 +2097,38 @@ if (policyBackBtn) {
       return;
     }
 
+  await navigator.clipboard.writeText(shareUrl);
+
+if (window.mobileToast) {
+  window.mobileToast.success(
+    String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+      ? "AIVO link copied."
+      : "AIVO linki kopyalandı."
+  );
+}
+} catch (err) {
+  try {
     await navigator.clipboard.writeText(shareUrl);
 
     if (window.mobileToast) {
-      window.mobileToast.success(window.t ? window.t("share.copied") : "AIVO linki kopyalandı.");
+      window.mobileToast.success(
+        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+          ? "AIVO link copied."
+          : "AIVO linki kopyalandı."
+      );
     }
-  } catch (err) {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-
-      if (window.mobileToast) {
-        window.mobileToast.success(window.t ? window.t("share.copied") : "AIVO linki kopyalandı.");
-      }
-    } catch (copyErr) {
-      if (window.mobileToast) {
-        window.mobileToast.error(window.t ? window.t("share.failed") : "Paylaşım başlatılamadı.");
-      }
+  } catch (copyErr) {
+    if (window.mobileToast) {
+      window.mobileToast.error(
+        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+          ? "Sharing could not be started."
+          : "Paylaşım başlatılamadı."
+      );
     }
   }
+}
 
-  return;
+return;
 }
    if (profileBtn) {
   e.preventDefault();
