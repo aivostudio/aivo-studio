@@ -2003,9 +2003,23 @@ if (accountNav) {
     if (lipsyncMount) lipsyncMount.hidden = true;
     if (toolsMount) toolsMount.hidden = true;
     if (creditsMount) creditsMount.hidden = true;
+    if (policyMount) policyMount.hidden = true;
     if (accountMount) accountMount.hidden = false;
 
+    const accountMenu = accountMount ? accountMount.querySelector("[data-mobile-account-menu]") : null;
+    const profilePanel = accountMount ? accountMount.querySelector("[data-mobile-account-profile]") : null;
+    const invoicesPanel = accountMount ? accountMount.querySelector("[data-mobile-account-invoices]") : null;
+    const settingsPanel = accountMount ? accountMount.querySelector("[data-mobile-account-settings]") : null;
+    const contactPanel = accountMount ? accountMount.querySelector("[data-mobile-account-contact]") : null;
+
+    if (accountMenu) accountMenu.hidden = false;
+    if (profilePanel) profilePanel.hidden = true;
+    if (invoicesPanel) invoicesPanel.hidden = true;
+    if (settingsPanel) settingsPanel.hidden = true;
+    if (contactPanel) contactPanel.hidden = true;
+
     setActiveNav(accountNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
     if (policyMount) {
