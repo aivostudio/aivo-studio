@@ -822,10 +822,7 @@
 
       soldCreditsPackages.innerHTML = html;
     }
-
-async function loadSoldCredits() {
-  let aivoLastPurchaseKey = "";
-let aivoPurchaseSoundReady = false;
+let aivoLastPurchaseKey = "";
 
 function playAivoPurchaseSound() {
   try {
@@ -863,6 +860,9 @@ function getPurchaseKey(items) {
     ""
   );
 }
+async function loadSoldCredits(options) {
+  const silent = !!(options && options.silent);
+
   const selectedDate =
     String(
       soldCreditsDate && soldCreditsDate.value
@@ -886,6 +886,18 @@ function getPurchaseKey(items) {
 
   if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
     const purchasedItems = purchasesData.items;
+        const latestPurchaseKey = getPurchaseKey(purchasedItems);
+
+    if (aivoLastPurchaseKey && latestPurchaseKey && latestPurchaseKey !== aivoLastPurchaseKey && !silent) {
+      playAivoPurchaseSound();
+      try {
+        if (window.toast) toast.success("Yeni kredi satışı", "Yeni bir kredi satın alımı geldi.");
+      } catch (_) {}
+    }
+
+    if (latestPurchaseKey) {
+      aivoLastPurchaseKey = latestPurchaseKey;
+    }
     const purchasedCredits = purchasedItems.reduce((sum, item) => {
       return sum + Number(item && item.credits ? item.credits : 0);
     }, 0);
@@ -1107,6 +1119,9 @@ function getPurchaseKey(items) {
     await loadProductionStats();
     await loadDailyCreditStats();
     await loadSoldCredits();
+    setInterval(function () {
+  loadSoldCredits({ silent: false });
+}, 30000);
  
 
     // TRAFFIC STATS
