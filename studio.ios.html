@@ -2527,35 +2527,7 @@ function getAivoMobileLoginUrl(extraQuery){
   var returnTo = "/studio.ios.html" + (window.location.hash || "");
   return "/login.ios.html?returnTo=" + encodeURIComponent(returnTo);
 }
-  window.addEventListener("pageshow", async function(event){
-  if (!event.persisted) return;
 
-  try {
-    const res = await fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store"
-    });
-
-   if (!res.ok) {
- window.location.replace(getAivoMobileLoginUrl());
-  return;
-}
-
-    const data = await res.json();
-
-if (!data || data.ok === false || !data.email) {
-  window.location.replace(getAivoMobileLoginUrl());
-  return;
-}
-
-if (data.verified !== true) {
- window.location.replace(getAivoMobileLoginUrl("tf=warning&tm=E-posta doğrulaması gerekiyor.&returnTo=/studio.ios.html"));
-  return;
-}
-  } catch (err) {
- window.location.replace(getAivoMobileLoginUrl());
-  }
-});
 </script>
 
 <script>
