@@ -824,6 +824,45 @@
     }
 
 async function loadSoldCredits() {
+  let aivoLastPurchaseKey = "";
+let aivoPurchaseSoundReady = false;
+
+function playAivoPurchaseSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.12);
+
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.22, ctx.currentTime + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.38);
+  } catch (_) {}
+}
+
+function getPurchaseKey(items) {
+  if (!Array.isArray(items) || !items.length) return "";
+  const latest = items[0] || {};
+  return String(
+    latest.order_id ||
+    latest.oid ||
+    latest.created_at ||
+    latest.email ||
+    ""
+  );
+}
   const selectedDate =
     String(
       soldCreditsDate && soldCreditsDate.value
