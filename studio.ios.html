@@ -2080,6 +2080,44 @@ if (policyBackBtn) {
 
   return;
 }
+  if (shareBtn) {
+  e.preventDefault();
+
+  const shareUrl = "https://aivo.tr";
+  const shareText = "AIVO ile müzik, kapak, video ve çizgifilm üretimini mobilde dene: https://aivo.tr";
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "AIVO",
+        text: shareText,
+        url: shareUrl
+      });
+
+      return;
+    }
+
+    await navigator.clipboard.writeText(shareUrl);
+
+    if (window.mobileToast) {
+      window.mobileToast.success(window.t ? window.t("share.copied") : "AIVO linki kopyalandı.");
+    }
+  } catch (err) {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+
+      if (window.mobileToast) {
+        window.mobileToast.success(window.t ? window.t("share.copied") : "AIVO linki kopyalandı.");
+      }
+    } catch (copyErr) {
+      if (window.mobileToast) {
+        window.mobileToast.error(window.t ? window.t("share.failed") : "Paylaşım başlatılamadı.");
+      }
+    }
+  }
+
+  return;
+}
    if (profileBtn) {
   e.preventDefault();
   if (accountMenu) accountMenu.hidden = true;
