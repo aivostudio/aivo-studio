@@ -738,35 +738,53 @@ body {
 
 .mobile-credits-pack-card{
   height:100%;
+  min-height:188px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
 }
 
-.mobile-account-card,
-.account-panel,
-.mobile-account-menu{
-  min-height:calc(100vh - 330px);
+.mobile-credits-pack-card > *{
+  min-width:0;
 }
 
-.mobile-account-menu{
+.mobile-credits-pack-card button,
+.mobile-credits-pack-card a{
+  margin-top:auto;
+}
+
+#mobileAccountMount{
+  min-height:calc(100vh - 260px);
+  display:flex;
+}
+
+.mobile-account-panel{
+  width:100%;
+  min-height:calc(100vh - 360px);
   display:flex;
   flex-direction:column;
 }
 
-.mobile-account-menu > *{
+.mobile-account-panel .mobile-account-row{
   flex:1;
-  display:flex;
-  align-items:center;
+}
+
+.mobile-account-panel .mobile-app-version{
+  margin-top:16px;
 }
   .mobile-account-menu button,
   .mobile-account-menu .account-menu-item{
     min-height:72px;
   }
 
-  .aivo-assistant-fab,
-  .ai-help,
-  .mobile-ai-help{
-    right:calc((100vw - min(760px,100vw)) / 2 + 42px);
-    bottom:118px;
-  }
+.aivo-assistant-fab,
+.ai-help,
+.mobile-ai-help{
+  right:calc((100vw - min(760px,100vw)) / 2 + 42px) !important;
+  bottom:126px !important;
+  left:auto !important;
+  transform:none !important;
+}
 }
   </style>
 
