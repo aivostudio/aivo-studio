@@ -134,7 +134,11 @@
   visibility:visible !important;
   opacity:1 !important;
 }
-
+.topbar .topbar-credit-actions[hidden]{
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+}
 .credit-balance-pill{
   min-width:82px;
 }
@@ -709,6 +713,7 @@ html.aivo-hash-routing-pending body{
         var st = document.getElementById("aivo-auth-gate-style");
         if (st) st.remove();
         document.documentElement.style.visibility = "visible";
+        document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
         try {
           document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
@@ -755,7 +760,7 @@ html.aivo-hash-routing-pending body{
         <img src="/aivo-logo.png" alt="AIVO">
       </a>
 
-    <div class="topbar-credit-actions">
+  <div class="topbar-credit-actions" hidden>
   <span class="credit-pill credit-balance-pill" data-mobile-credit-balance>
     Kredi --
   </span>
