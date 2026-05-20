@@ -760,7 +760,7 @@ body {
 
 .mobile-account-panel{
   width:100%;
-  min-height:calc(100vh - 360px);
+  min-height:calc(100vh - 410px);
   display:flex;
   flex-direction:column;
 }
@@ -777,13 +777,31 @@ body {
     min-height:72px;
   }
 
-.aivo-assistant-fab,
-.ai-help,
-.mobile-ai-help{
+
+  .aivo-assistant-launcher{
   right:calc((100vw - min(760px,100vw)) / 2 + 42px) !important;
   bottom:126px !important;
   left:auto !important;
   transform:none !important;
+}
+  .mobile-credits-pack-card{
+  position:relative;
+}
+
+
+  .mobile-credits-pack-card.is-popular{
+  padding-top:18px;
+}
+
+.mobile-credits-pack-card.is-popular .mobile-credits-popular{
+  position:absolute;
+  top:18px;
+  right:18px;
+  margin:0 !important;
+}
+
+.mobile-credits-pack-card.is-popular .mobile-credits-pack-head{
+  padding-right:150px;
 }
 }
   </style>
