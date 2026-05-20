@@ -86,7 +86,7 @@
       <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="Bana uygun paketi öner."
+      data-prompt="${tt("assistant.prompt.package", "Recommend the right package for me.")}"
         data-intent="pricing_guidance"
         data-module="pricing"
         data-action="package_select"
@@ -96,7 +96,7 @@
       <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="Kredi sistemi nasıl çalışıyor?"
+       data-prompt="${tt("assistant.prompt.credits", "How does the credit system work?")}"
         data-intent="pricing_guidance"
         data-module="pricing"
         data-action="credit_info"
@@ -106,7 +106,7 @@
       <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="Fikrimi güçlü, üretime hazır bir prompta çevir. Gerekirse eksikleri tamamla, modüle uygun yaz ve bana direkt kullanabileceğim en güçlü promptu ver."
+      data-prompt="${tt("assistant.prompt.improve", "Turn my idea into a strong, production-ready prompt. Fill in missing details if needed, adapt it to the right module, and give me the strongest prompt I can use directly.")}"
         data-intent="prompt_help"
         data-module=""
         data-action="prompt_help"
@@ -116,7 +116,7 @@
       <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="Sorun yaşıyorum, ne yapmalıyım?"
+       data-prompt="${tt("assistant.prompt.problem", "I’m having a problem. What should I do?")}"
         data-intent="troubleshooting"
         data-module=""
         data-action="troubleshoot"
@@ -126,7 +126,7 @@
       <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="İhtiyacıma göre doğru aracı öner."
+       data-prompt="${tt("assistant.prompt.tool", "Recommend the right tool based on what I need.")}"
         data-intent="module_selection"
         data-module=""
         data-action="recommend_module"
