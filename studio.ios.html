@@ -1647,9 +1647,15 @@ async function hydrateTopCreditBalance(){
     const data = await res.json();
     const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
 
-    topCreditBalance.textContent = "Kredi " + creditValue;
+   topCreditBalance.textContent =
+  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+    ? "Credits " + creditValue
+    : "Kredi " + creditValue;
   } catch (err) {
-    topCreditBalance.textContent = "Kredi --";
+   topCreditBalance.textContent =
+  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+    ? "Credits --"
+    : "Kredi --";
   }
 }
 
