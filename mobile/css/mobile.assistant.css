@@ -269,7 +269,7 @@ bottom: calc(126px + env(safe-area-inset-bottom));
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: rgba(3, 5, 14, .58);
+background: rgba(3, 5, 14, .38);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
