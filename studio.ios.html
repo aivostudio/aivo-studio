@@ -3,6 +3,23 @@
 <head>
   <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>
+(function AIVO_IOS_STUDIO_WEB_GUARD(){
+  try {
+   var isNative =
+  !!window.Capacitor ||
+  !!window.webkit?.messageHandlers?.bridge ||
+  navigator.userAgent.indexOf("Capacitor") !== -1;
+
+    if (isNative) return;
+
+    var hash = window.location.hash || "";
+    window.location.replace("/studio.mobile.html" + hash);
+  } catch (_) {
+    window.location.replace("/studio.mobile.html");
+  }
+})();
+</script>
   <title>AIVO Mobile Studio</title>
 
   <link rel="icon" href="/favicon.ico">
