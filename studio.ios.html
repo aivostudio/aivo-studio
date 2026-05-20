@@ -713,25 +713,49 @@ body {
     height:86px;
     border-radius:28px 28px 0 0;
   }
-
+ .aivo-assistant-fab,
+.ai-help,
+.mobile-ai-help{
+  bottom:118px !important;
+  right:calc(50% - 280px) !important;
+}
   .mobile-tools-grid{
-    grid-template-columns:1fr;
-  }
+  grid-template-columns:1fr;
+  min-height:calc(100vh - 390px);
+  align-content:stretch;
+}
 
-  .mobile-credits-grid,
-  .mobile-pricing-grid,
-  .credits-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:16px;
-  }
+.mobile-tools-grid > *{
+  min-height:92px;
+}
 
-  .mobile-account-card,
-  .account-panel,
-  .mobile-account-menu{
-    min-height:auto;
-  }
+.mobile-credits-pack-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  align-items:start;
+}
 
+.mobile-credits-pack-card{
+  height:100%;
+}
+
+.mobile-account-card,
+.account-panel,
+.mobile-account-menu{
+  min-height:calc(100vh - 330px);
+}
+
+.mobile-account-menu{
+  display:flex;
+  flex-direction:column;
+}
+
+.mobile-account-menu > *{
+  flex:1;
+  display:flex;
+  align-items:center;
+}
   .mobile-account-menu button,
   .mobile-account-menu .account-menu-item{
     min-height:72px;
