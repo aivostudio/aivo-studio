@@ -69,7 +69,10 @@
        <h3 class="aivo-assistant-title">${tt("assistant.title", "AIVO AI Yardım")}</h3>
         <p class="aivo-assistant-subtitle">${tt("assistant.subtitle", "Hızlı yönlendirme, paket, kredi ve prompt desteği")}</p>
       </div>
-      <button type="button" class="aivo-assistant-close" aria-label="Kapat">×</button>
+        <div class="aivo-assistant-actions">
+        <button type="button" class="aivo-assistant-fullscreen" aria-label="Tam ekran">⛶</button>
+        <button type="button" class="aivo-assistant-close" aria-label="Kapat">×</button>
+      </div>
     </div>
 
      <div class="aivo-assistant-quick">
@@ -158,6 +161,7 @@
   mobileAssistantRoot.appendChild(panel);
 
   const closeBtn = panel.querySelector(".aivo-assistant-close");
+  const fullscreenBtn = panel.querySelector(".aivo-assistant-fullscreen");
   const quickButtons = Array.from(panel.querySelectorAll(".aivo-assistant-chip"));
   const messagesEl = panel.querySelector("#aivo-assistant-messages");
   const formEl = panel.querySelector("#aivo-assistant-form");
@@ -688,6 +692,24 @@ ${hintText}`;
 
   launcher.addEventListener("click", togglePanel);
   closeBtn.addEventListener("click", closePanel);
+
+  if (fullscreenBtn) {
+    fullscreenBtn.addEventListener("click", function () {
+      panel.classList.toggle("is-fullscreen");
+
+      fullscreenBtn.textContent = panel.classList.contains("is-fullscreen") ? "↙" : "⛶";
+      fullscreenBtn.setAttribute(
+        "aria-label",
+        panel.classList.contains("is-fullscreen") ? "Küçült" : "Tam ekran"
+      );
+
+      requestAnimationFrame(function () {
+        autoResize();
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+        inputEl.focus();
+      });
+    });
+  }
 
   quickButtons.forEach((button) => {
     button.addEventListener("click", function () {
