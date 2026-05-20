@@ -240,7 +240,7 @@
   left: max(12px, calc((100vw - 430px) / 2 + 12px));
   right: max(12px, calc((100vw - 430px) / 2 + 12px));
 top: calc(104px + env(safe-area-inset-top));
-  bottom: calc(24px + env(safe-area-inset-bottom));
+bottom: calc(96px + env(safe-area-inset-bottom));
   max-width: 406px;
   height: auto;
   max-height: none;
