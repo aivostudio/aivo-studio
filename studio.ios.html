@@ -712,10 +712,16 @@ body {
     height:86px;
     border-radius:28px 28px 0 0;
   }
-
-  .mobile-tools-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
+.mobile-tools-grid{
+  grid-template-columns:1fr;
+}
+      .mobile-credits-grid,
+.mobile-pricing-grid,
+.credits-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
 }
   </style>
 
