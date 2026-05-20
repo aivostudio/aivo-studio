@@ -216,3 +216,51 @@
     bottom: calc(128px + env(safe-area-inset-bottom));
   }
 }
+.aivo-assistant-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.aivo-assistant-fullscreen {
+  border: 0;
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.aivo-assistant-panel.is-fullscreen {
+  left: max(12px, calc((100vw - 430px) / 2 + 12px));
+  right: max(12px, calc((100vw - 430px) / 2 + 12px));
+  top: calc(18px + env(safe-area-inset-top));
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  max-width: 406px;
+  height: auto;
+  max-height: none;
+  border-radius: 26px;
+  z-index: 100000;
+}
+
+.aivo-assistant-panel.is-fullscreen .aivo-assistant-messages {
+  padding-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+  .aivo-assistant-panel.is-fullscreen {
+    left: 12px;
+    right: 12px;
+    top: calc(18px + env(safe-area-inset-top));
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: none;
+  }
+}
