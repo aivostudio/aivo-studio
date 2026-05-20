@@ -264,3 +264,12 @@ bottom: calc(96px + env(safe-area-inset-bottom));
     max-height: none;
   }
 }
+.aivo-assistant-panel.is-fullscreen::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(3, 5, 14, .58);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
