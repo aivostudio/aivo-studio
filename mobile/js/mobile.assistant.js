@@ -76,7 +76,7 @@
       <button
         type="button"
         class="aivo-assistant-chip"
-        data-prompt="Hangi modül ne işe yarar?"
+      data-prompt="${tt("assistant.prompt.modules", "Which module does what?")}"
         data-intent="module_selection"
         data-module=""
         data-action=""
