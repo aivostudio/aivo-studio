@@ -256,8 +256,8 @@ bottom: calc(126px + env(safe-area-inset-bottom));
   .aivo-assistant-panel.is-fullscreen {
     left: 12px;
     right: 12px;
-    top: calc(158px + env(safe-area-inset-top));
-    bottom: calc(156px + env(safe-area-inset-bottom));
+    top: calc(18px + env(safe-area-inset-top));
+    bottom: calc(18px + env(safe-area-inset-bottom));
     width: auto;
     max-width: none;
     height: auto;
