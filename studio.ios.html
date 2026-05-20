@@ -696,9 +696,10 @@ body {
   -webkit-text-size-adjust:100%;
   touch-action:manipulation;
 }
-    @media (min-width: 768px) {
+@media (min-width: 768px) {
   .mobile-shell{
     width:min(760px,100%);
+    min-height:100vh;
     padding:22px 28px 104px;
   }
 
@@ -712,21 +713,36 @@ body {
     height:86px;
     border-radius:28px 28px 0 0;
   }
-.mobile-tools-grid{
-  grid-template-columns:1fr;
-}
-      .mobile-credits-grid,
-.mobile-pricing-grid,
-.credits-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:16px;
-}
-      .mobile-account-card,
-.account-panel,
-.mobile-account-menu{
-  min-height:520px;
-}
+
+  .mobile-tools-grid{
+    grid-template-columns:1fr;
+  }
+
+  .mobile-credits-grid,
+  .mobile-pricing-grid,
+  .credits-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+  }
+
+  .mobile-account-card,
+  .account-panel,
+  .mobile-account-menu{
+    min-height:auto;
+  }
+
+  .mobile-account-menu button,
+  .mobile-account-menu .account-menu-item{
+    min-height:72px;
+  }
+
+  .aivo-assistant-fab,
+  .ai-help,
+  .mobile-ai-help{
+    right:calc((100vw - min(760px,100vw)) / 2 + 42px);
+    bottom:118px;
+  }
 }
   </style>
 
