@@ -173,7 +173,11 @@ padding:58px 14px 20px;
   visibility:visible !important;
   opacity:1 !important;
 }
-
+.topbar .topbar-credit-actions[hidden]{
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+}
 .credit-balance-pill{
   min-width:auto;
 }
@@ -834,6 +838,7 @@ body {
         if (st) st.remove();
 
     document.documentElement.style.visibility = "visible";
+        document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
         try {
           
@@ -884,7 +889,7 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   <img src="/aivo-logo.png" alt="AIVO">
 </a>
 
-  <div class="topbar-credit-actions">
+<div class="topbar-credit-actions" hidden>
   <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
     Kredi --
   </span>
