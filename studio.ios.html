@@ -3120,14 +3120,14 @@ const creditTransaction = creditTransactions[0] || null;
 
       const offer = product && product.getOffer ? product.getOffer() : null;
 
-      if (!offer) {
-        showToast(
-          "error",
-          "Apple ürün bilgisi alınamadı: " + productId,
-          "Apple product information could not be loaded: " + productId
-        );
-        return;
-      }
+    if (!offer) {
+  showToast(
+    "warning",
+    "Apple Store geçici olarak hazır değil. Lütfen biraz sonra tekrar deneyin.",
+    "Apple Store is temporarily unavailable. Please try again shortly."
+  );
+  return;
+}
 
       const result = await offer.order();
 
