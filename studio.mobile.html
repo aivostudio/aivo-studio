@@ -688,12 +688,30 @@ body {
   }
 
   #mobileAccountMount{
+    width:100%;
     min-height:calc(100vh - 260px);
     display:flex;
+    flex-direction:column;
+  }
+
+  #mobileAccountMount > div,
+  #mobileAccountProfileMount,
+  #mobileAccountInvoicesMount,
+  #mobileAccountSettingsMount,
+  #mobileAccountContactMount{
+    width:100%;
+  }
+
+  .mobile-account-panel,
+  #mobileAccountProfileMount > *,
+  #mobileAccountInvoicesMount > *,
+  #mobileAccountSettingsMount > *,
+  #mobileAccountContactMount > *{
+    width:100%;
+    max-width:none;
   }
 
   .mobile-account-panel{
-    width:100%;
     min-height:calc(100vh - 390px);
     display:flex;
     flex-direction:column;
