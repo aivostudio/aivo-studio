@@ -611,8 +611,142 @@ html.aivo-hash-routing-pending body{
   line-height:1.45;
   font-weight:650;
 }
-   </style>
 
+/* iOS WKWebView / iPad input zoom hard fix */
+input,
+textarea,
+select {
+  font-size:16px !important;
+  -webkit-text-size-adjust:100%;
+  transform:none !important;
+}
+
+html,
+body {
+  -webkit-text-size-adjust:100%;
+  touch-action:manipulation;
+}
+
+/* iPad / tablet responsive shell */
+@media (min-width: 768px) {
+  .mobile-shell{
+    width:min(760px,100%);
+    min-height:100vh;
+    padding:22px 28px 104px;
+  }
+
+  .topbar{
+    margin:-22px -28px 22px;
+    padding:54px 28px 22px;
+  }
+
+  .bottom-nav{
+    width:min(760px,100%);
+    height:86px;
+    border-radius:28px 28px 0 0;
+  }
+
+  .aivo-assistant-fab,
+  .ai-help,
+  .mobile-ai-help{
+    bottom:118px !important;
+    right:calc(50% - 280px) !important;
+  }
+
+  .mobile-tools-grid{
+    grid-template-columns:1fr;
+    min-height:calc(100vh - 390px);
+    align-content:stretch;
+  }
+
+  .mobile-tools-grid > *{
+    min-height:92px;
+  }
+
+  .mobile-credits-pack-list{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+    align-items:start;
+  }
+
+  .mobile-credits-pack-card{
+    height:100%;
+    min-height:188px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+
+  .mobile-credits-pack-card > *{
+    min-width:0;
+  }
+
+  .mobile-credits-pack-card button,
+  .mobile-credits-pack-card a{
+    margin-top:auto;
+  }
+
+  #mobileAccountMount{
+    min-height:calc(100vh - 260px);
+    display:flex;
+  }
+
+  .mobile-account-panel{
+    width:100%;
+    min-height:calc(100vh - 390px);
+    display:flex;
+    flex-direction:column;
+  }
+
+  .mobile-account-panel .mobile-account-row{
+    flex:0 0 78px;
+  }
+
+  .mobile-account-panel .mobile-app-version{
+    margin-top:16px;
+  }
+
+  .mobile-account-menu button,
+  .mobile-account-menu .account-menu-item{
+    min-height:72px;
+  }
+
+  .aivo-assistant-launcher{
+    right:calc((100vw - min(760px,100vw)) / 2 + 42px) !important;
+    bottom:126px !important;
+    left:auto !important;
+    transform:none !important;
+  }
+
+  .mobile-credits-pack-card{
+    position:relative;
+  }
+
+  .mobile-credits-pack-card.is-popular{
+    padding-top:18px;
+  }
+
+  .mobile-credits-pack-card.is-popular .mobile-credits-popular{
+    position:absolute;
+    top:18px;
+    right:18px;
+    margin:0 !important;
+  }
+
+  .mobile-credits-pack-card.is-popular .mobile-credits-pack-head{
+    padding-right:150px;
+  }
+
+  .aivo-assistant-panel{
+    left:auto !important;
+    right:calc((100vw - min(760px,100vw)) / 2 + 42px) !important;
+    bottom:172px !important;
+    width:360px !important;
+    max-width:360px !important;
+  }
+}
+   </style>
   <!-- ✅ MOBILE AUTH GATE (desktop gate'in mobile uyarlanmış kopyası) -->
   <style id="aivo-auth-gate-style">
     html { visibility: hidden; }
