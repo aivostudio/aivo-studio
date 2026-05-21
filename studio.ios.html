@@ -753,17 +753,35 @@ body {
   margin-top:auto;
 }
 
-#mobileAccountMount{
-  min-height:calc(100vh - 260px);
-  display:flex;
-}
+  #mobileAccountMount{
+    width:100%;
+    min-height:calc(100vh - 260px);
+    display:flex;
+    flex-direction:column;
+  }
 
-.mobile-account-panel{
-  width:100%;
-  min-height:calc(100vh - 390px);
-  display:flex;
-  flex-direction:column;
-}
+  #mobileAccountMount > div,
+  #mobileAccountProfileMount,
+  #mobileAccountInvoicesMount,
+  #mobileAccountSettingsMount,
+  #mobileAccountContactMount{
+    width:100%;
+  }
+
+  .mobile-account-panel,
+  #mobileAccountProfileMount > *,
+  #mobileAccountInvoicesMount > *,
+  #mobileAccountSettingsMount > *,
+  #mobileAccountContactMount > *{
+    width:100%;
+    max-width:none;
+  }
+
+  .mobile-account-panel{
+    min-height:calc(100vh - 390px);
+    display:flex;
+    flex-direction:column;
+  }
 
 .mobile-account-panel .mobile-account-row{
   flex:0 0 78px;
