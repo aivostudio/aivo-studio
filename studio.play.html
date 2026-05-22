@@ -844,18 +844,17 @@ body {
 </style>
 
   <script>
-  (function AIVO_IOS_STUDIO_HARD_GATE(){
-    if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
-    window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
+ (function AIVO_PLAY_STUDIO_HARD_GATE(){
+    if (window.__AIVO_PLAY_STUDIO_HARD_GATE__) return;
+    window.__AIVO_PLAY_STUDIO_HARD_GATE__ = true;
 
    function goLogin(){
   try {
     const localLogged =
       localStorage.getItem("aivo_logged_in") === "1" &&
       String(localStorage.getItem("aivo_user_email") || "").includes("@");
-
-    if (localLogged && !window.__AIVO_IOS_AUTH_RETRY_DONE__) {
-      window.__AIVO_IOS_AUTH_RETRY_DONE__ = true;
+if (localLogged && !window.__AIVO_PLAY_AUTH_RETRY_DONE__) {
+      window.__AIVO_PLAY_AUTH_RETRY_DONE__ = true;
 
       setTimeout(function(){
         fetch("/api/auth/me", {
