@@ -1225,16 +1225,16 @@ html.aivo-play-leaving body{
         },
         credentials: "include",
         keepalive: true,
-        body: JSON.stringify({
-        page: page || "/index.ios.html"
-        })
+      body: JSON.stringify({
+page: page || "/index.play.html"
+})
       }).catch(function(){});
     } catch (err) {}
   })();
   </script>
-  <script>
+ <script>
 try {
-  localStorage.setItem("aivo_ios_app", "1");
+  localStorage.setItem("aivo_play_app", "1");
 } catch (err) {}
 </script>
   <script>
