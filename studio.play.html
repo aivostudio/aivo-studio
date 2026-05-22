@@ -1485,7 +1485,7 @@ try {
   }
 }
 try {
-  const creditsRes = await fetch("/mobile/modules/mobile.credits.ios.html?v=1", {
+  const creditsRes = await fetch("/mobile/modules/mobile.credits.play.html?v=1", {
     cache: "no-store"
   });
 
@@ -1493,14 +1493,14 @@ try {
     throw new Error("mobile_credits_html_load_failed");
   }
 
-   creditsMount.innerHTML = await creditsRes.text();
+  creditsMount.innerHTML = await creditsRes.text();
 
   if (typeof window.aivoApplyI18n === "function") {
     window.aivoApplyI18n(creditsMount);
   }
 
-   const creditsScript = document.createElement("script");
-  creditsScript.src = "/mobile/js/mobile.credits.ios.js?v=1";
+  const creditsScript = document.createElement("script");
+  creditsScript.src = "/mobile/js/mobile.credits.play.js?v=1";
   creditsScript.defer = true;
   document.body.appendChild(creditsScript);
 } catch (err) {
