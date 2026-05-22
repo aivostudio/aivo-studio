@@ -1,0 +1,3258 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <script>
+(function AIVO_IOS_STUDIO_WEB_GUARD(){
+  try {
+   var isNative =
+  !!window.Capacitor ||
+  !!window.webkit?.messageHandlers?.bridge ||
+  navigator.userAgent.indexOf("Capacitor") !== -1;
+
+    if (isNative) return;
+
+    var hash = window.location.hash || "";
+    window.location.replace("/studio.mobile.html" + hash);
+  } catch (_) {
+    window.location.replace("/studio.mobile.html");
+  }
+})();
+</script>
+  <title>AIVO Mobile Studio</title>
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="stylesheet" href="/css/player.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.home.css?v=1">
+ <link rel="stylesheet" href="/mobile/css/mobile.music.css?v=3">
+<link rel="stylesheet" href="/mobile/css/mobile.cover.css?v=2">
+<link rel="stylesheet" href="/mobile/css/mobile.atmo.css?v=1">
+<link rel="stylesheet" href="/mobile/css/mobile.cartoon.css?v=2">
+<link rel="stylesheet" href="/mobile/css/mobile.photofx.css?v=1">
+ <link rel="stylesheet" href="/mobile/css/mobile.video.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.lipsync.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.account.css?v=1">
+ <link rel="stylesheet" href="/mobile/css/mobile.invoices.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.credits.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.settings.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.policy.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.toast.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.assistant.css?v=1">
+
+  <style>
+    *{box-sizing:border-box}
+        [hidden]{
+      display:none !important;
+    }
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#070914;
+      color:#fff;
+    }
+
+    
+    body{
+      background:
+        radial-gradient(520px 360px at 20% 0%, rgba(139,92,246,.28), transparent 62%),
+        radial-gradient(520px 360px at 90% 20%, rgba(56,189,248,.18), transparent 62%),
+        radial-gradient(560px 420px at 50% 100%, rgba(236,72,153,.16), transparent 65%),
+        #070914;
+      overflow-x:hidden;
+    }
+
+    a{
+      color:inherit;
+      text-decoration:none;
+    }
+
+.mobile-shell{
+  width:min(430px,100%);
+  min-height:100vh;
+  margin:0 auto;
+  padding:12px 14px 84px;
+}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:90;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+
+  margin:-12px -14px 14px;
+padding:58px 14px 20px;
+  background:
+    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
+    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
+    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
+  border-bottom:0;
+  box-shadow:none;
+
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
+}
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      letter-spacing:-.04em;
+      font-size:20px;
+    }
+
+    .logo img{
+      width:74px;
+      height:auto;
+      display:block;
+    }
+
+.credit-pill{
+  min-height:26px;
+  padding:0 7px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.065);
+  border:1px solid rgba(255,255,255,.13);
+  color:rgba(255,255,255,.92);
+  font-size:12px;
+  font-weight:850;
+  letter-spacing:-.015em;
+  white-space:nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.16);
+}
+    [data-mobile-top-credits]{
+  animation:aivoStudioCreditAiGlow 7s ease-in-out infinite;
+}
+
+@keyframes aivoStudioCreditAiGlow{
+  0%, 100%{
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 8px 18px rgba(0,0,0,.16);
+    border-color:rgba(255,255,255,.13);
+    filter:brightness(1);
+  }
+
+  50%{
+    box-shadow:
+      inset 0 0 16px rgba(236,72,153,.16),
+      0 8px 18px rgba(0,0,0,.16),
+      0 0 18px rgba(139,92,246,.36);
+    border-color:rgba(236,72,153,.62);
+    filter:brightness(1.08);
+  }
+}
+
+.topbar-credit-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  flex:0 0 auto;
+}
+    .topbar .topbar-credit-actions{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+.topbar .topbar-credit-actions .credit-pill{
+  display:inline-flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+.topbar .topbar-credit-actions[hidden]{
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+}
+.credit-balance-pill{
+  min-width:auto;
+}
+.credit-balance-pill{
+  cursor:pointer;
+  transition:transform .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+
+.credit-balance-pill.is-credit-focus{
+  transform:scale(1.24);
+  z-index:3;
+  filter:brightness(1.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 14px 28px rgba(0,0,0,.26),
+    0 0 30px rgba(56,189,248,.42);
+}
+    .hero{
+      padding:12px 13px;
+      border-radius:22px;
+      background:
+        linear-gradient(135deg, rgba(139,92,246,.22), rgba(56,189,248,.08)),
+        rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 14px 38px rgba(0,0,0,.26);
+      margin-bottom:12px;
+    }
+
+    .eyebrow{
+      width:max-content;
+      max-width:100%;
+      padding:6px 9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.76);
+      font-size:10px;
+      font-weight:850;
+      margin-bottom:8px;
+    }
+
+    h1{
+      margin:0 0 6px;
+      font-size:24px;
+      line-height:1;
+      letter-spacing:-.055em;
+      font-weight:950;
+    }
+
+    .grad{
+      background:linear-gradient(135deg,#38bdf8,#8b5cf6,#ec4899);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .sub{
+      margin:0;
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
+    .section-title{
+      margin:18px 0 10px;
+      font-size:18px;
+      line-height:1.1;
+      letter-spacing:-.035em;
+    }
+
+    .empty-card{
+      padding:14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.66);
+      font-size:12px;
+      line-height:1.45;
+      font-weight:650;
+    }
+.mobile-account-panel{
+  margin-top:28px;
+  padding:20px;
+  border-radius:30px;
+  min-height:auto;
+ 
+  background:
+    radial-gradient(220px 120px at 0% 0%, rgba(236,72,153,.18), transparent 62%),
+    radial-gradient(220px 120px at 100% 0%, rgba(56,189,248,.14), transparent 62%),
+    rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.13);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.25);
+}
+
+.mobile-account-panel h3{
+  margin:0 0 14px;
+  font-size:22px;
+  line-height:1.1;
+  font-weight:950;
+  letter-spacing:-.04em;
+}
+
+.mobile-account-row{
+  width:100%;
+  min-height:58px;
+  margin-top:12px;
+  padding:0 16px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.11);
+  background:rgba(255,255,255,.035);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  font:inherit;
+  font-size:15px;
+  font-weight:850;
+  text-align:left;
+}
+
+.mobile-account-row:first-of-type{
+  margin-top:0;
+}
+
+.mobile-account-row-danger{
+  border-color:rgba(248,113,113,.42);
+  color:rgba(255,255,255,.92);
+}
+    .mobile-app-version{
+  margin-top:14px;
+  text-align:center;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.04em;
+  color:rgba(255,255,255,.34);
+}
+
+ .bottom-nav{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:80;
+  width:min(430px,100%);
+  height:78px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:0;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
+    rgba(8,10,24,.58);
+  border-top:1px solid rgba(255,255,255,.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -18px 36px rgba(0,0,0,.20),
+    0 -10px 24px rgba(5,7,16,.54),
+    0 -28px 70px rgba(139,92,246,.10);
+  backdrop-filter:blur(34px) saturate(190%);
+  -webkit-backdrop-filter:blur(34px) saturate(190%);
+}
+
+.bottom-nav::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:-18px;
+  height:18px;
+  background:linear-gradient(180deg, transparent, rgba(28,31,48,.38));
+  pointer-events:none;
+}
+
+    .bottom-nav a{
+      min-height:54px;
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      background:transparent;
+      color:rgba(255,255,255,.52);
+      font-size:10px;
+      font-weight:900;
+    }
+
+   .bottom-nav a span{
+  width:38px;
+  height:38px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  line-height:1;
+  background:rgba(255,255,255,.075);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+    .bottom-nav a b{
+      font-size:10px;
+      line-height:1;
+    }
+
+    .bottom-nav a.active{
+      color:#fff;
+    }
+
+    .bottom-nav a.active span{
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      border-color:rgba(255,255,255,.18);
+      box-shadow:0 0 22px rgba(139,92,246,.34);
+    }
+    .nav-icon{
+  position:relative;
+  overflow:hidden;
+}
+
+.nav-icon::before{
+  content:"";
+   width:24px;
+  height:24px;
+  display:block;
+  background:linear-gradient(135deg,#a78bfa,#60eaff);
+  filter:drop-shadow(0 0 9px rgba(139,92,246,.68));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+.nav-icon-home::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11.5L12 4l9 7.5'/%3E%3Cpath d='M5.5 10.5V20h13v-9.5'/%3E%3Cpath d='M9.5 20v-6h5v6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11.5L12 4l9 7.5'/%3E%3Cpath d='M5.5 10.5V20h13v-9.5'/%3E%3Cpath d='M9.5 20v-6h5v6'/%3E%3C/svg%3E");
+}
+
+.nav-icon-productions::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z'/%3E%3C/svg%3E");
+}
+
+.nav-icon-tools::before{
+  background:linear-gradient(135deg,#ffd36a,#f472ff,#60eaff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l10.5-10.5'/%3E%3Cpath d='M13 5l6 6'/%3E%3Cpath d='M15 3l1.2 3.2L19.5 7.5l-3.3 1.2L15 12l-1.2-3.3-3.3-1.2 3.3-1.3L15 3z'/%3E%3Cpath d='M6 4l.7 1.7L8.5 6.5 6.7 7.2 6 9 5.3 7.2 3.5 6.5l1.8-.8L6 4z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l10.5-10.5'/%3E%3Cpath d='M13 5l6 6'/%3E%3Cpath d='M15 3l1.2 3.2L19.5 7.5l-3.3 1.2L15 12l-1.2-3.3-3.3-1.2 3.3-1.3L15 3z'/%3E%3Cpath d='M6 4l.7 1.7L8.5 6.5 6.7 7.2 6 9 5.3 7.2 3.5 6.5l1.8-.8L6 4z'/%3E%3C/svg%3E");
+}
+
+.nav-icon-credits::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2.2'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M7 15h4'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2.2'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M7 15h4'/%3E%3C/svg%3E");
+}
+.nav-icon-account::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 20c1.5-4 4.2-6 7.5-6s6 2 7.5 6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 20c1.5-4 4.2-6 7.5-6s6 2 7.5 6'/%3E%3C/svg%3E");
+}
+.bottom-nav a.active .nav-icon::before{
+  background:linear-gradient(135deg,#fff,#ffd36a,#f472ff);
+  filter:drop-shadow(0 0 10px rgba(244,114,255,.78));
+}
+.mobile-tools-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  padding-bottom:14px;
+}
+
+.mobile-tool-card{
+  position:relative;
+  width:100%;
+  min-height:82px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:26px;
+  background:
+    radial-gradient(180px 90px at 0% 0%, rgba(139,92,246,.22), transparent 62%),
+    linear-gradient(135deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-align:left;
+  cursor:pointer;
+  overflow:hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.24);
+}
+
+.mobile-tool-card::after{
+  content:"›";
+  position:absolute;
+  right:18px;
+  top:50%;
+  transform:translateY(-50%);
+  color:rgba(255,255,255,.42);
+  font-size:30px;
+  font-weight:400;
+  line-height:1;
+}
+
+.mobile-tool-card span{
+  width:48px;
+  height:48px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.055));
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 10px 24px rgba(0,0,0,.22);
+  font-size:22px;
+  flex:0 0 auto;
+}
+
+.mobile-tool-card b{
+  max-width:250px;
+  padding-right:22px;
+  font-size:15px;
+  line-height:1.15;
+  font-weight:950;
+  letter-spacing:-.025em;
+}
+
+.mobile-tool-card:active{
+  transform:scale(.985);
+}
+.tool-icon{
+  position:relative;
+  width:54px;
+  height:54px;
+  border-radius:20px;
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 25% 18%, rgba(255,255,255,.20), transparent 34%),
+    linear-gradient(135deg, rgba(139,92,246,.34), rgba(56,189,248,.10));
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -16px 30px rgba(0,0,0,.18),
+    0 12px 26px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+
+.tool-icon::before{
+  content:"";
+  width:31px;
+  height:31px;
+  display:block;
+  background:linear-gradient(135deg,#f472ff,#60eaff);
+  filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+.tool-icon-music::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E");
+}
+
+.tool-icon-cover::before{
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.9' stroke='white'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8 15l3-3 2 2 3-4 2 2'/%3E%3Cpath d='M17.5 6.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z' fill='white' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.9' stroke='white'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8 15l3-3 2 2 3-4 2 2'/%3E%3Cpath d='M17.5 6.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z' fill='white' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+  background:linear-gradient(135deg,#f472ff,#7dd3ff);
+}
+
+.tool-icon-atmo::before{
+  background:linear-gradient(135deg,#a78bfa,#60eaff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A5 5 0 0 0 6 18z'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M10 23h4'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A5 5 0 0 0 6 18z'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M10 23h4'/%3E%3C/svg%3E");
+}
+.tool-icon-cartoon::before{
+ background:linear-gradient(135deg,#ffb86c,#ff7ccf 52%,#ffd36a);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7.5' cy='7.2' r='2.7'/%3E%3Ccircle cx='16.5' cy='7.2' r='2.7'/%3E%3Cpath d='M5.2 11.2c0-4.2 3.1-6.3 6.8-6.3s6.8 2.1 6.8 6.3v3.1c0 3.4-2.8 5.8-6.8 5.8s-6.8-2.4-6.8-5.8v-3.1z'/%3E%3Ccircle cx='9.4' cy='12.7' r='.7' fill='%23000'/%3E%3Ccircle cx='14.6' cy='12.7' r='.7' fill='%23000'/%3E%3Cpath d='M11 15.2h2'/%3E%3Cpath d='M10.3 16.3c1.1.9 2.3.9 3.4 0'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7.5' cy='7.2' r='2.7'/%3E%3Ccircle cx='16.5' cy='7.2' r='2.7'/%3E%3Cpath d='M5.2 11.2c0-4.2 3.1-6.3 6.8-6.3s6.8 2.1 6.8 6.3v3.1c0 3.4-2.8 5.8-6.8 5.8s-6.8-2.4-6.8-5.8v-3.1z'/%3E%3Ccircle cx='9.4' cy='12.7' r='.7' fill='%23000'/%3E%3Ccircle cx='14.6' cy='12.7' r='.7' fill='%23000'/%3E%3Cpath d='M11 15.2h2'/%3E%3Cpath d='M10.3 16.3c1.1.9 2.3.9 3.4 0'/%3E%3C/svg%3E");
+}
+
+.tool-icon-photofx::before{
+  background:linear-gradient(135deg,#ffd36a,#f472ff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+}
+
+.tool-icon-video::before{
+  background:linear-gradient(135deg,#8d7cff,#60eaff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+}
+
+.tool-icon-lipsync::before{
+  background:linear-gradient(135deg,#60eaff,#22c55e);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4a7 7 0 0 0 0 14'/%3E%3Cpath d='M12 4v14'/%3E%3Cpath d='M16 8c1.5 1 2.3 2.3 2.3 4s-.8 3-2.3 4'/%3E%3Cpath d='M19 6c2 1.6 3 3.6 3 6s-1 4.4-3 6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4a7 7 0 0 0 0 14'/%3E%3Cpath d='M12 4v14'/%3E%3Cpath d='M16 8c1.5 1 2.3 2.3 2.3 4s-.8 3-2.3 4'/%3E%3Cpath d='M19 6c2 1.6 3 3.6 3 6s-1 4.4-3 6'/%3E%3C/svg%3E");
+}
+    .hero{
+  text-align:center;
+}
+
+.hero .eyebrow{
+  margin-left:auto;
+  margin-right:auto;
+}
+    #mobileHomeMount{
+  display:grid;
+  gap:12px;
+}
+    #mobileHomeMount[hidden]{
+  display:none !important;
+}
+    
+html.aivo-start-productions .hero,
+html.aivo-start-tools .hero,
+html.aivo-start-account .hero,
+html.aivo-start-productions #mobileHomeMount,
+html.aivo-start-tools #mobileHomeMount,
+html.aivo-start-account #mobileHomeMount{
+  display:none !important;
+}
+  
+
+html.aivo-start-tools #mobileToolsMount,
+html.aivo-start-account #mobileAccountMount{
+  display:block !important;
+}
+html.aivo-start-credits .hero,
+html.aivo-start-music .hero,
+html.aivo-start-cover .hero,
+html.aivo-start-photofx .hero,
+html.aivo-start-video .hero,
+html.aivo-start-lipsync .hero,
+html.aivo-start-atmo .hero,
+html.aivo-start-cartoon .hero,
+html.aivo-start-credits #mobileHomeMount,
+html.aivo-start-music #mobileHomeMount,
+html.aivo-start-cover #mobileHomeMount,
+html.aivo-start-photofx #mobileHomeMount,
+html.aivo-start-video #mobileHomeMount,
+html.aivo-start-lipsync #mobileHomeMount,
+html.aivo-start-atmo #mobileHomeMount,
+html.aivo-start-cartoon #mobileHomeMount{
+  display:none !important;
+}
+
+html.aivo-start-credits #mobileCreditsMount,
+html.aivo-start-music #mobileMusicMount,
+html.aivo-start-cover #mobileCoverMount,
+html.aivo-start-photofx #mobilePhotoFxMount,
+html.aivo-start-video #mobileVideoMount,
+html.aivo-start-lipsync #mobileLipsyncMount,
+html.aivo-start-atmo #mobileAtmoMount,
+html.aivo-start-cartoon #mobileCartoonMount{
+  display:block !important;
+}
+
+html.aivo-hash-routing-pending{
+  visibility:visible !important;
+  background:#070914 !important;
+}
+
+html.aivo-hash-routing-pending body{
+  opacity:1 !important;
+  background:#070914 !important;
+}
+#mobileHomeMount .section-title{
+  margin-top:16px;
+}
+
+.mobile-home-intro-card{
+  padding:18px;
+  border-radius:26px;
+  background:
+    radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.24), transparent 62%),
+    radial-gradient(220px 120px at 100% 0%, rgba(56,189,248,.16), transparent 62%),
+    rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.13);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.24);
+}
+
+.mobile-home-intro-card strong{
+  display:block;
+  margin-bottom:6px;
+  font-size:17px;
+  line-height:1.15;
+  font-weight:950;
+  letter-spacing:-.035em;
+}
+
+.mobile-home-intro-card p{
+  margin:0;
+  color:rgba(255,255,255,.68);
+  font-size:12px;
+  line-height:1.45;
+  font-weight:650;
+}
+    /* iOS WKWebView input zoom hard fix */
+input,
+textarea,
+select {
+  font-size:16px !important;
+  -webkit-text-size-adjust:100%;
+  transform:none !important;
+}
+
+html,
+body {
+  -webkit-text-size-adjust:100%;
+  touch-action:manipulation;
+}
+@media (min-width: 768px) {
+  .mobile-shell{
+    width:min(760px,100%);
+    min-height:100vh;
+    padding:22px 28px 104px;
+  }
+
+  .topbar{
+    margin:-22px -28px 22px;
+    padding:54px 28px 22px;
+  }
+
+  .bottom-nav{
+    width:min(760px,100%);
+    height:86px;
+    border-radius:28px 28px 0 0;
+  }
+ .aivo-assistant-fab,
+.ai-help,
+.mobile-ai-help{
+  bottom:118px !important;
+  right:calc(50% - 280px) !important;
+}
+  .mobile-tools-grid{
+  grid-template-columns:1fr;
+  min-height:calc(100vh - 390px);
+  align-content:stretch;
+}
+
+.mobile-tools-grid > *{
+  min-height:92px;
+}
+
+.mobile-credits-pack-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  align-items:start;
+}
+
+.mobile-credits-pack-card{
+  height:100%;
+  min-height:188px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+
+.mobile-credits-pack-card > *{
+  min-width:0;
+}
+
+.mobile-credits-pack-card button,
+.mobile-credits-pack-card a{
+  margin-top:auto;
+}
+
+  #mobileAccountMount{
+    width:100%;
+    min-height:calc(100vh - 260px);
+    display:flex;
+    flex-direction:column;
+  }
+
+  #mobileAccountMount > div,
+  #mobileAccountProfileMount,
+  #mobileAccountInvoicesMount,
+  #mobileAccountSettingsMount,
+  #mobileAccountContactMount{
+    width:100%;
+  }
+
+  .mobile-account-panel,
+  #mobileAccountProfileMount > *,
+  #mobileAccountInvoicesMount > *,
+  #mobileAccountSettingsMount > *,
+  #mobileAccountContactMount > *{
+    width:100%;
+    max-width:none;
+  }
+
+  .mobile-account-panel{
+    min-height:calc(100vh - 390px);
+    display:flex;
+    flex-direction:column;
+  }
+
+.mobile-account-panel .mobile-account-row{
+  flex:0 0 78px;
+}
+
+.mobile-account-panel .mobile-app-version{
+  margin-top:16px;
+}
+  .mobile-account-menu button,
+  .mobile-account-menu .account-menu-item{
+    min-height:72px;
+  }
+
+
+  .aivo-assistant-launcher{
+  right:calc((100vw - min(760px,100vw)) / 2 + 42px) !important;
+  bottom:126px !important;
+  left:auto !important;
+  transform:none !important;
+}
+  .mobile-credits-pack-card{
+  position:relative;
+}
+
+
+  .mobile-credits-pack-card.is-popular{
+  padding-top:18px;
+}
+
+.mobile-credits-pack-card.is-popular .mobile-credits-popular{
+  position:absolute;
+  top:18px;
+  right:18px;
+  margin:0 !important;
+}
+
+.mobile-credits-pack-card.is-popular .mobile-credits-pack-head{
+  padding-right:150px;
+}
+  .aivo-assistant-panel{
+  left:auto !important;
+  right:calc((100vw - min(760px,100vw)) / 2 + 42px) !important;
+  bottom:172px !important;
+  width:360px !important;
+  max-width:360px !important;
+}
+}
+  </style>
+
+<style id="aivo-auth-gate-style">
+  html{
+    visibility:visible;
+    background:#070914 !important;
+  }
+
+  body{
+    opacity:0 !important;
+    background:#070914 !important;
+  }
+</style>
+
+  <script>
+  (function AIVO_IOS_STUDIO_HARD_GATE(){
+    if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
+    window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
+
+   function goLogin(){
+  try {
+    const localLogged =
+      localStorage.getItem("aivo_logged_in") === "1" &&
+      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+
+    if (localLogged && !window.__AIVO_IOS_AUTH_RETRY_DONE__) {
+      window.__AIVO_IOS_AUTH_RETRY_DONE__ = true;
+
+      setTimeout(function(){
+        fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store"
+        })
+        .then(function(res){
+          if (res && res.status === 200) {
+            location.reload();
+            return;
+          }
+
+          location.replace(getAivoMobileLoginUrl());
+        })
+        .catch(function(){
+          location.replace(getAivoMobileLoginUrl());
+        });
+      }, 450);
+
+      return;
+    }
+  } catch (err) {}
+
+  location.replace(getAivoMobileLoginUrl());
+}
+
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){
+      try { ctrl.abort(); } catch (e) {}
+    }, 2500);
+
+    fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      signal: ctrl.signal
+    })
+    .then(async function(r){
+      clearTimeout(t);
+
+      if (r.status === 200) {
+        var me = await r.json();
+
+             try {
+          var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+          var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
+          var nextEmail = String((me && me.email) || "").trim().toLowerCase();
+
+          function firstNonEmpty() {
+            for (var i = 0; i < arguments.length; i++) {
+              var v = arguments[i];
+              if (v != null && String(v).trim()) return String(v).trim();
+            }
+            return "";
+          }
+
+          function emailToName(email) {
+            var normalized = String(email || "").trim().toLowerCase();
+            if (!normalized || normalized.indexOf("@") === -1) return "";
+            return normalized.split("@")[0].trim();
+          }
+
+          function scopedKey(baseKey, email) {
+            var normalized = String(email || "").trim().toLowerCase();
+            if (!normalized) return baseKey;
+            return baseKey + ":" + normalized;
+          }
+
+          if (prevEmail && prevEmail !== nextEmail) {
+            localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
+            localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
+          }
+
+          var firstName = firstNonEmpty(
+            me && me.first_name,
+            me && me.firstName,
+            me && me.name,
+            emailToName(nextEmail),
+            "Kullanıcı"
+          );
+
+          var surname = firstNonEmpty(
+            me && me.last_name,
+            me && me.lastName,
+            me && me.surname,
+            ""
+          );
+
+          var fullName = firstNonEmpty(
+            firstName && surname ? (firstName + " " + surname) : "",
+            firstName,
+            "Kullanıcı"
+          );
+
+          localStorage.setItem("aivo_logged_in", "1");
+          localStorage.setItem("aivo_user_email", nextEmail);
+          localStorage.setItem("aivo_profile_name", "");
+          localStorage.setItem("aivo_profile_surname", "");
+          localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+            loggedIn: true,
+            email: nextEmail,
+            name: firstName,
+            first_name: firstName,
+            surname: surname,
+            last_name: surname,
+            full_name: fullName,
+            ts: Date.now()
+          }));
+          localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
+          localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
+        } catch (e) {}
+
+        var st = document.getElementById("aivo-auth-gate-style");
+        if (st) st.remove();
+
+    document.documentElement.style.visibility = "visible";
+        document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+
+        try {
+          
+          document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+            detail: { me: me }
+          }));
+        } catch (e) {}
+
+        return;
+      }
+
+      goLogin();
+    })
+    .catch(function(){
+      goLogin();
+    });
+  })();
+  </script>
+
+<script>
+(function AIVO_MOBILE_START_ROUTE(){
+  try {
+    const hash = window.location.hash;
+
+    if (hash && hash !== "#home") {
+      document.documentElement.classList.add("aivo-hash-routing-pending");
+    }
+     if (hash === "#productions") document.documentElement.classList.add("aivo-start-productions");
+  if (hash === "#tools") document.documentElement.classList.add("aivo-start-tools");
+if (hash === "#account") document.documentElement.classList.add("aivo-start-account");
+if (hash === "#credits") document.documentElement.classList.add("aivo-start-credits");
+if (hash === "#music") document.documentElement.classList.add("aivo-start-music");
+    if (hash === "#cover") document.documentElement.classList.add("aivo-start-cover");
+    if (hash === "#photofx") document.documentElement.classList.add("aivo-start-photofx");
+    if (hash === "#video") document.documentElement.classList.add("aivo-start-video");
+    if (hash === "#lipsync") document.documentElement.classList.add("aivo-start-lipsync");
+    if (hash === "#atmo") document.documentElement.classList.add("aivo-start-atmo");
+    if (hash === "#cartoon") document.documentElement.classList.add("aivo-start-cartoon");
+  } catch (err) {}
+})();
+</script>
+</head>
+
+<body>
+  <main class="mobile-shell">
+    <header class="topbar">
+   <a class="logo" href="/index.ios.html" aria-label="AIVO">
+  <img src="/aivo-logo.png" alt="AIVO">
+</a>
+
+<div class="topbar-credit-actions" hidden>
+  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
+    Kredi --
+  </span>
+
+  <a class="credit-pill" href="#credits" data-mobile-top-credits data-i18n="top.creditAI">
+    Kredi Al
+  </a>
+</div>
+    </header>
+
+  <section class="hero">
+  <div class="eyebrow" data-i18n="home.eyebrow">
+    AIVO Mobile Studio
+  </div>
+
+  <h1>
+    <span data-i18n="home.title.before">Cepte AI</span>
+    <span class="grad" data-i18n="home.title.grad">üretim.</span>
+  </h1>
+
+  <p class="sub" data-i18n="home.subtitle">
+    Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.
+  </p>
+</section>
+
+<div id="mobileHomeMount">
+  <div class="empty-card">Ana sayfa yükleniyor...</div>
+</div>
+
+<div id="mobileMusicMount" hidden>
+  <div class="empty-card">Müzik modülü yükleniyor...</div>
+</div>
+
+<div id="mobileCoverMount" hidden>
+  <div class="empty-card">Kapak modülü yükleniyor...</div>
+</div>
+
+<div id="mobileAtmoMount" hidden>
+  <div class="empty-card">Atmosfer modülü yükleniyor...</div>
+</div>
+   <div id="mobileCartoonMount" hidden>
+  <div class="empty-card">Çizgifilm modülü yükleniyor...</div>
+</div>
+
+<div id="mobilePhotoFxMount" hidden>
+  <div class="empty-card">PhotoFX modülü yükleniyor...</div>
+</div>
+
+<div id="mobileVideoMount" hidden>
+  <div class="empty-card">Resimden Video modülü yükleniyor...</div>
+</div>
+
+<div id="mobileLipsyncMount" hidden>
+  <div class="empty-card">Dudak Senkron Video modülü yükleniyor...</div>
+</div>
+  <div id="mobileCreditsMount" hidden>
+  <div class="empty-card" data-i18n="credits.loading">Krediler bölümü yükleniyor...</div>
+</div>
+
+<div id="mobileToolsMount" hidden>
+ 
+
+<div class="mobile-tools-grid">
+  <button class="mobile-tool-card" type="button" data-mobile-tool="music">
+    <span class="tool-icon tool-icon-music" aria-hidden="true"></span>
+    <b data-i18n="tools.music">AI Müzik Üret</b>
+  </button>
+
+  <button class="mobile-tool-card" type="button" data-mobile-tool="cover">
+    <span class="tool-icon tool-icon-cover" aria-hidden="true"></span>
+    <b data-i18n="tools.cover">AI Kapak Üret</b>
+  </button>
+
+  <button class="mobile-tool-card" type="button" data-mobile-tool="atmo">
+    <span class="tool-icon tool-icon-atmo" aria-hidden="true"></span>
+    <b data-i18n="tools.atmo">AI Atmosfer Video</b>
+  </button>
+
+  <button class="mobile-tool-card" type="button" data-mobile-tool="cartoon">
+    <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
+    <b data-i18n="tools.cartoon">AI Çocuk Çizgifilm</b>
+  </button>
+
+  <button class="mobile-tool-card" type="button" data-mobile-tool="photofx">
+    <span class="tool-icon tool-icon-photofx" aria-hidden="true"></span>
+    <b data-i18n="tools.photofx">AI Foto Efekt Video Clip</b>
+  </button>
+
+  <button class="mobile-tool-card" type="button" data-mobile-tool="video">
+    <span class="tool-icon tool-icon-video" aria-hidden="true"></span>
+    <b data-i18n="tools.video">AI Resimden Video Üret</b>
+  </button>
+
+  <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">
+    <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
+    <b data-i18n="tools.lipsync">AI Dudak Senkron Video</b>
+  </button>
+</div>
+</div>
+    <div id="mobilePolicyMount" hidden>
+  <div class="empty-card">Yasal metin yükleniyor...</div>
+</div>
+
+<div id="mobileAccountMount" hidden>
+
+
+  <div class="mobile-account-panel" data-mobile-account-menu>
+  <h3 data-i18n="account.panels">Paneller</h3>
+
+  <button class="mobile-account-row" type="button" data-mobile-account-panel="profile" data-i18n="account.profile">
+    Profil
+  </button>
+
+  <button class="mobile-account-row" type="button" data-mobile-account-panel="invoices" data-i18n="account.invoices">
+    Faturalarım
+  </button>
+
+ <button class="mobile-account-row" type="button" data-mobile-account-panel="settings" data-i18n="account.settings">
+  Ayarlar
+</button>
+
+<button class="mobile-account-row" type="button" data-mobile-account-panel="share" data-i18n="account.share">
+  AIVO’yu Paylaş
+</button>
+
+<button class="mobile-account-row" type="button" data-mobile-account-panel="contact" data-i18n="account.contact">
+  Bize Ulaşın
+</button>
+
+<button class="mobile-account-row mobile-account-row-danger" type="button" data-mobile-account-panel="logout" data-i18n="account.logout">
+  Çıkış Yap
+</button>
+
+<div class="mobile-app-version">
+  Version 0.3.1
+</div>
+</div>
+  <div data-mobile-account-profile hidden>
+    <div id="mobileAccountProfileMount">
+      <div class="empty-card">Profil modülü yükleniyor...</div>
+    </div>
+  </div>
+
+  <div data-mobile-account-invoices hidden>
+    <div id="mobileAccountInvoicesMount">
+      <div class="empty-card">Faturalar modülü yükleniyor...</div>
+    </div>
+  </div>
+
+  <div data-mobile-account-settings hidden>
+    <div id="mobileAccountSettingsMount">
+      <div class="empty-card">Ayarlar modülü yükleniyor...</div>
+    </div>
+  </div>
+  <div data-mobile-account-contact hidden>
+  <div id="mobileAccountContactMount">
+    <div class="empty-card">İletişim bölümü yükleniyor...</div>
+  </div>
+</div>
+</div>
+  </main>
+
+<nav class="bottom-nav">
+  <a class="active" href="#home">
+    <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+    <b data-i18n="nav.home">Ana Sayfa</b>
+  </a>
+  <a href="#productions">
+    <span class="nav-icon nav-icon-productions" aria-hidden="true"></span>
+    <b data-i18n="nav.productions">Üretimler</b>
+  </a>
+  <a href="#tools">
+    <span class="nav-icon nav-icon-tools" aria-hidden="true"></span>
+    <b data-i18n="nav.tools">Araçlar</b>
+  </a>
+  <a href="#credits">
+    <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
+    <b data-i18n="nav.credits">Krediler</b>
+  </a>
+  <a href="#account">
+    <span class="nav-icon nav-icon-account" aria-hidden="true"></span>
+    <b data-i18n="nav.account">Hesabım</b>
+  </a>
+</nav>
+<div id="mobileToastRoot" aria-live="polite" aria-atomic="true"></div>
+<div id="mobileAssistantRoot"></div>
+<script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
+<script src="/mobile/js/mobile.toast.js?v=1" defer></script>
+<script src="/mobile/js/mobile.assistant.js?v=3" defer></script>
+
+<script>
+(function AIVO_MOBILE_URL_TOAST_READ(){
+  try {
+    const u = new URL(window.location.href);
+    const tf = String(u.searchParams.get("tf") || "").trim();
+    const tm = String(u.searchParams.get("tm") || "").trim();
+
+    if (!tf || !tm) return;
+
+    const allowed = new Set(["success", "error", "warning", "info"]);
+    const type = allowed.has(tf) ? tf : "info";
+    const message = decodeURIComponent(tm);
+
+    let tries = 0;
+
+    function fire(){
+      tries += 1;
+
+      if (window.mobileToast && typeof window.mobileToast[type] === "function") {
+        window.mobileToast[type](message);
+
+        u.searchParams.delete("tf");
+        u.searchParams.delete("tm");
+        history.replaceState({}, "", u.toString());
+        return;
+      }
+
+      if (tries < 80) {
+        setTimeout(fire, 50);
+      }
+    }
+
+    fire();
+  } catch (err) {}
+})();
+</script>
+
+<script>
+  (async function(){
+  const homeMount = document.getElementById("mobileHomeMount");
+const musicMount = document.getElementById("mobileMusicMount");
+if (!homeMount || !musicMount) return;
+let coverMount = document.getElementById("mobileCoverMount");
+let toolsMount = document.getElementById("mobileToolsMount");
+let atmoMount = document.getElementById("mobileAtmoMount");
+let cartoonMount = document.getElementById("mobileCartoonMount");
+let photofxMount = document.getElementById("mobilePhotoFxMount");
+let videoMount = document.getElementById("mobileVideoMount");
+let lipsyncMount = document.getElementById("mobileLipsyncMount");
+let creditsMount = document.getElementById("mobileCreditsMount");
+let accountMount = document.getElementById("mobileAccountMount");
+ let policyMount = document.getElementById("mobilePolicyMount");
+    try {
+  const homeRes = await fetch("/mobile/modules/mobile.home.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!homeRes.ok) {
+    throw new Error("mobile_home_html_load_failed");
+  }
+
+ homeMount.innerHTML = await homeRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(homeMount);
+}
+} catch (err) {
+  homeMount.innerHTML = '<div class="empty-card">Ana sayfa yüklenemedi.</div>';
+}
+    if (!coverMount) {
+      coverMount = document.createElement("div");
+      coverMount.id = "mobileCoverMount";
+      coverMount.hidden = true;
+      coverMount.innerHTML = '<div class="empty-card">Kapak modülü yükleniyor...</div>';
+      musicMount.insertAdjacentElement("afterend", coverMount);
+    }
+    if (!atmoMount) {
+  atmoMount = document.createElement("div");
+  atmoMount.id = "mobileAtmoMount";
+  atmoMount.hidden = true;
+  atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yükleniyor...</div>';
+  coverMount.insertAdjacentElement("afterend", atmoMount);
+}
+    if (!photofxMount) {
+  photofxMount = document.createElement("div");
+  photofxMount.id = "mobilePhotoFxMount";
+  photofxMount.hidden = true;
+  photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yükleniyor...</div>';
+
+  if (cartoonMount) {
+    cartoonMount.insertAdjacentElement("afterend", photofxMount);
+  } else {
+    atmoMount.insertAdjacentElement("afterend", photofxMount);
+  }
+}
+    try {
+    const musicRes = await fetch("/mobile/modules/mobile.music.html?v=2", {
+  cache: "no-store"
+});
+
+      if (!musicRes.ok) {
+        throw new Error("mobile_music_html_load_failed");
+      }
+
+    musicMount.innerHTML = await musicRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(musicMount);
+}
+      setTimeout(function(){
+  const moodInput =
+    document.getElementById("mobileMusicMood") ||
+    document.getElementById("musicMood");
+
+  if (moodInput && String(moodInput.value || "").includes("@")) {
+    moodInput.value = "";
+  }
+
+  if (moodInput) {
+    moodInput.setAttribute("autocomplete", "off");
+    moodInput.setAttribute("name", "aivo_music_mood_" + Date.now());
+  }
+}, 250);
+
+      const musicScript = document.createElement("script");
+     musicScript.src = "/mobile/js/mobile.music.js?v=5102436";
+      musicScript.defer = true;
+      document.body.appendChild(musicScript);
+    } catch (err) {
+      musicMount.innerHTML = '<div class="empty-card">Müzik modülü yüklenemedi.</div>';
+    }
+
+    try {
+      const coverRes = await fetch("/mobile/modules/mobile.cover.html?v=1", {
+        cache: "no-store"
+      });
+
+      if (!coverRes.ok) {
+        throw new Error("mobile_cover_html_load_failed");
+      }
+
+     coverMount.innerHTML = await coverRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(coverMount);
+}
+
+      const coverScript = document.createElement("script");
+      coverScript.src = "/mobile/js/mobile.cover.js?v=1";
+      coverScript.defer = true;
+      document.body.appendChild(coverScript);
+    } catch (err) {
+      coverMount.innerHTML = '<div class="empty-card">Kapak modülü yüklenemedi.</div>';
+    }
+    try {
+  const atmoRes = await fetch("/mobile/modules/mobile.atmo.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!atmoRes.ok) {
+    throw new Error("mobile_atmo_html_load_failed");
+  }
+
+atmoMount.innerHTML = await atmoRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(atmoMount);
+}
+
+const atmoScript = document.createElement("script");
+atmoScript.src = "/mobile/js/mobile.atmo.js?v=1";
+atmoScript.defer = true;
+document.body.appendChild(atmoScript);
+} catch (err) {
+  atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yüklenemedi.</div>';
+}
+    try {
+  const cartoonRes = await fetch("/mobile/modules/mobile.cartoon.html?v=2", {
+  cache: "no-store"
+});
+
+  if (!cartoonRes.ok) {
+    throw new Error("mobile_cartoon_html_load_failed");
+  }
+
+ cartoonMount.innerHTML = await cartoonRes.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(cartoonMount);
+}
+
+  const cartoonScript = document.createElement("script");
+cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
+  cartoonScript.defer = true;
+  document.body.appendChild(cartoonScript);
+} catch (err) {
+  if (cartoonMount) {
+    cartoonMount.innerHTML = '<div class="empty-card">Çizgifilm modülü yüklenemedi.</div>';
+  }
+}
+    try {
+  const photofxRes = await fetch("/mobile/modules/mobile.photofx.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!photofxRes.ok) {
+    throw new Error("mobile_photofx_html_load_failed");
+  }
+
+  photofxMount.innerHTML = await photofxRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(photofxMount);
+  }
+
+const photofxScript = document.createElement("script");
+photofxScript.src = "/mobile/js/mobile.photofx.js?v=5";
+photofxScript.defer = true;
+document.body.appendChild(photofxScript);
+} catch (err) {
+  if (photofxMount) {
+    photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yüklenemedi.</div>';
+  }
+}
+try {
+  const videoRes = await fetch("/mobile/modules/mobile.video.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!videoRes.ok) {
+    throw new Error("mobile_video_html_load_failed");
+  }
+
+  videoMount.innerHTML = await videoRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(videoMount);
+  }
+
+  const videoScript = document.createElement("script");
+  videoScript.src = "/mobile/js/mobile.video.js?v=1";
+  videoScript.defer = true;
+  document.body.appendChild(videoScript);
+} catch (err) {
+  if (videoMount) {
+    videoMount.innerHTML = '<div class="empty-card">Resimden Video modülü yüklenemedi.</div>';
+  }
+}
+    try {
+  const lipsyncRes = await fetch("/mobile/modules/mobile.lipsync.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!lipsyncRes.ok) {
+    throw new Error("mobile_lipsync_html_load_failed");
+  }
+
+  lipsyncMount.innerHTML = await lipsyncRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(lipsyncMount);
+  }
+
+  const lipsyncScript = document.createElement("script");
+  lipsyncScript.src = "/mobile/js/mobile.lipsync.js?v=1";
+  lipsyncScript.defer = true;
+  document.body.appendChild(lipsyncScript);
+} catch (err) {
+  if (lipsyncMount) {
+    lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
+  }
+}
+try {
+  const creditsRes = await fetch("/mobile/modules/mobile.credits.ios.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!creditsRes.ok) {
+    throw new Error("mobile_credits_html_load_failed");
+  }
+
+   creditsMount.innerHTML = await creditsRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(creditsMount);
+  }
+
+   const creditsScript = document.createElement("script");
+  creditsScript.src = "/mobile/js/mobile.credits.ios.js?v=1";
+  creditsScript.defer = true;
+  document.body.appendChild(creditsScript);
+} catch (err) {
+  if (creditsMount) {
+    creditsMount.innerHTML = '<div class="empty-card">Krediler bölümü yüklenemedi.</div>';
+  }
+}
+
+try {
+  const accountProfileMount = document.getElementById("mobileAccountProfileMount");
+
+  if (accountProfileMount) {
+    const accountProfileRes = await fetch("/mobile/modules/account-profile.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountProfileRes.ok) {
+      throw new Error("mobile_account_profile_html_load_failed");
+    }
+
+    accountProfileMount.innerHTML = await accountProfileRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountProfileMount);
+}
+    const accountScript = document.createElement("script");
+    accountScript.src = "/mobile/js/mobile.account.js?v=1";
+    accountScript.defer = true;
+    document.body.appendChild(accountScript);
+  }
+} catch (err) {
+  const accountProfileMount = document.getElementById("mobileAccountProfileMount");
+
+  if (accountProfileMount) {
+    accountProfileMount.innerHTML = '<div class="empty-card">Profil modülü yüklenemedi.</div>';
+  }
+}
+
+try {
+  const accountInvoicesMount = document.getElementById("mobileAccountInvoicesMount");
+
+  if (accountInvoicesMount) {
+    const accountInvoicesRes = await fetch("/mobile/modules/account-invoices.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountInvoicesRes.ok) {
+      throw new Error("mobile_account_invoices_html_load_failed");
+    }
+
+    accountInvoicesMount.innerHTML = await accountInvoicesRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountInvoicesMount);
+}
+
+    const invoicesScript = document.createElement("script");
+    invoicesScript.src = "/mobile/js/mobile.invoices.js?v=1";
+    invoicesScript.defer = true;
+    document.body.appendChild(invoicesScript);
+  }
+} catch (err) {
+  const accountInvoicesMount = document.getElementById("mobileAccountInvoicesMount");
+
+  if (accountInvoicesMount) {
+    accountInvoicesMount.innerHTML = '<div class="empty-card">Faturalar modülü yüklenemedi.</div>';
+  }
+}
+    try {
+  const accountSettingsMount = document.getElementById("mobileAccountSettingsMount");
+
+  if (accountSettingsMount) {
+    const accountSettingsRes = await fetch("/mobile/modules/account-settings.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!accountSettingsRes.ok) {
+      throw new Error("mobile_account_settings_html_load_failed");
+    }
+
+    accountSettingsMount.innerHTML = await accountSettingsRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountSettingsMount);
+}
+
+    const settingsScript = document.createElement("script");
+    settingsScript.src = "/mobile/js/mobile.settings.js?v=1";
+    settingsScript.defer = true;
+    document.body.appendChild(settingsScript);
+  }
+} catch (err) {
+  const accountSettingsMount = document.getElementById("mobileAccountSettingsMount");
+
+  if (accountSettingsMount) {
+    accountSettingsMount.innerHTML = '<div class="empty-card">Ayarlar modülü yüklenemedi.</div>';
+  }
+}
+    try {
+  const accountContactMount = document.getElementById("mobileAccountContactMount");
+
+  if (accountContactMount) {
+   const accountContactRes = await fetch("/mobile/modules/account-contact.html?v=1", {
+  cache: "no-store"
+});
+
+if (!accountContactRes.ok) {
+  throw new Error("mobile_account_contact_html_load_failed");
+}
+
+accountContactMount.innerHTML = await accountContactRes.text();
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(accountContactMount);
+}
+
+
+const contactScript = document.createElement("script");
+contactScript.src = "/mobile/js/mobile.contact.js?v=1";
+contactScript.defer = true;
+document.body.appendChild(contactScript);
+  }
+} catch (err) {
+  const accountContactMount = document.getElementById("mobileAccountContactMount");
+
+  if (accountContactMount) {
+    accountContactMount.innerHTML = '<div class="empty-card">İletişim bölümü yüklenemedi.</div>';
+  }
+}
+        if (window.location.hash === "#credits") {
+      homeMount.hidden = true;
+      musicMount.hidden = true;
+      coverMount.hidden = true;
+      atmoMount.hidden = true;
+      if (cartoonMount) cartoonMount.hidden = true;
+      if (photofxMount) photofxMount.hidden = true;
+      if (videoMount) videoMount.hidden = true;
+      if (lipsyncMount) lipsyncMount.hidden = true;
+      if (toolsMount) toolsMount.hidden = true;
+      if (accountMount) accountMount.hidden = true;
+      if (policyMount) policyMount.hidden = true;
+      if (creditsMount) creditsMount.hidden = false;
+    }
+    const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
+    const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
+ const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
+const creditsNav = document.querySelector('.bottom-nav a[href="#credits"]');
+const accountNav = document.querySelector('.bottom-nav a[href="#account"]');
+    const topCreditsBtn = document.querySelector("[data-mobile-top-credits]");
+const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
+
+async function hydrateTopCreditBalance(){
+  if (!topCreditBalance) return;
+
+  try {
+    const res = await fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+      throw new Error("credit_balance_load_failed");
+    }
+
+    const data = await res.json();
+    const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+   topCreditBalance.textContent =
+  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+    ? "Credits " + creditValue
+    : "Kredi " + creditValue;
+  } catch (err) {
+   topCreditBalance.textContent =
+  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+    ? "Credits --"
+    : "Kredi --";
+  }
+}
+
+hydrateTopCreditBalance();
+    
+    if (topCreditsBtn) {
+  topCreditsBtn.addEventListener("click", function(e){
+    e.preventDefault();
+
+    if (creditsNav) {
+      creditsNav.click();
+    }
+
+    window.location.hash = "credits";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+   function setActiveNav(activeEl){
+  document.querySelectorAll(".bottom-nav a").forEach(function(item){
+    item.classList.toggle("active", item === activeEl);
+  });
+}
+
+document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
+  navItem.addEventListener("click", function(){
+document.documentElement.classList.remove(
+  "aivo-start-productions",
+  "aivo-start-tools",
+  "aivo-start-account",
+  "aivo-start-credits",
+      "aivo-start-music",
+      "aivo-start-cover",
+      "aivo-start-photofx",
+      "aivo-start-video",
+      "aivo-start-lipsync",
+      "aivo-start-atmo",
+      "aivo-start-cartoon"
+    );
+
+    if (policyMount) {
+      policyMount.hidden = true;
+    }
+  }, true);
+});
+function showHome(){
+  homeMount.hidden = false;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
+}
+function showMusic(){
+  homeMount.hidden = true;
+  musicMount.hidden = false;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+ const musicFormSection = document.getElementById("mobileHomeSection");
+const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+if (musicFormSection) musicFormSection.hidden = false;
+if (musicCard) musicCard.hidden = false;
+  if (musicProductionsSection) musicProductionsSection.hidden = true;
+
+  const musicResults = document.getElementById("mobileMusicResults");
+  if (musicResults) musicResults.hidden = false;
+}
+
+function showCover(){
+  musicMount.hidden = true;
+  coverMount.hidden = false;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+if (lipsyncMount) lipsyncMount.hidden = true;
+if (toolsMount) toolsMount.hidden = true;
+if (creditsMount) creditsMount.hidden = true;
+if (accountMount) accountMount.hidden = true;
+
+  const heroSub = document.getElementById("mobileHeroSub");
+  if (heroSub) {
+    heroSub.textContent = "Kapak fikrini yaz, AIVO mobilde görselini üretsin.";
+  }
+}
+
+function showAtmo(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = false;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+if (lipsyncMount) lipsyncMount.hidden = true;
+if (toolsMount) toolsMount.hidden = true;
+if (creditsMount) creditsMount.hidden = true;
+if (accountMount) accountMount.hidden = true;
+  const atmoSection = document.getElementById("mobileAtmoSection");
+  if (atmoSection) {
+    const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
+      return title.textContent.includes("Son atmosfer videoları");
+    });
+    const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
+
+    if (atmoResultsTitle) atmoResultsTitle.hidden = true;
+    if (atmoResults) atmoResults.hidden = true;
+  }
+}
+function showCartoon(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = false;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+if (lipsyncMount) lipsyncMount.hidden = true;
+if (toolsMount) toolsMount.hidden = true;
+if (creditsMount) creditsMount.hidden = true;
+if (accountMount) accountMount.hidden = true;
+  const cartoonSection = document.getElementById("mobileCartoonSection");
+  if (cartoonSection) {
+    const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
+    const cartoonTitle = cartoonSection.querySelector(".section-title");
+    const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
+
+    if (cartoonPanel) cartoonPanel.hidden = false;
+    if (cartoonTitle) cartoonTitle.hidden = true;
+    if (cartoonResults) cartoonResults.hidden = true;
+  }
+}
+
+function showPhotoFx(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = false;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+  const photofxSection = document.getElementById("mobilePhotoFxSection");
+  if (photofxSection) {
+    const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel, .pfxPage");
+    const photofxTitle = photofxSection.querySelector(".section-title");
+    const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
+
+    if (photofxPanel) photofxPanel.hidden = false;
+    if (photofxTitle) photofxTitle.hidden = true;
+    if (photofxResults) photofxResults.hidden = true;
+  }
+}
+function showVideo(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = false;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+  const videoSection = document.getElementById("mobileVideoSection");
+  if (videoSection) {
+    const videoPanel = videoSection.querySelector(".mobile-video-panel");
+    const videoTitle = videoSection.querySelector(".section-title");
+    const videoResults = videoSection.querySelector("#mobileVideoResults");
+
+    if (videoPanel) videoPanel.hidden = false;
+    if (videoTitle) videoTitle.hidden = true;
+    if (videoResults) videoResults.hidden = true;
+  }
+}
+function showLipsync(){
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+  const lipsyncSection = document.getElementById("mobileLipsyncSection");
+  if (lipsyncSection) {
+    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");
+    const lipsyncTitle = lipsyncSection.querySelector(".section-title");
+    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");
+
+    if (lipsyncPanel) lipsyncPanel.hidden = false;
+    if (lipsyncTitle) lipsyncTitle.hidden = true;
+    if (lipsyncResults) lipsyncResults.hidden = true;
+  }
+}
+    
+if (homeNav) {
+  homeNav.addEventListener("click", function(e){
+    e.preventDefault();
+
+    activeMobileModule = "music";
+
+    showHome();
+    setActiveNav(homeNav);
+  });
+}
+
+    let activeMobileModule = "music";
+
+    function setCoverLibraryOnly(isLibraryOnly){
+      
+      const coverSection = document.getElementById("mobileCoverSection");
+      if (!coverSection) return;
+
+      const sectionTitles = coverSection.querySelectorAll(".section-title");
+      const coverFormTitle = sectionTitles[0] || null;
+      const coverLibraryTitle = sectionTitles[1] || null;
+      const coverForm = coverSection.querySelector(".mobile-cover-card");
+      const coverResults = coverSection.querySelector("#mobileCoverResults");
+
+      if (coverFormTitle) coverFormTitle.hidden = !!isLibraryOnly;
+      if (coverForm) coverForm.hidden = !!isLibraryOnly;
+
+      if (coverLibraryTitle) coverLibraryTitle.hidden = !isLibraryOnly;
+      if (coverResults) coverResults.hidden = !isLibraryOnly;
+    }
+        function setAtmoLibraryOnly(isLibraryOnly){
+      const atmoSection = document.getElementById("mobileAtmoSection");
+      if (!atmoSection) return;
+
+      const atmoPanels = atmoSection.querySelectorAll(".mobile-atmo-card, .mobile-atmo-panel");
+      const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
+        return title.textContent.includes("Son atmosfer videoları");
+      });
+      const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
+
+          atmoPanels.forEach(function(panel){
+        if (isLibraryOnly) {
+          panel.hidden = true;
+          return;
+        }
+
+        if (panel.hasAttribute("data-mobile-atmo-panel")) {
+          panel.hidden = !panel.classList.contains("is-active");
+          return;
+        }
+
+        panel.hidden = false;
+      });
+    if (atmoResultsTitle) atmoResultsTitle.hidden = !isLibraryOnly;
+     if (atmoResults) atmoResults.hidden = !isLibraryOnly;
+    }
+
+    if (productionsNav) {
+      productionsNav.addEventListener("click", function(e){
+        if (activeMobileModule === "cover") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showCover();
+          setCoverLibraryOnly(true);
+          setActiveNav(productionsNav);
+
+          if (typeof window.mobileCoverHydrate === "function") {
+            window.mobileCoverHydrate();
+          }
+
+          return;
+        }
+if (activeMobileModule === "atmo") {
+  showAtmo();
+  setAtmoLibraryOnly(true);
+
+  if (typeof window.mobileAtmoHydrate === "function") {
+    window.mobileAtmoHydrate();
+  }
+
+  setActiveNav(productionsNav);
+  return;
+}
+
+                    if (activeMobileModule === "cartoon") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showCartoon();
+
+          const cartoonSection = document.getElementById("mobileCartoonSection");
+          if (cartoonSection) {
+            const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
+            const cartoonTitle = cartoonSection.querySelector(".section-title");
+            const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
+
+            if (cartoonPanel) cartoonPanel.hidden = true;
+            if (cartoonTitle) cartoonTitle.hidden = false;
+            if (cartoonResults) cartoonResults.hidden = false;
+            if (typeof window.mobileCartoonHydrate === "function") {
+            window.mobileCartoonHydrate();
+            }
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
+           if (activeMobileModule === "photofx") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showPhotoFx();
+
+          const photofxSection = document.getElementById("mobilePhotoFxSection");
+          if (photofxSection) {
+            const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel");
+            const photofxTitle = photofxSection.querySelector(".section-title");
+            const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
+
+            if (photofxPanel) photofxPanel.hidden = true;
+            if (photofxTitle) photofxTitle.hidden = false;
+            if (photofxResults) photofxResults.hidden = false;
+            if (typeof window.mobilePhotoFxHydrate === "function") {
+            window.mobilePhotoFxHydrate();
+           }
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
+        if (activeMobileModule === "video") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showVideo();
+
+          const videoSection = document.getElementById("mobileVideoSection");
+          if (videoSection) {
+            const videoPanel = videoSection.querySelector(".mobile-video-panel");
+            const videoTitle = videoSection.querySelector(".section-title");
+            const videoResults = videoSection.querySelector("#mobileVideoResults");
+
+            if (videoPanel) videoPanel.hidden = true;
+            if (videoTitle) videoTitle.hidden = false;
+            if (videoResults) videoResults.hidden = false;
+            if (typeof window.mobileVideoHydrate === "function") {
+           window.mobileVideoHydrate();
+           }
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+        if (activeMobileModule === "lipsync") {
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  showLipsync();
+
+  const lipsyncSection = document.getElementById("mobileLipsyncSection");
+  if (lipsyncSection) {
+    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");
+    const lipsyncTitle = lipsyncSection.querySelector(".section-title");
+    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");
+
+    if (lipsyncPanel) lipsyncPanel.hidden = true;
+    if (lipsyncTitle) lipsyncTitle.hidden = false;
+    if (lipsyncResults) lipsyncResults.hidden = false;
+    if (typeof window.mobileLipsyncShowLibrary === "function") {
+  window.mobileLipsyncShowLibrary();
+}
+  }
+
+  setActiveNav(productionsNav);
+
+  return;
+}
+showMusic();
+
+const musicHomeSection = document.getElementById("mobileHomeSection");
+const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+if (musicHomeSection) musicHomeSection.hidden = true;
+if (musicCard) musicCard.hidden = true;
+
+if (musicProductionsSection) {
+  musicProductionsSection.hidden = false;
+
+  document.documentElement.scrollTo({
+    top: musicProductionsSection.offsetTop - 12,
+    behavior: "smooth"
+  });
+}
+
+setActiveNav(productionsNav);
+      }, true);
+    }
+
+if (toolsNav) {
+ toolsNav.addEventListener("click", function(e){
+  e.preventDefault();
+
+  homeMount.hidden = true;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = false;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+}
+    if (creditsNav) {
+  creditsNav.addEventListener("click", function(e){
+    e.preventDefault();
+       homeMount.hidden = true;
+        const topbarCreditActions = document.querySelector(".topbar-credit-actions");
+    if (topbarCreditActions) {
+      topbarCreditActions.hidden = false;
+      topbarCreditActions.style.display = "flex";
+      topbarCreditActions.style.visibility = "visible";
+      topbarCreditActions.style.opacity = "1";
+    }
+
+    musicMount.hidden = true;
+    coverMount.hidden = true;
+    atmoMount.hidden = true;
+
+    if (cartoonMount) cartoonMount.hidden = true;
+    if (photofxMount) photofxMount.hidden = true;
+    if (videoMount) videoMount.hidden = true;
+    if (lipsyncMount) lipsyncMount.hidden = true;
+
+    if (toolsMount) toolsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
+
+    if (creditsMount) creditsMount.hidden = false;
+
+    setActiveNav(creditsNav);
+    hydrateTopCreditBalance();
+
+if (typeof window.mobileCreditsInit === "function") {
+  window.mobileCreditsInit();
+}
+  });
+}
+if (accountNav) {
+  accountNav.addEventListener("click", function(e){
+    e.preventDefault();
+
+    homeMount.hidden = true;
+    musicMount.hidden = true;
+    coverMount.hidden = true;
+    atmoMount.hidden = true;
+    if (cartoonMount) cartoonMount.hidden = true;
+    if (photofxMount) photofxMount.hidden = true;
+    if (videoMount) videoMount.hidden = true;
+    if (lipsyncMount) lipsyncMount.hidden = true;
+    if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
+    if (policyMount) policyMount.hidden = true;
+    if (accountMount) accountMount.hidden = false;
+
+    const accountMenu = accountMount ? accountMount.querySelector("[data-mobile-account-menu]") : null;
+    const profilePanel = accountMount ? accountMount.querySelector("[data-mobile-account-profile]") : null;
+    const invoicesPanel = accountMount ? accountMount.querySelector("[data-mobile-account-invoices]") : null;
+    const settingsPanel = accountMount ? accountMount.querySelector("[data-mobile-account-settings]") : null;
+    const contactPanel = accountMount ? accountMount.querySelector("[data-mobile-account-contact]") : null;
+
+    if (accountMenu) accountMenu.hidden = false;
+    if (profilePanel) profilePanel.hidden = true;
+    if (invoicesPanel) invoicesPanel.hidden = true;
+    if (settingsPanel) settingsPanel.hidden = true;
+    if (contactPanel) contactPanel.hidden = true;
+
+    setActiveNav(accountNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+    if (policyMount) {
+  policyMount.addEventListener("click", function(e){
+    const policyBackBtn = e.target.closest("[data-mobile-settings-back]");
+    if (!policyBackBtn) return;
+
+    e.preventDefault();
+
+    policyMount.hidden = true;
+
+    if (accountMount) accountMount.hidden = false;
+
+    const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+    const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
+    const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]");
+    const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
+
+    if (accountMenu) accountMenu.hidden = true;
+    if (profilePanel) profilePanel.hidden = true;
+    if (invoicesPanel) invoicesPanel.hidden = true;
+    if (settingsPanel) settingsPanel.hidden = false;
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+    if (accountMount) {
+accountMount.addEventListener("click", async function(e){
+const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
+const invoicesBtn = e.target.closest('[data-mobile-account-panel="invoices"]');
+const settingsBtn = e.target.closest('[data-mobile-account-panel="settings"]');
+const shareBtn = e.target.closest('[data-mobile-account-panel="share"]');
+const contactBtn = e.target.closest('[data-mobile-account-panel="contact"]');
+const logoutBtn = e.target.closest('[data-mobile-account-panel="logout"]');
+const backBtn = e.target.closest("[data-mobile-account-back]");
+const policyPrivacyBtn = e.target.closest("[data-mobile-policy-privacy]");
+const policyTermsBtn = e.target.closest("[data-mobile-policy-terms]");
+const policyBackBtn = e.target.closest("[data-mobile-settings-back]");
+const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+const profilePanel = accountMount.querySelector("[data-mobile-account-profile]");
+const invoicesPanel = accountMount.querySelector("[data-mobile-account-invoices]");
+const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
+const contactPanel = accountMount.querySelector("[data-mobile-account-contact]");
+ if (policyPrivacyBtn || policyTermsBtn) {
+  e.preventDefault();
+
+  const policyUrl = policyPrivacyBtn
+    ? "/mobile/modules/mobile-policy-privacy.html?v=1"
+    : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) {
+    policyMount.hidden = false;
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+  }
+
+  try {
+    const res = await fetch(policyUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("policy_load_failed");
+   policyMount.innerHTML = await res.text();
+
+if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(policyMount);
+}
+  } catch (err) {
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+
+if (policyBackBtn) {
+  e.preventDefault();
+
+  if (policyMount) policyMount.hidden = true;
+  if (accountMount) accountMount.hidden = false;
+
+  const accountMenu = accountMount.querySelector("[data-mobile-account-menu]");
+  const settingsPanel = accountMount.querySelector("[data-mobile-account-settings]");
+
+  if (accountMenu) accountMenu.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = false;
+
+  return;
+}
+  if (shareBtn) {
+  e.preventDefault();
+    
+const shareUrl = "https://www.aivo.tr";
+const shareText = "AIVO ile müzik, kapak, video ve çizgifilm üretimini mobilde dene:";
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: "AIVO",
+        text: shareText,
+        url: shareUrl
+      });
+
+      return;
+    }
+
+  await navigator.clipboard.writeText(shareUrl);
+
+if (window.mobileToast) {
+  window.mobileToast.success(
+    String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+      ? "AIVO link copied."
+      : "AIVO linki kopyalandı."
+  );
+}
+} catch (err) {
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+
+    if (window.mobileToast) {
+      window.mobileToast.success(
+        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+          ? "AIVO link copied."
+          : "AIVO linki kopyalandı."
+      );
+    }
+  } catch (copyErr) {
+    if (window.mobileToast) {
+      window.mobileToast.error(
+        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+          ? "Sharing could not be started."
+          : "Paylaşım başlatılamadı."
+      );
+    }
+  }
+}
+
+return;
+}
+   if (profileBtn) {
+  e.preventDefault();
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = false;
+
+  if (typeof window.mobileAccountInit === "function") {
+    window.mobileAccountInit();
+  }
+
+  return;
+}
+ if (invoicesBtn) {
+  e.preventDefault();
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = false;
+
+  if (typeof window.mobileInvoicesInit === "function") {
+    window.mobileInvoicesInit();
+  }
+
+  return;
+}
+  if (contactBtn) {
+  e.preventDefault();
+
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = true;
+  if (contactPanel) contactPanel.hidden = false;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+    if (logoutBtn) {
+  e.preventDefault();
+
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store"
+    });
+  } catch (err) {}
+
+    try {
+    localStorage.removeItem("aivo_logged_in");
+    localStorage.removeItem("aivo_user_email");
+    localStorage.removeItem("aivo_auth_unified_v1");
+    localStorage.removeItem("aivo_profile_name");
+    localStorage.removeItem("aivo_profile_surname");
+    localStorage.removeItem("aivo_mobile_active_tab");
+    localStorage.removeItem("aivo_mobile_account_state");
+
+    sessionStorage.clear();
+
+    localStorage.setItem("aivo_mobile_force_login", "1");
+  } catch (err) {}
+
+try {
+  if (window.mobileToast) {
+    const isEnglish =
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
+      String(localStorage.getItem("aivo_lang") || "").toLowerCase().startsWith("en");
+
+    window.mobileToast.success(isEnglish ? "Logged out." : "Çıkış yapıldı.");
+  }
+} catch (err) {}
+
+setTimeout(function(){
+ window.location.replace(getAivoMobileLoginUrl());
+}, 650);
+
+return;
+}
+    if (settingsBtn) {
+  e.preventDefault();
+
+  if (accountMenu) accountMenu.hidden = true;
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = false;
+
+  if (typeof window.mobileSettingsInit === "function") {
+    window.mobileSettingsInit();
+  }
+
+  return;
+}
+
+if (backBtn) {
+  e.preventDefault();
+
+  if (profilePanel) profilePanel.hidden = true;
+  if (invoicesPanel) invoicesPanel.hidden = true;
+  if (settingsPanel) settingsPanel.hidden = true;
+  if (contactPanel) contactPanel.hidden = true;
+
+  if (accountMenu) accountMenu.hidden = false;
+
+  return;
+}
+  });
+}
+if (window.location.hash === "#credits" && creditsNav) {
+  creditsNav.click();
+}
+
+if (window.location.hash === "#music") {
+  activeMobileModule = "music";
+  homeMount.hidden = true;
+  showMusic();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#cover") {
+  activeMobileModule = "cover";
+  homeMount.hidden = true;
+  showCover();
+  setCoverLibraryOnly(false);
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#photofx") {
+  activeMobileModule = "photofx";
+  homeMount.hidden = true;
+  showPhotoFx();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#video") {
+  activeMobileModule = "video";
+  homeMount.hidden = true;
+  showVideo();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#lipsync") {
+  activeMobileModule = "lipsync";
+  homeMount.hidden = true;
+  showLipsync();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#atmo") {
+  activeMobileModule = "atmo";
+  homeMount.hidden = true;
+  showAtmo();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+if (window.location.hash === "#cartoon") {
+  activeMobileModule = "cartoon";
+  homeMount.hidden = true;
+  showCartoon();
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function applyMobileHashRoute(){
+  const hash = String(window.location.hash || "#home");
+
+  if (hash === "#home" && homeNav) {
+    homeNav.click();
+    return;
+  }
+
+  if (hash === "#productions" && productionsNav) {
+    productionsNav.click();
+    return;
+  }
+
+  if (hash === "#tools" && toolsNav) {
+    toolsNav.click();
+    return;
+  }
+
+  if (hash === "#credits" && creditsNav) {
+    creditsNav.click();
+    return;
+  }
+
+  if (hash === "#account" && accountNav) {
+    accountNav.click();
+    return;
+  }
+
+  if (hash === "#music") {
+    activeMobileModule = "music";
+    homeMount.hidden = true;
+    showMusic();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (hash === "#cover") {
+    activeMobileModule = "cover";
+    homeMount.hidden = true;
+    showCover();
+    setCoverLibraryOnly(false);
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (hash === "#photofx") {
+    activeMobileModule = "photofx";
+    homeMount.hidden = true;
+    showPhotoFx();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (hash === "#video") {
+    activeMobileModule = "video";
+    homeMount.hidden = true;
+    showVideo();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (hash === "#lipsync") {
+    activeMobileModule = "lipsync";
+    homeMount.hidden = true;
+    showLipsync();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (hash === "#atmo") {
+    activeMobileModule = "atmo";
+    homeMount.hidden = true;
+    showAtmo();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (hash === "#cartoon") {
+    activeMobileModule = "cartoon";
+    homeMount.hidden = true;
+    showCartoon();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
+applyMobileHashRoute();
+document.documentElement.classList.remove("aivo-hash-routing-pending");
+window.addEventListener("hashchange", applyMobileHashRoute);
+
+document.addEventListener("click", function(e){
+  const btn = e.target.closest("[data-mobile-tool]");
+  if (!btn) return;
+
+  e.preventDefault();
+
+  const tool = btn.getAttribute("data-mobile-tool");
+
+  if (tool === "music") {
+    activeMobileModule = "music";
+    homeMount.hidden = true;
+    showMusic();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (tool === "cover") {
+    activeMobileModule = "cover";
+    homeMount.hidden = true;
+    showCover();
+    setCoverLibraryOnly(false);
+    setActiveNav(toolsNav);
+
+    if (typeof window.mobileCoverHydrate === "function") {
+      window.mobileCoverHydrate();
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+if (tool === "atmo") {
+  activeMobileModule = "atmo";
+  homeMount.hidden = true;
+  showAtmo();
+
+  if (typeof setAtmoLibraryOnly === "function") {
+    setAtmoLibraryOnly(false);
+  }
+
+  if (typeof window.mobileAtmoShowCurrent === "function") {
+    window.mobileAtmoShowCurrent();
+  }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+ if (tool === "cartoon") {
+  activeMobileModule = "cartoon";
+  homeMount.hidden = true;
+  showCartoon();
+
+  if (typeof window.mobileCartoonShowCurrent === "function") {
+    window.mobileCartoonShowCurrent();
+  }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+
+ if (tool === "photofx") {
+  activeMobileModule = "photofx";
+  homeMount.hidden = true;
+  showPhotoFx();
+
+  if (typeof window.mobilePhotoFxShowCurrent === "function") {
+    window.mobilePhotoFxShowCurrent();
+  }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+
+ if (tool === "video") {
+  activeMobileModule = "video";
+  homeMount.hidden = true;
+  showVideo();
+
+  if (typeof window.mobileVideoShowCurrent === "function") {
+    window.mobileVideoShowCurrent();
+  }
+
+  setActiveNav(toolsNav);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  return;
+}
+
+  if (tool === "lipsync") {
+    activeMobileModule = "lipsync";
+    homeMount.hidden = true;
+    showLipsync();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+});
+  })();
+function getAivoMobileLoginUrl(extraQuery){
+  if (extraQuery) {
+    return "/login.ios.html?" + extraQuery;
+  }
+
+  var returnTo = "/studio.ios.html" + (window.location.hash || "");
+  return "/login.ios.html?returnTo=" + encodeURIComponent(returnTo);
+}
+
+</script>
+
+<script>
+(function AIVO_MOBILE_PRESENCE_PING(){
+  try {
+    let presenceEmail = "";
+
+    async function getPresenceEmail(){
+      if (presenceEmail) return presenceEmail;
+
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store"
+      });
+
+      if (!res.ok) return "";
+
+      const data = await res.json().catch(function(){
+        return null;
+      });
+
+      const user = data && (data.user || data);
+      presenceEmail = String(user && user.email ? user.email : "").trim().toLowerCase();
+
+      return presenceEmail;
+    }
+
+    async function ping(){
+      const email = await getPresenceEmail();
+
+      if (!email || !email.includes("@")) return;
+
+      fetch("/api/presence/ping", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          source: "mobile",
+          page: "/studio.ios.html"
+        })
+      }).catch(function(){});
+    }
+
+    ping();
+    setInterval(ping, 30000);
+
+    document.addEventListener("visibilitychange", function(){
+      if (!document.hidden) ping();
+    });
+  } catch (err) {}
+})();
+</script>
+<script>
+(function AIVO_IOS_STUDIO_ACTIVITY(){
+  function hitTraffic(){
+    try {
+      fetch("/api/traffic/hit", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          source: "ios",
+          page: "/studio.ios.html"
+        })
+      }).catch(function(){});
+    } catch (err) {}
+  }
+
+  hitTraffic();
+})();
+</script>
+  <script>
+(function AIVO_STUDIO_CREDIT_PILL_TAP_HELPER(){
+  const pill = document.querySelector("[data-mobile-credit-balance]");
+  if (!pill) return;
+
+  pill.addEventListener("click", function(){
+    pill.classList.add("is-credit-focus");
+
+    window.clearTimeout(pill.__aivoCreditFocusTimer);
+    pill.__aivoCreditFocusTimer = window.setTimeout(function(){
+      pill.classList.remove("is-credit-focus");
+    }, 2000);
+  });
+})();
+</script>
+<script>
+(function AIVO_IOS_IAP_PURCHASE_BRIDGE(){
+  if (window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__) return;
+  window.__AIVO_IOS_IAP_PURCHASE_BRIDGE__ = true;
+
+  const AIVO_IOS_IAP_PRODUCTS = {
+    "25": "tr.aivo.credits.25",
+    "100": "tr.aivo.credits.100",
+    "200": "tr.aivo.credits.200",
+    "500": "tr.aivo.credits.500"
+  };
+
+  function getLang(){
+    return (
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en") ||
+      String(localStorage.getItem("aivo_lang") || "").toLowerCase().startsWith("en")
+    ) ? "en" : "tr";
+  }
+
+  function showToast(type, trMessage, enMessage){
+    const message = getLang() === "en" ? enMessage : trMessage;
+
+    if (window.mobileToast && typeof window.mobileToast[type] === "function") {
+      window.mobileToast[type](message);
+      return;
+    }
+
+    alert(message);
+  }
+
+  function findProductId(target){
+    const dataPlan = String(
+      target.getAttribute("data-plan") ||
+      target.getAttribute("data-package") ||
+      target.getAttribute("data-credits") ||
+      ""
+    ).trim();
+
+    const card = target.closest(
+      "[data-plan], [data-package], [data-credits], article, section, .mobile-credit-card, .mobile-price-card, .credit-card, .pricing-card"
+    );
+
+    const targetText = String(target.textContent || "").toLowerCase();
+    const cardText = String(card && card.textContent ? card.textContent : "").toLowerCase();
+
+    const combined = (dataPlan + " " + targetText + " " + cardText)
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+
+    if (/\b500\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["500"];
+    if (/\b200\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["200"];
+    if (/\b100\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["100"];
+    if (/\b25\b/.test(combined)) return AIVO_IOS_IAP_PRODUCTS["25"];
+
+    return "";
+  }
+
+  async function startIosIapPurchase(productId){
+    if (!productId) {
+      showToast(
+        "error",
+        "Paket bilgisi bulunamadı.",
+        "Package information could not be found."
+      );
+      return;
+    }
+
+    const CdvPurchase = window.CdvPurchase;
+    const store = CdvPurchase && CdvPurchase.store;
+
+    if (!CdvPurchase || !store) {
+      showToast(
+        "info",
+        "Apple In-App Purchase altyapısı hazırlanıyor. Product ID: " + productId,
+        "Apple In-App Purchase integration is being prepared. Product ID: " + productId
+      );
+      return;
+    }
+
+    async function sendIosIapVerifyPayload(source, payload){
+      try {
+        const safePayload = payload || {};
+        const transactionId = String(
+          safePayload.transactionId ||
+          safePayload.id ||
+          safePayload.originalTransactionId ||
+          ""
+        ).trim();
+
+        const receipt = String(
+          safePayload.receipt ||
+          safePayload.appStoreReceipt ||
+          safePayload.purchaseReceipt ||
+          safePayload.transactionReceipt ||
+          ""
+        ).trim();
+
+       const payloadProductId = String(
+  safePayload.productId ||
+  safePayload.product_id ||
+  productId ||
+  ""
+).trim();
+
+const purchaseDate = String(
+  safePayload.purchaseDate ||
+  safePayload.rawUpdatedItem?.purchaseDate ||
+  safePayload.rawUpdatedItem?.transactionDate ||
+  safePayload.rawUpdatedItem?.lastRenewalDate ||
+  safePayload.rawTransaction?.purchaseDate ||
+  safePayload.rawReceipt?.transactions?.[0]?.purchaseDate ||
+  Date.now()
+).trim();
+
+            const clientVerifyKey = [
+          "ios_iap_client_verify",
+          payloadProductId,
+          transactionId || receipt.slice(0, 80)
+        ].join(":");
+
+        window.__AIVO_IOS_IAP_VERIFY_KEYS__ = window.__AIVO_IOS_IAP_VERIFY_KEYS__ || {};
+
+   if (window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey]) {
+  console.log("[AIVO iOS IAP] duplicate client verify detected but backend will handle idempotency", {
+    source: source,
+    productId: payloadProductId,
+    transactionId: transactionId,
+    hasReceipt: !!receipt
+  });
+}
+
+window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey] = Date.now();
+
+        setTimeout(function(){
+  try {
+    if (window.__AIVO_IOS_IAP_VERIFY_KEYS__) {
+      delete window.__AIVO_IOS_IAP_VERIFY_KEYS__[clientVerifyKey];
+    }
+  } catch (err) {}
+}, 3000);
+
+        console.log("[AIVO iOS IAP] transaction payload", {
+          source: source,
+          productId: payloadProductId,
+          transactionId: transactionId,
+          hasReceipt: !!receipt,
+          raw: safePayload
+        });
+
+        const verifyRes = await fetch("/api/ios-iap/verify", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+            body: JSON.stringify({
+  productId: payloadProductId,
+  transactionId: transactionId,
+  receipt: receipt,
+  purchaseDate: purchaseDate,
+  userId: String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase(),
+  source: source,
+  rawPayload: safePayload
+})
+        });
+
+        const verifyData = await verifyRes.json().catch(function(){
+          return null;
+        });
+
+             console.log("[AIVO iOS IAP] verify response", verifyData);
+
+       if (verifyData && verifyData.ok && Number.isFinite(Number(verifyData.creditsAfter))) {
+  const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
+  if (topCreditBalance) {
+    topCreditBalance.textContent = "Kredi " + Number(verifyData.creditsAfter);
+  }
+
+  if (verifyData.deduped !== true && Number(verifyData.creditsAdded || 0) > 0) {
+    showToast(
+      "success",
+      "Apple satın alma doğrulandı. Krediler eklendi.",
+      "Apple purchase verified. Credits added."
+    );
+  }
+}
+
+        return verifyData;
+      } catch (verifyErr) {
+        console.error("[AIVO iOS IAP] verify request failed", verifyErr);
+        return null;
+      }
+    }
+
+    function setupIosIapListeners(){
+      if (window.__AIVO_IOS_IAP_LISTENERS_READY__) return;
+      window.__AIVO_IOS_IAP_LISTENERS_READY__ = true;
+
+      store.error(function(error){
+        console.error("[AIVO iOS IAP] store error", error);
+      });
+
+      try {
+        store.when().approved(function(transaction){
+          console.log("[AIVO iOS IAP] approved transaction", transaction);
+
+          sendIosIapVerifyPayload("approved", {
+            productId: transaction && transaction.products && transaction.products[0]
+              ? transaction.products[0].id
+              : productId,
+            transactionId: transaction && transaction.transactionId ? transaction.transactionId : "",
+            originalTransactionId: transaction && transaction.originalTransactionId ? transaction.originalTransactionId : "",
+            receipt: transaction && transaction.receipt ? transaction.receipt : "",
+            rawTransaction: transaction || null
+          });
+
+          if (transaction && typeof transaction.verify === "function") {
+            transaction.verify();
+          }
+        });
+
+        store.when().verified(function(receipt){
+          console.log("[AIVO iOS IAP] verified receipt", receipt);
+
+          sendIosIapVerifyPayload("verified", {
+            productId: receipt && receipt.transactions && receipt.transactions[0] && receipt.transactions[0].products && receipt.transactions[0].products[0]
+              ? receipt.transactions[0].products[0].id
+              : productId,
+            transactionId: receipt && receipt.transactions && receipt.transactions[0] && receipt.transactions[0].transactionId
+              ? receipt.transactions[0].transactionId
+              : "",
+            receipt: receipt && receipt.nativeData ? JSON.stringify(receipt.nativeData) : "",
+            rawReceipt: receipt || null
+          });
+
+          if (receipt && typeof receipt.finish === "function") {
+            receipt.finish();
+          }
+        });
+
+     store.when().updated(function(item){
+  console.log("[AIVO iOS IAP] updated item", item);
+
+  const nativeData = item && item.nativeData ? item.nativeData : {};
+  const appStoreReceipt = nativeData && nativeData.appStoreReceipt
+    ? nativeData.appStoreReceipt
+    : "";
+
+  const transactions = Array.isArray(item && item.transactions)
+    ? item.transactions
+    : [];
+
+const creditTransactions = transactions.filter(function(tx){
+  const txProduct = tx && tx.products && tx.products[0]
+    ? tx.products[0]
+    : null;
+
+  const txProductId = txProduct && txProduct.id
+    ? String(txProduct.id).trim()
+    : "";
+
+  const txId = tx && tx.transactionId
+    ? String(tx.transactionId).trim()
+    : "";
+
+  return (
+    txId &&
+    txProductId &&
+    AIVO_IOS_IAP_PRODUCTS &&
+    Object.values(AIVO_IOS_IAP_PRODUCTS).includes(txProductId)
+  );
+});
+
+creditTransactions.sort(function(a, b){
+  const aTime = new Date(a && a.purchaseDate ? a.purchaseDate : 0).getTime() || 0;
+  const bTime = new Date(b && b.purchaseDate ? b.purchaseDate : 0).getTime() || 0;
+
+  if (aTime !== bTime) {
+    return bTime - aTime;
+  }
+
+  return Number(b.transactionId || 0) - Number(a.transactionId || 0);
+});
+
+const creditTransaction = creditTransactions[0] || null;
+  if (!creditTransaction || !appStoreReceipt) {
+    return;
+  }
+
+  const creditProduct = creditTransaction.products && creditTransaction.products[0]
+    ? creditTransaction.products[0]
+    : null;
+
+  const updatedProductId = creditProduct && creditProduct.id
+    ? String(creditProduct.id).trim()
+    : "";
+
+  const updatedTransactionId = String(creditTransaction.transactionId || "").trim();
+  const updatedPurchaseDate = String(creditTransaction.purchaseDate || "").trim();
+
+  console.log("[AIVO iOS IAP] extracted transaction id", {
+    transactionId: updatedTransactionId,
+    productId: updatedProductId,
+    purchaseDate: updatedPurchaseDate
+  });
+
+  sendIosIapVerifyPayload("updated", {
+    productId: updatedProductId,
+    transactionId: updatedTransactionId,
+    purchaseDate: updatedPurchaseDate,
+    receipt: appStoreReceipt,
+    rawUpdatedItem: item || null
+  });
+
+  return;
+});
+      } catch (listenerErr) {
+        console.error("[AIVO iOS IAP] listener setup failed", listenerErr);
+      }
+    }
+
+    try {
+      showToast(
+        "info",
+        "Apple ödeme ekranı hazırlanıyor.",
+        "Preparing Apple payment screen."
+      );
+
+      setupIosIapListeners();
+
+      if (!window.__AIVO_IOS_IAP_STORE_READY__) {
+        Object.keys(AIVO_IOS_IAP_PRODUCTS).forEach(function(key){
+          store.register({
+            id: AIVO_IOS_IAP_PRODUCTS[key],
+            type: CdvPurchase.ProductType.CONSUMABLE,
+            platform: CdvPurchase.Platform.APPLE_APPSTORE
+          });
+        });
+
+        await store.initialize([
+          CdvPurchase.Platform.APPLE_APPSTORE
+        ]);
+
+        window.__AIVO_IOS_IAP_STORE_READY__ = true;
+      }
+
+      await store.update();
+
+      const product = store.get(
+        productId,
+        CdvPurchase.Platform.APPLE_APPSTORE
+      );
+
+      const offer = product && product.getOffer ? product.getOffer() : null;
+
+    if (!offer) {
+  showToast(
+    "warning",
+    "Apple Store geçici olarak hazır değil. Lütfen biraz sonra tekrar deneyin.",
+    "Apple Store is temporarily unavailable. Please try again shortly."
+  );
+  return;
+}
+
+      const result = await offer.order();
+
+      console.log("[AIVO iOS IAP] order result", result);
+
+      showToast(
+        "success",
+        "Apple satın alma ekranı açıldı.",
+        "Apple purchase screen opened."
+      );
+    } catch (err) {
+      console.error("[AIVO iOS IAP] order failed", err);
+
+      showToast(
+        "error",
+        "Satın alma başlatılamadı.",
+        "Purchase could not be started."
+      );
+    }
+  }
+
+  function isPaymentUrl(value){
+    const url = String(value || "").toLowerCase();
+
+    return (
+      url.includes("/api/garanti/") ||
+      url.includes("/api/paytr/") ||
+      url.includes("/api/stripe/") ||
+      url.includes("garanti") ||
+      url.includes("paytr") ||
+      url.includes("stripe")
+    );
+  }
+
+  const originalFetch = window.fetch;
+
+  window.fetch = function(input, init){
+    const url = typeof input === "string" ? input : (input && input.url);
+
+    if (isPaymentUrl(url)) {
+      showToast(
+        "info",
+        "iOS içinde ödeme Apple In-App Purchase ile yapılacak.",
+        "Payments inside iOS will use Apple In-App Purchase."
+      );
+
+      return Promise.resolve(new Response(JSON.stringify({
+        ok: false,
+        ios_iap_required: true,
+        message: "Apple In-App Purchase required."
+      }), {
+        status: 409,
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }));
+    }
+
+    return originalFetch.apply(this, arguments);
+  };
+
+  document.addEventListener("click", function(event){
+    const target = event.target && event.target.closest
+      ? event.target.closest("a, button")
+      : null;
+
+    if (!target) return;
+
+    const creditsMount = document.getElementById("mobileCreditsMount");
+    const insideCredits = creditsMount && creditsMount.contains(target);
+
+    const href = target.getAttribute("href") || "";
+    const action = target.getAttribute("formaction") || "";
+    const text = String(target.textContent || "").toLowerCase();
+
+    const isSafeCreditsNav =
+      href === "#credits" ||
+      href === "/studio.ios.html#credits" ||
+      href === "studio.ios.html#credits";
+
+    if (isSafeCreditsNav) return;
+
+    const looksLikePackageButton =
+      insideCredits &&
+      (
+        text.includes("select package") ||
+        text.includes("paketi seç") ||
+        text.includes("satın") ||
+        text.includes("buy") ||
+        text.includes("purchase") ||
+        text.includes("kredi al")
+      );
+
+    const looksLikeExternalPayment =
+      isPaymentUrl(href) ||
+      isPaymentUrl(action);
+
+    if (!looksLikePackageButton && !looksLikeExternalPayment) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    const productId = findProductId(target);
+    startIosIapPurchase(productId);
+  }, true);
+})();
+</script>
+</body>
+</html>
