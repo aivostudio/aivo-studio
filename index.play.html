@@ -6,14 +6,17 @@
 <script>
 (function AIVO_PLAY_INDEX_WEB_GUARD(){
   try {
-    var isNative =
-      !!window.Capacitor ||
-      !!window.webkit?.messageHandlers?.bridge ||
-      navigator.userAgent.indexOf("Capacitor") !== -1;
+var ua = navigator.userAgent || "";
+var isAndroid =
+  ua.indexOf("Android") !== -1 &&
+  (
+    !!window.Capacitor ||
+    ua.indexOf("Capacitor") !== -1
+  );
 
-    if (isNative) return;
+if (isAndroid) return;
 
-    window.location.replace("/index.mobile.html");
+window.location.replace("/index.mobile.html");
   } catch (_) {
     window.location.replace("/index.mobile.html");
   }
