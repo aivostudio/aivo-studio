@@ -5,6 +5,16 @@ const kv = kvMod?.default || kvMod || {};
 const kvGet = kv.kvGet;
 const kvSet = kv.kvSet;
 
+const PACKAGE_NAME = process.env.GOOGLE_PLAY_PACKAGE_NAME || "tr.aivo.app";
+const SERVICE_ACCOUNT_JSON = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || "";
+
+const CREDIT_PACKAGES = {
+  "tr.aivo.credits.25": 25,
+  "tr.aivo.credits.100": 100,
+  "tr.aivo.credits.200": 200,
+  "tr.aivo.credits.500": 500,
+};
+
 function sha256(value) {
   return crypto
     .createHash("sha256")
@@ -12,15 +22,170 @@ function sha256(value) {
     .digest("hex");
 }
 
+function base64url(input) {
+  return Buffer.from(input)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+}
+
+function getServiceAccount() {
+  if (!SERVICE_ACCOUNT_JSON) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(SERVICE_ACCOUNT_JSON);
+  } catch (err) {
+    return null;
+  }
+}
+
+async function getGoogleAccessToken() {
+  const serviceAccount = getServiceAccount();
+
+  if (!serviceAccount || !serviceAccount.client_email || !serviceAccount.private_key) {
+    throw new Error("google_play_service_account_missing");
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  const header = {
+    alg: "RS256",
+    typ: "JWT",
+  };
+
+  const claim = {
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/androidpublisher",
+    aud: "https://oauth2.googleapis.com/token",
+    exp: now + 3600,
+    iat: now,
+  };
+
+  const unsignedJwt = base64url(JSON.stringify(header)) + "." + base64url(JSON.stringify(claim));
+
+  const signer = crypto.createSign("RSA-SHA256");
+  signer.update(unsignedJwt);
+  signer.end();
+
+  const signature = signer
+    .sign(String(serviceAccount.private_key).replace(/\\n/g, "\n"))
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  const jwt = unsignedJwt + "." + signature;
+
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: jwt,
+    }).toString(),
+  });
+
+  const tokenData = await tokenRes.json().catch(() => ({}));
+
+  if (!tokenRes.ok || !tokenData.access_token) {
+    throw new Error("google_access_token_failed");
+  }
+
+  return tokenData.access_token;
+}
 
 async function verifyGooglePlayPurchase({ productId, purchaseToken }) {
+  const accessToken = await getGoogleAccessToken();
+
+  const url =
+    "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/" +
+    encodeURIComponent(PACKAGE_NAME) +
+    "/purchases/products/" +
+    encodeURIComponent(productId) +
+    "/tokens/" +
+    encodeURIComponent(purchaseToken);
+
+  const verifyRes = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+    },
+  });
+
+  const data = await verifyRes.json().catch(() => ({}));
+
+  if (!verifyRes.ok) {
+    return {
+      ok: false,
+      error: "google_play_verify_failed",
+      status: verifyRes.status,
+      data,
+    };
+  }
+
+  if (Number(data.purchaseState) !== 0) {
+    return {
+      ok: false,
+      error: "purchase_not_completed",
+      data,
+    };
+  }
+
   return {
     ok: true,
     provider: "google_play_billing",
     productId,
-    purchaseToken
+    purchaseToken,
+    orderId: data.orderId || "",
+    purchaseTimeMillis: data.purchaseTimeMillis || "",
+    acknowledgementState: Number(data.acknowledgementState || 0),
+    raw: data,
   };
 }
+
+async function acknowledgeGooglePlayPurchase({ productId, purchaseToken }) {
+  const accessToken = await getGoogleAccessToken();
+
+  const url =
+    "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/" +
+    encodeURIComponent(PACKAGE_NAME) +
+    "/purchases/products/" +
+    encodeURIComponent(productId) +
+    "/tokens/" +
+    encodeURIComponent(purchaseToken) +
+    ":acknowledge";
+
+  const ackRes = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      developerPayload: "aivo_google_play_billing",
+    }),
+  });
+
+  if (!ackRes.ok) {
+    const data = await ackRes.json().catch(() => ({}));
+
+    return {
+      ok: false,
+      status: ackRes.status,
+      data,
+    };
+  }
+
+  return {
+    ok: true,
+  };
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -31,22 +196,16 @@ export default async function handler(req, res) {
     }
 
     const body = req.body || {};
+
     const productId = String(body.productId || "").trim();
-    const transactionId = String(body.transactionId || "").trim();
-    const receipt = String(body.receipt || "").trim();
+    const purchaseToken = String(body.purchaseToken || body.token || "").trim();
+    const orderId = String(body.orderId || body.transactionId || "").trim();
 
     const userId = String(
       body.userId ||
       body.email ||
       ""
     ).trim().toLowerCase();
-
-    const CREDIT_PACKAGES = {
-      "tr.aivo.credits.25": 25,
-      "tr.aivo.credits.100": 100,
-      "tr.aivo.credits.200": 200,
-      "tr.aivo.credits.500": 500,
-    };
 
     const credits = CREDIT_PACKAGES[productId];
 
@@ -57,10 +216,10 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!transactionId && !receipt) {
+    if (!purchaseToken) {
       return res.status(400).json({
         ok: false,
-        error: "missing_transaction_or_receipt",
+        error: "missing_purchase_token",
       });
     }
 
@@ -78,50 +237,13 @@ export default async function handler(req, res) {
       });
     }
 
-const rawPayload = body.rawPayload || {};
-const rawUpdatedItem = rawPayload.rawUpdatedItem || body.rawUpdatedItem || {};
-const rawTransactions = Array.isArray(rawUpdatedItem.transactions)
-  ? rawUpdatedItem.transactions
-  : [];
+    const tokenHash = sha256(purchaseToken);
 
-const matchedTransaction = rawTransactions.find(function(tx){
-  const txProduct = tx && tx.products && tx.products[0]
-    ? tx.products[0]
-    : null;
-
-  const txProductId = txProduct && txProduct.id
-    ? String(txProduct.id).trim()
-    : "";
-
-  const txId = tx && tx.transactionId
-    ? String(tx.transactionId).trim()
-    : "";
-
-  return txId && txProductId === productId;
-});
-
-const purchaseDate = String(
-  body.purchaseDate ||
-  rawUpdatedItem.purchaseDate ||
-  rawUpdatedItem.transactionDate ||
-  rawUpdatedItem.lastRenewalDate ||
-  (matchedTransaction && matchedTransaction.purchaseDate) ||
-  body.rawResult?.purchaseDate ||
-  ""
-).trim();
-
-const purchaseFingerprint = transactionId && purchaseDate
-  ? `tx:${transactionId}:${purchaseDate}`
-  : transactionId
-    ? `tx:${transactionId}`
-    : purchaseDate
-      ? `xcode:${productId}:${purchaseDate}`
-      : `receipt:${sha256(receipt)}`;
     const idempotencyKey = [
-      "ios_iap",
+      "google_play_billing",
       userId,
       productId,
-      purchaseFingerprint
+      tokenHash,
     ].join(":");
 
     const existingPurchase = await kvGet(idempotencyKey).catch(() => null);
@@ -137,37 +259,35 @@ const purchaseFingerprint = transactionId && purchaseDate
         parsed = {};
       }
 
-return res.status(200).json({
-  ok: true,
-  provider: "apple_iap",
-  verified: true,
-  deduped: true,
-  productId,
-  transactionId,
-  creditsAdded: 0,
-  creditsBefore: parsed.creditsBefore,
-  creditsAfter: parsed.creditsAfter,
-  message: "Purchase already processed.",
-});
+      return res.status(200).json({
+        ok: true,
+        provider: "google_play_billing",
+        verified: true,
+        deduped: true,
+        productId,
+        orderId: parsed.orderId || orderId,
+        creditsAdded: 0,
+        creditsBefore: parsed.creditsBefore,
+        creditsAfter: parsed.creditsAfter,
+        message: "Purchase already processed.",
+      });
     }
 
-const appleVerifyData = await verifyAppleReceipt(receipt);
+    const googleVerifyData = await verifyGooglePlayPurchase({
+      productId,
+      purchaseToken,
+    });
 
-const isXcodeLocalReceipt =
-  appleVerifyData &&
-  appleVerifyData.status === 21002 &&
-  String(body.source || "").trim() === "updated" &&
-  String(receipt || "").length > 500 &&
-  String(req.headers.host || "").includes("aivo.tr");
+    if (!googleVerifyData.ok) {
+      return res.status(400).json({
+        ok: false,
+        provider: "google_play_billing",
+        error: googleVerifyData.error || "google_play_purchase_not_verified",
+        detail: googleVerifyData,
+      });
+    }
 
-if (!appleVerifyData || (appleVerifyData.status !== 0 && !isXcodeLocalReceipt)) {
-  return res.status(400).json({
-    ok: false,
-    provider: "apple_iap",
-    error: "apple_receipt_not_verified",
-    appleStatus: appleVerifyData && appleVerifyData.status,
-  });
-}
+    const finalOrderId = googleVerifyData.orderId || orderId || "";
 
     const creditKey = `credits:${userId}`;
     const currentCredits = Number(await kvGet(creditKey).catch(() => 0)) || 0;
@@ -175,32 +295,48 @@ if (!appleVerifyData || (appleVerifyData.status !== 0 && !isXcodeLocalReceipt)) 
 
     await kvSet(creditKey, nextCredits);
 
+    let acknowledged = false;
+
+    if (Number(googleVerifyData.acknowledgementState) !== 1) {
+      const ackResult = await acknowledgeGooglePlayPurchase({
+        productId,
+        purchaseToken,
+      });
+
+      acknowledged = !!ackResult.ok;
+    } else {
+      acknowledged = true;
+    }
+
     await kvSet(idempotencyKey, JSON.stringify({
-      provider: "apple_iap",
+      provider: "google_play_billing",
       productId,
-      transactionId,
+      orderId: finalOrderId,
+      purchaseTokenHash: tokenHash,
       creditsAdded: credits,
       creditsBefore: currentCredits,
       creditsAfter: nextCredits,
-      processedAt: new Date().toISOString()
+      acknowledged,
+      processedAt: new Date().toISOString(),
     }));
 
     return res.status(200).json({
       ok: true,
-      provider: "apple_iap",
+      provider: "google_play_billing",
       verified: true,
       deduped: false,
       productId,
-      transactionId,
+      orderId: finalOrderId,
       creditsAdded: credits,
       creditsBefore: currentCredits,
       creditsAfter: nextCredits,
+      acknowledged,
       message: "Credits successfully added.",
     });
   } catch (err) {
     return res.status(500).json({
       ok: false,
-      error: "ios_iap_verify_failed",
+      error: "google_play_billing_verify_failed",
       detail: err && err.message ? err.message : "Unknown error",
     });
   }
