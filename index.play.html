@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script>
+(function AIVO_IOS_INDEX_WEB_GUARD(){
+  try {
+    var isNative =
+      !!window.Capacitor ||
+      !!window.webkit?.messageHandlers?.bridge ||
+      navigator.userAgent.indexOf("Capacitor") !== -1;
+
+    if (isNative) return;
+
+    window.location.replace("/index.mobile.html");
+  } catch (_) {
+    window.location.replace("/index.mobile.html");
+  }
+})();
+</script>
+<title>AIVO Mobile</title>
+
+<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+<meta property="og:title" content="AIVO Studio">
+<meta property="og:description" content="AI ile müzik, kapak, video ve çizgifilm üretimini mobilde dene.">
+<meta property="og:image" content="https://www.aivo.tr/apple-touch-icon.png">
+<meta property="og:url" content="https://www.aivo.tr/">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+  *{box-sizing:border-box}
+
+  [hidden]{
+    display:none !important;
+  }
+
+  html,body{
+    margin:0;
+    width:100%;
+    min-height:100%;
+    max-width:100%;
+    overflow-x:hidden;
+    font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+    background:#070914;
+    color:#fff;
+  }
+
+  html{
+    position:relative;
+  }
+
+ body{
+  background:
+    linear-gradient(180deg, #241b4b 0px, #241b4b 250px, #070914 520px),
+    radial-gradient(520px 360px at 20% 6%, rgba(139,92,246,.34), transparent 62%),
+    radial-gradient(520px 360px at 90% 18%, rgba(56,189,248,.20), transparent 62%),
+    #070914;
+  overflow-x:hidden;
+}
+
+  a{
+    text-decoration:none;
+    color:inherit;
+  }
+
+.topbar{
+  position:fixed;
+  left:0;
+  right:0;
+  top:0;
+  z-index:120;
+  width:min(430px,100%);
+  margin:0 auto;
+  min-height:86px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
+  background:linear-gradient(180deg, rgba(7,9,20,.82), rgba(36,27,75,.48), rgba(36,27,75,0));
+  border-bottom:0;
+  box-shadow:none;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+  .logo img{
+  width:74px;
+  height:auto;
+  display:block;
+  filter:drop-shadow(0 10px 24px rgba(139,92,246,.20));
+}
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+  .pill{
+ min-height:26px;
+padding:0 7px;
+font-size:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      border:1px solid rgba(139,92,246,.48);
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.94);
+      font-weight:900;
+      font-size:13px;
+      white-space:nowrap;
+      box-shadow:0 10px 26px rgba(0,0,0,.22);
+    }
+  #mobileCreditPill{
+  cursor:pointer;
+  transition:transform .22s ease, box-shadow .22s ease, filter .22s ease;
+}
+
+#mobileCreditPill.is-credit-focus{
+  transform:scale(1.24);
+  z-index:3;
+  filter:brightness(1.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 14px 28px rgba(0,0,0,.26),
+    0 0 30px rgba(56,189,248,.42);
+}
+  #mobileBuyCreditPill{
+  animation:aivoCreditAiGlow 7s ease-in-out infinite;
+}
+
+@keyframes aivoCreditAiGlow{
+  0%, 100%{
+    box-shadow:0 10px 26px rgba(0,0,0,.22);
+    border-color:rgba(139,92,246,.48);
+    filter:brightness(1);
+  }
+
+  50%{
+    box-shadow:
+      0 10px 26px rgba(0,0,0,.22),
+      0 0 18px rgba(139,92,246,.36),
+      inset 0 0 16px rgba(236,72,153,.16);
+    border-color:rgba(236,72,153,.62);
+    filter:brightness(1.08);
+  }
+}
+
+.wrap{
+  width:min(430px,100%);
+  margin:0 auto;
+  padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
+}
+  .hero{
+  position:relative;
+  padding:18px 0 8px;
+  text-align:center;
+  overflow:hidden;
+}
+
+    .hero .badge{
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .hero .sub{
+      margin-left:auto;
+      margin-right:auto;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:-44px -24px auto -24px;
+      height:340px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(139,92,246,.26), transparent 42%),
+        radial-gradient(circle at 80% 30%, rgba(56,189,248,.20), transparent 42%),
+        radial-gradient(circle at 50% 100%, rgba(236,72,153,.16), transparent 48%);
+      filter:blur(30px);
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    .badge{
+      width:max-content;
+      max-width:100%;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+      font-weight:900;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8);
+      box-shadow:0 0 0 4px rgba(56,189,248,.16);
+    }
+
+  h1{
+  margin:14px 0 10px;
+  font-size:40px;
+  line-height:.92;
+  letter-spacing:-.07em;
+  font-weight:950;
+}
+
+    .grad{
+      background:linear-gradient(135deg,#8b5cf6,#38bdf8,#ec4899);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+
+    .sub{
+  margin:0;
+  color:rgba(255,255,255,.76);
+  font-weight:700;
+  line-height:1.48;
+  font-size:14px;
+  max-width:320px;
+}
+
+ .cta-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:16px;
+}
+
+      .btn{
+      min-height:50px;
+      border:0;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:15px;
+      cursor:pointer;
+      transition:transform .16s ease, filter .16s ease, border-color .16s ease;
+    }
+
+    .btn:active{
+      transform:scale(.985);
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+      box-shadow:0 18px 46px rgba(139,92,246,.32);
+    }
+
+    .btn-ghost{
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.13);
+      color:#fff;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+      .video-card{
+      margin-top:18px;
+      border-radius:22px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(240px 120px at 0% 0%, rgba(139,92,246,.18), transparent 62%),
+        rgba(255,255,255,.05);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 24px 70px rgba(0,0,0,.38);
+    }
+
+   .video-head{
+  padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+      .video-title{
+     font-weight:950;
+    font-size:14px;
+      letter-spacing:-.02em;
+    }
+
+    .video-sub{
+      margin-top:4px;
+      color:rgba(255,255,255,.66);
+      font-size:12px;
+      line-height:1.35;
+      font-weight:650;
+    }
+
+    ..sound{
+    border:0;
+    border-radius:999px;
+    padding:7px 11px;
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+      font-weight:900;
+      white-space:nowrap;
+      box-shadow:0 12px 28px rgba(139,92,246,.24);
+    }
+
+    video{
+      display:block;
+      width:100%;
+      aspect-ratio:16/9;
+      object-fit:cover;
+      background:#000;
+    }
+
+    .section-title{
+  position:relative;
+  margin:20px 0 12px;
+  font-size:22px;
+  line-height:1.1;
+  letter-spacing:-.04em;
+  text-align:center;
+  font-weight:950;
+}
+
+    .section-title::after{
+      content:"";
+      display:block;
+      width:74px;
+      height:3px;
+      margin:10px auto 0;
+      border-radius:999px;
+      background:linear-gradient(90deg,#8b5cf6,#38bdf8,#ec4899);
+      opacity:.92;
+    }
+
+    .modules{
+      display:grid;
+      gap:12px;
+    }
+
+    .mod-card{
+      position:relative;
+      min-height:86px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:16px 18px 16px 16px;
+      border-radius:24px;
+      background:
+        radial-gradient(180px 90px at 0% 0%, rgba(139,92,246,.22), transparent 62%),
+        linear-gradient(135deg,rgba(255,255,255,.085),rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.09),
+        0 18px 42px rgba(0,0,0,.25);
+      transition:transform .18s ease, background .18s ease, border-color .18s ease;
+      overflow:hidden;
+    }
+
+    .mod-card::after{
+      content:"›";
+      position:absolute;
+      right:18px;
+      top:50%;
+      transform:translateY(-50%);
+      color:rgba(255,255,255,.42);
+      font-size:30px;
+      font-weight:400;
+      line-height:1;
+    }
+
+    .mod-card:active{
+      transform:scale(.985);
+      border-color:rgba(255,255,255,.22);
+    }
+
+    .ico{
+      width:46px;
+      height:46px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.20), transparent 34%),
+        linear-gradient(135deg, rgba(139,92,246,.30), rgba(56,189,248,.10));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 12px 26px rgba(0,0,0,.26);
+      flex:0 0 auto;
+      font-size:0;
+      position:relative;
+    }
+
+    .ico::before{
+      content:"";
+      width:18px;
+      height:18px;
+      border-radius:6px;
+      background:linear-gradient(135deg,#ffffff,#8b5cf6,#38bdf8);
+      opacity:.92;
+      box-shadow:0 0 18px rgba(139,92,246,.42);
+    }
+
+    .mod-card b{
+      display:block;
+      padding-right:24px;
+      font-size:15.5px;
+      margin-bottom:4px;
+      line-height:1.15;
+      font-weight:950;
+      letter-spacing:-.025em;
+    }
+
+    .mod-card span{
+      display:block;
+      padding-right:24px;
+      color:rgba(255,255,255,.66);
+      font-size:12.5px;
+      line-height:1.38;
+      font-weight:650;
+    }
+
+   .bottom-nav{
+  position:fixed;
+  left:12px;
+  right:12px;
+  bottom:18px;
+      z-index:80;
+      width:min(406px,calc(100% - 24px));
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:10px;
+      border-radius:24px;
+      background:rgba(8,10,22,.84);
+      border:1px solid rgba(255,255,255,.13);
+      box-shadow:0 -16px 42px rgba(0,0,0,.34);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+
+    .bottom-nav a{
+      min-height:48px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:13px;
+      background:rgba(255,255,255,.065);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+  .bottom-nav a:first-child{
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  box-shadow:0 14px 34px rgba(139,92,246,.30);
+  border-color:rgba(255,255,255,.12);
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  z-index:80 !important;
+  width:min(430px,100%) !important;
+  height:78px !important;
+  margin:0 auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,1fr) !important;
+  gap:0 !important;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom)) !important;
+  border-radius:0 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
+    rgba(8,10,24,.58) !important;
+  border:0 !important;
+  border-top:1px solid rgba(255,255,255,.10) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -18px 36px rgba(0,0,0,.20),
+    0 -10px 24px rgba(5,7,16,.54),
+    0 -28px 70px rgba(139,92,246,.10) !important;
+  backdrop-filter:blur(34px) saturate(190%) !important;
+  -webkit-backdrop-filter:blur(34px) saturate(190%) !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:-18px;
+  height:18px;
+  background:linear-gradient(180deg, transparent, rgba(28,31,48,.38));
+  pointer-events:none;
+}
+
+#mobileAppBottomNav[hidden]{
+  display:none !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a{
+  min-height:54px !important;
+  border-radius:16px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:4px !important;
+  background:transparent !important;
+  border:0 !important;
+  color:rgba(255,255,255,.52) !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  box-shadow:none !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a span{
+  width:38px !important;
+  height:38px !important;
+  border-radius:999px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  background:rgba(255,255,255,.075) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a b{
+  font-size:10px !important;
+  line-height:1 !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a.active{
+  color:#fff !important;
+}
+
+#mobileAppBottomNav.mobile-app-bottom-nav a.active span{
+  background:linear-gradient(135deg,#8b5cf6,#ec4899) !important;
+  border-color:rgba(255,255,255,.18) !important;
+  box-shadow:0 0 22px rgba(139,92,246,.34) !important;
+}
+
+#mobileAppBottomNav .nav-icon{
+  position:relative;
+  overflow:hidden;
+}
+
+#mobileAppBottomNav .nav-icon::before{
+  content:"";
+  width:24px;
+  height:24px;
+  display:block;
+  background:linear-gradient(135deg,#a78bfa,#60eaff);
+  filter:drop-shadow(0 0 9px rgba(139,92,246,.68));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+}
+
+#mobileAppBottomNav .nav-icon-home::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11.5L12 4l9 7.5'/%3E%3Cpath d='M5.5 10.5V20h13v-9.5'/%3E%3Cpath d='M9.5 20v-6h5v6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11.5L12 4l9 7.5'/%3E%3Cpath d='M5.5 10.5V20h13v-9.5'/%3E%3Cpath d='M9.5 20v-6h5v6'/%3E%3C/svg%3E");
+}
+
+#mobileAppBottomNav .nav-icon-productions::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z'/%3E%3C/svg%3E");
+}
+
+#mobileAppBottomNav .nav-icon-tools::before{
+  background:linear-gradient(135deg,#ffd36a,#f472ff,#60eaff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l10.5-10.5'/%3E%3Cpath d='M13 5l6 6'/%3E%3Cpath d='M15 3l1.2 3.2L19.5 7.5l-3.3 1.2L15 12l-1.2-3.3-3.3-1.2 3.3-1.3L15 3z'/%3E%3Cpath d='M6 4l.7 1.7L8.5 6.5 6.7 7.2 6 9 5.3 7.2 3.5 6.5l1.8-.8L6 4z'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20l10.5-10.5'/%3E%3Cpath d='M13 5l6 6'/%3E%3Cpath d='M15 3l1.2 3.2L19.5 7.5l-3.3 1.2L15 12l-1.2-3.3-3.3-1.2 3.3-1.3L15 3z'/%3E%3Cpath d='M6 4l.7 1.7L8.5 6.5 6.7 7.2 6 9 5.3 7.2 3.5 6.5l1.8-.8L6 4z'/%3E%3C/svg%3E");
+}
+
+#mobileAppBottomNav .nav-icon-credits::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2.2'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M7 15h4'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2.2'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M7 15h4'/%3E%3C/svg%3E");
+}
+
+#mobileAppBottomNav .nav-icon-account::before{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 20c1.5-4 4.2-6 7.5-6s6 2 7.5 6'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4.5 20c1.5-4 4.2-6 7.5-6s6 2 7.5 6'/%3E%3C/svg%3E");
+}
+
+#mobileAppBottomNav a.active .nav-icon::before{
+  background:linear-gradient(135deg,#fff,#ffd36a,#f472ff);
+  filter:drop-shadow(0 0 10px rgba(244,114,255,.78));
+}
+        .tool-icon{
+      position:relative;
+      width:54px;
+      height:54px;
+      border-radius:20px;
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 25% 18%, rgba(255,255,255,.20), transparent 34%),
+        linear-gradient(135deg, rgba(139,92,246,.34), rgba(56,189,248,.10));
+      border:1px solid rgba(255,255,255,.15);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        inset 0 -16px 30px rgba(0,0,0,.18),
+        0 12px 26px rgba(0,0,0,.28);
+      overflow:hidden;
+    }
+
+       .tool-icon::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:31px;
+      height:31px;
+      display:block;
+      background:linear-gradient(135deg,#f472ff,#60eaff);
+      filter:drop-shadow(0 0 11px rgba(139,92,246,.85));
+      -webkit-mask:center / contain no-repeat;
+      mask:center / contain no-repeat;
+      transform:translate(-50%,-50%);
+    }
+
+    .tool-icon-music::before{
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V5l12-2v13'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='18' cy='16' r='3'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-cover::before{
+      background:linear-gradient(135deg,#f472ff,#7dd3ff);
+      -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.9' stroke='white'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8 15l3-3 2 2 3-4 2 2'/%3E%3Cpath d='M17.5 6.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z' fill='white' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+      mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.9' stroke='white'%3E%3Crect x='4' y='4' width='16' height='16' rx='3'/%3E%3Cpath d='M8 15l3-3 2 2 3-4 2 2'/%3E%3Cpath d='M17.5 6.5l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5.5-1.2z' fill='white' stroke='none'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+
+    .tool-icon-photofx::before{
+      background:linear-gradient(135deg,#ffd36a,#f472ff);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000'%3E%3Cpath d='M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2L12 2z'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-video::before{
+      background:linear-gradient(135deg,#8d7cff,#60eaff);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='7.5' width='17' height='12' rx='2.2'/%3E%3Cpath d='M7 4.5l2 3M13.5 4.5l2 3'/%3E%3Cpath d='M10 11.2v4.8l4.4-2.4-4.4-2.4z' fill='%23000' stroke='none'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-lipsync::before{
+      background:linear-gradient(135deg,#60eaff,#22c55e);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4a7 7 0 0 0 0 14'/%3E%3Cpath d='M12 4v14'/%3E%3Cpath d='M16 8c1.5 1 2.3 2.3 2.3 4s-.8 3-2.3 4'/%3E%3Cpath d='M19 6c2 1.6 3 3.6 3 6s-1 4.4-3 6'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4a7 7 0 0 0 0 14'/%3E%3Cpath d='M12 4v14'/%3E%3Cpath d='M16 8c1.5 1 2.3 2.3 2.3 4s-.8 3-2.3 4'/%3E%3Cpath d='M19 6c2 1.6 3 3.6 3 6s-1 4.4-3 6'/%3E%3C/svg%3E");
+    }
+        .tool-icon-atmo::before{
+      background:linear-gradient(135deg,#a78bfa,#60eaff);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A5 5 0 0 0 6 18z'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M10 23h4'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18h11a4 4 0 0 0 0-8 6 6 0 0 0-11.5-2A5 5 0 0 0 6 18z'/%3E%3Cpath d='M8 21h8'/%3E%3Cpath d='M10 23h4'/%3E%3C/svg%3E");
+    }
+
+    .tool-icon-cartoon::before{
+      background:linear-gradient(135deg,#ffb86c,#ff7ccf 52%,#ffd36a);
+      -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7.5' cy='7.2' r='2.7'/%3E%3Ccircle cx='16.5' cy='7.2' r='2.7'/%3E%3Cpath d='M5.2 11.2c0-4.2 3.1-6.3 6.8-6.3s6.8 2.1 6.8 6.3v3.1c0 3.4-2.8 5.8-6.8 5.8s-6.8-2.4-6.8-5.8v-3.1z'/%3E%3Ccircle cx='9.4' cy='12.7' r='.7' fill='%23000'/%3E%3Ccircle cx='14.6' cy='12.7' r='.7' fill='%23000'/%3E%3Cpath d='M11 15.2h2'/%3E%3Cpath d='M10.3 16.3c1.1.9 2.3.9 3.4 0'/%3E%3C/svg%3E");
+      mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='7.5' cy='7.2' r='2.7'/%3E%3Ccircle cx='16.5' cy='7.2' r='2.7'/%3E%3Cpath d='M5.2 11.2c0-4.2 3.1-6.3 6.8-6.3s6.8 2.1 6.8 6.3v3.1c0 3.4-2.8 5.8-6.8 5.8s-6.8-2.4-6.8-5.8v-3.1z'/%3E%3Ccircle cx='9.4' cy='12.7' r='.7' fill='%23000'/%3E%3Ccircle cx='14.6' cy='12.7' r='.7' fill='%23000'/%3E%3Cpath d='M11 15.2h2'/%3E%3Cpath d='M10.3 16.3c1.1.9 2.3.9 3.4 0'/%3E%3C/svg%3E");
+    }
+    .sound{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:0;
+  border-radius:999px;
+  padding:8px 13px;
+  background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  color:#fff;
+  font-weight:950;
+  white-space:nowrap;
+  box-shadow:0 12px 28px rgba(139,92,246,.28);
+}
+
+.sound-icon{
+  position:relative;
+  width:18px;
+  height:18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+}
+
+.sound-icon::before{
+  content:"";
+  width:18px;
+  height:18px;
+  display:block;
+  background:linear-gradient(135deg,#fff,#60eaff,#f472ff);
+  filter:drop-shadow(0 0 8px rgba(244,114,255,.68));
+  -webkit-mask:center / contain no-repeat;
+  mask:center / contain no-repeat;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10v4h4l5 4V6l-5 4H4z'/%3E%3Cpath d='M17 9c1 1 1.5 2 1.5 3s-.5 2-1.5 3'/%3E%3Cpath d='M19.5 6.5C21 8 22 9.8 22 12s-1 4-2.5 5.5'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.35' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10v4h4l5 4V6l-5 4H4z'/%3E%3Cpath d='M17 9c1 1 1.5 2 1.5 3s-.5 2-1.5 3'/%3E%3Cpath d='M19.5 6.5C21 8 22 9.8 22 12s-1 4-2.5 5.5'/%3E%3C/svg%3E");
+}
+  html.aivo-ios-leaving,
+html.aivo-ios-leaving body{
+  background:#070914 !important;
+}
+
+html.aivo-ios-leaving body{
+  opacity:0 !important;
+  transition:opacity .08s linear;
+}
+  @media (min-width: 768px){
+  .topbar,
+  .wrap,
+  #mobileAppBottomNav.mobile-app-bottom-nav{
+    width:min(760px,100%) !important;
+  }
+
+  .wrap{
+    padding-left:28px !important;
+    padding-right:28px !important;
+  }
+    .mobile-price-list{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:18px !important;
+}
+
+.mobile-price-card{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.mobile-price-card .mobile-price-btn{
+  margin-top:auto;
+ }
+}
+  </style>
+
+</head>
+
+<body>
+  <header class="topbar">
+<a class="logo" href="/index.ios.html" aria-label="AIVO">
+      <img src="/aivo-logo.png" alt="AIVO">
+    </a>
+
+       <div class="top-actions">
+    <a class="pill" id="mobileLoginPill" href="/studio.ios.html" hidden data-i18n="index.login">Giriş Yap</a>
+<span class="pill" id="mobileCreditPill" hidden data-i18n="top.creditEmpty">Kredi --</span>
+<a class="pill" id="mobileBuyCreditPill" href="/studio.ios.html#credits" hidden data-i18n="top.creditAI">Kredi Al</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+<div class="badge">
+  <span class="dot"></span>
+  <span data-i18n="index.badge">AIVO Mobile Studio</span>
+</div>
+
+<h1>
+  <span data-i18n="index.heroTitle.before">AIVO Studio</span>
+  <span class="grad" data-i18n="index.heroTitle.grad">cebinde.</span>
+</h1>
+
+<p class="sub" data-i18n="index.heroSub">
+  Müzik, kapak, video ve çizgifilm üretimini mobilde başlat. Fikrini yaz, AIVO üretimi senin için hazırlasın.
+</p>
+
+<div class="cta-row">
+  <a class="btn btn-primary" href="/studio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
+  <a class="btn btn-ghost" id="mobilePricingCta" href="#mobilePricing" data-i18n="index.viewPrices">Fiyatları Gör</a>
+</div>
+      <div class="video-card">
+        <div class="video-head">
+          <div>
+           <div class="video-title" data-i18n="index.videoTitle">Görselden Video Klip</div>
+<div class="video-sub" data-i18n="index.videoSub">Görselini hareketli klip sahnesine dönüştür</div>
+          </div>
+
+        <button class="sound" type="button" id="soundBtn">
+        <span class="sound-icon" aria-hidden="true"></span>
+    <span class="sound-label" data-i18n="index.sound">Ses</span>
+       </button>
+         </div>
+
+        <video
+          id="demoVideo"
+          src="https://media.aivo.tr/outputs/home/image-to-video/image-to-video-preview-1777719387477.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto">
+        </video>
+      </div>
+    </section>
+
+   <h2 class="section-title" data-i18n="index.featuredTitle">Mobilde öne çıkanlar</h2>
+
+<section class="modules">
+  <a class="mod-card" href="/studio.ios.html#music">
+    <span class="tool-icon tool-icon-music" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.musicTitle">AI Müzik Üret</b>
+      <span data-i18n="index.module.musicSub">Şarkı fikrini yaz, mobilde üretimi başlat.</span>
+    </div>
+  </a>
+
+  <a class="mod-card" href="/studio.ios.html#photofx">
+    <span class="tool-icon tool-icon-photofx" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.photofxTitle">AI Foto Efekt Video Clip</b>
+      <span data-i18n="index.module.photofxSub">Fotoğrafını kısa, dikkat çekici video klibe dönüştür.</span>
+    </div>
+  </a>
+
+  <a class="mod-card" href="/studio.ios.html#cover">
+    <span class="tool-icon tool-icon-cover" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.coverTitle">AI Kapak Üret</b>
+      <span data-i18n="index.module.coverSub">Kapak, afiş ve sosyal medya görseli oluştur.</span>
+    </div>
+  </a>
+
+  <a class="mod-card" href="/studio.ios.html#video">
+    <span class="tool-icon tool-icon-video" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.videoTitle">AI Resimden Video Üret</b>
+      <span data-i18n="index.module.videoSub">Tek görseli sosyal medya uyumlu videoya çevir.</span>
+    </div>
+  </a>
+
+  <a class="mod-card" href="/studio.ios.html#lipsync">
+    <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.lipsyncTitle">AI Dudak Senkron Video</b>
+      <span data-i18n="index.module.lipsyncSub">Fotoğrafını konuştur, tanıtım videosuna dönüştür.</span>
+    </div>
+  </a>
+
+  <a class="mod-card" href="/studio.ios.html#atmo">
+    <span class="tool-icon tool-icon-atmo" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.atmoTitle">AI Atmosfer Video</b>
+      <span data-i18n="index.module.atmoSub">Loop sahne, yağmur, kar, ışık ve sinematik atmosfer oluştur.</span>
+    </div>
+  </a>
+
+  <a class="mod-card" href="/studio.ios.html#cartoon">
+    <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.cartoonTitle">AI Çocuk Çizgifilm</b>
+      <span data-i18n="index.module.cartoonSub">Karakter ve sahne fikrini mobilde çizgifilme dönüştür.</span>
+    </div>
+  </a>
+</section>
+    <section id="mobilePricing" class="mobile-pricing">
+  <style>
+    .mobile-pricing{
+      margin-top:34px;
+      padding:20px 0 8px;
+    }
+
+    .mobile-pricing-hero{
+      padding:22px 18px;
+      border-radius:26px;
+      text-align:center;
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.26), transparent 62%),
+        radial-gradient(220px 120px at 100% 0%, rgba(56,189,248,.16), transparent 62%),
+        rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 18px 42px rgba(0,0,0,.24);
+    }
+
+    .mobile-pricing-pill{
+      width:max-content;
+      margin:0 auto 10px;
+      padding:8px 13px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:12px;
+      font-weight:950;
+      color:rgba(255,255,255,.82);
+    }
+
+    .mobile-pricing-title{
+      margin:0;
+      font-size:30px;
+      line-height:1;
+      letter-spacing:-.055em;
+      font-weight:950;
+    }
+
+    .mobile-pricing-sub{
+      margin:10px auto 0;
+      max-width:320px;
+      color:rgba(255,255,255,.68);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:750;
+    }
+
+    .mobile-price-list{
+      display:grid;
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .mobile-price-card{
+      padding:18px;
+      border-radius:26px;
+      background:
+        radial-gradient(220px 120px at 0% 0%, rgba(139,92,246,.20), transparent 62%),
+        linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.09), 0 18px 42px rgba(0,0,0,.24);
+    }
+
+    .mobile-price-card.is-popular{
+      border-color:rgba(236,72,153,.46);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 0 0 1px rgba(236,72,153,.12), 0 20px 48px rgba(0,0,0,.28);
+    }
+
+    .mobile-price-badge{
+      width:max-content;
+      max-width:100%;
+      padding:7px 11px;
+      border-radius:999px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13);
+      color:rgba(255,255,255,.80);
+      font-size:12px;
+      font-weight:950;
+    }
+
+    .mobile-price-name{
+      margin:14px 0 10px;
+      font-size:22px;
+      line-height:1.1;
+      font-weight:950;
+      letter-spacing:-.035em;
+    }
+
+    .mobile-price-amount{
+      margin:0;
+      font-size:42px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.055em;
+    }
+
+    .mobile-price-amount span{
+      font-size:18px;
+      color:rgba(255,255,255,.62);
+      letter-spacing:-.03em;
+    }
+
+    .mobile-price-metric{
+      margin:8px 0 14px;
+      color:rgba(255,255,255,.62);
+      font-size:13px;
+      font-weight:850;
+    }
+
+    .mobile-price-list-items{
+      margin:14px 0 18px;
+      padding:14px 0 0;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:grid;
+      gap:9px;
+    }
+
+    .mobile-price-list-items div{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+      font-weight:850;
+    }
+
+    .mobile-price-list-items div::before{
+      content:"✓";
+      width:22px;
+      height:22px;
+      border-radius:9px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      color:#fff;
+      font-size:13px;
+      flex:0 0 auto;
+    }
+
+    .mobile-price-btn{
+      width:100%;
+      min-height:52px;
+      border:0;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#8b5cf6,#ec4899);
+      color:#fff;
+      font-size:15px;
+      font-weight:950;
+      box-shadow:0 18px 42px rgba(139,92,246,.28);
+    }
+
+    .mobile-pricing-info{
+      margin-top:16px;
+      padding:18px;
+      border-radius:26px;
+      text-align:center;
+      background:rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.70);
+      font-size:13px;
+      line-height:1.5;
+      font-weight:750;
+    }
+
+    .mobile-pricing-info strong{
+      display:block;
+      margin-bottom:8px;
+      color:#fff;
+      font-size:18px;
+      font-weight:950;
+    }
+  </style>
+
+<div class="mobile-pricing-hero">
+  <div class="mobile-pricing-pill" data-i18n="index.pricing.pill">AIVO Krediler</div>
+  <h2 class="mobile-pricing-title" data-i18n="index.pricing.title">Kredi Paketleri</h2>
+  <p class="mobile-pricing-sub" data-i18n="index.pricing.sub">Sana uygun paketi seç, üretime giriş yaptıktan sonra devam et.</p>
+</div>
+<div class="mobile-price-list">
+  <article class="mobile-price-card">
+    <div class="mobile-price-badge" data-i18n="index.price.starterBadge">Başlangıç</div>
+    <h3 class="mobile-price-name" data-i18n="index.price.starterName">Yeni Kullanıcı</h3>
+    <p class="mobile-price-amount">
+      <strong data-index-price="starter">199₺</strong>
+      <span data-index-price-label="starter">/ 25 kredi</span>
+    </p>
+    <div class="mobile-price-metric" data-index-price-metric="starter">Kredi başına ₺7.96</div>
+    <div class="mobile-price-list-items">
+      <div data-i18n="index.price.starterItem1">25 Kredi</div>
+      <div data-i18n="index.price.starterItem2">Temel kalite üretim</div>
+      <div data-i18n="index.price.starterItem3">Standart hız</div>
+      <div data-i18n="index.price.starterItem4">Kapak + Müzik</div>
+      <div data-i18n="index.price.starterItem5">Anında Aktivasyon</div>
+      <div data-i18n="index.price.starterItem6">Güvenli Ödeme</div>
+    </div>
+    <a class="mobile-price-btn" href="/studio.ios.html#credits" data-i18n="index.price.select">Paketi seç</a>
+  </article>
+
+  <article class="mobile-price-card is-popular">
+    <div class="mobile-price-badge" data-i18n="index.price.popularBadge">★ En Popüler</div>
+    <h3 class="mobile-price-name" data-i18n="index.price.standardName">Standart Paket</h3>
+    <p class="mobile-price-amount">
+      <strong data-index-price="standard">699₺</strong>
+      <span data-index-price-label="standard">/ 100 kredi</span>
+    </p>
+    <div class="mobile-price-metric" data-index-price-metric="standard">Kredi başına ₺6.99</div>
+    <div class="mobile-price-list-items">
+      <div data-i18n="index.price.standardItem1">100 Kredi</div>
+      <div data-i18n="index.price.standardItem2">Daha hızlı üretim</div>
+      <div data-i18n="index.price.standardItem3">Öncelikli sıra</div>
+      <div data-i18n="index.price.standardItem4">Müzik + Kapak</div>
+      <div data-i18n="index.price.standardItem5">Anında Aktivasyon</div>
+      <div data-i18n="index.price.standardItem6">Güvenli Ödeme</div>
+    </div>
+    <a class="mobile-price-btn" href="/studio.ios.html#credits" data-i18n="index.price.select">Paketi seç</a>
+  </article>
+
+  <article class="mobile-price-card">
+    <div class="mobile-price-badge" data-i18n="index.price.proBadge">Pro</div>
+    <h3 class="mobile-price-name" data-i18n="index.price.proName">Yaratıcı Üretici</h3>
+    <p class="mobile-price-amount">
+      <strong data-index-price="pro">1.299₺</strong>
+      <span data-index-price-label="pro">/ 200 kredi</span>
+    </p>
+    <div class="mobile-price-metric" data-index-price-metric="pro">Kredi başına ₺6.49</div>
+    <div class="mobile-price-list-items">
+      <div data-i18n="index.price.proItem1">200 Kredi</div>
+      <div data-i18n="index.price.proItem2">Premium kalite</div>
+      <div data-i18n="index.price.proItem3">Öncelikli destek</div>
+      <div data-i18n="index.price.proItem4">Ticari kullanım</div>
+      <div data-i18n="index.price.proItem5">Kapak + Müzik + Video</div>
+      <div data-i18n="index.price.proItem6">Güvenli Ödeme</div>
+    </div>
+    <a class="mobile-price-btn" href="/studio.ios.html#credits" data-i18n="index.price.select">Paketi seç</a>
+  </article>
+
+  <article class="mobile-price-card">
+    <div class="mobile-price-badge" data-i18n="index.price.studioBadge">Stüdyo</div>
+    <h3 class="mobile-price-name" data-i18n="index.price.studioName">Stüdyo / Ajans</h3>
+    <p class="mobile-price-amount">
+      <strong data-index-price="studio">2.999₺</strong>
+      <span data-index-price-label="studio">/ 500 kredi</span>
+    </p>
+    <div class="mobile-price-metric" data-index-price-metric="studio">Kredi başına ₺6.00</div>
+    <div class="mobile-price-list-items">
+      <div data-i18n="index.price.studioItem1">500 Kredi</div>
+      <div data-i18n="index.price.studioItem2">Takım kullanımı</div>
+      <div data-i18n="index.price.studioItem3">Özel destek</div>
+      <div data-i18n="index.price.studioItem4">Ticari kullanım</div>
+      <div data-i18n="index.price.studioItem5">Yüksek hacimli üretim</div>
+      <div data-i18n="index.price.studioItem6">Güvenli Ödeme</div>
+    </div>
+    <a class="mobile-price-btn" href="/studio.ios.html#credits" data-i18n="index.price.select">Paketi seç</a>
+  </article>
+</div>
+
+<div class="mobile-pricing-info">
+  <strong data-i18n="index.pricing.infoTitle">Bilgilendirme</strong>
+  <span data-i18n="index.pricing.infoText">Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına tanımlanır ve AIVO Studio’da üretim için kullanılır.</span>
+</div>
+</section>
+  </main>
+
+<nav class="bottom-nav" id="mobileGuestBottomNav">
+  <a href="/studio.ios.html" data-i18n="index.startCreating">Üretime Başla</a>
+  <a href="#mobilePricing" data-i18n="index.explore">Keşfet</a>
+</nav>
+
+<nav class="bottom-nav mobile-app-bottom-nav" id="mobileAppBottomNav" hidden>
+  <a class="active" href="/studio.ios.html#home">
+    <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+  <b data-i18n="nav.home">Ana Sayfa</b>
+  </a>
+
+  <a href="/studio.ios.html#productions">
+    <span class="nav-icon nav-icon-productions" aria-hidden="true"></span>
+ <b data-i18n="nav.productions">Üretimler</b>
+  </a>
+
+  <a href="/studio.ios.html#tools">
+    <span class="nav-icon nav-icon-tools" aria-hidden="true"></span>
+  <b data-i18n="nav.tools">Araçlar</b>
+  </a>
+
+  <a href="/studio.ios.html#credits">
+    <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
+   <b data-i18n="nav.credits">Krediler</b>
+  </a>
+
+  <a href="/studio.ios.html#account">
+    <span class="nav-icon nav-icon-account" aria-hidden="true"></span>
+   <b data-i18n="nav.account">Hesabım</b>
+  </a>
+</nav>
+  <script src="/mobile/js/mobile.i18n.js?v=2"></script>
+  <script>
+    (function(){
+      var btn = document.getElementById("soundBtn");
+      var video = document.getElementById("demoVideo");
+      if (!btn || !video) return;
+
+      btn.addEventListener("click", function(){
+        video.muted = !video.muted;
+
+             var label = btn.querySelector(".sound-label");
+
+        if (!video.muted) {
+          video.currentTime = 0;
+          video.play().catch(function(){});
+
+          if (label) {
+            label.textContent = typeof window.t === "function"
+              ? window.t("index.soundOn")
+              : "Ses Açık";
+          }
+        } else {
+          if (label) {
+            label.textContent = typeof window.t === "function"
+              ? window.t("index.sound")
+              : "Ses";
+          }
+        }
+      });
+    })();
+  </script>
+    <script>
+  (function AIVO_MOBILE_TRAFFIC_HIT(){
+    try {
+      var page =
+        window.location.pathname +
+        window.location.search;
+
+      fetch("/api/traffic/hit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include",
+        keepalive: true,
+        body: JSON.stringify({
+        page: page || "/index.ios.html"
+        })
+      }).catch(function(){});
+    } catch (err) {}
+  })();
+  </script>
+  <script>
+try {
+  localStorage.setItem("aivo_ios_app", "1");
+} catch (err) {}
+</script>
+  <script>
+(function AIVO_IOS_INTERNAL_NAV(){
+  document.querySelectorAll('a[href^="/login.ios.html"]').forEach(function(link){
+    link.addEventListener("click", function(e){
+      e.preventDefault();
+      window.location.href = link.getAttribute("href");
+    });
+  });
+})();
+</script>
+  <script>
+(function AIVO_IOS_INDEX_TRAFFIC_HIT(){
+  try {
+    fetch("/api/traffic/hit", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        source: "ios",
+        page: "/index.ios.html"
+      })
+    }).catch(function(){});
+  } catch (err) {}
+})();
+</script>
+<script>
+(function AIVO_IOS_INDEX_AUTH_UI(){
+  const loginPill = document.getElementById("mobileLoginPill");
+  const creditPill = document.getElementById("mobileCreditPill");
+  const buyCreditPill = document.getElementById("mobileBuyCreditPill");
+  const pricingCta = document.getElementById("mobilePricingCta");
+  const guestBottomNav = document.getElementById("mobileGuestBottomNav");
+  const appBottomNav = document.getElementById("mobileAppBottomNav");
+
+  if (!loginPill || !creditPill || !buyCreditPill) return;
+
+  function showGuest(){
+    loginPill.hidden = false;
+    creditPill.hidden = true;
+    buyCreditPill.hidden = true;
+
+    if (guestBottomNav) guestBottomNav.hidden = false;
+    if (appBottomNav) appBottomNav.hidden = true;
+
+    if (pricingCta) {
+      pricingCta.setAttribute("href", "#mobilePricing");
+    }
+  }
+
+  function showUser(){
+    loginPill.hidden = true;
+    creditPill.hidden = false;
+    buyCreditPill.hidden = false;
+
+    if (guestBottomNav) guestBottomNav.hidden = true;
+    if (appBottomNav) appBottomNav.hidden = false;
+
+    if (pricingCta) {
+      pricingCta.setAttribute("href", "/studio.ios.html#credits");
+    }
+  }
+
+  try {
+    const quickLoggedIn =
+      localStorage.getItem("aivo_logged_in") === "1" ||
+      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+
+    if (quickLoggedIn) {
+      showUser();
+    }
+  } catch (err) {}
+
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store"
+  })
+  .then(function(res){
+    if (!res.ok) {
+      showGuest();
+      return null;
+    }
+
+    return res.json();
+  })
+  .then(function(me){
+    if (!me) return;
+
+    const user = me.user || me;
+    const email = String(user.email || "").trim();
+
+    if (!email) {
+      showGuest();
+      return;
+    }
+
+    showUser();
+
+    return fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store"
+    });
+  })
+  .then(function(res){
+    if (!res || !res.ok) return null;
+    return res.json();
+  })
+  .then(function(data){
+    if (!data) return;
+
+      const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+    creditPill.textContent = typeof window.t === "function"
+      ? window.t("top.creditValue", { count: creditValue })
+      : "Kredi " + creditValue;
+  })
+  .catch(function(){
+    showGuest();
+  });
+})();
+</script>
+  <script>
+(function AIVO_INDEX_CREDIT_PILL_TAP_HELPER(){
+  const pill = document.getElementById("mobileCreditPill");
+  if (!pill) return;
+
+  pill.addEventListener("click", function(){
+    pill.classList.add("is-credit-focus");
+
+    window.clearTimeout(pill.__aivoCreditFocusTimer);
+    pill.__aivoCreditFocusTimer = window.setTimeout(function(){
+      pill.classList.remove("is-credit-focus");
+    }, 2000);
+  });
+})();
+</script>
+<script>
+(function AIVO_INDEX_PRICE_REGION(){
+  const PRICE_MAP = {
+    tr: {
+      starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
+      standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
+      pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
+      studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
+    },
+    us: {
+      starter: { price: "$4.99", amount: "/ 25 credits", metric: "$0.20 per credit" },
+      standard: { price: "$14.99", amount: "/ 100 credits", metric: "$0.15 per credit" },
+      pro: { price: "$29.99", amount: "/ 200 credits", metric: "$0.15 per credit" },
+      studio: { price: "$69.99", amount: "/ 500 credits", metric: "$0.14 per credit" }
+    },
+    eu: {
+      starter: { price: "€4.99", amount: "/ 25 credits", metric: "€0.20 per credit" },
+      standard: { price: "€14.99", amount: "/ 100 credits", metric: "€0.15 per credit" },
+      pro: { price: "€29.99", amount: "/ 200 credits", metric: "€0.15 per credit" },
+      studio: { price: "€69.99", amount: "/ 500 credits", metric: "€0.14 per credit" }
+    }
+  };
+
+  function getRegion(){
+    const lang = String(document.documentElement.lang || localStorage.getItem("aivo_mobile_language") || navigator.language || "tr").toLowerCase();
+    if (lang.startsWith("tr")) return "tr";
+    if (lang.startsWith("de") || lang.startsWith("fr") || lang.startsWith("es") || lang.startsWith("it") || lang.startsWith("nl") || lang.startsWith("pt")) return "eu";
+    return "us";
+  }
+
+  function applyPrices(){
+    const prices = PRICE_MAP[getRegion()] || PRICE_MAP.tr;
+
+    Object.keys(prices).forEach(function(key){
+      const item = prices[key];
+      const priceEl = document.querySelector('[data-index-price="' + key + '"]');
+      const amountEl = document.querySelector('[data-index-price-label="' + key + '"]');
+      const metricEl = document.querySelector('[data-index-price-metric="' + key + '"]');
+
+      if (priceEl) priceEl.textContent = item.price;
+      if (amountEl) amountEl.textContent = item.amount;
+      if (metricEl) metricEl.textContent = item.metric;
+    });
+  }
+
+ applyPrices();
+setTimeout(applyPrices, 0);
+setTimeout(applyPrices, 250);
+document.addEventListener("aivo:language-change", applyPrices);
+})();
+</script>
+</body>
+</html>
