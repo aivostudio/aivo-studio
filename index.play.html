@@ -1238,8 +1238,8 @@ try {
 } catch (err) {}
 </script>
   <script>
-(function AIVO_IOS_INTERNAL_NAV(){
-  document.querySelectorAll('a[href^="/login.ios.html"]').forEach(function(link){
+(function AIVO_PLAY_INTERNAL_NAV(){
+  document.querySelectorAll('a[href^="/login.play.html"]').forEach(function(link){
     link.addEventListener("click", function(e){
       e.preventDefault();
       window.location.href = link.getAttribute("href");
@@ -1248,7 +1248,7 @@ try {
 })();
 </script>
   <script>
-(function AIVO_IOS_INDEX_TRAFFIC_HIT(){
+(function AIVO_PLAY_INDEX_TRAFFIC_HIT(){
   try {
     fetch("/api/traffic/hit", {
       method: "POST",
@@ -1258,15 +1258,15 @@ try {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        source: "ios",
-        page: "/index.ios.html"
+        source: "play",
+        page: "/index.play.html"
       })
     }).catch(function(){});
   } catch (err) {}
 })();
 </script>
 <script>
-(function AIVO_IOS_INDEX_AUTH_UI(){
+(function AIVO_PLAY_INDEX_AUTH_UI(){
   const loginPill = document.getElementById("mobileLoginPill");
   const creditPill = document.getElementById("mobileCreditPill");
   const buyCreditPill = document.getElementById("mobileBuyCreditPill");
@@ -1298,7 +1298,7 @@ try {
     if (appBottomNav) appBottomNav.hidden = false;
 
     if (pricingCta) {
-      pricingCta.setAttribute("href", "/studio.ios.html#credits");
+     pricingCta.setAttribute("href", "/studio.play.html#credits");
     }
   }
 
