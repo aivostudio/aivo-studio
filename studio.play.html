@@ -2727,11 +2727,11 @@ function getAivoMobileLoginUrl(extraQuery){
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          email: email,
-          source: "mobile",
-          page: "/studio.ios.html"
-        })
+     body: JSON.stringify({
+  email: email,
+  source: "play",
+  page: "/studio.play.html"
+})
       }).catch(function(){});
     }
 
@@ -2745,7 +2745,7 @@ function getAivoMobileLoginUrl(extraQuery){
 })();
 </script>
 <script>
-(function AIVO_IOS_STUDIO_ACTIVITY(){
+(function AIVO_PLAY_STUDIO_ACTIVITY(){
   function hitTraffic(){
     try {
       fetch("/api/traffic/hit", {
@@ -2755,10 +2755,10 @@ function getAivoMobileLoginUrl(extraQuery){
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          source: "ios",
-          page: "/studio.ios.html"
-        })
+      body: JSON.stringify({
+  source: "play",
+  page: "/studio.play.html"
+})
       }).catch(function(){});
     } catch (err) {}
   }
