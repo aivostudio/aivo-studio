@@ -99,7 +99,8 @@ function applyMobileCreditPrices(){
     el.textContent = Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : "0";
   }
 
-  async function getMe(){
+async function getMe(){
+  try {
     const res = await fetch("/api/auth/me", {
       method: "GET",
       credentials: "include",
@@ -109,29 +110,37 @@ function applyMobileCreditPrices(){
       }
     });
 
-    if (!res.ok) {
-      throw new Error("AUTH_REQUIRED");
+    if (res.ok) {
+      const data = await res.json().catch(function(){
+        return null;
+      });
+
+      const user = data && (data.user || data);
+      const email = String(user && user.email ? user.email : "").trim();
+      const userId = String(
+        (user && (user.id || user.user_id || user.uid || user.email)) || ""
+      ).trim();
+
+      if (email && email.includes("@") && userId) {
+        return {
+          email: email,
+          user_id: userId
+        };
+      }
     }
+  } catch (err) {}
 
-    const data = await res.json().catch(function(){
-      return null;
-    });
+  const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
 
-    const user = data && (data.user || data);
-    const email = String(user && user.email ? user.email : "").trim();
-    const userId = String(
-      (user && (user.id || user.user_id || user.uid || user.email)) || ""
-    ).trim();
-
-    if (!email || !email.includes("@") || !userId) {
-      throw new Error("AUTH_USER_MISSING");
-    }
-
+  if (localEmail && localEmail.includes("@")) {
     return {
-      email: email,
-      user_id: userId
+      email: localEmail,
+      user_id: localEmail
     };
   }
+
+  throw new Error("AUTH_USER_MISSING");
+}
 
   async function hydrateCredits(){
     const balanceEl = $("#mobileCreditsBalance");
