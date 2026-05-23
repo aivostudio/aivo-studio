@@ -263,14 +263,14 @@
     <section class="mobile-forgot-hero">
       <div class="mobile-forgot-badge">
         <span class="mobile-forgot-dot"></span>
-        AIVO Mobile Studio
+           <span data-i18n="common.appName">AIVO Mobile Studio</span>
       </div>
-
       <h1>
-        Şifreni <span class="mobile-forgot-grad">sıfırla.</span>
+        <span data-i18n="forgot.title.before">Şifreni</span>
+        <span class="mobile-forgot-grad" data-i18n="forgot.title.grad">sıfırla.</span>
       </h1>
 
-      <p>
+      <p data-i18n="forgot.subtitle">
         E-posta adresini gir. Hesabın kayıtlıysa sana şifre sıfırlama bağlantısı gönderilecek.
       </p>
     </section>
@@ -278,11 +278,11 @@
     <section class="mobile-forgot-card">
       <form id="mobileForgotForm">
         <div class="mobile-forgot-field">
-          <label for="mobileForgotEmail">E-posta</label>
-          <input id="mobileForgotEmail" type="email" placeholder="ornek@email.com" autocomplete="email" required>
+                 <label for="mobileForgotEmail" data-i18n="login.email">E-posta</label>
+          <input id="mobileForgotEmail" type="email" placeholder="ornek@email.com" data-i18n-placeholder="login.emailPlaceholder" autocomplete="email" required>
         </div>
 
-        <button class="mobile-forgot-submit" id="mobileForgotBtn" type="submit">
+             <button class="mobile-forgot-submit" id="mobileForgotBtn" type="submit" data-i18n="forgot.submit">
           Sıfırlama Linki Gönder
         </button>
 
@@ -291,8 +291,8 @@
     </section>
 
     <div class="mobile-forgot-actions">
-      <a href="/index.ios.html">Vitrine dön</a>
-      <a href="/login.ios.html?returnTo=/studio.ios.html">Girişe dön</a>
+           <a href="/index.ios.html" data-i18n="forgot.backHome">Vitrine dön</a>
+      <a href="/login.ios.html?returnTo=/studio.ios.html" data-i18n="forgot.backLogin">Girişe dön</a>
     </div>
   </main>
 
@@ -302,6 +302,15 @@
       const email = document.getElementById("mobileForgotEmail");
       const btn = document.getElementById("mobileForgotBtn");
       const message = document.getElementById("mobileForgotMessage");
+            function tt(key, fallback){
+        try {
+          if (typeof window.t === "function") {
+            return window.t(key);
+          }
+        } catch (_) {}
+
+        return fallback;
+      }
 
       function setMessage(text, type){
         message.textContent = text || "";
@@ -315,12 +324,12 @@
         const cleanEmail = String(email.value || "").trim().toLowerCase();
 
         if (!cleanEmail || !cleanEmail.includes("@")) {
-          setMessage("Lütfen geçerli bir e-posta gir.", "is-error");
+                setMessage(tt("forgot.errorInvalidEmail", "Lütfen geçerli bir e-posta gir."), "is-error");
           return;
         }
 
         btn.disabled = true;
-        btn.textContent = "Gönderiliyor...";
+            btn.textContent = tt("forgot.sending", "Gönderiliyor...");
         setMessage("", "");
 
         try {
@@ -335,12 +344,12 @@
            })
           });
 
-          setMessage("Eğer e-posta sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi.", "is-ok");
+             setMessage(tt("forgot.success", "Eğer e-posta sistemde kayıtlıysa, sıfırlama bağlantısı gönderildi."), "is-ok");
         } catch (err) {
-          setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
+              setMessage(tt("forgot.errorConnection", "Bağlantı hatası. Tekrar dene."), "is-error");
         } finally {
           btn.disabled = false;
-          btn.textContent = "Sıfırlama Linki Gönder";
+               btn.textContent = tt("forgot.submit", "Sıfırlama Linki Gönder");
         }
       });
     })();
