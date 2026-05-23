@@ -1107,7 +1107,27 @@
       <b>Hesabım</b>
     </a>
   </nav>
-
+   <script>
+(function AIVO_MOBILE_INDEX_TRAFFIC_HIT(){
+  try {
+    fetch("/api/traffic/hit", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        platform: "mobile_web",
+        source: "mobile_index",
+        visibilityState: document.visibilityState || "unknown",
+        referrer: document.referrer || "",
+        page: "/index.mobile.html"
+      })
+    }).catch(function(){});
+  } catch (err) {}
+})();
+</script>
   <script>
     (function(){
       var btn = document.getElementById("soundBtn");
