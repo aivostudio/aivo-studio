@@ -617,8 +617,10 @@ const rawReturnTo = url.searchParams.get("returnTo") || "/studio.ios.html";
 const returnTo = rawReturnTo.includes("studio.ios.html")
   ? rawReturnTo
   : "/studio.ios.html";
-      const card = document.getElementById("mobileLoginCard");
+  const card = document.getElementById("mobileLoginCard");
       const form = document.getElementById("mobileLoginForm");
+      const hero = document.querySelector(".mobile-login-hero");
+      const footer = document.querySelector(".mobile-login-footer");
       const tabs = Array.from(document.querySelectorAll(".mobile-login-tab"));
       const submitBtn = document.getElementById("mobileSubmitBtn");
       const switchBtn = document.getElementById("mobileSwitchBtn");
@@ -658,11 +660,15 @@ document.addEventListener("click", async function(e){
   window.aivoApplyI18n(loginPolicyContent);
 }
 
+    if (card) card.hidden = true;
+    if (hero) hero.hidden = true;
+    if (footer) footer.hidden = true;
+
     if (loginPolicyView) {
       loginPolicyView.hidden = false;
-      loginPolicyView.scrollIntoView({
-        behavior:"smooth",
-        block:"start"
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
       });
     }
 
@@ -675,12 +681,17 @@ document.addEventListener("click", async function(e){
 
 if (loginPolicyBack) {
   loginPolicyBack.addEventListener("click", function(){
-    if (loginPolicyView) {
-      loginPolicyView.hidden = true;
-    }
+    if (loginPolicyView) loginPolicyView.hidden = true;
+    if (card) card.hidden = false;
+    if (hero) hero.hidden = false;
+    if (footer) footer.hidden = false;
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   });
 }
-
 
       let mode = "login";
       function tt(key, fallback){
