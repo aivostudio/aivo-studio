@@ -605,6 +605,20 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
       const password = document.getElementById("mobilePassword");
       const passwordRepeat = document.getElementById("mobilePasswordRepeat");
       const terms = document.getElementById("mobileTerms");
+      document.addEventListener("click", function(e){
+  const privacyBtn = e.target.closest("[data-login-policy-privacy]");
+  const termsBtn = e.target.closest("[data-login-policy-terms]");
+
+  if (!privacyBtn && !termsBtn) return;
+
+  e.preventDefault();
+
+  const targetUrl = privacyBtn
+    ? "/studio.ios.html#policy-privacy"
+    : "/studio.ios.html#policy-terms";
+
+  window.location.href = targetUrl;
+});
 
       let mode = "login";
       function tt(key, fallback){
