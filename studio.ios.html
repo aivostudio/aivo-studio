@@ -3249,36 +3249,8 @@ const creditTransaction = creditTransactions[0] || null;
     event.stopPropagation();
     event.stopImmediatePropagation();
 
-   const kvkkCheck = document.getElementById("mobileCreditsKvkkCheck");
-
-if (!kvkkCheck || !kvkkCheck.checked) {
-  const kvkkCard = document.querySelector(".mobile-credits-kvkk-card");
-  const kvkkHint = document.getElementById("mobileCreditsKvkkHint");
-
-  if (kvkkHint) {
-    kvkkHint.style.display = "block";
-  }
-
-  if (kvkkCard) {
-    kvkkCard.classList.add("needs-attention");
-
-    try {
-      kvkkCard.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-    } catch (err) {}
-
-    setTimeout(function(){
-      kvkkCard.classList.remove("needs-attention");
-    }, 1800);
-  }
-
-  return false;
-}
-
-const productId = findProductId(target);
-startIosIapPurchase(productId);
+    const productId = findProductId(target);
+    startIosIapPurchase(productId);
   }, true);
 })();
 </script>
