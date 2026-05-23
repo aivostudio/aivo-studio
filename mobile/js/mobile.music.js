@@ -2319,11 +2319,9 @@ if (window.toast?.loading) {
               "Versiyon 2",
               "Version 2"
             );
-
         const card = document.createElement("div");
         card.className = "aivo-player-card is-pending";
         card.dataset.mobilePollJobId = String(pollJobId || "");
-        card.style.marginBottom = index === 1 ? "0" : "10px";
         card.style.minHeight = "78px";
         card.style.padding = "12px";
         card.style.opacity = ".96";
