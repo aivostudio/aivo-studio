@@ -529,13 +529,13 @@
       <form class="mobile-login-form" id="mobileLoginForm">
         <div class="mobile-login-grid mobile-login-register-only">
           <div class="mobile-login-field">
-            <label for="mobileFirstName">Ad</label>
-            <input id="mobileFirstName" name="name" type="text" placeholder="Adınız" autocomplete="given-name">
+            <label for="mobileFirstName" data-i18n="login.firstName">Ad</label>
+<input id="mobileFirstName" name="name" type="text" placeholder="Adınız" data-i18n-placeholder="login.firstNamePlaceholder" autocomplete="given-name">
           </div>
 
           <div class="mobile-login-field">
-            <label for="mobileLastName">Soyad</label>
-            <input id="mobileLastName" name="surname" type="text" placeholder="Soyadınız" autocomplete="family-name">
+          <label for="mobileLastName" data-i18n="login.lastName">Soyad</label>
+<input id="mobileLastName" name="surname" type="text" placeholder="Soyadınız" data-i18n-placeholder="login.lastNamePlaceholder" autocomplete="family-name">
           </div>
         </div>
 
@@ -572,17 +572,17 @@
         </div>
 
         <div class="mobile-login-field mobile-login-register-only">
-          <label for="mobilePasswordRepeat">Şifre Tekrar</label>
-          <input id="mobilePasswordRepeat" name="passwordRepeat" type="password" placeholder="Şifrenizi tekrar girin" autocomplete="new-password">
+        <label for="mobilePasswordRepeat" data-i18n="login.repeatPassword">Şifre Tekrar</label>
+<input id="mobilePasswordRepeat" name="passwordRepeat" type="password" placeholder="Şifrenizi tekrar girin" data-i18n-placeholder="login.repeatPasswordPlaceholder" autocomplete="new-password">
         </div>
 
         <div class="mobile-login-row">
           <label class="mobile-login-check">
             <input id="mobileRemember" type="checkbox">
-            <span>Beni hatırla</span>
+         <span data-i18n="login.rememberMe">Beni hatırla</span>
           </label>
 
-    <a class="mobile-login-link" href="/forgot.ios.html">Şifremi unuttum?</a>
+   <a class="mobile-login-link" href="/forgot.ios.html" data-i18n="login.forgotPassword">Şifremi unuttum?</a>
         </div>
 
  <label class="mobile-login-check mobile-login-register-only">
