@@ -653,6 +653,9 @@ document.addEventListener("click", async function(e){
     if (loginPolicyContent) {
       loginPolicyContent.innerHTML = html;
     }
+    if (typeof window.aivoApplyI18n === "function") {
+  window.aivoApplyI18n(loginPolicyContent);
+}
 
     if (loginPolicyView) {
       loginPolicyView.hidden = false;
