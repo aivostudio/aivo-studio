@@ -57,10 +57,14 @@
       }
     ]
   };
-  const launcher = document.createElement("button");
-  launcher.type = "button";
-  launcher.className = "aivo-assistant-launcher";
-  launcher.textContent = tt("assistant.launcher", "AI Yardım");
+const launcher = document.createElement("button");
+launcher.type = "button";
+launcher.className = "aivo-assistant-launcher";
+launcher.textContent = tt("assistant.launcher", "AI Yardım");
+
+if (window.matchMedia("(min-width: 768px)").matches) {
+  launcher.style.setProperty("bottom", "220px", "important");
+}
   const panel = document.createElement("section");
   panel.className = "aivo-assistant-panel";
   panel.innerHTML = `
