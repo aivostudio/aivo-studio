@@ -1,7 +1,5 @@
 // api/admin/traffic-debug.js
 
-const { getRedis } = require("../_kv.js");
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -11,24 +9,52 @@ export default async function handler(req, res) {
       });
     }
 
+    const KV_URL =
+      process.env.KV_REST_API_URL ||
+      process.env.UPSTASH_KV_REST_API_URL ||
+      process.env.UPSTASH_REDIS_REST_URL ||
+      process.env.UPSTASH_REDIS_REST_API_URL;
+
+    const KV_TOKEN =
+      process.env.KV_REST_API_TOKEN ||
+      process.env.UPSTASH_KV_REST_API_TOKEN ||
+      process.env.UPSTASH_REDIS_REST_TOKEN ||
+      process.env.UPSTASH_REDIS_REST_API_TOKEN;
+
+    if (!KV_URL || !KV_TOKEN) {
+      return res.status(200).json({
+        ok: false,
+        error: "kv_env_missing"
+      });
+    }
+
     const day = String(req.query.day || new Date().toISOString().slice(0, 10))
       .trim()
       .slice(0, 10);
 
-    const limit = Math.min(
-      Math.max(Number(req.query.limit || 50), 1),
-      200
-    );
-
-    const redis = getRedis();
+    const limit = Math.min(Math.max(Number(req.query.limit || 50), 1), 200);
     const key = `traffic:day:${day}:debug`;
 
-    const rawItems = await redis.lrange(key, 0, limit - 1);
+    const r = await fetch(`${KV_URL}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${KV_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify([
+        ["LRANGE", key, "0", String(limit - 1)]
+      ])
+    });
+
+    if (!r.ok) {
+      throw new Error("kv_request_failed");
+    }
+
+    const data = await r.json();
+    const rawItems = Array.isArray(data?.[0]?.result) ? data[0].result : [];
 
     const items = rawItems.map((item) => {
-      if (typeof item === "object" && item !== null) {
-        return item;
-      }
+      if (typeof item === "object" && item !== null) return item;
 
       try {
         return JSON.parse(String(item));
