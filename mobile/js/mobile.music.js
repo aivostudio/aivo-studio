@@ -1879,7 +1879,6 @@ miniAudioEl.play().then(function(){
             outputs.forEach(function(output, index){
             const card = document.createElement("div");
             card.className = "aivo-player-card is-ready";
-            card.style.marginBottom = index === outputs.length - 1 ? "0" : "6px";
             card.style.alignItems = "center";
             card.style.position = "relative";
            card.style.gridTemplateColumns = "54px minmax(0,1fr) 118px";
