@@ -1212,26 +1212,7 @@ html.aivo-ios-leaving body{
     })();
   </script>
     <script>
-  (function AIVO_MOBILE_TRAFFIC_HIT(){
-    try {
-      var page =
-        window.location.pathname +
-        window.location.search;
 
-      fetch("/api/traffic/hit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        keepalive: true,
-        body: JSON.stringify({
-        page: page || "/index.ios.html"
-        })
-      }).catch(function(){});
-    } catch (err) {}
-  })();
-  </script>
   <script>
 try {
   localStorage.setItem("aivo_ios_app", "1");
