@@ -416,6 +416,26 @@
 .mobile-login-card.is-register .mobile-login-submit{
   min-height:50px;
 }
+    .mobile-login-policy-view{
+  margin-top:14px;
+}
+
+.mobile-login-policy-card{
+  padding:16px;
+  border-radius:24px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+}
+
+.mobile-login-policy-card[hidden],
+.mobile-login-policy-view[hidden]{
+  display:none;
+}
+
+.mobile-login-policy-card .mobile-policy-page{
+  padding:0;
+}
    </style>
 
   <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
@@ -581,6 +601,12 @@
   Ücretsiz hesap oluştur →
 </button>
     </div>
+    <section id="mobileLoginPolicyView" class="mobile-login-policy-view" hidden>
+  <div class="mobile-login-policy-card">
+    <button type="button" id="mobileLoginPolicyBack" class="mobile-login-back" aria-label="Geri">Geri</button>
+    <div id="mobileLoginPolicyContent">Yasal metin yükleniyor...</div>
+  </div>
+</section>
   </main>
 
   <script>
@@ -605,6 +631,51 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
       const password = document.getElementById("mobilePassword");
       const passwordRepeat = document.getElementById("mobilePasswordRepeat");
       const terms = document.getElementById("mobileTerms");
+      const loginPolicyView = document.getElementById("mobileLoginPolicyView");
+const loginPolicyContent = document.getElementById("mobileLoginPolicyContent");
+const loginPolicyBack = document.getElementById("mobileLoginPolicyBack");
+
+document.addEventListener("click", async function(e){
+  const privacyBtn = e.target.closest("[data-login-policy-privacy]");
+  const termsBtn = e.target.closest("[data-login-policy-terms]");
+
+  if (!privacyBtn && !termsBtn) return;
+
+  e.preventDefault();
+
+  const file = privacyBtn
+    ? "/mobile/modules/mobile-policy-privacy.html?v=1"
+    : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  try{
+    const html = await fetch(file).then(r => r.text());
+
+    if (loginPolicyContent) {
+      loginPolicyContent.innerHTML = html;
+    }
+
+    if (loginPolicyView) {
+      loginPolicyView.hidden = false;
+      loginPolicyView.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+    }
+
+  }catch(err){
+    if (loginPolicyContent) {
+      loginPolicyContent.innerHTML = "Policy yüklenemedi.";
+    }
+  }
+});
+
+if (loginPolicyBack) {
+  loginPolicyBack.addEventListener("click", function(){
+    if (loginPolicyView) {
+      loginPolicyView.hidden = true;
+    }
+  });
+}
       document.addEventListener("click", function(e){
   const privacyBtn = e.target.closest("[data-login-policy-privacy]");
   const termsBtn = e.target.closest("[data-login-policy-terms]");
