@@ -1573,9 +1573,12 @@ body.mobile-sheet-open{
 }
 @media (min-width: 768px){
   .mobile-mini-player{
-    width:min(900px, calc(100vw - 180px)) !important;
+    left:120px !important;
+    right:120px !important;
+    width:auto !important;
     max-width:none !important;
     bottom:86px !important;
+    transform:none !important;
     border-radius:22px !important;
   }
 
