@@ -1214,27 +1214,7 @@ html.aivo-play-leaving body{
       });
     })();
   </script>
-    <script>
-  (function AIVO_MOBILE_TRAFFIC_HIT(){
-    try {
-      var page =
-        window.location.pathname +
-        window.location.search;
-
-      fetch("/api/traffic/hit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include",
-        keepalive: true,
-      body: JSON.stringify({
-page: page || "/index.play.html"
-})
-      }).catch(function(){});
-    } catch (err) {}
-  })();
-  </script>
+   
  <script>
 try {
   localStorage.setItem("aivo_play_app", "1");
