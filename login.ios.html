@@ -644,6 +644,7 @@ const returnTo = rawReturnTo.includes("studio.ios.html")
   const card = document.getElementById("mobileLoginCard");
       const form = document.getElementById("mobileLoginForm");
       const hero = document.querySelector(".mobile-login-hero");
+      const topbar = document.querySelector(".mobile-login-topbar");
       const footer = document.querySelector(".mobile-login-footer");
       const tabs = Array.from(document.querySelectorAll(".mobile-login-tab"));
       const submitBtn = document.getElementById("mobileSubmitBtn");
@@ -684,9 +685,10 @@ document.addEventListener("click", async function(e){
   window.aivoApplyI18n(loginPolicyContent);
 }
 
-    if (card) card.hidden = true;
-    if (hero) hero.hidden = true;
-    if (footer) footer.hidden = true;
+  if (topbar) topbar.hidden = true;
+if (card) card.hidden = true;
+if (hero) hero.hidden = true;
+if (footer) footer.hidden = true;
 
     if (loginPolicyView) {
       loginPolicyView.hidden = false;
@@ -706,9 +708,10 @@ document.addEventListener("click", async function(e){
 if (loginPolicyBack) {
   loginPolicyBack.addEventListener("click", function(){
     if (loginPolicyView) loginPolicyView.hidden = true;
-    if (card) card.hidden = false;
-    if (hero) hero.hidden = false;
-    if (footer) footer.hidden = false;
+   if (topbar) topbar.hidden = false;
+if (card) card.hidden = false;
+if (hero) hero.hidden = false;
+if (footer) footer.hidden = false;
 
     window.scrollTo({
       top: 0,
