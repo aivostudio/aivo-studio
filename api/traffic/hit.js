@@ -25,11 +25,35 @@ export default async function handler(req, res) {
           : {}
         : {};
 
-    const page = String(body.page || req.query.page || req.headers.referer || "/")
-      .trim()
-      .slice(0, 300);
+const page = String(body.page || req.query.page || req.headers.referer || "/")
+  .trim()
+  .slice(0, 300);
 
-    const ua = String(req.headers["user-agent"] || "").slice(0, 300);
+const platform = String(body.platform || req.query.platform || "unknown")
+  .trim()
+  .slice(0, 80);
+
+const source = String(body.source || req.query.source || "unknown")
+  .trim()
+  .slice(0, 80);
+
+const visibilityState = String(body.visibilityState || req.query.visibilityState || "unknown")
+  .trim()
+  .slice(0, 80);
+
+const referrer = String(body.referrer || req.query.referrer || req.headers.referer || "")
+  .trim()
+  .slice(0, 300);
+
+const bootId = String(body.bootId || req.query.bootId || "none")
+  .trim()
+  .slice(0, 120);
+
+const sessionId = String(body.sessionId || req.query.sessionId || "none")
+  .trim()
+  .slice(0, 120);
+
+const ua = String(req.headers["user-agent"] || "").slice(0, 300);
     const ip =
       String(
         req.headers["x-forwarded-for"] ||
@@ -61,6 +85,29 @@ export default async function handler(req, res) {
       "1",
       page
     ]);
+    await kvCmd(KV_URL, KV_TOKEN, [
+  "LPUSH",
+  `traffic:day:${day}:debug`,
+  JSON.stringify({
+    at: now.toISOString(),
+    page,
+    platform,
+    source,
+    visibilityState,
+    referrer,
+    bootId,
+    sessionId,
+    ua,
+    ip
+  })
+]);
+
+await kvCmd(KV_URL, KV_TOKEN, [
+  "LTRIM",
+  `traffic:day:${day}:debug`,
+  "0",
+  "199"
+]);
 
     await kvCmd(KV_URL, KV_TOKEN, [
       "EXPIRE",
@@ -74,11 +121,16 @@ export default async function handler(req, res) {
       String(60 * 60 * 24 * 45)
     ]);
 
-    return res.status(200).json({
-      ok: true,
-      day,
-      page
-    });
+ return res.status(200).json({
+  ok: true,
+  day,
+  page,
+  platform,
+  source,
+  visibilityState,
+  bootId,
+  sessionId
+});
   } catch (err) {
     return res.status(200).json({
       ok: false,
