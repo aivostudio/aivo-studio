@@ -2207,6 +2207,50 @@ if (accountNav) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
+    document.addEventListener("click", async function(e){
+  const policyPrivacyBtn = e.target.closest("[data-mobile-policy-privacy]");
+  const policyTermsBtn = e.target.closest("[data-mobile-policy-terms]");
+
+  if (!policyPrivacyBtn && !policyTermsBtn) return;
+
+  e.preventDefault();
+
+  const policyUrl = policyPrivacyBtn
+    ? "/mobile/modules/mobile-policy-privacy.html?v=1"
+    : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  if (homeMount) homeMount.hidden = true;
+  if (musicMount) musicMount.hidden = true;
+  if (coverMount) coverMount.hidden = true;
+  if (atmoMount) atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+  if (policyMount) {
+    policyMount.hidden = false;
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+  }
+
+  try {
+    const res = await fetch(policyUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("policy_load_failed");
+
+    policyMount.innerHTML = await res.text();
+
+    if (typeof window.aivoApplyI18n === "function") {
+      window.aivoApplyI18n(policyMount);
+    }
+  } catch (err) {
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}, true);
     if (accountMount) {
 accountMount.addEventListener("click", async function(e){
 const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
