@@ -1691,19 +1691,7 @@ hydrateTopCreditBalance();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
-window.addEventListener("DOMContentLoaded", function(){
-  if (location.hash !== "#policy-privacy" && location.hash !== "#policy-terms") return;
 
-  setTimeout(function(){
-    const target = location.hash === "#policy-privacy"
-      ? document.querySelector("[data-mobile-policy-privacy]")
-      : document.querySelector("[data-mobile-policy-terms]");
-
-    if (target) {
-      target.click();
-    }
-  }, 600);
-});
    function setActiveNav(activeEl){
   document.querySelectorAll(".bottom-nav a").forEach(function(item){
     item.classList.toggle("active", item === activeEl);
