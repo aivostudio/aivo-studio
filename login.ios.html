@@ -437,6 +437,30 @@
 .mobile-login-policy-card .mobile-policy-page{
   padding:0;
 }
+    @media (min-width: 768px) {
+  .mobile-login-shell{
+    width:min(760px,100%);
+    padding:calc(26px + env(safe-area-inset-top)) 42px max(34px, env(safe-area-inset-bottom));
+  }
+
+  .mobile-login-policy-view{
+    width:100%;
+    margin-top:18px;
+  }
+
+  .mobile-login-policy-card{
+    max-width:760px;
+    margin:0 auto;
+    padding:0;
+    background:transparent;
+    border:0;
+    box-shadow:none;
+  }
+
+  .mobile-login-policy-card .mobile-policy-page{
+    width:100%;
+  }
+}
    </style>
 
   <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
