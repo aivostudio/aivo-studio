@@ -332,7 +332,10 @@ function applyMobileCreditPrices(){
     }
   }
   document.addEventListener("click", function(e){
-    const packBtn = e.target.closest("[data-mobile-pack]");
+    const packBtn = e.target.closest(
+      "[data-mobile-pack], [data-ios-product], [data-iap-product], .mobile-credits-pack-card button, .mobile-credits-pack-card a"
+    );
+
     if (!packBtn) return;
 
     if (getKvkkOk()) return;
