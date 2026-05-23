@@ -1571,3 +1571,31 @@ body.mobile-sheet-open{
 .field-textarea{
   border:1px solid rgba(236,72,153,.32) !important;
 }
+@media (min-width: 768px){
+  .mobile-mini-player{
+    width:min(720px, calc(100vw - 280px)) !important;
+    bottom:86px !important;
+    border-radius:22px !important;
+  }
+
+  .mobile-mini-player .mini-inner{
+    height:72px !important;
+    grid-template-columns:54px minmax(0,1fr) 52px !important;
+    gap:14px !important;
+    padding:10px 16px !important;
+  }
+
+  .mobile-mini-player .mini-cover{
+    width:54px !important;
+    height:54px !important;
+    border-radius:16px !important;
+  }
+
+  .mobile-mini-player .mini-title{
+    font-size:15px !important;
+  }
+
+  .mobile-mini-player .mini-sub{
+    font-size:12px !important;
+  }
+}
