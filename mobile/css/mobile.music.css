@@ -1686,3 +1686,12 @@ body.mobile-sheet-open{
   content:none !important;
   display:none !important;
 }
+@media (min-width: 768px){
+  .mobile-mini-player{
+    left: max(28px, calc((100vw - 760px) / 2)) !important;
+    right: auto !important;
+    width: min(760px, calc(100vw - 56px)) !important;
+    max-width: min(760px, calc(100vw - 56px)) !important;
+    transform: none !important;
+  }
+}
