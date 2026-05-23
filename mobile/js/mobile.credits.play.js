@@ -291,7 +291,23 @@ await startPlayBillingPurchase(pack);
       setButtonLoading(button, false);
     }
   }
+  document.addEventListener("click", function(e){
+    const packBtn = e.target.closest("[data-mobile-pack]");
+    if (!packBtn) return;
 
+    if (getKvkkOk()) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.stopImmediatePropagation) {
+      e.stopImmediatePropagation();
+    }
+
+    showKvkkWarning();
+
+    return false;
+  }, true);
   function bindClicks(){
     const section = $("#mobileCreditsSection");
     if (!section || section.dataset.bound === "1") return;
