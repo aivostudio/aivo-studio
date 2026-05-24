@@ -285,6 +285,8 @@ if (data.purchase_id) {
   } catch (err) {}
 }
 
+await new Promise(function(resolve){ setTimeout(resolve, 700); });
+
 await startPlayBillingPurchase({
   ...pack,
   plan:
