@@ -152,9 +152,9 @@ async function getMe(){
     try {
        const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
-      const creditsUrl = localEmail && localEmail.includes("@")
-        ? "https://aivo.tr/api/credits/get?email=" + encodeURIComponent(localEmail)
-        : "https://aivo.tr/api/credits/get";
+           const creditsUrl = localEmail && localEmail.includes("@")
+        ? "https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail)
+        : "https://aivo.tr/api/play-billing/credits-get";
 
       const res = await fetch(creditsUrl, {
         method: "GET",
