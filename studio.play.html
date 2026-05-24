@@ -866,10 +866,9 @@ if (localLogged && !window.__AIVO_PLAY_AUTH_RETRY_DONE__) {
           cache: "no-store"
         })
         .then(function(res){
-          if (res && res.status === 200) {
-            location.reload();
-            return;
-          }
+       if (res && res.status === 200) {
+       return;
+       }
 
           location.replace(getAivoMobileLoginUrl());
         })
