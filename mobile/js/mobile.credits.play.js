@@ -95,10 +95,11 @@ function applyMobileCreditPrices(){
     const n = Number(value);
     const safeValue = Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : "0";
 
-    const topEl = document.querySelector("[data-mobile-credit-balance]");
-    if (topEl) {
-      topEl.textContent = "Kredi " + safeValue;
-    }
+   const topEl = document.querySelector("[data-mobile-credit-balance]");
+if (topEl) {
+  topEl.removeAttribute("data-i18n");
+  topEl.textContent = "Kredi " + safeValue;
+}
   }
 
 async function getMe(){
