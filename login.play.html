@@ -747,14 +747,24 @@ switchBtn.textContent = mode === "login"
   return;
 }
 
-        setMessage(
+       setMessage(
   tt("login.success.login", "Giriş başarılı."),
   "is-ok"
 );
 
-         setTimeout(function(){
-     window.location.href = returnTo;
-        }, 350);
+try {
+  localStorage.setItem("aivo_logged_in", "1");
+  localStorage.setItem("aivo_user_email", cleanEmail);
+  localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+    loggedIn: true,
+    email: cleanEmail,
+    ts: Date.now()
+  }));
+} catch (err) {}
+
+setTimeout(function(){
+  window.location.href = returnTo;
+}, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
