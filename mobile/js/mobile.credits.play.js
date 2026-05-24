@@ -157,24 +157,50 @@ async function getMe(){
     }
 
     try {
-      const res = await fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
-        method: "GET",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
+ const capHttp = window.Capacitor &&
+  window.Capacitor.Plugins &&
+  window.Capacitor.Plugins.CapacitorHttp;
 
-      const data = await res.json().catch(function(){
-        return null;
-      });
+if (capHttp && typeof capHttp.get === "function") {
+  const res = await capHttp.get({
+    url: "https://aivo.tr/api/play-billing/credits-get",
+    params: {
+      email: localEmail
+    },
+    headers: {
+      "Accept": "application/json"
+    }
+  });
 
-      if (!res.ok || !data || data.ok === false) {
-        setBalance(0);
-        return;
-      }
+  const data = res && res.data ? res.data : null;
 
-      setBalance(data.credits);
+  if (!res || Number(res.status) < 200 || Number(res.status) >= 300 || !data || data.ok === false) {
+    setBalance(0);
+    return;
+  }
+
+  setBalance(data.credits);
+  return;
+}
+
+const res = await fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
+  method: "GET",
+  cache: "no-store",
+  headers: {
+    "Accept": "application/json"
+  }
+});
+
+const data = await res.json().catch(function(){
+  return null;
+});
+
+if (!res.ok || !data || data.ok === false) {
+  setBalance(0);
+  return;
+}
+
+setBalance(data.credits);
     } catch (err) {
       setBalance(0);
     }
