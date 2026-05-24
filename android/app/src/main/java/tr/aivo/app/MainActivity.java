@@ -165,9 +165,10 @@ public class MainActivity extends BridgeActivity {
   }
 
   public class AivoPlayBillingBridge {
-    @JavascriptInterface
-    public void purchase(String plan) {
-      startPurchase(plan);
-    }
+  @JavascriptInterface
+public void purchase(String plan) {
+    android.util.Log.d("AivoPlayBilling", "purchase called plan=" + plan);
+    startPurchase(plan);
+}
   }
 }
