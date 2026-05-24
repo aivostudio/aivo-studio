@@ -31,9 +31,14 @@ public class MainActivity extends BridgeActivity {
     }
   };
 
-  @Override
+   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    CookieManager cookieManager = CookieManager.getInstance();
+    cookieManager.setAcceptCookie(true);
+    cookieManager.setAcceptThirdPartyCookies(getBridge().getWebView(), true);
+    cookieManager.flush();
 
     billingClient = BillingClient.newBuilder(this)
       .setListener(purchasesUpdatedListener)
