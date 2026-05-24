@@ -148,35 +148,32 @@ async function getMe(){
 }
 
   async function hydrateCredits(){
-    const balanceEl = $("#mobileCreditsBalance");
-    if (balanceEl) balanceEl.textContent = "Yükleniyor...";
+    const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+
+    if (!localEmail || !localEmail.includes("@")) {
+      setBalance(0);
+      return;
+    }
 
     try {
-       const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
-
-           const creditsUrl = localEmail && localEmail.includes("@")
-        ? "https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail)
-        : "https://aivo.tr/api/play-billing/credits-get";
-
-      const res = await fetch(creditsUrl, {
+      const res = await fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
         method: "GET",
-        credentials: "include",
         cache: "no-store",
         headers: {
           "Accept": "application/json"
         }
       });
 
-      if (!res.ok) {
-        setBalance(0);
-        return;
-      }
-
       const data = await res.json().catch(function(){
         return null;
       });
 
-      setBalance(data && data.credits != null ? data.credits : 0);
+      if (!res.ok || !data || data.ok === false) {
+        setBalance(0);
+        return;
+      }
+
+      setBalance(data.credits);
     } catch (err) {
       setBalance(0);
     }
