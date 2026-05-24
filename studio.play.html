@@ -857,28 +857,17 @@ body {
     const localLogged =
       localStorage.getItem("aivo_logged_in") === "1" &&
       String(localStorage.getItem("aivo_user_email") || "").includes("@");
-if (localLogged && !window.__AIVO_PLAY_AUTH_RETRY_DONE__) {
-      window.__AIVO_PLAY_AUTH_RETRY_DONE__ = true;
+if (localLogged) {
+  var st = document.getElementById("aivo-auth-gate-style");
+  if (st) st.remove();
 
-      setTimeout(function(){
-        fetch("/api/auth/me", {
-          credentials: "include",
-          cache: "no-store"
-        })
-        .then(function(res){
-       if (res && res.status === 200) {
-       return;
-       }
+  document.documentElement.style.visibility = "visible";
+  document.body.style.opacity = "1";
 
-          location.replace(getAivoMobileLoginUrl());
-        })
-        .catch(function(){
-          location.replace(getAivoMobileLoginUrl());
-        });
-      }, 450);
+  document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
-      return;
-    }
+  return;
+}
   } catch (err) {}
 
   location.replace(getAivoMobileLoginUrl());
