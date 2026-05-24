@@ -1,6 +1,7 @@
 package tr.aivo.app;
 
 import android.os.Bundle;
+import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 
 import com.android.billingclient.api.BillingClient;
