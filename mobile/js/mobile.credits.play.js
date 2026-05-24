@@ -266,6 +266,7 @@ function startPlayBillingPurchase(pack){
   })
 });
       const raw = await res.text();
+      console.error("[AIVO PLAY INIT]", res.status, raw);
       let data = null;
 
       try {
