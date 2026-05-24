@@ -100,6 +100,9 @@ function applyMobileCreditPrices(){
   }
 
 async function getMe(){
+  console.log("[AIVO PLAY AUTH] local email:", localStorage.getItem("aivo_user_email"));
+  console.log("[AIVO PLAY AUTH] unified:", localStorage.getItem("aivo_auth_unified_v1"));
+
   try {
     const res = await fetch("/api/auth/me", {
       method: "GET",
