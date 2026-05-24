@@ -150,7 +150,13 @@ async function getMe(){
     if (balanceEl) balanceEl.textContent = "Yükleniyor...";
 
     try {
-      const res = await fetch("/api/credits/get", {
+       const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+
+      const creditsUrl = localEmail && localEmail.includes("@")
+        ? "https://aivo.tr/api/credits/get?email=" + encodeURIComponent(localEmail)
+        : "https://aivo.tr/api/credits/get";
+
+      const res = await fetch(creditsUrl, {
         method: "GET",
         credentials: "include",
         cache: "no-store",
