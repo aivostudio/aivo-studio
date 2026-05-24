@@ -345,15 +345,24 @@ await startPlayBillingPurchase({
       startCheckout(planKey, button);
     });
   }
+function scheduleCreditsHydrate(){
+  requestAnimationFrame(function(){
+    setTimeout(function(){
+      hydrateCredits();
+    }, 300);
+  });
+}
+
 window.mobileCreditsInit = function(){
   bindClicks();
-  hydrateCredits();
   applyMobileCreditPrices();
+  scheduleCreditsHydrate();
 };
+
 function boot(){
   bindClicks();
-  hydrateCredits();
   applyMobileCreditPrices();
+  scheduleCreditsHydrate();
 }
 
   if (document.readyState === "loading") {
