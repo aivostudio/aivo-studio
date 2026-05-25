@@ -843,169 +843,81 @@ body {
   }
 </style>
 
-  <script>
-  (function AIVO_IOS_STUDIO_HARD_GATE(){
-    if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
-    window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
+<script>
+(function AIVO_IOS_STUDIO_HARD_GATE(){
+  if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
+  window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
 
-   function goLogin(){
-  try {
-    const localLogged =
-      localStorage.getItem("aivo_logged_in") === "1" &&
-      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+  function getLoginUrl(){
+    return "/login.ios.html?returnTo=" + encodeURIComponent("/studio.ios.html" + (window.location.hash || ""));
+  }
 
-    if (localLogged && !window.__AIVO_IOS_AUTH_RETRY_DONE__) {
-      window.__AIVO_IOS_AUTH_RETRY_DONE__ = true;
+  function showStudio(me){
+    try {
+      var nextEmail = String((me && me.email) || (me && me.user && me.user.email) || "").trim().toLowerCase();
 
-      let retryCount = 0;
+      localStorage.setItem("aivo_logged_in", "1");
+      localStorage.setItem("aivo_user_email", nextEmail);
+      localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+        loggedIn: true,
+        email: nextEmail,
+        ts: Date.now()
+      }));
+    } catch (e) {}
 
-      function retryAuthMe(){
-        retryCount += 1;
-
-        fetch("/api/auth/me", {
-          credentials: "include",
-          cache: "no-store"
-        })
-        .then(function(res){
-          if (res && res.status === 200) {
-            location.reload();
-            return;
-          }
-
-          if (retryCount < 3) {
-            setTimeout(retryAuthMe, 900);
-            return;
-          }
-
-          location.replace(getAivoMobileLoginUrl());
-        })
-        .catch(function(){
-          if (retryCount < 3) {
-            setTimeout(retryAuthMe, 900);
-            return;
-          }
-
-          location.replace(getAivoMobileLoginUrl());
-        });
-      }
-
-      setTimeout(retryAuthMe, 900);
-
-      return;
-    }
-  } catch (err) {}
-
-  location.replace(getAivoMobileLoginUrl());
-}
-
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){
-      try { ctrl.abort(); } catch (e) {}
-    }, 2500);
-
-    fetch("/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    })
-    .then(async function(r){
-      clearTimeout(t);
-
-      if (r.status === 200) {
-        var me = await r.json();
-
-             try {
-          var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
-          var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
-          var nextEmail = String((me && me.email) || "").trim().toLowerCase();
-
-          function firstNonEmpty() {
-            for (var i = 0; i < arguments.length; i++) {
-              var v = arguments[i];
-              if (v != null && String(v).trim()) return String(v).trim();
-            }
-            return "";
-          }
-
-          function emailToName(email) {
-            var normalized = String(email || "").trim().toLowerCase();
-            if (!normalized || normalized.indexOf("@") === -1) return "";
-            return normalized.split("@")[0].trim();
-          }
-
-          function scopedKey(baseKey, email) {
-            var normalized = String(email || "").trim().toLowerCase();
-            if (!normalized) return baseKey;
-            return baseKey + ":" + normalized;
-          }
-
-          if (prevEmail && prevEmail !== nextEmail) {
-            localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
-            localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
-          }
-
-          var firstName = firstNonEmpty(
-            me && me.first_name,
-            me && me.firstName,
-            me && me.name,
-            emailToName(nextEmail),
-            "Kullanıcı"
-          );
-
-          var surname = firstNonEmpty(
-            me && me.last_name,
-            me && me.lastName,
-            me && me.surname,
-            ""
-          );
-
-          var fullName = firstNonEmpty(
-            firstName && surname ? (firstName + " " + surname) : "",
-            firstName,
-            "Kullanıcı"
-          );
-
-          localStorage.setItem("aivo_logged_in", "1");
-          localStorage.setItem("aivo_user_email", nextEmail);
-          localStorage.setItem("aivo_profile_name", "");
-          localStorage.setItem("aivo_profile_surname", "");
-          localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
-            loggedIn: true,
-            email: nextEmail,
-            name: firstName,
-            first_name: firstName,
-            surname: surname,
-            last_name: surname,
-            full_name: fullName,
-            ts: Date.now()
-          }));
-          localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
-          localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
-        } catch (e) {}
-
-        var st = document.getElementById("aivo-auth-gate-style");
-        if (st) st.remove();
+    var st = document.getElementById("aivo-auth-gate-style");
+    if (st) st.remove();
 
     document.documentElement.style.visibility = "visible";
-        document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+    document.body.style.opacity = "1";
 
-        try {
-          
-          document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-            detail: { me: me }
-          }));
-        } catch (e) {}
+    document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
-        return;
+    try {
+      document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+        detail: { me: me }
+      }));
+    } catch (e) {}
+  }
+
+  async function checkSessionOnce(){
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
       }
-
-      goLogin();
-    })
-    .catch(function(){
-      goLogin();
     });
-  })();
-  </script>
+
+    if (!res.ok) return null;
+
+    return await res.json().catch(function(){
+      return null;
+    });
+  }
+
+  async function boot(){
+    for (let i = 0; i < 12; i++) {
+      try {
+        const me = await checkSessionOnce();
+
+        if (me && (me.email || (me.user && me.user.email))) {
+          showStudio(me);
+          return;
+        }
+      } catch (err) {}
+
+      await new Promise(function(resolve){
+        setTimeout(resolve, 500);
+      });
+    }
+
+    location.replace(getLoginUrl());
+  }
+
+  boot();
+})();
+</script>
 
 <script>
 (function AIVO_MOBILE_START_ROUTE(){
