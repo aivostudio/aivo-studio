@@ -1644,27 +1644,54 @@ async function hydrateTopCreditBalance(){
   if (!topCreditBalance) return;
 
   try {
-    const res = await fetch("/api/credits/get", {
-      credentials: "include",
-      cache: "no-store"
-    });
+    const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
-    if (!res.ok) {
-      throw new Error("credit_balance_load_failed");
+    if (!email || !email.includes("@")) {
+      throw new Error("play_credit_email_missing");
     }
 
-    const data = await res.json();
-    const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+    const capHttp =
+      window.Capacitor &&
+      window.Capacitor.Plugins &&
+      window.Capacitor.Plugins.CapacitorHttp;
 
-   topCreditBalance.textContent =
-  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
-    ? "Credits " + creditValue
-    : "Kredi " + creditValue;
+    let res;
+
+    if (capHttp && typeof capHttp.get === "function") {
+      res = await capHttp.get({
+        url: "https://aivo.tr/api/play-billing/credits-get",
+        params: { email: email },
+        headers: { "Accept": "application/json" }
+      });
+    } else {
+      res = await fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(email), {
+        method: "GET",
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
+      });
+    }
+
+    const ok = res && (res.ok || Number(res.status) === 200);
+
+    if (!ok) {
+      throw new Error("play_credit_balance_load_failed");
+    }
+
+    const data = res.data || await res.json().catch(function(){
+      return null;
+    });
+
+    const creditValue = data && (data.credits ?? data.balance ?? data.credit ?? 0);
+
+    topCreditBalance.textContent =
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+        ? "Credits " + creditValue
+        : "Kredi " + creditValue;
   } catch (err) {
-   topCreditBalance.textContent =
-  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
-    ? "Credits --"
-    : "Kredi --";
+    topCreditBalance.textContent =
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+        ? "Credits --"
+        : "Kredi --";
   }
 }
 
