@@ -1971,6 +1971,8 @@ if (productionsNav) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
+    activeMobileModule = "music";
+
     showMusic();
 
     const musicHomeSection = document.getElementById("mobileHomeSection");
@@ -1984,7 +1986,7 @@ if (productionsNav) {
     if (policyMount) policyMount.hidden = true;
 
     setActiveNav(productionsNav);
-    window.location.hash = "productions";
+    history.replaceState(null, "", "#productions");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, true);
 }
