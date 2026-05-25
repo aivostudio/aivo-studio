@@ -3182,15 +3182,48 @@ const creditTransaction = creditTransactions[0] || null;
 
       const offer = product && product.getOffer ? product.getOffer() : null;
 
-    if (!offer) {
-  showToast(
-    "warning",
-    "Apple Store geçici olarak hazır değil. Lütfen biraz sonra tekrar deneyin.",
-    "Apple Store is temporarily unavailable. Please try again shortly."
+if (!offer) {
+  console.warn("[AIVO iOS IAP] offer missing, retrying store update", {
+    productId: productId,
+    product: product || null
+  });
+
+  await new Promise(function(resolve){
+    setTimeout(resolve, 900);
+  });
+
+  await store.update();
+
+  const retryProduct = store.get(
+    productId,
+    CdvPurchase.Platform.APPLE_APPSTORE
   );
+
+  const retryOffer = retryProduct && retryProduct.getOffer
+    ? retryProduct.getOffer()
+    : null;
+
+  if (!retryOffer) {
+    showToast(
+      "warning",
+      "Apple Store geçici olarak hazır değil. Lütfen birkaç saniye sonra tekrar deneyin.",
+      "Apple Store is temporarily unavailable. Please try again in a few seconds."
+    );
+    return;
+  }
+
+  const retryResult = await retryOffer.order();
+
+  console.log("[AIVO iOS IAP] retry order result", retryResult);
+
+  showToast(
+    "success",
+    "Apple satın alma ekranı açıldı.",
+    "Apple purchase screen opened."
+  );
+
   return;
 }
-
       const result = await offer.order();
 
       console.log("[AIVO iOS IAP] order result", result);
