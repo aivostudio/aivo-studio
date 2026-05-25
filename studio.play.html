@@ -1966,7 +1966,40 @@ if (homeNav) {
      if (atmoResults) atmoResults.hidden = !isLibraryOnly;
     }
 
-    if (productionsNav) {
+   if (productionsNav) {
+  productionsNav.addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    homeMount.hidden = true;
+    musicMount.hidden = true;
+    coverMount.hidden = true;
+    atmoMount.hidden = true;
+
+    if (cartoonMount) cartoonMount.hidden = true;
+    if (photofxMount) photofxMount.hidden = true;
+    if (videoMount) videoMount.hidden = true;
+    if (lipsyncMount) lipsyncMount.hidden = true;
+    if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
+    if (policyMount) policyMount.hidden = true;
+
+    showMusic();
+
+    const musicHomeSection = document.getElementById("mobileHomeSection");
+    const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+    const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+    if (musicHomeSection) musicHomeSection.hidden = true;
+    if (musicCard) musicCard.hidden = true;
+    if (musicProductionsSection) musicProductionsSection.hidden = false;
+
+    setActiveNav(productionsNav);
+    window.location.hash = "productions";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, true);
+}
       productionsNav.addEventListener("click", function(e){
         if (activeMobileModule === "cover") {
           e.preventDefault();
