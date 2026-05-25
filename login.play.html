@@ -693,17 +693,19 @@ switchBtn.textContent = mode === "login"
         try {
           const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
 
-          const payload = mode === "login"
-            ? {
-                email: cleanEmail,
-                password: cleanPassword
-              }
-            : {
-                name: String(firstName.value || "").trim(),
-                surname: String(lastName.value || "").trim(),
-                email: cleanEmail,
-                password: cleanPassword
-              };
+       const payload = mode === "login"
+  ? {
+      app: "play",
+      email: cleanEmail,
+      password: cleanPassword
+    }
+  : {
+      app: "play",
+      name: String(firstName.value || "").trim(),
+      surname: String(lastName.value || "").trim(),
+      email: cleanEmail,
+      password: cleanPassword
+    };
 
        const capHttp =
   window.Capacitor &&
