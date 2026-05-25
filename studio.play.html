@@ -1203,6 +1203,26 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
 <script src="/mobile/js/mobile.assistant.js?v=3" defer></script>
+  <script>
+(function AIVO_PLAY_API_FETCH_BRIDGE(){
+  if (window.__AIVO_PLAY_API_FETCH_BRIDGE__) return;
+  window.__AIVO_PLAY_API_FETCH_BRIDGE__ = true;
+
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = function(input, init){
+    try {
+      if (typeof input === "string" && input.startsWith("/api/")) {
+        input = "https://aivo.tr" + input;
+      } else if (input && typeof input.url === "string" && input.url.startsWith(location.origin + "/api/")) {
+        input = new Request(input.url.replace(location.origin, "https://aivo.tr"), input);
+      }
+    } catch (err) {}
+
+    return originalFetch(input, init);
+  };
+})();
+</script>
 
 <script>
 (function AIVO_MOBILE_URL_TOAST_READ(){
