@@ -92,8 +92,9 @@ function applyMobileCreditPrices(){
   }
 
   function setBalance(value){
-    const n = Number(value);
-    const safeValue = Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : "0";
+  const n = Number(value);
+const safeValue = Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : "0";
+el.textContent = "Kredi " + safeValue;
 
    const topEl = document.querySelector("[data-mobile-credit-balance]");
 if (topEl) {
