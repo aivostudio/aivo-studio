@@ -97,21 +97,19 @@ if (user.verified !== true) {
       return json(res, 401, { ok: false, error: "invalid_credentials" });
     }
 
-// ✅ SESSION
-const sid = await createAuthSession(res, email);
+    // ✅ SESSION
+    await createAuthSession(res, email);
 
-const isPlayLogin =
-  String(body.app || "").trim().toLowerCase() === "play";
 
-return json(res, 200, {
-  ok: true,
-  ...(isPlayLogin ? { sid } : {}),
-  user: {
-    email,
-    name: user.name || "",
-    role: user.role || "user",
-  },
-});
+
+    return json(res, 200, {
+      ok: true,
+      user: {
+        email,
+        name: user.name || "",
+        role: user.role || "user",
+      },
+    });
   } catch (e) {
     return json(res, 500, {
       ok: false,
