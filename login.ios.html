@@ -892,7 +892,7 @@ switchBtn.textContent = mode === "login"
     return;
   }
 
-  setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
+setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
   return;
 }
 
@@ -901,9 +901,9 @@ switchBtn.textContent = mode === "login"
   "is-ok"
 );
 
-         setTimeout(function(){
-     window.location.href = returnTo;
-        }, 350);
+        setTimeout(function(){
+          window.location.href = returnTo;
+        }, 1800);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
