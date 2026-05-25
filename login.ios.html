@@ -896,14 +896,44 @@ setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısı
   return;
 }
 
-        setMessage(
+setMessage(
   tt("login.success.login", "Giriş başarılı."),
   "is-ok"
 );
 
-        setTimeout(function(){
-          window.location.href = returnTo;
-        }, 1800);
+async function waitForIosSession(){
+  for (let i = 0; i < 8; i++) {
+    try {
+      const meRes = await fetch("/api/auth/me", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      if (meRes.ok) {
+        return true;
+      }
+    } catch (err) {}
+
+    await new Promise(function(resolve){
+      setTimeout(resolve, 350);
+    });
+  }
+
+  return false;
+}
+
+const sessionReady = await waitForIosSession();
+
+if (!sessionReady) {
+  setMessage("Oturum hazırlanıyor, lütfen tekrar dene.", "is-error");
+  return;
+}
+
+window.location.href = returnTo;
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
