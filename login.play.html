@@ -705,19 +705,39 @@ switchBtn.textContent = mode === "login"
                 password: cleanPassword
               };
 
-          const res = await fetch(endpoint, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-          });
+       const capHttp =
+  window.Capacitor &&
+  window.Capacitor.Plugins &&
+  window.Capacitor.Plugins.CapacitorHttp;
 
-          const data = await res.json().catch(function(){
-            return {};
-          });
+let res;
+let data;
 
+if (capHttp && typeof capHttp.post === "function") {
+  res = await capHttp.post({
+    url: "https://aivo.tr" + endpoint,
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    data: payload
+  });
+
+  data = res && res.data ? res.data : {};
+} else {
+  res = await fetch(endpoint, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  data = await res.json().catch(function(){
+    return {};
+  });
+}
         if (!res.ok || !data || data.ok === false) {
           const err = data && data.error ? data.error : "auth_failed";
 
