@@ -857,7 +857,11 @@ body {
     if (localLogged && !window.__AIVO_IOS_AUTH_RETRY_DONE__) {
       window.__AIVO_IOS_AUTH_RETRY_DONE__ = true;
 
-      setTimeout(function(){
+      let retryCount = 0;
+
+      function retryAuthMe(){
+        retryCount += 1;
+
         fetch("/api/auth/me", {
           credentials: "include",
           cache: "no-store"
@@ -868,12 +872,24 @@ body {
             return;
           }
 
+          if (retryCount < 3) {
+            setTimeout(retryAuthMe, 900);
+            return;
+          }
+
           location.replace(getAivoMobileLoginUrl());
         })
         .catch(function(){
+          if (retryCount < 3) {
+            setTimeout(retryAuthMe, 900);
+            return;
+          }
+
           location.replace(getAivoMobileLoginUrl());
         });
-      }, 450);
+      }
+
+      setTimeout(retryAuthMe, 900);
 
       return;
     }
