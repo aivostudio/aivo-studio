@@ -254,8 +254,10 @@ setBalance(data.credits);
   }
 
 function startPlayBillingPurchase(pack){
+  const productId = String(pack.productId || pack.plan || "").trim();
+
   if (window.AivoPlayBilling && typeof window.AivoPlayBilling.purchase === "function") {
-    return window.AivoPlayBilling.purchase(pack.plan);
+    return window.AivoPlayBilling.purchase(productId);
   }
 
   throw new Error("PLAY_BILLING_BRIDGE_MISSING");
