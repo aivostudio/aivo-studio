@@ -736,19 +736,21 @@ if (capHttp && typeof capHttp.post === "function") {
       headers["set-cookie".toLowerCase()] ||
       "";
 
-    const cookieText = Array.isArray(setCookie) ? setCookie.join(",") : String(setCookie || "");
+const cookieText = Array.isArray(setCookie) ? setCookie.join(",") : String(setCookie || "");
+const sidFromBody = data && data.sid ? String(data.sid) : "";
 
-    ["aivo_sess", "aivo_session"].forEach(function(cookieName){
-      const match = cookieText.match(new RegExp(cookieName + "=([^;,\n\r]+)"));
+["aivo_sess", "aivo_session"].forEach(function(cookieName){
+  const match = cookieText.match(new RegExp(cookieName + "=([^;,\n\r]+)"));
+  const cookieValue = match && match[1] ? match[1] : sidFromBody;
 
-      if (cookiePlugin && match && match[1]) {
-        cookiePlugin.setCookie({
-          url: "https://aivo.tr",
-          key: cookieName,
-          value: match[1]
-        });
-      }
+  if (cookiePlugin && cookieValue) {
+    cookiePlugin.setCookie({
+      url: "https://aivo.tr",
+      key: cookieName,
+      value: cookieValue
     });
+  }
+});
   } catch (err) {}
 } else {
   res = await fetch(endpoint, {
