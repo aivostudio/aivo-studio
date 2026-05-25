@@ -738,7 +738,7 @@ if (capHttp && typeof capHttp.post === "function") {
     return {};
   });
 }
-        if (!res.ok || !data || data.ok === false) {
+      if (!((res && res.ok) || Number(res && res.status) === 200) || !data || data.ok === false) {
           const err = data && data.error ? data.error : "auth_failed";
 
           if (err === "email_not_verified") {
