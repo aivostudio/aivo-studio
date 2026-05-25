@@ -1655,7 +1655,7 @@ async function hydrateTopCreditBalance(){
       window.Capacitor.Plugins &&
       window.Capacitor.Plugins.CapacitorHttp;
 
-    let res;
+    let res;if (productionsNav) {
 
     if (capHttp && typeof capHttp.get === "function") {
       res = await capHttp.get({
@@ -1966,24 +1966,10 @@ if (homeNav) {
      if (atmoResults) atmoResults.hidden = !isLibraryOnly;
     }
 
-   if (productionsNav) {
+if (productionsNav) {
   productionsNav.addEventListener("click", function(e){
     e.preventDefault();
     e.stopImmediatePropagation();
-
-    homeMount.hidden = true;
-    musicMount.hidden = true;
-    coverMount.hidden = true;
-    atmoMount.hidden = true;
-
-    if (cartoonMount) cartoonMount.hidden = true;
-    if (photofxMount) photofxMount.hidden = true;
-    if (videoMount) videoMount.hidden = true;
-    if (lipsyncMount) lipsyncMount.hidden = true;
-    if (toolsMount) toolsMount.hidden = true;
-    if (creditsMount) creditsMount.hidden = true;
-    if (accountMount) accountMount.hidden = true;
-    if (policyMount) policyMount.hidden = true;
 
     showMusic();
 
@@ -1995,157 +1981,13 @@ if (homeNav) {
     if (musicCard) musicCard.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
 
+    if (policyMount) policyMount.hidden = true;
+
     setActiveNav(productionsNav);
     window.location.hash = "productions";
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, true);
 }
-      productionsNav.addEventListener("click", function(e){
-        if (activeMobileModule === "cover") {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-
-          showCover();
-          setCoverLibraryOnly(true);
-          setActiveNav(productionsNav);
-
-          if (typeof window.mobileCoverHydrate === "function") {
-            window.mobileCoverHydrate();
-          }
-
-          return;
-        }
-if (activeMobileModule === "atmo") {
-  showAtmo();
-  setAtmoLibraryOnly(true);
-
-  if (typeof window.mobileAtmoHydrate === "function") {
-    window.mobileAtmoHydrate();
-  }
-
-  setActiveNav(productionsNav);
-  return;
-}
-
-                    if (activeMobileModule === "cartoon") {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-
-          showCartoon();
-
-          const cartoonSection = document.getElementById("mobileCartoonSection");
-          if (cartoonSection) {
-            const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
-            const cartoonTitle = cartoonSection.querySelector(".section-title");
-            const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
-
-            if (cartoonPanel) cartoonPanel.hidden = true;
-            if (cartoonTitle) cartoonTitle.hidden = false;
-            if (cartoonResults) cartoonResults.hidden = false;
-            if (typeof window.mobileCartoonHydrate === "function") {
-            window.mobileCartoonHydrate();
-            }
-          }
-
-          setActiveNav(productionsNav);
-
-          return;
-        }
-
-           if (activeMobileModule === "photofx") {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-
-          showPhotoFx();
-
-          const photofxSection = document.getElementById("mobilePhotoFxSection");
-          if (photofxSection) {
-            const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel");
-            const photofxTitle = photofxSection.querySelector(".section-title");
-            const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
-
-            if (photofxPanel) photofxPanel.hidden = true;
-            if (photofxTitle) photofxTitle.hidden = false;
-            if (photofxResults) photofxResults.hidden = false;
-            if (typeof window.mobilePhotoFxHydrate === "function") {
-            window.mobilePhotoFxHydrate();
-           }
-          }
-
-          setActiveNav(productionsNav);
-
-          return;
-        }
-
-        if (activeMobileModule === "video") {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-
-          showVideo();
-
-          const videoSection = document.getElementById("mobileVideoSection");
-          if (videoSection) {
-            const videoPanel = videoSection.querySelector(".mobile-video-panel");
-            const videoTitle = videoSection.querySelector(".section-title");
-            const videoResults = videoSection.querySelector("#mobileVideoResults");
-
-            if (videoPanel) videoPanel.hidden = true;
-            if (videoTitle) videoTitle.hidden = false;
-            if (videoResults) videoResults.hidden = false;
-            if (typeof window.mobileVideoHydrate === "function") {
-           window.mobileVideoHydrate();
-           }
-          }
-
-          setActiveNav(productionsNav);
-
-          return;
-        }
-        if (activeMobileModule === "lipsync") {
-  e.preventDefault();
-  e.stopImmediatePropagation();
-
-  showLipsync();
-
-  const lipsyncSection = document.getElementById("mobileLipsyncSection");
-  if (lipsyncSection) {
-    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");
-    const lipsyncTitle = lipsyncSection.querySelector(".section-title");
-    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");
-
-    if (lipsyncPanel) lipsyncPanel.hidden = true;
-    if (lipsyncTitle) lipsyncTitle.hidden = false;
-    if (lipsyncResults) lipsyncResults.hidden = false;
-    if (typeof window.mobileLipsyncShowLibrary === "function") {
-  window.mobileLipsyncShowLibrary();
-}
-  }
-
-  setActiveNav(productionsNav);
-
-  return;
-}
-showMusic();
-
-const musicHomeSection = document.getElementById("mobileHomeSection");
-const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
-const musicProductionsSection = document.getElementById("mobileProductionsSection");
-
-if (musicHomeSection) musicHomeSection.hidden = true;
-if (musicCard) musicCard.hidden = true;
-
-if (musicProductionsSection) {
-  musicProductionsSection.hidden = false;
-
-  document.documentElement.scrollTo({
-    top: musicProductionsSection.offsetTop - 12,
-    behavior: "smooth"
-  });
-}
-
-setActiveNav(productionsNav);
-      }, true);
-    }
 
 if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
