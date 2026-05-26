@@ -6,6 +6,16 @@
 <script>
 (function AIVO_IOS_INDEX_WEB_GUARD(){
   try {
+    var params = new URLSearchParams(window.location.search || "");
+
+    var isVerifyReturn =
+      params.get("verified") === "1" ||
+      params.get("from") === "ios" ||
+      params.get("open") === "login" ||
+      String(params.get("email") || "").includes("@");
+
+    if (isVerifyReturn) return;
+
     var isNative =
       !!window.Capacitor ||
       !!window.webkit?.messageHandlers?.bridge ||
