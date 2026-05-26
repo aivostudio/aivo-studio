@@ -871,13 +871,23 @@ body {
     document.documentElement.style.visibility = "visible";
     document.body.style.opacity = "1";
 
-    document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+ document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
-    try {
-      document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-        detail: { me: me }
-      }));
-    } catch (e) {}
+try {
+  document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+    detail: { me: me }
+  }));
+} catch (e) {}
+
+try {
+  window.dispatchEvent(new Event("aivo:credits:refresh"));
+} catch (e) {}
+
+try {
+  if (typeof loadCredits === "function") {
+    loadCredits();
+  }
+} catch (e) {}
   }
 
   async function checkSessionOnce(){
