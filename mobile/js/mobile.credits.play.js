@@ -243,7 +243,7 @@ setBalance(data.credits);
       button.disabled = true;
         button.textContent =
         (window.aivoI18n && window.aivoI18n.t("credits.paymentLoading")) ||
-        "Preparing payment...";
+     "Ödeme hazırlanıyor..."
       return;
     }
 
@@ -326,6 +326,7 @@ await startPlayBillingPurchase({
   ...pack,
   productId: pack.plan
 });
+      setButtonLoading(button, false);
     } catch (err) {
     console.error("[AIVO play credits] checkout failed:", err);
         alert(
