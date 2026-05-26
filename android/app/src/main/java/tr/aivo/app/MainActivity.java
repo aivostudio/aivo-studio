@@ -24,16 +24,25 @@ public class MainActivity extends BridgeActivity {
   private BillingClient billingClient;
   private final Map<String, ProductDetails> productDetailsMap = new HashMap<>();
 
-  private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult, purchases) -> {
-    if (
-      billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK &&
-      purchases != null
-    ) {
-      for (Purchase purchase : purchases) {
-        handlePurchase(purchase);
-      }
+private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult, purchases) -> {
+  if (
+    billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK &&
+    purchases != null
+  ) {
+    for (Purchase purchase : purchases) {
+      handlePurchase(purchase);
     }
-  };
+    return;
+  }
+
+  evaluateJs(
+    "window.dispatchEvent(new CustomEvent('aivo:play-billing-error',{detail:{error:'" +
+    billingResult.getResponseCode() +
+    "',message:" +
+    jsString(billingResult.getDebugMessage()) +
+    "}}));"
+  );
+};
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
