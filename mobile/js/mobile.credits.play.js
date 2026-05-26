@@ -324,11 +324,7 @@ await new Promise(function(resolve){ setTimeout(resolve, 700); });
 
 await startPlayBillingPurchase({
   ...pack,
-  plan:
-    pack.plan === "baslangic" ? "tr.aivo.credits.25" :
-    pack.plan === "standart" ? "tr.aivo.credits.100" :
-    pack.plan === "pro" ? "tr.aivo.credits.200" :
-    "tr.aivo.credits.500"
+  productId: pack.plan
 });
     } catch (err) {
     console.error("[AIVO play credits] checkout failed:", err);
