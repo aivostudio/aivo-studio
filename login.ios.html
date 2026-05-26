@@ -847,12 +847,14 @@ switchBtn.textContent = mode === "login"
                 email: cleanEmail,
                 password: cleanPassword
               }
-            : {
-                name: String(firstName.value || "").trim(),
-                surname: String(lastName.value || "").trim(),
-                email: cleanEmail,
-                password: cleanPassword
-              };
+          : {
+    name: String(firstName.value || "").trim(),
+    surname: String(lastName.value || "").trim(),
+    email: cleanEmail,
+    password: cleanPassword,
+    from: "ios",
+    source: "ios"
+  };
 
           const res = await fetch(endpoint, {
             method: "POST",
