@@ -1189,6 +1189,97 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 </script>
 
 <script>
+(function AIVO_IOS_FAST_BOTTOM_NAV(){
+  if (window.__AIVO_IOS_FAST_BOTTOM_NAV__) return;
+  window.__AIVO_IOS_FAST_BOTTOM_NAV__ = true;
+
+  function setActiveNav(activeHref){
+    document.querySelectorAll(".bottom-nav a").forEach(function(item){
+      item.classList.toggle("active", item.getAttribute("href") === activeHref);
+    });
+  }
+
+  function hideAllSections(){
+    [
+      "mobileHomeMount",
+      "mobileMusicMount",
+      "mobileCoverMount",
+      "mobileAtmoMount",
+      "mobileCartoonMount",
+      "mobilePhotoFxMount",
+      "mobileVideoMount",
+      "mobileLipsyncMount",
+      "mobileCreditsMount",
+      "mobileToolsMount",
+      "mobileAccountMount",
+      "mobilePolicyMount"
+    ].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.hidden = true;
+    });
+  }
+
+  function showSection(hash){
+    const cleanHash = hash || "#home";
+
+    hideAllSections();
+
+    if (cleanHash === "#home") {
+      const home = document.getElementById("mobileHomeMount");
+      if (home) home.hidden = false;
+      setActiveNav("#home");
+      return;
+    }
+
+    if (cleanHash === "#productions") {
+      const productions = document.getElementById("mobileMusicMount");
+      if (productions) productions.hidden = false;
+      setActiveNav("#productions");
+      return;
+    }
+
+    if (cleanHash === "#tools") {
+      const tools = document.getElementById("mobileToolsMount");
+      if (tools) tools.hidden = false;
+      setActiveNav("#tools");
+      return;
+    }
+
+    if (cleanHash === "#credits") {
+      const credits = document.getElementById("mobileCreditsMount");
+      if (credits) credits.hidden = false;
+      setActiveNav("#credits");
+      return;
+    }
+
+    if (cleanHash === "#account") {
+      const account = document.getElementById("mobileAccountMount");
+      if (account) account.hidden = false;
+      setActiveNav("#account");
+    }
+  }
+
+  document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
+    navItem.addEventListener("click", function(event){
+      const href = navItem.getAttribute("href") || "#home";
+      if (!href.startsWith("#")) return;
+
+      event.preventDefault();
+      window.location.hash = href.slice(1);
+      showSection(href);
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }, true);
+  });
+
+  window.addEventListener("hashchange", function(){
+    showSection(window.location.hash || "#home");
+  });
+
+  showSection(window.location.hash || "#home");
+})();
+</script>
+
+<script>
   (async function(){
   const homeMount = document.getElementById("mobileHomeMount");
 const musicMount = document.getElementById("mobileMusicMount");
