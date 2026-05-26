@@ -40,8 +40,29 @@ export default async function handler(req, res) {
     const verifyKey = `verify:${token}`;
     const payload = await kvGetJson(verifyKey).catch(() => null);
 
-    if (!payload || typeof payload !== "object") {
-      return json(res, 400, { ok: false, error: "invalid_or_expired_token" });
+      if (!payload || typeof payload !== "object") {
+      const from = req.query?.from ? String(req.query.from).trim().toLowerCase() : "";
+      const returnToRaw = req.query?.returnTo ? String(req.query.returnTo).trim() : "";
+
+      let expiredLocation = "/login.html?returnTo=/studio.v2.html";
+
+      if (returnToRaw && returnToRaw.startsWith("/")) {
+        expiredLocation = returnToRaw;
+      } else if (from === "ios") {
+        expiredLocation = "/login.ios.html?returnTo=/studio.ios.html";
+      } else if (from === "play" || from === "android") {
+        expiredLocation = "/login.play.html?returnTo=/studio.play.html";
+      } else if (from === "mobile") {
+        expiredLocation = "/login.mobile.html?returnTo=/studio.mobile.html";
+      }
+
+      const joiner = expiredLocation.includes("?") ? "&" : "?";
+      const finalExpiredLocation = `${expiredLocation}${joiner}verify=expired`;
+
+      res.statusCode = 302;
+      res.setHeader("Location", finalExpiredLocation);
+      res.end();
+      return;
     }
 
     const verifiedEmail = normalizeEmail(payload.email);
