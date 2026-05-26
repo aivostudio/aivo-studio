@@ -852,27 +852,15 @@ body {
     if (window.__AIVO_PLAY_STUDIO_HARD_GATE__) return;
     window.__AIVO_PLAY_STUDIO_HARD_GATE__ = true;
 
-   function goLogin(){
+function goLogin(){
   try {
-    const localLogged =
-      localStorage.getItem("aivo_logged_in") === "1" &&
-      String(localStorage.getItem("aivo_user_email") || "").includes("@");
-if (localLogged) {
-  var st = document.getElementById("aivo-auth-gate-style");
-  if (st) st.remove();
-
-  document.documentElement.style.visibility = "visible";
-  document.body.style.opacity = "1";
-
-  document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
-
-  return;
-}
+    localStorage.removeItem("aivo_logged_in");
+    localStorage.removeItem("aivo_user_email");
+    localStorage.removeItem("aivo_auth_unified_v1");
   } catch (err) {}
 
   location.replace(getAivoMobileLoginUrl());
 }
-
     var ctrl = new AbortController();
     var t = setTimeout(function(){
       try { ctrl.abort(); } catch (e) {}
