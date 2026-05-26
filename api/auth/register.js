@@ -143,10 +143,23 @@ export default async function handler(req, res) {
     // ✅ verify token + payload
     const token = crypto.randomBytes(32).toString("hex");
     const now = Date.now();
-    const appBase = env("APP_BASE_URL", "https://aivo.tr");
- const verifyUrl =
-  `${appBase}/api/auth/verify?token=${token}` +
-  `&returnTo=${encodeURIComponent("/login.mobile.html?returnTo=/studio.mobile.html")}`;
+     const appBase = env("APP_BASE_URL", "https://aivo.tr");
+    const from = String(body.from || body.source || "").trim().toLowerCase();
+
+    let verifyReturnTo = "/login.html?returnTo=/studio.v2.html";
+
+    if (from === "ios") {
+      verifyReturnTo = "/login.ios.html?returnTo=/studio.ios.html";
+    } else if (from === "play" || from === "android") {
+      verifyReturnTo = "/login.play.html?returnTo=/studio.play.html";
+    } else if (from === "mobile") {
+      verifyReturnTo = "/login.mobile.html?returnTo=/studio.mobile.html";
+    }
+
+    const verifyUrl =
+      `${appBase}/api/auth/verify?token=${token}` +
+      `&from=${encodeURIComponent(from)}` +
+      `&returnTo=${encodeURIComponent(verifyReturnTo)}`;
 
     // ✅ password hash
     const passwordHash = await bcrypt.hash(password, 10);
