@@ -81,30 +81,40 @@ export default async function handler(req, res) {
     // verify tokenı temizle
     await delSafe(verifyKey);
 
-   // ✅ Verify success redirect
-const from = req.query?.from ? String(req.query.from) : "";
-const returnToRaw = req.query?.returnTo ? String(req.query.returnTo) : "";
-const email = verifiedEmail;
+    // ✅ Verify success redirect
+    const from = req.query?.from ? String(req.query.from).trim().toLowerCase() : "";
+    const returnToRaw = req.query?.returnTo ? String(req.query.returnTo).trim() : "";
+    const email = verifiedEmail;
 
-if (returnToRaw && returnToRaw.includes("mobile")) {
-  const joiner = returnToRaw.includes("?") ? "&" : "?";
-  const mobileLocation =
-    `${returnToRaw}${joiner}verified=1&email=${encodeURIComponent(email)}`;
+    if (returnToRaw && returnToRaw.startsWith("/")) {
+      const joiner = returnToRaw.includes("?") ? "&" : "?";
+      const safeLocation =
+        `${returnToRaw}${joiner}verified=1&email=${encodeURIComponent(email)}`;
 
-  res.statusCode = 302;
-  res.setHeader("Location", mobileLocation);
-  res.end();
-  return;
-}
+      res.statusCode = 302;
+      res.setHeader("Location", safeLocation);
+      res.end();
+      return;
+    }
 
-const qs =
-  `open=login&verified=1&email=${encodeURIComponent(email)}` +
-  (from ? `&from=${encodeURIComponent(from)}` : "");
+    let fallbackLocation = "/login.html?returnTo=/studio.v2.html";
 
-res.statusCode = 302;
-res.setHeader("Location", `/?${qs}`);
-res.end();
-return;
+    if (from === "ios") {
+      fallbackLocation = "/login.ios.html?returnTo=/studio.ios.html";
+    } else if (from === "play" || from === "android") {
+      fallbackLocation = "/login.play.html?returnTo=/studio.play.html";
+    } else if (from === "mobile") {
+      fallbackLocation = "/login.mobile.html?returnTo=/studio.mobile.html";
+    }
+
+    const joiner = fallbackLocation.includes("?") ? "&" : "?";
+    const finalLocation =
+      `${fallbackLocation}${joiner}verified=1&email=${encodeURIComponent(email)}`;
+
+    res.statusCode = 302;
+    res.setHeader("Location", finalLocation);
+    res.end();
+    return;
   } catch (e) {
     return json(res, 500, {
       ok: false,
