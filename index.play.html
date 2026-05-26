@@ -1295,10 +1295,31 @@ try {
     }
   } catch (err) {}
 
-  fetch("/api/auth/me", {
-    credentials: "include",
-    cache: "no-store"
-  })
+  const capHttp =
+    window.Capacitor &&
+    window.Capacitor.Plugins &&
+    window.Capacitor.Plugins.CapacitorHttp;
+
+  const authMePromise = capHttp && typeof capHttp.get === "function"
+    ? capHttp.get({
+        url: "https://aivo.tr/api/auth/me",
+        headers: {
+          "Accept": "application/json"
+        }
+      }).then(function(r){
+        return {
+          ok: Number(r && r.status) === 200,
+          json: function(){
+            return Promise.resolve(r && r.data ? r.data : {});
+          }
+        };
+      })
+    : fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store"
+      });
+
+  authMePromise
   .then(function(res){
     if (!res.ok) {
       showGuest();
