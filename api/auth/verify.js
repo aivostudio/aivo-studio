@@ -152,7 +152,7 @@ export default async function handler(req, res) {
     const returnToRaw = req.query?.returnTo ? String(req.query.returnTo).trim() : "";
     const email = verifiedEmail;
 
-     if (from === "ios") {
+         if (from === "ios") {
       return renderIosVerifySuccessPage(res, email);
     }
 
