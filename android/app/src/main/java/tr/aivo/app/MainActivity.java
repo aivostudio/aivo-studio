@@ -148,27 +148,34 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
     );
   }
 
-  private String planToProductId(String plan) {
+  private String planToProductId(String value) {
 
-    if ("baslangic".equals(plan)) {
+    if (value == null) {
+      return "";
+    }
+
+    if (value.startsWith("tr.aivo.credits.")) {
+      return value;
+    }
+
+    if ("baslangic".equals(value)) {
       return "tr.aivo.credits.25";
     }
 
-    if ("standart".equals(plan)) {
+    if ("standart".equals(value)) {
       return "tr.aivo.credits.100";
     }
 
-    if ("pro".equals(plan)) {
+    if ("pro".equals(value)) {
       return "tr.aivo.credits.200";
     }
 
-    if ("studyo".equals(plan)) {
+    if ("studyo".equals(value)) {
       return "tr.aivo.credits.500";
     }
 
     return "";
   }
-
   private void startPurchase(String plan) {
 
     runOnUiThread(() -> {
