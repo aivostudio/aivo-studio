@@ -1405,5 +1405,31 @@ setTimeout(applyPrices, 250);
 document.addEventListener("aivo:language-change", applyPrices);
 })();
 </script>
+  <script>
+(function AIVO_IOS_INDEX_AUTH_LINK_GUARD(){
+  document.addEventListener("click", function(event){
+    const link = event.target && event.target.closest
+      ? event.target.closest('a[href^="/studio.ios.html"]')
+      : null;
+
+    if (!link) return;
+
+    const href = link.getAttribute("href") || "/studio.ios.html";
+
+    try {
+      const loggedIn =
+        localStorage.getItem("aivo_logged_in") === "1" &&
+        String(localStorage.getItem("aivo_user_email") || "").includes("@");
+
+      if (loggedIn) return;
+    } catch (err) {}
+
+    event.preventDefault();
+
+    window.location.href =
+      "/login.ios.html?returnTo=" + encodeURIComponent(href);
+  }, true);
+})();
+</script>
 </body>
 </html>
