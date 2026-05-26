@@ -239,10 +239,12 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
       "credentials:'include'," +
       "cache:'no-store'," +
       "headers:{'Content-Type':'application/json','Accept':'application/json'}," +
-      "body:JSON.stringify({" +
-      "productId:" + jsString(productId) + "," +
-      "purchaseToken:" + jsString(purchaseToken) +
-      "})" +
+    "body:JSON.stringify({" +
+"productId:" + jsString(productId) + "," +
+"purchaseToken:" + jsString(purchaseToken) + "," +
+"email:(localStorage.getItem('aivo_user_email')||'')," +
+"userId:(localStorage.getItem('aivo_user_email')||'')" +
+"})" +
       "}).then(function(r){return r.json();}).then(function(data){" +
       "window.dispatchEvent(new CustomEvent('aivo:play-billing-verified',{detail:data}));" +
       "if(window.mobileToast&&data&&data.ok){window.mobileToast.success('Kredi tanımlandı.');}" +
