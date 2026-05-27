@@ -839,19 +839,19 @@ body {
   max-width:360px !important;
 }
 }
-    /* Android Play Studio bottom nav final force */
+/* Android Play Studio bottom nav final force */
 .bottom-nav{
   position:fixed !important;
   left:0 !important;
   right:0 !important;
-  bottom:72px !important;
+  bottom:0 !important;
   z-index:9999 !important;
   width:min(430px,100%) !important;
   height:78px !important;
   margin:0 auto !important;
   display:grid !important;
   grid-template-columns:repeat(5,1fr) !important;
-  padding:8px 10px !important;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom)) !important;
   transform:none !important;
 }
   </style>
@@ -1023,9 +1023,9 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 </a>
 
 <div class="topbar-credit-actions">
-  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
-    Kredi --
-  </span>
+  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance>
+  Kredi --
+</span>
 
   <a class="credit-pill" href="#credits" data-mobile-top-credits data-i18n="top.creditAI">
     Kredi Al
