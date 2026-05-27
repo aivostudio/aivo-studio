@@ -18,12 +18,11 @@
     if (isAndroidNative) return;
 
     var hash = window.location.hash || "";
-    return;
+    window.location.replace("/studio.mobile.html" + hash);
   } catch (_) {
-    return;
+    window.location.replace("/studio.mobile.html");
   }
 })();
-   
 </script>
   <title>AIVO Mobile Studio</title>
 
@@ -79,31 +78,30 @@
   width:min(430px,100%);
   min-height:100vh;
   margin:0 auto;
-  padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
+  padding:12px 14px 84px;
 }
 
 .topbar{
-  position:fixed;
-  left:0;
-  right:0;
+  position:sticky;
   top:0;
-  z-index:120;
-  width:min(430px,100%);
-  margin:0 auto;
-  min-height:86px;
+  z-index:90;
 
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
 
-  padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
-  background:linear-gradient(180deg, rgba(7,9,20,.82), rgba(36,27,75,.48), rgba(36,27,75,0));
+  margin:-12px -14px 14px;
+padding:58px 14px 20px;
+  background:
+    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
+    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
+    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
   border-bottom:0;
   box-shadow:none;
 
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
 }
     .logo{
       display:flex;
@@ -127,14 +125,16 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(139,92,246,.48);
-  color:rgba(255,255,255,.94);
+  background:rgba(255,255,255,.065);
+  border:1px solid rgba(255,255,255,.13);
+  color:rgba(255,255,255,.92);
   font-size:12px;
-  font-weight:900;
+  font-weight:850;
   letter-spacing:-.015em;
   white-space:nowrap;
-  box-shadow:0 10px 26px rgba(0,0,0,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.16);
 }
     [data-mobile-top-credits]{
   animation:aivoStudioCreditAiGlow 7s ease-in-out infinite;
@@ -322,11 +322,11 @@
   color:rgba(255,255,255,.34);
 }
 
-.bottom-nav{
-  position:fixed !important;
+ .bottom-nav{
+  position:fixed;
   left:0;
   right:0;
-  bottom:92px !important;
+  bottom:0;
   z-index:80;
   width:min(430px,100%);
   height:78px;
@@ -334,7 +334,7 @@
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:0;
-  padding:8px 10px 8px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
   background:
     linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
     rgba(8,10,24,.58);
@@ -347,6 +347,7 @@
   backdrop-filter:blur(34px) saturate(190%);
   -webkit-backdrop-filter:blur(34px) saturate(190%);
 }
+
 .bottom-nav::before{
   content:"";
   position:absolute;
@@ -358,35 +359,31 @@
   pointer-events:none;
 }
 
-.bottom-nav a{
-  min-height:54px;
-  border-radius:16px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-  padding-top:1px;
-  background:transparent;
-  color:rgba(255,255,255,.52);
-  font-size:10px;
-  font-weight:900;
-  line-height:1;
-}
+    .bottom-nav a{
+      min-height:54px;
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      background:transparent;
+      color:rgba(255,255,255,.52);
+      font-size:10px;
+      font-weight:900;
+    }
 
-.bottom-nav a span{
+   .bottom-nav a span{
   width:38px;
   height:38px;
   border-radius:999px;
   display:flex;
   align-items:center;
   justify-content:center;
-  flex:0 0 38px;
   font-size:16px;
   line-height:1;
   background:rgba(255,255,255,.075);
   border:1px solid rgba(255,255,255,.12);
-  transform:translateY(-1px);
 }
 
     .bottom-nav a b{
@@ -705,30 +702,27 @@ body {
 }
 @media (min-width: 768px) {
   .mobile-shell{
-    width:min(430px,100%);
+    width:min(760px,100%);
     min-height:100vh;
-    margin:0 auto;
-    padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
+    padding:22px 28px 104px;
   }
 
   .topbar{
-    width:min(430px,100%);
-    margin:0 auto;
-    padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
+    margin:-22px -28px 22px;
+    padding:54px 28px 22px;
   }
 
   .bottom-nav{
-    width:min(430px,100%);
-    height:78px;
-    border-radius:0;
+    width:min(760px,100%);
+    height:86px;
+    border-radius:28px 28px 0 0;
   }
-
-  .aivo-assistant-fab,
-  .ai-help,
-  .mobile-ai-help{
-    bottom:98px !important;
-    right:22px !important;
-  }
+ .aivo-assistant-fab,
+.ai-help,
+.mobile-ai-help{
+  bottom:118px !important;
+  right:calc(50% - 280px) !important;
+}
   .mobile-tools-grid{
   grid-template-columns:1fr;
   min-height:calc(100vh - 390px);
@@ -839,21 +833,6 @@ body {
   max-width:360px !important;
 }
 }
-/* Android Play Studio bottom nav final force */
-.bottom-nav{
-  position:fixed !important;
-  left:0 !important;
-  right:0 !important;
-  bottom:0 !important;
-  z-index:9999 !important;
-  width:min(430px,100%) !important;
-  height:78px !important;
-  margin:0 auto !important;
-  display:grid !important;
-  grid-template-columns:repeat(5,1fr) !important;
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom)) !important;
-  transform:none !important;
-}
   </style>
 
 <style id="aivo-auth-gate-style">
@@ -875,17 +854,9 @@ body {
 
 function goLogin(){
   try {
-    const logged = localStorage.getItem("aivo_logged_in") === "1";
-    const email = String(localStorage.getItem("aivo_user_email") || "").trim();
-
-    if (logged && email.includes("@")) {
-      return;
-    }
-
     localStorage.removeItem("aivo_logged_in");
     localStorage.removeItem("aivo_user_email");
     localStorage.removeItem("aivo_auth_unified_v1");
-    localStorage.removeItem("aivo_mobile_force_login");
   } catch (err) {}
 
   location.replace(getAivoMobileLoginUrl());
@@ -1031,9 +1002,9 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 </a>
 
 <div class="topbar-credit-actions">
-  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance>
-  Kredi --
-</span>
+  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
+    Kredi --
+  </span>
 
   <a class="credit-pill" href="#credits" data-mobile-top-credits data-i18n="top.creditAI">
     Kredi Al
@@ -1085,13 +1056,6 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 
 <div id="mobileLipsyncMount" hidden>
   <div class="empty-card">Dudak Senkron Video modülü yükleniyor...</div>
-</div>
-    <div id="mobileProductionsMount" hidden>
-  <h2 class="section-title">Üretimlerim</h2>
-
-  <div id="mobileProductionsList" class="mobile-tools-grid">
-    <div class="empty-card">Üretimler yükleniyor...</div>
-  </div>
 </div>
   <div id="mobileCreditsMount" hidden>
   <div class="empty-card" data-i18n="credits.loading">Krediler bölümü yükleniyor...</div>
@@ -1298,7 +1262,6 @@ let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
 let creditsMount = document.getElementById("mobileCreditsMount");
-let productionsMount = document.getElementById("mobileProductionsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
     try {
@@ -1700,7 +1663,7 @@ async function hydrateTopCreditBalance(){
       window.Capacitor.Plugins &&
       window.Capacitor.Plugins.CapacitorHttp;
 
-   let res;
+    let res;if (productionsNav) {
 
     if (capHttp && typeof capHttp.get === "function") {
       res = await capHttp.get({
@@ -1793,7 +1756,6 @@ function showHome(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
   if (policyMount) policyMount.hidden = true;
 }
@@ -1808,7 +1770,6 @@ function showMusic(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
  const musicFormSection = document.getElementById("mobileHomeSection");
@@ -1833,7 +1794,6 @@ function showCover(){
 if (lipsyncMount) lipsyncMount.hidden = true;
 if (toolsMount) toolsMount.hidden = true;
 if (creditsMount) creditsMount.hidden = true;
-if (productionsMount) productionsMount.hidden = true;
 if (accountMount) accountMount.hidden = true;
 
   const heroSub = document.getElementById("mobileHeroSub");
@@ -1852,7 +1812,6 @@ function showAtmo(){
 if (lipsyncMount) lipsyncMount.hidden = true;
 if (toolsMount) toolsMount.hidden = true;
 if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
 if (accountMount) accountMount.hidden = true;
   const atmoSection = document.getElementById("mobileAtmoSection");
   if (atmoSection) {
@@ -1875,7 +1834,6 @@ function showCartoon(){
 if (lipsyncMount) lipsyncMount.hidden = true;
 if (toolsMount) toolsMount.hidden = true;
 if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
 if (accountMount) accountMount.hidden = true;
   const cartoonSection = document.getElementById("mobileCartoonSection");
   if (cartoonSection) {
@@ -1899,7 +1857,6 @@ function showPhotoFx(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   const photofxSection = document.getElementById("mobilePhotoFxSection");
@@ -1923,7 +1880,6 @@ function showVideo(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   const videoSection = document.getElementById("mobileVideoSection");
@@ -1947,7 +1903,6 @@ function showLipsync(){
   if (lipsyncMount) lipsyncMount.hidden = false;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   const lipsyncSection = document.getElementById("mobileLipsyncSection");
@@ -2018,64 +1973,25 @@ if (homeNav) {
     if (atmoResultsTitle) atmoResultsTitle.hidden = !isLibraryOnly;
      if (atmoResults) atmoResults.hidden = !isLibraryOnly;
     }
-    window.mobileRenderUnifiedProductions = async function(){
-  const list = document.getElementById("mobileProductionsList");
-
-  if (!list) return;
-
-  try {
-    const cards = [];
-
-    document.querySelectorAll(
-      "#mobileMusicResults .mobile-music-job-card, " +
-      "#mobileCoverResults .mobile-cover-card-result, " +
-      "#mobileAtmoResults .mobile-atmo-result-card, " +
-      "#mobileCartoonResults .mobile-cartoon-result-card, " +
-      "#mobilePhotoFxResults .mobile-photofx-result-card, " +
-      "#mobileVideoResults .mobile-video-result-card, " +
-      "#mobileLipsyncResults .mobile-lipsync-result-card"
-    ).forEach(function(card){
-      cards.push(card.outerHTML);
-    });
-
-    if (!cards.length) {
-      list.innerHTML = '<div class="empty-card">Henüz üretim bulunamadı.</div>';
-      return;
-    }
-
-    list.innerHTML = cards.join("");
-  } catch (err) {
-    list.innerHTML = '<div class="empty-card">Üretimler yüklenemedi.</div>';
-  }
-};
 
 if (productionsNav) {
   productionsNav.addEventListener("click", function(e){
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    homeMount.hidden = true;
-    musicMount.hidden = true;
-    coverMount.hidden = true;
-    atmoMount.hidden = true;
+    activeMobileModule = "music";
 
-    if (cartoonMount) cartoonMount.hidden = true;
-    if (photofxMount) photofxMount.hidden = true;
-    if (videoMount) videoMount.hidden = true;
-    if (lipsyncMount) lipsyncMount.hidden = true;
-    if (toolsMount) toolsMount.hidden = true;
-    if (creditsMount) creditsMount.hidden = true;
-    if (accountMount) accountMount.hidden = true;
+    showMusic();
+
+    const musicHomeSection = document.getElementById("mobileHomeSection");
+    const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+    const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+    if (musicHomeSection) musicHomeSection.hidden = true;
+    if (musicCard) musicCard.hidden = true;
+    if (musicProductionsSection) musicProductionsSection.hidden = false;
+
     if (policyMount) policyMount.hidden = true;
-    if (productionsMount) productionsMount.hidden = false;
-
-    const list = document.getElementById("mobileProductionsList");
-    if (list) {
-      list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
-    }
-    if (typeof window.mobileRenderUnifiedProductions === "function") {
-  window.mobileRenderUnifiedProductions();
-}
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
