@@ -18,9 +18,9 @@
     if (isAndroidNative) return;
 
     var hash = window.location.hash || "";
-    window.location.replace("/studio.mobile.html" + hash);
+    return;
   } catch (_) {
-    window.location.replace("/studio.mobile.html");
+    return;
   }
 })();
 </script>
