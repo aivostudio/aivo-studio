@@ -2035,9 +2035,16 @@ if (productionsNav) {
       musicLibrary.appendChild(musicLibraryList);
     }
 
-    if (typeof window.mobileMusicLoadLibrary === "function") {
-      window.mobileMusicLoadLibrary();
-    }
+   if (typeof window.mobileMusicLoadLibrary === "function") {
+  window.mobileMusicLoadLibrary();
+} else if (typeof window.mobileMusicRenderLibrary === "function") {
+  window.mobileMusicRenderLibrary();
+} else {
+  const musicLibraryList = document.getElementById("mobileMusicLibraryList");
+  if (musicLibraryList) {
+    musicLibraryList.innerHTML = '<div class="empty-card">Henüz üretim bulunamadı.</div>';
+  }
+}
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
