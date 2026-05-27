@@ -2013,7 +2013,25 @@ if (productionsNav) {
 
     const list = document.getElementById("mobileProductionsList");
     if (list) {
-      list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
+      const cards = [];
+
+      document.querySelectorAll(
+        "#mobileMusicResults > *, " +
+        "#mobileCoverResults > *, " +
+        "#mobileAtmoResults > *, " +
+        "#mobileCartoonResults > *, " +
+        "#mobilePhotoFxResults > *, " +
+        "#mobileVideoResults > *, " +
+        "#mobileLipsyncResults > *"
+      ).forEach(function(card){
+        if (card && card.outerHTML && !card.classList.contains("empty-card")) {
+          cards.push(card.outerHTML);
+        }
+      });
+
+      list.innerHTML = cards.length
+        ? cards.join("")
+        : '<div class="empty-card">Henüz üretim bulunamadı.</div>';
     }
 
     setActiveNav(productionsNav);
