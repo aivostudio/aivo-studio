@@ -707,65 +707,23 @@ switchBtn.textContent = mode === "login"
       password: cleanPassword
     };
 
-       const capHttp =
-  window.Capacitor &&
-  window.Capacitor.Plugins &&
-  window.Capacitor.Plugins.CapacitorHttp;
-
 let res;
 let data;
 
-if (capHttp && typeof capHttp.post === "function") {
-  res = await capHttp.post({
-    url: "https://aivo.tr" + endpoint,
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json"
-    },
-    data: payload
-  });
-
-  data = res && res.data ? res.data : {};
-
-  try {
-    const cookiePlugin = window.Capacitor?.Plugins?.CapacitorCookies;
-    const headers = res && res.headers ? res.headers : {};
-    const setCookie =
-      headers["Set-Cookie"] ||
-      headers["set-cookie"] ||
-      headers["set-cookie".toLowerCase()] ||
-      "";
-
-const cookieText = Array.isArray(setCookie) ? setCookie.join(",") : String(setCookie || "");
-const sidFromBody = data && data.sid ? String(data.sid) : "";
-
-["aivo_sess", "aivo_session"].forEach(function(cookieName){
-  const match = cookieText.match(new RegExp(cookieName + "=([^;,\n\r]+)"));
-  const cookieValue = match && match[1] ? match[1] : sidFromBody;
-
-  if (cookiePlugin && cookieValue) {
-    cookiePlugin.setCookie({
-      url: "https://aivo.tr",
-      key: cookieName,
-      value: cookieValue
-    });
-  }
+res = await fetch("https://aivo.tr" + endpoint, {
+  method: "POST",
+  credentials: "include",
+  cache: "no-store",
+  headers: {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  },
+  body: JSON.stringify(payload)
 });
-  } catch (err) {}
-} else {
-  res = await fetch(endpoint, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
 
-  data = await res.json().catch(function(){
-    return {};
-  });
-}
+data = await res.json().catch(function(){
+  return {};
+});
       if (!((res && res.ok) || Number(res && res.status) === 200) || !data || data.ok === false) {
           const err = data && data.error ? data.error : "auth_failed";
 
