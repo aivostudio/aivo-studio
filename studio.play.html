@@ -78,30 +78,31 @@
   width:min(430px,100%);
   min-height:100vh;
   margin:0 auto;
-  padding:12px 14px 84px;
+  padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
 }
 
 .topbar{
-  position:sticky;
+  position:fixed;
+  left:0;
+  right:0;
   top:0;
-  z-index:90;
+  z-index:120;
+  width:min(430px,100%);
+  margin:0 auto;
+  min-height:86px;
 
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
 
-  margin:-12px -14px 14px;
-padding:58px 14px 20px;
-  background:
-    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
-    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
-    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
+  padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
+  background:linear-gradient(180deg, rgba(7,9,20,.82), rgba(36,27,75,.48), rgba(36,27,75,0));
   border-bottom:0;
   box-shadow:none;
 
-  backdrop-filter:blur(26px) saturate(150%);
-  -webkit-backdrop-filter:blur(26px) saturate(150%);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
 }
     .logo{
       display:flex;
@@ -125,16 +126,14 @@ padding:58px 14px 20px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,.065);
-  border:1px solid rgba(255,255,255,.13);
-  color:rgba(255,255,255,.92);
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(139,92,246,.48);
+  color:rgba(255,255,255,.94);
   font-size:12px;
-  font-weight:850;
+  font-weight:900;
   letter-spacing:-.015em;
   white-space:nowrap;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    0 8px 18px rgba(0,0,0,.16);
+  box-shadow:0 10px 26px rgba(0,0,0,.22);
 }
     [data-mobile-top-credits]{
   animation:aivoStudioCreditAiGlow 7s ease-in-out infinite;
@@ -322,11 +321,11 @@ padding:58px 14px 20px;
   color:rgba(255,255,255,.34);
 }
 
- .bottom-nav{
-  position:fixed;
+.bottom-nav{
+  position:fixed !important;
   left:0;
   right:0;
-  bottom:0;
+  bottom:92px !important;
   z-index:80;
   width:min(430px,100%);
   height:78px;
@@ -334,7 +333,7 @@ padding:58px 14px 20px;
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:0;
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  padding:8px 10px 8px;
   background:
     linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
     rgba(8,10,24,.58);
@@ -347,7 +346,6 @@ padding:58px 14px 20px;
   backdrop-filter:blur(34px) saturate(190%);
   -webkit-backdrop-filter:blur(34px) saturate(190%);
 }
-
 .bottom-nav::before{
   content:"";
   position:absolute;
@@ -359,31 +357,35 @@ padding:58px 14px 20px;
   pointer-events:none;
 }
 
-    .bottom-nav a{
-      min-height:54px;
-      border-radius:16px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      background:transparent;
-      color:rgba(255,255,255,.52);
-      font-size:10px;
-      font-weight:900;
-    }
+.bottom-nav a{
+  min-height:54px;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  padding-top:1px;
+  background:transparent;
+  color:rgba(255,255,255,.52);
+  font-size:10px;
+  font-weight:900;
+  line-height:1;
+}
 
-   .bottom-nav a span{
+.bottom-nav a span{
   width:38px;
   height:38px;
   border-radius:999px;
   display:flex;
   align-items:center;
   justify-content:center;
+  flex:0 0 38px;
   font-size:16px;
   line-height:1;
   background:rgba(255,255,255,.075);
   border:1px solid rgba(255,255,255,.12);
+  transform:translateY(-1px);
 }
 
     .bottom-nav a b{
@@ -702,27 +704,30 @@ body {
 }
 @media (min-width: 768px) {
   .mobile-shell{
-    width:min(760px,100%);
+    width:min(430px,100%);
     min-height:100vh;
-    padding:22px 28px 104px;
+    margin:0 auto;
+    padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
   }
 
   .topbar{
-    margin:-22px -28px 22px;
-    padding:54px 28px 22px;
+    width:min(430px,100%);
+    margin:0 auto;
+    padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
   }
 
   .bottom-nav{
-    width:min(760px,100%);
-    height:86px;
-    border-radius:28px 28px 0 0;
+    width:min(430px,100%);
+    height:78px;
+    border-radius:0;
   }
- .aivo-assistant-fab,
-.ai-help,
-.mobile-ai-help{
-  bottom:118px !important;
-  right:calc(50% - 280px) !important;
-}
+
+  .aivo-assistant-fab,
+  .ai-help,
+  .mobile-ai-help{
+    bottom:98px !important;
+    right:22px !important;
+  }
   .mobile-tools-grid{
   grid-template-columns:1fr;
   min-height:calc(100vh - 390px);
@@ -833,6 +838,21 @@ body {
   max-width:360px !important;
 }
 }
+    /* Android Play Studio bottom nav final force */
+.bottom-nav{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:72px !important;
+  z-index:9999 !important;
+  width:min(430px,100%) !important;
+  height:78px !important;
+  margin:0 auto !important;
+  display:grid !important;
+  grid-template-columns:repeat(5,1fr) !important;
+  padding:8px 10px !important;
+  transform:none !important;
+}
   </style>
 
 <style id="aivo-auth-gate-style">
@@ -866,7 +886,7 @@ function goLogin(){
       try { ctrl.abort(); } catch (e) {}
     }, 2500);
 
-      fetch("https://aivo.tr/api/auth/me", {
+    fetch("/api/auth/me", {
       credentials: "include",
       cache: "no-store",
       signal: ctrl.signal
@@ -1057,14 +1077,6 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <div id="mobileLipsyncMount" hidden>
   <div class="empty-card">Dudak Senkron Video modülü yükleniyor...</div>
 </div>
-
-<div id="mobileProductionsMount" hidden>
-  <h2 class="section-title">Üretimlerim</h2>
-  <div id="mobileProductionsList" class="mobile-tools-grid">
-    <div class="empty-card">Üretimler yükleniyor...</div>
-  </div>
-</div>
-
   <div id="mobileCreditsMount" hidden>
   <div class="empty-card" data-i18n="credits.loading">Krediler bölümü yükleniyor...</div>
 </div>
@@ -1270,7 +1282,6 @@ let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
 let creditsMount = document.getElementById("mobileCreditsMount");
-let productionsMount = document.getElementById("mobileProductionsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
     try {
@@ -1672,7 +1683,9 @@ async function hydrateTopCreditBalance(){
       window.Capacitor.Plugins &&
       window.Capacitor.Plugins.CapacitorHttp;
 
-    let res;
+   let res;
+
+if (productionsNav) {
 
     if (capHttp && typeof capHttp.get === "function") {
       res = await capHttp.get({
@@ -1765,7 +1778,6 @@ function showHome(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
   if (policyMount) policyMount.hidden = true;
 }
@@ -1780,7 +1792,6 @@ function showMusic(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
  const musicFormSection = document.getElementById("mobileHomeSection");
@@ -1805,7 +1816,6 @@ function showCover(){
 if (lipsyncMount) lipsyncMount.hidden = true;
 if (toolsMount) toolsMount.hidden = true;
 if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
 if (accountMount) accountMount.hidden = true;
 
   const heroSub = document.getElementById("mobileHeroSub");
@@ -1824,7 +1834,6 @@ function showAtmo(){
 if (lipsyncMount) lipsyncMount.hidden = true;
 if (toolsMount) toolsMount.hidden = true;
 if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
 if (accountMount) accountMount.hidden = true;
   const atmoSection = document.getElementById("mobileAtmoSection");
   if (atmoSection) {
@@ -1847,7 +1856,6 @@ function showCartoon(){
 if (lipsyncMount) lipsyncMount.hidden = true;
 if (toolsMount) toolsMount.hidden = true;
 if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
 if (accountMount) accountMount.hidden = true;
   const cartoonSection = document.getElementById("mobileCartoonSection");
   if (cartoonSection) {
@@ -1871,7 +1879,6 @@ function showPhotoFx(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   const photofxSection = document.getElementById("mobilePhotoFxSection");
@@ -1895,7 +1902,6 @@ function showVideo(){
   if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   const videoSection = document.getElementById("mobileVideoSection");
@@ -1919,7 +1925,6 @@ function showLipsync(){
   if (lipsyncMount) lipsyncMount.hidden = false;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
   const lipsyncSection = document.getElementById("mobileLipsyncSection");
@@ -1992,334 +1997,30 @@ if (homeNav) {
     }
 
 if (productionsNav) {
-  async function loadPlayProductions(){
-    const list = document.getElementById("mobileProductionsList");
-    if (!list) return;
-
-    list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
-
-    const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
-
-    function escapeHtml(value){
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function getItemsFromPayload(payload){
-      if (!payload) return [];
-      if (Array.isArray(payload)) return payload;
-      if (Array.isArray(payload.jobs)) return payload.jobs;
-      if (Array.isArray(payload.items)) return payload.items;
-      if (Array.isArray(payload.results)) return payload.results;
-      if (Array.isArray(payload.productions)) return payload.productions;
-      if (payload.data) return getItemsFromPayload(payload.data);
-      return [];
-    }
-
-    async function fetchJson(url){
-      const capHttp =
-        window.Capacitor &&
-        window.Capacitor.Plugins &&
-        window.Capacitor.Plugins.CapacitorHttp;
-
-      if (capHttp && typeof capHttp.get === "function") {
-        const res = await capHttp.get({
-          url: url.startsWith("http") ? url : "https://aivo.tr" + url,
-          headers: { "Accept": "application/json" }
-        });
-
-        if (!res || Number(res.status) < 200 || Number(res.status) >= 300) {
-          throw new Error("play_productions_http_failed");
-        }
-
-        return res.data;
-      }
-
-      const res = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-        headers: { "Accept": "application/json" }
-      });
-
-      if (!res.ok) {
-        throw new Error("play_productions_fetch_failed");
-      }
-
-      return await res.json();
-    }
-
-    async function loadRemoteItems(){
-      const urls = [
-        "/api/jobs/list?scope=all",
-        email ? "/api/jobs/list?email=" + encodeURIComponent(email) : "",
-        "/api/jobs/list"
-      ].filter(Boolean);
-
-      for (const url of urls) {
-        try {
-          const payload = await fetchJson(url);
-          const items = getItemsFromPayload(payload);
-
-          if (items.length) {
-            return items;
-          }
-        } catch (err) {}
-      }
-
-      return [];
-    }
-
-    function loadLocalItems(){
-      const items = [];
-
-      try {
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (!key) continue;
-
-          const lowerKey = key.toLowerCase();
-
-          if (
-            !lowerKey.includes("aivo") &&
-            !lowerKey.includes("music") &&
-            !lowerKey.includes("cover") &&
-            !lowerKey.includes("atmo") &&
-            !lowerKey.includes("cartoon") &&
-            !lowerKey.includes("photofx") &&
-            !lowerKey.includes("video") &&
-            !lowerKey.includes("lipsync")
-          ) {
-            continue;
-          }
-
-          const raw = localStorage.getItem(key);
-          if (!raw || raw.length < 8) continue;
-
-          try {
-            const parsed = JSON.parse(raw);
-            const found = getItemsFromPayload(parsed);
-
-            if (found.length) {
-              found.forEach(function(item){
-                items.push(item);
-              });
-            } else if (parsed && typeof parsed === "object") {
-              items.push(parsed);
-            }
-          } catch (err) {}
-        }
-      } catch (err) {}
-
-      return items;
-    }
-
-    function detectModule(item){
-      const raw = [
-        item.module,
-        item.type,
-        item.kind,
-        item.source,
-        item.provider,
-        item.category,
-        item.jobType,
-        item.tool,
-        item.mode
-      ].join(" ").toLowerCase();
-
-      if (raw.includes("cover")) return "Kapak";
-      if (raw.includes("atmo") || raw.includes("atmos")) return "Atmosfer";
-      if (raw.includes("cartoon") || raw.includes("cizgi") || raw.includes("çizgi")) return "Çizgifilm";
-      if (raw.includes("photo") || raw.includes("photofx") || raw.includes("pfx")) return "PhotoFX";
-      if (raw.includes("lipsync") || raw.includes("lip")) return "Lipsync";
-      if (raw.includes("video")) return "Video";
-      if (raw.includes("music") || raw.includes("audio") || raw.includes("song")) return "Müzik";
-
-      return "Üretim";
-    }
-
-    function getMediaUrl(item){
-      return (
-        item.url ||
-        item.outputUrl ||
-        item.output_url ||
-        item.resultUrl ||
-        item.result_url ||
-        item.audioUrl ||
-        item.audio_url ||
-        item.videoUrl ||
-        item.video_url ||
-        item.imageUrl ||
-        item.image_url ||
-        item.coverUrl ||
-        item.cover_url ||
-        item.finalUrl ||
-        item.final_url ||
-        item.publicUrl ||
-        item.public_url ||
-        ""
-      );
-    }
-
-    function getTitle(item){
-      return (
-        item.title ||
-        item.name ||
-        item.prompt ||
-        item.songTitle ||
-        item.song_title ||
-        item.filename ||
-        detectModule(item)
-      );
-    }
-
-    function getTime(item){
-      return (
-        item.createdAt ||
-        item.created_at ||
-        item.updatedAt ||
-        item.updated_at ||
-        item.ts ||
-        item.time ||
-        item.date ||
-        ""
-      );
-    }
-
-    function isUsefulItem(item){
-      if (!item || typeof item !== "object") return false;
-
-      const status = String(item.status || item.state || "").toLowerCase();
-
-      if (
-        status.includes("deleted") ||
-        status.includes("failed") ||
-        status.includes("error")
-      ) {
-        return false;
-      }
-
-      return Boolean(
-        getMediaUrl(item) ||
-        item.id ||
-        item.jobId ||
-        item.job_id ||
-        item.uuid ||
-        item.prompt ||
-        item.title ||
-        item.name
-      );
-    }
-
-    function normalizeItems(items){
-      const seen = new Set();
-
-      return items
-        .filter(isUsefulItem)
-        .map(function(item){
-          const mediaUrl = getMediaUrl(item);
-          const id = String(item.id || item.jobId || item.job_id || item.uuid || mediaUrl || JSON.stringify(item)).trim();
-
-          return {
-            id: id,
-            module: detectModule(item),
-            title: getTitle(item),
-            status: item.status || item.state || "ready",
-            mediaUrl: mediaUrl,
-            createdAt: getTime(item),
-            raw: item
-          };
-        })
-        .filter(function(item){
-          if (!item.id || seen.has(item.id)) return false;
-          seen.add(item.id);
-          return true;
-        })
-        .sort(function(a, b){
-          const at = new Date(a.createdAt || 0).getTime() || 0;
-          const bt = new Date(b.createdAt || 0).getTime() || 0;
-          return bt - at;
-        });
-    }
-
-    function renderItem(item){
-      const title = escapeHtml(item.title || item.module);
-      const module = escapeHtml(item.module);
-      const status = escapeHtml(item.status || "");
-      const mediaUrl = String(item.mediaUrl || "").trim();
-
-      let mediaHtml = "";
-
-      if (mediaUrl) {
-        const safeUrl = escapeHtml(mediaUrl);
-        const lowerUrl = mediaUrl.toLowerCase();
-
-        if (lowerUrl.includes(".mp4") || lowerUrl.includes(".webm") || lowerUrl.includes("video")) {
-          mediaHtml = '<video controls playsinline preload="metadata" src="' + safeUrl + '" style="width:100%;border-radius:18px;margin-top:10px;background:#000;"></video>';
-        } else if (lowerUrl.includes(".mp3") || lowerUrl.includes(".wav") || lowerUrl.includes(".m4a") || lowerUrl.includes("audio")) {
-          mediaHtml = '<audio controls preload="metadata" src="' + safeUrl + '" style="width:100%;margin-top:10px;"></audio>';
-        } else {
-          mediaHtml = '<img src="' + safeUrl + '" alt="" style="width:100%;border-radius:18px;margin-top:10px;display:block;">';
-        }
-      }
-
-      return [
-        '<article class="mobile-tool-card" style="display:block;">',
-        '<div style="display:flex;align-items:center;gap:12px;">',
-        '<span class="tool-icon" aria-hidden="true"></span>',
-        '<div style="min-width:0;">',
-        '<b style="display:block;padding-right:0;">' + title + '</b>',
-        '<small style="display:block;margin-top:5px;color:rgba(255,255,255,.58);font-weight:800;">' + module + (status ? " • " + status : "") + '</small>',
-        '</div>',
-        '</div>',
-        mediaHtml,
-        '</article>'
-      ].join("");
-    }
-
-    try {
-      const remoteItems = await loadRemoteItems();
-      const localItems = loadLocalItems();
-      const items = normalizeItems(remoteItems.concat(localItems));
-
-      list.innerHTML = items.length
-        ? items.map(renderItem).join("")
-        : '<div class="empty-card">Henüz üretim bulunamadı.</div>';
-    } catch (err) {
-      list.innerHTML = '<div class="empty-card">Üretimler yüklenemedi. Lütfen tekrar deneyin.</div>';
-    }
-  }
-
   productionsNav.addEventListener("click", function(e){
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    homeMount.hidden = true;
-    musicMount.hidden = true;
-    coverMount.hidden = true;
-    atmoMount.hidden = true;
+    activeMobileModule = "music";
 
-    if (cartoonMount) cartoonMount.hidden = true;
-    if (photofxMount) photofxMount.hidden = true;
-    if (videoMount) videoMount.hidden = true;
-    if (lipsyncMount) lipsyncMount.hidden = true;
-    if (toolsMount) toolsMount.hidden = true;
-    if (creditsMount) creditsMount.hidden = true;
-    if (accountMount) accountMount.hidden = true;
+    showMusic();
+
+    const musicHomeSection = document.getElementById("mobileHomeSection");
+    const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+    const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+    if (musicHomeSection) musicHomeSection.hidden = true;
+    if (musicCard) musicCard.hidden = true;
+    if (musicProductionsSection) musicProductionsSection.hidden = false;
+
     if (policyMount) policyMount.hidden = true;
-    if (productionsMount) productionsMount.hidden = false;
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
     window.scrollTo({ top: 0, behavior: "smooth" });
-
-    loadPlayProductions();
   }, true);
 }
+
 if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
   e.preventDefault();
