@@ -875,9 +875,17 @@ body {
 
 function goLogin(){
   try {
+    const logged = localStorage.getItem("aivo_logged_in") === "1";
+    const email = String(localStorage.getItem("aivo_user_email") || "").trim();
+
+    if (logged && email.includes("@")) {
+      return;
+    }
+
     localStorage.removeItem("aivo_logged_in");
     localStorage.removeItem("aivo_user_email");
     localStorage.removeItem("aivo_auth_unified_v1");
+    localStorage.removeItem("aivo_mobile_force_login");
   } catch (err) {}
 
   location.replace(getAivoMobileLoginUrl());
