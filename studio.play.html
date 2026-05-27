@@ -1669,7 +1669,9 @@ async function hydrateTopCreditBalance(){
       window.Capacitor.Plugins &&
       window.Capacitor.Plugins.CapacitorHttp;
 
-    let res;if (productionsNav) {
+   let res;
+
+if (productionsNav) {
 
     if (capHttp && typeof capHttp.get === "function") {
       res = await capHttp.get({
