@@ -2026,6 +2026,19 @@ if (productionsNav) {
     if (musicResults) musicResults.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
 
+    const musicLibrary = document.getElementById("mobileMusicLibrary");
+
+    if (musicLibrary && !document.getElementById("mobileMusicLibraryList")) {
+      const musicLibraryList = document.createElement("div");
+      musicLibraryList.id = "mobileMusicLibraryList";
+      musicLibraryList.className = "mobile-music-library-list";
+      musicLibrary.appendChild(musicLibraryList);
+    }
+
+    if (typeof window.mobileMusicLoadLibrary === "function") {
+      window.mobileMusicLoadLibrary();
+    }
+
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
     window.scrollTo({ top: 0, behavior: "smooth" });
