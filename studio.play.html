@@ -866,7 +866,7 @@ function goLogin(){
       try { ctrl.abort(); } catch (e) {}
     }, 2500);
 
-    fetch("/api/auth/me", {
+      fetch("https://aivo.tr/api/auth/me", {
       credentials: "include",
       cache: "no-store",
       signal: ctrl.signal
