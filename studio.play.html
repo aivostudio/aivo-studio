@@ -1996,19 +1996,25 @@ if (productionsNav) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    activeMobileModule = "music";
+    homeMount.hidden = true;
+    musicMount.hidden = true;
+    coverMount.hidden = true;
+    atmoMount.hidden = true;
 
-    showMusic();
-
-    const musicHomeSection = document.getElementById("mobileHomeSection");
-    const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
-    const musicProductionsSection = document.getElementById("mobileProductionsSection");
-
-    if (musicHomeSection) musicHomeSection.hidden = true;
-    if (musicCard) musicCard.hidden = true;
-    if (musicProductionsSection) musicProductionsSection.hidden = false;
-
+    if (cartoonMount) cartoonMount.hidden = true;
+    if (photofxMount) photofxMount.hidden = true;
+    if (videoMount) videoMount.hidden = true;
+    if (lipsyncMount) lipsyncMount.hidden = true;
+    if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
     if (policyMount) policyMount.hidden = true;
+    if (productionsMount) productionsMount.hidden = false;
+
+    const list = document.getElementById("mobileProductionsList");
+    if (list) {
+      list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
+    }
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
