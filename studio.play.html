@@ -2016,10 +2016,8 @@ if (productionsNav) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    activeMobileModule = "music";
-
     homeMount.hidden = true;
-    musicMount.hidden = false;
+    musicMount.hidden = true;
     coverMount.hidden = true;
     atmoMount.hidden = true;
 
@@ -2031,36 +2029,12 @@ if (productionsNav) {
     if (creditsMount) creditsMount.hidden = true;
     if (accountMount) accountMount.hidden = true;
     if (policyMount) policyMount.hidden = true;
+    if (productionsMount) productionsMount.hidden = false;
 
-    const musicHomeSection = document.getElementById("mobileHomeSection");
-    const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
-    const musicResults = document.getElementById("mobileMusicResults");
-    const musicProductionsSection = document.getElementById("mobileProductionsSection");
-
-    if (musicHomeSection) musicHomeSection.hidden = true;
-    if (musicCard) musicCard.hidden = true;
-    if (musicResults) musicResults.hidden = true;
-    if (musicProductionsSection) musicProductionsSection.hidden = false;
-
-    const musicLibrary = document.getElementById("mobileMusicLibrary");
-
-    if (musicLibrary && !document.getElementById("mobileMusicLibraryList")) {
-      const musicLibraryList = document.createElement("div");
-      musicLibraryList.id = "mobileMusicLibraryList";
-      musicLibraryList.className = "mobile-music-library-list";
-      musicLibrary.appendChild(musicLibraryList);
+    const list = document.getElementById("mobileProductionsList");
+    if (list) {
+      list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
     }
-
-   if (typeof window.mobileMusicLoadLibrary === "function") {
-  window.mobileMusicLoadLibrary();
-} else if (typeof window.mobileMusicRenderLibrary === "function") {
-  window.mobileMusicRenderLibrary();
-} else {
-  const musicLibraryList = document.getElementById("mobileMusicLibraryList");
-  if (musicLibraryList) {
-    musicLibraryList.innerHTML = '<div class="empty-card">Henüz üretim bulunamadı.</div>';
-  }
-}
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
