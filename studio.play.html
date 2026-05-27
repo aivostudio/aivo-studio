@@ -1685,8 +1685,6 @@ async function hydrateTopCreditBalance(){
 
    let res;
 
-if (productionsNav) {
-
     if (capHttp && typeof capHttp.get === "function") {
       res = await capHttp.get({
         url: "https://aivo.tr/api/play-billing/credits-get",
