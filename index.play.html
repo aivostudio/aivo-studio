@@ -1348,6 +1348,39 @@ try {
     showGuest();
   });
 })();
+})();
+</script>
+<script>
+(function AIVO_PLAY_INDEX_FORCE_AUTH_UI(){
+  function applyUserUi(){
+    var loginPill = document.getElementById("mobileLoginPill");
+    var creditPill = document.getElementById("mobileCreditPill");
+    var buyCreditPill = document.getElementById("mobileBuyCreditPill");
+    var guestBottomNav = document.getElementById("mobileGuestBottomNav");
+    var appBottomNav = document.getElementById("mobileAppBottomNav");
+    var pricingCta = document.getElementById("mobilePricingCta");
+
+    if (loginPill) loginPill.hidden = true;
+    if (creditPill) creditPill.hidden = false;
+    if (buyCreditPill) buyCreditPill.hidden = false;
+    if (guestBottomNav) guestBottomNav.hidden = true;
+    if (appBottomNav) appBottomNav.hidden = false;
+    if (pricingCta) pricingCta.setAttribute("href", "/studio.play.html#credits");
+  }
+
+  fetch("https://aivo.tr/api/auth/me", {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Accept": "application/json"
+    }
+  })
+  .then(function(res){
+    if (res && res.ok) applyUserUi();
+  })
+  .catch(function(){});
+})();
 </script>
   <script>
 (function AIVO_INDEX_CREDIT_PILL_TAP_HELPER(){
