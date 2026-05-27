@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AIVO</string>
+    <string name="title_activity_main">AIVO</string>
+    <string name="package_name">tr.aivo.app</string>
+    <string name="custom_url_scheme">tr.aivo.app</string>
+</resources>
