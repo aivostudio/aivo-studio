@@ -2002,17 +2002,29 @@ if (productionsNav) {
 
     activeMobileModule = "music";
 
-    showMusic();
+    homeMount.hidden = true;
+    musicMount.hidden = false;
+    coverMount.hidden = true;
+    atmoMount.hidden = true;
+
+    if (cartoonMount) cartoonMount.hidden = true;
+    if (photofxMount) photofxMount.hidden = true;
+    if (videoMount) videoMount.hidden = true;
+    if (lipsyncMount) lipsyncMount.hidden = true;
+    if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
+    if (policyMount) policyMount.hidden = true;
 
     const musicHomeSection = document.getElementById("mobileHomeSection");
     const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+    const musicResults = document.getElementById("mobileMusicResults");
     const musicProductionsSection = document.getElementById("mobileProductionsSection");
 
     if (musicHomeSection) musicHomeSection.hidden = true;
     if (musicCard) musicCard.hidden = true;
+    if (musicResults) musicResults.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
-
-    if (policyMount) policyMount.hidden = true;
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
