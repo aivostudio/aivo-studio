@@ -2035,6 +2035,9 @@ if (productionsNav) {
     if (list) {
       list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
     }
+    if (typeof window.mobileRenderUnifiedProductions === "function") {
+  window.mobileRenderUnifiedProductions();
+}
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
