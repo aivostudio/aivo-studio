@@ -2010,6 +2010,36 @@ if (homeNav) {
     if (atmoResultsTitle) atmoResultsTitle.hidden = !isLibraryOnly;
      if (atmoResults) atmoResults.hidden = !isLibraryOnly;
     }
+    window.mobileRenderUnifiedProductions = async function(){
+  const list = document.getElementById("mobileProductionsList");
+
+  if (!list) return;
+
+  try {
+    const cards = [];
+
+    document.querySelectorAll(
+      "#mobileMusicResults .mobile-music-job-card, " +
+      "#mobileCoverResults .mobile-cover-card-result, " +
+      "#mobileAtmoResults .mobile-atmo-result-card, " +
+      "#mobileCartoonResults .mobile-cartoon-result-card, " +
+      "#mobilePhotoFxResults .mobile-photofx-result-card, " +
+      "#mobileVideoResults .mobile-video-result-card, " +
+      "#mobileLipsyncResults .mobile-lipsync-result-card"
+    ).forEach(function(card){
+      cards.push(card.outerHTML);
+    });
+
+    if (!cards.length) {
+      list.innerHTML = '<div class="empty-card">Henüz üretim bulunamadı.</div>';
+      return;
+    }
+
+    list.innerHTML = cards.join("");
+  } catch (err) {
+    list.innerHTML = '<div class="empty-card">Üretimler yüklenemedi.</div>';
+  }
+};
 
 if (productionsNav) {
   productionsNav.addEventListener("click", function(e){
