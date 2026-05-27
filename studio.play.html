@@ -1992,6 +1992,308 @@ if (homeNav) {
     }
 
 if (productionsNav) {
+  async function loadPlayProductions(){
+    const list = document.getElementById("mobileProductionsList");
+    if (!list) return;
+
+    list.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
+
+    const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+
+    function escapeHtml(value){
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getItemsFromPayload(payload){
+      if (!payload) return [];
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload.jobs)) return payload.jobs;
+      if (Array.isArray(payload.items)) return payload.items;
+      if (Array.isArray(payload.results)) return payload.results;
+      if (Array.isArray(payload.productions)) return payload.productions;
+      if (payload.data) return getItemsFromPayload(payload.data);
+      return [];
+    }
+
+    async function fetchJson(url){
+      const capHttp =
+        window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.CapacitorHttp;
+
+      if (capHttp && typeof capHttp.get === "function") {
+        const res = await capHttp.get({
+          url: url.startsWith("http") ? url : "https://aivo.tr" + url,
+          headers: { "Accept": "application/json" }
+        });
+
+        if (!res || Number(res.status) < 200 || Number(res.status) >= 300) {
+          throw new Error("play_productions_http_failed");
+        }
+
+        return res.data;
+      }
+
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: { "Accept": "application/json" }
+      });
+
+      if (!res.ok) {
+        throw new Error("play_productions_fetch_failed");
+      }
+
+      return await res.json();
+    }
+
+    async function loadRemoteItems(){
+      const urls = [
+        "/api/jobs/list?scope=all",
+        email ? "/api/jobs/list?email=" + encodeURIComponent(email) : "",
+        "/api/jobs/list"
+      ].filter(Boolean);
+
+      for (const url of urls) {
+        try {
+          const payload = await fetchJson(url);
+          const items = getItemsFromPayload(payload);
+
+          if (items.length) {
+            return items;
+          }
+        } catch (err) {}
+      }
+
+      return [];
+    }
+
+    function loadLocalItems(){
+      const items = [];
+
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+
+          const lowerKey = key.toLowerCase();
+
+          if (
+            !lowerKey.includes("aivo") &&
+            !lowerKey.includes("music") &&
+            !lowerKey.includes("cover") &&
+            !lowerKey.includes("atmo") &&
+            !lowerKey.includes("cartoon") &&
+            !lowerKey.includes("photofx") &&
+            !lowerKey.includes("video") &&
+            !lowerKey.includes("lipsync")
+          ) {
+            continue;
+          }
+
+          const raw = localStorage.getItem(key);
+          if (!raw || raw.length < 8) continue;
+
+          try {
+            const parsed = JSON.parse(raw);
+            const found = getItemsFromPayload(parsed);
+
+            if (found.length) {
+              found.forEach(function(item){
+                items.push(item);
+              });
+            } else if (parsed && typeof parsed === "object") {
+              items.push(parsed);
+            }
+          } catch (err) {}
+        }
+      } catch (err) {}
+
+      return items;
+    }
+
+    function detectModule(item){
+      const raw = [
+        item.module,
+        item.type,
+        item.kind,
+        item.source,
+        item.provider,
+        item.category,
+        item.jobType,
+        item.tool,
+        item.mode
+      ].join(" ").toLowerCase();
+
+      if (raw.includes("cover")) return "Kapak";
+      if (raw.includes("atmo") || raw.includes("atmos")) return "Atmosfer";
+      if (raw.includes("cartoon") || raw.includes("cizgi") || raw.includes("çizgi")) return "Çizgifilm";
+      if (raw.includes("photo") || raw.includes("photofx") || raw.includes("pfx")) return "PhotoFX";
+      if (raw.includes("lipsync") || raw.includes("lip")) return "Lipsync";
+      if (raw.includes("video")) return "Video";
+      if (raw.includes("music") || raw.includes("audio") || raw.includes("song")) return "Müzik";
+
+      return "Üretim";
+    }
+
+    function getMediaUrl(item){
+      return (
+        item.url ||
+        item.outputUrl ||
+        item.output_url ||
+        item.resultUrl ||
+        item.result_url ||
+        item.audioUrl ||
+        item.audio_url ||
+        item.videoUrl ||
+        item.video_url ||
+        item.imageUrl ||
+        item.image_url ||
+        item.coverUrl ||
+        item.cover_url ||
+        item.finalUrl ||
+        item.final_url ||
+        item.publicUrl ||
+        item.public_url ||
+        ""
+      );
+    }
+
+    function getTitle(item){
+      return (
+        item.title ||
+        item.name ||
+        item.prompt ||
+        item.songTitle ||
+        item.song_title ||
+        item.filename ||
+        detectModule(item)
+      );
+    }
+
+    function getTime(item){
+      return (
+        item.createdAt ||
+        item.created_at ||
+        item.updatedAt ||
+        item.updated_at ||
+        item.ts ||
+        item.time ||
+        item.date ||
+        ""
+      );
+    }
+
+    function isUsefulItem(item){
+      if (!item || typeof item !== "object") return false;
+
+      const status = String(item.status || item.state || "").toLowerCase();
+
+      if (
+        status.includes("deleted") ||
+        status.includes("failed") ||
+        status.includes("error")
+      ) {
+        return false;
+      }
+
+      return Boolean(
+        getMediaUrl(item) ||
+        item.id ||
+        item.jobId ||
+        item.job_id ||
+        item.uuid ||
+        item.prompt ||
+        item.title ||
+        item.name
+      );
+    }
+
+    function normalizeItems(items){
+      const seen = new Set();
+
+      return items
+        .filter(isUsefulItem)
+        .map(function(item){
+          const mediaUrl = getMediaUrl(item);
+          const id = String(item.id || item.jobId || item.job_id || item.uuid || mediaUrl || JSON.stringify(item)).trim();
+
+          return {
+            id: id,
+            module: detectModule(item),
+            title: getTitle(item),
+            status: item.status || item.state || "ready",
+            mediaUrl: mediaUrl,
+            createdAt: getTime(item),
+            raw: item
+          };
+        })
+        .filter(function(item){
+          if (!item.id || seen.has(item.id)) return false;
+          seen.add(item.id);
+          return true;
+        })
+        .sort(function(a, b){
+          const at = new Date(a.createdAt || 0).getTime() || 0;
+          const bt = new Date(b.createdAt || 0).getTime() || 0;
+          return bt - at;
+        });
+    }
+
+    function renderItem(item){
+      const title = escapeHtml(item.title || item.module);
+      const module = escapeHtml(item.module);
+      const status = escapeHtml(item.status || "");
+      const mediaUrl = String(item.mediaUrl || "").trim();
+
+      let mediaHtml = "";
+
+      if (mediaUrl) {
+        const safeUrl = escapeHtml(mediaUrl);
+        const lowerUrl = mediaUrl.toLowerCase();
+
+        if (lowerUrl.includes(".mp4") || lowerUrl.includes(".webm") || lowerUrl.includes("video")) {
+          mediaHtml = '<video controls playsinline preload="metadata" src="' + safeUrl + '" style="width:100%;border-radius:18px;margin-top:10px;background:#000;"></video>';
+        } else if (lowerUrl.includes(".mp3") || lowerUrl.includes(".wav") || lowerUrl.includes(".m4a") || lowerUrl.includes("audio")) {
+          mediaHtml = '<audio controls preload="metadata" src="' + safeUrl + '" style="width:100%;margin-top:10px;"></audio>';
+        } else {
+          mediaHtml = '<img src="' + safeUrl + '" alt="" style="width:100%;border-radius:18px;margin-top:10px;display:block;">';
+        }
+      }
+
+      return [
+        '<article class="mobile-tool-card" style="display:block;">',
+        '<div style="display:flex;align-items:center;gap:12px;">',
+        '<span class="tool-icon" aria-hidden="true"></span>',
+        '<div style="min-width:0;">',
+        '<b style="display:block;padding-right:0;">' + title + '</b>',
+        '<small style="display:block;margin-top:5px;color:rgba(255,255,255,.58);font-weight:800;">' + module + (status ? " • " + status : "") + '</small>',
+        '</div>',
+        '</div>',
+        mediaHtml,
+        '</article>'
+      ].join("");
+    }
+
+    try {
+      const remoteItems = await loadRemoteItems();
+      const localItems = loadLocalItems();
+      const items = normalizeItems(remoteItems.concat(localItems));
+
+      list.innerHTML = items.length
+        ? items.map(renderItem).join("")
+        : '<div class="empty-card">Henüz üretim bulunamadı.</div>';
+    } catch (err) {
+      list.innerHTML = '<div class="empty-card">Üretimler yüklenemedi. Lütfen tekrar deneyin.</div>';
+    }
+  }
+
   productionsNav.addEventListener("click", function(e){
     e.preventDefault();
     e.stopImmediatePropagation();
@@ -2011,35 +2313,13 @@ if (productionsNav) {
     if (policyMount) policyMount.hidden = true;
     if (productionsMount) productionsMount.hidden = false;
 
-    const list = document.getElementById("mobileProductionsList");
-    if (list) {
-      const cards = [];
-
-      document.querySelectorAll(
-        "#mobileMusicResults > *, " +
-        "#mobileCoverResults > *, " +
-        "#mobileAtmoResults > *, " +
-        "#mobileCartoonResults > *, " +
-        "#mobilePhotoFxResults > *, " +
-        "#mobileVideoResults > *, " +
-        "#mobileLipsyncResults > *"
-      ).forEach(function(card){
-        if (card && card.outerHTML && !card.classList.contains("empty-card")) {
-          cards.push(card.outerHTML);
-        }
-      });
-
-      list.innerHTML = cards.length
-        ? cards.join("")
-        : '<div class="empty-card">Henüz üretim bulunamadı.</div>';
-    }
-
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    loadPlayProductions();
   }, true);
 }
-
 if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
   e.preventDefault();
