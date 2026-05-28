@@ -36,7 +36,8 @@ function createAppleJwt() {
   sign.end();
 
   const signature = sign
-    .sign(APPLE_PRIVATE_KEY, "base64")
+    .sign({ key: APPLE_PRIVATE_KEY, dsaEncoding: "ieee-p1363" })
+    .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=/g, "");
