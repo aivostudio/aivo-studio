@@ -980,9 +980,138 @@ async function loadSoldCredits(options) {
       btnSoldCredits.addEventListener("click", loadSoldCredits);
     }
 
-    if (soldCreditsDate) {
+      if (soldCreditsDate) {
       soldCreditsDate.addEventListener("change", loadSoldCredits);
     }
+
+    const btnIosSales = $("btnIosSales");
+    const iosSalesDate = $("iosSalesDate");
+    const iosSalesStatus = $("iosSalesStatus");
+    const iosSalesUnits = $("iosSalesUnits");
+    const iosSalesCustomerTotal = $("iosSalesCustomerTotal");
+    const iosSalesProceedsTotal = $("iosSalesProceedsTotal");
+    const iosSalesTbody = $("iosSalesTbody");
+    const iosSalesOut = $("iosSalesOut");
+
+    function yesterdayDateInputValue() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatIosMoney(value, currency) {
+      const n = Number(value || 0);
+      return n.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + " " + String(currency || "TRY");
+    }
+
+    function renderIosSales(rows) {
+      const list = Array.isArray(rows) ? rows : [];
+
+      let totalUnits = 0;
+      let customerTotal = 0;
+      let proceedsTotal = 0;
+      let currency = "TRY";
+
+      list.forEach(function (row) {
+        totalUnits += Number(row.Units || 0);
+        customerTotal += Number(row["Customer Price"] || 0) * Number(row.Units || 0);
+        proceedsTotal += Number(row["Developer Proceeds"] || 0) * Number(row.Units || 0);
+        currency = row["Customer Currency"] || row["Currency of Proceeds"] || currency;
+      });
+
+      if (iosSalesUnits) iosSalesUnits.textContent = String(totalUnits);
+      if (iosSalesCustomerTotal) iosSalesCustomerTotal.textContent = formatIosMoney(customerTotal, currency);
+      if (iosSalesProceedsTotal) iosSalesProceedsTotal.textContent = formatIosMoney(proceedsTotal, currency);
+
+      if (!iosSalesTbody) return;
+
+      if (!list.length) {
+        iosSalesTbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="muted" style="padding:12px;">
+              Seçilen gün için iOS satış verisi yok.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      iosSalesTbody.innerHTML = list.map(function (row) {
+        return `
+          <tr>
+            <td style="padding:8px 10px;">${escapeHtml(row.SKU || row.Title || "-")}</td>
+            <td style="padding:8px 10px;">${Number(row.Units || 0)}</td>
+            <td style="padding:8px 10px;">${escapeHtml(formatIosMoney(row["Customer Price"], row["Customer Currency"]))}</td>
+            <td style="padding:8px 10px;">${escapeHtml(formatIosMoney(row["Developer Proceeds"], row["Currency of Proceeds"]))}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row["Customer Currency"] || row["Currency of Proceeds"] || "-")}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row["Country Code"] || "-")}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row.Device || "-")}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadIosSales() {
+      const selectedDate =
+        String(
+          iosSalesDate && iosSalesDate.value
+            ? iosSalesDate.value
+            : yesterdayDateInputValue()
+        ).trim();
+
+      if (iosSalesStatus) iosSalesStatus.textContent = "Yükleniyor...";
+
+      try {
+        const r = await fetch("/api/admin/ios-sales?date=" + encodeURIComponent(selectedDate), {
+          cache: "no-store",
+          credentials: "include"
+        });
+
+        const j = await r.json().catch(() => null);
+
+        if (!r.ok || !j || !j.ok) {
+          throw new Error((j && (j.error || j.message)) || "ios_sales_failed");
+        }
+
+        renderIosSales(j.rows || []);
+
+        if (iosSalesOut) {
+          iosSalesOut.style.display = "none";
+          iosSalesOut.textContent = JSON.stringify(j, null, 2);
+        }
+
+        if (iosSalesStatus) iosSalesStatus.textContent = `Gün: ${String(j.date || selectedDate)}`;
+      } catch (err) {
+        renderIosSales([]);
+
+        if (iosSalesOut) {
+          iosSalesOut.style.display = "block";
+          iosSalesOut.textContent = String(err && err.message ? err.message : err);
+        }
+
+        if (iosSalesStatus) iosSalesStatus.textContent = "Hata oluştu.";
+      }
+    }
+
+    if (iosSalesDate && !iosSalesDate.value) {
+      iosSalesDate.value = yesterdayDateInputValue();
+    }
+
+    if (btnIosSales) {
+      btnIosSales.addEventListener("click", loadIosSales);
+    }
+
+    if (iosSalesDate) {
+      iosSalesDate.addEventListener("change", loadIosSales);
+    }
+
+    await loadIosSales();
 
     async function loadUsers() {
       const s = await adminAuth();
