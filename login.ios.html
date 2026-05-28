@@ -946,17 +946,32 @@ window.location.href = returnTo;
         }
       });
 
-         setMode("login");
+          function handleVerifiedLoginParams(params){
+        if (!params || params.get("verified") !== "1") return;
 
-      if (url.searchParams.get("verified") === "1") {
         setMode("login");
 
-        if (email && url.searchParams.get("email")) {
-          email.value = String(url.searchParams.get("email") || "").trim().toLowerCase();
+        if (email && params.get("email")) {
+          email.value = String(params.get("email") || "").trim().toLowerCase();
         }
 
         setMessage("E-posta doğrulandı. Şimdi giriş yapabilirsin.", "is-ok");
       }
+
+      setMode("login");
+      handleVerifiedLoginParams(url.searchParams);
+
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+          window.Capacitor.Plugins.App.addListener("appUrlOpen", function(event){
+            const incomingUrl = String(event && event.url ? event.url : "");
+            if (!incomingUrl) return;
+
+            const parsed = new URL(incomingUrl);
+            handleVerifiedLoginParams(parsed.searchParams);
+          });
+        }
+      } catch (_) {}
     })();
   </script>
 </body>
