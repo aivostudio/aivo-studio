@@ -25,8 +25,8 @@ async function delSafe(key) {
 
 function renderIosVerifySuccessPage(res, email) {
   const safeEmail = encodeURIComponent(String(email || ""));
-  const appUrl = `aivo://studio?verified=1&email=${safeEmail}`;
-  const fallbackUrl = `/login.ios.html?returnTo=/studio.ios.html&verified=1&email=${safeEmail}`;
+    const appUrl = `https://aivo.tr/studio.ios.html?verified=1&email=${safeEmail}`;
+  const fallbackUrl = `/studio.ios.html?verified=1&email=${safeEmail}`;
 
   res.statusCode = 200;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
