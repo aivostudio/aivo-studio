@@ -946,7 +946,17 @@ window.location.href = returnTo;
         }
       });
 
-      setMode("login");
+         setMode("login");
+
+      if (url.searchParams.get("verified") === "1") {
+        setMode("login");
+
+        if (email && url.searchParams.get("email")) {
+          email.value = String(url.searchParams.get("email") || "").trim().toLowerCase();
+        }
+
+        setMessage("E-posta doğrulandı. Şimdi giriş yapabilirsin.", "is-ok");
+      }
     })();
   </script>
 </body>
