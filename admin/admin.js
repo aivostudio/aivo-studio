@@ -170,7 +170,13 @@
     for (const u of list) {
       const tr = document.createElement("tr");
 
-      const email = String(u.email || "");
+          const rawEmail = String(u.email || "");
+      const mailMatch = rawEmail.match(/mailto:([^)\s]+)/i);
+      const bracketMatch = rawEmail.match(/\[([^\]]+@[^\\]]+)\]/i);
+      const email = String(
+        mailMatch ? mailMatch[1] : bracketMatch ? bracketMatch[1] : rawEmail
+      ).trim();
+
       const role = String(u.role || "user");
       const createdAt = fmtTs(u.createdAt || u.created || 0);
       const updatedAt = fmtTs(u.updatedAt || u.updated || 0);
