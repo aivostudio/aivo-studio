@@ -1999,78 +1999,19 @@ if (productionsNav) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    homeMount.hidden = true;
-    musicMount.hidden = false;
-    coverMount.hidden = false;
-    atmoMount.hidden = false;
+    activeMobileModule = "music";
 
-    if (cartoonMount) cartoonMount.hidden = false;
-    if (photofxMount) photofxMount.hidden = false;
-    if (videoMount) videoMount.hidden = false;
-    if (lipsyncMount) lipsyncMount.hidden = false;
-    if (toolsMount) toolsMount.hidden = true;
-    if (creditsMount) creditsMount.hidden = true;
-    if (accountMount) accountMount.hidden = true;
-    if (policyMount) policyMount.hidden = true;
+    showMusic();
 
     const musicHomeSection = document.getElementById("mobileHomeSection");
     const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
     const musicProductionsSection = document.getElementById("mobileProductionsSection");
-    const musicResults = document.getElementById("mobileMusicResults");
 
     if (musicHomeSection) musicHomeSection.hidden = true;
     if (musicCard) musicCard.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
-    if (musicResults) musicResults.hidden = false;
 
-    setCoverLibraryOnly(true);
-    setAtmoLibraryOnly(true);
-
-    function showOnlyResults(sectionId, panelSelector, resultsId){
-      const section = document.getElementById(sectionId);
-      if (!section) return;
-
-      section.querySelectorAll(panelSelector).forEach(function(panel){
-        panel.hidden = true;
-      });
-
-      section.querySelectorAll(".section-title").forEach(function(title){
-        title.hidden = false;
-      });
-
-      const results = document.getElementById(resultsId);
-      if (results) results.hidden = false;
-    }
-
-    showOnlyResults("mobileCartoonSection", ".mobile-cartoon-panel", "mobileCartoonResults");
-    showOnlyResults("mobilePhotoFxSection", ".mobile-photofx-panel, .pfxPage", "mobilePhotoFxResults");
-    showOnlyResults("mobileVideoSection", ".mobile-video-panel", "mobileVideoResults");
-    showOnlyResults("mobileLipsyncSection", ".mobile-lipsync-panel", "mobileLipsyncResults");
-        function hideEmptyResult(sectionId, resultsId){
-      const section = document.getElementById(sectionId);
-      const results = document.getElementById(resultsId);
-      if (!section || !results) return;
-
-      const text = String(results.textContent || "").toLowerCase();
-      const isEmpty =
-        text.includes("henüz mobil") ||
-        text.includes("başlatılmadı") ||
-        text.includes("bulunamadı") ||
-        text.trim().length < 8;
-
-      if (!isEmpty) return;
-
-      const title = section.querySelector(".section-title");
-      if (title) title.hidden = true;
-      results.hidden = true;
-    }
-
-    hideEmptyResult("mobileCoverSection", "mobileCoverResults");
-    hideEmptyResult("mobileAtmoSection", "mobileAtmoResults");
-    hideEmptyResult("mobileCartoonSection", "mobileCartoonResults");
-    hideEmptyResult("mobilePhotoFxSection", "mobilePhotoFxResults");
-    hideEmptyResult("mobileVideoSection", "mobileVideoResults");
-    hideEmptyResult("mobileLipsyncSection", "mobileLipsyncResults");
+    if (policyMount) policyMount.hidden = true;
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
