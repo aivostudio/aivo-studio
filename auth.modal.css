@@ -684,11 +684,22 @@
     inset 0 1px 0 rgba(255,255,255,.95) !important;
 }
 
+#loginModal .btn-apple{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
+
 #loginModal .btn-apple::before{
   content: "";
-  display: inline-block;
-  margin-right: 9px;
-  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 0;
+  font-size: 19px;
   line-height: 1;
   transform: translateY(-1px);
 }
