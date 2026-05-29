@@ -2046,6 +2046,31 @@ if (productionsNav) {
     showOnlyResults("mobilePhotoFxSection", ".mobile-photofx-panel, .pfxPage", "mobilePhotoFxResults");
     showOnlyResults("mobileVideoSection", ".mobile-video-panel", "mobileVideoResults");
     showOnlyResults("mobileLipsyncSection", ".mobile-lipsync-panel", "mobileLipsyncResults");
+        function hideEmptyResult(sectionId, resultsId){
+      const section = document.getElementById(sectionId);
+      const results = document.getElementById(resultsId);
+      if (!section || !results) return;
+
+      const text = String(results.textContent || "").toLowerCase();
+      const isEmpty =
+        text.includes("henüz mobil") ||
+        text.includes("başlatılmadı") ||
+        text.includes("bulunamadı") ||
+        text.trim().length < 8;
+
+      if (!isEmpty) return;
+
+      const title = section.querySelector(".section-title");
+      if (title) title.hidden = true;
+      results.hidden = true;
+    }
+
+    hideEmptyResult("mobileCoverSection", "mobileCoverResults");
+    hideEmptyResult("mobileAtmoSection", "mobileAtmoResults");
+    hideEmptyResult("mobileCartoonSection", "mobileCartoonResults");
+    hideEmptyResult("mobilePhotoFxSection", "mobilePhotoFxResults");
+    hideEmptyResult("mobileVideoSection", "mobileVideoResults");
+    hideEmptyResult("mobileLipsyncSection", "mobileLipsyncResults");
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
