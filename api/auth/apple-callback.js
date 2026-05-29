@@ -52,13 +52,14 @@ const privateKey = String(process.env.APPLE_PRIVATE_KEY || "")
 
   const data = `${base64url(JSON.stringify(header))}.${base64url(JSON.stringify(payload))}`;
 
-  const signature = crypto.sign(
-    "sha256",
-    Buffer.from(data),
-    {
-      key: privateKey,
-    }
-  );
+ const signature = crypto.sign(
+  "sha256",
+  Buffer.from(data),
+  {
+    key: privateKey,
+    dsaEncoding: "ieee-p1363"
+  }
+);
 
   return `${data}.${base64url(signature)}`;
 }
