@@ -163,21 +163,7 @@ export default async function handler(req, res) {
     res.setHeader("Set-Cookie", nextCookies);
 
     const clientSecret = makeAppleClientSecret();
-    try {
-  const parts = String(clientSecret || "").split(".");
-  console.log("[auth/apple-callback] jwt header:", JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8")));
-  console.log("[auth/apple-callback] jwt payload:", JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8")));
-  console.log("[auth/apple-callback] env check:", {
-    clientId,
-    redirectUri,
-    teamId: process.env.APPLE_TEAM_ID,
-    keyId: process.env.APPLE_KEY_ID,
-    privateKeyStart: String(process.env.APPLE_PRIVATE_KEY || "").trim().slice(0, 27),
-    privateKeyEnd: String(process.env.APPLE_PRIVATE_KEY || "").trim().slice(-25)
-  });
-} catch (e) {
-  console.error("[auth/apple-callback] jwt debug failed:", e);
-}
+
 
     const tokenRes = await fetch("https://appleid.apple.com/auth/token", {
       method: "POST",
