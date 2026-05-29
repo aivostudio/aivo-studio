@@ -5448,3 +5448,31 @@ html.is-studio .aivo-topbar {
   margin: 6px auto 0 !important;
   text-align: center !important;
 }
+.hero-appstore{
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.hero-appstore-link{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 12px 34px rgba(0,0,0,.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-appstore-link:hover{
+  background: rgba(255,255,255,.10);
+  transform: translateY(-1px);
+}
