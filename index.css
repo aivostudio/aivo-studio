@@ -5476,3 +5476,36 @@ html.is-studio .aivo-topbar {
   background: rgba(255,255,255,.10);
   transform: translateY(-1px);
 }
+.hero-appstore-cta{
+  position: relative;
+  overflow: hidden;
+  opacity: 1 !important;
+  color: #fff !important;
+  font-weight: 900 !important;
+  padding: 0 18px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,.18) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.14), rgba(124,58,237,.16), rgba(31,182,255,.12)) !important;
+  box-shadow: 0 14px 42px rgba(124,58,237,.22);
+  text-decoration: none !important;
+}
+
+.hero-appstore-cta::after{
+  content: "";
+  position: absolute;
+  top: -70%;
+  left: -45%;
+  width: 42%;
+  height: 240%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
+  transform: rotate(18deg);
+  animation: aivoAppStoreShine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes aivoAppStoreShine{
+  0%{ transform: translateX(-150%) rotate(18deg); opacity: 0; }
+  35%{ opacity: .65; }
+  100%{ transform: translateX(320%) rotate(18deg); opacity: 0; }
+}
