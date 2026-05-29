@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
     res.setHeader(
       "Set-Cookie",
-      `aivo_apple_state=${stateNonce}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=Lax; Secure; Max-Age=600`
+    `aivo_apple_state=${stateNonce}; Path=/; Domain=.aivo.tr; HttpOnly; SameSite=None; Secure; Max-Age=600`
     );
 
     const appleUrl = new URL("https://appleid.apple.com/auth/authorize");
