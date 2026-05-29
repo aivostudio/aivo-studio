@@ -670,3 +670,9 @@
   margin: 0 !important;
   line-height: 1.32 !important;
 }
+#loginModal .btn-apple{
+  margin-top: 10px;
+  background: linear-gradient(180deg, #111827 0%, #030712 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,.18) !important;
+}
