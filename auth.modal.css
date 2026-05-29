@@ -671,54 +671,28 @@
   line-height: 1.32 !important;
 }
 #loginModal .btn-apple{
-  margin-top: 10px;
-  position: relative;
-  overflow: hidden;
-  background:
-    linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%) !important;
-  color: #05070d !important;
-  border: 1px solid rgba(255,255,255,.75) !important;
-  box-shadow:
-    0 14px 34px rgba(255,255,255,.10),
-    0 10px 24px rgba(0,0,0,.22),
-    inset 0 1px 0 rgba(255,255,255,.95) !important;
-}
-
-#loginModal .btn-apple{
-  display: flex !important;
+  margin-top: 10px !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 10px !important;
-}
-
-#loginModal .btn-apple::before{
-  content: "";
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  margin-right: 0;
-  font-size: 19px;
-  line-height: 1;
-  transform: translateY(-1px);
-}
-#loginModal .btn-apple{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 9px !important;
+  width: 100% !important;
+  height: 46px !important;
+  padding: 0 18px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%) !important;
+  color: #05070d !important;
+  border: 1px solid rgba(255,255,255,.75) !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
   line-height: 1 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
 }
 
 #loginModal .btn-apple::before{
   content: "";
-  display: inline-block;
-  width: 18px;
-  text-align: center;
-  font-size: 20px;
-  line-height: 1;
-  transform: translateY(-1px);
+  display: inline-block !important;
+  margin: 0 !important;
+  font-size: 20px !important;
+  line-height: 1 !important;
+  transform: translateY(-1px) !important;
 }
