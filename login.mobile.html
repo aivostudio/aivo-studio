@@ -446,6 +446,9 @@
       <button class="mobile-login-google" type="button" id="mobileGoogleBtn">
         Google ile devam et
       </button>
+      <button class="mobile-login-google" type="button" id="mobileAppleBtn">
+        Apple ile devam et
+      </button>
 
       <div class="mobile-login-sep"><span>VEYA EMAIL İLE DEVAM ET</span></div>
 
@@ -520,8 +523,8 @@ const returnTo = rawReturnTo.includes("mobile")
       const footerText = document.getElementById("mobileFooterText");
       const message = document.getElementById("mobileLoginMessage");
       const googleBtn = document.getElementById("mobileGoogleBtn");
-
-      const firstName = document.getElementById("mobileFirstName");
+      const appleBtn = document.getElementById("mobileAppleBtn");
+     const firstName = document.getElementById("mobileFirstName");
       const lastName = document.getElementById("mobileLastName");
       const email = document.getElementById("mobileEmail");
       const password = document.getElementById("mobilePassword");
@@ -589,6 +592,9 @@ const returnTo = rawReturnTo.includes("mobile")
       googleBtn.addEventListener("click", function(){
         location.href = "/api/auth/google?returnTo=" + encodeURIComponent(returnTo);
       });
+      appleBtn.addEventListener("click", function(){
+     location.href = "/api/auth/apple?returnTo=" + encodeURIComponent(returnTo);
+    });
 
       form.addEventListener("submit", async function(e){
         e.preventDefault();
