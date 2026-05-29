@@ -603,21 +603,23 @@ window.rememberTarget = function (url) { rememberTarget(url); };
     }, true);
   });
 })();
+
+
 /* =========================================================
-   GOOGLE LOGIN BUTTON — ENTRY REDIRECT
-   - Button: #btnGoogleLogin
-   - Flow: click -> /api/auth/google -> callback -> session
+   APPLE LOGIN BUTTON — ENTRY REDIRECT
+   - Button: #btnAppleLogin
+   - Flow: click -> /api/auth/apple -> callback -> session
    ========================================================= */
 (() => {
-  if (window.__AIVO_GOOGLE_LOGIN_BIND__) return;
-  window.__AIVO_GOOGLE_LOGIN_BIND__ = true;
+  if (window.__AIVO_APPLE_LOGIN_BIND__) return;
+  window.__AIVO_APPLE_LOGIN_BIND__ = true;
 
   const MAX_MS = 15000;
   const start = Date.now();
 
   const wait = (cb) => {
     (function tick() {
-      const btn = document.getElementById("btnGoogleLogin");
+      const btn = document.getElementById("btnAppleLogin");
       if (btn) return cb(btn);
       if (Date.now() - start > MAX_MS) return;
       setTimeout(tick, 150);
@@ -634,8 +636,8 @@ window.rememberTarget = function (url) { rememberTarget(url); };
   }
 
   wait((btn) => {
-    if (btn.__aivoGoogleBound === true) return;
-    btn.__aivoGoogleBound = true;
+    if (btn.__aivoAppleBound === true) return;
+    btn.__aivoAppleBound = true;
 
     btn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -643,12 +645,13 @@ window.rememberTarget = function (url) { rememberTarget(url); };
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
       const returnTo = getReturnUrl();
-      const url = "/api/auth/google?return=" + encodeURIComponent(returnTo);
+      const url = "/api/auth/apple?returnTo=" + encodeURIComponent(returnTo);
 
       window.location.href = url;
     }, true);
   });
 })();
+
 
 /* =========================================================
    PRODUCTS DROPDOWN — DEFAULT ACTIVE + TAP SELECT (iPad)
