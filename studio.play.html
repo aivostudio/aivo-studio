@@ -2001,26 +2001,60 @@ if (productionsNav) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    activeMobileModule = "music";
+    homeMount.hidden = true;
+    musicMount.hidden = false;
+    coverMount.hidden = false;
+    atmoMount.hidden = false;
 
-    showMusic();
+    if (cartoonMount) cartoonMount.hidden = false;
+    if (photofxMount) photofxMount.hidden = false;
+    if (videoMount) videoMount.hidden = false;
+    if (lipsyncMount) lipsyncMount.hidden = false;
+
+    if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
+    if (policyMount) policyMount.hidden = true;
 
     const musicHomeSection = document.getElementById("mobileHomeSection");
     const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
     const musicProductionsSection = document.getElementById("mobileProductionsSection");
+    const musicResults = document.getElementById("mobileMusicResults");
 
     if (musicHomeSection) musicHomeSection.hidden = true;
     if (musicCard) musicCard.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
+    if (musicResults) musicResults.hidden = false;
 
-    if (policyMount) policyMount.hidden = true;
+    setCoverLibraryOnly(true);
+    setAtmoLibraryOnly(true);
+
+    function showOnlyResults(sectionId, panelSelector, resultsId){
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+
+      section.querySelectorAll(panelSelector).forEach(function(panel){
+        panel.hidden = true;
+      });
+
+      section.querySelectorAll(".section-title").forEach(function(title){
+        title.hidden = false;
+      });
+
+      const results = document.getElementById(resultsId);
+      if (results) results.hidden = false;
+    }
+
+    showOnlyResults("mobileCartoonSection", ".mobile-cartoon-panel", "mobileCartoonResults");
+    showOnlyResults("mobilePhotoFxSection", ".mobile-photofx-panel, .pfxPage", "mobilePhotoFxResults");
+    showOnlyResults("mobileVideoSection", ".mobile-video-panel", "mobileVideoResults");
+    showOnlyResults("mobileLipsyncSection", ".mobile-lipsync-panel", "mobileLipsyncResults");
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, true);
 }
-
 if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
   e.preventDefault();
