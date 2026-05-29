@@ -25,7 +25,10 @@ function makeAppleClientSecret() {
   const teamId = process.env.APPLE_TEAM_ID;
   const clientId = process.env.APPLE_CLIENT_ID;
   const keyId = process.env.APPLE_KEY_ID;
-  const privateKey = String(process.env.APPLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
+const privateKey = String(process.env.APPLE_PRIVATE_KEY || "")
+  .replace(/\\n/g, "\n")
+  .replace(/^"|"$/g, "")
+  .trim();
 
   if (!teamId || !clientId || !keyId || !privateKey) {
     throw new Error("apple_env_missing");
