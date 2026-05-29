@@ -5,7 +5,8 @@
       {
         "appID": "53N9GRJ36A.tr.aivo.app",
         "paths": [
-          "*"
+          "/app/*",
+          "/open-app/*"
         ]
       }
     ]
