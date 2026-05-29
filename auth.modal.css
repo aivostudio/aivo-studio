@@ -703,3 +703,27 @@
   line-height: 1;
   transform: translateY(-1px);
 }
+#loginModal .btn-apple{
+  display: grid !important;
+  grid-template-columns: 24px auto 24px !important;
+  align-items: center !important;
+  justify-items: center !important;
+  text-align: center !important;
+}
+
+#loginModal .btn-apple::before{
+  grid-column: 1 !important;
+  justify-self: end !important;
+  margin-right: 8px !important;
+}
+
+#loginModal .btn-apple{
+  font-size: 0 !important;
+}
+
+#loginModal .btn-apple::after{
+  content: "Apple ile Giriş Yap";
+  grid-column: 2 !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
