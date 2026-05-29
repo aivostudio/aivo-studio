@@ -57,7 +57,6 @@ const privateKey = String(process.env.APPLE_PRIVATE_KEY || "")
     Buffer.from(data),
     {
       key: privateKey,
-      dsaEncoding: "ieee-p1363"
     }
   );
 
