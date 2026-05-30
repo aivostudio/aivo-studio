@@ -5,23 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <script>
 (function AIVO_PLAY_STUDIO_WEB_GUARD(){
-  try {
-    var ua = navigator.userAgent || "";
-
-    var isAndroidNative =
-      ua.indexOf("Android") !== -1 &&
-      (
-        !!window.Capacitor ||
-        ua.indexOf("Capacitor") !== -1
-      );
-
-    if (isAndroidNative) return;
-
-    var hash = window.location.hash || "";
-    window.location.replace("/studio.mobile.html" + hash);
-  } catch (_) {
-    window.location.replace("/studio.mobile.html");
-  }
+  return;
 })();
 </script>
   
