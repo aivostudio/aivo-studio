@@ -1157,6 +1157,72 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
 <script src="/mobile/js/mobile.assistant.js?v=3" defer></script>
+  <script>
+(function AIVO_PLAY_API_FETCH_BRIDGE(){
+  if (window.__AIVO_PLAY_API_FETCH_BRIDGE__) return;
+  window.__AIVO_PLAY_API_FETCH_BRIDGE__ = true;
+
+  const originalFetch = window.fetch.bind(window);
+
+  window.fetch = function(input, init){
+    try {
+      const capHttp =
+        window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.CapacitorHttp;
+
+      let url = "";
+
+      if (typeof input === "string") {
+        url = input;
+      } else if (input && typeof input.url === "string") {
+        url = input.url;
+      }
+
+      if (url.startsWith("/api/")) {
+        url = "https://aivo.tr" + url;
+      } else if (url.startsWith(location.origin + "/api/")) {
+        url = url.replace(location.origin, "https://aivo.tr");
+      }
+
+      if (capHttp && url.startsWith("https://aivo.tr/api/")) {
+        const method = String((init && init.method) || "GET").toUpperCase();
+        const headers = (init && init.headers) || {};
+        const body = init && init.body;
+
+        if (method === "POST") {
+          return capHttp.post({
+            url,
+            headers,
+            data: body ? JSON.parse(body) : {}
+          }).then(function(res){
+            return new Response(JSON.stringify(res.data || {}), {
+              status: res.status || 200,
+              headers: { "Content-Type": "application/json" }
+            });
+          });
+        }
+
+        return capHttp.get({
+          url,
+          headers
+        }).then(function(res){
+          return new Response(JSON.stringify(res.data || {}), {
+            status: res.status || 200,
+            headers: { "Content-Type": "application/json" }
+          });
+        });
+      }
+
+      if (url && typeof input === "string") {
+        input = url;
+      }
+    } catch (err) {}
+
+    return originalFetch(input, init);
+  };
+})();
+</script>
 
 <script>
 (function AIVO_MOBILE_URL_TOAST_READ(){
