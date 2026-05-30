@@ -860,8 +860,15 @@ body {
     var st = document.getElementById("aivo-auth-gate-style");
     if (st) st.remove();
 
-    document.documentElement.style.visibility = "visible";
+  document.documentElement.style.visibility = "visible";
+
+if (document.body) {
+  document.body.style.opacity = "1";
+} else {
+  document.addEventListener("DOMContentLoaded", function(){
     document.body.style.opacity = "1";
+  }, { once: true });
+}
 
  document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
