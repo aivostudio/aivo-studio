@@ -917,7 +917,11 @@ function goLogin(){
   const playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
 
   if (playLoggedIn && playEmail.includes("@")) {
+    const st = document.getElementById("aivo-auth-gate-style");
+    if (st) st.remove();
+
     document.documentElement.style.visibility = "visible";
+    document.body.style.opacity = "1";
     document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
     document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
