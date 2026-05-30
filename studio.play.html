@@ -867,178 +867,108 @@ body {
   }
 </style>
 
-  <script>
- (function AIVO_PLAY_STUDIO_HARD_GATE(){
-    if (window.__AIVO_PLAY_STUDIO_HARD_GATE__) return;
-    window.__AIVO_PLAY_STUDIO_HARD_GATE__ = true;
+<script>
+(function AIVO_PLAY_STUDIO_HARD_GATE(){
+  if (window.__AIVO_PLAY_STUDIO_HARD_GATE__) return;
+  window.__AIVO_PLAY_STUDIO_HARD_GATE__ = true;
 
-function goLogin(){
-  try {
-    var playLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
-    var playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
+  function openStudioWithLocalSession(email){
+    try {
+      var cleanEmail = String(email || localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
-    if (playLoggedIn && playEmail.indexOf("@") !== -1) {
+      localStorage.setItem("aivo_logged_in", "1");
+      localStorage.setItem("aivo_user_email", cleanEmail);
+      localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+        loggedIn: true,
+        email: cleanEmail,
+        role: "user",
+        verified: true,
+        session: "play-local",
+        ts: Date.now()
+      }));
+
       var st = document.getElementById("aivo-auth-gate-style");
       if (st) st.remove();
 
       document.documentElement.style.visibility = "visible";
+      if (document.body) document.body.style.opacity = "1";
+
       document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
       document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
         detail: {
           me: {
-            email: playEmail,
+            email: cleanEmail,
             role: "user",
             verified: true,
-            session: "local"
+            session: "play-local"
           }
         }
       }));
+    } catch (err) {}
+  }
 
+  function goLogin(){
+    try {
+      var playLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
+      var playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
+
+      if (playLoggedIn && playEmail.indexOf("@") !== -1) {
+        openStudioWithLocalSession(playEmail);
+        return;
+      }
+    } catch (err) {}
+
+    try {
+      localStorage.removeItem("aivo_logged_in");
+      localStorage.removeItem("aivo_user_email");
+      localStorage.removeItem("aivo_auth_unified_v1");
+    } catch (err) {}
+
+    location.replace(getAivoMobileLoginUrl());
+  }
+
+  try {
+    var playLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
+    var playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
+
+    if (playLoggedIn && playEmail.indexOf("@") !== -1) {
+      openStudioWithLocalSession(playEmail);
       return;
     }
   } catch (err) {}
 
-  try {
-    localStorage.removeItem("aivo_logged_in");
-    localStorage.removeItem("aivo_user_email");
-    localStorage.removeItem("aivo_auth_unified_v1");
-  } catch (err) {}
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){
+    try { ctrl.abort(); } catch (e) {}
+  }, 2500);
 
-  location.replace(getAivoMobileLoginUrl());
-}
-    var ctrl = new AbortController();
-    var t = setTimeout(function(){
-      try { ctrl.abort(); } catch (e) {}
-    }, 2500);
- 
-    try {
-  const playLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
-  const playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
+  fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+    signal: ctrl.signal
+  })
+  .then(async function(r){
+    clearTimeout(t);
 
-  if (playLoggedIn && playEmail.includes("@")) {
-    const st = document.getElementById("aivo-auth-gate-style");
-    if (st) st.remove();
+    if (r.status === 200) {
+      var me = await r.json();
+      var user = me && (me.user || me);
+      var email = String(user && user.email ? user.email : "").trim().toLowerCase();
 
-    document.documentElement.style.visibility = "visible";
-    if (document.body) document.body.style.opacity = "1";
-    document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
-
-    document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-      detail: {
-        me: {
-          email: playEmail
-        }
-      }
-    }));
-
-    return;
-  }
-} catch (err) {}
-     fetch("https://aivo.tr/api/auth/me", {
-      credentials: "include",
-      cache: "no-store",
-      signal: ctrl.signal
-    })
-    .then(async function(r){
-      clearTimeout(t);
-
-      if (r.status === 200) {
-        var me = await r.json();
-
-             try {
-          var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
-          var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
-          var nextEmail = String((me && me.email) || "").trim().toLowerCase();
-
-          function firstNonEmpty() {
-            for (var i = 0; i < arguments.length; i++) {
-              var v = arguments[i];
-              if (v != null && String(v).trim()) return String(v).trim();
-            }
-            return "";
-          }
-
-          function emailToName(email) {
-            var normalized = String(email || "").trim().toLowerCase();
-            if (!normalized || normalized.indexOf("@") === -1) return "";
-            return normalized.split("@")[0].trim();
-          }
-
-          function scopedKey(baseKey, email) {
-            var normalized = String(email || "").trim().toLowerCase();
-            if (!normalized) return baseKey;
-            return baseKey + ":" + normalized;
-          }
-
-          if (prevEmail && prevEmail !== nextEmail) {
-            localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
-            localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
-          }
-
-          var firstName = firstNonEmpty(
-            me && me.first_name,
-            me && me.firstName,
-            me && me.name,
-            emailToName(nextEmail),
-            "Kullanıcı"
-          );
-
-          var surname = firstNonEmpty(
-            me && me.last_name,
-            me && me.lastName,
-            me && me.surname,
-            ""
-          );
-
-          var fullName = firstNonEmpty(
-            firstName && surname ? (firstName + " " + surname) : "",
-            firstName,
-            "Kullanıcı"
-          );
-
-          localStorage.setItem("aivo_logged_in", "1");
-          localStorage.setItem("aivo_user_email", nextEmail);
-          localStorage.setItem("aivo_profile_name", "");
-          localStorage.setItem("aivo_profile_surname", "");
-          localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
-            loggedIn: true,
-            email: nextEmail,
-            name: firstName,
-            first_name: firstName,
-            surname: surname,
-            last_name: surname,
-            full_name: fullName,
-            ts: Date.now()
-          }));
-          localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
-          localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
-        } catch (e) {}
-
-        var st = document.getElementById("aivo-auth-gate-style");
-        if (st) st.remove();
-
-    document.documentElement.style.visibility = "visible";
-        document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
-
-        try {
-          
-          document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-            detail: { me: me }
-          }));
-        } catch (e) {}
-
+      if (email && email.indexOf("@") !== -1) {
+        openStudioWithLocalSession(email);
         return;
       }
+    }
 
-      goLogin();
-    })
-    .catch(function(){
-      goLogin();
-    });
-  })();
-  </script>
-
+    goLogin();
+  })
+  .catch(function(){
+    goLogin();
+  });
+})();
+</script>
 <script>
 (function AIVO_MOBILE_START_ROUTE(){
   try {
