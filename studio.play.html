@@ -921,7 +921,7 @@ function goLogin(){
     if (st) st.remove();
 
     document.documentElement.style.visibility = "visible";
-    document.body.style.opacity = "1";
+    if (document.body) document.body.style.opacity = "1";
     document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
     document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
