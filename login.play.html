@@ -776,8 +776,7 @@ if (capHttp && typeof capHttp.post === "function") {
   setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
   return;
 }
-
-       setMessage(
+setMessage(
   tt("login.success.login", "Giriş başarılı."),
   "is-ok"
 );
@@ -791,6 +790,12 @@ try {
     ts: Date.now()
   }));
 } catch (err) {}
+
+setTimeout(function(){
+  window.location.href = "/studio.play.html";
+}, 350);
+
+return;
 
 async function waitForPlaySession(){
   for (let i = 0; i < 8; i++) {
