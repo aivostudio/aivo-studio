@@ -1467,5 +1467,27 @@ setTimeout(applyPrices, 250);
 document.addEventListener("aivo:language-change", applyPrices);
 })();
 </script>
+  <script>
+(function AIVO_PLAY_INDEX_LOCAL_AUTH_FINAL(){
+  try {
+    var email = String(localStorage.getItem("aivo_user_email") || "").trim();
+    var logged = localStorage.getItem("aivo_logged_in") === "1";
+
+    if (!logged && !email.includes("@")) return;
+
+    var loginPill = document.getElementById("mobileLoginPill");
+    var creditPill = document.getElementById("mobileCreditPill");
+    var buyCreditPill = document.getElementById("mobileBuyCreditPill");
+    var guestBottomNav = document.getElementById("mobileGuestBottomNav");
+    var appBottomNav = document.getElementById("mobileAppBottomNav");
+
+    if (loginPill) loginPill.hidden = true;
+    if (creditPill) creditPill.hidden = false;
+    if (buyCreditPill) buyCreditPill.hidden = false;
+    if (guestBottomNav) guestBottomNav.hidden = true;
+    if (appBottomNav) appBottomNav.hidden = false;
+  } catch (err) {}
+})();
+</script>
 </body>
 </html>
