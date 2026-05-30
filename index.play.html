@@ -7,6 +7,7 @@
 (function AIVO_PLAY_INDEX_WEB_GUARD(){
   try {
     var ua = navigator.userAgent || "";
+    if (location.search.indexOf("playDebug=1") !== -1) return;
     var isCapacitor =
       !!window.Capacitor ||
       ua.indexOf("Capacitor") !== -1 ||
