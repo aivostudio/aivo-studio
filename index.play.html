@@ -1344,9 +1344,19 @@ try {
       ? window.t("top.creditValue", { count: creditValue })
       : "Kredi " + creditValue;
   })
-  .catch(function(){
-    showGuest();
-  });
+ .catch(function(){
+  try {
+    const localLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
+    const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
+
+    if (localLoggedIn || localEmail.includes("@")) {
+      showUser();
+      return;
+    }
+  } catch (err) {}
+
+  showGuest();
+});
 })();
 </script>
 <script>
