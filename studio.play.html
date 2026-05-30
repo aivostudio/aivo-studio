@@ -1845,11 +1845,13 @@ function showHome(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
   if (policyMount) policyMount.hidden = true;
 }
+
 function showMusic(){
   homeMount.hidden = true;
   musicMount.hidden = false;
@@ -1859,16 +1861,17 @@ function showMusic(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
 
- const musicFormSection = document.getElementById("mobileHomeSection");
-const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
-const musicProductionsSection = document.getElementById("mobileProductionsSection");
+  const musicFormSection = document.getElementById("mobileHomeSection");
+  const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+  const musicProductionsSection = document.getElementById("mobileProductionsSection");
 
-if (musicFormSection) musicFormSection.hidden = false;
-if (musicCard) musicCard.hidden = false;
+  if (musicFormSection) musicFormSection.hidden = false;
+  if (musicCard) musicCard.hidden = false;
   if (musicProductionsSection) musicProductionsSection.hidden = true;
 
   const musicResults = document.getElementById("mobileMusicResults");
@@ -1882,10 +1885,11 @@ function showCover(){
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
-if (lipsyncMount) lipsyncMount.hidden = true;
-if (toolsMount) toolsMount.hidden = true;
-if (creditsMount) creditsMount.hidden = true;
-if (accountMount) accountMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
 
   const heroSub = document.getElementById("mobileHeroSub");
   if (heroSub) {
@@ -1900,10 +1904,12 @@ function showAtmo(){
   if (cartoonMount) cartoonMount.hidden = true;
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
-if (lipsyncMount) lipsyncMount.hidden = true;
-if (toolsMount) toolsMount.hidden = true;
-if (creditsMount) creditsMount.hidden = true;
-if (accountMount) accountMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
   const atmoSection = document.getElementById("mobileAtmoSection");
   if (atmoSection) {
     const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
@@ -1915,6 +1921,7 @@ if (accountMount) accountMount.hidden = true;
     if (atmoResults) atmoResults.hidden = true;
   }
 }
+
 function showCartoon(){
   musicMount.hidden = true;
   coverMount.hidden = true;
@@ -1922,10 +1929,12 @@ function showCartoon(){
   if (cartoonMount) cartoonMount.hidden = false;
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
-if (lipsyncMount) lipsyncMount.hidden = true;
-if (toolsMount) toolsMount.hidden = true;
-if (creditsMount) creditsMount.hidden = true;
-if (accountMount) accountMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
   const cartoonSection = document.getElementById("mobileCartoonSection");
   if (cartoonSection) {
     const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
@@ -1946,6 +1955,7 @@ function showPhotoFx(){
   if (photofxMount) photofxMount.hidden = false;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -1961,6 +1971,7 @@ function showPhotoFx(){
     if (photofxResults) photofxResults.hidden = true;
   }
 }
+
 function showVideo(){
   musicMount.hidden = true;
   coverMount.hidden = true;
@@ -1969,6 +1980,7 @@ function showVideo(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = false;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -1984,6 +1996,7 @@ function showVideo(){
     if (videoResults) videoResults.hidden = true;
   }
 }
+
 function showLipsync(){
   musicMount.hidden = true;
   coverMount.hidden = true;
@@ -1992,6 +2005,7 @@ function showLipsync(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = false;
+  if (productionsMount) productionsMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2007,7 +2021,7 @@ function showLipsync(){
     if (lipsyncResults) lipsyncResults.hidden = true;
   }
 }
-    
+
 if (homeNav) {
   homeNav.addEventListener("click", function(e){
     e.preventDefault();
