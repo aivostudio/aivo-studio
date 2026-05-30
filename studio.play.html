@@ -2619,7 +2619,7 @@ function getAivoMobileLoginUrl(extraQuery){
     async function getPresenceEmail(){
       if (presenceEmail) return presenceEmail;
 
-      const res = await fetch("/api/auth/me", {
+    const res = await fetch("https://aivo.tr/api/auth/me", {
         credentials: "include",
         cache: "no-store"
       });
