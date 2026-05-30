@@ -1171,10 +1171,56 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 
   window.fetch = function(input, init){
     try {
-      if (typeof input === "string" && input.startsWith("/api/")) {
-        input = "https://aivo.tr" + input;
-      } else if (input && typeof input.url === "string" && input.url.startsWith(location.origin + "/api/")) {
-        input = new Request(input.url.replace(location.origin, "https://aivo.tr"), input);
+      const capHttp =
+        window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.CapacitorHttp;
+
+      let url = "";
+
+      if (typeof input === "string") {
+        url = input;
+      } else if (input && typeof input.url === "string") {
+        url = input.url;
+      }
+
+      if (url.startsWith("/api/")) {
+        url = "https://aivo.tr" + url;
+      } else if (url.startsWith(location.origin + "/api/")) {
+        url = url.replace(location.origin, "https://aivo.tr");
+      }
+
+      if (capHttp && url.startsWith("https://aivo.tr/api/")) {
+        const method = String((init && init.method) || "GET").toUpperCase();
+        const headers = (init && init.headers) || {};
+        const body = init && init.body;
+
+        if (method === "POST") {
+          return capHttp.post({
+            url,
+            headers,
+            data: body ? JSON.parse(body) : {}
+          }).then(function(res){
+            return new Response(JSON.stringify(res.data || {}), {
+              status: res.status || 200,
+              headers: { "Content-Type": "application/json" }
+            });
+          });
+        }
+
+        return capHttp.get({
+          url,
+          headers
+        }).then(function(res){
+          return new Response(JSON.stringify(res.data || {}), {
+            status: res.status || 200,
+            headers: { "Content-Type": "application/json" }
+          });
+        });
+      }
+
+      if (url && typeof input === "string") {
+        input = url;
       }
     } catch (err) {}
 
