@@ -1284,6 +1284,18 @@ let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
 let productionsMount = document.getElementById("mobileProductionsMount");
+    if (!productionsMount) {
+  productionsMount = document.createElement("div");
+  productionsMount.id = "mobileProductionsMount";
+  productionsMount.hidden = true;
+  productionsMount.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
+
+  if (lipsyncMount) {
+    lipsyncMount.insertAdjacentElement("afterend", productionsMount);
+  } else if (musicMount) {
+    musicMount.insertAdjacentElement("afterend", productionsMount);
+  }
+}
 let creditsMount = document.getElementById("mobileCreditsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
