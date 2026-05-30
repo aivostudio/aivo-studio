@@ -2567,25 +2567,20 @@ function getAivoMobileLoginUrl(extraQuery){
   try {
     let presenceEmail = "";
 
-    async function getPresenceEmail(){
-      if (presenceEmail) return presenceEmail;
+  async function getPresenceEmail(){
+  if (presenceEmail) return presenceEmail;
 
-    const res = await fetch("https://aivo.tr/api/auth/me", {
-        credentials: "include",
-        cache: "no-store"
-      });
+  try {
+    const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
-      if (!res.ok) return "";
-
-      const data = await res.json().catch(function(){
-        return null;
-      });
-
-      const user = data && (data.user || data);
-      presenceEmail = String(user && user.email ? user.email : "").trim().toLowerCase();
-
+    if (localEmail && localEmail.includes("@")) {
+      presenceEmail = localEmail;
       return presenceEmail;
     }
+  } catch (err) {}
+
+  return "";
+}
 
     async function ping(){
       const email = await getPresenceEmail();
