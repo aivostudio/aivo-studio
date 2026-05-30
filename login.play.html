@@ -711,20 +711,43 @@ switchBtn.textContent = mode === "login"
 let res;
 let data;
 
-res = await fetch("https://aivo.tr" + endpoint, {
-  method: "POST",
-  credentials: "include",
-  cache: "no-store",
-  headers: {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  },
-  body: JSON.stringify(payload)
-});
+const capHttp =
+  window.Capacitor &&
+  window.Capacitor.Plugins &&
+  window.Capacitor.Plugins.CapacitorHttp;
 
-data = await res.json().catch(function(){
-  return {};
-});
+if (capHttp && typeof capHttp.post === "function") {
+  const nativeRes = await capHttp.post({
+    url: "https://aivo.tr" + endpoint,
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    data: payload
+  });
+
+  res = {
+    ok: Number(nativeRes && nativeRes.status) >= 200 && Number(nativeRes && nativeRes.status) < 300,
+    status: Number(nativeRes && nativeRes.status)
+  };
+
+  data = nativeRes && nativeRes.data ? nativeRes.data : {};
+} else {
+  res = await fetch("https://aivo.tr" + endpoint, {
+    method: "POST",
+    credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  data = await res.json().catch(function(){
+    return {};
+  });
+}
       if (!((res && res.ok) || Number(res && res.status) === 200) || !data || data.ok === false) {
           const err = data && data.error ? data.error : "auth_failed";
 
