@@ -938,35 +938,7 @@ body {
     }
   } catch (err) {}
 
-  var ctrl = new AbortController();
-  var t = setTimeout(function(){
-    try { ctrl.abort(); } catch (e) {}
-  }, 2500);
-
-  fetch("/api/auth/me", {
-    credentials: "include",
-    cache: "no-store",
-    signal: ctrl.signal
-  })
-  .then(async function(r){
-    clearTimeout(t);
-
-    if (r.status === 200) {
-      var me = await r.json();
-      var user = me && (me.user || me);
-      var email = String(user && user.email ? user.email : "").trim().toLowerCase();
-
-      if (email && email.indexOf("@") !== -1) {
-        openStudioWithLocalSession(email);
-        return;
-      }
-    }
-
-    goLogin();
-  })
-  .catch(function(){
-    goLogin();
-  });
+  goLogin();
 })();
 </script>
 <script>
