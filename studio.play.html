@@ -2439,6 +2439,25 @@ function showProductions(){
   if (musicCard) musicCard.hidden = true;
   if (musicProductionsSection) musicProductionsSection.hidden = false;
 
+  if (typeof setCoverLibraryOnly === "function") setCoverLibraryOnly(true);
+  if (typeof setAtmoLibraryOnly === "function") setAtmoLibraryOnly(true);
+
+  [
+    ["mobileCartoonSection", ".mobile-cartoon-panel", "#mobileCartoonResults"],
+    ["mobilePhotoFxSection", ".mobile-photofx-panel, .pfxPage", "#mobilePhotoFxResults"],
+    ["mobileVideoSection", ".mobile-video-panel", "#mobileVideoResults"],
+    ["mobileLipsyncSection", ".mobile-lipsync-panel", "#mobileLipsyncResults"]
+  ].forEach(function(row){
+    const section = document.getElementById(row[0]);
+    if (!section) return;
+
+    const panel = section.querySelector(row[1]);
+    const results = section.querySelector(row[2]);
+
+    if (panel) panel.hidden = true;
+    if (results) results.hidden = false;
+  });
+
   if (typeof window.mobileMusicHydrate === "function") window.mobileMusicHydrate();
   if (typeof window.mobileCoverHydrate === "function") window.mobileCoverHydrate();
   if (typeof window.mobileAtmoHydrate === "function") window.mobileAtmoHydrate();
