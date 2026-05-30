@@ -2436,52 +2436,31 @@ if (window.location.hash === "#cartoon") {
 }
 function showProductions(){
   if (homeMount) homeMount.hidden = true;
-  if (musicMount) musicMount.hidden = false;
-  if (coverMount) coverMount.hidden = false;
-  if (atmoMount) atmoMount.hidden = false;
-  if (cartoonMount) cartoonMount.hidden = false;
-  if (photofxMount) photofxMount.hidden = false;
-  if (videoMount) videoMount.hidden = false;
-  if (lipsyncMount) lipsyncMount.hidden = false;
+  if (musicMount) musicMount.hidden = true;
+  if (coverMount) coverMount.hidden = true;
+  if (atmoMount) atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
   if (policyMount) policyMount.hidden = true;
+  if (productionsMount) productionsMount.hidden = false;
 
-  const musicHomeSection = document.getElementById("mobileHomeSection");
-  const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
-  const musicProductionsSection = document.getElementById("mobileProductionsSection");
+  if (productionsMount) {
+    productionsMount.innerHTML = `
+      <section class="mobile-home-intro-card">
+        <div class="eyebrow">AIVO Mobile Studio</div>
+        <h1>Üretimlerim</h1>
+        <p class="sub">Müzik, kapak, video, atmosfer, PhotoFX, Lipsync ve çizgifilm üretimlerin burada listelenecek.</p>
+      </section>
 
-  if (musicHomeSection) musicHomeSection.hidden = true;
-  if (musicCard) musicCard.hidden = true;
-  if (musicProductionsSection) musicProductionsSection.hidden = false;
-
-  if (typeof setCoverLibraryOnly === "function") setCoverLibraryOnly(true);
-  if (typeof setAtmoLibraryOnly === "function") setAtmoLibraryOnly(true);
-
-  [
-    ["mobileCartoonSection", ".mobile-cartoon-panel", "#mobileCartoonResults"],
-    ["mobilePhotoFxSection", ".mobile-photofx-panel, .pfxPage", "#mobilePhotoFxResults"],
-    ["mobileVideoSection", ".mobile-video-panel", "#mobileVideoResults"],
-    ["mobileLipsyncSection", ".mobile-lipsync-panel", "#mobileLipsyncResults"]
-  ].forEach(function(row){
-    const section = document.getElementById(row[0]);
-    if (!section) return;
-
-    const panel = section.querySelector(row[1]);
-    const results = section.querySelector(row[2]);
-
-    if (panel) panel.hidden = true;
-    if (results) results.hidden = false;
-  });
-
-  if (typeof window.mobileMusicHydrate === "function") window.mobileMusicHydrate();
-  if (typeof window.mobileCoverHydrate === "function") window.mobileCoverHydrate();
-  if (typeof window.mobileAtmoHydrate === "function") window.mobileAtmoHydrate();
-  if (typeof window.mobileCartoonHydrate === "function") window.mobileCartoonHydrate();
-  if (typeof window.mobilePhotoFxHydrate === "function") window.mobilePhotoFxHydrate();
-  if (typeof window.mobileVideoHydrate === "function") window.mobileVideoHydrate();
-  if (typeof window.mobileLipsyncShowLibrary === "function") window.mobileLipsyncShowLibrary();
+      <h2 class="section-title">Son Üretimler</h2>
+      <div class="empty-card">Üretimler yükleniyor...</div>
+    `;
+  }
 
   setActiveNav(productionsNav);
   history.replaceState(null, "", "#productions");
