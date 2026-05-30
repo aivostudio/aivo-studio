@@ -837,14 +837,9 @@ async function waitForPlaySession(){
   return false;
 }
 
-const sessionReady = await waitForPlaySession();
-
-if (!sessionReady) {
-  setMessage("Oturum hazırlanıyor, lütfen tekrar dene.", "is-error");
-  return;
-}
-
-window.location.href = returnTo;
+setTimeout(function(){
+  window.location.replace(returnTo || "/studio.play.html");
+}, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
