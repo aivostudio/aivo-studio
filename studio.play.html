@@ -2017,6 +2017,17 @@ if (productionsNav) {
     if (musicHomeSection) musicHomeSection.hidden = true;
     if (musicCard) musicCard.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
+    document.querySelectorAll(
+  ".mobile-cover-card, .mobile-atmo-card, .mobile-atmo-panel, .mobile-cartoon-panel, .mobile-photofx-panel, .pfxPage, .mobile-video-panel, .mobile-lipsync-panel"
+).forEach(function(panel){
+  panel.hidden = true;
+});
+
+document.querySelectorAll(
+  "#mobileCoverResults, #mobileAtmoResults, #mobileCartoonResults, #mobilePhotoFxResults, #mobileVideoResults, #mobileLipsyncResults"
+).forEach(function(results){
+  results.hidden = false;
+});
 
     if (typeof window.mobileMusicHydrate === "function") window.mobileMusicHydrate();
     if (typeof window.mobileCoverHydrate === "function") window.mobileCoverHydrate();
