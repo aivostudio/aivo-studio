@@ -927,13 +927,6 @@ try {
       }
     } catch (err) {}
 
-    console.log("AIVO_GATE_REDIRECT", {
-      logged: localStorage.getItem("aivo_logged_in"),
-      email: localStorage.getItem("aivo_user_email"),
-      auth: localStorage.getItem("aivo_auth_unified_v1"),
-      href: location.href
-    });
-
     location.replace(getLoginUrl());
   }
 
