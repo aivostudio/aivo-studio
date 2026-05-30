@@ -6,17 +6,15 @@
 <script>
 (function AIVO_PLAY_INDEX_WEB_GUARD(){
   try {
-var ua = navigator.userAgent || "";
-var isAndroid =
-  ua.indexOf("Android") !== -1 &&
-  (
-    !!window.Capacitor ||
-    ua.indexOf("Capacitor") !== -1
-  );
+    var ua = navigator.userAgent || "";
+    var isCapacitor =
+      !!window.Capacitor ||
+      ua.indexOf("Capacitor") !== -1 ||
+      location.protocol === "capacitor:";
 
-if (isAndroid) return;
+    if (isCapacitor) return;
 
-window.location.replace("/index.mobile.html");
+    window.location.replace("/index.mobile.html");
   } catch (_) {
     window.location.replace("/index.mobile.html");
   }
