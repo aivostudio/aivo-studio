@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
- <script>
+<script>
 (function AIVO_PLAY_STUDIO_WEB_GUARD(){
   try {
     var ua = navigator.userAgent || "";
@@ -18,9 +18,9 @@
     if (isAndroidNative) return;
 
     var hash = window.location.hash || "";
-    return;
+    window.location.replace("/studio.mobile.html" + hash);
   } catch (_) {
-    return;
+    window.location.replace("/studio.mobile.html");
   }
 })();
 </script>
@@ -43,7 +43,7 @@
   <link rel="stylesheet" href="/mobile/css/mobile.settings.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.policy.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.toast.css?v=1">
-  <link rel="stylesheet" href="/mobile/css/mobile.assistant.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.assistant.css?v=2">
 
   <style>
     *{box-sizing:border-box}
@@ -78,31 +78,30 @@
   width:min(430px,100%);
   min-height:100vh;
   margin:0 auto;
-  padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
+  padding:12px 14px 84px;
 }
 
 .topbar{
-  position:fixed;
-  left:0;
-  right:0;
+  position:sticky;
   top:0;
-  z-index:120;
-  width:min(430px,100%);
-  margin:0 auto;
-  min-height:86px;
+  z-index:90;
 
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
 
-  padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
-  background:linear-gradient(180deg, rgba(7,9,20,.82), rgba(36,27,75,.48), rgba(36,27,75,0));
+  margin:-12px -14px 14px;
+padding:58px 14px 20px;
+  background:
+    linear-gradient(180deg, rgba(5,7,16,.88) 0%, rgba(5,7,16,.58) 58%, rgba(5,7,16,0) 100%),
+    radial-gradient(260px 110px at 18% 0%, rgba(139,92,246,.24), transparent 72%),
+    radial-gradient(260px 110px at 88% 0%, rgba(56,189,248,.16), transparent 72%);
   border-bottom:0;
   box-shadow:none;
 
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
 }
     .logo{
       display:flex;
@@ -126,14 +125,16 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(139,92,246,.48);
-  color:rgba(255,255,255,.94);
+  background:rgba(255,255,255,.065);
+  border:1px solid rgba(255,255,255,.13);
+  color:rgba(255,255,255,.92);
   font-size:12px;
-  font-weight:900;
+  font-weight:850;
   letter-spacing:-.015em;
   white-space:nowrap;
-  box-shadow:0 10px 26px rgba(0,0,0,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 8px 18px rgba(0,0,0,.16);
 }
     [data-mobile-top-credits]{
   animation:aivoStudioCreditAiGlow 7s ease-in-out infinite;
@@ -321,11 +322,11 @@
   color:rgba(255,255,255,.34);
 }
 
-.bottom-nav{
-  position:fixed !important;
+ .bottom-nav{
+  position:fixed;
   left:0;
   right:0;
-  bottom:92px !important;
+  bottom:0;
   z-index:80;
   width:min(430px,100%);
   height:78px;
@@ -333,7 +334,7 @@
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:0;
-  padding:8px 10px 8px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
   background:
     linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.045)),
     rgba(8,10,24,.58);
@@ -346,6 +347,7 @@
   backdrop-filter:blur(34px) saturate(190%);
   -webkit-backdrop-filter:blur(34px) saturate(190%);
 }
+
 .bottom-nav::before{
   content:"";
   position:absolute;
@@ -357,35 +359,31 @@
   pointer-events:none;
 }
 
-.bottom-nav a{
-  min-height:54px;
-  border-radius:16px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-  padding-top:1px;
-  background:transparent;
-  color:rgba(255,255,255,.52);
-  font-size:10px;
-  font-weight:900;
-  line-height:1;
-}
+    .bottom-nav a{
+      min-height:54px;
+      border-radius:16px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:4px;
+      background:transparent;
+      color:rgba(255,255,255,.52);
+      font-size:10px;
+      font-weight:900;
+    }
 
-.bottom-nav a span{
+   .bottom-nav a span{
   width:38px;
   height:38px;
   border-radius:999px;
   display:flex;
   align-items:center;
   justify-content:center;
-  flex:0 0 38px;
   font-size:16px;
   line-height:1;
   background:rgba(255,255,255,.075);
   border:1px solid rgba(255,255,255,.12);
-  transform:translateY(-1px);
 }
 
     .bottom-nav a b{
@@ -704,30 +702,28 @@ body {
 }
 @media (min-width: 768px) {
   .mobile-shell{
-    width:min(430px,100%);
+    width:min(760px,100%);
     min-height:100vh;
-    margin:0 auto;
-    padding:calc(122px + env(safe-area-inset-top)) 16px 132px;
+    padding:22px 28px 128px;
   }
 
   .topbar{
-    width:min(430px,100%);
-    margin:0 auto;
-    padding:calc(48px + env(safe-area-inset-top)) 18px 12px;
+    margin:-22px -28px 22px;
+    padding:54px 28px 22px;
   }
 
   .bottom-nav{
-    width:min(430px,100%);
-    height:78px;
-    border-radius:0;
+    width:min(760px,100%);
+    height:86px;
+    bottom:22px;
+    border-radius:28px;
   }
-
-  .aivo-assistant-fab,
-  .ai-help,
-  .mobile-ai-help{
-    bottom:98px !important;
-    right:22px !important;
-  }
+ .aivo-assistant-fab,
+.ai-help,
+.mobile-ai-help{
+  bottom:118px !important;
+  right:calc(50% - 280px) !important;
+}
   .mobile-tools-grid{
   grid-template-columns:1fr;
   min-height:calc(100vh - 390px);
@@ -838,21 +834,6 @@ body {
   max-width:360px !important;
 }
 }
-    /* Android Play Studio bottom nav final force */
-.bottom-nav{
-  position:fixed !important;
-  left:0 !important;
-  right:0 !important;
-  bottom:72px !important;
-  z-index:9999 !important;
-  width:min(430px,100%) !important;
-  height:78px !important;
-  margin:0 auto !important;
-  display:grid !important;
-  grid-template-columns:repeat(5,1fr) !important;
-  padding:8px 10px !important;
-  transform:none !important;
-}
   </style>
 
 <style id="aivo-auth-gate-style">
@@ -872,75 +853,89 @@ body {
   if (window.__AIVO_PLAY_STUDIO_HARD_GATE__) return;
   window.__AIVO_PLAY_STUDIO_HARD_GATE__ = true;
 
-  function openStudioWithLocalSession(email){
+  function getLoginUrl(){
+    return "/login.play.html?returnTo=" + encodeURIComponent("/studio.play.html" + (window.location.hash || ""));
+  }
+
+  function showStudio(me){
     try {
-      var cleanEmail = String(email || localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+      var nextEmail = String((me && me.email) || (me && me.user && me.user.email) || "").trim().toLowerCase();
 
       localStorage.setItem("aivo_logged_in", "1");
-      localStorage.setItem("aivo_user_email", cleanEmail);
-      localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+      localStorage.setItem("aivo_user_email", nextEmail);
+         localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
         loggedIn: true,
-        email: cleanEmail,
+        email: nextEmail,
         role: "user",
         verified: true,
         session: "play-local",
         ts: Date.now()
       }));
+    } catch (e) {}
 
-      var st = document.getElementById("aivo-auth-gate-style");
-      if (st) st.remove();
+    var st = document.getElementById("aivo-auth-gate-style");
+    if (st) st.remove();
 
-      document.documentElement.style.visibility = "visible";
-      if (document.body) document.body.style.opacity = "1";
+    document.documentElement.style.visibility = "visible";
+    document.body.style.opacity = "1";
 
-      document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+ document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
-      document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-        detail: {
-          me: {
-            email: cleanEmail,
-            role: "user",
-            verified: true,
-            session: "play-local"
-          }
-        }
-      }));
-    } catch (err) {}
+try {
+  document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+    detail: { me: me }
+  }));
+} catch (e) {}
+
+try {
+  window.dispatchEvent(new Event("aivo:credits:refresh"));
+} catch (e) {}
+
+try {
+  if (typeof loadCredits === "function") {
+    loadCredits();
+  }
+} catch (e) {}
   }
 
-  function goLogin(){
+  async function checkSessionOnce(){
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json().catch(function(){
+      return null;
+    });
+  }
+  async function boot(){
     try {
       var playLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
-      var playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
+      var playEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
       if (playLoggedIn && playEmail.indexOf("@") !== -1) {
-        openStudioWithLocalSession(playEmail);
+        showStudio({
+          email: playEmail,
+          role: "user",
+          verified: true,
+          session: "play-local"
+        });
         return;
       }
     } catch (err) {}
 
-    try {
-      localStorage.removeItem("aivo_logged_in");
-      localStorage.removeItem("aivo_user_email");
-      localStorage.removeItem("aivo_auth_unified_v1");
-    } catch (err) {}
-
-    location.replace(getAivoMobileLoginUrl());
+    location.replace(getLoginUrl());
   }
 
-  try {
-    var playLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
-    var playEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
-
-    if (playLoggedIn && playEmail.indexOf("@") !== -1) {
-      openStudioWithLocalSession(playEmail);
-      return;
-    }
-  } catch (err) {}
-
-  goLogin();
+  boot();
 })();
 </script>
+
 <script>
 (function AIVO_MOBILE_START_ROUTE(){
   try {
@@ -968,11 +963,11 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <body>
   <main class="mobile-shell">
     <header class="topbar">
-<a class="logo" href="/index.play.html" aria-label="AIVO">
+  <a class="logo" href="/index.play.html" aria-label="AIVO">
   <img src="/aivo-logo.png" alt="AIVO">
 </a>
 
-<div class="topbar-credit-actions">
+<div class="topbar-credit-actions" hidden>
   <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
     Kredi --
   </span>
@@ -1028,12 +1023,7 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <div id="mobileLipsyncMount" hidden>
   <div class="empty-card">Dudak Senkron Video modülü yükleniyor...</div>
 </div>
-
-<div id="mobileProductionsMount" hidden>
-  <div class="empty-card">Üretimler yükleniyor...</div>
-</div>
-
-<div id="mobileCreditsMount" hidden>
+  <div id="mobileCreditsMount" hidden>
   <div class="empty-card" data-i18n="credits.loading">Krediler bölümü yükleniyor...</div>
 </div>
 
@@ -1167,72 +1157,6 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
 <script src="/mobile/js/mobile.assistant.js?v=3" defer></script>
-  <script>
-(function AIVO_PLAY_API_FETCH_BRIDGE(){
-  if (window.__AIVO_PLAY_API_FETCH_BRIDGE__) return;
-  window.__AIVO_PLAY_API_FETCH_BRIDGE__ = true;
-
-  const originalFetch = window.fetch.bind(window);
-
-  window.fetch = function(input, init){
-    try {
-      const capHttp =
-        window.Capacitor &&
-        window.Capacitor.Plugins &&
-        window.Capacitor.Plugins.CapacitorHttp;
-
-      let url = "";
-
-      if (typeof input === "string") {
-        url = input;
-      } else if (input && typeof input.url === "string") {
-        url = input.url;
-      }
-
-      if (url.startsWith("/api/")) {
-        url = "https://aivo.tr" + url;
-      } else if (url.startsWith(location.origin + "/api/")) {
-        url = url.replace(location.origin, "https://aivo.tr");
-      }
-
-      if (capHttp && url.startsWith("https://aivo.tr/api/")) {
-        const method = String((init && init.method) || "GET").toUpperCase();
-        const headers = (init && init.headers) || {};
-        const body = init && init.body;
-
-        if (method === "POST") {
-          return capHttp.post({
-            url,
-            headers,
-            data: body ? JSON.parse(body) : {}
-          }).then(function(res){
-            return new Response(JSON.stringify(res.data || {}), {
-              status: res.status || 200,
-              headers: { "Content-Type": "application/json" }
-            });
-          });
-        }
-
-        return capHttp.get({
-          url,
-          headers
-        }).then(function(res){
-          return new Response(JSON.stringify(res.data || {}), {
-            status: res.status || 200,
-            headers: { "Content-Type": "application/json" }
-          });
-        });
-      }
-
-      if (url && typeof input === "string") {
-        input = url;
-      }
-    } catch (err) {}
-
-    return originalFetch(input, init);
-  };
-})();
-</script>
 
 <script>
 (function AIVO_MOBILE_URL_TOAST_READ(){
@@ -1272,6 +1196,97 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 </script>
 
 <script>
+(function AIVO_IOS_FAST_BOTTOM_NAV(){
+  if (window.__AIVO_IOS_FAST_BOTTOM_NAV__) return;
+  window.__AIVO_IOS_FAST_BOTTOM_NAV__ = true;
+
+  function setActiveNav(activeHref){
+    document.querySelectorAll(".bottom-nav a").forEach(function(item){
+      item.classList.toggle("active", item.getAttribute("href") === activeHref);
+    });
+  }
+
+  function hideAllSections(){
+    [
+      "mobileHomeMount",
+      "mobileMusicMount",
+      "mobileCoverMount",
+      "mobileAtmoMount",
+      "mobileCartoonMount",
+      "mobilePhotoFxMount",
+      "mobileVideoMount",
+      "mobileLipsyncMount",
+      "mobileCreditsMount",
+      "mobileToolsMount",
+      "mobileAccountMount",
+      "mobilePolicyMount"
+    ].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.hidden = true;
+    });
+  }
+
+  function showSection(hash){
+    const cleanHash = hash || "#home";
+
+    hideAllSections();
+
+    if (cleanHash === "#home") {
+      const home = document.getElementById("mobileHomeMount");
+      if (home) home.hidden = false;
+      setActiveNav("#home");
+      return;
+    }
+
+    if (cleanHash === "#productions") {
+      const productions = document.getElementById("mobileMusicMount");
+      if (productions) productions.hidden = false;
+      setActiveNav("#productions");
+      return;
+    }
+
+    if (cleanHash === "#tools") {
+      const tools = document.getElementById("mobileToolsMount");
+      if (tools) tools.hidden = false;
+      setActiveNav("#tools");
+      return;
+    }
+
+    if (cleanHash === "#credits") {
+      const credits = document.getElementById("mobileCreditsMount");
+      if (credits) credits.hidden = false;
+      setActiveNav("#credits");
+      return;
+    }
+
+    if (cleanHash === "#account") {
+      const account = document.getElementById("mobileAccountMount");
+      if (account) account.hidden = false;
+      setActiveNav("#account");
+    }
+  }
+
+  document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
+    navItem.addEventListener("click", function(event){
+      const href = navItem.getAttribute("href") || "#home";
+      if (!href.startsWith("#")) return;
+
+      event.preventDefault();
+      window.location.hash = href.slice(1);
+      showSection(href);
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }, true);
+  });
+
+  window.addEventListener("hashchange", function(){
+    showSection(window.location.hash || "#home");
+  });
+
+  showSection(window.location.hash || "#home");
+})();
+</script>
+
+<script>
   (async function(){
   const homeMount = document.getElementById("mobileHomeMount");
 const musicMount = document.getElementById("mobileMusicMount");
@@ -1283,19 +1298,6 @@ let cartoonMount = document.getElementById("mobileCartoonMount");
 let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
-let productionsMount = document.getElementById("mobileProductionsMount");
-    if (!productionsMount) {
-  productionsMount = document.createElement("div");
-  productionsMount.id = "mobileProductionsMount";
-  productionsMount.hidden = true;
-  productionsMount.innerHTML = '<div class="empty-card">Üretimler yükleniyor...</div>';
-
-  if (lipsyncMount) {
-    lipsyncMount.insertAdjacentElement("afterend", productionsMount);
-  } else if (musicMount) {
-    musicMount.insertAdjacentElement("afterend", productionsMount);
-  }
-}
 let creditsMount = document.getElementById("mobileCreditsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
@@ -1519,6 +1521,7 @@ try {
     lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
   }
 }
+
 try {
   const creditsRes = await fetch("/mobile/modules/mobile.credits.play.html?v=1", {
     cache: "no-store"
@@ -1535,7 +1538,7 @@ try {
   }
 
   const creditsScript = document.createElement("script");
-creditsScript.src = "/mobile/js/mobile.credits.play.js?v=3";
+  creditsScript.src = "/mobile/js/mobile.credits.play.js?v=3";
   creditsScript.defer = true;
   document.body.appendChild(creditsScript);
 } catch (err) {
@@ -1693,38 +1696,20 @@ async function hydrateTopCreditBalance(){
       throw new Error("play_credit_email_missing");
     }
 
-    const capHttp =
-      window.Capacitor &&
-      window.Capacitor.Plugins &&
-      window.Capacitor.Plugins.CapacitorHttp;
+    const res = await fetch("/api/play-billing/credits-get?email=" + encodeURIComponent(email), {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    });
 
-    let res;
-
-    if (capHttp && typeof capHttp.get === "function") {
-      res = await capHttp.get({
-        url: "https://aivo.tr/api/play-billing/credits-get",
-        params: { email: email },
-        headers: { "Accept": "application/json" }
-      });
-    } else {
-      res = await fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(email), {
-        method: "GET",
-        cache: "no-store",
-        headers: { "Accept": "application/json" }
-      });
-    }
-
-    const ok = res && (res.ok || Number(res.status) === 200);
-
-    if (!ok) {
+    if (!res.ok) {
       throw new Error("play_credit_balance_load_failed");
     }
 
-    const data = res.data || await res.json().catch(function(){
-      return null;
-    });
-
-    const creditValue = data && (data.credits ?? data.balance ?? data.credit ?? 0);
+    const data = await res.json();
+    const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
 
     topCreditBalance.textContent =
       String(document.documentElement.lang || "").toLowerCase().startsWith("en")
@@ -2009,57 +1994,154 @@ if (homeNav) {
      if (atmoResults) atmoResults.hidden = !isLibraryOnly;
     }
 
-if (productionsNav) {
-  productionsNav.addEventListener("click", function(e){
-    e.preventDefault();
-    e.stopImmediatePropagation();
+    if (productionsNav) {
+      productionsNav.addEventListener("click", function(e){
+        if (activeMobileModule === "cover") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
 
-    homeMount.hidden = true;
-    musicMount.hidden = false;
-    coverMount.hidden = false;
-    atmoMount.hidden = false;
+          showCover();
+          setCoverLibraryOnly(true);
+          setActiveNav(productionsNav);
 
-    if (cartoonMount) cartoonMount.hidden = false;
-    if (photofxMount) photofxMount.hidden = false;
-    if (videoMount) videoMount.hidden = false;
-    if (lipsyncMount) lipsyncMount.hidden = false;
-    if (toolsMount) toolsMount.hidden = true;
-    if (creditsMount) creditsMount.hidden = true;
-    if (accountMount) accountMount.hidden = true;
-    if (policyMount) policyMount.hidden = true;
+          if (typeof window.mobileCoverHydrate === "function") {
+            window.mobileCoverHydrate();
+          }
 
-    const musicHomeSection = document.getElementById("mobileHomeSection");
-    const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
-    const musicProductionsSection = document.getElementById("mobileProductionsSection");
+          return;
+        }
+if (activeMobileModule === "atmo") {
+  showAtmo();
+  setAtmoLibraryOnly(true);
 
-    if (musicHomeSection) musicHomeSection.hidden = true;
-    if (musicCard) musicCard.hidden = true;
-    if (musicProductionsSection) musicProductionsSection.hidden = false;
-    document.querySelectorAll(
-  ".mobile-cover-card, .mobile-atmo-card, .mobile-atmo-panel, .mobile-cartoon-panel, .mobile-photofx-panel, .pfxPage, .mobile-video-panel, .mobile-lipsync-panel"
-).forEach(function(panel){
-  panel.hidden = true;
-});
+  if (typeof window.mobileAtmoHydrate === "function") {
+    window.mobileAtmoHydrate();
+  }
 
-document.querySelectorAll(
-  "#mobileCoverResults, #mobileAtmoResults, #mobileCartoonResults, #mobilePhotoFxResults, #mobileVideoResults, #mobileLipsyncResults"
-).forEach(function(results){
-  results.hidden = false;
-});
-
-    if (typeof window.mobileMusicHydrate === "function") window.mobileMusicHydrate();
-    if (typeof window.mobileCoverHydrate === "function") window.mobileCoverHydrate();
-    if (typeof window.mobileAtmoHydrate === "function") window.mobileAtmoHydrate();
-    if (typeof window.mobileCartoonHydrate === "function") window.mobileCartoonHydrate();
-    if (typeof window.mobilePhotoFxHydrate === "function") window.mobilePhotoFxHydrate();
-    if (typeof window.mobileVideoHydrate === "function") window.mobileVideoHydrate();
-    if (typeof window.mobileLipsyncShowLibrary === "function") window.mobileLipsyncShowLibrary();
-
-    setActiveNav(productionsNav);
-    history.replaceState(null, "", "#productions");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, true);
+  setActiveNav(productionsNav);
+  return;
 }
+
+                    if (activeMobileModule === "cartoon") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showCartoon();
+
+          const cartoonSection = document.getElementById("mobileCartoonSection");
+          if (cartoonSection) {
+            const cartoonPanel = cartoonSection.querySelector(".mobile-cartoon-panel");
+            const cartoonTitle = cartoonSection.querySelector(".section-title");
+            const cartoonResults = cartoonSection.querySelector("#mobileCartoonResults");
+
+            if (cartoonPanel) cartoonPanel.hidden = true;
+            if (cartoonTitle) cartoonTitle.hidden = false;
+            if (cartoonResults) cartoonResults.hidden = false;
+            if (typeof window.mobileCartoonHydrate === "function") {
+            window.mobileCartoonHydrate();
+            }
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
+           if (activeMobileModule === "photofx") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showPhotoFx();
+
+          const photofxSection = document.getElementById("mobilePhotoFxSection");
+          if (photofxSection) {
+            const photofxPanel = photofxSection.querySelector(".mobile-photofx-panel");
+            const photofxTitle = photofxSection.querySelector(".section-title");
+            const photofxResults = photofxSection.querySelector("#mobilePhotoFxResults");
+
+            if (photofxPanel) photofxPanel.hidden = true;
+            if (photofxTitle) photofxTitle.hidden = false;
+            if (photofxResults) photofxResults.hidden = false;
+            if (typeof window.mobilePhotoFxHydrate === "function") {
+            window.mobilePhotoFxHydrate();
+           }
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+
+        if (activeMobileModule === "video") {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          showVideo();
+
+          const videoSection = document.getElementById("mobileVideoSection");
+          if (videoSection) {
+            const videoPanel = videoSection.querySelector(".mobile-video-panel");
+            const videoTitle = videoSection.querySelector(".section-title");
+            const videoResults = videoSection.querySelector("#mobileVideoResults");
+
+            if (videoPanel) videoPanel.hidden = true;
+            if (videoTitle) videoTitle.hidden = false;
+            if (videoResults) videoResults.hidden = false;
+            if (typeof window.mobileVideoHydrate === "function") {
+           window.mobileVideoHydrate();
+           }
+          }
+
+          setActiveNav(productionsNav);
+
+          return;
+        }
+        if (activeMobileModule === "lipsync") {
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  showLipsync();
+
+  const lipsyncSection = document.getElementById("mobileLipsyncSection");
+  if (lipsyncSection) {
+    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");
+    const lipsyncTitle = lipsyncSection.querySelector(".section-title");
+    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");
+
+    if (lipsyncPanel) lipsyncPanel.hidden = true;
+    if (lipsyncTitle) lipsyncTitle.hidden = false;
+    if (lipsyncResults) lipsyncResults.hidden = false;
+    if (typeof window.mobileLipsyncShowLibrary === "function") {
+  window.mobileLipsyncShowLibrary();
+}
+  }
+
+  setActiveNav(productionsNav);
+
+  return;
+}
+showMusic();
+
+const musicHomeSection = document.getElementById("mobileHomeSection");
+const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+if (musicHomeSection) musicHomeSection.hidden = true;
+if (musicCard) musicCard.hidden = true;
+
+if (musicProductionsSection) {
+  musicProductionsSection.hidden = false;
+
+  document.documentElement.scrollTo({
+    top: musicProductionsSection.offsetTop - 12,
+    behavior: "smooth"
+  });
+}
+
+setActiveNav(productionsNav);
+      }, true);
+    }
+
 if (toolsNav) {
  toolsNav.addEventListener("click", function(e){
   e.preventDefault();
@@ -2171,6 +2253,50 @@ if (accountNav) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
+    document.addEventListener("click", async function(e){
+  const policyPrivacyBtn = e.target.closest("[data-mobile-policy-privacy]");
+  const policyTermsBtn = e.target.closest("[data-mobile-policy-terms]");
+
+  if (!policyPrivacyBtn && !policyTermsBtn) return;
+
+  e.preventDefault();
+
+  const policyUrl = policyPrivacyBtn
+    ? "/mobile/modules/mobile-policy-privacy.html?v=1"
+    : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  if (homeMount) homeMount.hidden = true;
+  if (musicMount) musicMount.hidden = true;
+  if (coverMount) coverMount.hidden = true;
+  if (atmoMount) atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+
+  if (policyMount) {
+    policyMount.hidden = false;
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+  }
+
+  try {
+    const res = await fetch(policyUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("policy_load_failed");
+
+    policyMount.innerHTML = await res.text();
+
+    if (typeof window.aivoApplyI18n === "function") {
+      window.aivoApplyI18n(policyMount);
+    }
+  } catch (err) {
+    policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}, true);
     if (accountMount) {
 accountMount.addEventListener("click", async function(e){
 const profileBtn = e.target.closest('[data-mobile-account-panel="profile"]');
@@ -2446,38 +2572,7 @@ if (window.location.hash === "#cartoon") {
   setActiveNav(toolsNav);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-function showProductions(){
-  if (homeMount) homeMount.hidden = true;
-  if (musicMount) musicMount.hidden = true;
-  if (coverMount) coverMount.hidden = true;
-  if (atmoMount) atmoMount.hidden = true;
-  if (cartoonMount) cartoonMount.hidden = true;
-  if (photofxMount) photofxMount.hidden = true;
-  if (videoMount) videoMount.hidden = true;
-  if (lipsyncMount) lipsyncMount.hidden = true;
-  if (toolsMount) toolsMount.hidden = true;
-  if (creditsMount) creditsMount.hidden = true;
-  if (accountMount) accountMount.hidden = true;
-  if (policyMount) policyMount.hidden = true;
-  if (productionsMount) productionsMount.hidden = false;
 
-  if (productionsMount) {
-    productionsMount.innerHTML = `
-      <section class="mobile-home-intro-card">
-        <div class="eyebrow">AIVO Mobile Studio</div>
-        <h1>Üretimlerim</h1>
-        <p class="sub">Müzik, kapak, video, atmosfer, PhotoFX, Lipsync ve çizgifilm üretimlerin burada listelenecek.</p>
-      </section>
-
-      <h2 class="section-title">Son Üretimler</h2>
-      <div class="empty-card">Üretimler yükleniyor...</div>
-    `;
-  }
-
-  setActiveNav(productionsNav);
-  history.replaceState(null, "", "#productions");
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
 function applyMobileHashRoute(){
   const hash = String(window.location.hash || "#home");
 
@@ -2486,10 +2581,10 @@ function applyMobileHashRoute(){
     return;
   }
 
-if (hash === "#productions" && productionsNav) {
-  showProductions();
-  return;
-}
+  if (hash === "#productions" && productionsNav) {
+    productionsNav.click();
+    return;
+  }
 
   if (hash === "#tools" && toolsNav) {
     toolsNav.click();
@@ -2683,7 +2778,6 @@ function getAivoMobileLoginUrl(extraQuery){
   var returnTo = "/studio.play.html" + (window.location.hash || "");
   return "/login.play.html?returnTo=" + encodeURIComponent(returnTo);
 }
-
 </script>
 
 <script>
@@ -2691,20 +2785,20 @@ function getAivoMobileLoginUrl(extraQuery){
   try {
     let presenceEmail = "";
 
-  async function getPresenceEmail(){
-  if (presenceEmail) return presenceEmail;
+    async function getPresenceEmail(){
+      if (presenceEmail) return presenceEmail;
 
-  try {
-    const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+      try {
+        const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
-    if (localEmail && localEmail.includes("@")) {
-      presenceEmail = localEmail;
-      return presenceEmail;
+        if (localEmail && localEmail.includes("@")) {
+          presenceEmail = localEmail;
+          return presenceEmail;
+        }
+      } catch (err) {}
+
+      return "";
     }
-  } catch (err) {}
-
-  return "";
-}
 
     async function ping(){
       const email = await getPresenceEmail();
@@ -2718,11 +2812,11 @@ function getAivoMobileLoginUrl(extraQuery){
         headers: {
           "Content-Type": "application/json"
         },
-     body: JSON.stringify({
-  email: email,
-  source: "play",
-  page: "/studio.play.html"
-})
+          body: JSON.stringify({
+          email: email,
+          source: "play",
+          page: "/studio.play.html"
+        })
       }).catch(function(){});
     }
 
@@ -2746,10 +2840,10 @@ function getAivoMobileLoginUrl(extraQuery){
         headers: {
           "Content-Type": "application/json"
         },
-      body: JSON.stringify({
-  source: "play",
-  page: "/studio.play.html"
-})
+           body: JSON.stringify({
+          source: "play",
+          page: "/studio.play.html"
+        })
       }).catch(function(){});
     } catch (err) {}
   }
@@ -2772,5 +2866,6 @@ function getAivoMobileLoginUrl(extraQuery){
   });
 })();
 </script>
+
 </body>
 </html>
