@@ -791,9 +791,14 @@ try {
   }));
 } catch (err) {}
 
-setTimeout(function(){
-  window.location.href = returnTo;
-}, 350);
+const sessionReady = await waitForPlaySession();
+
+if (!sessionReady) {
+  setMessage("Oturum hazırlanıyor, lütfen tekrar dene.", "is-error");
+  return;
+}
+
+window.location.href = returnTo;
 
 return;
 
