@@ -1996,7 +1996,19 @@ if (productionsNav) {
     e.preventDefault();
     e.stopImmediatePropagation();
 
-    showMusic();
+    homeMount.hidden = true;
+    musicMount.hidden = false;
+    coverMount.hidden = false;
+    atmoMount.hidden = false;
+
+    if (cartoonMount) cartoonMount.hidden = false;
+    if (photofxMount) photofxMount.hidden = false;
+    if (videoMount) videoMount.hidden = false;
+    if (lipsyncMount) lipsyncMount.hidden = false;
+    if (toolsMount) toolsMount.hidden = true;
+    if (creditsMount) creditsMount.hidden = true;
+    if (accountMount) accountMount.hidden = true;
+    if (policyMount) policyMount.hidden = true;
 
     const musicHomeSection = document.getElementById("mobileHomeSection");
     const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
@@ -2006,7 +2018,13 @@ if (productionsNav) {
     if (musicCard) musicCard.hidden = true;
     if (musicProductionsSection) musicProductionsSection.hidden = false;
 
-    if (policyMount) policyMount.hidden = true;
+    if (typeof window.mobileMusicHydrate === "function") window.mobileMusicHydrate();
+    if (typeof window.mobileCoverHydrate === "function") window.mobileCoverHydrate();
+    if (typeof window.mobileAtmoHydrate === "function") window.mobileAtmoHydrate();
+    if (typeof window.mobileCartoonHydrate === "function") window.mobileCartoonHydrate();
+    if (typeof window.mobilePhotoFxHydrate === "function") window.mobilePhotoFxHydrate();
+    if (typeof window.mobileVideoHydrate === "function") window.mobileVideoHydrate();
+    if (typeof window.mobileLipsyncShowLibrary === "function") window.mobileLipsyncShowLibrary();
 
     setActiveNav(productionsNav);
     history.replaceState(null, "", "#productions");
