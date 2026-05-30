@@ -874,7 +874,7 @@ body {
 
 function goLogin(){
   try {
-    localStorage.removeItem("aivo_logged_in");
+   if (!localStorage.getItem("aivo_user_email")) localStorage.removeItem("aivo_logged_in");
     localStorage.removeItem("aivo_user_email");
     localStorage.removeItem("aivo_auth_unified_v1");
   } catch (err) {}
