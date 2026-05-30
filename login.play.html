@@ -843,7 +843,7 @@ async function waitForPlaySession(){
 }
 
 setTimeout(function(){
-  window.location.replace(returnTo || "/studio.play.html");
+ window.location.replace("/studio.play.html");
 }, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
