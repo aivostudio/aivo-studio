@@ -843,7 +843,7 @@ body {
 
   function showStudio(me){
     try {
-      var nextEmail = String((me && me.email) || (me && me.user && me.user.email) || "").trim().toLowerCase();
+     var nextEmail = String((me && me.email) || (me && me.user && me.user.email) || localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
 
       localStorage.setItem("aivo_logged_in", "1");
       localStorage.setItem("aivo_user_email", nextEmail);
