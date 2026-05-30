@@ -2431,6 +2431,22 @@ function showProductions(){
   if (accountMount) accountMount.hidden = true;
   if (policyMount) policyMount.hidden = true;
 
+  const musicHomeSection = document.getElementById("mobileHomeSection");
+  const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+  const musicProductionsSection = document.getElementById("mobileProductionsSection");
+
+  if (musicHomeSection) musicHomeSection.hidden = true;
+  if (musicCard) musicCard.hidden = true;
+  if (musicProductionsSection) musicProductionsSection.hidden = false;
+
+  if (typeof window.mobileMusicHydrate === "function") window.mobileMusicHydrate();
+  if (typeof window.mobileCoverHydrate === "function") window.mobileCoverHydrate();
+  if (typeof window.mobileAtmoHydrate === "function") window.mobileAtmoHydrate();
+  if (typeof window.mobileCartoonHydrate === "function") window.mobileCartoonHydrate();
+  if (typeof window.mobilePhotoFxHydrate === "function") window.mobilePhotoFxHydrate();
+  if (typeof window.mobileVideoHydrate === "function") window.mobileVideoHydrate();
+  if (typeof window.mobileLipsyncShowLibrary === "function") window.mobileLipsyncShowLibrary();
+
   setActiveNav(productionsNav);
   history.replaceState(null, "", "#productions");
   window.scrollTo({ top: 0, behavior: "smooth" });
