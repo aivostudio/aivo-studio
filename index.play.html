@@ -1305,14 +1305,24 @@ try {
   });
 
   authMePromise
-  .then(function(res){
-    if (!res.ok) {
-      showGuest();
-      return null;
-    }
+.then(function(res){
+  if (!res.ok) {
+    try {
+      const localLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
+      const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
 
-    return res.json();
-  })
+      if (localLoggedIn || localEmail.includes("@")) {
+        showUser();
+        return null;
+      }
+    } catch (err) {}
+
+    showGuest();
+    return null;
+  }
+
+  return res.json();
+})
   .then(function(me){
     if (!me) return;
 
