@@ -2417,7 +2417,24 @@ if (window.location.hash === "#cartoon") {
   setActiveNav(toolsNav);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+function showProductions(){
+  if (homeMount) homeMount.hidden = true;
+  if (musicMount) musicMount.hidden = false;
+  if (coverMount) coverMount.hidden = false;
+  if (atmoMount) atmoMount.hidden = false;
+  if (cartoonMount) cartoonMount.hidden = false;
+  if (photofxMount) photofxMount.hidden = false;
+  if (videoMount) videoMount.hidden = false;
+  if (lipsyncMount) lipsyncMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
 
+  setActiveNav(productionsNav);
+  history.replaceState(null, "", "#productions");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 function applyMobileHashRoute(){
   const hash = String(window.location.hash || "#home");
 
@@ -2426,10 +2443,10 @@ function applyMobileHashRoute(){
     return;
   }
 
-  if (hash === "#productions" && productionsNav) {
-    productionsNav.click();
-    return;
-  }
+if (hash === "#productions" && productionsNav) {
+  showProductions();
+  return;
+}
 
   if (hash === "#tools" && toolsNav) {
     toolsNav.click();
