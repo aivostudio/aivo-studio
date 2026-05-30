@@ -911,6 +911,13 @@ try {
         });
         return;
       }
+
+      var sessionMe = await checkSessionOnce();
+
+      if (sessionMe && (sessionMe.email || (sessionMe.user && sessionMe.user.email))) {
+        showStudio(sessionMe);
+        return;
+      }
     } catch (err) {}
 
     location.replace(getLoginUrl());
