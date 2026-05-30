@@ -2205,24 +2205,25 @@ if (activeMobileModule === "atmo") {
 
   return;
 }
-homeMount.hidden = true;
-musicMount.hidden = true;
-coverMount.hidden = true;
-atmoMount.hidden = true;
+showMusic();
 
-if (cartoonMount) cartoonMount.hidden = true;
-if (photofxMount) photofxMount.hidden = true;
-if (videoMount) videoMount.hidden = true;
-if (lipsyncMount) lipsyncMount.hidden = true;
+const musicHomeSection = document.getElementById("mobileHomeSection");
+const musicCard = document.querySelector("#mobileMusicMount .mobile-music-card");
+const musicProductionsSection = document.getElementById("mobileProductionsSection");
 
-if (toolsMount) toolsMount.hidden = true;
-if (creditsMount) creditsMount.hidden = true;
-if (accountMount) accountMount.hidden = true;
+if (musicHomeSection) musicHomeSection.hidden = true;
+if (musicCard) musicCard.hidden = true;
 
-if (productionsMount) productionsMount.hidden = false;
+if (musicProductionsSection) {
+  musicProductionsSection.hidden = false;
+
+  document.documentElement.scrollTo({
+    top: musicProductionsSection.offsetTop - 12,
+    behavior: "smooth"
+  });
+}
 
 setActiveNav(productionsNav);
-window.scrollTo({ top: 0, behavior: "smooth" });
       }, true);
     }
 
