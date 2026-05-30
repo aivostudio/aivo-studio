@@ -791,13 +791,6 @@ try {
   }));
 } catch (err) {}
 
-const sessionReady = await waitForPlaySession();
-
-if (!sessionReady) {
-  setMessage("Oturum hazırlanıyor, lütfen tekrar dene.", "is-error");
-  return;
-}
-
 window.location.href = returnTo;
 
 return;
