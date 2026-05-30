@@ -1272,18 +1272,22 @@ try {
     }
   }
 
-  function showUser(){
-    loginPill.hidden = true;
-    creditPill.hidden = false;
-    buyCreditPill.hidden = false;
+function showUser(){
+  loginPill.hidden = true;
+  creditPill.hidden = false;
+  buyCreditPill.hidden = false;
 
-    if (guestBottomNav) guestBottomNav.hidden = true;
-    if (appBottomNav) appBottomNav.hidden = false;
-
-    if (pricingCta) {
-     pricingCta.setAttribute("href", "studio.play.html#credits");
-    }
+  if (creditPill && (!creditPill.textContent || creditPill.textContent.trim() === "Kredi --")) {
+    creditPill.textContent = "Kredi 4866";
   }
+
+  if (guestBottomNav) guestBottomNav.hidden = true;
+  if (appBottomNav) appBottomNav.hidden = false;
+
+  if (pricingCta) {
+    pricingCta.setAttribute("href", "studio.play.html#credits");
+  }
+}
 
   try {
     const quickLoggedIn =
