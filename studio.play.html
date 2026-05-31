@@ -1381,27 +1381,27 @@ if (typeof window.aivoApplyI18n === "function") {
   window.aivoApplyI18n(homeMount);
 }
 } catch (err) {
-  homeMount.innerHTML = '<div class="empty-card">Ana sayfa yüklenemedi.</div>';
+  homeMount.innerHTML = '<div class="empty-card" data-i18n="empty.homeLoadFailed">Home could not be loaded.</div>';
 }
     if (!coverMount) {
       coverMount = document.createElement("div");
       coverMount.id = "mobileCoverMount";
       coverMount.hidden = true;
-      coverMount.innerHTML = '<div class="empty-card">Kapak modülü yükleniyor...</div>';
+      coverMount.innerHTML = '<div class="empty-card" data-i18n="empty.coverLoading">Loading cover module.</div>';
       musicMount.insertAdjacentElement("afterend", coverMount);
     }
     if (!atmoMount) {
   atmoMount = document.createElement("div");
   atmoMount.id = "mobileAtmoMount";
   atmoMount.hidden = true;
-  atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yükleniyor...</div>';
+  atmoMount.innerHTML = '<div class="empty-card" data-i18n="empty.atmoLoading">Loading atmosphere module.</div>';
   coverMount.insertAdjacentElement("afterend", atmoMount);
 }
     if (!photofxMount) {
   photofxMount = document.createElement("div");
   photofxMount.id = "mobilePhotoFxMount";
   photofxMount.hidden = true;
-  photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yükleniyor...</div>';
+  photofxMount.innerHTML = '<div class="empty-card" data-i18n="empty.photofxLoading">Loading PhotoFX module.</div>';
 
   if (cartoonMount) {
     cartoonMount.insertAdjacentElement("afterend", photofxMount);
