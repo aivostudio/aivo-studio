@@ -1795,16 +1795,33 @@ async function hydrateTopCreditBalance(){
   }
 }
 
+function normalizeTopCreditButton(){
+  if (topCreditsBtn) {
+    topCreditsBtn.textContent =
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+        ? "Buy Credits"
+        : "Kredi Al";
+  }
+}
+
 hydrateTopCreditBalance();
+normalizeTopCreditButton();
 document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+
 document.addEventListener("aivo:auth-ready", function(){
   document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
   hydrateTopCreditBalance();
+  normalizeTopCreditButton();
 });
+
 window.addEventListener("aivo:credits:refresh", function(){
   document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
   hydrateTopCreditBalance();
+  normalizeTopCreditButton();
 });
+
+setTimeout(normalizeTopCreditButton, 300);
+setTimeout(normalizeTopCreditButton, 1200);
     
     if (topCreditsBtn) {
   topCreditsBtn.addEventListener("click", function(e){
