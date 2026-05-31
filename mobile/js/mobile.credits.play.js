@@ -243,18 +243,42 @@ setBalance(data.credits);
       }, 1800);
     }
   }
-    function openMobileCreditsPolicy(type){
-    try {
-      if (window.openMobilePolicy && typeof window.openMobilePolicy === "function") {
-        window.openMobilePolicy(type);
-        return;
-      }
+ async function openMobileCreditsPolicy(type){
+  const policyMount = document.getElementById("mobilePolicyMount");
+  const creditsMount = document.getElementById("mobileCreditsMount");
 
-      window.location.hash = type === "terms" ? "terms" : "privacy";
-    } catch (err) {
-      alert(type === "terms" ? "Kullanım Şartları açılamadı." : "KVKK metni açılamadı.");
+  const file = type === "terms"
+    ? "/mobile/modules/mobile-policy-terms.html?v=1"
+    : "/mobile/modules/mobile-policy-privacy.html?v=1";
+
+  try {
+    if (creditsMount) creditsMount.hidden = true;
+
+    if (policyMount) {
+      policyMount.hidden = false;
+      policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+    }
+
+    const html = await fetch(file, { cache: "no-store" }).then(function(res){
+      if (!res.ok) throw new Error("policy_load_failed");
+      return res.text();
+    });
+
+    if (policyMount) {
+      policyMount.innerHTML = html;
+    }
+
+    if (typeof window.aivoApplyI18n === "function") {
+      window.aivoApplyI18n(policyMount);
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (err) {
+    if (policyMount) {
+      policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
     }
   }
+}
 
   function bindPolicyLinks(){
     const section = $("#mobileCreditsSection");
