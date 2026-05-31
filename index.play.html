@@ -1332,9 +1332,9 @@ try {
   }
 
   try {
-    const localLoggedIn =
-      localStorage.getItem("aivo_logged_in") === "1" ||
-      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+   const localLoggedIn =
+  localStorage.getItem("aivo_logged_in") === "1" &&
+  String(localStorage.getItem("aivo_user_email") || "").includes("@");
 
     if (localLoggedIn) {
       showUser();
@@ -1351,9 +1351,9 @@ setTimeout(hydrateCredits, 1200);
 
 function refreshAuthUi(){
   try {
-    const localLoggedIn =
-      localStorage.getItem("aivo_logged_in") === "1" &&
-      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+   const localLoggedIn =
+  localStorage.getItem("aivo_logged_in") === "1" &&
+  String(localStorage.getItem("aivo_user_email") || "").includes("@");
 
     if (localLoggedIn) {
       showUser();
