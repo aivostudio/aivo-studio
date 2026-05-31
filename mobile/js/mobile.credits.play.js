@@ -91,17 +91,26 @@ function applyMobileCreditPrices(){
     return (root || document).querySelector(selector);
   }
 
-  function setBalance(value){
+function setBalance(value){
   const n = Number(value);
-const safeValue = Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : "0";
-el.textContent = "Kredi " + safeValue;
+  const safeValue = Number.isFinite(n) ? String(Math.max(0, Math.floor(n))) : "0";
+  const isEnglish = String(window.AIVO_LANG || localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "")
+    .toLowerCase()
+    .startsWith("en");
 
-   const topEl = document.querySelector("[data-mobile-credit-balance]");
-if (topEl) {
-  topEl.removeAttribute("data-i18n");
-  topEl.textContent = "Kredi " + safeValue;
-}
+  const label = isEnglish ? "Credits " : "Kredi ";
+
+  const el = $("#mobileCreditsBalance");
+  if (el) {
+    el.textContent = label + safeValue;
   }
+
+  const topEl = document.querySelector("[data-mobile-credit-balance]");
+  if (topEl) {
+    topEl.removeAttribute("data-i18n");
+    topEl.textContent = label + safeValue;
+  }
+}
 
 async function getMe(){
   console.log("[AIVO PLAY AUTH] local email:", localStorage.getItem("aivo_user_email"));
