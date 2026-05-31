@@ -1258,18 +1258,28 @@ try {
 
   if (!loginPill || !creditPill || !buyCreditPill) return;
 
-  function showGuest(){
-    loginPill.hidden = false;
-    creditPill.hidden = true;
-    buyCreditPill.hidden = true;
+function showGuest(){
+  try {
+    const localLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
+    const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
 
-    if (guestBottomNav) guestBottomNav.hidden = false;
-    if (appBottomNav) appBottomNav.hidden = true;
-
-    if (pricingCta) {
-      pricingCta.setAttribute("href", "#mobilePricing");
+    if (localLoggedIn || localEmail.includes("@")) {
+      showUser();
+      return;
     }
+  } catch (err) {}
+
+  loginPill.hidden = false;
+  creditPill.hidden = true;
+  buyCreditPill.hidden = true;
+
+  if (guestBottomNav) guestBottomNav.hidden = false;
+  if (appBottomNav) appBottomNav.hidden = true;
+
+  if (pricingCta) {
+    pricingCta.setAttribute("href", "#mobilePricing");
   }
+}
 
 function showUser(){
   loginPill.hidden = true;
