@@ -1286,8 +1286,10 @@ function showUser(){
   creditPill.hidden = false;
   buyCreditPill.hidden = false;
 
-  if (creditPill && (!creditPill.textContent || creditPill.textContent.trim() === "Kredi --")) {
-    creditPill.textContent = "Kredi 4866";
+  if (creditPill && (!creditPill.textContent || creditPill.textContent.trim() === "Kredi --" || creditPill.textContent.trim() === "Credit --")) {
+    creditPill.textContent = typeof window.t === "function"
+      ? window.t("top.creditValue", { count: 4866 })
+      : ((String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "tr").toLowerCase().startsWith("en")) ? "Credit 4866" : "Kredi 4866");
   }
 
   if (guestBottomNav) guestBottomNav.hidden = true;
