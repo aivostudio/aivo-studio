@@ -1789,6 +1789,8 @@ async function hydrateTopCreditBalance(){
 }
 
 hydrateTopCreditBalance();
+    document.addEventListener("aivo:auth-ready", hydrateTopCreditBalance);
+window.addEventListener("aivo:credits:refresh", hydrateTopCreditBalance);
     
     if (topCreditsBtn) {
   topCreditsBtn.addEventListener("click", function(e){
