@@ -2360,7 +2360,7 @@ if (accountNav) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
-    document.addEventListener("click", async function(e){
+       document.addEventListener("click", async function(e){
   const policyPrivacyBtn = e.target.closest("[data-mobile-policy-privacy]");
   const policyTermsBtn = e.target.closest("[data-mobile-policy-terms]");
 
@@ -2371,6 +2371,8 @@ if (accountNav) {
   const policyUrl = policyPrivacyBtn
     ? "/mobile/modules/mobile-policy-privacy.html?v=1"
     : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  const isEnglish = String(document.documentElement.lang || "").toLowerCase().startsWith("en");
 
   if (homeMount) homeMount.hidden = true;
   if (musicMount) musicMount.hidden = true;
@@ -2386,7 +2388,7 @@ if (accountNav) {
 
   if (policyMount) {
     policyMount.hidden = false;
-    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoading">Loading legal text.</div>';
+    policyMount.innerHTML = '<div class="empty-card">' + (isEnglish ? "Loading legal text." : "Yasal metin yükleniyor...") + '</div>';
   }
 
   try {
@@ -2399,7 +2401,7 @@ if (accountNav) {
       window.aivoApplyI18n(policyMount);
     }
   } catch (err) {
-    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoadFailed">Legal text could not be loaded.</div>';
+    policyMount.innerHTML = '<div class="empty-card">' + (isEnglish ? "Legal text could not be loaded." : "Yasal metin yüklenemedi.") + '</div>';
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
