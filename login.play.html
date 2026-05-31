@@ -302,10 +302,21 @@
       accent-color:#8b5cf6;
     }
 
-    .mobile-login-link{
-      color:#c4b5fd;
-      font-weight:900;
-    }
+   .mobile-login-link{
+  color:#c4b5fd;
+  font-weight:900;
+}
+
+.mobile-login-policy-btn{
+  appearance:none;
+  border:0;
+  padding:0;
+  margin:0 2px;
+  background:none;
+  font:inherit;
+  text-decoration:underline;
+  cursor:pointer;
+}
 
     .mobile-login-submit{
       width:100%;
@@ -578,8 +589,8 @@
 
   <a class="mobile-login-link" href="/forgot.play.html" data-i18n="login.forgotPassword">Şifremi unuttum?</a>
 </div>
-     <label class="mobile-login-check mobile-login-register-only">
-  <input id="mobileTerms" type="checkbox">
+<label class="mobile-login-check mobile-login-register-only">
+  <input id="mobileTerms" type="checkbox" required>
 
   <span>
     <button
@@ -602,7 +613,9 @@
       Kullanım Şartları
     </button>
 
-    <span data-i18n="credits.acceptSuffix">metinlerini okudum ve kabul ediyorum.</span>
+    <span data-i18n="credits.acceptSuffix">
+      metinlerini okudum ve kabul ediyorum.
+    </span>
   </span>
 </label>
 
@@ -835,13 +848,16 @@ switchBtn.textContent = mode === "login"
     return;
   }
 
-  if (!terms.checked) {
-    setMessage(
-      tt("login.error.acceptTerms", "Kullanım şartlarını kabul etmelisin."),
-      "is-error"
-    );
-    return;
-  }
+if (!terms.checked) {
+  setMessage(
+    tt(
+      "login.error.acceptTerms",
+      "KVKK Aydınlatma Metni ve Kullanım Şartlarını kabul etmelisin."
+    ),
+    "is-error"
+  );
+  return;
+}
 }
 
        submitBtn.disabled = true;
@@ -858,14 +874,16 @@ submitBtn.textContent = mode === "login"
       email: cleanEmail,
       password: cleanPassword
     }
-  : {
+: {
       app: "play",
       name: String(firstName.value || "").trim(),
       surname: String(lastName.value || "").trim(),
       email: cleanEmail,
-      password: cleanPassword
+      password: cleanPassword,
+      kvkkAccepted: true,
+      termsAccepted: true,
+      consentSource: "android_play_register"
     };
-
 let res;
 let data;
 
