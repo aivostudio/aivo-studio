@@ -2382,7 +2382,7 @@ if (accountNav) {
 
   if (policyMount) {
     policyMount.hidden = false;
-    policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoading">Loading legal text.</div>';
   }
 
   try {
@@ -2395,7 +2395,7 @@ if (accountNav) {
       window.aivoApplyI18n(policyMount);
     }
   } catch (err) {
-    policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
+    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoadFailed">Legal text could not be loaded.</div>';
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
