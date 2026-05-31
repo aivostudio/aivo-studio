@@ -1743,16 +1743,24 @@ document.body.appendChild(contactScript);
       if (policyMount) policyMount.hidden = true;
       if (creditsMount) creditsMount.hidden = false;
     }
-    const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
-    const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
- const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
+ const homeNav = document.querySelector('.bottom-nav a[href="#home"]');
+const productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
+const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
 const creditsNav = document.querySelector('.bottom-nav a[href="#credits"]');
 const accountNav = document.querySelector('.bottom-nav a[href="#account"]');
-    const topCreditsBtn = document.querySelector("[data-mobile-top-credits]");
+const topCreditsBtn = document.querySelector("[data-mobile-top-credits]");
 const topCreditBalance = document.querySelector("[data-mobile-credit-balance]");
+
+function isMobileEnglish(){
+  return String(window.AIVO_LANG || localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "")
+    .toLowerCase()
+    .startsWith("en");
+}
 
 async function hydrateTopCreditBalance(){
   if (!topCreditBalance) return;
+
+  const isEnglish = isMobileEnglish();
 
   try {
     const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
@@ -1776,31 +1784,29 @@ async function hydrateTopCreditBalance(){
     const data = await res.json();
     const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
 
-   topCreditBalance.textContent =
-  String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "").toLowerCase().startsWith("en")
-    ? "Credits " + creditValue
-    : "Kredi " + creditValue;
-} catch (err) {
-  topCreditBalance.textContent =
-    String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "").toLowerCase().startsWith("en")
+    topCreditBalance.textContent = isEnglish
+      ? "Credits " + creditValue
+      : "Kredi " + creditValue;
+  } catch (err) {
+    topCreditBalance.textContent = isEnglish
       ? "Credits --"
       : "Kredi --";
-}
+  }
 
   if (topCreditsBtn) {
-    topCreditsBtn.textContent =
-      String(document.documentElement.lang || "").toLowerCase().startsWith("en")
-        ? "Buy Credits"
-        : "Kredi Al";
+    topCreditsBtn.textContent = isEnglish
+      ? "Buy Credits"
+      : "Kredi Al";
   }
 }
 
 function normalizeTopCreditButton(){
   if (topCreditsBtn) {
-    topCreditsBtn.textContent =
-      String(document.documentElement.lang || "").toLowerCase().startsWith("en")
-        ? "Buy Credits"
-        : "Kredi Al";
+    const isEnglish = isMobileEnglish();
+
+    topCreditsBtn.textContent = isEnglish
+      ? "Buy Credits"
+      : "Kredi Al";
   }
 }
 
