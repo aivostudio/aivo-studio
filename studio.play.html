@@ -2471,7 +2471,10 @@ if (policyBackBtn) {
   e.preventDefault();
     
 const shareUrl = "https://www.aivo.tr";
-const shareText = "Try AIVO on mobile to create music, covers, videos and cartoons:";
+const shareText =
+  String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+    ? "Try AIVO on mobile to create music, covers, videos and cartoons:"
+    : "AIVO ile müzik, kapak, video ve çizgifilm üretimini mobilde dene:";
 
   try {
     if (navigator.share) {
