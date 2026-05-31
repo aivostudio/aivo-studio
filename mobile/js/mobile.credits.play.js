@@ -409,7 +409,7 @@ await new Promise(function(resolve){ setTimeout(resolve, 700); });
 
 await startPlayBillingPurchase({
   ...pack,
-  productId: pack.plan
+  productId: pack.productId
 });
       setButtonLoading(button, false);
     } catch (err) {
