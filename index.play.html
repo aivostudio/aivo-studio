@@ -1342,18 +1342,10 @@ function showUser(){
     const user = me.user || me;
     const email = String(user.email || "").trim();
 
-   if (!res.ok) {
-  const localLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
-  const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim();
-
-  if (localLoggedIn || localEmail.includes("@")) {
-    showUser();
-    return null;
-  }
-
-  showGuest();
-  return null;
-}
+    if (!email) {
+      showGuest();
+      return;
+    }
 
     showUser();
 
