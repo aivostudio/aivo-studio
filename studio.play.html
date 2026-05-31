@@ -2080,8 +2080,9 @@ if (homeNav) {
 
       const atmoPanels = atmoSection.querySelectorAll(".mobile-atmo-card, .mobile-atmo-panel");
       const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
-        return title.textContent.includes("Son atmosfer videoları");
-      });
+  const text = String(title.textContent || "");
+  return text.includes("Son atmosfer videoları") || text.includes("Latest atmosphere videos");
+});
       const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
 
           atmoPanels.forEach(function(panel){
