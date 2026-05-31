@@ -245,7 +245,27 @@
       color:#c4b5fd;
       font-weight:950;
     }
+    @media (min-width: 768px) {
+      .mobile-forgot-shell{
+        width:min(760px,100%);
+        padding:calc(26px + env(safe-area-inset-top)) 42px max(34px, env(safe-area-inset-bottom));
+      }
+
+      .mobile-forgot-card,
+      .mobile-forgot-actions{
+        max-width:760px;
+        width:100%;
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      .mobile-forgot-hero p{
+        max-width:520px;
+      }
+    }
   </style>
+
+  <script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
 </head>
 
 <body>
