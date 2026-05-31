@@ -1786,6 +1786,13 @@ async function hydrateTopCreditBalance(){
         ? "Credits --"
         : "Kredi --";
   }
+
+  if (topCreditsBtn) {
+    topCreditsBtn.textContent =
+      String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+        ? "Buy Credits"
+        : "Kredi Al";
+  }
 }
 
 hydrateTopCreditBalance();
