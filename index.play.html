@@ -1264,6 +1264,12 @@ try {
       .startsWith("en");
   }
 
+  function isLoggedIn(){
+    const logged = localStorage.getItem("aivo_logged_in") === "1";
+    const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+    return logged && email.includes("@");
+  }
+
   function showGuest(){
     loginPill.hidden = false;
     creditPill.hidden = true;
@@ -1272,9 +1278,7 @@ try {
     if (guestBottomNav) guestBottomNav.hidden = false;
     if (appBottomNav) appBottomNav.hidden = true;
 
-    if (pricingCta) {
-      pricingCta.setAttribute("href", "#mobilePricing");
-    }
+    if (pricingCta) pricingCta.setAttribute("href", "#mobilePricing");
   }
 
   function showUser(){
@@ -1285,9 +1289,7 @@ try {
     if (guestBottomNav) guestBottomNav.hidden = true;
     if (appBottomNav) appBottomNav.hidden = false;
 
-    if (pricingCta) {
-      pricingCta.setAttribute("href", "studio.play.html#credits");
-    }
+    if (pricingCta) pricingCta.setAttribute("href", "studio.play.html#credits");
 
     if (!creditPill.textContent || creditPill.textContent.trim() === "Kredi --" || creditPill.textContent.trim() === "Credits --") {
       creditPill.textContent = isEnglish() ? "Credits --" : "Kredi --";
@@ -1298,10 +1300,12 @@ try {
 
   async function hydrateCredits(){
     try {
+      if (!isLoggedIn()) {
+        showGuest();
+        return;
+      }
+
       const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
-
-      if (!email || !email.includes("@")) return;
-
       showUser();
 
       const capHttp = window.Capacitor &&
@@ -1312,12 +1316,8 @@ try {
 
       const res = await capHttp.get({
         url: "https://aivo.tr/api/play-billing/credits-get",
-        params: {
-          email: email
-        },
-        headers: {
-          "Accept": "application/json"
-        }
+        params: { email: email },
+        headers: { "Accept": "application/json" }
       });
 
       const data = res && res.data ? res.data : null;
@@ -1331,57 +1331,24 @@ try {
     } catch (err) {}
   }
 
-  try {
-   const localLoggedIn =
-  localStorage.getItem("aivo_logged_in") === "1" &&
-  String(localStorage.getItem("aivo_user_email") || "").includes("@");
-
-    if (localLoggedIn) {
+  function refreshAuthUi(){
+    if (isLoggedIn()) {
       showUser();
       hydrateCredits();
     } else {
       showGuest();
     }
-  } catch (err) {
-    showGuest();
   }
 
-setTimeout(hydrateCredits, 300);
-setTimeout(hydrateCredits, 1200);
-
-function refreshAuthUi(){
-function refreshAuthUi(){
-  try {
-    const localLoggedIn =
-      localStorage.getItem("aivo_logged_in") === "1" &&
-      String(localStorage.getItem("aivo_user_email") || "").includes("@");
-
-    if (localLoggedIn) {
-      showUser();
-      hydrateCredits();
-    } else {
-      showGuest();
-    }
-  } catch (err) {
-    showGuest();
-  }
-}
-
-refreshAuthUi();
-
-window.addEventListener("pageshow", function(){
   refreshAuthUi();
-});
 
-document.addEventListener("visibilitychange", function(){
-  if (!document.hidden) {
-    refreshAuthUi();
-  }
-});
+  window.addEventListener("pageshow", refreshAuthUi);
 
-window.addEventListener("focus", function(){
-  refreshAuthUi();
-});
+  document.addEventListener("visibilitychange", function(){
+    if (!document.hidden) refreshAuthUi();
+  });
+
+  window.addEventListener("focus", refreshAuthUi);
 })();
 </script>
 
