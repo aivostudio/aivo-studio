@@ -844,8 +844,10 @@ switchBtn.textContent = mode === "login"
   }
 }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = mode === "login" ? "Giriş yapılıyor..." : "Hesap oluşturuluyor...";
+       submitBtn.disabled = true;
+submitBtn.textContent = mode === "login"
+  ? tt("login.processing.login", "Giriş yapılıyor...")
+  : tt("login.processing.register", "Hesap oluşturuluyor...");
 
         try {
           const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
@@ -939,13 +941,19 @@ if (capHttp && typeof capHttp.post === "function") {
            return;
            }
 
-       if (mode === "register") {
+if (mode === "register") {
   if (data && data.mailSent === false) {
-    setMessage("Hesap oluşturuldu fakat doğrulama e-postası gönderilemedi. Lütfen destek ile iletişime geç.", "is-error");
+    setMessage(
+      tt("login.error.verificationMailFailed", "Hesap oluşturuldu fakat doğrulama e-postası gönderilemedi. Lütfen destek ile iletişime geç."),
+      "is-error"
+    );
     return;
   }
 
-  setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
+  setMessage(
+    tt("login.success.register", "Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla."),
+    "is-ok"
+  );
   return;
 }
 setMessage(
@@ -1015,9 +1023,12 @@ async function waitForPlaySession(){
 setTimeout(function(){
  window.location.replace("/studio.play.html");
 }, 350);
-        } catch (err) {
-          setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
-        } finally {
+      } catch (err) {
+  setMessage(
+    tt("login.error.connection", "Bağlantı hatası. Tekrar dene."),
+    "is-error"
+  );
+} finally {
           submitBtn.disabled = false;
          submitBtn.textContent = mode === "login"
   ? tt("login.submit.login", "Giriş Yap")
