@@ -2430,10 +2430,12 @@ const contactPanel = accountMount.querySelector("[data-mobile-account-contact]")
     ? "/mobile/modules/mobile-policy-privacy.html?v=1"
     : "/mobile/modules/mobile-policy-terms.html?v=1";
 
+  const isEnglish = String(document.documentElement.lang || "").toLowerCase().startsWith("en");
+
   if (accountMount) accountMount.hidden = true;
   if (policyMount) {
     policyMount.hidden = false;
-    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoading">Loading legal text.</div>';
+    policyMount.innerHTML = '<div class="empty-card">' + (isEnglish ? "Loading legal text." : "Yasal metin yükleniyor...") + '</div>';
   }
 
   try {
@@ -2445,13 +2447,12 @@ if (typeof window.aivoApplyI18n === "function") {
   window.aivoApplyI18n(policyMount);
 }
   } catch (err) {
-    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoadFailed">Legal text could not be loaded.</div>';
+    policyMount.innerHTML = '<div class="empty-card">' + (isEnglish ? "Legal text could not be loaded." : "Yasal metin yüklenemedi.") + '</div>';
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
   return;
 }
-
 if (policyBackBtn) {
   e.preventDefault();
 
