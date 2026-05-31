@@ -1917,7 +1917,7 @@ function showCover(){
 
   const heroSub = document.getElementById("mobileHeroSub");
   if (heroSub) {
-    heroSub.textContent = "Kapak fikrini yaz, AIVO mobilde görselini üretsin.";
+    heroSub.textContent = "Write your cover idea and let AIVO create your visual on mobile.";
   }
 }
 
@@ -1936,7 +1936,7 @@ function showAtmo(){
   const atmoSection = document.getElementById("mobileAtmoSection");
   if (atmoSection) {
     const atmoResultsTitle = Array.from(atmoSection.querySelectorAll(".section-title")).find(function(title){
-      return title.textContent.includes("Son atmosfer videoları");
+      return title.textContent.includes("Latest atmosphere videos");
     });
     const atmoResults = atmoSection.querySelector("#mobileAtmoResults");
 
@@ -1944,7 +1944,6 @@ function showAtmo(){
     if (atmoResults) atmoResults.hidden = true;
   }
 }
-
 function showCartoon(){
   musicMount.hidden = true;
   coverMount.hidden = true;
