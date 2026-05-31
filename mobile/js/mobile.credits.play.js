@@ -243,16 +243,33 @@ setBalance(data.credits);
       }, 1800);
     }
   }
- async function openMobileCreditsPolicy(type){
+async function openMobileCreditsPolicy(type){
   const policyMount = document.getElementById("mobilePolicyMount");
-  const creditsMount = document.getElementById("mobileCreditsMount");
+  const hero = document.querySelector(".hero");
 
   const file = type === "terms"
     ? "/mobile/modules/mobile-policy-terms.html?v=1"
     : "/mobile/modules/mobile-policy-privacy.html?v=1";
 
   try {
-    if (creditsMount) creditsMount.hidden = true;
+    [
+      "mobileHomeMount",
+      "mobileMusicMount",
+      "mobileCoverMount",
+      "mobileAtmoMount",
+      "mobileCartoonMount",
+      "mobilePhotoFxMount",
+      "mobileVideoMount",
+      "mobileLipsyncMount",
+      "mobileCreditsMount",
+      "mobileToolsMount",
+      "mobileAccountMount"
+    ].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.hidden = true;
+    });
+
+    if (hero) hero.hidden = true;
 
     if (policyMount) {
       policyMount.hidden = false;
@@ -275,6 +292,7 @@ setBalance(data.credits);
     window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (err) {
     if (policyMount) {
+      policyMount.hidden = false;
       policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
     }
   }
