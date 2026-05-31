@@ -2427,7 +2427,7 @@ const contactPanel = accountMount.querySelector("[data-mobile-account-contact]")
   if (accountMount) accountMount.hidden = true;
   if (policyMount) {
     policyMount.hidden = false;
-    policyMount.innerHTML = '<div class="empty-card">Yasal metin yükleniyor...</div>';
+    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoading">Loading legal text.</div>';
   }
 
   try {
@@ -2439,7 +2439,7 @@ if (typeof window.aivoApplyI18n === "function") {
   window.aivoApplyI18n(policyMount);
 }
   } catch (err) {
-    policyMount.innerHTML = '<div class="empty-card">Yasal metin yüklenemedi.</div>';
+    policyMount.innerHTML = '<div class="empty-card" data-i18n="empty.policyLoadFailed">Legal text could not be loaded.</div>';
   }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2464,7 +2464,7 @@ if (policyBackBtn) {
   e.preventDefault();
     
 const shareUrl = "https://www.aivo.tr";
-const shareText = "AIVO ile müzik, kapak, video ve çizgifilm üretimini mobilde dene:";
+const shareText = "Try AIVO on mobile to create music, covers, videos and cartoons:";
 
   try {
     if (navigator.share) {
