@@ -1349,21 +1349,35 @@ try {
 setTimeout(hydrateCredits, 300);
 setTimeout(hydrateCredits, 1200);
 
+function refreshAuthUi(){
+  try {
+    const localLoggedIn =
+      localStorage.getItem("aivo_logged_in") === "1" &&
+      String(localStorage.getItem("aivo_user_email") || "").includes("@");
+
+    if (localLoggedIn) {
+      showUser();
+      hydrateCredits();
+    } else {
+      showGuest();
+    }
+  } catch (err) {
+    showGuest();
+  }
+}
+
 window.addEventListener("pageshow", function(){
-  showUser();
-  hydrateCredits();
+  refreshAuthUi();
 });
 
 document.addEventListener("visibilitychange", function(){
   if (!document.hidden) {
-    showUser();
-    hydrateCredits();
+    refreshAuthUi();
   }
 });
 
 window.addEventListener("focus", function(){
-  showUser();
-  hydrateCredits();
+  refreshAuthUi();
 });
 })();
 </script>
