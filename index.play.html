@@ -1543,5 +1543,47 @@ document.addEventListener("aivo:language-change", applyPrices);
   } catch (err) {}
 })();
 </script>
+  <script>
+(function AIVO_PLAY_INDEX_CREDIT_CAP_HTTP_FIX(){
+  async function hydrateIndexCredit(){
+    try {
+      const creditPill = document.getElementById("mobileCreditPill");
+      if (!creditPill) return;
+
+      const email = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+      if (!email || !email.includes("@")) return;
+
+      const isEnglish = String(window.AIVO_LANG || localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "")
+        .toLowerCase()
+        .startsWith("en");
+
+      const capHttp = window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.CapacitorHttp;
+
+      if (!capHttp || typeof capHttp.get !== "function") return;
+
+      const res = await capHttp.get({
+        url: "https://aivo.tr/api/play-billing/credits-get",
+        params: { email: email },
+        headers: { "Accept": "application/json" }
+      });
+
+      const data = res && res.data ? res.data : null;
+      if (!data) return;
+
+      const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+      creditPill.textContent = isEnglish
+        ? "Credits " + creditValue
+        : "Kredi " + creditValue;
+    } catch (err) {}
+  }
+
+  hydrateIndexCredit();
+  setTimeout(hydrateIndexCredit, 500);
+  setTimeout(hydrateIndexCredit, 1500);
+})();
+</script>
 </body>
 </html>
