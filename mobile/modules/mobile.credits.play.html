@@ -149,13 +149,53 @@
       video generation in AIVO Studio.
     </p>
 
-    <label class="mobile-credits-kvkk-row">
+<label class="mobile-credits-kvkk-row">
   <input type="checkbox" id="mobileCreditsKvkkCheck">
-  <span data-i18n="credits.kvkkAccept">I accept the Privacy Disclosure and KVKK notice.</span>
+
+  <span>
+    <button
+      type="button"
+      class="mobile-policy-inline-btn"
+      data-mobile-policy-privacy
+      data-i18n="credits.privacyLink"
+    >
+      KVKK Aydınlatma Metni
+    </button>
+
+    <span data-i18n="credits.andText">ve</span>
+
+    <button
+      type="button"
+      class="mobile-policy-inline-btn"
+      data-mobile-policy-terms
+      data-i18n="credits.termsLink"
+    >
+      Kullanım Şartları
+    </button>
+
+    <span data-i18n="credits.acceptSuffix">metinlerini okudum ve kabul ediyorum.</span>
+  </span>
 </label>
 
 <small id="mobileCreditsKvkkHint" data-i18n="credits.kvkkHint">
   You must accept the privacy notice to continue.
 </small>
   </div>
+  <style>
+.mobile-policy-inline-btn{
+  -webkit-appearance:none;
+  appearance:none;
+  border:0;
+  padding:0;
+  margin:0 2px;
+  background:transparent !important;
+  color:#7dd3fc !important;
+  font:inherit;
+  font-weight:800;
+  text-decoration:underline;
+  cursor:pointer;
+  box-shadow:none !important;
+  outline:none;
+}
+</style>
 </section>
