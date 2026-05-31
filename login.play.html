@@ -409,6 +409,56 @@
 .mobile-login-card.is-register .mobile-login-submit{
   min-height:50px;
 }
+
+.mobile-login-policy-view{
+  margin-top:14px;
+}
+
+.mobile-login-policy-card{
+  padding:16px;
+  border-radius:24px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+}
+
+.mobile-login-policy-card[hidden],
+.mobile-login-policy-view[hidden]{
+  display:none;
+}
+
+.mobile-login-policy-card .mobile-policy-page{
+  padding:0;
+}
+
+@media (min-width: 768px) {
+  .mobile-login-shell{
+    width:min(760px,100%);
+    padding:calc(26px + env(safe-area-inset-top)) 42px max(34px, env(safe-area-inset-bottom));
+  }
+
+  .mobile-login-policy-view{
+    width:100%;
+    margin-top:18px;
+  }
+
+  .mobile-login-policy-card{
+    max-width:760px;
+    margin:0 auto;
+    padding:0;
+    background:transparent;
+    border:0;
+    box-shadow:none;
+  }
+
+  .mobile-login-policy-card .mobile-policy-page{
+    width:100%;
+  }
+}
+
+.mobile-login-policy-card [data-mobile-settings-back]{
+  display:none !important;
+}
    </style>
 
   <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
@@ -529,10 +579,33 @@
   <a class="mobile-login-link" href="/forgot.play.html">Şifremi unuttum?</a>
         </div>
 
-        <label class="mobile-login-check mobile-login-register-only">
-          <input id="mobileTerms" type="checkbox">
-          <span>Kullanım şartlarını kabul ediyorum</span>
-        </label>
+     <label class="mobile-login-check mobile-login-register-only">
+  <input id="mobileTerms" type="checkbox">
+
+  <span>
+    <button
+      type="button"
+      class="mobile-login-link mobile-login-policy-btn"
+      data-login-policy-privacy
+      data-i18n="credits.privacyLink"
+    >
+      KVKK Aydınlatma Metni
+    </button>
+
+    <span data-i18n="credits.andText">ve</span>
+
+    <button
+      type="button"
+      class="mobile-login-link mobile-login-policy-btn"
+      data-login-policy-terms
+      data-i18n="credits.termsLink"
+    >
+      Kullanım Şartları
+    </button>
+
+    <span data-i18n="credits.acceptSuffix">metinlerini okudum ve kabul ediyorum.</span>
+  </span>
+</label>
 
         <button class="mobile-login-submit" type="submit" id="mobileSubmitBtn" data-i18n="login.submit.login">
   Giriş Yap
@@ -541,7 +614,12 @@
         <div class="mobile-login-message" id="mobileLoginMessage"></div>
       </form>
     </section>
-
+    <section id="mobileLoginPolicyView" class="mobile-login-policy-view" hidden>
+  <div class="mobile-login-policy-card">
+    <button type="button" id="mobileLoginPolicyBack" class="mobile-login-back" aria-label="Geri">Geri</button>
+    <div id="mobileLoginPolicyContent">Yasal metin yükleniyor...</div>
+  </div>
+</section>
     <div class="mobile-login-footer">
      <span id="mobileFooterText" data-i18n="login.footer.new">
   AIVO’da yeni misin?
@@ -575,6 +653,72 @@ const returnTo = rawReturnTo.includes("studio.play.html")
       const password = document.getElementById("mobilePassword");
       const passwordRepeat = document.getElementById("mobilePasswordRepeat");
       const terms = document.getElementById("mobileTerms");
+      const hero = document.querySelector(".mobile-login-hero");
+const topbar = document.querySelector(".mobile-login-topbar");
+const footer = document.querySelector(".mobile-login-footer");
+const loginPolicyView = document.getElementById("mobileLoginPolicyView");
+const loginPolicyContent = document.getElementById("mobileLoginPolicyContent");
+const loginPolicyBack = document.getElementById("mobileLoginPolicyBack");
+
+document.addEventListener("click", async function(e){
+  const privacyBtn = e.target.closest("[data-login-policy-privacy]");
+  const termsBtn = e.target.closest("[data-login-policy-terms]");
+
+  if (!privacyBtn && !termsBtn) return;
+
+  e.preventDefault();
+
+  const file = privacyBtn
+    ? "/mobile/modules/mobile-policy-privacy.html?v=1"
+    : "/mobile/modules/mobile-policy-terms.html?v=1";
+
+  try {
+    const html = await fetch(file).then(function(r){
+      return r.text();
+    });
+
+    if (loginPolicyContent) {
+      loginPolicyContent.innerHTML = html;
+    }
+
+    if (typeof window.aivoApplyI18n === "function") {
+      window.aivoApplyI18n(loginPolicyContent);
+    }
+
+    if (topbar) topbar.hidden = true;
+    if (card) card.hidden = true;
+    if (hero) hero.hidden = true;
+    if (footer) footer.hidden = true;
+
+    if (loginPolicyView) {
+      loginPolicyView.hidden = false;
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+  } catch (err) {
+    if (loginPolicyContent) {
+      loginPolicyContent.innerHTML = "Policy yüklenemedi.";
+    }
+  }
+});
+
+if (loginPolicyBack) {
+  loginPolicyBack.addEventListener("click", function(){
+    if (loginPolicyView) loginPolicyView.hidden = true;
+
+    if (topbar) topbar.hidden = false;
+    if (card) card.hidden = false;
+    if (hero) hero.hidden = false;
+    if (footer) footer.hidden = false;
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+}
 
       let mode = "login";
       function tt(key, fallback){
