@@ -6,14 +6,25 @@
 <script>
 (function AIVO_PLAY_INDEX_WEB_GUARD(){
   try {
-    var ua = navigator.userAgent || "";
+    var params = new URLSearchParams(window.location.search || "");
+
     if (location.search.indexOf("playDebug=1") !== -1) return;
-    var isCapacitor =
+
+    var isVerifyReturn =
+      params.get("verified") === "1" ||
+      params.get("from") === "play" ||
+      params.get("open") === "login" ||
+      String(params.get("email") || "").includes("@");
+
+    if (isVerifyReturn) return;
+
+    var ua = navigator.userAgent || "";
+    var isNative =
       !!window.Capacitor ||
       ua.indexOf("Capacitor") !== -1 ||
       location.protocol === "capacitor:";
 
-    if (isCapacitor) return;
+    if (isNative) return;
 
     window.location.replace("/index.mobile.html");
   } catch (_) {
