@@ -1637,7 +1637,7 @@ try {
   const accountProfileMount = document.getElementById("mobileAccountProfileMount");
 
   if (accountProfileMount) {
-    accountProfileMount.innerHTML = '<div class="empty-card">Profil modülü yüklenemedi.</div>';
+    accountProfileMount.innerHTML = '<div class="empty-card" data-i18n="empty.profileLoadFailed">Profile module could not be loaded.</div>';
   }
 }
 
@@ -1667,7 +1667,7 @@ try {
   const accountInvoicesMount = document.getElementById("mobileAccountInvoicesMount");
 
   if (accountInvoicesMount) {
-    accountInvoicesMount.innerHTML = '<div class="empty-card">Faturalar modülü yüklenemedi.</div>';
+    accountInvoicesMount.innerHTML = '<div class="empty-card" data-i18n="empty.invoicesLoadFailed">Invoices module could not be loaded.</div>';
   }
 }
     try {
@@ -1696,7 +1696,7 @@ try {
   const accountSettingsMount = document.getElementById("mobileAccountSettingsMount");
 
   if (accountSettingsMount) {
-    accountSettingsMount.innerHTML = '<div class="empty-card">Ayarlar modülü yüklenemedi.</div>';
+    accountSettingsMount.innerHTML = '<div class="empty-card" data-i18n="empty.settingsLoadFailed">Settings module could not be loaded.</div>';
   }
 }
     try {
@@ -1726,7 +1726,7 @@ document.body.appendChild(contactScript);
   const accountContactMount = document.getElementById("mobileAccountContactMount");
 
   if (accountContactMount) {
-    accountContactMount.innerHTML = '<div class="empty-card">İletişim bölümü yüklenemedi.</div>';
+    accountContactMount.innerHTML = '<div class="empty-card" data-i18n="empty.contactLoadFailed">Contact section could not be loaded.</div>';
   }
 }
         if (window.location.hash === "#credits") {
