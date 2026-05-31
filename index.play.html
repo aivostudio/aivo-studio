@@ -1351,10 +1351,19 @@ function showUser(){
 
     showUser();
 
-    return fetch("/api/credits/get", {
-      credentials: "include",
-      cache: "no-store"
-    });
+   const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+
+if (!localEmail || !localEmail.includes("@")) {
+  return null;
+}
+
+return fetch("/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
+  method: "GET",
+  cache: "no-store",
+  headers: {
+    "Accept": "application/json"
+  }
+});
   })
   .then(function(res){
     if (!res || !res.ok) return null;
