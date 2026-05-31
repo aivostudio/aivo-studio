@@ -1789,8 +1789,15 @@ async function hydrateTopCreditBalance(){
 }
 
 hydrateTopCreditBalance();
-    document.addEventListener("aivo:auth-ready", hydrateTopCreditBalance);
-window.addEventListener("aivo:credits:refresh", hydrateTopCreditBalance);
+document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+document.addEventListener("aivo:auth-ready", function(){
+  document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+  hydrateTopCreditBalance();
+});
+window.addEventListener("aivo:credits:refresh", function(){
+  document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+  hydrateTopCreditBalance();
+});
     
     if (topCreditsBtn) {
   topCreditsBtn.addEventListener("click", function(e){
