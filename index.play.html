@@ -6,25 +6,14 @@
 <script>
 (function AIVO_PLAY_INDEX_WEB_GUARD(){
   try {
-    var params = new URLSearchParams(window.location.search || "");
-
-    if (location.search.indexOf("playDebug=1") !== -1) return;
-
-    var isVerifyReturn =
-      params.get("verified") === "1" ||
-      params.get("from") === "play" ||
-      params.get("open") === "login" ||
-      String(params.get("email") || "").includes("@");
-
-    if (isVerifyReturn) return;
-
     var ua = navigator.userAgent || "";
-    var isNative =
+    if (location.search.indexOf("playDebug=1") !== -1) return;
+    var isCapacitor =
       !!window.Capacitor ||
       ua.indexOf("Capacitor") !== -1 ||
       location.protocol === "capacitor:";
 
-    if (isNative) return;
+    if (isCapacitor) return;
 
     window.location.replace("/index.mobile.html");
   } catch (_) {
@@ -783,9 +772,9 @@ html.aivo-play-leaving body{
     </a>
 
        <div class="top-actions">
- <a class="pill" id="mobileLoginPill" href="/login.play.html?returnTo=%2Fstudio.play.html" data-i18n="index.login">Giriş Yap</a>
+ <a class="pill" id="mobileLoginPill" href="/login.play.html?returnTo=%2Fstudio.play.html" hidden data-i18n="index.login">Giriş Yap</a>
 <span class="pill" id="mobileCreditPill" hidden data-i18n="top.creditEmpty">Kredi --</span>
-<a class="pill" id="mobileBuyCreditPill" href="/studio.play.html#credits" hidden data-i18n="top.creditAI">Kredi Al</a>
+<a class="pill" id="mobileBuyCreditPill" href="studio.play.html#credits" hidden data-i18n="top.creditAI">Kredi Al</a>
     </div>
   </header>
 
@@ -806,7 +795,7 @@ html.aivo-play-leaving body{
 </p>
 
 <div class="cta-row">
-  <a class="btn btn-primary" href="/login.play.html?returnTo=%2Fstudio.play.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
+  <a class="btn btn-primary" href="studio.play.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
   <a class="btn btn-ghost" id="mobilePricingCta" href="#mobilePricing" data-i18n="index.viewPrices">Fiyatları Gör</a>
 </div>
       <div class="video-card">
@@ -837,7 +826,7 @@ html.aivo-play-leaving body{
    <h2 class="section-title" data-i18n="index.featuredTitle">Mobilde öne çıkanlar</h2>
 
 <section class="modules">
-  <a class="mod-card" href="/studio.play.html#music">
+  <a class="mod-card" href="studio.play.html#music">
     <span class="tool-icon tool-icon-music" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.musicTitle">AI Müzik Üret</b>
@@ -845,7 +834,7 @@ html.aivo-play-leaving body{
     </div>
   </a>
 
-  <a class="mod-card" href="/studio.play.html#photofx">
+  <a class="mod-card" href="studio.play.html#photofx">
     <span class="tool-icon tool-icon-photofx" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.photofxTitle">AI Foto Efekt Video Clip</b>
@@ -853,7 +842,7 @@ html.aivo-play-leaving body{
     </div>
   </a>
 
-  <a class="mod-card" href="/studio.play.html#cover">
+  <a class="mod-card" href="studio.play.html#cover">
     <span class="tool-icon tool-icon-cover" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.coverTitle">AI Kapak Üret</b>
@@ -861,7 +850,7 @@ html.aivo-play-leaving body{
     </div>
   </a>
 
-  <a class="mod-card" href="/studio.play.html#video">
+  <a class="mod-card" href="studio.play.html#video">
     <span class="tool-icon tool-icon-video" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.videoTitle">AI Resimden Video Üret</b>
@@ -869,7 +858,7 @@ html.aivo-play-leaving body{
     </div>
   </a>
 
-  <a class="mod-card" href="/studio.play.html#lipsync">
+  <a class="mod-card" href="studio.play.html#lipsync">
     <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.lipsyncTitle">AI Dudak Senkron Video</b>
@@ -877,7 +866,7 @@ html.aivo-play-leaving body{
     </div>
   </a>
 
-  <a class="mod-card" href="/studio.play.html#atmo">
+  <a class="mod-card" href="studio.play.html#atmo">
     <span class="tool-icon tool-icon-atmo" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.atmoTitle">AI Atmosfer Video</b>
@@ -885,7 +874,7 @@ html.aivo-play-leaving body{
     </div>
   </a>
 
-  <a class="mod-card" href="/studio.play.html#cartoon">
+  <a class="mod-card" href="studio.play.html#cartoon">
     <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
     <div>
       <b data-i18n="index.module.cartoonTitle">AI Çocuk Çizgifilm</b>
@@ -1163,32 +1152,32 @@ html.aivo-play-leaving body{
   </main>
 
 <nav class="bottom-nav" id="mobileGuestBottomNav">
-  <a href="/login.play.html?returnTo=%2Fstudio.play.html" data-i18n="index.startCreating">Üretime Başla</a>
+  <a href="studio.play.html" data-i18n="index.startCreating">Üretime Başla</a>
   <a href="#mobilePricing" data-i18n="index.explore">Keşfet</a>
 </nav>
 
 <nav class="bottom-nav mobile-app-bottom-nav" id="mobileAppBottomNav" hidden>
-  <a class="active" href="/studio.play.html#home">
+  <a class="active" href="studio.play.html#home">
     <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
   <b data-i18n="nav.home">Ana Sayfa</b>
   </a>
 
-  <a href="/studio.play.html#productions">
+  <a href="studio.play.html#productions">
     <span class="nav-icon nav-icon-productions" aria-hidden="true"></span>
  <b data-i18n="nav.productions">Üretimler</b>
   </a>
 
-  <a href="/studio.play.html#tools">
+  <a href="studio.play.html#tools">
     <span class="nav-icon nav-icon-tools" aria-hidden="true"></span>
   <b data-i18n="nav.tools">Araçlar</b>
   </a>
 
-  <a href="/studio.play.html#credits">
+  <a href="studio.play.html#credits">
     <span class="nav-icon nav-icon-credits" aria-hidden="true"></span>
    <b data-i18n="nav.credits">Krediler</b>
   </a>
 
-  <a href="/studio.play.html#account">
+  <a href="studio.play.html#account">
     <span class="nav-icon nav-icon-account" aria-hidden="true"></span>
    <b data-i18n="nav.account">Hesabım</b>
   </a>
