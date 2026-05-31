@@ -1454,7 +1454,7 @@ document.addEventListener("aivo:language-change", applyPrices);
     var email = String(localStorage.getItem("aivo_user_email") || "").trim();
     var logged = localStorage.getItem("aivo_logged_in") === "1";
 
-    if (!logged && !email.includes("@")) return;
+if (!logged || !email.includes("@")) return;
 
     var loginPill = document.getElementById("mobileLoginPill");
     var creditPill = document.getElementById("mobileCreditPill");
