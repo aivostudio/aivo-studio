@@ -1443,7 +1443,7 @@ if (typeof window.aivoApplyI18n === "function") {
       musicScript.defer = true;
       document.body.appendChild(musicScript);
     } catch (err) {
-      musicMount.innerHTML = '<div class="empty-card">Müzik modülü yüklenemedi.</div>';
+      musicMount.innerHTML = '<div class="empty-card" data-i18n="empty.musicLoadFailed">Music module could not be loaded.</div>';
     }
 
     try {
@@ -1466,7 +1466,7 @@ if (typeof window.aivoApplyI18n === "function") {
       coverScript.defer = true;
       document.body.appendChild(coverScript);
     } catch (err) {
-      coverMount.innerHTML = '<div class="empty-card">Kapak modülü yüklenemedi.</div>';
+      coverMount.innerHTML = '<div class="empty-card" data-i18n="empty.coverLoadFailed">Cover module could not be loaded.</div>';
     }
     try {
   const atmoRes = await fetch("/mobile/modules/mobile.atmo.html?v=1", {
@@ -1488,7 +1488,7 @@ atmoScript.src = "/mobile/js/mobile.atmo.js?v=1";
 atmoScript.defer = true;
 document.body.appendChild(atmoScript);
 } catch (err) {
-  atmoMount.innerHTML = '<div class="empty-card">Atmosfer modülü yüklenemedi.</div>';
+  atmoMount.innerHTML = '<div class="empty-card" data-i18n="empty.atmoLoadFailed">Atmosphere module could not be loaded.</div>';
 }
     try {
   const cartoonRes = await fetch("/mobile/modules/mobile.cartoon.html?v=2", {
@@ -1511,7 +1511,7 @@ cartoonScript.src = "/mobile/js/mobile.cartoon.js?v=12";
   document.body.appendChild(cartoonScript);
 } catch (err) {
   if (cartoonMount) {
-    cartoonMount.innerHTML = '<div class="empty-card">Çizgifilm modülü yüklenemedi.</div>';
+    cartoonMount.innerHTML = '<div class="empty-card" data-i18n="empty.cartoonLoadFailed">Cartoon module could not be loaded.</div>';
   }
 }
     try {
@@ -1535,7 +1535,7 @@ photofxScript.defer = true;
 document.body.appendChild(photofxScript);
 } catch (err) {
   if (photofxMount) {
-    photofxMount.innerHTML = '<div class="empty-card">PhotoFX modülü yüklenemedi.</div>';
+    photofxMount.innerHTML = '<div class="empty-card" data-i18n="empty.photofxLoadFailed">PhotoFX module could not be loaded.</div>';
   }
 }
 try {
@@ -1559,7 +1559,7 @@ try {
   document.body.appendChild(videoScript);
 } catch (err) {
   if (videoMount) {
-    videoMount.innerHTML = '<div class="empty-card">Resimden Video modülü yüklenemedi.</div>';
+    videoMount.innerHTML = '<div class="empty-card" data-i18n="empty.videoLoadFailed">Image-to-video module could not be loaded.</div>';
   }
 }
     try {
@@ -1583,7 +1583,7 @@ try {
   document.body.appendChild(lipsyncScript);
 } catch (err) {
   if (lipsyncMount) {
-    lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';
+    lipsyncMount.innerHTML = '<div class="empty-card" data-i18n="empty.lipsyncLoadFailed">Lip sync video module could not be loaded.</div>';
   }
 }
 
@@ -1608,7 +1608,7 @@ try {
   document.body.appendChild(creditsScript);
 } catch (err) {
   if (creditsMount) {
-    creditsMount.innerHTML = '<div class="empty-card">Krediler bölümü yüklenemedi.</div>';
+    creditsMount.innerHTML = '<div class="empty-card" data-i18n="empty.creditsLoadFailed">Credits section could not be loaded.</div>';
   }
 }
 
