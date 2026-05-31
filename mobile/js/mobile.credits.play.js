@@ -3,28 +3,32 @@
   window.__AIVO_MOBILE_CREDITS__ = true;
 
  
-  const PLAN_MAP = {
-    baslangic: {
-      plan: "baslangic",
-      label: "Başlangıç",
-      credits: 25
-    },
-    standart: {
-      plan: "standart",
-      label: "Standart",
-      credits: 100
-    },
-    pro: {
-      plan: "pro",
-      label: "Pro",
-      credits: 200
-    },
-    studyo: {
-      plan: "studyo",
-      label: "Stüdyo",
-      credits: 500
-    }
-  };
+const PLAN_MAP = {
+  baslangic: {
+    plan: "baslangic",
+    productId: "tr.aivo.credits.25",
+    label: "Başlangıç",
+    credits: 25
+  },
+  standart: {
+    plan: "standart",
+    productId: "tr.aivo.credits.100",
+    label: "Standart",
+    credits: 100
+  },
+  pro: {
+    plan: "pro",
+    productId: "tr.aivo.credits.200",
+    label: "Pro",
+    credits: 200
+  },
+  studyo: {
+    plan: "studyo",
+    productId: "tr.aivo.credits.500",
+    label: "Stüdyo",
+    credits: 500
+  }
+};
   const MOBILE_PRICE_MAP = {
   tr: {
     starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
