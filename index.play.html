@@ -1365,9 +1365,9 @@ function showUser(){
 
       const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
 
-    creditPill.textContent = typeof window.t === "function"
-      ? window.t("top.creditValue", { count: creditValue })
-      : "Kredi " + creditValue;
+   creditPill.textContent = typeof window.t === "function"
+  ? window.t("top.creditValue", { count: creditValue })
+  : ((String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "tr").toLowerCase().startsWith("en")) ? "Credit " + creditValue : "Kredi " + creditValue);
   })
  .catch(function(){
   try {
