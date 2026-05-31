@@ -1369,15 +1369,45 @@ return fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURICo
     if (!res || !res.ok) return null;
     return res.json();
   })
-  .then(function(data){
-    if (!data) return;
+.then(function(data){
+  if (!data) return;
+
+  const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+  creditPill.textContent = typeof window.t === "function"
+    ? window.t("top.creditValue", { count: creditValue })
+    : ((String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "tr").toLowerCase().startsWith("en")) ? "Credits " + creditValue : "Kredi " + creditValue);
+})
+.finally(function(){
+  try {
+    const localEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+
+    if (!localEmail || !localEmail.includes("@")) return;
+
+    fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
+      }
+    })
+    .then(function(res){
+      if (!res || !res.ok) return null;
+      return res.json();
+    })
+    .then(function(data){
+      if (!data) return;
 
       const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+      const isEnglish = String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "tr").toLowerCase().startsWith("en");
 
-   creditPill.textContent = typeof window.t === "function"
-  ? window.t("top.creditValue", { count: creditValue })
-  : ((String(localStorage.getItem("aivo_mobile_language") || document.documentElement.lang || "tr").toLowerCase().startsWith("en")) ? "Credit " + creditValue : "Kredi " + creditValue);
-  })
+      creditPill.textContent = isEnglish
+        ? "Credits " + creditValue
+        : "Kredi " + creditValue;
+    })
+    .catch(function(){});
+  } catch (err) {}
+})
  .catch(function(){
   try {
     const localLoggedIn = localStorage.getItem("aivo_logged_in") === "1";
