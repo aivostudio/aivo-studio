@@ -865,10 +865,20 @@ if (!terms.checked) {
 }
 }
 
-       submitBtn.disabled = true;
+      submitBtn.disabled = true;
+
+const submitTextBeforeLoading = String(submitBtn.textContent || "").trim();
+const submitTextIsEnglish =
+  submitTextBeforeLoading.toLowerCase().includes("sign") ||
+  submitTextBeforeLoading.toLowerCase().includes("create");
+
 submitBtn.textContent = mode === "login"
-  ? tt("login.processing.login", "Giriş yapılıyor...")
-  : tt("login.processing.register", "Hesap oluşturuluyor...");
+  ? submitTextIsEnglish
+    ? "Signing in..."
+    : "Giriş yapılıyor..."
+  : submitTextIsEnglish
+    ? "Creating account..."
+    : "Hesap oluşturuluyor...";
 
         try {
           const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
