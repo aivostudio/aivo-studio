@@ -1357,7 +1357,7 @@ if (!localEmail || !localEmail.includes("@")) {
   return null;
 }
 
-return fetch("/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
+return fetch("https://aivo.tr/api/play-billing/credits-get?email=" + encodeURIComponent(localEmail), {
   method: "GET",
   cache: "no-store",
   headers: {
