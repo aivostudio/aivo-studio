@@ -243,7 +243,37 @@ setBalance(data.credits);
       }, 1800);
     }
   }
+    function openMobileCreditsPolicy(type){
+    try {
+      if (window.openMobilePolicy && typeof window.openMobilePolicy === "function") {
+        window.openMobilePolicy(type);
+        return;
+      }
 
+      window.location.hash = type === "terms" ? "terms" : "privacy";
+    } catch (err) {
+      alert(type === "terms" ? "Kullanım Şartları açılamadı." : "KVKK metni açılamadı.");
+    }
+  }
+
+  function bindPolicyLinks(){
+    const section = $("#mobileCreditsSection");
+    if (!section || section.dataset.policyBound === "1") return;
+
+    section.dataset.policyBound = "1";
+
+    section.addEventListener("click", function(e){
+      const privacyBtn = e.target.closest("[data-mobile-policy-privacy]");
+      const termsBtn = e.target.closest("[data-mobile-policy-terms]");
+
+      if (!privacyBtn && !termsBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      openMobileCreditsPolicy(termsBtn ? "terms" : "privacy");
+    });
+  }
   function setButtonLoading(button, isLoading){
     if (!button) return;
 
@@ -391,12 +421,14 @@ function scheduleCreditsHydrate(){
 
 window.mobileCreditsInit = function(){
   bindClicks();
+  bindPolicyLinks();
   applyMobileCreditPrices();
   scheduleCreditsHydrate();
 };
 
 function boot(){
   bindClicks();
+  bindPolicyLinks();
   applyMobileCreditPrices();
   scheduleCreditsHydrate();
 }
