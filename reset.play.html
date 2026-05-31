@@ -251,165 +251,177 @@
   </style>
 
 
+<script src="/mobile/js/mobile.i18n.js?v=1" defer></script>
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
 </head>
-  <main class="mobile-reset-shell">
-   <header class="mobile-reset-topbar">
-  <a class="mobile-reset-back" href="/login.play.html?returnTo=/studio.play.html" aria-label="Girişe dön">Geri</a>
+<main class="mobile-reset-shell">
+  <header class="mobile-reset-topbar">
+    <a class="mobile-reset-back" href="/login.play.html?returnTo=/studio.play.html" aria-label="Girişe dön" data-i18n-label="forgot.backLabel">Geri</a>
 
-  <a class="mobile-reset-logo" href="/index.play.html" aria-label="AIVO">
-    <img src="/aivo-logo.png" alt="AIVO">
-  </a>
-</header>
+    <a class="mobile-reset-logo" href="/index.play.html" aria-label="AIVO">
+      <img src="/aivo-logo.png" alt="AIVO">
+    </a>
+  </header>
 
-    <section class="mobile-reset-hero">
-      <div class="mobile-reset-badge">
-        <span class="mobile-reset-dot"></span>
-        AIVO Mobile Studio
+  <section class="mobile-reset-hero">
+    <div class="mobile-reset-badge">
+      <span class="mobile-reset-dot"></span>
+      <span data-i18n="common.appName">AIVO Mobile Studio</span>
+    </div>
+
+    <h1>
+      <span data-i18n="reset.title.before">Yeni</span>
+      <span class="mobile-reset-grad" data-i18n="reset.title.grad">şifre.</span>
+    </h1>
+
+    <p data-i18n="reset.subtitle">
+      Yeni şifreni belirle. Sonrasında mobil giriş ekranına döneceksin.
+    </p>
+  </section>
+
+  <section class="mobile-reset-card">
+    <form class="mobile-reset-form" id="mobileResetForm">
+      <div class="mobile-reset-field">
+        <label for="mobileResetPassword" data-i18n="reset.password">Yeni Şifre</label>
+        <input id="mobileResetPassword" type="password" placeholder="En az 8 karakter" data-i18n-placeholder="reset.passwordPlaceholder" autocomplete="new-password" required>
       </div>
 
-      <h1>
-        Yeni <span class="mobile-reset-grad">şifre.</span>
-      </h1>
+      <div class="mobile-reset-field">
+        <label for="mobileResetPasswordRepeat" data-i18n="reset.passwordRepeat">Yeni Şifre Tekrar</label>
+        <input id="mobileResetPasswordRepeat" type="password" placeholder="Şifreni tekrar gir" data-i18n-placeholder="reset.passwordRepeatPlaceholder" autocomplete="new-password" required>
+      </div>
 
-      <p>
-        Yeni şifreni belirle. Sonrasında mobil giriş ekranına döneceksin.
-      </p>
-    </section>
+      <button class="mobile-reset-submit" id="mobileResetBtn" type="submit" data-i18n="reset.submit">
+        Şifremi Güncelle
+      </button>
 
-    <section class="mobile-reset-card">
-      <form class="mobile-reset-form" id="mobileResetForm">
-        <div class="mobile-reset-field">
-          <label for="mobileResetPassword">Yeni Şifre</label>
-          <input id="mobileResetPassword" type="password" placeholder="En az 8 karakter" autocomplete="new-password" required>
-        </div>
+      <div class="mobile-reset-message" id="mobileResetMessage"></div>
+    </form>
+  </section>
 
-        <div class="mobile-reset-field">
-          <label for="mobileResetPasswordRepeat">Yeni Şifre Tekrar</label>
-          <input id="mobileResetPasswordRepeat" type="password" placeholder="Şifreni tekrar gir" autocomplete="new-password" required>
-        </div>
+  <div class="mobile-reset-actions">
+    <a href="/index.play.html" data-i18n="forgot.backHome">Vitrine dön</a>
+    <a href="/login.play.html?returnTo=/studio.play.html" data-i18n="forgot.backLogin">Girişe dön</a>
+  </div>
+</main>
 
-        <button class="mobile-reset-submit" id="mobileResetBtn" type="submit">
-          Şifremi Güncelle
-        </button>
+<script>
+  (function(){
+    const url = new URL(window.location.href);
+    const token = String(url.searchParams.get("token") || "").trim();
 
-        <div class="mobile-reset-message" id="mobileResetMessage"></div>
-      </form>
-    </section>
+    const form = document.getElementById("mobileResetForm");
+    const password = document.getElementById("mobileResetPassword");
+    const passwordRepeat = document.getElementById("mobileResetPasswordRepeat");
+    const btn = document.getElementById("mobileResetBtn");
+    const message = document.getElementById("mobileResetMessage");
 
-   <div class="mobile-reset-actions">
-  <a href="/index.play.html">Vitrine dön</a>
-  <a href="/login.play.html?returnTo=/studio.play.html">Girişe dön</a>
-</div>
-  </main>
+    function tt(key, fallback){
+      try {
+        if (typeof window.t === "function") {
+          return window.t(key);
+        }
+      } catch (_) {}
 
-  <script>
-    (function(){
-      const url = new URL(window.location.href);
-      const token = String(url.searchParams.get("token") || "").trim();
+      return fallback;
+    }
 
-      const form = document.getElementById("mobileResetForm");
-      const password = document.getElementById("mobileResetPassword");
-      const passwordRepeat = document.getElementById("mobileResetPasswordRepeat");
-      const btn = document.getElementById("mobileResetBtn");
-      const message = document.getElementById("mobileResetMessage");
+    function setMessage(text, type){
+      message.textContent = "";
+      message.classList.remove("is-error", "is-ok");
 
-     function setMessage(text, type){
-  message.textContent = "";
-  message.classList.remove("is-error", "is-ok");
+      if (!text) return;
 
-  if (!text) return;
+      const toastType = type === "is-error"
+        ? "error"
+        : type === "is-ok"
+          ? "success"
+          : "info";
 
-  const toastType = type === "is-error"
-    ? "error"
-    : type === "is-ok"
-      ? "success"
-      : "info";
-
-  if (window.mobileToast && typeof window.mobileToast.show === "function") {
-    window.mobileToast.show(text, toastType);
-    return;
-  }
-
-  message.textContent = text;
-  if (type) message.classList.add(type);
-}
-
-      if (!token) {
-        setMessage("Sıfırlama bağlantısı geçersiz.", "is-error");
-        btn.disabled = true;
+      if (window.mobileToast && typeof window.mobileToast.show === "function") {
+        window.mobileToast.show(text, toastType);
+        return;
       }
 
-      form.addEventListener("submit", async function(e){
-        e.preventDefault();
+      message.textContent = text;
+      if (type) message.classList.add(type);
+    }
 
-        const nextPassword = String(password.value || "");
-        const nextPasswordRepeat = String(passwordRepeat.value || "");
+    if (!token) {
+      setMessage(tt("reset.errorInvalidToken", "Sıfırlama bağlantısı geçersiz."), "is-error");
+      btn.disabled = true;
+    }
 
-        if (!token) {
-          setMessage("Sıfırlama bağlantısı geçersiz.", "is-error");
-          return;
-        }
+    form.addEventListener("submit", async function(e){
+      e.preventDefault();
 
-        if (nextPassword.length < 8) {
-          setMessage("Şifre en az 8 karakter olmalı.", "is-error");
-          return;
-        }
+      const nextPassword = String(password.value || "");
+      const nextPasswordRepeat = String(passwordRepeat.value || "");
 
-        if (nextPassword !== nextPasswordRepeat) {
-          setMessage("Şifreler eşleşmiyor.", "is-error");
-          return;
-        }
+      if (!token) {
+        setMessage(tt("reset.errorInvalidToken", "Sıfırlama bağlantısı geçersiz."), "is-error");
+        return;
+      }
 
-        btn.disabled = true;
-        btn.textContent = "Güncelleniyor...";
-        setMessage("", "");
+      if (nextPassword.length < 8) {
+        setMessage(tt("reset.errorMinLength", "Şifre en az 8 karakter olmalı."), "is-error");
+        return;
+      }
 
-        try {
-          const res = await fetch("/api/auth/reset", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              token: token,
-              password: nextPassword
-            })
-          });
+      if (nextPassword !== nextPasswordRepeat) {
+        setMessage(tt("reset.errorPasswordMismatch", "Şifreler eşleşmiyor."), "is-error");
+        return;
+      }
 
-          const data = await res.json().catch(function(){
-            return {};
-          });
+      btn.disabled = true;
+      btn.textContent = tt("reset.processing", "Güncelleniyor...");
+      setMessage("", "");
 
-          if (!res.ok || !data || data.ok !== true) {
-            const reason = data && data.reason ? data.reason : "reset_failed";
+      try {
+        const res = await fetch("/api/auth/reset", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            token: token,
+            password: nextPassword
+          })
+        });
 
-            if (reason === "weak") {
-              setMessage("Şifre en az 8 karakter olmalı.", "is-error");
-            } else if (reason === "expired") {
-              setMessage("Bu sıfırlama bağlantısının süresi dolmuş.", "is-error");
-            } else if (reason === "used") {
-              setMessage("Bu sıfırlama bağlantısı daha önce kullanılmış.", "is-error");
-            } else {
-              setMessage("Sıfırlama bağlantısı geçersiz.", "is-error");
-            }
+        const data = await res.json().catch(function(){
+          return {};
+        });
 
-            return;
+        if (!res.ok || !data || data.ok !== true) {
+          const reason = data && data.reason ? data.reason : "reset_failed";
+
+          if (reason === "weak") {
+            setMessage(tt("reset.errorMinLength", "Şifre en az 8 karakter olmalı."), "is-error");
+          } else if (reason === "expired") {
+            setMessage(tt("reset.errorExpired", "Bu sıfırlama bağlantısının süresi dolmuş."), "is-error");
+          } else if (reason === "used") {
+            setMessage(tt("reset.errorUsed", "Bu sıfırlama bağlantısı daha önce kullanılmış."), "is-error");
+          } else {
+            setMessage(tt("reset.errorInvalidToken", "Sıfırlama bağlantısı geçersiz."), "is-error");
           }
 
-          setMessage("Şifren güncellendi. Giriş ekranına yönlendiriliyorsun.", "is-ok");
-
-         setTimeout(function(){
-          window.location.replace("/login.play.html?returnTo=/studio.play.html&tf=success&tm=Şifren güncellendi.");
-         }, 650);
-        } catch (err) {
-          setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
-        } finally {
-          btn.disabled = false;
-          btn.textContent = "Şifremi Güncelle";
+          return;
         }
-      });
-    })();
-  </script>
+
+        setMessage(tt("reset.success", "Şifren güncellendi. Giriş ekranına yönlendiriliyorsun."), "is-ok");
+
+        setTimeout(function(){
+          window.location.replace("/login.play.html?returnTo=/studio.play.html&tf=success&tm=" + encodeURIComponent(tt("reset.successShort", "Şifren güncellendi.")));
+        }, 650);
+      } catch (err) {
+        setMessage(tt("reset.errorConnection", "Bağlantı hatası. Tekrar dene."), "is-error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = tt("reset.submit", "Şifremi Güncelle");
+      }
+    });
+  })();
+</script>
 </body>
 </html>
