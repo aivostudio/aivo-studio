@@ -960,70 +960,71 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 
 <body>
   <main class="mobile-shell">
-    <header class="topbar">
+<header class="topbar">
   <a class="logo" href="/index.play.html" aria-label="AIVO">
-  <img src="/aivo-logo.png" alt="AIVO">
-</a>
-
-<div class="topbar-credit-actions" hidden>
-  <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
-    Kredi --
-  </span>
-
-  <a class="credit-pill" href="#credits" data-mobile-top-credits data-i18n="top.creditAI">
-    Kredi Al
+    <img src="/aivo-logo.png" alt="AIVO">
   </a>
-</div>
-    </header>
 
-  <section class="hero">
+  <div class="topbar-credit-actions" hidden>
+    <span class="credit-pill credit-balance-pill" data-mobile-credit-balance data-i18n="top.creditEmpty">
+      Credit --
+    </span>
+
+    <a class="credit-pill" href="#credits" data-mobile-top-credits data-i18n="top.creditAI">
+      Buy Credits
+    </a>
+  </div>
+</header>
+
+<section class="hero">
   <div class="eyebrow" data-i18n="home.eyebrow">
     AIVO Mobile Studio
   </div>
 
   <h1>
-    <span data-i18n="home.title.before">Cepte AI</span>
-    <span class="grad" data-i18n="home.title.grad">üretim.</span>
+    <span data-i18n="home.title.before">AI creation</span>
+    <span class="grad" data-i18n="home.title.grad">in your pocket.</span>
   </h1>
 
   <p class="sub" data-i18n="home.subtitle">
-    Şarkı fikrini yaz, AIVO mobilde üretimi başlatsın.
+    Write your song idea and let AIVO start creating on mobile.
   </p>
 </section>
 
 <div id="mobileHomeMount">
-  <div class="empty-card">Ana sayfa yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.homeLoading">Loading home.</div>
 </div>
 
 <div id="mobileMusicMount" hidden>
-  <div class="empty-card">Müzik modülü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.musicLoading">Loading music module.</div>
 </div>
 
 <div id="mobileCoverMount" hidden>
-  <div class="empty-card">Kapak modülü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.coverLoading">Loading cover module.</div>
 </div>
 
 <div id="mobileAtmoMount" hidden>
-  <div class="empty-card">Atmosfer modülü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.atmoLoading">Loading atmosphere module.</div>
 </div>
-   <div id="mobileCartoonMount" hidden>
-  <div class="empty-card">Çizgifilm modülü yükleniyor...</div>
+
+<div id="mobileCartoonMount" hidden>
+  <div class="empty-card" data-i18n="empty.cartoonLoading">Loading cartoon module.</div>
 </div>
 
 <div id="mobilePhotoFxMount" hidden>
-  <div class="empty-card">PhotoFX modülü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.photofxLoading">Loading PhotoFX module.</div>
 </div>
 
 <div id="mobileVideoMount" hidden>
-  <div class="empty-card">Resimden Video modülü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.videoLoading">Loading image-to-video module.</div>
 </div>
 
 <div id="mobileLipsyncMount" hidden>
-  <div class="empty-card">Dudak Senkron Video modülü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.lipsyncLoading">Loading lip sync video module.</div>
 </div>
 
 <div id="mobileCreditsMount" hidden>
-  <div class="empty-card" data-i18n="credits.loading">Krediler bölümü yükleniyor...</div>
+  <div class="empty-card" data-i18n="empty.creditsLoading">Loading credits section.</div>
 </div>
 
 <div id="mobileToolsMount" hidden>
