@@ -1346,8 +1346,25 @@ try {
     showGuest();
   }
 
-  setTimeout(hydrateCredits, 300);
-  setTimeout(hydrateCredits, 1200);
+setTimeout(hydrateCredits, 300);
+setTimeout(hydrateCredits, 1200);
+
+window.addEventListener("pageshow", function(){
+  showUser();
+  hydrateCredits();
+});
+
+document.addEventListener("visibilitychange", function(){
+  if (!document.hidden) {
+    showUser();
+    hydrateCredits();
+  }
+});
+
+window.addEventListener("focus", function(){
+  showUser();
+  hydrateCredits();
+});
 })();
 </script>
 
