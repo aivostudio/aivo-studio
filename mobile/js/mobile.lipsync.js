@@ -68,7 +68,53 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
+   function pickPosterUrl(data){
+    const outputs = Array.isArray(data?.outputs) ? data.outputs : [];
+    const firstPosterOutput = outputs.find(function(output){
+      return output && (
+        output.poster_url ||
+        output.posterUrl ||
+        output.thumbnail_url ||
+        output.thumbnailUrl ||
+        output.thumb_url ||
+        output.thumbUrl ||
+        output.meta?.poster_url ||
+        output.meta?.posterUrl ||
+        output.meta?.thumbnail_url ||
+        output.meta?.thumbnailUrl ||
+        output.meta?.thumb_url ||
+        output.meta?.thumbUrl
+      );
+    });
 
+    return String(
+      data.poster_url ||
+      data.posterUrl ||
+      data.thumbnail_url ||
+      data.thumbnailUrl ||
+      data.thumb_url ||
+      data.thumbUrl ||
+      data.meta?.poster_url ||
+      data.meta?.posterUrl ||
+      data.meta?.thumbnail_url ||
+      data.meta?.thumbnailUrl ||
+      data.meta?.thumb_url ||
+      data.meta?.thumbUrl ||
+      firstPosterOutput?.poster_url ||
+      firstPosterOutput?.posterUrl ||
+      firstPosterOutput?.thumbnail_url ||
+      firstPosterOutput?.thumbnailUrl ||
+      firstPosterOutput?.thumb_url ||
+      firstPosterOutput?.thumbUrl ||
+      firstPosterOutput?.meta?.poster_url ||
+      firstPosterOutput?.meta?.posterUrl ||
+      firstPosterOutput?.meta?.thumbnail_url ||
+      firstPosterOutput?.meta?.thumbnailUrl ||
+      firstPosterOutput?.meta?.thumb_url ||
+      firstPosterOutput?.meta?.thumbUrl ||
+      ""
+    ).trim();
+  }
   function safeText(value){
     return String(value || "").trim();
   }
@@ -575,15 +621,18 @@
 
     resultsEl.className = "mobile-lipsync-results";
 
-    resultsEl.innerHTML = items.map(function(job){
+      resultsEl.innerHTML = items.map(function(job){
       const ready = Boolean(job.videoUrl);
+      const posterAttr = job.posterUrl
+        ? ` poster="${esc(job.posterUrl)}"`
+        : "";
 
       return `
         <article class="mobile-lipsync-video-card" data-mobile-lipsync-job="${esc(job.id)}">
           <div class="mobile-lipsync-video-media">
             ${
               ready
-                ? `<video class="mobile-lipsync-video" src="${esc(job.videoUrl)}" playsinline webkit-playsinline preload="metadata"></video>`
+                ? `<video class="mobile-lipsync-video" src="${esc(job.videoUrl)}"${posterAttr} playsinline webkit-playsinline preload="metadata"></video>`
                 : `<div class="mobile-lipsync-video-loading"><span>${mobileLipsyncText("Hazırlanıyor…", "Preparing…")}</span></div>`
             }
 
@@ -815,8 +864,9 @@
 
       if (!job) return;
 
-          if (videoUrl) {
+              if (videoUrl) {
         job.videoUrl = videoUrl;
+        job.posterUrl = pickPosterUrl(data);
         job.status = "ready";
         job.title = job.title || mobileLipsyncText(
           "Dudak senkron video hazır",
@@ -970,6 +1020,7 @@
             "Lip sync video"
           ),
           videoUrl: videoUrl,
+          posterUrl: pickPosterUrl(row),
           status: "ready",
           payload: row
         });
