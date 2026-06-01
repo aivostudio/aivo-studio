@@ -276,6 +276,49 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
       }
     );
   }
+    private void consumeExistingPurchases() {
+    QueryPurchasesParams params =
+      QueryPurchasesParams
+        .newBuilder()
+        .setProductType(BillingClient.ProductType.INAPP)
+        .build();
+
+    billingClient.queryPurchasesAsync(
+      params,
+      (billingResult, purchases) -> {
+        if (
+          billingResult.getResponseCode() !=
+          BillingClient.BillingResponseCode.OK ||
+          purchases == null
+        ) {
+          return;
+        }
+
+        for (Purchase purchase : purchases) {
+          String purchaseToken = purchase.getPurchaseToken();
+
+          ConsumeParams consumeParams =
+            ConsumeParams
+              .newBuilder()
+              .setPurchaseToken(purchaseToken)
+              .build();
+
+          billingClient.consumeAsync(
+            consumeParams,
+            (consumeResult, token) -> {
+              evaluateJs(
+                "window.dispatchEvent(new CustomEvent('aivo:play-billing-existing-consumed',{detail:{code:" +
+                consumeResult.getResponseCode() +
+                ",message:" +
+                jsString(consumeResult.getDebugMessage()) +
+                "}}));"
+              );
+            }
+          );
+        }
+      }
+    );
+  }
 
   private String jsString(String value) {
 
