@@ -1329,10 +1329,11 @@ function buildPayload(){
 
         if (!jobId || !videoUrl) return;
 
-         mobileVideoLibraryJobs.push({
+               mobileVideoLibraryJobs.push({
           id: jobId,
           title: row.title || row.prompt || row.meta?.prompt || mobileVideoText("Video", "Video"),
           videoUrl: videoUrl,
+          posterUrl: pickPosterUrl(row),
           status: "ready",
           payload: row
         });
