@@ -13,8 +13,8 @@ import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.getcapacitor.BridgeActivity;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,11 +63,12 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
       @Override
       public void onBillingSetupFinished(BillingResult billingResult) {
-        if (
+            if (
           billingResult.getResponseCode() ==
           BillingClient.BillingResponseCode.OK
         ) {
           queryProducts();
+          consumeExistingPurchases();
         }
       }
 
