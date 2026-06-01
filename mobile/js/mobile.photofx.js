@@ -1237,6 +1237,7 @@ async function uploadMobilePhotoFxFile(file, kind){
   scope: "library",
   title: row.title || row.prompt || row.meta?.prompt || (String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "PhotoFX clip" : "PhotoFX klip"),
   videoUrl: videoUrl,
+  posterUrl: pickPosterUrl(row),
   status: "ready",
   payload: row
 });
