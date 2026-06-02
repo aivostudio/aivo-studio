@@ -1,3 +1,4 @@
+const admin = require('firebase-admin');
 const { kvGetJson } = require('../../_kv');
 
 function json(res, status, payload) {
@@ -20,6 +21,46 @@ function isAdmin(email) {
 
 function allTokensKey() {
   return 'push:tokens:all';
+}
+
+function getFirebasePrivateKey() {
+  return String(process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+}
+
+function getFirebaseApp() {
+  if (admin.apps.length) return admin.app();
+
+  const projectId = String(process.env.FIREBASE_PROJECT_ID || '').trim();
+  const clientEmail = String(process.env.FIREBASE_CLIENT_EMAIL || '').trim();
+  const privateKey = getFirebasePrivateKey();
+
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error('missing_firebase_env');
+  }
+
+  return admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId,
+      clientEmail,
+      privateKey
+    })
+  });
+}
+
+async function sendToToken(token, title, message) {
+  getFirebaseApp();
+
+  return await admin.messaging().send({
+    token,
+    notification: {
+      title,
+      body: message
+    },
+    data: {
+      source: 'aivo_admin_campaign',
+      click_action: 'open_app'
+    }
+  });
 }
 
 module.exports = async (req, res) => {
@@ -71,15 +112,52 @@ module.exports = async (req, res) => {
     const tokens = await kvGetJson(allTokensKey());
 
     const tokenList = Array.isArray(tokens)
-      ? tokens
+      ? tokens.filter(Boolean)
       : [];
+
+    if (!tokenList.length) {
+      return json(res, 200, {
+        ok: true,
+        title,
+        message,
+        total_tokens: 0,
+        sent: 0,
+        failed: 0,
+        results: []
+      });
+    }
+
+    const results = [];
+
+    for (const token of tokenList) {
+      try {
+        const messageId = await sendToToken(token, title, message);
+
+        results.push({
+          token,
+          ok: true,
+          message_id: messageId
+        });
+      } catch (err) {
+        results.push({
+          token,
+          ok: false,
+          error: err?.message || 'send_failed'
+        });
+      }
+    }
+
+    const sent = results.filter(item => item.ok).length;
+    const failed = results.length - sent;
 
     return json(res, 200, {
       ok: true,
       title,
       message,
       total_tokens: tokenList.length,
-      tokens: tokenList
+      sent,
+      failed,
+      results
     });
   } catch (err) {
     return json(res, 500, {
