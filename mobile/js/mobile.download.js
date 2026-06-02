@@ -80,7 +80,11 @@
           });
           return true;
         }
-      } catch (err) {}
+
+        return true;
+      } catch (err) {
+        return true;
+      }
     }
 
     const a = document.createElement("a");
