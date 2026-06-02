@@ -839,7 +839,7 @@ body {
   }
 
   body{
-    opacity:1 !important;
+    opacity:0 !important;
     background:#070914 !important;
   }
 </style>
@@ -853,25 +853,9 @@ body {
     return "/login.ios.html?returnTo=" + encodeURIComponent("/studio.ios.html" + (window.location.hash || ""));
   }
 
-  function revealStudio(){
-    var st = document.getElementById("aivo-auth-gate-style");
-    if (st) st.remove();
-
-    document.documentElement.style.visibility = "visible";
-    document.body.style.opacity = "1";
-
-    var creditActions = document.querySelector(".topbar-credit-actions");
-    if (creditActions) {
-      creditActions.removeAttribute("hidden");
-    }
-  }
-
-  function saveSession(me){
+  function showStudio(me){
     try {
-      var user = (me && (me.user || me)) || {};
-      var nextEmail = String(user.email || "").trim().toLowerCase();
-
-      if (!nextEmail || nextEmail.indexOf("@") === -1) return false;
+      var nextEmail = String((me && me.email) || (me && me.user && me.user.email) || "").trim().toLowerCase();
 
       localStorage.setItem("aivo_logged_in", "1");
       localStorage.setItem("aivo_user_email", nextEmail);
@@ -880,87 +864,68 @@ body {
         email: nextEmail,
         ts: Date.now()
       }));
+    } catch (e) {}
 
-      return true;
-    } catch (e) {
-      return false;
-    }
+    var st = document.getElementById("aivo-auth-gate-style");
+    if (st) st.remove();
+
+    document.documentElement.style.visibility = "visible";
+    document.body.style.opacity = "1";
+
+ document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+
+try {
+  document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+    detail: { me: me }
+  }));
+} catch (e) {}
+
+try {
+  window.dispatchEvent(new Event("aivo:credits:refresh"));
+} catch (e) {}
+
+try {
+  if (typeof loadCredits === "function") {
+    loadCredits();
+  }
+} catch (e) {}
   }
 
-  function notifyReady(me){
-    try {
-      document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-        detail: { me: me }
-      }));
-    } catch (e) {}
-
-    try {
-      window.dispatchEvent(new Event("aivo:credits:refresh"));
-    } catch (e) {}
-
-    try {
-      if (typeof loadCredits === "function") {
-        loadCredits();
+  async function checkSessionOnce(){
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
       }
-    } catch (e) {}
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json().catch(function(){
+      return null;
+    });
   }
 
   async function boot(){
-    var ctrl = new AbortController();
-    var timer = setTimeout(function(){
+    for (let i = 0; i < 12; i++) {
       try {
-        ctrl.abort();
-      } catch (e) {}
-    }, 2500);
+        const me = await checkSessionOnce();
 
-    try {
-      var res = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache: "no-store",
-        signal: ctrl.signal,
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-      clearTimeout(timer);
-
-      if (!res.ok) {
-        location.replace(getLoginUrl());
-        return;
-      }
-
-      var me = await res.json().catch(function(){
-        return null;
-      });
-
-      if (!saveSession(me)) {
-        location.replace(getLoginUrl());
-        return;
-      }
-
-      revealStudio();
-      notifyReady(me);
-    } catch (err) {
-      clearTimeout(timer);
-
-      try {
-        var cachedEmail = String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
-
-        if (cachedEmail && cachedEmail.indexOf("@") !== -1) {
-          revealStudio();
-          notifyReady({
-            email: cachedEmail
-          });
+        if (me && (me.email || (me.user && me.user.email))) {
+          showStudio(me);
           return;
         }
-      } catch (e) {}
+      } catch (err) {}
 
-      location.replace(getLoginUrl());
+      await new Promise(function(resolve){
+        setTimeout(resolve, 500);
+      });
     }
+
+    location.replace(getLoginUrl());
   }
 
-  revealStudio();
   boot();
 })();
 </script>
