@@ -23,8 +23,8 @@ function tokenKey(deviceToken) {
   return `push:token:${deviceToken}`;
 }
 
-function userTokensKey(userId) {
-  return `push:user:${userId}:tokens`;
+function allTokensKey() {
+  return 'push:tokens:all';
 }
 
 export default async function handler(req, res) {
@@ -91,16 +91,14 @@ export default async function handler(req, res) {
 
     await kvSetJson(tokenKey(deviceToken), mergedRecord);
 
-    if (userId) {
-      const currentList = await kvGetJson(userTokensKey(userId));
-      const tokens = Array.isArray(currentList) ? currentList : [];
+    const allCurrentList = await kvGetJson(allTokensKey());
+    const allTokens = Array.isArray(allCurrentList) ? allCurrentList : [];
 
-      if (!tokens.includes(deviceToken)) {
-        tokens.push(deviceToken);
-      }
-
-      await kvSetJson(userTokensKey(userId), tokens);
+    if (!allTokens.includes(deviceToken)) {
+      allTokens.push(deviceToken);
     }
+
+    await kvSetJson(allTokensKey(), allTokens);
 
     return json(res, 200, {
       ok: true,
