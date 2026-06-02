@@ -1,5 +1,4 @@
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const { kvGetJson, kvSetJson } = require('../_kv');
 
 function json(res, status, payload) {
   return res.status(status).json(payload);
@@ -15,6 +14,19 @@ function normalizePlatform(platform) {
   return null;
 }
 
+function safeString(value) {
+  const text = String(value || '').trim();
+  return text || null;
+}
+
+function tokenKey(deviceToken) {
+  return `push:token:${deviceToken}`;
+}
+
+function userTokensKey(userId) {
+  return `push:user:${userId}:tokens`;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -24,27 +36,16 @@ export default async function handler(req, res) {
     });
   }
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return json(res, 500, {
-      ok: false,
-      error: 'missing_supabase_env'
-    });
-  }
-
   try {
     const body = req.body || {};
 
-    const userId = body.user_id ? String(body.user_id).trim() : null;
-    const userUuid = body.user_uuid ? String(body.user_uuid).trim() : null;
+    const userId = safeString(body.user_id);
+    const userUuid = safeString(body.user_uuid);
     const platform = normalizePlatform(body.platform);
-    const deviceToken = body.device_token ? String(body.device_token).trim() : null;
-
-    const permissionStatus = body.permission_status
-      ? String(body.permission_status).trim()
-      : 'granted';
-
-    const deviceId = body.device_id ? String(body.device_id).trim() : null;
-    const app = body.app ? String(body.app).trim() : 'aivo';
+    const deviceToken = safeString(body.device_token);
+    const permissionStatus = safeString(body.permission_status) || 'granted';
+    const deviceId = safeString(body.device_id);
+    const app = safeString(body.app) || 'aivo';
 
     if (!platform) {
       return json(res, 400, {
@@ -60,7 +61,9 @@ export default async function handler(req, res) {
       });
     }
 
-    const payload = {
+    const now = new Date().toISOString();
+
+    const tokenRecord = {
       user_id: userId,
       user_uuid: userUuid,
       platform,
@@ -69,41 +72,45 @@ export default async function handler(req, res) {
       app,
       device_id: deviceId,
       user_agent: req.headers['user-agent'] || null,
-      last_seen_at: new Date().toISOString(),
+      last_seen_at: now,
       revoked_at: null,
-      meta: body.meta && typeof body.meta === 'object' ? body.meta : {}
+      meta: body.meta && typeof body.meta === 'object' ? body.meta : {},
+      updated_at: now
     };
 
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/push_tokens`, {
-      method: 'POST',
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=representation'
-      },
-      body: JSON.stringify(payload)
-    });
+    const existing = await kvGetJson(tokenKey(deviceToken));
 
-    const data = await response.json().catch(() => null);
+    const mergedRecord = {
+      ...(existing && typeof existing === 'object' ? existing : {}),
+      ...tokenRecord,
+      created_at:
+        existing && existing.created_at
+          ? existing.created_at
+          : now
+    };
 
-    if (!response.ok) {
-      return json(res, response.status, {
-        ok: false,
-        error: 'push_token_save_failed',
-        detail: data
-      });
+    await kvSetJson(tokenKey(deviceToken), mergedRecord);
+
+    if (userId) {
+      const currentList = await kvGetJson(userTokensKey(userId));
+      const tokens = Array.isArray(currentList) ? currentList : [];
+
+      if (!tokens.includes(deviceToken)) {
+        tokens.push(deviceToken);
+      }
+
+      await kvSetJson(userTokensKey(userId), tokens);
     }
 
     return json(res, 200, {
       ok: true,
-      token: Array.isArray(data) ? data[0] : data
+      token: mergedRecord
     });
   } catch (err) {
     return json(res, 500, {
       ok: false,
       error: 'server_error',
-      message: err?.message || 'Unknown error'
+      message: err && err.message ? err.message : 'Unknown error'
     });
   }
 }
