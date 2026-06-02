@@ -1152,6 +1152,45 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 <script src="/mobile/js/mobile.toast.js?v=1" defer></script>
 <script src="/mobile/js/mobile.download.js?v=1" defer></script>
 <script src="/mobile/js/mobile.assistant.js?v=3" defer></script>
+  <script>
+(function AIVO_IOS_EARLY_CREDIT_PILL(){
+  try {
+    const pill = document.querySelector("[data-mobile-credit-balance]");
+    if (!pill) return;
+
+    const cached = localStorage.getItem("aivo_mobile_credit_balance");
+
+    if (cached !== null && cached !== "") {
+      pill.textContent =
+        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+          ? "Credits " + cached
+          : "Kredi " + cached;
+    }
+
+    fetch("/api/credits/get", {
+      credentials: "include",
+      cache: "no-store"
+    })
+    .then(function(res){
+      if (!res.ok) return null;
+      return res.json();
+    })
+    .then(function(data){
+      if (!data) return;
+
+      const creditValue = data.credits ?? data.balance ?? data.credit ?? 0;
+
+      localStorage.setItem("aivo_mobile_credit_balance", String(creditValue));
+
+      pill.textContent =
+        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
+          ? "Credits " + creditValue
+          : "Kredi " + creditValue;
+    })
+    .catch(function(){});
+  } catch (err) {}
+})();
+</script>
 <script>
   
 (function AIVO_MOBILE_URL_TOAST_READ(){
