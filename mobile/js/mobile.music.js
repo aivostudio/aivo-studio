@@ -345,14 +345,23 @@ if (downloadEl) {
 
     if (!resolvedAudioUrl) return;
 
-    const filename = "aivo-music.mp3";
+     const filename = "aivo-music.mp3";
+
+    if (window.AivoMobileDownload?.download) {
+      await window.AivoMobileDownload.download({
+        url: resolvedAudioUrl,
+        filename
+      });
+      return;
+    }
+
     const proxied = "/api/media/proxy?url=" + encodeURIComponent(resolvedAudioUrl) + "&filename=" + encodeURIComponent(filename);
 
     const a = document.createElement("a");
     a.href = proxied;
     a.download = filename;
     a.rel = "noopener";
-      a.style.display = "none";
+    a.style.display = "none";
 
     document.body.appendChild(a);
     a.click();
