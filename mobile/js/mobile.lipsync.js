@@ -747,20 +747,29 @@
         return;
       }
 
-         if (act === "download") {
+        if (act === "download") {
         if (!job.videoUrl) return;
 
         const directUrl = String(job.videoUrl || "").split("#")[0];
+        const filename = "aivo-lip-sync-video.mp4";
 
-              const downloadUrl =
+        if (window.AivoMobileDownload?.download) {
+          await window.AivoMobileDownload.download({
+            url: directUrl,
+            filename
+          });
+          return;
+        }
+
+        const downloadUrl =
           "/api/media/proxy?url=" +
           encodeURIComponent(directUrl) +
           "&filename=" +
-          encodeURIComponent("aivo-lip-sync-video.mp4");
+          encodeURIComponent(filename);
 
         const a = document.createElement("a");
         a.href = downloadUrl;
-             a.download = "aivo-lip-sync-video.mp4";
+        a.download = filename;
         a.rel = "noopener";
         a.style.display = "none";
 
