@@ -32,7 +32,33 @@
     const sourceUrl = String(options?.url || "").trim();
     const filename = safeName(options?.filename, "aivo-download");
 
+    const activeBtn = document.activeElement;
+    const canMarkBusy =
+      activeBtn &&
+      (
+        activeBtn.tagName === "BUTTON" ||
+        activeBtn.tagName === "A"
+      );
+
+    const oldText = canMarkBusy ? activeBtn.textContent : "";
+    const oldPointerEvents = canMarkBusy ? activeBtn.style.pointerEvents : "";
+    const oldOpacity = canMarkBusy ? activeBtn.style.opacity : "";
+
+    if (canMarkBusy) {
+      activeBtn.textContent = "…";
+      activeBtn.style.pointerEvents = "none";
+      activeBtn.style.opacity = ".65";
+    }
+
+    function resetBusy(){
+      if (!canMarkBusy) return;
+      activeBtn.textContent = oldText;
+      activeBtn.style.pointerEvents = oldPointerEvents;
+      activeBtn.style.opacity = oldOpacity;
+    }
+
     if (!sourceUrl) {
+      resetBusy();
       return false;
     }
        
@@ -51,8 +77,9 @@
 
       setTimeout(function(){
         try { a.remove(); } catch (err) {}
-      }, 1500);
+        }, 1500);
 
+      resetBusy();
       return true;
     }
 
