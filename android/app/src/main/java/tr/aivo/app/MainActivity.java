@@ -83,12 +83,16 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
               String lowerUrl = downloadUrl.toLowerCase();
         String lowerType = String.valueOf(mimetype).toLowerCase();
 
-        String fileName =
+             String fileName =
           lowerUrl.contains("/music/") ||
           lowerUrl.contains("music") ||
           lowerType.contains("audio")
             ? "aivo-music-" + System.currentTimeMillis() + ".mp3"
-            : "aivo-video-" + System.currentTimeMillis() + ".mp4";
+            : lowerUrl.contains("/cover/") ||
+              lowerUrl.contains("cover") ||
+              lowerType.contains("image")
+                ? "aivo-cover-" + System.currentTimeMillis() + ".png"
+                : "aivo-video-" + System.currentTimeMillis() + ".mp4";
 
         request.setDestinationInExternalPublicDir(
           Environment.DIRECTORY_DOWNLOADS,
