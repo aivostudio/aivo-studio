@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "289020740666",
+    "project_id": "aivo-dd2d8",
+    "storage_bucket": "aivo-dd2d8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:289020740666:android:01cbedcf94f6beaaa92103",
+        "android_client_info": {
+          "package_name": "tr.aivo.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYpM_tN4i7XTNUkwj3iR54-5ZyHHbZHSM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
