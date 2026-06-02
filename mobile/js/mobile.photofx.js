@@ -1257,7 +1257,7 @@ async function uploadMobilePhotoFxFile(file, kind){
     if (!resultsEl || resultsEl.__mobilePhotoFxActionsBound) return;
     resultsEl.__mobilePhotoFxActionsBound = true;
 
-    resultsEl.addEventListener("click", function(e){
+     resultsEl.addEventListener("click", async function(e){
       const btn = e.target.closest("[data-mobile-photofx-act]");
       if (!btn) return;
 
@@ -1340,27 +1340,36 @@ async function uploadMobilePhotoFxFile(file, kind){
 
         return;
       }
-      if (act === "download") {
+       if (act === "download") {
         if (!job.videoUrl) return;
 
         const directUrl = String(job.videoUrl || "").split("#")[0];
+        const filename = "aivo-photofx-klip.mp4";
+
+        if (window.AivoMobileDownload?.download) {
+          await window.AivoMobileDownload.download({
+            url: directUrl,
+            filename
+          });
+          return;
+        }
 
         const downloadUrl =
           "/api/media/proxy?url=" +
           encodeURIComponent(directUrl) +
           "&filename=" +
-          encodeURIComponent("aivo-photofx-klip.mp4");
+          encodeURIComponent(filename);
 
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = "aivo-photofx-klip.mp4";
+        a.download = filename;
         a.rel = "noopener";
         a.style.display = "none";
 
         document.body.appendChild(a);
         a.click();
 
-            mobilePhotoFxToast(
+        mobilePhotoFxToast(
           "success",
           String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
             ? "Download started."
