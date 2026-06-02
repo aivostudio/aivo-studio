@@ -372,16 +372,25 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         if (!job.videoUrl) return;
 
         const directUrl = String(job.videoUrl || "").split("#")[0];
+        const filename = "aivo-atmosphere-video.mp4";
+
+        if (window.AivoMobileDownload?.download) {
+          await window.AivoMobileDownload.download({
+            url: directUrl,
+            filename
+          });
+          return;
+        }
 
         const downloadUrl =
           "/api/media/proxy?url=" +
           encodeURIComponent(directUrl) +
           "&filename=" +
-          encodeURIComponent("aivo-atmosphere-video.mp4");
+          encodeURIComponent(filename);
 
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = "aivo-atmosphere-video.mp4";
+        a.download = filename;
         a.rel = "noopener";
         a.style.display = "none";
 
