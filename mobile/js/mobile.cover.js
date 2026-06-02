@@ -356,8 +356,8 @@ if (downloadBtn) {
   downloadBtn.addEventListener("click", async function(){
     if (!imageUrl) return;
 
-    if (window.mobileDownloadFile) {
-      await window.mobileDownloadFile({
+    if (window.AivoMobileDownload?.download) {
+      await window.AivoMobileDownload.download({
         url: imageUrl,
         filename: "aivo-kapak.jpg"
       });
