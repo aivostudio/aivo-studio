@@ -1355,7 +1355,7 @@ function buildPayload(){
     if (!resultsEl || resultsEl.__mobileVideoActionsBound) return;
     resultsEl.__mobileVideoActionsBound = true;
 
-    resultsEl.addEventListener("click", function(e){
+    resultsEl.addEventListener("click", async function(e){
       const btn = e.target.closest("[data-mobile-video-act]");
       if (!btn) return;
 
@@ -1441,27 +1441,36 @@ function buildPayload(){
 
         return;
       }
-      if (act === "download") {
+       if (act === "download") {
         if (!job.videoUrl) return;
 
         const directUrl = String(job.videoUrl || "").split("#")[0];
+        const filename = "aivo-video.mp4";
+
+        if (window.AivoMobileDownload?.download) {
+          await window.AivoMobileDownload.download({
+            url: directUrl,
+            filename
+          });
+          return;
+        }
 
         const downloadUrl =
           "/api/media/proxy?url=" +
           encodeURIComponent(directUrl) +
           "&filename=" +
-          encodeURIComponent("aivo-video.mp4");
+          encodeURIComponent(filename);
 
         const a = document.createElement("a");
         a.href = downloadUrl;
-        a.download = "aivo-video.mp4";
+        a.download = filename;
         a.rel = "noopener";
         a.style.display = "none";
 
         document.body.appendChild(a);
         a.click();
 
-            mobileVideoToast("success", mobileVideoText(
+        mobileVideoToast("success", mobileVideoText(
           "İndirme başlatıldı.",
           "Download started."
         ));
