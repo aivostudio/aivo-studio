@@ -35,13 +35,7 @@
     if (!sourceUrl) {
       return false;
     }
-        try {
-      if (window.mobileToast?.loading) {
-        window.mobileToast.loading("İndirme hazırlanıyor...");
-      } else if (window.mobileToast?.info) {
-        window.mobileToast.info("İndirme hazırlanıyor...");
-      }
-    } catch (err) {}
+       
     const proxyUrl = sourceUrl.includes("/api/media/proxy")
       ? sourceUrl
       : buildProxyUrl(sourceUrl, filename);
