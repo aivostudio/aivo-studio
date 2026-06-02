@@ -59,6 +59,32 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
     cookieManager.setAcceptThirdPartyCookies(getBridge().getWebView(), true);
     cookieManager.flush();
 
+        getBridge().getWebView().setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+      try {
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+
+        String cookies = CookieManager.getInstance().getCookie(url);
+        if (cookies != null) {
+          request.addRequestHeader("Cookie", cookies);
+        }
+
+        request.addRequestHeader("User-Agent", userAgent);
+        request.setMimeType(mimetype);
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(
+          Environment.DIRECTORY_DOWNLOADS,
+          URLUtil.guessFileName(url, contentDisposition, mimetype)
+        );
+
+        DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        downloadManager.enqueue(request);
+
+        Toast.makeText(this, "Video indirme başladı", Toast.LENGTH_SHORT).show();
+      } catch (Exception error) {
+        Toast.makeText(this, "İndirme başlatılamadı", Toast.LENGTH_SHORT).show();
+      }
+    });
+
     billingClient = BillingClient.newBuilder(this)
       .setListener(purchasesUpdatedListener)
       .enablePendingPurchases()
