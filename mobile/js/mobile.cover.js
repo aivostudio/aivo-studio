@@ -352,32 +352,40 @@
       });
     }
 
-     if (downloadBtn) {
-      downloadBtn.addEventListener("click", function(){
-        if (!imageUrl) return;
+if (downloadBtn) {
+  downloadBtn.addEventListener("click", async function(){
+    if (!imageUrl) return;
 
-        const proxied =
-          "/api/media/proxy?url=" +
-          encodeURIComponent(imageUrl) +
-          "&filename=" +
-          encodeURIComponent("aivo-kapak.jpg");
-
-        const a = document.createElement("a");
-        a.href = proxied;
-        a.download = "aivo-kapak.jpg";
-        a.rel = "noopener";
-        a.style.display = "none";
-
-        document.body.appendChild(a);
-        a.click();
-
-        setTimeout(function(){
-          try {
-            a.remove();
-          } catch (err) {}
-        }, 1500);
+    if (window.mobileDownloadFile) {
+      await window.mobileDownloadFile({
+        url: imageUrl,
+        filename: "aivo-kapak.jpg"
       });
+      return;
     }
+
+    const proxied =
+      "/api/media/proxy?url=" +
+      encodeURIComponent(imageUrl) +
+      "&filename=" +
+      encodeURIComponent("aivo-kapak.jpg");
+
+    const a = document.createElement("a");
+    a.href = proxied;
+    a.download = "aivo-kapak.jpg";
+    a.rel = "noopener";
+    a.style.display = "none";
+
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(function(){
+      try {
+        a.remove();
+      } catch (err) {}
+    }, 1500);
+  });
+}
 
      if (shareBtn) {
       shareBtn.addEventListener("click", async function(){
