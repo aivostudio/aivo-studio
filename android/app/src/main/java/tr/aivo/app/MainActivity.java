@@ -1,8 +1,13 @@
 package tr.aivo.app;
 
+import android.app.DownloadManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.URLUtil;
+import android.widget.Toast;
 
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
