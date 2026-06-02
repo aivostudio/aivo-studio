@@ -80,9 +80,11 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
         request.addRequestHeader("User-Agent", userAgent);
         request.setMimeType(mimetype);
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+              String fileName = "aivo-video-" + System.currentTimeMillis() + ".mp4";
+
         request.setDestinationInExternalPublicDir(
           Environment.DIRECTORY_DOWNLOADS,
-          URLUtil.guessFileName(url, contentDisposition, mimetype)
+          fileName
         );
 
         DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
