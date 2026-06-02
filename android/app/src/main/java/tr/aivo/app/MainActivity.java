@@ -61,7 +61,16 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
         getBridge().getWebView().setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
       try {
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        String downloadUrl = String.valueOf(url);
+
+        if (downloadUrl.startsWith("https://localhost/api/media/proxy")) {
+          downloadUrl = downloadUrl.replace(
+            "https://localhost/api/media/proxy",
+            "https://aivo.tr/api/media/proxy"
+          );
+        }
+
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
 
         String cookies = CookieManager.getInstance().getCookie(url);
         if (cookies != null) {
