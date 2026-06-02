@@ -1212,23 +1212,31 @@ if (shareBtn) {
 
               return;
             }
-
             const filename = "aivo-" + key + ".mp3";
+
+            if (window.AivoMobileDownload?.download) {
+              window.AivoMobileDownload.download({
+                url,
+                filename
+              });
+              return;
+            }
+
             const proxied = "/api/media/proxy?url=" + encodeURIComponent(url) + "&filename=" + encodeURIComponent(filename);
 
             const a = document.createElement("a");
             a.href = proxied;
             a.download = filename;
             a.rel = "noopener";
-              a.style.display = "none";
+            a.style.display = "none";
 
-              document.body.appendChild(a);
-              a.click();
+            document.body.appendChild(a);
+            a.click();
 
-               setTimeout(function(){
+            setTimeout(function(){
               try {
-             a.remove();
-             } catch (err) {}
+                a.remove();
+              } catch (err) {}
             }, 1500);
           });
         });
@@ -1986,7 +1994,16 @@ if (downloadBtn) {
 
     if (!audioUrl) return;
 
-    const filename = (index === 0 ? "aivo-music.mp3" : "aivo-music-version-" + (index + 1) + ".mp3");
+      const filename = (index === 0 ? "aivo-music.mp3" : "aivo-music-version-" + (index + 1) + ".mp3");
+
+    if (window.AivoMobileDownload?.download) {
+      window.AivoMobileDownload.download({
+        url: audioUrl,
+        filename
+      });
+      return;
+    }
+
     const proxied = "/api/media/proxy?url=" + encodeURIComponent(audioUrl) + "&filename=" + encodeURIComponent(filename);
 
     const a = document.createElement("a");
