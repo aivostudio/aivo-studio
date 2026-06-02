@@ -1224,7 +1224,104 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   };
 })();
 </script>
+<script>
+(function AIVO_ANDROID_PUSH_TOKEN_REGISTER(){
+  if (window.__AIVO_ANDROID_PUSH_TOKEN_REGISTER__) return;
+  window.__AIVO_ANDROID_PUSH_TOKEN_REGISTER__ = true;
 
+  function getEmail(){
+    try {
+      return String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function getPushPlugin(){
+    try {
+      return window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.PushNotifications
+        ? window.Capacitor.Plugins.PushNotifications
+        : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function sendTokenToBackend(token){
+    const email = getEmail();
+
+    await fetch("/api/push/register", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: email,
+        user_uuid: email,
+        platform: "android",
+        device_token: token,
+        permission_status: "granted",
+        app: "aivo",
+        device_id: "android-play",
+        meta: {
+          source: "studio.play.html",
+          registered_at: new Date().toISOString()
+        }
+      })
+    });
+  }
+
+  async function boot(){
+    const PushNotifications = getPushPlugin();
+    if (!PushNotifications) return;
+
+    PushNotifications.addListener("registration", async function(token){
+      const value = token && token.value ? String(token.value).trim() : "";
+
+      console.log("[AIVO PUSH] Android FCM token:", value);
+
+      if (!value) return;
+
+      try {
+        localStorage.setItem("aivo_android_fcm_token", value);
+      } catch (err) {}
+
+      try {
+        await sendTokenToBackend(value);
+        console.log("[AIVO PUSH] token registered to backend");
+      } catch (err) {
+        console.error("[AIVO PUSH] token backend register failed", err);
+      }
+    });
+
+    PushNotifications.addListener("registrationError", function(error){
+      console.error("[AIVO PUSH] registration error", error);
+    });
+
+    try {
+      const perm = await PushNotifications.requestPermissions();
+
+      if (perm && perm.receive === "granted") {
+        await PushNotifications.register();
+      } else {
+        console.warn("[AIVO PUSH] notification permission not granted", perm);
+      }
+    } catch (err) {
+      console.error("[AIVO PUSH] boot failed", err);
+    }
+  }
+
+  document.addEventListener("aivo:auth-ready", function(){
+    boot();
+  });
+
+  setTimeout(boot, 1800);
+})();
+</script>
 <script>
 (function AIVO_MOBILE_URL_TOAST_READ(){
   try {
