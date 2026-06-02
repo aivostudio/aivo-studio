@@ -80,7 +80,15 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
         request.addRequestHeader("User-Agent", userAgent);
         request.setMimeType(mimetype);
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-              String fileName = "aivo-video-" + System.currentTimeMillis() + ".mp4";
+              String lowerUrl = downloadUrl.toLowerCase();
+        String lowerType = String.valueOf(mimetype).toLowerCase();
+
+        String fileName =
+          lowerUrl.contains("/music/") ||
+          lowerUrl.contains("music") ||
+          lowerType.contains("audio")
+            ? "aivo-music-" + System.currentTimeMillis() + ".mp3"
+            : "aivo-video-" + System.currentTimeMillis() + ".mp4";
 
         request.setDestinationInExternalPublicDir(
           Environment.DIRECTORY_DOWNLOADS,
