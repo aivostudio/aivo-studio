@@ -1254,38 +1254,8 @@ try {
   } catch (err) {}
 })();
 </script>
-  <script>
-(function AIVO_IOS_INDEX_EARLY_CREDIT_PILL(){
-  try {
-    const loginPill = document.getElementById("mobileLoginPill");
-    const creditPill = document.getElementById("mobileCreditPill");
-    const buyCreditPill = document.getElementById("mobileBuyCreditPill");
-
-    if (!loginPill || !creditPill || !buyCreditPill) return;
-
-    const quickLoggedIn =
-      localStorage.getItem("aivo_logged_in") === "1" ||
-      String(localStorage.getItem("aivo_user_email") || "").includes("@");
-
-    if (!quickLoggedIn) return;
-
-    loginPill.hidden = true;
-    creditPill.hidden = false;
-    buyCreditPill.hidden = false;
-
-    const cached = localStorage.getItem("aivo_mobile_credit_balance");
-
-    if (cached !== null && cached !== "") {
-      creditPill.textContent =
-        String(document.documentElement.lang || "").toLowerCase().startsWith("en")
-          ? "Credits " + cached
-          : "Kredi " + cached;
-    }
-  } catch (err) {}
-})();
-</script>
 <script>
-  (function AIVO_IOS_INDEX_AUTH_UI(){
+(function AIVO_IOS_INDEX_AUTH_UI(){
   const loginPill = document.getElementById("mobileLoginPill");
   const creditPill = document.getElementById("mobileCreditPill");
   const buyCreditPill = document.getElementById("mobileBuyCreditPill");
