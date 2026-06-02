@@ -91,14 +91,23 @@ export default async function handler(req, res) {
 
     await kvSetJson(tokenKey(deviceToken), mergedRecord);
 
-    const allCurrentList = await kvGetJson(allTokensKey());
-    const allTokens = Array.isArray(allCurrentList) ? allCurrentList : [];
+  const allCurrentList = await kvGetJson(allTokensKey());
+const allTokensRaw = Array.isArray(allCurrentList) ? allCurrentList : [];
 
-    if (!allTokens.includes(deviceToken)) {
-      allTokens.push(deviceToken);
-    }
+const allTokens = allTokensRaw.filter(function(token) {
+  const value = String(token || '').trim();
 
-    await kvSetJson(allTokensKey(), allTokens);
+  if (!value) return false;
+  if (value === 'test-token-123') return false;
+
+  return true;
+});
+
+if (!allTokens.includes(deviceToken)) {
+  allTokens.push(deviceToken);
+}
+
+await kvSetJson(allTokensKey(), allTokens);
 
     return json(res, 200, {
       ok: true,
