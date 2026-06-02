@@ -908,7 +908,7 @@ try {
   }
 
   async function boot(){
-    for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 3; i++) {
       try {
         const me = await checkSessionOnce();
 
@@ -919,7 +919,7 @@ try {
       } catch (err) {}
 
       await new Promise(function(resolve){
-        setTimeout(resolve, 500);
+     setTimeout(resolve, 300);
       });
     }
 
