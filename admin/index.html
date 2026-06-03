@@ -81,12 +81,21 @@
       <div style="display:grid; grid-template-columns:1fr; gap:12px;">
         <input id="pushTitle" placeholder="Bildirim başlığı" />
 
-        <textarea
-          id="pushMessage"
-          placeholder="Bildirim mesajı"
-          rows="4"
-          style="width:100%; resize:vertical; line-height:1.45;"
-        ></textarea>
+       <textarea
+  id="pushMessage"
+  placeholder="Bildirim mesajı"
+  rows="4"
+  style="
+    width:100%;
+    resize:vertical;
+    line-height:1.45;
+    background:#0b0f17;
+    color:#fff;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+    padding:14px;
+  "
+></textarea>
 
         <div style="display:flex; justify-content:flex-end;">
           <button id="btnPushSend" class="btn btn-primary">Bildirimi Gönder</button>
