@@ -47,20 +47,44 @@ function getFirebaseApp() {
   });
 }
 
-async function sendToToken(token, title, message) {
+async function sendToToken(token, title, message, imageUrl) {
   getFirebaseApp();
 
-  return await admin.messaging().send({
+  const cleanImageUrl = String(imageUrl || '').trim();
+
+  const payload = {
     token,
     notification: {
       title,
       body: message
     },
+    android: {
+      notification: {
+        imageUrl: cleanImageUrl || undefined
+      }
+    },
+    apns: {
+      payload: {
+        aps: {
+          'mutable-content': 1
+        }
+      },
+      fcm_options: {
+        image: cleanImageUrl || undefined
+      }
+    },
     data: {
       source: 'aivo_admin_campaign',
-      click_action: 'open_app'
+      click_action: 'open_app',
+      imageUrl: cleanImageUrl
     }
-  });
+  };
+
+  if (cleanImageUrl) {
+    payload.notification.imageUrl = cleanImageUrl;
+  }
+
+  return await admin.messaging().send(payload);
 }
 
 module.exports = async (req, res) => {
