@@ -377,6 +377,7 @@
         const btnPushSend = $("btnPushSend");
     const pushTitle = $("pushTitle");
     const pushMessage = $("pushMessage");
+    const pushImageUrl = $("pushImageUrl");
     const pushCampaignStatus = $("pushCampaignStatus");
     const pushCampaignOut = $("pushCampaignOut");
 
