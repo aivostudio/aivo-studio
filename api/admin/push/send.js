@@ -54,12 +54,10 @@ async function sendToToken(token, title, message, imageUrl) {
 
   const payload = {
     token,
-    notification: {
-      title,
-      body: message
-    },
     android: {
       notification: {
+        title,
+        body: message,
         imageUrl: cleanImageUrl || undefined
       }
     },
@@ -89,10 +87,6 @@ async function sendToToken(token, title, message, imageUrl) {
       image: cleanImageUrl
     }
   };
-
-  if (cleanImageUrl) {
-    payload.notification.imageUrl = cleanImageUrl;
-  }
 
   return await admin.messaging().send(payload);
 }
