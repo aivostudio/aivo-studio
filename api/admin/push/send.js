@@ -65,8 +65,8 @@ async function sendToToken(token, title, message, imageUrl) {
     },
     apns: {
       payload: {
-        aps: {
-          mutableContent: 1
+              aps: {
+          mutableContent: true
         }
       },
          fcmOptions: {
