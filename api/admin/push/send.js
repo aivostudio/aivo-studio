@@ -64,13 +64,22 @@ async function sendToToken(token, title, message, imageUrl) {
       }
     },
     apns: {
+      headers: {
+        'apns-push-type': 'alert',
+        'apns-priority': '10'
+      },
       payload: {
-              aps: {
-          mutableContent: true
+        aps: {
+          alert: {
+            title,
+            body: message
+          },
+          mutableContent: true,
+          sound: 'default'
         }
       },
-         fcmOptions: {
-        image: cleanImageUrl || undefined
+      fcmOptions: {
+        imageUrl: cleanImageUrl || undefined
       }
     },
     data: {
