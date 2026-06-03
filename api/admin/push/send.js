@@ -54,29 +54,12 @@ async function sendToToken(token, title, message, imageUrl) {
 
   const payload = {
     token,
+    notification: {
+      title,
+      body: message
+    },
     android: {
       notification: {
-        title,
-        body: message,
-        imageUrl: cleanImageUrl || undefined
-      }
-    },
-    apns: {
-      headers: {
-        'apns-push-type': 'alert',
-        'apns-priority': '10'
-      },
-      payload: {
-        aps: {
-          alert: {
-            title,
-            body: message
-          },
-          'mutable-content': 1,
-          sound: 'default'
-        }
-      },
-      fcmOptions: {
         imageUrl: cleanImageUrl || undefined
       }
     },
