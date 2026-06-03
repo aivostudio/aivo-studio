@@ -1197,6 +1197,8 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   if (window.__AIVO_IOS_PUSH_TOKEN_REGISTER__) return;
   window.__AIVO_IOS_PUSH_TOKEN_REGISTER__ = true;
 
+  var bootStarted = false;
+
   function getEmail(){
     try {
       return String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
@@ -1244,8 +1246,16 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   }
 
   async function boot(){
+    if (bootStarted) return;
+
     const PushNotifications = getPushPlugin();
-    if (!PushNotifications) return;
+
+    if (!PushNotifications) {
+      setTimeout(boot, 600);
+      return;
+    }
+
+    bootStarted = true;
 
     PushNotifications.addListener("registration", async function(token){
       const value = token && token.value ? String(token.value).trim() : "";
@@ -1273,6 +1283,8 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
     try {
       const perm = await PushNotifications.requestPermissions();
 
+      console.log("[AIVO PUSH] iOS permission:", perm);
+
       if (perm && perm.receive === "granted") {
         await PushNotifications.register();
       } else {
@@ -1283,11 +1295,13 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
     }
   }
 
-  document.addEventListener("aivo:auth-ready", function(){
-    boot();
-  });
+  document.addEventListener("deviceready", boot, false);
+  document.addEventListener("DOMContentLoaded", boot, false);
+  document.addEventListener("aivo:auth-ready", boot, false);
 
-  setTimeout(boot, 1800);
+  setTimeout(boot, 1000);
+  setTimeout(boot, 2500);
+  setTimeout(boot, 5000);
 })();
 </script>
 
