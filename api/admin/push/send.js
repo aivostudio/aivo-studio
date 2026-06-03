@@ -1,5 +1,5 @@
 const admin = require('firebase-admin');
-const { kvGetJson } = require('../../_kv');
+const { kvGetJson, kvSetJson } = require('../../_kv');
 
 function json(res, status, payload) {
   return res.status(status).json(payload);
@@ -147,18 +147,39 @@ module.exports = async (req, res) => {
       }
     }
 
-    const sent = results.filter(item => item.ok).length;
-    const failed = results.length - sent;
+ const sent = results.filter(item => item.ok).length;
+const failed = results.length - sent;
 
-    return json(res, 200, {
-      ok: true,
-      title,
-      message,
-      total_tokens: tokenList.length,
-      sent,
-      failed,
-      results
-    });
+const cleanedTokenList = tokenList.filter(function(token) {
+  const result = results.find(item => item.token === token);
+
+  if (!result) return false;
+  if (result.ok) return true;
+
+  const error = String(result.error || '');
+
+  if (error.includes('not a valid FCM registration token')) return false;
+  if (error.includes('Requested entity was not found')) return false;
+  if (/^[a-fA-F0-9]{64,}$/.test(String(token || '').trim())) return false;
+
+  return true;
+});
+
+if (cleanedTokenList.length !== tokenList.length) {
+  await kvSetJson(allTokensKey(), cleanedTokenList);
+}
+
+return json(res, 200, {
+  ok: true,
+  title,
+  message,
+  total_tokens: tokenList.length,
+  active_tokens: cleanedTokenList.length,
+  cleaned_tokens: tokenList.length - cleanedTokenList.length,
+  sent,
+  failed,
+  results
+});
   } catch (err) {
     return json(res, 500, {
       ok: false,
