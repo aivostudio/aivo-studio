@@ -115,8 +115,12 @@ module.exports = async (req, res) => {
       req.body?.title || ''
     ).trim();
 
-    const message = String(
+      const message = String(
       req.body?.message || ''
+    ).trim();
+
+    const imageUrl = String(
+      req.body?.imageUrl || ''
     ).trim();
 
     if (!title) {
@@ -155,7 +159,12 @@ module.exports = async (req, res) => {
 
     for (const token of tokenList) {
       try {
-        const messageId = await sendToToken(token, title, message);
+            const messageId = await sendToToken(
+          token,
+          title,
+          message,
+          imageUrl
+        );
 
         results.push({
           token,
