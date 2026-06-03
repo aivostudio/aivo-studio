@@ -56,10 +56,21 @@ async function sendToToken(token, title, message, imageUrl) {
     token,
     notification: {
       title,
-      body: message
+      body: message,
+      imageUrl: cleanImageUrl || undefined
     },
     android: {
       notification: {
+        imageUrl: cleanImageUrl || undefined
+      }
+    },
+    apns: {
+      payload: {
+        aps: {
+          'mutable-content': 1
+        }
+      },
+      fcmOptions: {
         imageUrl: cleanImageUrl || undefined
       }
     },
@@ -70,7 +81,6 @@ async function sendToToken(token, title, message, imageUrl) {
       image: cleanImageUrl
     }
   };
-
   return await admin.messaging().send(payload);
 }
 
