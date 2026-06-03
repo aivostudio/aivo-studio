@@ -386,9 +386,9 @@
         const s = await adminAuth();
         if (!s.ok) return;
 
-        const title = String(pushTitle?.value || "").trim();
+         const title = String(pushTitle?.value || "").trim();
         const message = String(pushMessage?.value || "").trim();
-
+        const imageUrl = String(pushImageUrl?.value || "").trim();
         if (!title || !message) {
           jsonPrint(pushCampaignOut, {
             ok: false,
@@ -407,10 +407,11 @@
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             cache: "no-store",
-            body: JSON.stringify({
+              body: JSON.stringify({
               email: s.email,
               title,
-              message
+              message,
+              imageUrl
             })
           });
 
