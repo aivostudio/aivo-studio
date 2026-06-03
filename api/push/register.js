@@ -26,6 +26,23 @@ function tokenKey(deviceToken) {
 function allTokensKey() {
   return 'push:tokens:all';
 }
+function isInvalidPushTokenForPlatform(platform, deviceToken) {
+  const token = String(deviceToken || '').trim();
+
+  if (!token) return true;
+
+  if (token === 'test-token-123') return true;
+
+  if (platform === 'ios') {
+    const isApnsHexToken = /^[a-fA-F0-9]{64,}$/.test(token);
+    if (isApnsHexToken) return true;
+
+    const looksLikeFcmToken = token.includes(':') && token.length > 80;
+    if (!looksLikeFcmToken) return true;
+  }
+
+  return false;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
