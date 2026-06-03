@@ -73,10 +73,12 @@ async function sendToToken(token, title, message, imageUrl) {
         image: cleanImageUrl || undefined
       }
     },
-    data: {
+       data: {
       source: 'aivo_admin_campaign',
       click_action: 'open_app',
-      imageUrl: cleanImageUrl
+      imageUrl: cleanImageUrl,
+      image: cleanImageUrl,
+      'gcm.notification.image': cleanImageUrl
     }
   };
 
