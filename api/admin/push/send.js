@@ -72,7 +72,7 @@ async function sendToToken(token, title, message, imageUrl) {
             title,
             body: message
           },
-          mutableContent: true,
+          'mutable-content': 1,
           sound: 'default'
         }
       },
