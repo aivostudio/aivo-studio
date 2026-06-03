@@ -374,7 +374,72 @@
     const whoEl = $("who");
     if (whoEl && state.email) whoEl.textContent = "Giriş: " + state.email;
 
+        const btnPushSend = $("btnPushSend");
+    const pushTitle = $("pushTitle");
+    const pushMessage = $("pushMessage");
+    const pushCampaignStatus = $("pushCampaignStatus");
+    const pushCampaignOut = $("pushCampaignOut");
 
+    if (btnPushSend) {
+      btnPushSend.addEventListener("click", async () => {
+        const s = await adminAuth();
+        if (!s.ok) return;
+
+        const title = String(pushTitle?.value || "").trim();
+        const message = String(pushMessage?.value || "").trim();
+
+        if (!title || !message) {
+          jsonPrint(pushCampaignOut, {
+            ok: false,
+            error: "title_and_message_required"
+          });
+          if (pushCampaignStatus) pushCampaignStatus.textContent = "Başlık ve mesaj gerekli.";
+          return;
+        }
+
+        try {
+          btnPushSend.disabled = true;
+          if (pushCampaignStatus) pushCampaignStatus.textContent = "Gönderiliyor...";
+
+          const r = await fetch("/api/admin/push/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            cache: "no-store",
+            body: JSON.stringify({
+              email: s.email,
+              title,
+              message
+            })
+          });
+
+          const j = await r.json().catch(() => null);
+
+          jsonPrint(pushCampaignOut, j || {
+            ok: false,
+            error: "empty_response"
+          });
+
+          if (!r.ok || !j || !j.ok) {
+            if (pushCampaignStatus) pushCampaignStatus.textContent = "Gönderim başarısız.";
+            return;
+          }
+
+          if (pushCampaignStatus) {
+            pushCampaignStatus.textContent =
+              "Gönderildi: " + String(j.sent || 0) + " / " + String(j.active_tokens || j.total_tokens || 0);
+          }
+        } catch (_) {
+          jsonPrint(pushCampaignOut, {
+            ok: false,
+            error: "fetch_failed"
+          });
+          if (pushCampaignStatus) pushCampaignStatus.textContent = "Gönderim hatası.";
+        } finally {
+          btnPushSend.disabled = false;
+        }
+      });
+    }
     const btnCheck = $("btnCheck");
     if (btnCheck) {
       btnCheck.addEventListener("click", async () => {
