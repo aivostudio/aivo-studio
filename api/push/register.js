@@ -77,7 +77,12 @@ export default async function handler(req, res) {
         error: 'missing_device_token'
       });
     }
-
+    if (isInvalidPushTokenForPlatform(platform, deviceToken)) {
+  return json(res, 400, {
+    ok: false,
+    error: 'invalid_device_token'
+  });
+}
     const now = new Date().toISOString();
 
     const tokenRecord = {
@@ -116,6 +121,7 @@ const allTokens = allTokensRaw.filter(function(token) {
 
   if (!value) return false;
   if (value === 'test-token-123') return false;
+  if (/^[a-fA-F0-9]{64,}$/.test(value)) return false;
 
   return true;
 });
