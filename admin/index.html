@@ -69,19 +69,31 @@
 
       <pre id="auditOut" class="out"></pre>
     </section>
-        <section class="card" id="cardPushCampaign">
-      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-        <span>📣 Push Kampanya</span>
+     <section class="card" id="cardPushCampaign">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:18px;">
+        <div>
+          <h3 style="margin:0 0 6px;">📣 Push Kampanya</h3>
+          <p class="muted" style="margin:0;">Kampanya, duyuru ve kredi bildirimlerini kullanıcılara gönder.</p>
+        </div>
         <span class="muted" id="pushCampaignStatus">Hazır.</span>
-      </h3>
-
-      <div class="row" style="gap:10px; flex-wrap:wrap;">
-        <input id="pushTitle" placeholder="Bildirim başlığı" style="min-width:260px;" />
-             <textarea id="pushMessage" placeholder="Bildirim mesajı" rows="3" style="min-width:360px; width:100%; resize:vertical;"></textarea>
-        <button id="btnPushSend" class="btn btn-primary">Gönder</button>
       </div>
 
-      <pre id="pushCampaignOut" class="out"></pre>
+      <div style="display:grid; grid-template-columns:1fr; gap:12px;">
+        <input id="pushTitle" placeholder="Bildirim başlığı" />
+
+        <textarea
+          id="pushMessage"
+          placeholder="Bildirim mesajı"
+          rows="4"
+          style="width:100%; resize:vertical; line-height:1.45;"
+        ></textarea>
+
+        <div style="display:flex; justify-content:flex-end;">
+          <button id="btnPushSend" class="btn btn-primary">Bildirimi Gönder</button>
+        </div>
+      </div>
+
+      <pre id="pushCampaignOut" class="out" style="margin-top:16px;"></pre>
     </section>
     <section class="card" id="cardUsers">
       <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
