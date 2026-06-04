@@ -60,14 +60,7 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
     cookieManager.setAcceptThirdPartyCookies(getBridge().getWebView(), true);
     cookieManager.flush();
 
-    getBridge().getWebView().setWebChromeClient(new WebChromeClient() {
-  @Override
-  public void onPermissionRequest(final PermissionRequest request) {
-    runOnUiThread(() -> {
-      request.grant(request.getResources());
-    });
-  }
-});
+
 
         getBridge().getWebView().setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
       try {
