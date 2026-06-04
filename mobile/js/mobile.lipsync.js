@@ -1535,7 +1535,20 @@
       const subEl = currentModal.querySelector("[data-mobile-lipsync-record-sub]");
       const statusBox = currentModal.querySelector("[data-mobile-lipsync-record-status]");
 
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+     if (stream) {
+  stream.getTracks().forEach(function(track){
+    track.stop();
+  });
+  stream = null;
+}
+
+stream = await navigator.mediaDevices.getUserMedia({
+  audio: {
+    echoCancellation: false,
+    noiseSuppression: false,
+    autoGainControl: false
+  }
+});
         const preferredMimeType =
         MediaRecorder.isTypeSupported("audio/mp4")
           ? "audio/mp4"
