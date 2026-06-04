@@ -1229,6 +1229,8 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   if (window.__AIVO_ANDROID_PUSH_TOKEN_REGISTER__) return;
   window.__AIVO_ANDROID_PUSH_TOKEN_REGISTER__ = true;
 
+  var bootStarted = false;
+
   function getEmail(){
     try {
       return String(localStorage.getItem("aivo_user_email") || "").trim().toLowerCase();
@@ -1276,8 +1278,16 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   }
 
   async function boot(){
+    if (bootStarted) return;
+
     const PushNotifications = getPushPlugin();
-    if (!PushNotifications) return;
+
+    if (!PushNotifications) {
+      setTimeout(boot, 600);
+      return;
+    }
+
+    bootStarted = true;
 
     PushNotifications.addListener("registration", async function(token){
       const value = token && token.value ? String(token.value).trim() : "";
@@ -1292,34 +1302,38 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
 
       try {
         await sendTokenToBackend(value);
-        console.log("[AIVO PUSH] token registered to backend");
+        console.log("[AIVO PUSH] Android token registered to backend");
       } catch (err) {
-        console.error("[AIVO PUSH] token backend register failed", err);
+        console.error("[AIVO PUSH] Android token backend register failed", err);
       }
     });
 
     PushNotifications.addListener("registrationError", function(error){
-      console.error("[AIVO PUSH] registration error", error);
+      console.error("[AIVO PUSH] Android registration error", error);
     });
 
     try {
       const perm = await PushNotifications.requestPermissions();
 
+      console.log("[AIVO PUSH] Android permission:", perm);
+
       if (perm && perm.receive === "granted") {
         await PushNotifications.register();
       } else {
-        console.warn("[AIVO PUSH] notification permission not granted", perm);
+        console.warn("[AIVO PUSH] Android notification permission not granted", perm);
       }
     } catch (err) {
-      console.error("[AIVO PUSH] boot failed", err);
+      console.error("[AIVO PUSH] Android boot failed", err);
     }
   }
 
-  document.addEventListener("aivo:auth-ready", function(){
-    boot();
-  });
+  document.addEventListener("deviceready", boot, false);
+  document.addEventListener("DOMContentLoaded", boot, false);
+  document.addEventListener("aivo:auth-ready", boot, false);
 
-  setTimeout(boot, 1800);
+  setTimeout(boot, 1000);
+  setTimeout(boot, 2500);
+  setTimeout(boot, 5000);
 })();
 </script>
 <script>
