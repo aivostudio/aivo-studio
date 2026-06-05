@@ -291,14 +291,14 @@ async function generateMusic(payload) {
       let result = null;
       try {
         result = await callGenerateAPI(prompt);
-      } catch (apiErr) {
+          } catch (apiErr) {
         console.warn("[music.generate] /api/music/generate failed. Credit refund will be attempted:", apiErr);
 
         await refundMusicCredit("music_generate_failed", {
           error: String(apiErr?.message || apiErr || "generate_failed")
         });
 
-      toastError("Üretim başarısız. Promptu sadeleştir. 2 kredi iade edildi.");
+        toastError("Üretim başarısız. Sanatçı adı/telifli söz kullanma. 2 kredi iade edildi.");
         return;
       }
 
