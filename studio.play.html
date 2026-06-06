@@ -1284,13 +1284,14 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        user_id: email,
-        user_uuid: email,
-        platform: "android",
-        device_token: token,
-        permission_status: "granted",
-        app: "aivo",
-        device_id: "android-play",
+              user_id: email,
+          user_uuid: email,
+          platform: "android",
+          device_token: token,
+          permission_status: "granted",
+          app: "aivo",
+          lang: (localStorage.getItem("aivo_mobile_lang") || localStorage.getItem("aivo_lang") || document.documentElement.lang || navigator.language || "tr"),
+          device_id: "android-play",
         meta: {
           source: "studio.play.html",
           registered_at: new Date().toISOString()
