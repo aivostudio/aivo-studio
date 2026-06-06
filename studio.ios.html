@@ -1229,13 +1229,14 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
+         body: JSON.stringify({
         user_id: email,
         user_uuid: email,
         platform: "ios",
         device_token: token,
         permission_status: "granted",
         app: "aivo",
+        lang: (localStorage.getItem("aivo_mobile_lang") || localStorage.getItem("aivo_lang") || document.documentElement.lang || navigator.language || "tr"),
         device_id: "ios-app",
         meta: {
           source: "studio.ios.html",
