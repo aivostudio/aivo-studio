@@ -253,8 +253,24 @@ const sent = results.filter(function(item) {
   return item && item.ok && item.skipped !== true;
 }).length;
 
+const sentTr = results.filter(function(item) {
+  return item && item.ok && item.skipped !== true && item.lang === 'tr';
+}).length;
+
+const sentEn = results.filter(function(item) {
+  return item && item.ok && item.skipped !== true && item.lang === 'en';
+}).length;
+
 const skipped = results.filter(function(item) {
   return item && item.skipped === true;
+}).length;
+
+const skippedTr = results.filter(function(item) {
+  return item && item.skipped === true && item.lang === 'tr';
+}).length;
+
+const skippedEn = results.filter(function(item) {
+  return item && item.skipped === true && item.lang === 'en';
 }).length;
 
 const failed = results.filter(function(item) {
