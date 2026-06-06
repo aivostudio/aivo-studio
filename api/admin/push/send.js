@@ -249,8 +249,17 @@ module.exports = async (req, res) => {
       }
     }
 
- const sent = results.filter(item => item.ok).length;
-const failed = results.length - sent;
+const sent = results.filter(function(item) {
+  return item && item.ok && item.skipped !== true;
+}).length;
+
+const skipped = results.filter(function(item) {
+  return item && item.skipped === true;
+}).length;
+
+const failed = results.filter(function(item) {
+  return item && item.ok !== true;
+}).length;
 
 const cleanedTokenList = tokenList.filter(function(token) {
   const result = results.find(item => item.token === token);
@@ -279,7 +288,8 @@ return json(res, 200, {
   total_tokens: tokenList.length,
   active_tokens: cleanedTokenList.length,
   cleaned_tokens: tokenList.length - cleanedTokenList.length,
-  sent,
+    sent,
+  skipped,
   failed,
   results
 });
