@@ -140,40 +140,45 @@ module.exports = async (req, res) => {
     const titleEn = String(
       req.body?.titleEn ||
       req.body?.title_en ||
-      req.body?.title ||
-      titleTr ||
       ''
     ).trim();
 
     const messageEn = String(
       req.body?.messageEn ||
       req.body?.message_en ||
-      req.body?.message ||
-      messageTr ||
       ''
     ).trim();
 
-    const title = titleTr;
-    const message = messageTr;
+    const hasTrPush = !!(titleTr && messageTr);
+    const hasEnPush = !!(titleEn && messageEn);
+
+    const title = titleTr || titleEn;
+    const message = messageTr || messageEn;
 
     const imageUrl = String(
       req.body?.imageUrl || ''
     ).trim();
 
-    if (!title) {
+    if (!hasTrPush && !hasEnPush) {
       return json(res, 400, {
         ok: false,
-        error: 'missing_title'
+        error: 'at_least_one_language_required'
       });
     }
 
-    if (!message) {
+    if ((titleTr && !messageTr) || (!titleTr && messageTr)) {
       return json(res, 400, {
         ok: false,
-        error: 'missing_message'
+        error: 'tr_title_and_message_required_together'
       });
     }
 
+    if ((titleEn && !messageEn) || (!titleEn && messageEn)) {
+      return json(res, 400, {
+        ok: false,
+        error: 'en_title_and_message_required_together'
+      });
+    }
     const tokens = await kvGetJson(allTokensKey());
 
     const tokenList = Array.isArray(tokens)
@@ -203,6 +208,21 @@ module.exports = async (req, res) => {
             ? tokenRecord.lang
             : 'tr'
         );
+
+          const shouldSendToToken =
+          (lang === 'en' && hasEnPush) ||
+          (lang === 'tr' && hasTrPush);
+
+        if (!shouldSendToToken) {
+          results.push({
+            token,
+            lang,
+            ok: true,
+            skipped: true,
+            reason: 'language_not_selected'
+          });
+          continue;
+        }
 
         const localizedTitle = lang === 'en' ? titleEn : titleTr;
         const localizedMessage = lang === 'en' ? messageEn : messageTr;
