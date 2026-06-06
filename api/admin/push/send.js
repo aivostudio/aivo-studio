@@ -23,6 +23,21 @@ function allTokensKey() {
   return 'push:tokens:all';
 }
 
+function tokenKey(deviceToken) {
+  return `push:token:${deviceToken}`;
+}
+
+function normalizeLang(value) {
+  const lang = String(value || '').toLowerCase().trim();
+
+  if (lang === 'tr') return 'tr';
+  if (lang === 'en') return 'en';
+  if (lang.startsWith('tr')) return 'tr';
+  if (lang.startsWith('en')) return 'en';
+
+  return 'tr';
+}
+
 function getFirebasePrivateKey() {
   return String(process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
 }
@@ -108,13 +123,38 @@ module.exports = async (req, res) => {
       });
     }
 
-    const title = String(
-      req.body?.title || ''
+    const titleTr = String(
+      req.body?.titleTr ||
+      req.body?.title_tr ||
+      req.body?.title ||
+      ''
     ).trim();
 
-      const message = String(
-      req.body?.message || ''
+    const messageTr = String(
+      req.body?.messageTr ||
+      req.body?.message_tr ||
+      req.body?.message ||
+      ''
     ).trim();
+
+    const titleEn = String(
+      req.body?.titleEn ||
+      req.body?.title_en ||
+      req.body?.title ||
+      titleTr ||
+      ''
+    ).trim();
+
+    const messageEn = String(
+      req.body?.messageEn ||
+      req.body?.message_en ||
+      req.body?.message ||
+      messageTr ||
+      ''
+    ).trim();
+
+    const title = titleTr;
+    const message = messageTr;
 
     const imageUrl = String(
       req.body?.imageUrl || ''
@@ -157,15 +197,26 @@ module.exports = async (req, res) => {
 
     for (const token of tokenList) {
       try {
-            const messageId = await sendToToken(
+        const tokenRecord = await kvGetJson(tokenKey(token));
+        const lang = normalizeLang(
+          tokenRecord && typeof tokenRecord === 'object'
+            ? tokenRecord.lang
+            : 'tr'
+        );
+
+        const localizedTitle = lang === 'en' ? titleEn : titleTr;
+        const localizedMessage = lang === 'en' ? messageEn : messageTr;
+
+        const messageId = await sendToToken(
           token,
-          title,
-          message,
+          localizedTitle,
+          localizedMessage,
           imageUrl
         );
 
         results.push({
           token,
+          lang,
           ok: true,
           message_id: messageId
         });
