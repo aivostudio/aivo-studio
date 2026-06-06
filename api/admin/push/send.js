@@ -304,8 +304,12 @@ return json(res, 200, {
   total_tokens: tokenList.length,
   active_tokens: cleanedTokenList.length,
   cleaned_tokens: tokenList.length - cleanedTokenList.length,
-    sent,
+  sent,
+  sent_tr: sentTr,
+  sent_en: sentEn,
   skipped,
+  skipped_tr: skippedTr,
+  skipped_en: skippedEn,
   failed,
   results
 });
