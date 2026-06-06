@@ -19,6 +19,17 @@ function safeString(value) {
   return text || null;
 }
 
+function normalizeLang(value) {
+  const lang = String(value || '').toLowerCase().trim();
+
+  if (lang === 'tr') return 'tr';
+  if (lang === 'en') return 'en';
+  if (lang.startsWith('tr')) return 'tr';
+  if (lang.startsWith('en')) return 'en';
+
+  return 'tr';
+}
+
 function tokenKey(deviceToken) {
   return `push:token:${deviceToken}`;
 }
@@ -63,6 +74,7 @@ export default async function handler(req, res) {
     const permissionStatus = safeString(body.permission_status) || 'granted';
     const deviceId = safeString(body.device_id);
     const app = safeString(body.app) || 'aivo';
+    const lang = normalizeLang(body.lang || body.language || body.locale);
 
     if (!platform) {
       return json(res, 400, {
@@ -92,6 +104,7 @@ export default async function handler(req, res) {
       device_token: deviceToken,
       permission_status: permissionStatus,
       app,
+      lang,
       device_id: deviceId,
       user_agent: req.headers['user-agent'] || null,
       last_seen_at: now,
