@@ -374,9 +374,11 @@
     const whoEl = $("who");
     if (whoEl && state.email) whoEl.textContent = "Giriş: " + state.email;
 
-        const btnPushSend = $("btnPushSend");
-    const pushTitle = $("pushTitle");
-    const pushMessage = $("pushMessage");
+      const btnPushSend = $("btnPushSend");
+    const pushTitleTr = $("pushTitleTr");
+    const pushMessageTr = $("pushMessageTr");
+    const pushTitleEn = $("pushTitleEn");
+    const pushMessageEn = $("pushMessageEn");
     const pushImageUrl = $("pushImageUrl");
     const pushCampaignStatus = $("pushCampaignStatus");
     const pushCampaignOut = $("pushCampaignOut");
@@ -386,15 +388,20 @@
         const s = await adminAuth();
         if (!s.ok) return;
 
-         const title = String(pushTitle?.value || "").trim();
-        const message = String(pushMessage?.value || "").trim();
+             const titleTr = String(pushTitleTr?.value || "").trim();
+        const messageTr = String(pushMessageTr?.value || "").trim();
+        const titleEn = String(pushTitleEn?.value || "").trim();
+        const messageEn = String(pushMessageEn?.value || "").trim();
         const imageUrl = String(pushImageUrl?.value || "").trim();
-        if (!title || !message) {
+
+        if (!titleTr || !messageTr || !titleEn || !messageEn) {
           jsonPrint(pushCampaignOut, {
             ok: false,
-            error: "title_and_message_required"
+            error: "tr_and_en_title_message_required"
           });
-          if (pushCampaignStatus) pushCampaignStatus.textContent = "Başlık ve mesaj gerekli.";
+          if (pushCampaignStatus) {
+            pushCampaignStatus.textContent = "Türkçe ve İngilizce başlık/mesaj gerekli.";
+          }
           return;
         }
 
@@ -407,10 +414,12 @@
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             cache: "no-store",
-              body: JSON.stringify({
+             body: JSON.stringify({
               email: s.email,
-              title,
-              message,
+              titleTr,
+              messageTr,
+              titleEn,
+              messageEn,
               imageUrl
             })
           });
