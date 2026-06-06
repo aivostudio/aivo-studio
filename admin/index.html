@@ -69,63 +69,258 @@
 
       <pre id="auditOut" class="out"></pre>
     </section>
-     <section class="card" id="cardPushCampaign">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:18px;">
+    <section class="card" id="cardPushCampaign">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
         <div>
-          <h3 style="margin:0 0 6px;">📣 Push Kampanya</h3>
-          <p class="muted" style="margin:0;">Kampanya, duyuru ve kredi bildirimlerini kullanıcılara gönder.</p>
+          <h3 style="margin:0 0 6px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">📣</span>
+            <span>Push Kampanya</span>
+          </h3>
+          <p class="muted" style="margin:0; max-width:780px;">
+            Türkçe ve İngilizce push kampanyalarını tek panelden yönet. Her cihaz, kayıtlı diline göre doğru bildirimi alsın.
+          </p>
         </div>
-        <span class="muted" id="pushCampaignStatus">Hazır.</span>
+
+        <span
+          id="pushCampaignStatus"
+          class="muted"
+          style="
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:10px 14px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.10);
+            background:rgba(255,255,255,.04);
+            min-height:42px;
+          "
+        >Hazır.</span>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr; gap:12px;">
-        <input id="pushTitle" placeholder="Bildirim başlığı" />
-
-       <textarea
-      <div style="display:grid; grid-template-columns:1fr; gap:12px;">
-        <input id="pushTitleTr" placeholder="Türkçe bildirim başlığı" />
-
-        <textarea
-          id="pushMessageTr"
-          placeholder="Türkçe bildirim mesajı"
-          rows="4"
+      <div
+        style="
+          display:grid;
+          grid-template-columns:repeat(2, minmax(320px, 1fr));
+          gap:16px;
+          margin-bottom:16px;
+        "
+      >
+        <div
           style="
-            width:100%;
-            resize:vertical;
-            line-height:1.45;
-            background:#0b0f17;
-            color:#fff;
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:16px;
-            padding:14px;
+            background:linear-gradient(180deg, rgba(22,28,45,.92) 0%, rgba(11,15,23,.96) 100%);
+            border:1px solid rgba(80,120,255,.18);
+            border-radius:22px;
+            padding:18px;
+            box-shadow:0 12px 32px rgba(0,0,0,.18);
           "
-        ></textarea>
+        >
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px;">
+            <div>
+              <div style="font-size:16px; font-weight:800; color:#fff;">Türkçe Bildirim</div>
+              <div class="muted" style="font-size:13px; margin-top:4px;">Uygulama dili Türkçe olan cihazlara gider.</div>
+            </div>
+            <span
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                min-width:44px;
+                height:32px;
+                padding:0 10px;
+                border-radius:999px;
+                background:rgba(50,120,255,.14);
+                border:1px solid rgba(90,140,255,.22);
+                color:#cfe0ff;
+                font-size:12px;
+                font-weight:700;
+              "
+            >TR</span>
+          </div>
 
-        <input id="pushTitleEn" placeholder="English notification title" />
+          <div style="display:grid; gap:12px;">
+            <div>
+              <label for="pushTitleTr" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Başlık</label>
+              <input
+                id="pushTitleTr"
+                placeholder="Örn: Kredileriniz yüklendi 🎉"
+                style="
+                  width:100%;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              />
+            </div>
 
-        <textarea
-          id="pushMessageEn"
-          placeholder="English notification message"
-          rows="4"
+            <div>
+              <label for="pushMessageTr" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Mesaj</label>
+              <textarea
+                id="pushMessageTr"
+                placeholder="Örn: Yeni kredi paketlerin hesabına tanımlandı. Hemen üretime başlayabilirsin."
+                rows="6"
+                style="
+                  width:100%;
+                  resize:vertical;
+                  line-height:1.5;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div
           style="
-            width:100%;
-            resize:vertical;
-            line-height:1.45;
-            background:#0b0f17;
-            color:#fff;
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:16px;
-            padding:14px;
+            background:linear-gradient(180deg, rgba(22,28,45,.92) 0%, rgba(11,15,23,.96) 100%);
+            border:1px solid rgba(80,120,255,.18);
+            border-radius:22px;
+            padding:18px;
+            box-shadow:0 12px 32px rgba(0,0,0,.18);
           "
-        ></textarea>
+        >
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px;">
+            <div>
+              <div style="font-size:16px; font-weight:800; color:#fff;">English Notification</div>
+              <div class="muted" style="font-size:13px; margin-top:4px;">Sent to devices using English.</div>
+            </div>
+            <span
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                min-width:44px;
+                height:32px;
+                padding:0 10px;
+                border-radius:999px;
+                background:rgba(50,120,255,.14);
+                border:1px solid rgba(90,140,255,.22);
+                color:#cfe0ff;
+                font-size:12px;
+                font-weight:700;
+              "
+            >EN</span>
+          </div>
 
-        <input id="pushImageUrl" placeholder="Bildirim görseli URL (opsiyonel)" />
+          <div style="display:grid; gap:12px;">
+            <div>
+              <label for="pushTitleEn" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Title</label>
+              <input
+                id="pushTitleEn"
+                placeholder="Example: Your credits are ready 🎉"
+                style="
+                  width:100%;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              />
+            </div>
 
-        <div style="display:flex; justify-content:flex-end;">
-          <button id="btnPushSend" class="btn btn-primary">Bildirimi Gönder</button>
+            <div>
+              <label for="pushMessageEn" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Message</label>
+              <textarea
+                id="pushMessageEn"
+                placeholder="Example: Your new credit package has been added. Start creating right away."
+                rows="6"
+                style="
+                  width:100%;
+                  resize:vertical;
+                  line-height:1.5;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              ></textarea>
+            </div>
+          </div>
         </div>
       </div>
-      <pre id="pushCampaignOut" class="out" style="margin-top:16px;"></pre>
+
+      <div
+        style="
+          background:linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.02) 100%);
+          border:1px solid rgba(255,255,255,.08);
+          border-radius:20px;
+          padding:18px;
+          margin-bottom:16px;
+        "
+      >
+        <div style="display:grid; gap:12px;">
+          <div>
+            <label for="pushImageUrl" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">
+              Bildirim görseli URL (opsiyonel)
+            </label>
+            <input
+              id="pushImageUrl"
+              placeholder="https://..."
+              style="
+                width:100%;
+                background:#0b0f17;
+                color:#fff;
+                border:1px solid rgba(255,255,255,.08);
+                border-radius:16px;
+                padding:14px 16px;
+                outline:none;
+              "
+            />
+          </div>
+
+          <div
+            class="muted"
+            style="
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              gap:12px;
+              flex-wrap:wrap;
+              font-size:13px;
+            "
+          >
+            <span>İpucu: Kısa, net ve aksiyona yönlendiren mesajlar daha iyi dönüşüm sağlar.</span>
+
+            <button
+              id="btnPushSend"
+              class="btn btn-primary"
+              style="
+                min-width:190px;
+                height:46px;
+                border-radius:14px;
+                font-weight:700;
+                box-shadow:0 10px 24px rgba(70,90,255,.18);
+              "
+            >
+              Bildirimi Gönder
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <pre
+        id="pushCampaignOut"
+        class="out"
+        style="
+          margin-top:0;
+          min-height:84px;
+          border-radius:18px;
+          border:1px solid rgba(255,255,255,.08);
+          background:rgba(5,9,16,.92);
+          padding:16px;
+        "
+      ></pre>
     </section>
     <section class="card" id="cardUsers">
       <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
