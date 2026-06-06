@@ -394,13 +394,38 @@
         const messageEn = String(pushMessageEn?.value || "").trim();
         const imageUrl = String(pushImageUrl?.value || "").trim();
 
-        if (!titleTr || !messageTr || !titleEn || !messageEn) {
+           const hasTrPush = !!(titleTr && messageTr);
+        const hasEnPush = !!(titleEn && messageEn);
+
+        if (!hasTrPush && !hasEnPush) {
           jsonPrint(pushCampaignOut, {
             ok: false,
-            error: "tr_and_en_title_message_required"
+            error: "at_least_one_language_required"
           });
           if (pushCampaignStatus) {
-            pushCampaignStatus.textContent = "Türkçe ve İngilizce başlık/mesaj gerekli.";
+            pushCampaignStatus.textContent = "En az bir dil için başlık ve mesaj gerekli.";
+          }
+          return;
+        }
+
+        if ((titleTr && !messageTr) || (!titleTr && messageTr)) {
+          jsonPrint(pushCampaignOut, {
+            ok: false,
+            error: "tr_title_and_message_required_together"
+          });
+          if (pushCampaignStatus) {
+            pushCampaignStatus.textContent = "Türkçe göndermek için başlık ve mesaj birlikte dolu olmalı.";
+          }
+          return;
+        }
+
+        if ((titleEn && !messageEn) || (!titleEn && messageEn)) {
+          jsonPrint(pushCampaignOut, {
+            ok: false,
+            error: "en_title_and_message_required_together"
+          });
+          if (pushCampaignStatus) {
+            pushCampaignStatus.textContent = "İngilizce göndermek için başlık ve mesaj birlikte dolu olmalı.";
           }
           return;
         }
