@@ -396,9 +396,7 @@ export default async function handler(req, res) {
         });
       }
 
-      if (i > 0 && i % 10 === 0) {
-        await sleep(350);
-      }
+         await sleep(300);
     }
 
     return res.status(200).json({
