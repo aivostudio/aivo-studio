@@ -117,7 +117,7 @@ export default async function handler(req, res) {
       return json(res, 400, { ok: false, error: "ID_REQUIRED" });
     }
 
-    const invoiceUrl = `${getBaseUrl()}/api/invoices/pdf?email=${encodeURIComponent(
+     const invoiceUrl = `${getBaseUrl()}/api/invoices/view?email=${encodeURIComponent(
       email
     )}&id=${encodeURIComponent(id)}`;
 
