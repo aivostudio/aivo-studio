@@ -123,10 +123,14 @@ export default async function handler(req, res) {
 
     const transporter = getTransporter();
 
-       const fromAddress =
-      process.env.SMTP_FROM ||
-      process.env.MAIL_FROM ||
-      process.env.SMTP_USER;
+      const fromAddress = process.env.SMTP_USER;
+
+    if (!fromAddress) {
+      return json(res, 500, {
+        ok: false,
+        error: "SMTP_USER_MISSING",
+      });
+    }
 
     const result = await transporter.sendMail({
       from: `AIVO <${fromAddress}>`,
