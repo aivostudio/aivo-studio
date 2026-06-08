@@ -476,6 +476,156 @@
         }
       });
     }
+        const btnMailTestSend = $("btnMailTestSend");
+    const btnMailCampaignSend = $("btnMailCampaignSend");
+    const mailSubjectTr = $("mailSubjectTr");
+    const mailMessageTr = $("mailMessageTr");
+    const mailSubjectEn = $("mailSubjectEn");
+    const mailMessageEn = $("mailMessageEn");
+    const mailTestEmail = $("mailTestEmail");
+    const mailBatchOffset = $("mailBatchOffset");
+    const mailBatchLimit = $("mailBatchLimit");
+    const mailCampaignStatus = $("mailCampaignStatus");
+    const mailCampaignOut = $("mailCampaignOut");
+
+    async function sendMailCampaign(testOnly) {
+      const s = await adminAuth();
+      if (!s.ok) return;
+
+      const subjectTr = String(mailSubjectTr?.value || "").trim();
+      const messageTr = String(mailMessageTr?.value || "").trim();
+      const subjectEn = String(mailSubjectEn?.value || "").trim();
+      const messageEn = String(mailMessageEn?.value || "").trim();
+      const testEmail = String(mailTestEmail?.value || "").trim();
+      const offset = Number(String(mailBatchOffset?.value || "0").trim()) || 0;
+      const limit = Number(String(mailBatchLimit?.value || "80").trim()) || 80;
+
+      const hasTrMail = !!(subjectTr && messageTr);
+      const hasEnMail = !!(subjectEn && messageEn);
+
+      if (!hasTrMail && !hasEnMail) {
+        jsonPrint(mailCampaignOut, {
+          ok: false,
+          error: "at_least_one_language_required"
+        });
+        if (mailCampaignStatus) {
+          mailCampaignStatus.textContent = "En az bir dil için konu ve mesaj gerekli.";
+        }
+        return;
+      }
+
+      if ((subjectTr && !messageTr) || (!subjectTr && messageTr)) {
+        jsonPrint(mailCampaignOut, {
+          ok: false,
+          error: "tr_subject_and_message_required_together"
+        });
+        if (mailCampaignStatus) {
+          mailCampaignStatus.textContent = "Türkçe mail için konu ve mesaj birlikte dolu olmalı.";
+        }
+        return;
+      }
+
+      if ((subjectEn && !messageEn) || (!subjectEn && messageEn)) {
+        jsonPrint(mailCampaignOut, {
+          ok: false,
+          error: "en_subject_and_message_required_together"
+        });
+        if (mailCampaignStatus) {
+          mailCampaignStatus.textContent = "İngilizce mail için konu ve mesaj birlikte dolu olmalı.";
+        }
+        return;
+      }
+
+      if (testOnly && !isEmailLike(testEmail)) {
+        jsonPrint(mailCampaignOut, {
+          ok: false,
+          error: "test_email_invalid"
+        });
+        if (mailCampaignStatus) {
+          mailCampaignStatus.textContent = "Test mail adresi geçersiz.";
+        }
+        return;
+      }
+
+      const activeButton = testOnly ? btnMailTestSend : btnMailCampaignSend;
+
+      try {
+        if (activeButton) activeButton.disabled = true;
+        if (mailCampaignStatus) {
+          mailCampaignStatus.textContent = testOnly ? "Test mail gönderiliyor..." : "Toplu mail gönderiliyor...";
+        }
+
+        const r = await fetch("/api/admin/mail/send-campaign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          cache: "no-store",
+          body: JSON.stringify({
+            admin: s.email,
+            subjectTr,
+            messageTr,
+            subjectEn,
+            messageEn,
+            testOnly,
+            testEmail,
+            offset,
+            limit
+          })
+        });
+
+        const j = await r.json().catch(() => null);
+
+        jsonPrint(mailCampaignOut, j || {
+          ok: false,
+          error: "empty_response"
+        });
+
+        if (!r.ok || !j || !j.ok) {
+          if (mailCampaignStatus) mailCampaignStatus.textContent = "Mail gönderimi başarısız.";
+          return;
+        }
+
+        if (mailCampaignStatus) {
+          mailCampaignStatus.textContent =
+            "Gönderildi: " +
+            String(j.sent || 0) +
+            " / İşlenen: " +
+            String(j.processed || 0) +
+            " / Hata: " +
+            String(j.failed || 0);
+        }
+
+        if (!testOnly && j.has_more && mailBatchOffset) {
+          mailBatchOffset.value = String(j.next_offset || offset + limit);
+        }
+      } catch (_) {
+        jsonPrint(mailCampaignOut, {
+          ok: false,
+          error: "fetch_failed"
+        });
+        if (mailCampaignStatus) mailCampaignStatus.textContent = "Mail gönderim hatası.";
+      } finally {
+        if (activeButton) activeButton.disabled = false;
+      }
+    }
+
+    if (btnMailTestSend) {
+      btnMailTestSend.addEventListener("click", async () => {
+        await sendMailCampaign(true);
+      });
+    }
+
+    if (btnMailCampaignSend) {
+      btnMailCampaignSend.addEventListener("click", async () => {
+        const ok = confirm(
+          "Toplu mail gönderimi başlatılsın mı?\n\n" +
+          "Önce test maili gönderip kontrol ettiğinden emin ol."
+        );
+        if (!ok) return;
+
+        await sendMailCampaign(false);
+      });
+    }
     const btnCheck = $("btnCheck");
     if (btnCheck) {
       btnCheck.addEventListener("click", async () => {
