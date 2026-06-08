@@ -3,12 +3,9 @@
 // - Ödeme akışına dokunmaz
 // - Krediye dokunmaz
 // - Invoice kaydını değiştirmez
-// - Sadece mevcut invoice id + email ile test fatura maili gönderir
+// - Sadece SMTP ile test fatura maili gönderir
 
-import { createRequire } from "module";
-import kvMod from "../_kv.js";
-
-const require = createRequire(import.meta.url);
+import nodemailer from "nodemailer";
 
 function json(res, code, data) {
   res.status(code).setHeader("Content-Type", "application/json");
@@ -22,27 +19,6 @@ function safeStr(v) {
 function normEmail(v) {
   const s = safeStr(v).toLowerCase();
   return s.includes("@") ? s : "";
-}
-
-function safeJsonParse(v, fallback = null) {
-  try {
-    if (v == null) return fallback;
-    if (typeof v === "object") return v;
-    return JSON.parse(String(v));
-  } catch {
-    return fallback;
-  }
-}
-
-function resolveKv() {
-  const kv = kvMod?.default || kvMod || {};
-  const getRedis = kv.getRedis;
-
-  if (typeof getRedis !== "function") {
-    throw new Error("KV_HELPER_MISSING:getRedis");
-  }
-
-  return { getRedis };
 }
 
 function getBaseUrl() {
@@ -62,51 +38,8 @@ function escapeHtml(v) {
     .replace(/"/g, "&quot;");
 }
 
-function formatTRY(v) {
-  const n = Number(v || 0);
-  if (!Number.isFinite(n)) return "₺0,00";
-
-  return new Intl.NumberFormat("tr-TR", {
-    style: "currency",
-    currency: "TRY",
-  }).format(n);
-}
-
-async function readInvoicesByEmail(email) {
-  const { getRedis } = resolveKv();
-  const redis = getRedis();
-  const key = `invoices:${email}`;
-  const type = await redis.type(key);
-
-  if (type === "list") {
-    const rows = await redis.lrange(key, 0, -1);
-    return Array.isArray(rows)
-      ? rows
-          .map((row) => safeJsonParse(row, null))
-          .filter((x) => x && typeof x === "object")
-      : [];
-  }
-
-  if (type === "string") {
-    const raw = await redis.get(key);
-    const arr = safeJsonParse(raw, []);
-    return Array.isArray(arr)
-      ? arr.filter((x) => x && typeof x === "object")
-      : [];
-  }
-
-  if (type === "none") {
-    return [];
-  }
-
-  throw new Error(`Unexpected Redis type for ${key}: ${type}`);
-}
-
-function buildInvoiceMailHtml(invoice, invoiceUrl) {
-  const invoiceId = escapeHtml(invoice?.id || "-");
-  const amount = formatTRY(invoice?.amountTRY || invoice?.amount_total || invoice?.amount || 0);
-  const credits = escapeHtml(invoice?.credits || "-");
-  const plan = escapeHtml(invoice?.plan || "AIVO Kredi Paketi");
+function buildMailHtml({ id, invoiceUrl }) {
+  const safeId = escapeHtml(id);
   const safeUrl = escapeHtml(invoiceUrl);
 
   return `<!doctype html>
@@ -123,21 +56,12 @@ function buildInvoiceMailHtml(invoice, invoiceUrl) {
       <h1 style="margin:0 0 10px;font-size:24px;color:#ffffff;">Faturanız hazır ✅</h1>
 
       <p style="margin:0 0 18px;font-size:14px;line-height:1.65;color:#cbd5e1;">
-        AIVO satın alma işleminize ait fatura kaydı oluşturuldu. Faturanızı aşağıdaki bağlantıdan görüntüleyebilirsiniz.
+        AIVO satın alma işleminize ait fatura bağlantısı aşağıdadır.
       </p>
 
       <div style="border:1px solid rgba(120,120,255,.14);background:rgba(10,12,18,.55);border-radius:14px;padding:16px;margin:18px 0;">
         <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;">Fatura No</div>
-        <div style="font-size:16px;font-weight:800;color:#ffffff;margin-bottom:14px;">${invoiceId}</div>
-
-        <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;">Paket</div>
-        <div style="font-size:16px;font-weight:800;color:#ffffff;margin-bottom:14px;">${plan}</div>
-
-        <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;">Kredi</div>
-        <div style="font-size:16px;font-weight:800;color:#ffffff;margin-bottom:14px;">${credits}</div>
-
-        <div style="font-size:13px;color:#94a3b8;margin-bottom:8px;">Tutar</div>
-        <div style="font-size:20px;font-weight:900;color:#ffffff;">${amount}</div>
+        <div style="font-size:16px;font-weight:800;color:#ffffff;">${safeId}</div>
       </div>
 
       <a href="${safeUrl}" style="display:inline-block;background:#ffffff;color:#111827;text-decoration:none;font-weight:800;border-radius:999px;padding:12px 18px;">
@@ -145,7 +69,7 @@ function buildInvoiceMailHtml(invoice, invoiceUrl) {
       </a>
 
       <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#94a3b8;">
-        Bu test endpoint'i yalnızca mail gönderimini doğrulamak için kullanılmıştır. Ödeme, kredi veya fatura kaydını değiştirmez.
+        Bu test mailidir. Ödeme, kredi veya fatura kaydı değiştirilmemiştir.
       </p>
     </div>
   </div>
@@ -153,31 +77,25 @@ function buildInvoiceMailHtml(invoice, invoiceUrl) {
 </html>`;
 }
 
-async function sendInvoiceMail({ email, invoice, invoiceUrl }) {
-  const mailerMod = require("../../lib/mailer.js");
-  const getMailer = mailerMod?.getMailer;
+function getTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const secure = String(process.env.SMTP_SECURE || "").toLowerCase() === "true";
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
 
-  if (typeof getMailer !== "function") {
-    throw new Error("MAILER_MISSING:getMailer");
-  }
+  if (!host) throw new Error("SMTP_HOST_MISSING");
+  if (!user) throw new Error("SMTP_USER_MISSING");
+  if (!pass) throw new Error("SMTP_PASS_MISSING");
 
-  const transporter = getMailer();
-
-  return await transporter.sendMail({
-    from:
-      process.env.SMTP_FROM ||
-      process.env.MAIL_FROM ||
-      "AIVO <no-reply@mail.aivo.tr>",
-    to: email,
-    subject: `AIVO Faturanız - ${invoice.id}`,
-    text:
-      `AIVO satın alma işleminize ait fatura kaydı oluşturuldu.\n\n` +
-      `Fatura No: ${invoice.id}\n` +
-      `Paket: ${invoice.plan || "AIVO Kredi Paketi"}\n` +
-      `Kredi: ${invoice.credits || "-"}\n` +
-      `Tutar: ${formatTRY(invoice.amountTRY || invoice.amount_total || invoice.amount || 0)}\n\n` +
-      `Faturanızı görüntülemek için:\n${invoiceUrl}\n`,
-    html: buildInvoiceMailHtml(invoice, invoiceUrl),
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: {
+      user,
+      pass,
+    },
   });
 }
 
@@ -199,34 +117,33 @@ export default async function handler(req, res) {
       return json(res, 400, { ok: false, error: "ID_REQUIRED" });
     }
 
-    const invoices = await readInvoicesByEmail(email);
-    const invoice = invoices.find((x) => safeStr(x?.id) === id);
-
-    if (!invoice) {
-      return json(res, 404, {
-        ok: false,
-        error: "INVOICE_NOT_FOUND",
-        email,
-        id,
-      });
-    }
-
     const invoiceUrl = `${getBaseUrl()}/api/invoices/pdf?email=${encodeURIComponent(
       email
     )}&id=${encodeURIComponent(id)}`;
 
-    const result = await sendInvoiceMail({
-      email,
-      invoice,
-      invoiceUrl,
+    const transporter = getTransporter();
+
+    const result = await transporter.sendMail({
+      from:
+        process.env.SMTP_FROM ||
+        process.env.MAIL_FROM ||
+        "AIVO <no-reply@mail.aivo.tr>",
+      to: email,
+      subject: `AIVO Faturanız - ${id}`,
+      text:
+        `AIVO fatura bağlantınız hazır.\n\n` +
+        `Fatura No: ${id}\n\n` +
+        `Faturanızı görüntülemek için:\n${invoiceUrl}\n\n` +
+        `Bu test mailidir. Ödeme, kredi veya fatura kaydı değiştirilmemiştir.\n`,
+      html: buildMailHtml({ id, invoiceUrl }),
     });
 
     return json(res, 200, {
       ok: true,
+      mail_sent: true,
       email,
       id,
       invoice_url: invoiceUrl,
-      mail_sent: true,
       message_id: result?.messageId || null,
       response: result?.response || null,
     });
