@@ -123,11 +123,13 @@ export default async function handler(req, res) {
 
     const transporter = getTransporter();
 
+       const fromAddress =
+      process.env.SMTP_FROM ||
+      process.env.MAIL_FROM ||
+      process.env.SMTP_USER;
+
     const result = await transporter.sendMail({
-      from:
-        process.env.SMTP_FROM ||
-        process.env.MAIL_FROM ||
-        "AIVO <no-reply@mail.aivo.tr>",
+      from: `AIVO <${fromAddress}>`,
       to: email,
       subject: `AIVO Faturanız - ${id}`,
       text:
