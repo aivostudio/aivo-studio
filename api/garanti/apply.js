@@ -335,10 +335,10 @@ export default async function handler(req, res) {
       const newTotal = await kvIncr(creditsKey, creditsToAdd);
 
         const invoiceId = `garanti_${oid}`;
-      const invoiceUrl = `${getBaseUrl()}/api/invoices/pdf?email=${encodeURIComponent(
+      const invoiceUrl = `${getBaseUrl()}/api/invoices/view?email=${encodeURIComponent(
         email
       )}&id=${encodeURIComponent(invoiceId)}`;
-
+      
       const invoice = {
         id: invoiceId,
         provider: "garanti",
