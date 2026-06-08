@@ -120,7 +120,11 @@ function formatTRY(v) {
 }
 
 function buildInvoiceMailHtml({ invoice, invoiceUrl }) {
-  const invoiceId = escapeHtml(invoice?.id || "-");
+  const rawInvoiceId = String(invoice?.id || "-");
+  const displayInvoiceId = rawInvoiceId
+    .replace(/^garanti_/i, "")
+    .replace(/^GARANTI_/i, "AIVO-");
+  const invoiceId = escapeHtml(displayInvoiceId);
   const plan = escapeHtml(invoice?.plan || "AIVO Kredi Paketi");
   const credits = escapeHtml(invoice?.credits || "-");
   const amount = formatTRY(invoice?.amountTRY || invoice?.amount_total || invoice?.amount || 0);
