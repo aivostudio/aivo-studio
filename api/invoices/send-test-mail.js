@@ -39,7 +39,11 @@ function escapeHtml(v) {
 }
 
 function buildMailHtml({ id, invoiceUrl }) {
-  const safeId = escapeHtml(id);
+  const rawInvoiceId = String(id || "-");
+  const displayInvoiceId = rawInvoiceId
+    .replace(/^garanti_/i, "")
+    .replace(/^GARANTI_/i, "AIVO-");
+  const safeId = escapeHtml(displayInvoiceId);
   const safeUrl = escapeHtml(invoiceUrl);
 
   return `<!doctype html>
