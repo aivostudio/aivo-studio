@@ -322,6 +322,318 @@
         "
       ></pre>
     </section>
+        <section class="card" id="cardMailCampaign">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+        <div>
+          <h3 style="margin:0 0 6px; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">✉️</span>
+            <span>E-posta Kampanya</span>
+          </h3>
+          <p class="muted" style="margin:0; max-width:780px;">
+            Kayıtlı kullanıcılara Türkçe ve İngilizce kampanya e-postası gönder. Önce test maili gönder, sonra parça parça toplu gönder.
+          </p>
+        </div>
+
+        <span
+          id="mailCampaignStatus"
+          class="muted"
+          style="
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:10px 14px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.10);
+            background:rgba(255,255,255,.04);
+            min-height:42px;
+          "
+        >Hazır.</span>
+      </div>
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:repeat(2, minmax(320px, 1fr));
+          gap:16px;
+          margin-bottom:16px;
+        "
+      >
+        <div
+          style="
+            background:linear-gradient(180deg, rgba(255,255,255,.035) 0%, rgba(255,255,255,.018) 100%);
+            border:1px solid rgba(255,255,255,.08);
+            border-radius:22px;
+            padding:18px;
+            box-shadow:0 12px 32px rgba(0,0,0,.18);
+          "
+        >
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px;">
+            <div>
+              <div style="font-size:16px; font-weight:800; color:#fff;">Türkçe E-posta</div>
+              <div class="muted" style="font-size:13px; margin-top:4px;">Türkçe kullanıcılar için gönderilir.</div>
+            </div>
+            <span
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                min-width:44px;
+                height:32px;
+                padding:0 10px;
+                border-radius:999px;
+                background:rgba(255,255,255,.06);
+                border:1px solid rgba(255,255,255,.12);
+                color:#d7dbe4;
+                font-size:12px;
+                font-weight:700;
+              "
+            >TR</span>
+          </div>
+
+          <div style="display:grid; gap:12px;">
+            <div>
+              <label for="mailSubjectTr" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Konu</label>
+              <input
+                id="mailSubjectTr"
+                placeholder="Örn: AIVO Studio ile üretime başla 🚀"
+                style="
+                  width:100%;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              />
+            </div>
+
+            <div>
+              <label for="mailMessageTr" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Mesaj</label>
+              <textarea
+                id="mailMessageTr"
+                placeholder="Örn: AIVO Studio’da müzik, görsel, video ve çizgi film üretim araçlarını tek uygulamada keşfet."
+                rows="7"
+                style="
+                  width:100%;
+                  resize:vertical;
+                  line-height:1.5;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div
+          style="
+            background:linear-gradient(180deg, rgba(255,255,255,.035) 0%, rgba(255,255,255,.018) 100%);
+            border:1px solid rgba(255,255,255,.08);
+            border-radius:22px;
+            padding:18px;
+            box-shadow:0 12px 32px rgba(0,0,0,.18);
+          "
+        >
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:10px;">
+            <div>
+              <div style="font-size:16px; font-weight:800; color:#fff;">English Email</div>
+              <div class="muted" style="font-size:13px; margin-top:4px;">Sent to English users.</div>
+            </div>
+            <span
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                min-width:44px;
+                height:32px;
+                padding:0 10px;
+                border-radius:999px;
+                background:rgba(255,255,255,.06);
+                border:1px solid rgba(255,255,255,.12);
+                color:#d7dbe4;
+                font-size:12px;
+                font-weight:700;
+              "
+            >EN</span>
+          </div>
+
+          <div style="display:grid; gap:12px;">
+            <div>
+              <label for="mailSubjectEn" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Subject</label>
+              <input
+                id="mailSubjectEn"
+                placeholder="Example: Start creating with AIVO Studio 🚀"
+                style="
+                  width:100%;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              />
+            </div>
+
+            <div>
+              <label for="mailMessageEn" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">Message</label>
+              <textarea
+                id="mailMessageEn"
+                placeholder="Example: Discover AI music, image, video and cartoon creation tools in one app."
+                rows="7"
+                style="
+                  width:100%;
+                  resize:vertical;
+                  line-height:1.5;
+                  background:#0b0f17;
+                  color:#fff;
+                  border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;
+                  padding:14px 16px;
+                  outline:none;
+                "
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        style="
+          background:linear-gradient(180deg, rgba(255,255,255,.03) 0%, rgba(255,255,255,.02) 100%);
+          border:1px solid rgba(255,255,255,.08);
+          border-radius:20px;
+          padding:18px;
+          margin-bottom:16px;
+        "
+      >
+        <div style="display:grid; grid-template-columns:1fr 160px 160px; gap:12px; align-items:end;">
+          <div>
+            <label for="mailTestEmail" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">
+              Test e-posta adresi
+            </label>
+            <input
+              id="mailTestEmail"
+              placeholder="info@aivo.tr"
+              style="
+                width:100%;
+                background:#0b0f17;
+                color:#fff;
+                border:1px solid rgba(255,255,255,.08);
+                border-radius:16px;
+                padding:14px 16px;
+                outline:none;
+              "
+            />
+          </div>
+
+          <div>
+            <label for="mailBatchOffset" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">
+              Offset
+            </label>
+            <input
+              id="mailBatchOffset"
+              type="number"
+              min="0"
+              value="0"
+              style="
+                width:100%;
+                background:#0b0f17;
+                color:#fff;
+                border:1px solid rgba(255,255,255,.08);
+                border-radius:16px;
+                padding:14px 16px;
+                outline:none;
+              "
+            />
+          </div>
+
+          <div>
+            <label for="mailBatchLimit" class="muted" style="display:block; margin:0 0 8px; font-size:13px;">
+              Limit
+            </label>
+            <input
+              id="mailBatchLimit"
+              type="number"
+              min="1"
+              max="120"
+              value="80"
+              style="
+                width:100%;
+                background:#0b0f17;
+                color:#fff;
+                border:1px solid rgba(255,255,255,.08);
+                border-radius:16px;
+                padding:14px 16px;
+                outline:none;
+              "
+            />
+          </div>
+        </div>
+
+        <div
+          class="muted"
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+            font-size:13px;
+            margin-top:16px;
+          "
+        >
+          <span>İpucu: Önce test maili gönder. Test doğruysa toplu gönderimi 80’lik parçalar halinde yap.</span>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button
+              id="btnMailTestSend"
+              class="btn"
+              style="
+                min-width:160px;
+                height:46px;
+                border-radius:14px;
+                font-weight:700;
+              "
+            >
+              Test Mail Gönder
+            </button>
+
+            <button
+              id="btnMailCampaignSend"
+              class="btn btn-primary"
+              style="
+                min-width:190px;
+                height:46px;
+                border-radius:14px;
+                font-weight:700;
+                box-shadow:0 10px 24px rgba(0,0,0,.22);
+              "
+            >
+              Toplu Mail Gönder
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <pre
+        id="mailCampaignOut"
+        class="out"
+        style="
+          margin-top:0;
+          min-height:84px;
+          border-radius:18px;
+          border:1px solid rgba(255,255,255,.08);
+          background:rgba(5,9,16,.92);
+          padding:16px;
+        "
+      ></pre>
+    </section>
     <section class="card" id="cardUsers">
       <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
         <span>Kayıtlar (Kullanıcılar)</span>
