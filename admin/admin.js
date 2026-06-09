@@ -1292,7 +1292,12 @@ async function loadSoldCredits(options) {
     }
 
     function renderIosSales(rows) {
-      const list = Array.isArray(rows) ? rows : [];
+      const list = (Array.isArray(rows) ? rows : []).filter(function (row) {
+        const customerPrice = Number(row["Customer Price"] || 0);
+        const developerProceeds = Number(row["Developer Proceeds"] || 0);
+
+        return customerPrice > 0 || developerProceeds > 0;
+      });
 
       let totalUnits = 0;
       let customerTotal = 0;
