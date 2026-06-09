@@ -1143,8 +1143,11 @@ async function loadSoldCredits(options) {
   console.log("PURCHASES DEBUG:", purchasesData);
 
   if (purchasesData?.ok && Array.isArray(purchasesData.items)) {
-    const purchasedItems = purchasesData.items;
-        const latestPurchaseKey = getPurchaseKey(purchasedItems);
+    const purchasedItems = purchasesData.items.filter(function (item) {
+      return String(item && item.provider ? item.provider : "").trim().toLowerCase() !== "google_play";
+    });
+
+    const latestPurchaseKey = getPurchaseKey(purchasedItems);
 
     if (aivoLastPurchaseKey && latestPurchaseKey && latestPurchaseKey !== aivoLastPurchaseKey && !silent) {
       playAivoPurchaseSound();
