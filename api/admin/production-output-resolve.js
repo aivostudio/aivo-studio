@@ -282,12 +282,12 @@ async function resolveMusicFromTopMediai(req, job) {
     };
   }
 
-  return {
+   return {
     ok: true,
     source: "topmediai_admin_resolve",
     provider_job_id: providerJobId || null,
     provider_song_ids: providerSongIds,
-    output_url: outputs[0].url,
+    output_url: outputs[0].raw_url || outputs[0].url,
     outputs,
     topmediai: json
   };
