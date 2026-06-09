@@ -647,11 +647,11 @@ window.selectedJobId = window.selectedJobId || "";
     const stemsControls =
       (stemsStatus === "succeeded" && stemsOut) ? `
         <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
-          ${stemsOut.vocals ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.vocals || "", "Vocals"))}" download target="_self" title="Vocals indir" aria-label="Vocals indir">🎤</a>` : ``}
-          ${stemsOut.drums ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.drums || "", "Drums"))}" download target="_self" title="Drums indir" aria-label="Drums indir">🥁</a>` : ``}
-          ${stemsOut.bass ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.bass || "", "Bass"))}" download target="_self" title="Bass indir" aria-label="Bass indir">🔊</a>` : ``}
-          ${stemsOut.guitar ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.guitar || "", "Guitar"))}" download target="_self" title="Guitar indir" aria-label="Guitar indir">🎸</a>` : ``}
-          ${stemsOut.piano ? `<a class="aivo-stem aivo-stem-ic" href="${esc(px(stemsOut.piano || "", "Piano"))}" download target="_self" title="Piano indir" aria-label="Piano indir">🎹</a>` : ``}
+          ${stemsOut.vocals ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.vocals || "", "Vocals"))}" data-filename="Vocals.wav" title="Vocals indir" aria-label="Vocals indir">🎤</button>` : ``}
+          ${stemsOut.drums ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.drums || "", "Drums"))}" data-filename="Drums.wav" title="Drums indir" aria-label="Drums indir">🥁</button>` : ``}
+          ${stemsOut.bass ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.bass || "", "Bass"))}" data-filename="Bass.wav" title="Bass indir" aria-label="Bass indir">🔊</button>` : ``}
+          ${stemsOut.guitar ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.guitar || "", "Guitar"))}" data-filename="Guitar.wav" title="Guitar indir" aria-label="Guitar indir">🎸</button>` : ``}
+          ${stemsOut.piano ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.piano || "", "Piano"))}" data-filename="Piano.wav" title="Piano indir" aria-label="Piano indir">🎹</button>` : ``}
         </div>
 
         <style>
@@ -1602,10 +1602,22 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       });
       return;
     }
-    if (act === "toggle-play") return togglePlayFromCard(card);
+     if (act === "toggle-play") return togglePlayFromCard(card);
     if (act === "stems") return actionStems(card);
     if (act === "lyrics") return actionLyrics(card);
     if (act === "download") return actionDownload(card);
+    if (act === "stem-download") {
+      const url = String(btn?.dataset?.url || "").trim();
+      const filename = String(btn?.dataset?.filename || "stem.wav").trim();
+      if (!url) {
+        toast("error", "İndirilecek kanal yok");
+        return;
+      }
+
+      const ok = await downloadBlobFile(url, filename);
+      if (ok) toast("success", "Kanal indirme başlatıldı");
+      return;
+    }
     if (act === "delete") return actionDelete(card);
 
     toast("info", `Action: ${act}`);
