@@ -913,7 +913,58 @@ async function togglePlayFromCard(card){
     updateProgressUI();
   }
 
-  function actionDownload(card){
+  async function downloadBlobFile(url, filename) {
+    let cleanUrl = String(url || "").trim();
+    if (!cleanUrl) return false;
+
+    cleanUrl = cleanUrl.includes("#")
+      ? cleanUrl.split("#")[0]
+      : cleanUrl;
+
+    if (
+      cleanUrl.startsWith("/api/media/proxy?url=") ||
+      cleanUrl.includes("/api/media/proxy?url=")
+    ) {
+      try {
+        const encoded = cleanUrl.split("url=")[1] || "";
+        cleanUrl = decodeURIComponent(encoded).split("#")[0];
+      } catch {}
+    }
+
+    try {
+      const response = await fetch(cleanUrl, {
+        method: "GET",
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("download_fetch_failed_" + response.status);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(objectUrl);
+      }, 1000);
+
+      return true;
+    } catch (err) {
+      console.error("[panel.music] download failed", err);
+      window.open(cleanUrl, "_blank", "noopener");
+      return false;
+    }
+  }
+
+  async function actionDownload(card){
     const jobId = String(card?.getAttribute("data-job-id") || "").trim();
     const existing = (jobs || []).find((x) => getJobId(x) === jobId) || {};
     const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
@@ -922,16 +973,8 @@ async function togglePlayFromCard(card){
       return;
     }
 
-      const proxied = `/api/media/proxy?url=${encodeURIComponent(src)}&filename=music.mp3`;
-
-    const a = document.createElement("a");
-    a.href = proxied;
-    a.download = "music.mp3";
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    toast("success", "İndirme başlatıldı");
+    const ok = await downloadBlobFile(src, "music.mp3");
+    if (ok) toast("success", "İndirme başlatıldı");
   }
 
   if (!window.__AIVO_MUSIC_STEMS_TIMERS__) window.__AIVO_MUSIC_STEMS_TIMERS__ = new Map();
