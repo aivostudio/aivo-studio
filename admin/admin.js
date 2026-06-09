@@ -1241,7 +1241,7 @@ async function loadSoldCredits(options) {
       soldCreditsDate.addEventListener("change", loadSoldCredits);
     }
 
-    const btnIosSales = $("btnIosSales");
+     const btnIosSales = $("btnIosSales");
     const iosSalesDate = $("iosSalesDate");
     const iosSalesStatus = $("iosSalesStatus");
     const iosSalesUnits = $("iosSalesUnits");
@@ -1249,6 +1249,15 @@ async function loadSoldCredits(options) {
     const iosSalesProceedsTotal = $("iosSalesProceedsTotal");
     const iosSalesTbody = $("iosSalesTbody");
     const iosSalesOut = $("iosSalesOut");
+
+    const btnPlaySales = $("btnPlaySales");
+    const playSalesDate = $("playSalesDate");
+    const playSalesStatus = $("playSalesStatus");
+    const playSalesUnits = $("playSalesUnits");
+    const playSalesCustomerTotal = $("playSalesCustomerTotal");
+    const playSalesRevenueTotal = $("playSalesRevenueTotal");
+    const playSalesTbody = $("playSalesTbody");
+    const playSalesOut = $("playSalesOut");
 
     function yesterdayDateInputValue() {
       const d = new Date();
@@ -1265,6 +1274,18 @@ async function loadSoldCredits(options) {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       }) + " " + String(currency || "TRY");
+    }
+
+    function formatPlayMoney(value, currency) {
+      const n = Number(value || 0);
+      return n.toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + " " + String(currency || "TRY");
+    }
+
+    function isGooglePlayOrderId(value) {
+      return /^GPA\./i.test(String(value || "").trim());
     }
 
     function renderIosSales(rows) {
@@ -1314,6 +1335,54 @@ async function loadSoldCredits(options) {
       }).join("");
     }
 
+    function renderPlaySales(rows) {
+      const list = Array.isArray(rows) ? rows : [];
+
+      let totalUnits = 0;
+      let customerTotal = 0;
+      let revenueTotal = 0;
+      let currency = "TRY";
+
+      list.forEach(function (row) {
+        totalUnits += Number(row.quantity || 1);
+        customerTotal += Number(row.customerTotal || 0);
+        revenueTotal += Number(row.developerRevenue || 0);
+        currency = row.currency || currency;
+      });
+
+      if (playSalesUnits) playSalesUnits.textContent = String(totalUnits);
+      if (playSalesCustomerTotal) playSalesCustomerTotal.textContent = formatPlayMoney(customerTotal, currency);
+      if (playSalesRevenueTotal) playSalesRevenueTotal.textContent = formatPlayMoney(revenueTotal, currency);
+
+      if (!playSalesTbody) return;
+
+      if (!list.length) {
+        playSalesTbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="muted" style="padding:12px;">
+              Seçilen gün için Google Play satış verisi yok.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      playSalesTbody.innerHTML = list.map(function (row) {
+        return `
+          <tr>
+            <td style="padding:8px 10px;">${escapeHtml(row.productTitle || row.productId || "-")}</td>
+            <td style="padding:8px 10px;">${Number(row.quantity || 1)}</td>
+            <td style="padding:8px 10px;">${escapeHtml(formatPlayMoney(row.customerTotal, row.currency))}</td>
+            <td style="padding:8px 10px;">${escapeHtml(formatPlayMoney(row.developerRevenue, row.currency))}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row.currency || "-")}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row.buyerCountry || "-")}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row.state || "-")}</td>
+            <td style="padding:8px 10px; max-width:260px; overflow-x:auto; white-space:nowrap;">${escapeHtml(row.orderId || "-")}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
     async function loadIosSales() {
       const selectedDate =
         String(
@@ -1356,6 +1425,100 @@ async function loadSoldCredits(options) {
       }
     }
 
+    async function loadPlaySales() {
+      const selectedDate =
+        String(
+          playSalesDate && playSalesDate.value
+            ? playSalesDate.value
+            : todayDateInputValue()
+        ).trim();
+
+      if (playSalesStatus) playSalesStatus.textContent = "Yükleniyor...";
+
+      try {
+        const purchasesResponse = await fetch(
+          "/api/admin/purchases?date=" + encodeURIComponent(selectedDate),
+          {
+            cache: "no-store",
+            credentials: "include"
+          }
+        );
+
+        const purchasesData = await purchasesResponse.json().catch(() => null);
+
+        if (!purchasesResponse.ok || !purchasesData || !purchasesData.ok) {
+          throw new Error((purchasesData && (purchasesData.error || purchasesData.message)) || "play_purchases_failed");
+        }
+
+        const orderIds = Array.isArray(purchasesData.items)
+          ? purchasesData.items
+              .map(function (item) {
+                return String(item && (item.order_id || item.orderId || item.oid || "")).trim();
+              })
+              .filter(isGooglePlayOrderId)
+          : [];
+
+        const uniqueOrderIds = Array.from(new Set(orderIds));
+
+        if (!uniqueOrderIds.length) {
+          renderPlaySales([]);
+
+          if (playSalesOut) {
+            playSalesOut.style.display = "none";
+            playSalesOut.textContent = JSON.stringify({
+              ok: true,
+              date: selectedDate,
+              message: "Seçilen gün için Google Play order id bulunamadı.",
+              purchases: purchasesData
+            }, null, 2);
+          }
+
+          if (playSalesStatus) playSalesStatus.textContent = `Gün: ${selectedDate}`;
+          return;
+        }
+
+        const ordersResponse = await fetch(
+          "/api/admin/play-orders?orderIds=" + encodeURIComponent(uniqueOrderIds.join(",")),
+          {
+            cache: "no-store",
+            credentials: "include"
+          }
+        );
+
+        const ordersData = await ordersResponse.json().catch(() => null);
+
+        if (!ordersResponse.ok || !ordersData || !ordersData.ok) {
+          throw new Error((ordersData && (ordersData.error || ordersData.message)) || "play_orders_failed");
+        }
+
+        renderPlaySales(ordersData.rows || []);
+
+        if (playSalesOut) {
+          playSalesOut.style.display = "none";
+          playSalesOut.textContent = JSON.stringify({
+            ok: true,
+            date: selectedDate,
+            orderIds: uniqueOrderIds,
+            purchases: purchasesData,
+            orders: ordersData
+          }, null, 2);
+        }
+
+        if (playSalesStatus) {
+          playSalesStatus.textContent = `Gün: ${selectedDate} / Sipariş: ${String((ordersData.rows || []).length)}`;
+        }
+      } catch (err) {
+        renderPlaySales([]);
+
+        if (playSalesOut) {
+          playSalesOut.style.display = "block";
+          playSalesOut.textContent = String(err && err.message ? err.message : err);
+        }
+
+        if (playSalesStatus) playSalesStatus.textContent = "Hata oluştu.";
+      }
+    }
+
     if (iosSalesDate && !iosSalesDate.value) {
       iosSalesDate.value = yesterdayDateInputValue();
     }
@@ -1368,7 +1531,20 @@ async function loadSoldCredits(options) {
       iosSalesDate.addEventListener("change", loadIosSales);
     }
 
+    if (playSalesDate && !playSalesDate.value) {
+      playSalesDate.value = todayDateInputValue();
+    }
+
+    if (btnPlaySales) {
+      btnPlaySales.addEventListener("click", loadPlaySales);
+    }
+
+    if (playSalesDate) {
+      playSalesDate.addEventListener("change", loadPlaySales);
+    }
+
     await loadIosSales();
+    await loadPlaySales();
 
     async function loadUsers() {
       const s = await adminAuth();
