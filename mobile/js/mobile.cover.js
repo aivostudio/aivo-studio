@@ -356,34 +356,74 @@ if (downloadBtn) {
   downloadBtn.addEventListener("click", async function(){
     if (!imageUrl) return;
 
-    if (window.AivoMobileDownload?.download) {
-      await window.AivoMobileDownload.download({
-        url: imageUrl,
-        filename: "aivo-kapak.jpg"
-      });
-      return;
+    let directUrl = String(imageUrl || "").trim();
+    const filename = "aivo-kapak.jpg";
+
+    directUrl = directUrl.includes("#")
+      ? directUrl.split("#")[0]
+      : directUrl;
+
+    if (
+      directUrl.startsWith("/api/media/proxy?url=") ||
+      directUrl.includes("/api/media/proxy?url=")
+    ) {
+      try {
+        const encoded = directUrl.split("url=")[1] || "";
+        directUrl = decodeURIComponent(encoded).split("#")[0];
+      } catch {}
     }
 
-    const proxied =
-      "/api/media/proxy?url=" +
-      encodeURIComponent(imageUrl) +
-      "&filename=" +
-      encodeURIComponent("aivo-kapak.jpg");
+    try {
+      const response = await fetch(directUrl, {
+        method: "GET",
+        cache: "no-store"
+      });
 
-    const a = document.createElement("a");
-    a.href = proxied;
-    a.download = "aivo-kapak.jpg";
-    a.rel = "noopener";
-    a.style.display = "none";
+      if (!response.ok) {
+        throw new Error("mobile_cover_download_failed_" + response.status);
+      }
 
-    document.body.appendChild(a);
-    a.click();
+      const blob = await response.blob();
+      const file = new File([blob], filename, {
+        type: blob.type || "image/jpeg"
+      });
 
-    setTimeout(function(){
-      try {
-        a.remove();
-      } catch (err) {}
-    }, 1500);
+      if (
+        navigator.canShare &&
+        navigator.canShare({ files: [file] }) &&
+        navigator.share
+      ) {
+        await navigator.share({
+          files: [file],
+          title: "AIVO Kapak"
+        });
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.rel = "noopener";
+      a.style.display = "none";
+
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function(){
+        try {
+          a.remove();
+        } catch (err) {}
+
+        try {
+          URL.revokeObjectURL(objectUrl);
+        } catch (err) {}
+      }, 1500);
+    } catch (err) {
+      console.error("[MOBILE COVER][DOWNLOAD ERROR]", err);
+      window.open(directUrl, "_blank", "noopener");
+    }
   });
 }
 
