@@ -263,16 +263,52 @@
       return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 11v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 7l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
     }
 
-function download(url) {
-  const proxied = `/api/media/proxy?url=${encodeURIComponent(url)}&filename=cover.jpg`;
+async function download(url) {
+  let cleanUrl = String(url || "").trim();
+  if (!cleanUrl) return;
 
-  const a = document.createElement("a");
-  a.href = proxied;
-  a.download = "cover.jpg";
-  a.rel = "noopener";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  cleanUrl = cleanUrl.includes("#")
+    ? cleanUrl.split("#")[0]
+    : cleanUrl;
+
+  if (
+    cleanUrl.startsWith("/api/media/proxy?url=") ||
+    cleanUrl.includes("/api/media/proxy?url=")
+  ) {
+    try {
+      const encoded = cleanUrl.split("url=")[1] || "";
+      cleanUrl = decodeURIComponent(encoded).split("#")[0];
+    } catch {}
+  }
+
+  try {
+    const response = await fetch(cleanUrl, {
+      method: "GET",
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("download_fetch_failed_" + response.status);
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = "cover.jpg";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(objectUrl);
+    }, 1000);
+  } catch (err) {
+    console.error("[COVER PANEL] download failed", err);
+    window.open(cleanUrl, "_blank", "noopener");
+  }
 }
     function share(url) {
       if (navigator.share) navigator.share({ url }).catch(() => {});
