@@ -345,32 +345,74 @@ if (downloadEl) {
 
     if (!resolvedAudioUrl) return;
 
-     const filename = "aivo-music.mp3";
+    let directUrl = String(resolvedAudioUrl || "").trim();
+    const filename = "aivo-music.mp3";
 
-    if (window.AivoMobileDownload?.download) {
-      await window.AivoMobileDownload.download({
-        url: resolvedAudioUrl,
-        filename
-      });
-      return;
+    directUrl = directUrl.includes("#")
+      ? directUrl.split("#")[0]
+      : directUrl;
+
+    if (
+      directUrl.startsWith("/api/media/proxy?url=") ||
+      directUrl.includes("/api/media/proxy?url=")
+    ) {
+      try {
+        const encoded = directUrl.split("url=")[1] || "";
+        directUrl = decodeURIComponent(encoded).split("#")[0];
+      } catch {}
     }
 
-    const proxied = "/api/media/proxy?url=" + encodeURIComponent(resolvedAudioUrl) + "&filename=" + encodeURIComponent(filename);
+    try {
+      const response = await fetch(directUrl, {
+        method: "GET",
+        cache: "no-store"
+      });
 
-    const a = document.createElement("a");
-    a.href = proxied;
-    a.download = filename;
-    a.rel = "noopener";
-    a.style.display = "none";
+      if (!response.ok) {
+        throw new Error("mobile_music_download_failed_" + response.status);
+      }
 
-    document.body.appendChild(a);
-    a.click();
+      const blob = await response.blob();
+      const file = new File([blob], filename, {
+        type: blob.type || "audio/mpeg"
+      });
 
-    setTimeout(function(){
-      try {
-        a.remove();
-      } catch (err) {}
-    }, 1500);
+      if (
+        navigator.canShare &&
+        navigator.canShare({ files: [file] }) &&
+        navigator.share
+      ) {
+        await navigator.share({
+          files: [file],
+          title: "AIVO Müzik"
+        });
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.rel = "noopener";
+      a.style.display = "none";
+
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function(){
+        try {
+          a.remove();
+        } catch (err) {}
+
+        try {
+          URL.revokeObjectURL(objectUrl);
+        } catch (err) {}
+      }, 1500);
+    } catch (err) {
+      console.error("[MOBILE MUSIC][DOWNLOAD ERROR]", err);
+      window.open(directUrl, "_blank", "noopener");
+    }
   });
 }
 
@@ -1212,32 +1254,81 @@ if (shareBtn) {
 
               return;
             }
-            const filename = "aivo-" + key + ".mp3";
+                  const filename = "aivo-" + key + ".wav";
 
-            if (window.AivoMobileDownload?.download) {
-              window.AivoMobileDownload.download({
-                url,
-                filename
-              });
-              return;
+            let directUrl = String(url || "").trim();
+
+            directUrl = directUrl.includes("#")
+              ? directUrl.split("#")[0]
+              : directUrl;
+
+            if (
+              directUrl.startsWith("/api/media/proxy?url=") ||
+              directUrl.includes("/api/media/proxy?url=")
+            ) {
+              try {
+                const encoded = directUrl.split("url=")[1] || "";
+                directUrl = decodeURIComponent(encoded).split("#")[0];
+              } catch {}
             }
 
-            const proxied = "/api/media/proxy?url=" + encodeURIComponent(url) + "&filename=" + encodeURIComponent(filename);
+            const convertUrl =
+              "/api/media/convert-wav?url=" +
+              encodeURIComponent(directUrl) +
+              "&filename=" +
+              encodeURIComponent(filename);
 
-            const a = document.createElement("a");
-            a.href = proxied;
-            a.download = filename;
-            a.rel = "noopener";
-            a.style.display = "none";
+            try {
+              const response = await fetch(convertUrl, {
+                method: "GET",
+                cache: "no-store"
+              });
 
-            document.body.appendChild(a);
-            a.click();
+              if (!response.ok) {
+                throw new Error("mobile_music_stem_download_failed_" + response.status);
+              }
 
-            setTimeout(function(){
-              try {
-                a.remove();
-              } catch (err) {}
-            }, 1500);
+              const blob = await response.blob();
+              const file = new File([blob], filename, {
+                type: blob.type || "audio/wav"
+              });
+
+              if (
+                navigator.canShare &&
+                navigator.canShare({ files: [file] }) &&
+                navigator.share
+              ) {
+                await navigator.share({
+                  files: [file],
+                  title: "AIVO Kanal"
+                });
+                return;
+              }
+
+              const objectUrl = URL.createObjectURL(blob);
+
+              const a = document.createElement("a");
+              a.href = objectUrl;
+              a.download = filename;
+              a.rel = "noopener";
+              a.style.display = "none";
+
+              document.body.appendChild(a);
+              a.click();
+
+              setTimeout(function(){
+                try {
+                  a.remove();
+                } catch (err) {}
+
+                try {
+                  URL.revokeObjectURL(objectUrl);
+                } catch (err) {}
+              }, 1500);
+            } catch (err) {
+              console.error("[MOBILE MUSIC][STEM DOWNLOAD ERROR]", err);
+              window.open(convertUrl, "_blank", "noopener");
+            }
           });
         });
 
@@ -1988,31 +2079,82 @@ if (playBtn) {
 }
 
 if (downloadBtn) {
-  downloadBtn.addEventListener("click", function(e){
+  downloadBtn.addEventListener("click", async function(e){
     e.preventDefault();
     e.stopPropagation();
 
     if (!audioUrl) return;
 
-      const filename = (index === 0 ? "aivo-music.mp3" : "aivo-music-version-" + (index + 1) + ".mp3");
+    let directUrl = String(audioUrl || "").trim();
+    const filename = index === 0
+      ? "aivo-music.mp3"
+      : "aivo-music-version-" + (index + 1) + ".mp3";
 
-    if (window.AivoMobileDownload?.download) {
-      window.AivoMobileDownload.download({
-        url: audioUrl,
-        filename
-      });
-      return;
+    directUrl = directUrl.includes("#")
+      ? directUrl.split("#")[0]
+      : directUrl;
+
+    if (
+      directUrl.startsWith("/api/media/proxy?url=") ||
+      directUrl.includes("/api/media/proxy?url=")
+    ) {
+      try {
+        const encoded = directUrl.split("url=")[1] || "";
+        directUrl = decodeURIComponent(encoded).split("#")[0];
+      } catch {}
     }
 
-    const proxied = "/api/media/proxy?url=" + encodeURIComponent(audioUrl) + "&filename=" + encodeURIComponent(filename);
+    try {
+      const response = await fetch(directUrl, {
+        method: "GET",
+        cache: "no-store"
+      });
 
-    const a = document.createElement("a");
-    a.href = proxied;
-    a.download = filename;
-    a.rel = "noopener";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+      if (!response.ok) {
+        throw new Error("mobile_music_generated_download_failed_" + response.status);
+      }
+
+      const blob = await response.blob();
+      const file = new File([blob], filename, {
+        type: blob.type || "audio/mpeg"
+      });
+
+      if (
+        navigator.canShare &&
+        navigator.canShare({ files: [file] }) &&
+        navigator.share
+      ) {
+        await navigator.share({
+          files: [file],
+          title: "AIVO Müzik"
+        });
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.rel = "noopener";
+      a.style.display = "none";
+
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(function(){
+        try {
+          a.remove();
+        } catch (err) {}
+
+        try {
+          URL.revokeObjectURL(objectUrl);
+        } catch (err) {}
+      }, 1500);
+    } catch (err) {
+      console.error("[MOBILE MUSIC][GENERATED DOWNLOAD ERROR]", err);
+      window.open(directUrl, "_blank", "noopener");
+    }
   });
 }
 
