@@ -39,11 +39,21 @@
   const toMaybeProxyUrl = (url) => {
     const u = String(url || "").trim();
     if (!u) return "";
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    if (u.startsWith("http://")) return "/api/media/proxy?url=" + encodeURIComponent(u);
+
+    if (
+      u.startsWith("/api/media/proxy?url=") ||
+      u.includes("/api/media/proxy?url=")
+    ) {
+      try {
+        const encoded = u.split("url=")[1] || "";
+        return decodeURIComponent(encoded).split("#")[0];
+      } catch {
+        return u;
+      }
+    }
+
     return u;
   };
-
   const fmtDT = (d) => {
     try {
       const dt = new Date(d || Date.now());
