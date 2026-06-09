@@ -39,10 +39,19 @@
   const toMaybeProxyUrl = (url) => {
     const u = safeStr(url);
     if (!u) return "";
-    if (u.startsWith("/api/media/proxy?url=") || u.includes("/api/media/proxy?url=")) return u;
-    if (u.startsWith("http://") || u.startsWith("https://")) {
-      return "/api/media/proxy?url=" + encodeURIComponent(u);
+
+    if (
+      u.startsWith("/api/media/proxy?url=") ||
+      u.includes("/api/media/proxy?url=")
+    ) {
+      try {
+        const encoded = u.split("url=")[1] || "";
+        return decodeURIComponent(encoded).split("#")[0];
+      } catch {
+        return u;
+      }
     }
+
     return u;
   };
 
@@ -267,14 +276,56 @@
         return;
       }
 
-      if (act === "download") {
+        if (act === "download") {
         if (!videoRaw) return;
-        const a = document.createElement("a");
-        a.href = toMaybeProxyUrl(videoRaw);
-        a.download = `lipsync-${id}.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+
+        let cleanUrl = toMaybeProxyUrl(videoRaw);
+
+        cleanUrl = String(cleanUrl || "").trim();
+
+        cleanUrl = cleanUrl.includes("#")
+          ? cleanUrl.split("#")[0]
+          : cleanUrl;
+
+        if (
+          cleanUrl.startsWith("/api/media/proxy?url=") ||
+          cleanUrl.includes("/api/media/proxy?url=")
+        ) {
+          try {
+            const encoded = cleanUrl.split("url=")[1] || "";
+            cleanUrl = decodeURIComponent(encoded).split("#")[0];
+          } catch {}
+        }
+
+        try {
+          const response = await fetch(cleanUrl, {
+            method: "GET",
+            cache: "no-store"
+          });
+
+          if (!response.ok) {
+            throw new Error("download_fetch_failed_" + response.status);
+          }
+
+          const blob = await response.blob();
+          const objectUrl = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = objectUrl;
+          a.download = `lipsync-${id}.mp4`;
+          a.rel = "noopener";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+          setTimeout(() => {
+            URL.revokeObjectURL(objectUrl);
+          }, 1000);
+        } catch (err) {
+          console.error("[LIPSYNC PANEL] download failed", err);
+          window.open(cleanUrl, "_blank", "noopener");
+        }
+
         return;
       }
 
