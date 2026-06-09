@@ -906,9 +906,9 @@
         const outputUrl = String(item && item.output_url ? item.output_url : "").trim();
         const jobId = String(item && item.job_id ? item.job_id : "-").trim();
 
-        const outputHtml = outputUrl
+              const outputHtml = outputUrl
           ? `<a href="${escapeHtml(outputUrl)}" target="_blank" rel="noopener noreferrer">Aç</a>`
-          : "-";
+          : `<button class="btn btnProductionOutputResolve" data-job-id="${escapeHtml(jobId)}" type="button" style="padding:6px 10px;">Bul</button>`;
 
         return `
           <tr>
@@ -1001,6 +1001,56 @@
 
     if (btnProductionHistory) {
       btnProductionHistory.addEventListener("click", loadProductionHistory);
+    }
+        if (productionHistoryTbody) {
+      productionHistoryTbody.addEventListener("click", async function (ev) {
+        const btn = ev.target && ev.target.closest
+          ? ev.target.closest(".btnProductionOutputResolve")
+          : null;
+
+        if (!btn) return;
+
+        const jobId = String(btn.getAttribute("data-job-id") || "").trim();
+        if (!jobId || jobId === "-") return;
+
+        btn.disabled = true;
+        const oldText = btn.textContent;
+        btn.textContent = "Bakılıyor...";
+
+        try {
+          const r = await fetch(
+            "/api/admin/production-output-resolve?job_id=" + encodeURIComponent(jobId),
+            {
+              cache: "no-store",
+              credentials: "include"
+            }
+          );
+
+          const j = await r.json().catch(() => null);
+
+          if (!r.ok || !j || !j.ok) {
+            throw new Error((j && (j.error || j.message)) || "output_resolve_failed");
+          }
+
+          if (!j.found || !j.output_url) {
+            btn.textContent = "Yok";
+            btn.disabled = false;
+            return;
+          }
+
+          btn.textContent = "Aç";
+          btn.disabled = false;
+          btn.onclick = function () {
+            window.open(j.output_url, "_blank", "noopener,noreferrer");
+          };
+
+          window.open(j.output_url, "_blank", "noopener,noreferrer");
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = oldText || "Bul";
+          alert("Çıktı bulunamadı: " + String(err && err.message ? err.message : err));
+        }
+      });
     }
 
     if (productionHistoryDate) {
