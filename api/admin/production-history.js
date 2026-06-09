@@ -98,8 +98,8 @@ function pickOutputUrl(outputs, meta) {
   return null;
 }
 
-function mapModuleLabel(app, action, reason) {
-  const text = `${app || ""} ${action || ""} ${reason || ""}`.toLowerCase();
+function mapModuleLabel(app, type) {
+  const text = `${app || ""} ${type || ""}`.toLowerCase();
 
   if (text.includes("music") || text.includes("müzik") || text.includes("muzik")) return "AI Müzik Üret";
   if (text.includes("cover") || text.includes("kapak")) return "AI Kapak Üret";
@@ -163,41 +163,39 @@ module.exports = async function handler(req, res) {
 
     const rows = await sql`
       select
-        ct.id as transaction_id,
-        ct.user_id as email,
-        ct.app as transaction_app,
-        ct.action as action,
-        ct.kind as kind,
-        ct.amount as amount,
-        ct.status as transaction_status,
-        ct.reason as reason,
-        ct.job_id as job_id,
-        ct.provider_job_id as provider_job_id,
-        ct.meta as transaction_meta,
-        ct.created_at as transaction_created_at,
-
-        j.id as real_job_id,
-        j.user_id as job_user_id,
-        j.app as job_app,
-        j.type as job_type,
+        j.id as job_id,
+        j.user_id as email,
+        j.app as app,
+        j.type as type,
         j.provider as provider,
+        j.request_id as request_id,
         j.status as job_status,
         j.prompt as prompt,
         j.meta as job_meta,
         j.outputs as outputs,
         j.error as job_error,
         j.created_at as job_created_at,
-        j.updated_at as job_updated_at
-      from credit_transactions ct
-      left join jobs j
+        j.updated_at as job_updated_at,
+
+        ct.id as transaction_id,
+        ct.action as action,
+        ct.kind as kind,
+        ct.amount as amount,
+        ct.status as transaction_status,
+        ct.reason as reason,
+        ct.provider_job_id as provider_job_id,
+        ct.meta as transaction_meta,
+        ct.created_at as transaction_created_at
+      from jobs j
+      left join credit_transactions ct
         on ct.job_id is not null
-        and j.id::text = ct.job_id
-      where ct.status = 'applied'
-        and ct.created_at >= ${start}::timestamptz
-        and ct.created_at <= ${end}::timestamptz
-        and (${emailFilter}::text is null or lower(ct.user_id) = lower(${emailFilter}::text))
-        and (${appFilter}::text is null or lower(ct.app) = lower(${appFilter}::text))
-      order by ct.created_at desc
+        and ct.job_id = j.id::text
+        and ct.status = 'applied'
+      where j.created_at >= ${start}::timestamptz
+        and j.created_at <= ${end}::timestamptz
+        and (${emailFilter}::text is null or lower(j.user_id) = lower(${emailFilter}::text))
+        and (${appFilter}::text is null or lower(j.app) = lower(${appFilter}::text))
+      order by j.created_at desc
       limit ${limit}
     `;
 
@@ -208,30 +206,33 @@ module.exports = async function handler(req, res) {
       const outputUrl = pickOutputUrl(outputs, jobMeta);
 
       return {
+        date: row.job_created_at || row.transaction_created_at || null,
+        email: row.email || null,
+        app: row.app || null,
+        module_label: mapModuleLabel(row.app, row.type),
+        type: row.type || null,
+        prompt: row.prompt || null,
+
+        job_id: row.job_id || null,
+        provider: row.provider || null,
+        request_id: row.request_id || null,
+        provider_job_id: row.provider_job_id || null,
+        job_status: row.job_status || null,
+        output_url: outputUrl,
+        outputs,
+        job_meta: jobMeta,
+        job_error: row.job_error || null,
+        job_created_at: row.job_created_at || null,
+        job_updated_at: row.job_updated_at || null,
+
         transaction_id: row.transaction_id || null,
-        date: row.transaction_created_at || null,
-        email: row.email || row.job_user_id || null,
-        app: row.job_app || row.transaction_app || null,
-        module_label: mapModuleLabel(row.job_app || row.transaction_app, row.action, row.reason),
         action: row.action || null,
         kind: row.kind || null,
         amount: Number(row.amount || 0),
         transaction_status: row.transaction_status || null,
         reason: row.reason || null,
-
-        job_id: row.real_job_id || row.job_id || null,
-        provider_job_id: row.provider_job_id || null,
-        provider: row.provider || null,
-        job_type: row.job_type || null,
-        job_status: row.job_status || null,
-        prompt: row.prompt || null,
-        output_url: outputUrl,
-        outputs,
-        job_meta: jobMeta,
         transaction_meta: transactionMeta,
-        job_error: row.job_error || null,
-        job_created_at: row.job_created_at || null,
-        job_updated_at: row.job_updated_at || null
+        transaction_created_at: row.transaction_created_at || null
       };
     });
 
@@ -245,13 +246,19 @@ module.exports = async function handler(req, res) {
           acc.refund_credits += Number(item.amount || 0);
         }
 
-        acc.transaction_count += 1;
+        acc.job_count += 1;
+
+        if (item.transaction_id) {
+          acc.transaction_count += 1;
+        }
+
         return acc;
       },
       {
         spent_credits: 0,
         refund_credits: 0,
         net_credits: 0,
+        job_count: 0,
         transaction_count: 0
       }
     );
