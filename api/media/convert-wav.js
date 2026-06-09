@@ -114,17 +114,23 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_or_invalid_url" });
     }
 
-    const viaProxy = `https://aivo.tr/api/media/proxy?url=${encodeURIComponent(upstreamUrl)}`;
-
-    const inPath = path.join("/tmp", `aivo_in_${Date.now()}.mp3`);
+     const inPath = path.join("/tmp", `aivo_in_${Date.now()}.mp3`);
     const outPath = path.join("/tmp", `aivo_out_${Date.now()}.wav`);
 
-    // 1) Download to /tmp
-    const r = await fetch(viaProxy, { method: "GET", redirect: "follow" });
+    // 1) Download original stem directly to /tmp
+    const r = await fetch(upstreamUrl, {
+      method: "GET",
+      redirect: "follow",
+      headers: {
+        "accept": "audio/*,*/*"
+      }
+    });
+
     if (!r.ok) {
       const t = await r.text().catch(() => "");
       return res.status(r.status).end(t || "upstream_download_failed");
     }
+
     await pipeline(r.body, fs.createWriteStream(inPath));
 
     // 2) Convert
