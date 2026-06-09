@@ -51,18 +51,21 @@
   const toMaybeProxyUrl = (url) => {
     const u = safeStr(url);
     if (!u) return "";
+
     if (
       u.startsWith("/api/media/proxy?url=") ||
       u.includes("/api/media/proxy?url=")
     ) {
-      return u;
+      try {
+        const encoded = u.split("url=")[1] || "";
+        return decodeURIComponent(encoded).split("#")[0];
+      } catch {
+        return u;
+      }
     }
-    if (u.startsWith("http://") || u.startsWith("https://")) {
-      return "/api/media/proxy?url=" + encodeURIComponent(u);
-    }
+
     return u;
   };
-
   const mapBadge = (job) => {
     const a = norm(job?.db_status);
     const b = norm(job?.status);
@@ -648,25 +651,52 @@ function pickPreviewVideoFromJob(job) {
       render(buildMergedItems());
     }
 
-    function download(url, filename = "photofx.mp4") {
-      const cleanUrl = String(url || "").trim();
+     async function download(url, filename = "photofx.mp4") {
+      let cleanUrl = String(url || "").trim();
       if (!cleanUrl) return;
 
-      const directUrl = cleanUrl.includes("#")
+      cleanUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
         : cleanUrl;
 
-      const proxied = directUrl.startsWith("/api/media/proxy?url=")
-        ? directUrl
-        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(filename)}`;
+      if (
+        cleanUrl.startsWith("/api/media/proxy?url=") ||
+        cleanUrl.includes("/api/media/proxy?url=")
+      ) {
+        try {
+          const encoded = cleanUrl.split("url=")[1] || "";
+          cleanUrl = decodeURIComponent(encoded).split("#")[0];
+        } catch {}
+      }
 
-      const a = document.createElement("a");
-      a.href = proxied;
-      a.download = filename;
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      try {
+        const response = await fetch(cleanUrl, {
+          method: "GET",
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("download_fetch_failed_" + response.status);
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = filename;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        setTimeout(() => {
+          URL.revokeObjectURL(objectUrl);
+        }, 1000);
+      } catch (err) {
+        console.error("[PHOTOFX PANEL] download failed", err);
+        window.open(cleanUrl, "_blank", "noopener");
+      }
     }
 
     function share(url) {
