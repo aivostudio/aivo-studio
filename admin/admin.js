@@ -1413,14 +1413,36 @@ async function loadSoldCredits(options) {
           throw new Error((j && (j.error || j.message)) || "ios_sales_failed");
         }
 
-        renderIosSales(j.rows || []);
+        const selectedPaidRows = (Array.isArray(j.rows) ? j.rows : []).filter(function (row) {
+          const customerPrice = Number(row["Customer Price"] || 0);
+          const developerProceeds = Number(row["Developer Proceeds"] || 0);
+
+          return customerPrice > 0 || developerProceeds > 0;
+        });
+
+        const fallbackPaidRows = (Array.isArray(j.total_rows) ? j.total_rows : []).filter(function (row) {
+          const customerPrice = Number(row["Customer Price"] || 0);
+          const developerProceeds = Number(row["Developer Proceeds"] || 0);
+
+          return customerPrice > 0 || developerProceeds > 0;
+        });
+
+        const rowsToRender = selectedPaidRows.length
+          ? selectedPaidRows
+          : fallbackPaidRows.slice(0, 20);
+
+        renderIosSales(rowsToRender);
 
         if (iosSalesOut) {
           iosSalesOut.style.display = "none";
           iosSalesOut.textContent = JSON.stringify(j, null, 2);
         }
 
-        if (iosSalesStatus) iosSalesStatus.textContent = `Gün: ${String(j.date || selectedDate)}`;
+        if (iosSalesStatus) {
+          iosSalesStatus.textContent = selectedPaidRows.length
+            ? `Gün: ${String(j.date || selectedDate)}`
+            : `Gün: ${String(j.date || selectedDate)} / Son iOS satışları`;
+        }
       } catch (err) {
         renderIosSales([]);
 
