@@ -670,20 +670,26 @@
       render(buildMergedItems());
     }
 
-    function download(url, filename = "cartoon.mp4") {
+     function download(url, filename = "cartoon.mp4") {
       const cleanUrl = String(url || "").trim();
       if (!cleanUrl) return;
 
-      const directUrl = cleanUrl.includes("#")
+      let directUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
         : cleanUrl;
 
-      const proxied = directUrl.startsWith("/api/media/proxy?url=")
-        ? directUrl
-        : `/api/media/proxy?url=${encodeURIComponent(directUrl)}&filename=${encodeURIComponent(filename)}`;
+      if (
+        directUrl.startsWith("/api/media/proxy?url=") ||
+        directUrl.includes("/api/media/proxy?url=")
+      ) {
+        try {
+          const encoded = directUrl.split("url=")[1] || "";
+          directUrl = decodeURIComponent(encoded).split("#")[0];
+        } catch {}
+      }
 
       const a = document.createElement("a");
-      a.href = proxied;
+      a.href = directUrl;
       a.download = filename;
       a.rel = "noopener";
       document.body.appendChild(a);
