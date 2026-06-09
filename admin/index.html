@@ -754,7 +754,7 @@
 <pre id="soldCreditsOut" class="out" style="margin-top:12px; display:none;"></pre>
     </section>
 
-        <section class="card" id="cardIosSales">
+           <section class="card" id="cardIosSales">
       <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
         <span>🍎 iOS Satışları</span>
         <span class="muted" id="iosSalesStatus">Hazır.</span>
@@ -807,6 +807,62 @@
       </div>
 
       <pre id="iosSalesOut" class="out" style="margin-top:12px; display:none;"></pre>
+    </section>
+
+    <section class="card" id="cardPlaySales">
+      <h3 style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span>🤖 Google Play Satışları</span>
+        <span class="muted" id="playSalesStatus">Hazır.</span>
+      </h3>
+
+      <div class="row" style="gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+        <button id="btnPlaySales" class="btn">Yenile</button>
+        <input id="playSalesDate" type="date" />
+        <span class="muted">Google Play siparişleri ve Android kredi satışları</span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+        <div style="padding:10px 14px; border:1px solid rgba(255,255,255,.08); border-radius:16px;">
+          <div class="muted">Toplam Satış</div>
+          <div id="playSalesUnits" style="font-size:28px; font-weight:800;">0</div>
+        </div>
+
+        <div style="padding:10px 14px; border:1px solid rgba(255,255,255,.08); border-radius:16px;">
+          <div class="muted">Müşteri Tutarı</div>
+          <div id="playSalesCustomerTotal" style="font-size:28px; font-weight:800;">0 TRY</div>
+        </div>
+
+        <div style="padding:10px 14px; border:1px solid rgba(255,255,255,.08); border-radius:16px;">
+          <div class="muted">Google Sonrası Gelir</div>
+          <div id="playSalesRevenueTotal" style="font-size:28px; font-weight:800;">0 TRY</div>
+        </div>
+      </div>
+
+      <div style="overflow:auto; border:1px solid rgba(255,255,255,.08); border-radius:16px;">
+        <table id="playSalesTable" style="width:100%; border-collapse:collapse; min-width:980px;">
+          <thead>
+            <tr style="text-align:left; opacity:.85;">
+              <th style="padding:10px 12px;">Ürün</th>
+              <th style="padding:10px 12px;">Adet</th>
+              <th style="padding:10px 12px;">Müşteri Tutarı</th>
+              <th style="padding:10px 12px;">Gelir</th>
+              <th style="padding:10px 12px;">Para Birimi</th>
+              <th style="padding:10px 12px;">Ülke</th>
+              <th style="padding:10px 12px;">Durum</th>
+              <th style="padding:10px 12px;">Sipariş</th>
+            </tr>
+          </thead>
+          <tbody id="playSalesTbody">
+            <tr>
+              <td colspan="8" class="muted" style="padding:12px;">
+                Henüz Google Play satış verisi yüklenmedi.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <pre id="playSalesOut" class="out" style="margin-top:12px; display:none;"></pre>
     </section>
 
     <section class="card" id="cardProductionStats">
