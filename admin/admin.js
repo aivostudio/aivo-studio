@@ -1163,9 +1163,9 @@ async function loadSoldCredits(options) {
       return sum + Number(item && item.credits ? item.credits : 0);
     }, 0);
 
-        setSoldCreditsValues(
+           setSoldCreditsValues(
           purchasedCredits,
-          purchasesData.total || purchasedItems.length || 0
+          purchasedItems.length || 0
         );
         renderSoldCreditsPackages(purchasedItems);
 
