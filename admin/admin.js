@@ -1343,53 +1343,65 @@ async function loadSoldCredits(options) {
       }).join("");
     }
 
-    function renderPlaySales(rows) {
-      const list = Array.isArray(rows) ? rows : [];
+function renderPlaySales(rows) {
+  const rawList = Array.isArray(rows) ? rows : [];
 
-      let totalUnits = 0;
-      let customerTotal = 0;
-      let revenueTotal = 0;
-      let currency = "TRY";
+  const list = rawList.filter(function (row) {
+    const developerRevenue = Number(row && row.developerRevenue ? row.developerRevenue : 0);
+    const productTitle = String(row && row.productTitle ? row.productTitle : "").trim().toLowerCase();
+    const state = String(row && row.state ? row.state : "").trim().toLowerCase();
 
-      list.forEach(function (row) {
-        totalUnits += Number(row.quantity || 1);
-        customerTotal += Number(row.customerTotal || 0);
-        revenueTotal += Number(row.developerRevenue || 0);
-        currency = row.currency || currency;
-      });
+    if (state === "refunded") return false;
+    if (productTitle.startsWith("test:")) return false;
+    if (developerRevenue <= 0) return false;
 
-      if (playSalesUnits) playSalesUnits.textContent = String(totalUnits);
-      if (playSalesCustomerTotal) playSalesCustomerTotal.textContent = formatPlayMoney(customerTotal, currency);
-      if (playSalesRevenueTotal) playSalesRevenueTotal.textContent = formatPlayMoney(revenueTotal, currency);
+    return true;
+  });
 
-      if (!playSalesTbody) return;
+  let totalUnits = 0;
+  let customerTotal = 0;
+  let revenueTotal = 0;
+  let currency = "TRY";
 
-      if (!list.length) {
-        playSalesTbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="muted" style="padding:12px;">
-              Seçilen gün için Google Play satış verisi yok.
-            </td>
-          </tr>
-        `;
-        return;
-      }
+  list.forEach(function (row) {
+    totalUnits += Number(row.quantity || 1);
+    customerTotal += Number(row.customerTotal || 0);
+    revenueTotal += Number(row.developerRevenue || 0);
+    currency = row.currency || currency;
+  });
 
-      playSalesTbody.innerHTML = list.map(function (row) {
-        return `
-          <tr>
-            <td style="padding:8px 10px;">${escapeHtml(row.productTitle || row.productId || "-")}</td>
-            <td style="padding:8px 10px;">${Number(row.quantity || 1)}</td>
-            <td style="padding:8px 10px;">${escapeHtml(formatPlayMoney(row.customerTotal, row.currency))}</td>
-            <td style="padding:8px 10px;">${escapeHtml(formatPlayMoney(row.developerRevenue, row.currency))}</td>
-            <td style="padding:8px 10px;">${escapeHtml(row.currency || "-")}</td>
-            <td style="padding:8px 10px;">${escapeHtml(row.buyerCountry || "-")}</td>
-            <td style="padding:8px 10px;">${escapeHtml(row.state || "-")}</td>
-            <td style="padding:8px 10px; max-width:260px; overflow-x:auto; white-space:nowrap;">${escapeHtml(row.orderId || "-")}</td>
-          </tr>
-        `;
-      }).join("");
-    }
+  if (playSalesUnits) playSalesUnits.textContent = String(totalUnits);
+  if (playSalesCustomerTotal) playSalesCustomerTotal.textContent = formatPlayMoney(customerTotal, currency);
+  if (playSalesRevenueTotal) playSalesRevenueTotal.textContent = formatPlayMoney(revenueTotal, currency);
+
+  if (!playSalesTbody) return;
+
+  if (!list.length) {
+    playSalesTbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="muted" style="padding:12px;">
+          Seçilen gün için gerçek Google Play satış verisi yok. Test, ücretsiz veya iade kayıtları toplama dahil edilmedi.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  playSalesTbody.innerHTML = list.map(function (row) {
+    return `
+      <tr>
+        <td style="padding:8px 10px;">${escapeHtml(row.productTitle || row.productId || "-")}</td>
+        <td style="padding:8px 10px;">${Number(row.quantity || 1)}</td>
+        <td style="padding:8px 10px;">${escapeHtml(formatPlayMoney(row.customerTotal, row.currency))}</td>
+        <td style="padding:8px 10px;">${escapeHtml(formatPlayMoney(row.developerRevenue, row.currency))}</td>
+        <td style="padding:8px 10px;">${escapeHtml(row.currency || "-")}</td>
+        <td style="padding:8px 10px;">${escapeHtml(row.buyerCountry || "-")}</td>
+        <td style="padding:8px 10px;">${escapeHtml(row.state || "-")}</td>
+        <td style="padding:8px 10px; max-width:260px; overflow-x:auto; white-space:nowrap;">${escapeHtml(row.orderId || "-")}</td>
+      </tr>
+    `;
+  }).join("");
+}
 
     async function loadIosSales() {
       const selectedDate =
