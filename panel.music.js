@@ -1548,7 +1548,7 @@ async function actionDelete(card){
     toast("error", "Silme hatası");
   }
 }
-function onCardClick(e){
+async function onCardClick(e){
   const btn = e.target.closest("[data-action]");
   const card = e.target.closest(".aivo-player-card");
   if (!card) return;
