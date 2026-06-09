@@ -3,11 +3,21 @@
 import crypto from "crypto";
 import zlib from "zlib";
 
-const APPLE_ISSUER_ID = process.env.APPLE_ISSUER_ID || "";
-const APPLE_KEY_ID = process.env.APPLE_KEY_ID || "";
-const APPLE_PRIVATE_KEY = (process.env.APPLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
-const APPLE_VENDOR_NUMBER = process.env.APPLE_VENDOR_NUMBER || "";
+const APPLE_ISSUER_ID =
+  process.env.APP_STORE_CONNECT_ISSUER_ID ||
+  process.env.APPLE_ISSUER_ID ||
+  "";
 
+const APPLE_KEY_ID =
+  process.env.APP_STORE_CONNECT_KEY_ID ||
+  "";
+
+const APPLE_PRIVATE_KEY = String(
+  process.env.APP_STORE_CONNECT_PRIVATE_KEY ||
+  ""
+).replace(/\\n/g, "\n");
+
+const APPLE_VENDOR_NUMBER = process.env.APPLE_VENDOR_NUMBER || "";
 function base64url(input) {
   return Buffer.from(input)
     .toString("base64")
