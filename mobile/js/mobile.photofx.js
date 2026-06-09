@@ -1343,44 +1343,81 @@ async function uploadMobilePhotoFxFile(file, kind){
        if (act === "download") {
         if (!job.videoUrl) return;
 
-        const directUrl = String(job.videoUrl || "").split("#")[0];
+        let directUrl = String(job.videoUrl || "").trim();
         const filename = "aivo-photofx-klip.mp4";
 
-        if (window.AivoMobileDownload?.download) {
-          await window.AivoMobileDownload.download({
-            url: directUrl,
-            filename
-          });
-          return;
+        directUrl = directUrl.includes("#")
+          ? directUrl.split("#")[0]
+          : directUrl;
+
+        if (
+          directUrl.startsWith("/api/media/proxy?url=") ||
+          directUrl.includes("/api/media/proxy?url=")
+        ) {
+          try {
+            const encoded = directUrl.split("url=")[1] || "";
+            directUrl = decodeURIComponent(encoded).split("#")[0];
+          } catch {}
         }
 
-        const downloadUrl =
-          "/api/media/proxy?url=" +
-          encodeURIComponent(directUrl) +
-          "&filename=" +
-          encodeURIComponent(filename);
+        try {
+          const response = await fetch(directUrl, {
+            method: "GET",
+            cache: "no-store"
+          });
 
-        const a = document.createElement("a");
-        a.href = downloadUrl;
-        a.download = filename;
-        a.rel = "noopener";
-        a.style.display = "none";
+          if (!response.ok) {
+            throw new Error("mobile_photofx_download_failed_" + response.status);
+          }
 
-        document.body.appendChild(a);
-        a.click();
+          const blob = await response.blob();
+          const file = new File([blob], filename, {
+            type: blob.type || "video/mp4"
+          });
 
-        mobilePhotoFxToast(
-          "success",
-          String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
-            ? "Download started."
-            : "İndirme başlatıldı."
-        );
+          if (
+            navigator.canShare &&
+            navigator.canShare({ files: [file] }) &&
+            navigator.share
+          ) {
+            await navigator.share({
+              files: [file],
+              title: "AIVO PhotoFX Klip"
+            });
+            return;
+          }
 
-        setTimeout(function(){
-          try {
-            a.remove();
-          } catch (err) {}
-        }, 1500);
+          const objectUrl = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = objectUrl;
+          a.download = filename;
+          a.rel = "noopener";
+          a.style.display = "none";
+
+          document.body.appendChild(a);
+          a.click();
+
+          mobilePhotoFxToast(
+            "success",
+            String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0
+              ? "Download started."
+              : "İndirme başlatıldı."
+          );
+
+          setTimeout(function(){
+            try {
+              a.remove();
+            } catch (err) {}
+
+            try {
+              URL.revokeObjectURL(objectUrl);
+            } catch (err) {}
+          }, 1500);
+        } catch (err) {
+          console.error("[MOBILE PHOTOFX][DOWNLOAD ERROR]", err);
+          window.open(directUrl, "_blank", "noopener");
+        }
 
         return;
       }
