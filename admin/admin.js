@@ -846,6 +846,176 @@
     }
 
     const btnDailyCreditStats = $("btnDailyCreditStats");
+        const btnProductionHistory = $("btnProductionHistory");
+    const productionHistoryDate = $("productionHistoryDate");
+    const productionHistoryEmail = $("productionHistoryEmail");
+    const productionHistoryStatus = $("productionHistoryStatus");
+    const productionHistoryTbody = $("productionHistoryTbody");
+    const productionHistoryOut = $("productionHistoryOut");
+    const productionHistoryJobCount = $("productionHistoryJobCount");
+    const productionHistorySpent = $("productionHistorySpent");
+    const productionHistoryTxCount = $("productionHistoryTxCount");
+
+    function formatProductionHistoryDate(value) {
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "-";
+
+      const pad = (x) => String(x).padStart(2, "0");
+
+      return (
+        pad(d.getDate()) +
+        "." +
+        pad(d.getMonth() + 1) +
+        "." +
+        d.getFullYear() +
+        " " +
+        pad(d.getHours()) +
+        ":" +
+        pad(d.getMinutes())
+      );
+    }
+
+    function shortText(value, maxLen) {
+      const s = String(value == null ? "" : value).trim();
+      const limit = Number(maxLen || 90);
+
+      if (!s) return "-";
+      if (s.length <= limit) return s;
+
+      return s.slice(0, limit - 1) + "…";
+    }
+
+    function renderProductionHistory(items) {
+      if (!productionHistoryTbody) return;
+
+      const list = Array.isArray(items) ? items : [];
+      productionHistoryTbody.innerHTML = "";
+
+      if (!list.length) {
+        productionHistoryTbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="muted" style="padding:12px;">
+              Seçilen gün için üretim geçmişi bulunamadı.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      productionHistoryTbody.innerHTML = list.map(function (item) {
+        const outputUrl = String(item && item.output_url ? item.output_url : "").trim();
+        const jobId = String(item && item.job_id ? item.job_id : "-").trim();
+
+        const outputHtml = outputUrl
+          ? `<a href="${escapeHtml(outputUrl)}" target="_blank" rel="noopener noreferrer">Aç</a>`
+          : "-";
+
+        return `
+          <tr>
+            <td style="padding:8px 10px; white-space:nowrap;">${escapeHtml(formatProductionHistoryDate(item.date || item.job_created_at))}</td>
+            <td style="padding:8px 10px; max-width:260px; overflow-x:auto; white-space:nowrap;">${escapeHtml(item.email || "-")}</td>
+            <td style="padding:8px 10px; white-space:nowrap;">${escapeHtml(item.module_label || item.app || "-")}</td>
+            <td style="padding:8px 10px; min-width:320px;">${escapeHtml(shortText(item.prompt || "-", 160))}</td>
+            <td style="padding:8px 10px;">${Number(item.amount || 0)}</td>
+            <td style="padding:8px 10px; white-space:nowrap;">${escapeHtml(item.job_status || item.transaction_status || "-")}</td>
+            <td style="padding:8px 10px; white-space:nowrap;">${outputHtml}</td>
+            <td style="padding:8px 10px; max-width:260px; overflow-x:auto; white-space:nowrap;">${escapeHtml(jobId)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadProductionHistory() {
+      const s = await adminAuth();
+      if (!s.ok) return;
+
+      const selectedDate =
+        String(
+          productionHistoryDate && productionHistoryDate.value
+            ? productionHistoryDate.value
+            : todayDateInputValue()
+        ).trim();
+
+      const emailFilter = String(productionHistoryEmail && productionHistoryEmail.value ? productionHistoryEmail.value : "").trim();
+
+      if (productionHistoryStatus) productionHistoryStatus.textContent = "Yükleniyor...";
+
+      try {
+        const url =
+          "/api/admin/production-history?date=" +
+          encodeURIComponent(selectedDate) +
+          (emailFilter ? "&email=" + encodeURIComponent(emailFilter) : "");
+
+        const r = await fetch(url, {
+          cache: "no-store",
+          credentials: "include"
+        });
+
+        const j = await r.json().catch(() => null);
+
+        if (!r.ok || !j || !j.ok) {
+          throw new Error((j && (j.error || j.message)) || "production_history_failed");
+        }
+
+        renderProductionHistory(j.items || []);
+
+        if (productionHistoryJobCount) {
+          productionHistoryJobCount.textContent = String(Number(j.totals && j.totals.job_count ? j.totals.job_count : j.count || 0));
+        }
+
+        if (productionHistorySpent) {
+          productionHistorySpent.textContent = String(Number(j.totals && j.totals.spent_credits ? j.totals.spent_credits : 0));
+        }
+
+        if (productionHistoryTxCount) {
+          productionHistoryTxCount.textContent = String(Number(j.totals && j.totals.transaction_count ? j.totals.transaction_count : 0));
+        }
+
+        if (productionHistoryOut) {
+          productionHistoryOut.style.display = "none";
+          productionHistoryOut.textContent = JSON.stringify(j, null, 2);
+        }
+
+        if (productionHistoryStatus) {
+          productionHistoryStatus.textContent = `Gün: ${String(j.date || selectedDate || "-")}`;
+        }
+      } catch (err) {
+        renderProductionHistory([]);
+
+        if (productionHistoryJobCount) productionHistoryJobCount.textContent = "0";
+        if (productionHistorySpent) productionHistorySpent.textContent = "0";
+        if (productionHistoryTxCount) productionHistoryTxCount.textContent = "0";
+
+        if (productionHistoryOut) {
+          productionHistoryOut.style.display = "block";
+          productionHistoryOut.textContent = String(err && err.message ? err.message : err);
+        }
+
+        if (productionHistoryStatus) productionHistoryStatus.textContent = "Hata oluştu.";
+      }
+    }
+
+    if (productionHistoryDate && !productionHistoryDate.value) {
+      productionHistoryDate.value = todayDateInputValue();
+    }
+
+    if (btnProductionHistory) {
+      btnProductionHistory.addEventListener("click", loadProductionHistory);
+    }
+
+    if (productionHistoryDate) {
+      productionHistoryDate.addEventListener("change", loadProductionHistory);
+    }
+
+    if (productionHistoryEmail) {
+      productionHistoryEmail.addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter") {
+          loadProductionHistory();
+        }
+      });
+    }
+
+    loadProductionHistory();
     const btnDailyCreditStatsPdf = $("btnDailyCreditStatsPdf");
     const dailyCreditStatsDate = $("dailyCreditStatsDate");
     const dailyCreditStatsStatus = $("dailyCreditStatsStatus");
