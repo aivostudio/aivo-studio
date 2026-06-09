@@ -794,31 +794,57 @@ function render() {
         return;
       }
 
-      if (act === "download") {
-        const dlUrl = finalUrl || url || previewUrl;
-        if (!dlUrl) return;
+    if (act === "download") {
+      let dlUrl = finalUrl || url || previewUrl;
+      if (!dlUrl) return;
 
-        const proxied =
-          "/api/media/proxy?url=" +
-          encodeURIComponent(dlUrl) +
-          "&filename=" +
-          encodeURIComponent(`atmo-${jobId || "video"}.mp4`);
+      dlUrl = String(dlUrl || "").trim();
 
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.setAttribute("aria-hidden", "true");
-        iframe.src = proxied;
+      dlUrl = dlUrl.includes("#")
+        ? dlUrl.split("#")[0]
+        : dlUrl;
 
-        document.body.appendChild(iframe);
+      if (
+        dlUrl.startsWith("/api/media/proxy?url=") ||
+        dlUrl.includes("/api/media/proxy?url=")
+      ) {
+        try {
+          const encoded = dlUrl.split("url=")[1] || "";
+          dlUrl = decodeURIComponent(encoded).split("#")[0];
+        } catch {}
+      }
+
+      try {
+        const response = await fetch(dlUrl, {
+          method: "GET",
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("download_fetch_failed_" + response.status);
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = `atmo-${jobId || "video"}.mp4`;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
 
         setTimeout(() => {
-          try {
-            iframe.remove();
-          } catch {}
-        }, 15000);
-
-        return;
+          URL.revokeObjectURL(objectUrl);
+        }, 1000);
+      } catch (err) {
+        console.error("[ATMO PANEL] download failed", err);
+        window.open(dlUrl, "_blank", "noopener");
       }
+
+      return;
+    }
 
       if (act === "share") {
         const shareUrl = finalUrl || url || previewUrl;
