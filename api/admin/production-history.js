@@ -187,10 +187,33 @@ module.exports = async function handler(req, res) {
         ct.meta as transaction_meta,
         ct.created_at as transaction_created_at
       from jobs j
-      left join credit_transactions ct
-        on ct.job_id is not null
-        and ct.job_id = j.id::text
-        and ct.status = 'applied'
+      left join lateral (
+        select
+          c.id,
+          c.action,
+          c.kind,
+          c.amount,
+          c.status,
+          c.reason,
+          c.provider_job_id,
+          c.meta,
+          c.created_at
+        from credit_transactions c
+        where c.status = 'applied'
+          and c.kind = 'consume'
+          and lower(c.user_id) = lower(j.user_id)
+          and lower(c.app) = lower(j.app)
+          and c.created_at >= (${start}::timestamptz - interval '10 minutes')
+          and c.created_at <= (${end}::timestamptz + interval '10 minutes')
+          and (
+            c.job_id = j.id::text
+            or c.job_id is null
+          )
+        order by
+          case when c.job_id = j.id::text then 0 else 1 end,
+          abs(extract(epoch from (c.created_at - j.created_at))) asc
+        limit 1
+      ) ct on true
       where j.created_at >= ${start}::timestamptz
         and j.created_at <= ${end}::timestamptz
         and (${emailFilter}::text is null or lower(j.user_id) = lower(${emailFilter}::text))
