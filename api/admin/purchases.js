@@ -146,6 +146,77 @@ if (type === "string") {
   return [];
 }
 
+function normalizeGooglePlayBilling(raw, key) {
+  const item = raw && typeof raw === "object" ? raw : {};
+  const parts = String(key || "").split(":");
+
+  const email = safeText(parts[1]);
+  const productId = safeText(item.productId);
+  const credits = safeInt(item.creditsAdded) || safeInt(item.credits);
+
+  let pack = "";
+  let amount = 0;
+
+  if (productId === "tr.aivo.credits.25" || credits === 25) {
+    pack = "baslangic";
+    amount = 199;
+  } else if (productId === "tr.aivo.credits.100" || credits === 100) {
+    pack = "standart";
+    amount = 699;
+  } else if (productId === "tr.aivo.credits.200" || credits === 200) {
+    pack = "pro";
+    amount = 1299;
+  } else if (productId === "tr.aivo.credits.500" || credits === 500) {
+    pack = "studyo";
+    amount = 2999;
+  }
+
+  const orderId = safeText(item.orderId || item.order_id);
+
+  return {
+    id: orderId || safeText(key),
+    email,
+    provider: "google_play",
+    status: "paid",
+    credits,
+    pack,
+    amount,
+    currency: "TRY",
+    order_id: orderId,
+    created_at: safeText(item.processedAt || item.created_at || item.ts),
+    product_id: productId
+  };
+}
+
+async function readGooglePlayBilling(redis, key) {
+  const type = await redis.type(key);
+
+  if (type !== "string") {
+    return null;
+  }
+
+  const raw = await redis.get(key);
+  let parsed = null;
+
+  try {
+    parsed = typeof raw === "string" ? JSON.parse(raw || "{}") : raw;
+  } catch (_) {
+    parsed = null;
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    return null;
+  }
+
+  const item = normalizeGooglePlayBilling(parsed, key);
+
+  if (!item.order_id || !item.order_id.startsWith("GPA.")) {
+    return null;
+  }
+
+  return item;
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -158,10 +229,11 @@ module.exports = async function handler(req, res) {
     const redis = kv.getRedis?.() || kv.redis;
 
     const keys = await scanKeys(redis, "invoices:*");
+    const googlePlayKeys = await scanKeys(redis, "google_play_billing:*");
 
     const items = [];
 
-    for (const key of keys) {
+     for (const key of keys) {
       const invoices = await readInvoices(redis, key);
 
       for (const inv of invoices) {
@@ -179,6 +251,24 @@ module.exports = async function handler(req, res) {
           created_at: inv.created_at
         });
       }
+    }
+
+    for (const key of googlePlayKeys) {
+      const playItem = await readGooglePlayBilling(redis, key);
+
+      if (!playItem) continue;
+
+      items.push({
+        id: playItem.id,
+        email: playItem.email,
+        provider: playItem.provider,
+        credits: playItem.credits,
+        pack: playItem.pack,
+        amount: playItem.amount,
+        currency: playItem.currency,
+        order_id: playItem.order_id,
+        created_at: playItem.created_at
+      });
     }
 
     items.sort((a, b) => {
