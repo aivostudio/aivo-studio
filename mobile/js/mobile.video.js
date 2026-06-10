@@ -653,11 +653,17 @@ const state = {
                 : `<div class="mobile-photofx-video-loading"><span>${mobileVideoText("Hazırlanıyor…", "Preparing…")}</span></div>`
             }
 
-            <div class="mobile-photofx-video-actions">
+                <div class="mobile-photofx-video-actions">
               <button type="button" data-mobile-video-act="download" ${ready ? "" : "disabled"}>⬇</button>
               <button type="button" data-mobile-video-act="share" ${ready ? "" : "disabled"}>↗</button>
               <button type="button" data-mobile-video-act="sound" ${ready ? "" : "disabled"}>🔇</button>
               <button type="button" data-mobile-video-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+              <button
+                type="button"
+                data-mobile-video-act="report"
+                aria-label="${mobileVideoText("İçeriği bildir", "Report content")}"
+                title="${mobileVideoText("İçeriği bildir", "Report content")}"
+              >⚑</button>
               <button type="button" data-mobile-video-act="delete">🗑</button>
             </div>
 
