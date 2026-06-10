@@ -33,6 +33,41 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
+
+    function normalizeAtmoProxyOnly(value){
+    const original = String(value == null ? "" : value).trim();
+    if (!original) return "";
+
+    if (
+      !original.startsWith("/api/media/proxy?") &&
+      !original.includes("/api/media/proxy?")
+    ) {
+      return original;
+    }
+
+    try {
+      const marker = "/api/media/proxy?";
+      const query = original.includes(marker)
+        ? original.split(marker)[1] || ""
+        : original.split("?")[1] || "";
+
+      const params = new URLSearchParams(query);
+      const rawUrl = String(params.get("url") || "").trim();
+
+      if (
+        rawUrl &&
+        (
+          rawUrl.startsWith("http://") ||
+          rawUrl.startsWith("https://")
+        )
+      ) {
+        return rawUrl;
+      }
+    } catch (err) {}
+
+    return original;
+  }
+  
    function pickPosterUrl(data){
     const outputs = Array.isArray(data?.outputs) ? data.outputs : [];
     const firstPosterOutput = outputs.find(function(output){
@@ -163,15 +198,17 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         ""
       ).toLowerCase();
 
-      const videoUrl = String(
-        data.video_url ||
-        data.final_url ||
-        data.url ||
-        data.video?.url ||
-        data.output?.video?.url ||
-        data.outputs?.[0]?.url ||
-        ""
-      ).trim();
+       const videoUrl = normalizeAtmoProxyOnly(
+        String(
+          data.video_url ||
+          data.final_url ||
+          data.url ||
+          data.video?.url ||
+          data.output?.video?.url ||
+          data.outputs?.[0]?.url ||
+          ""
+        ).trim()
+      );
 
       const job = mobileAtmoJobs.find(function(item){
         return item.id === jobId;
@@ -514,23 +551,25 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           );
         });
 
-        const videoUrl = String(
-          row.video_url ||
-          row.videoUrl ||
-          row.final_url ||
-          row.output_url ||
-          row.url ||
-          row.meta?.video_url ||
-          row.meta?.videoUrl ||
-          row.meta?.final_url ||
-          row.outputs?.video_url ||
-          row.outputs?.videoUrl ||
-          firstVideoOutput?.url ||
-          firstVideoOutput?.video_url ||
-          firstVideoOutput?.videoUrl ||
-          firstVideoOutput?.src ||
-          ""
-        ).trim();
+           const videoUrl = normalizeAtmoProxyOnly(
+          String(
+            row.video_url ||
+            row.videoUrl ||
+            row.final_url ||
+            row.output_url ||
+            row.url ||
+            row.meta?.video_url ||
+            row.meta?.videoUrl ||
+            row.meta?.final_url ||
+            row.outputs?.video_url ||
+            row.outputs?.videoUrl ||
+            firstVideoOutput?.url ||
+            firstVideoOutput?.video_url ||
+            firstVideoOutput?.videoUrl ||
+            firstVideoOutput?.src ||
+            ""
+          ).trim()
+        );
 
         const jobId = String(row.id || row.job_id || row.jobId || "").trim();
 
