@@ -1577,28 +1577,78 @@ function buildPayload(){
 
     const submitBtn = sheet.querySelector("[data-mobile-video-report-submit]");
     if (submitBtn) {
-      submitBtn.addEventListener("click", function(){
+      submitBtn.addEventListener("click", async function(){
         const checkedReason = sheet.querySelector('input[name="mobileVideoReportReason"]:checked');
         const detailsEl = sheet.querySelector("[data-mobile-video-report-details]");
 
-        job.reportDraft = {
+        const payload = {
           app: "video",
           job_id: job.id || "",
           content_url: job.videoUrl || "",
           reason: checkedReason ? checkedReason.value : "",
           details: detailsEl ? safeText(detailsEl.value) : "",
-          source: "mobile_video_report_sheet"
+          source: "mobile_app",
+          meta: {
+            module: "mobile.video",
+            platform: "mobile",
+            title: job.title || ""
+          }
         };
 
-        closeSheet();
+        if (!payload.reason) {
+          mobileVideoToast("warning", mobileVideoText(
+            "Lütfen bir rapor nedeni seç.",
+            "Please select a report reason."
+          ));
+          return;
+        }
 
-        const message = mobileVideoText(
-          "Rapor alındı.",
-          "Report received."
-        );
+        submitBtn.disabled = true;
+        submitBtn.textContent = mobileVideoText("Gönderiliyor...", "Sending...");
 
-        setStatus(message);
-        mobileVideoToast("success", message);
+        try {
+          const res = await fetch("/api/reports/create", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(function(){
+            return null;
+          });
+
+          if (!res.ok || !data || !data.ok) {
+            throw new Error(data && data.error ? data.error : "report_failed");
+          }
+
+          closeSheet();
+
+          const message = typeof window.t === "function"
+            ? window.t("video.reportReceived")
+            : mobileVideoText(
+                "Rapor alındı.",
+                "Report received."
+              );
+
+          setStatus(message);
+          mobileVideoToast("success", message);
+        } catch (err) {
+          console.error("[MOBILE VIDEO][REPORT ERROR]", err);
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = typeof window.t === "function"
+            ? window.t("video.reportSubmit")
+            : mobileVideoText("Raporu gönder", "Submit report");
+
+          mobileVideoToast("error", mobileVideoText(
+            "Rapor gönderilemedi. Lütfen tekrar dene.",
+            "Report could not be sent. Please try again."
+          ));
+        }
       });
     }
   }
