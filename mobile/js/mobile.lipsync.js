@@ -636,11 +636,17 @@
                 : `<div class="mobile-lipsync-video-loading"><span>${mobileLipsyncText("Hazırlanıyor…", "Preparing…")}</span></div>`
             }
 
-            <div class="mobile-lipsync-video-actions">
+                      <div class="mobile-lipsync-video-actions">
               <button type="button" data-mobile-lipsync-act="download" ${ready ? "" : "disabled"}>⬇</button>
               <button type="button" data-mobile-lipsync-act="share" ${ready ? "" : "disabled"}>↗</button>
               <button type="button" data-mobile-lipsync-act="sound" ${ready ? "" : "disabled"}>🔇</button>
               <button type="button" data-mobile-lipsync-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+              <button
+                type="button"
+                data-mobile-lipsync-act="report"
+                aria-label="${mobileLipsyncText("İçeriği bildir", "Report content")}"
+                title="${mobileLipsyncText("İçeriği bildir", "Report content")}"
+              >⚑</button>
               <button type="button" data-mobile-lipsync-act="delete">🗑</button>
             </div>
 
