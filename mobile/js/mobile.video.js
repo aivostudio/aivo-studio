@@ -1691,6 +1691,20 @@ function buildPayload(){
         return;
       }
 
+        if (act === "report") {
+        const message = typeof window.t === "function"
+          ? window.t("video.reportPreparing")
+          : mobileVideoText(
+              "Rapor ekranı hazırlanıyor.",
+              "Report screen is being prepared."
+            );
+
+        setStatus(message);
+        mobileVideoToast("info", message);
+
+        return;
+      }
+
       if (act === "delete") {
              mobileVideoDeletedIds.add(id);
 
