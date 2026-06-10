@@ -33,25 +33,6 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
-    function toMaybeProxyUrl(url){
-    const value = String(url || "").trim();
-
-    if (!value) return "";
-
-    if (
-      value.startsWith("/api/media/proxy?url=") ||
-      value.includes("/api/media/proxy?url=")
-    ) {
-      try {
-        const encoded = value.split("url=")[1] || "";
-        return decodeURIComponent(encoded).split("#")[0];
-      } catch (err) {
-        return value;
-      }
-    }
-
-    return value;
-  }
    function pickPosterUrl(data){
     const outputs = Array.isArray(data?.outputs) ? data.outputs : [];
     const firstPosterOutput = outputs.find(function(output){
@@ -182,7 +163,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         ""
       ).toLowerCase();
 
-       const videoUrl = toMaybeProxyUrl(
+      const videoUrl = String(
         data.video_url ||
         data.final_url ||
         data.url ||
@@ -190,7 +171,8 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         data.output?.video?.url ||
         data.outputs?.[0]?.url ||
         ""
-      );
+      ).trim();
+
       const job = mobileAtmoJobs.find(function(item){
         return item.id === jobId;
       });
@@ -532,7 +514,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           );
         });
 
-          const videoUrl = toMaybeProxyUrl(
+        const videoUrl = String(
           row.video_url ||
           row.videoUrl ||
           row.final_url ||
@@ -548,7 +530,7 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           firstVideoOutput?.videoUrl ||
           firstVideoOutput?.src ||
           ""
-        );
+        ).trim();
 
         const jobId = String(row.id || row.job_id || row.jobId || "").trim();
 
@@ -2137,4 +2119,3 @@ window.mobileAtmoHydrate = async function(){
 };
   window.mobileAtmoState = state;
 })();
-
