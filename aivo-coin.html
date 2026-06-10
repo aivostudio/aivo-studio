@@ -124,7 +124,77 @@
       opacity: .44;
       transform: rotate(-5deg);
     }
+        .coin-spark {
+      position: absolute;
+      left: -22%;
+      width: 260px;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(34,211,238,.95), rgba(236,72,153,.92), transparent);
+      filter:
+        blur(.2px)
+        drop-shadow(0 0 12px rgba(34,211,238,.72))
+        drop-shadow(0 0 18px rgba(236,72,153,.54));
+      opacity: 0;
+      transform: rotate(-7deg) translateX(0);
+      animation: coinSparkRun 5.8s linear infinite;
+    }
 
+    .coin-spark-a {
+      top: 214px;
+      animation-delay: 0s;
+    }
+
+    .coin-spark-b {
+      top: 344px;
+      width: 210px;
+      opacity: 0;
+      animation-delay: 1.65s;
+      transform: rotate(-7deg) translateX(0);
+    }
+
+    .coin-spark-c {
+      top: 296px;
+      width: 180px;
+      height: 4px;
+      animation-delay: 3.1s;
+      transform: rotate(-5deg) translateX(0);
+      filter:
+        blur(.25px)
+        drop-shadow(0 0 10px rgba(139,92,246,.72))
+        drop-shadow(0 0 16px rgba(34,211,238,.42));
+    }
+
+    @keyframes coinSparkRun {
+      0% {
+        opacity: 0;
+        transform: rotate(-7deg) translateX(0);
+      }
+
+      8% {
+        opacity: .95;
+      }
+
+      48% {
+        opacity: .82;
+      }
+
+      72% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 0;
+        transform: rotate(-7deg) translateX(150vw);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .coin-spark {
+        animation: none;
+        display: none;
+      }
+    }
     .coin-wrap {
       width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
@@ -539,7 +609,11 @@
   <div data-include="topbar"></div>
 
   <main class="coin-page">
-    <div class="coin-orbit"></div>
+     <div class="coin-orbit" aria-hidden="true">
+      <span class="coin-spark coin-spark-a"></span>
+      <span class="coin-spark coin-spark-b"></span>
+      <span class="coin-spark coin-spark-c"></span>
+    </div>
 
     <div class="coin-wrap">
       <section class="coin-hero">
