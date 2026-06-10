@@ -621,7 +621,17 @@ if (downloadBtn) {
         }
       });
     }
-
+        if (reportBtn) {
+      reportBtn.addEventListener("click", function(){
+        openMobileCoverReportSheet({
+          imageUrl: imageUrl,
+          jobId: jobId,
+          prompt: payload.prompt || "",
+          quality: payload.quality || "",
+          ratio: payload.ratio || ""
+        });
+      });
+    }
     if (deleteBtn) {
       deleteBtn.addEventListener("click", async function(){
         if (jobId) {
