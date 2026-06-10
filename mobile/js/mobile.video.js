@@ -325,19 +325,158 @@ const state = {
 
     generateBtn.setAttribute("data-credit-cost", String(credit));
   }
+  function safeMobileVideoUrl(value){
+    return String(value == null ? "" : value).trim();
+  }
+
+  function normalizeMobileVideoProxyUrl(value){
+    const original = safeMobileVideoUrl(value);
+    if (!original) return "";
+
+    if (
+      !original.startsWith("/api/media/proxy?") &&
+      !original.includes("/api/media/proxy?")
+    ) {
+      return original;
+    }
+
+    try {
+      const marker = "/api/media/proxy?";
+      const query = original.includes(marker)
+        ? original.split(marker)[1] || ""
+        : original.split("?")[1] || "";
+
+      const params = new URLSearchParams(query);
+      const rawUrl = safeMobileVideoUrl(params.get("url"));
+
+      if (
+        rawUrl &&
+        (
+          rawUrl.startsWith("http://") ||
+          rawUrl.startsWith("https://")
+        )
+      ) {
+        return rawUrl;
+      }
+    } catch (err) {}
+
+    return original;
+  }
+
+  function isMobileVideoOutput(output){
+    const type = safeMobileVideoUrl(
+      output?.type ||
+      output?.kind ||
+      output?.meta?.type ||
+      output?.meta?.kind
+    ).toLowerCase();
+
+    if (type && type !== "video") return false;
+
+    const app = safeMobileVideoUrl(
+      output?.meta?.app ||
+      output?.meta?.module ||
+      output?.meta?.routeKey
+    ).toLowerCase();
+
+    if (app && !app.includes("video")) return false;
+
+    return true;
+  }
+
+  function pickMobileVideoOutputUrl(output){
+    return safeMobileVideoUrl(
+      output?.archive_url ||
+      output?.archiveUrl ||
+      output?.url ||
+      output?.video_url ||
+      output?.videoUrl ||
+      output?.raw_url ||
+      output?.rawUrl ||
+      output?.final_video_url ||
+      output?.finalVideoUrl ||
+      output?.src ||
+      output?.meta?.archive_url ||
+      output?.meta?.archiveUrl ||
+      output?.meta?.url ||
+      output?.meta?.video_url ||
+      output?.meta?.videoUrl ||
+      output?.meta?.raw_url ||
+      output?.meta?.rawUrl ||
+      output?.meta?.final_video_url ||
+      output?.meta?.finalVideoUrl ||
+      output?.meta?.src ||
+      ""
+    );
+  }
+
   function pickVideoUrl(data){
-    return String(
+    const outputs = Array.isArray(data?.outputs)
+      ? data.outputs.filter(isMobileVideoOutput)
+      : [];
+
+    const directFinal = safeMobileVideoUrl(
       data.video_url ||
+      data.videoUrl ||
       data.final_url ||
+      data.finalUrl ||
+      data.final_video_url ||
+      data.finalVideoUrl ||
       data.url ||
       data.video?.url ||
       data.output?.video?.url ||
       data.meta?.final_video_url ||
-      data.meta?.preview_video_url ||
-      data.outputs?.[0]?.url ||
-      data.outputs?.[0]?.video_url ||
+      data.meta?.finalVideoUrl ||
+      data.meta?.final_url ||
+      data.meta?.finalUrl ||
+      data.meta?.video_url ||
+      data.meta?.videoUrl ||
       ""
-    ).trim();
+    );
+
+    if (directFinal) {
+      return normalizeMobileVideoProxyUrl(directFinal);
+    }
+
+    const finalizedOutput = outputs.find(function(output){
+      const variant = safeMobileVideoUrl(output?.meta?.variant).toLowerCase();
+
+      return (
+        variant === "finalized" ||
+        variant === "final" ||
+        output?.meta?.is_final === true
+      );
+    });
+
+    const finalizedUrl = pickMobileVideoOutputUrl(finalizedOutput);
+    if (finalizedUrl) {
+      return normalizeMobileVideoProxyUrl(finalizedUrl);
+    }
+
+    const providerOutput = outputs.find(function(output){
+      return safeMobileVideoUrl(output?.meta?.variant).toLowerCase() === "provider";
+    });
+
+    const providerUrl = pickMobileVideoOutputUrl(providerOutput);
+    if (providerUrl) {
+      return normalizeMobileVideoProxyUrl(providerUrl);
+    }
+
+    const previewOutput = outputs.find(function(output){
+      return safeMobileVideoUrl(output?.meta?.variant).toLowerCase() === "preview";
+    });
+
+    const previewUrl = pickMobileVideoOutputUrl(previewOutput);
+    if (previewUrl) {
+      return normalizeMobileVideoProxyUrl(previewUrl);
+    }
+
+    const firstOutputUrl = pickMobileVideoOutputUrl(outputs[0]);
+    if (firstOutputUrl) {
+      return normalizeMobileVideoProxyUrl(firstOutputUrl);
+    }
+
+    return "";
   }
 
   async function refreshMobileVideoCreditsUI(){
