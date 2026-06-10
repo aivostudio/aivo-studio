@@ -571,11 +571,17 @@
                 : `<div class="mobile-photofx-video-loading"><span>${String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Preparing…" : "Hazırlanıyor…"}</span></div>`
             }
 
-            <div class="mobile-photofx-video-actions">
+               <div class="mobile-photofx-video-actions">
               <button type="button" data-mobile-photofx-act="download" ${ready ? "" : "disabled"}>⬇</button>
               <button type="button" data-mobile-photofx-act="share" ${ready ? "" : "disabled"}>↗</button>
               <button type="button" data-mobile-photofx-act="sound" ${ready ? "" : "disabled"}>🔇</button>
               <button type="button" data-mobile-photofx-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+              <button
+                type="button"
+                data-mobile-photofx-act="report"
+                aria-label="${String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Report content" : "İçeriği bildir"}"
+                title="${String(window.AIVO_LANG || "").toLowerCase().indexOf("en") === 0 ? "Report content" : "İçeriği bildir"}"
+              >⚑</button>
               <button type="button" data-mobile-photofx-act="delete">🗑</button>
             </div>
 
