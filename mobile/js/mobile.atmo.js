@@ -129,11 +129,17 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           <div class="mobile-atmo-video-media">
             <div class="mobile-atmo-video-loading"><span></span></div>
 
-            <div class="mobile-atmo-video-actions">
+               <div class="mobile-atmo-video-actions">
               <button type="button" data-mobile-atmo-act="download" disabled>⬇</button>
               <button type="button" data-mobile-atmo-act="share" disabled>↗</button>
               <button type="button" data-mobile-atmo-act="sound" disabled>🔇</button>
               <button type="button" data-mobile-atmo-act="fullscreen" disabled>⛶</button>
+              <button
+                type="button"
+                data-mobile-atmo-act="report"
+                aria-label="${atmoText("İçeriği bildir", "Report content")}"
+                title="${atmoText("İçeriği bildir", "Report content")}"
+              >⚑</button>
               <button type="button" data-mobile-atmo-act="delete">🗑</button>
             </div>
 
