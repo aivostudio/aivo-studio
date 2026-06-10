@@ -274,11 +274,12 @@
 
         <div class="mobile-cover-badge">${window.AIVO_LANG === "en" ? "Ready" : "Hazır"}</div>
 
-        <div class="mobile-cover-overlay">
+           <div class="mobile-cover-overlay">
           <div class="mobile-cover-overlay-actions">
             <button class="mobile-cover-overlay-btn" type="button" data-action="open-cover" data-mobile-cover-act="fullscreen" title="${window.AIVO_LANG === "en" ? "View" : "Görüntüle"}">👁</button>
             <button class="mobile-cover-overlay-btn" type="button" data-action="download-cover" data-mobile-cover-act="download" title="${window.AIVO_LANG === "en" ? "Download" : "İndir"}">↓</button>
             <button class="mobile-cover-overlay-btn" type="button" data-action="share-cover" data-mobile-cover-act="share" title="${window.AIVO_LANG === "en" ? "Share" : "Paylaş"}">↗</button>
+            <button class="mobile-cover-overlay-btn" type="button" data-action="report-cover" data-mobile-cover-act="report" title="${window.AIVO_LANG === "en" ? "Report content" : "İçeriği bildir"}">⚑</button>
             <button class="mobile-cover-overlay-btn is-danger" type="button" data-action="delete-cover" data-mobile-cover-act="delete" title="${window.AIVO_LANG === "en" ? "Delete" : "Sil"}">🗑</button>
           </div>
         </div>
