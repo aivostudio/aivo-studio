@@ -995,11 +995,16 @@
         return;
       }
 
+      if (act === "report") {
+        openMobileLipsyncReportSheet(job);
+        return;
+      }
+
       if (act === "delete") {
         mobileLipsyncDeletedIds.add(id);
        renderMobileLipsyncResults("library");
 
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
           fetch("/api/jobs/delete", {
             method: "POST",
             credentials: "include",
