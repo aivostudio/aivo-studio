@@ -261,6 +261,175 @@
       resultsEl.appendChild(card);
     }
   }
+    function openMobileCoverReportSheet(payload){
+    if (!payload) return;
+
+    const oldSheet = document.getElementById("aivoMobileCoverReportSheet");
+    if (oldSheet) {
+      oldSheet.remove();
+    }
+
+    const isEn = window.AIVO_LANG === "en";
+
+    const reportTitle = isEn ? "Report content" : "İçeriği bildir";
+    const reportSub = isEn
+      ? "Select the issue related to this content."
+      : "Bu içerikle ilgili sorunu seç.";
+    const detailsLabel = isEn ? "Details" : "Açıklama";
+    const detailsPlaceholder = isEn
+      ? "Optionally write a short description..."
+      : "İstersen kısa bir açıklama yaz...";
+    const cancelText = isEn ? "Cancel" : "Vazgeç";
+    const submitText = isEn ? "Submit report" : "Raporu gönder";
+
+    const reasons = isEn
+      ? [
+          "Offensive or disturbing content",
+          "Hate, harassment or discrimination",
+          "Violence or dangerous content",
+          "Sexual or inappropriate content",
+          "Copyright or trademark issue",
+          "Misleading or deceptive content",
+          "Other"
+        ]
+      : [
+          "Rahatsız edici / saldırgan içerik",
+          "Nefret / taciz / ayrımcılık",
+          "Şiddet / tehlikeli içerik",
+          "Cinsel / uygunsuz içerik",
+          "Telif / marka ihlali",
+          "Yanlış / aldatıcı içerik",
+          "Diğer"
+        ];
+
+    const sheet = document.createElement("div");
+    sheet.id = "aivoMobileCoverReportSheet";
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-modal", "true");
+    sheet.setAttribute("aria-label", reportTitle);
+    sheet.innerHTML = `
+      <div data-mobile-cover-report-backdrop style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.54);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);"></div>
+      <div style="position:fixed;left:14px;right:14px;bottom:86px;z-index:9999;border-radius:28px;padding:18px;background:linear-gradient(135deg,rgba(24,26,42,.98),rgba(18,20,34,.98));border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.12);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
+          <div>
+            <div style="color:#fff;font-size:20px;font-weight:950;letter-spacing:-.035em;">${safe(reportTitle)}</div>
+            <div style="margin-top:5px;color:rgba(255,255,255,.62);font-size:13px;font-weight:800;line-height:1.35;">${safe(reportSub)}</div>
+          </div>
+          <button type="button" data-mobile-cover-report-close style="width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font-size:22px;font-weight:900;">×</button>
+        </div>
+
+        <div style="display:grid;gap:8px;margin-bottom:14px;">
+          ${reasons.map(function(reason, index){
+            return `
+              <label style="display:flex;align-items:center;gap:10px;min-height:42px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.90);font-size:13px;font-weight:850;">
+                <input type="radio" name="mobileCoverReportReason" value="${safe(reason)}" ${index === 0 ? "checked" : ""} style="width:18px;height:18px;accent-color:#ec4899;">
+                <span>${safe(reason)}</span>
+              </label>
+            `;
+          }).join("")}
+        </div>
+
+        <label style="display:block;margin-bottom:14px;">
+          <span style="display:block;margin-bottom:7px;color:rgba(255,255,255,.76);font-size:12px;font-weight:950;">${safe(detailsLabel)}</span>
+          <textarea data-mobile-cover-report-details maxlength="500" placeholder="${safe(detailsPlaceholder)}" style="width:100%;min-height:78px;resize:none;border-radius:16px;padding:12px;border:1px solid rgba(255,255,255,.12);outline:none;background:rgba(0,0,0,.24);color:#fff;font-size:13px;font-weight:750;"></textarea>
+        </label>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button type="button" data-mobile-cover-report-close style="min-height:46px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:rgba(255,255,255,.86);font-size:14px;font-weight:950;">${safe(cancelText)}</button>
+          <button type="button" data-mobile-cover-report-submit style="min-height:46px;border-radius:16px;border:0;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;font-size:14px;font-weight:950;box-shadow:0 0 24px rgba(236,72,153,.28);">${safe(submitText)}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(sheet);
+
+    function closeSheet(){
+      sheet.remove();
+    }
+
+    sheet.querySelectorAll("[data-mobile-cover-report-close], [data-mobile-cover-report-backdrop]").forEach(function(el){
+      el.addEventListener("click", closeSheet);
+    });
+
+    const submitBtn = sheet.querySelector("[data-mobile-cover-report-submit]");
+    if (submitBtn) {
+      submitBtn.addEventListener("click", async function(){
+        const checkedReason = sheet.querySelector('input[name="mobileCoverReportReason"]:checked');
+        const detailsEl = sheet.querySelector("[data-mobile-cover-report-details]");
+
+        const reportPayload = {
+          app: "cover",
+          job_id: payload.jobId || "",
+          content_url: payload.imageUrl || "",
+          reason: checkedReason ? checkedReason.value : "",
+          details: detailsEl ? String(detailsEl.value || "").trim() : "",
+          source: "mobile_app",
+          meta: {
+            module: "mobile.cover",
+            platform: "mobile",
+            prompt: payload.prompt || "",
+            quality: payload.quality || "",
+            ratio: payload.ratio || ""
+          }
+        };
+
+        if (!reportPayload.reason) {
+          if (window.toast?.warning) {
+            window.toast.warning(
+              isEn ? "Please select a report reason." : "Lütfen bir rapor nedeni seç."
+            );
+          }
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = isEn ? "Sending..." : "Gönderiliyor...";
+
+        try {
+          const res = await fetch("/api/reports/create", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify(reportPayload)
+          });
+
+          const data = await res.json().catch(function(){
+            return null;
+          });
+
+          if (!res.ok || !data || !data.ok) {
+            throw new Error(data && data.error ? data.error : "report_failed");
+          }
+
+          closeSheet();
+
+          const message = isEn ? "Report received." : "Rapor alındı.";
+
+          statusEl.textContent = message;
+
+          if (window.toast?.success) {
+            window.toast.success(message);
+          }
+        } catch (err) {
+          console.error("[MOBILE COVER][REPORT ERROR]", err);
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = isEn ? "Submit report" : "Raporu gönder";
+
+          if (window.toast?.error) {
+            window.toast.error(
+              isEn
+                ? "Report could not be sent. Please try again."
+                : "Rapor gönderilemedi. Lütfen tekrar dene."
+            );
+          }
+        }
+      });
+    }
+  }
   function renderCoverCard(payload, index){
     const card = document.createElement("div");
     card.className = "mobile-cover-result-card";
@@ -290,9 +459,10 @@
       </div>
     `;
 
-    const openBtn = card.querySelector('[data-action="open-cover"]');
+     const openBtn = card.querySelector('[data-action="open-cover"]');
     const downloadBtn = card.querySelector('[data-action="download-cover"]');
     const shareBtn = card.querySelector('[data-action="share-cover"]');
+    const reportBtn = card.querySelector('[data-action="report-cover"]');
     const deleteBtn = card.querySelector('[data-action="delete-cover"]');
 
       if (openBtn) {
