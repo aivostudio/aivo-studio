@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="tr" class="aivoAuthPreload">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#070A14" />
+
+  <title>AIVO COIN • AIVO</title>
+  <meta name="description" content="AIVO COIN, AIVO AI ekosistemi için Solana üzerinde oluşturulmuş dijital utility token sayfasıdır." />
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <link rel="stylesheet" href="/index.css?v=1002" />
+  <link rel="stylesheet" href="/toast.css?v=2" />
+  <link rel="stylesheet" href="/products.dropdown.css?v=104" />
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
+  <link rel="stylesheet" href="/auth.modal.css?v=101" />
+
+  <script src="/toast.manager.js?v=2" defer></script>
+  <script src="/include.partials.js?v=4" defer></script>
+  <script src="/auth.core.js?v=20260115x" defer></script>
+  <script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <script src="/auth.unify.fix.js?v=2" defer></script>
+  <script src="/store.js?v=20260113" defer></script>
+  <script src="/js/assistant.widget.js?v=1" defer></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14;
+      color: #eef2ff;
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .coin-page {
+      position: relative;
+      min-height: 100vh;
+      padding: 118px 0 76px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .coin-page::before {
+      content: "";
+      position: absolute;
+      inset: -18%;
+      background:
+        radial-gradient(920px 540px at 16% 10%, rgba(34,211,238,.20), transparent 64%),
+        radial-gradient(900px 540px at 84% 8%, rgba(236,72,153,.24), transparent 62%),
+        radial-gradient(820px 520px at 48% 72%, rgba(139,92,246,.24), transparent 66%),
+        linear-gradient(180deg, rgba(7,10,20,0), rgba(7,10,20,.94));
+      filter: blur(28px);
+      z-index: -3;
+      pointer-events: none;
+    }
+
+    .coin-page::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.75), transparent 74%);
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .coin-orbit {
+      position: absolute;
+      inset: 84px -12% auto -12%;
+      height: 620px;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .72;
+      background:
+        linear-gradient(100deg, transparent 0%, rgba(34,211,238,.10) 18%, rgba(236,72,153,.20) 38%, rgba(139,92,246,.14) 62%, transparent 86%),
+        radial-gradient(520px 160px at 75% 48%, rgba(34,211,238,.20), transparent 68%);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.95), transparent 92%);
+    }
+
+    .coin-orbit::before,
+    .coin-orbit::after {
+      content: "";
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      height: 130px;
+      border-radius: 999px;
+      border-top: 4px solid rgba(34,211,238,.55);
+      border-bottom: 3px solid rgba(236,72,153,.42);
+      filter: blur(.2px) drop-shadow(0 0 22px rgba(139,92,246,.52));
+      transform: rotate(-7deg);
+    }
+
+    .coin-orbit::before {
+      top: 210px;
+    }
+
+    .coin-orbit::after {
+      top: 292px;
+      opacity: .44;
+      transform: rotate(-5deg);
+    }
+
+    .coin-wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .coin-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, .72fr);
+      gap: 38px;
+      align-items: center;
+      min-height: 540px;
+      padding: 22px 0 34px;
+    }
+
+    .coin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      width: fit-content;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.88);
+      font-weight: 850;
+      font-size: 13px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 44px rgba(0,0,0,.28);
+    }
+
+    .coin-title {
+      margin: 20px 0 16px;
+      font-size: clamp(58px, 9vw, 126px);
+      line-height: .88;
+      letter-spacing: -0.075em;
+      font-weight: 950;
+      color: #fff;
+    }
+
+    .coin-title span {
+      display: block;
+      background: linear-gradient(90deg, #22d3ee, #8b5cf6, #ec4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .coin-sub {
+      margin: 0;
+      max-width: 710px;
+      color: rgba(238,242,255,.74);
+      font-size: clamp(17px, 1.7vw, 22px);
+      line-height: 1.62;
+      font-weight: 650;
+    }
+
+    .coin-actions {
+      margin-top: 28px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .coin-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 19px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 920;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.065);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .coin-btn.primary {
+      border: 0;
+      background: linear-gradient(135deg, #22d3ee, #8b5cf6, #ec4899);
+      box-shadow: 0 18px 44px rgba(236,72,153,.22);
+    }
+
+    .coin-panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      padding: 22px;
+      background:
+        radial-gradient(540px 280px at 30% 0%, rgba(34,211,238,.20), transparent 62%),
+        radial-gradient(520px 260px at 84% 12%, rgba(236,72,153,.18), transparent 62%),
+        rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 30px 90px rgba(0,0,0,.48);
+      backdrop-filter: blur(18px) saturate(120%);
+      -webkit-backdrop-filter: blur(18px) saturate(120%);
+    }
+
+    .coin-logo-card {
+      min-height: 390px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 28px;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(7,10,20,.34), rgba(7,10,20,.78)),
+        rgba(7,10,20,.48);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .coin-logo-mark {
+      width: 150px;
+      height: 150px;
+      border-radius: 34px;
+      object-fit: cover;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.12),
+        0 0 40px rgba(34,211,238,.20),
+        0 0 54px rgba(236,72,153,.16);
+    }
+
+    .coin-status {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .coin-status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+      color: rgba(255,255,255,.72);
+      font-weight: 750;
+    }
+
+    .coin-status-row strong {
+      color: #fff;
+      text-align: right;
+    }
+
+    .coin-section {
+      margin-top: 34px;
+      padding: 30px;
+      border-radius: 34px;
+      background:
+        radial-gradient(900px 420px at 18% 0%, rgba(139,92,246,.18), transparent 62%),
+        radial-gradient(900px 420px at 86% 8%, rgba(236,72,153,.14), transparent 62%),
+        rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 30px 90px rgba(0,0,0,.42);
+      backdrop-filter: blur(18px) saturate(120%);
+      -webkit-backdrop-filter: blur(18px) saturate(120%);
+    }
+
+    .coin-section-head {
+      display: grid;
+      grid-template-columns: minmax(0, .82fr) minmax(0, 1fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .coin-kicker {
+      color: #f0abfc;
+      font-size: 13px;
+      letter-spacing: .18em;
+      font-weight: 950;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .coin-section h2 {
+      margin: 0;
+      font-size: clamp(34px, 4.5vw, 62px);
+      line-height: .98;
+      letter-spacing: -0.055em;
+      color: #fff;
+    }
+
+    .coin-section-copy {
+      margin: 0;
+      color: rgba(255,255,255,.70);
+      line-height: 1.66;
+      font-size: 16px;
+      font-weight: 650;
+    }
+
+    .coin-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .coin-card {
+      min-height: 150px;
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(7,10,20,.48);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
+    }
+
+    .coin-card-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      color: #67e8f9;
+      font-size: 20px;
+    }
+
+    .coin-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .coin-card p {
+      margin: 0;
+      color: rgba(255,255,255,.64);
+      line-height: 1.52;
+      font-size: 14px;
+      font-weight: 620;
+    }
+
+    .coin-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.10);
+    }
+
+    .coin-metric {
+      padding: 24px;
+      background: rgba(7,10,20,.64);
+    }
+
+    .coin-metric strong {
+      display: block;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .coin-metric span {
+      color: rgba(255,255,255,.66);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .coin-address {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 24px;
+      background: rgba(7,10,20,.58);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.70);
+      line-height: 1.7;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .coin-address code {
+      color: #67e8f9;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+    }
+
+    .coin-warning {
+      margin-top: 24px;
+      padding: 20px 22px;
+      border-radius: 24px;
+      background: rgba(251,191,36,.08);
+      border: 1px solid rgba(251,191,36,.22);
+      color: rgba(255,255,255,.76);
+      line-height: 1.64;
+      font-weight: 680;
+    }
+
+    .coin-footer-actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      .coin-hero,
+      .coin-section-head {
+        grid-template-columns: 1fr;
+      }
+
+      .coin-grid,
+      .coin-metrics {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .coin-logo-card {
+        min-height: 340px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .coin-page {
+        padding-top: 102px;
+      }
+
+      .coin-hero {
+        min-height: auto;
+        padding-top: 10px;
+      }
+
+      .coin-grid,
+      .coin-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .coin-panel,
+      .coin-section {
+        padding: 18px;
+        border-radius: 26px;
+      }
+
+      .coin-logo-card {
+        min-height: 310px;
+        border-radius: 22px;
+      }
+
+      .coin-logo-mark {
+        width: 124px;
+        height: 124px;
+        border-radius: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body class="page-aivo-coin" style="background:#070A14;">
+  <div data-include="topbar"></div>
+
+  <main class="coin-page">
+    <div class="coin-orbit"></div>
+
+    <div class="coin-wrap">
+      <section class="coin-hero">
+        <div>
+          <div class="coin-pill">⚡ Solana üzerinde canlı utility token</div>
+
+          <h1 class="coin-title">
+            AIVO COIN
+            <span>AI üretim ekosistemi.</span>
+          </h1>
+
+          <p class="coin-sub">
+            AIVO COIN, AIVO AI ekosistemi için Solana üzerinde oluşturulmuş dijital utility token’dır.
+            AIVO Studio, topluluk erişimi, ekosistem entegrasyonları ve gelecekteki platform içi kullanım senaryoları
+            için resmi AIVO token sayfasıdır.
+          </p>
+
+          <div class="coin-actions">
+            <a class="coin-btn primary" href="https://dexscreener.com/solana/BKa6HcVBZeDDm3KjBjpNtJPnK9EcyoG1Ejdbeg4XhjWE" target="_blank" rel="noopener">
+              DexScreener’da Gör
+            </a>
+            <a class="coin-btn" href="/studio.v2.html" data-auth="required">
+              AIVO Studio’ya Git
+            </a>
+          </div>
+        </div>
+
+        <aside class="coin-panel" aria-label="AIVO COIN canlı durum">
+          <div class="coin-logo-card">
+            <div>
+              <img class="coin-logo-mark" src="/apple-touch-icon.png" alt="AIVO COIN logosu">
+            </div>
+
+            <div>
+              <div class="coin-kicker">Canlı Durum</div>
+              <div class="coin-status">
+                <div class="coin-status-row">
+                  <span>Network</span>
+                  <strong>Solana</strong>
+                </div>
+                <div class="coin-status-row">
+                  <span>Pair</span>
+                  <strong>AIVO / SOL</strong>
+                </div>
+                <div class="coin-status-row">
+                  <span>DEX</span>
+                  <strong>Raydium</strong>
+                </div>
+                <div class="coin-status-row">
+                  <span>Total Supply</span>
+                  <strong>1,000,000,000 AIVO</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="coin-section">
+        <div class="coin-section-head">
+          <div>
+            <div class="coin-kicker">AIVO COIN nedir?</div>
+            <h2>Yapay zekâ üretimi için dijital ekosistem katmanı.</h2>
+          </div>
+          <p class="coin-section-copy">
+            AIVO COIN, AIVO’nun AI müzik, kapak, video, foto efekt, çizgifilm ve dudak senkron üretim araçlarının
+            etrafında büyüyen dijital ekosistemi desteklemek için oluşturulmuştur. Token; topluluk, erişim,
+            kampanya, ödül ve ileride platform içi entegrasyon senaryoları için konumlandırılmıştır.
+          </p>
+        </div>
+
+        <div class="coin-grid">
+          <article class="coin-card">
+            <div class="coin-card-icon">◎</div>
+            <h3>Solana ağı</h3>
+            <p>Hızlı, düşük maliyetli ve yüksek erişilebilirlik hedefleyen Solana ağı üzerinde oluşturuldu.</p>
+          </article>
+
+          <article class="coin-card">
+            <div class="coin-card-icon">↔</div>
+            <h3>Raydium havuzu</h3>
+            <p>AIVO/SOL likidite havuzu Raydium üzerinde canlıdır ve DexScreener’dan takip edilebilir.</p>
+          </article>
+
+          <article class="coin-card">
+            <div class="coin-card-icon">AI</div>
+            <h3>AIVO ekosistemi</h3>
+            <p>AIVO Studio ve gelecekteki AI üretim özellikleriyle bağlantılı resmi ekosistem tokenıdır.</p>
+          </article>
+
+          <article class="coin-card">
+            <div class="coin-card-icon">◇</div>
+            <h3>Utility odaklı</h3>
+            <p>Token; topluluk, erişim, kampanya ve platform içi dijital kullanım senaryoları için tasarlanmıştır.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="coin-section">
+        <div class="coin-section-head">
+          <div>
+            <div class="coin-kicker">Güven ve şeffaflık</div>
+            <h2>Arz sabit. Yetkiler kapalı. Bilgiler açık.</h2>
+          </div>
+          <p class="coin-section-copy">
+            AIVO COIN için temel güven bilgileri herkesin kontrol edebileceği şekilde açık tutulur.
+            Mint Authority ve Freeze Authority kapatılmıştır. Böylece yeni token basma ve holder hesaplarını
+            dondurma yetkileri devre dışıdır.
+          </p>
+        </div>
+
+        <div class="coin-metrics">
+          <div class="coin-metric">
+            <strong>1B</strong>
+            <span>Toplam AIVO arzı</span>
+          </div>
+          <div class="coin-metric">
+            <strong>Revoked</strong>
+            <span>Mint Authority</span>
+          </div>
+          <div class="coin-metric">
+            <strong>Revoked</strong>
+            <span>Freeze Authority</span>
+          </div>
+          <div class="coin-metric">
+            <strong>Live</strong>
+            <span>AIVO/SOL Raydium pair</span>
+          </div>
+        </div>
+
+        <div class="coin-address">
+          <strong>Pair ID:</strong>
+          <code>BKa6HcVBZeDDm3KjBjpNtJPnK9EcyoG1Ejdbeg4XhjWE</code>
+          <br>
+          <strong>Token:</strong>
+          <code>AIVO / SOL — Solana / Raydium</code>
+        </div>
+
+        <div class="coin-footer-actions">
+          <a class="coin-btn primary" href="https://dexscreener.com/solana/BKa6HcVBZeDDm3KjBjpNtJPnK9EcyoG1Ejdbeg4XhjWE" target="_blank" rel="noopener">
+            Canlı Grafiği Aç
+          </a>
+          <a class="coin-btn" href="https://aivo.tr/" target="_self">
+            AIVO Ana Sayfa
+          </a>
+        </div>
+      </section>
+
+      <section class="coin-section">
+        <div class="coin-section-head">
+          <div>
+            <div class="coin-kicker">Ekosistem kullanım alanları</div>
+            <h2>AIVO büyüdükçe kullanım alanı genişleyecek.</h2>
+          </div>
+          <p class="coin-section-copy">
+            AIVO COIN’in hedefi yalnızca bir token sayfası olmak değil; AIVO’nun ürünleri, topluluğu ve dijital
+            üretim deneyimiyle birlikte büyüyen bir ekosistem katmanı oluşturmaktır.
+          </p>
+        </div>
+
+        <div class="coin-grid">
+          <article class="coin-card">
+            <div class="coin-card-icon">🎬</div>
+            <h3>AI üretim topluluğu</h3>
+            <p>AIVO kullanıcıları, üreticiler ve topluluk üyeleri için ortak dijital ekosistem zemini.</p>
+          </article>
+
+          <article class="coin-card">
+            <div class="coin-card-icon">🎁</div>
+            <h3>Kampanya ve ödüller</h3>
+            <p>Gelecekte kampanya, özel erişim ve topluluk ödülleri için kullanılabilecek yapı.</p>
+          </article>
+
+          <article class="coin-card">
+            <div class="coin-card-icon">🚀</div>
+            <h3>Platform entegrasyonu</h3>
+            <p>AIVO Studio içinde ileride değerlendirilebilecek dijital kullanım ve erişim senaryoları.</p>
+          </article>
+
+          <article class="coin-card">
+            <div class="coin-card-icon">🌐</div>
+            <h3>Ekosistem görünürlüğü</h3>
+            <p>AIVO markasının AI üretim dünyasındaki topluluk ve Web3 görünürlüğünü güçlendiren katman.</p>
+          </article>
+        </div>
+
+        <div class="coin-warning">
+          AIVO COIN bir yatırım tavsiyesi değildir. Kripto varlıklar yüksek risk içerir ve fiyatları hızlı şekilde
+          değişebilir. Bu sayfa, AIVO COIN hakkında resmi ekosistem bilgisi sunmak amacıyla hazırlanmıştır.
+          Her kullanıcı kendi araştırmasını yapmalı ve kendi finansal kararından sorumlu olmalıdır.
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
