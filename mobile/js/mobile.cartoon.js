@@ -967,6 +967,11 @@ function bindMobileCartoonResultActions(){
       return;
     }
 
+     if (act === "report") {
+      openMobileCartoonReportSheet(job);
+      return;
+    }
+
         if (act === "delete") {
       mobileCartoonDeletedIds.add(id);
 
