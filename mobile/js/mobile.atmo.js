@@ -94,11 +94,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
     });
 
     if (!items.length) {
-      resultsEl.className = "empty-card";
-      resultsEl.innerHTML = atmoText(
-        "Henüz mobil atmosfer videosu başlatılmadı.",
-        "No mobile atmosphere video has been started yet."
-      );
+        if (!resultsEl.querySelector('[data-mobile-atmo-job]')) {
+      resultsEl.className = "mobile-atmo-results";
+      resultsEl.innerHTML = "";
+    }
       return;
     }
 
