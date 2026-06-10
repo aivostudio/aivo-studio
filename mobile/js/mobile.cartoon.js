@@ -137,11 +137,17 @@ function renderMobileCartoonResults(){
                 : `<div class="mobile-cartoon-video-loading"><span>${cartoonText("Hazırlanıyor…", "Preparing…")}</span></div>`
           }
 
-          <div class="mobile-cartoon-video-actions">
+            <div class="mobile-cartoon-video-actions">
             <button type="button" data-mobile-cartoon-act="download" ${ready ? "" : "disabled"}>⬇</button>
             <button type="button" data-mobile-cartoon-act="share" ${ready ? "" : "disabled"}>↗</button>
             <button type="button" data-mobile-cartoon-act="sound" ${ready ? "" : "disabled"}>🔇</button>
             <button type="button" data-mobile-cartoon-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+            <button
+              type="button"
+              data-mobile-cartoon-act="report"
+              aria-label="${cartoonText("İçeriği bildir", "Report content")}"
+              title="${cartoonText("İçeriği bildir", "Report content")}"
+            >⚑</button>
             <button type="button" data-mobile-cartoon-act="delete">🗑</button>
           </div>
 
