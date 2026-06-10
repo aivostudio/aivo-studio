@@ -1,9 +1,13 @@
 package tr.aivo.app;
 
 import android.app.DownloadManager;
+import android.content.ContentValues;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
@@ -21,6 +25,9 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
 import com.getcapacitor.BridgeActivity;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,9 +69,41 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
 
 
-        getBridge().getWebView().setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+      getBridge().getWebView().addJavascriptInterface(
+      new AivoAndroidDownloadBridge(),
+      "AivoAndroidDownload"
+    );
+
+    getBridge().getWebView().setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
       try {
         String downloadUrl = String.valueOf(url);
+        String fileName = guessAivoDownloadFileName(downloadUrl, contentDisposition, mimetype);
+
+        if (downloadUrl.startsWith("blob:")) {
+          String js =
+            "(function(){" +
+            "var blobUrl=" + jsString(downloadUrl) + ";" +
+            "var fileName=" + jsString(fileName) + ";" +
+            "var fallbackMime=" + jsString(mimetype) + ";" +
+            "fetch(blobUrl).then(function(response){" +
+            "return response.blob();" +
+            "}).then(function(blob){" +
+            "var reader=new FileReader();" +
+            "reader.onloadend=function(){" +
+            "var result=String(reader.result||'');" +
+            "var base64=result.indexOf(',')>=0?result.split(',')[1]:result;" +
+            "window.AivoAndroidDownload.saveBase64File(base64,fileName,blob.type||fallbackMime||'application/octet-stream');" +
+            "};" +
+            "reader.readAsDataURL(blob);" +
+            "}).catch(function(error){" +
+            "window.AivoAndroidDownload.downloadFailed(String(error));" +
+            "});" +
+            "})();";
+
+          getBridge().getWebView().evaluateJavascript(js, null);
+          Toast.makeText(this, "İndirme hazırlanıyor", Toast.LENGTH_SHORT).show();
+          return;
+        }
 
         if (downloadUrl.startsWith("https://localhost/api/media/proxy")) {
           downloadUrl = downloadUrl.replace(
@@ -80,22 +119,15 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
           request.addRequestHeader("Cookie", cookies);
         }
 
-        request.addRequestHeader("User-Agent", userAgent);
-        request.setMimeType(mimetype);
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-              String lowerUrl = downloadUrl.toLowerCase();
-        String lowerType = String.valueOf(mimetype).toLowerCase();
+        if (userAgent != null) {
+          request.addRequestHeader("User-Agent", userAgent);
+        }
 
-             String fileName =
-          lowerUrl.contains("/music/") ||
-          lowerUrl.contains("music") ||
-          lowerType.contains("audio")
-            ? "aivo-music-" + System.currentTimeMillis() + ".mp3"
-            : lowerUrl.contains("/cover/") ||
-              lowerUrl.contains("cover") ||
-              lowerType.contains("image")
-                ? "aivo-cover-" + System.currentTimeMillis() + ".png"
-                : "aivo-video-" + System.currentTimeMillis() + ".mp4";
+        if (mimetype != null && !mimetype.trim().isEmpty()) {
+          request.setMimeType(mimetype);
+        }
+
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
         request.setDestinationInExternalPublicDir(
           Environment.DIRECTORY_DOWNLOADS,
@@ -105,7 +137,7 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
         DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
         downloadManager.enqueue(request);
 
-        Toast.makeText(this, "Video indirme başladı", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "İndirme başladı", Toast.LENGTH_SHORT).show();
       } catch (Exception error) {
         Toast.makeText(this, "İndirme başlatılamadı", Toast.LENGTH_SHORT).show();
       }
@@ -397,6 +429,127 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
         .getWebView()
         .evaluateJavascript(js, null);
     });
+  }
+    private String guessAivoDownloadFileName(String downloadUrl, String contentDisposition, String mimetype) {
+    String lowerUrl = String.valueOf(downloadUrl).toLowerCase();
+    String lowerType = String.valueOf(mimetype).toLowerCase();
+
+    String guessed = URLUtil.guessFileName(downloadUrl, contentDisposition, mimetype);
+
+    if (
+      guessed != null &&
+      !guessed.trim().isEmpty() &&
+      !guessed.toLowerCase().endsWith(".bin")
+    ) {
+      return guessed;
+    }
+
+    if (
+      lowerUrl.contains("/music/") ||
+      lowerUrl.contains("music") ||
+      lowerType.contains("audio")
+    ) {
+      if (lowerType.contains("wav")) {
+        return "aivo-music-" + System.currentTimeMillis() + ".wav";
+      }
+
+      return "aivo-music-" + System.currentTimeMillis() + ".mp3";
+    }
+
+    if (
+      lowerUrl.contains("/cover/") ||
+      lowerUrl.contains("cover") ||
+      lowerType.contains("image")
+    ) {
+      return "aivo-cover-" + System.currentTimeMillis() + ".png";
+    }
+
+    return "aivo-video-" + System.currentTimeMillis() + ".mp4";
+  }
+
+  public class AivoAndroidDownloadBridge {
+
+    @JavascriptInterface
+    public void saveBase64File(String base64Data, String fileName, String mimeType) {
+      try {
+        String cleanBase64 = String.valueOf(base64Data);
+
+        if (cleanBase64.contains(",")) {
+          cleanBase64 = cleanBase64.substring(cleanBase64.indexOf(",") + 1);
+        }
+
+        byte[] bytes = Base64.decode(cleanBase64, Base64.DEFAULT);
+        String safeFileName = String.valueOf(fileName).trim();
+
+        if (safeFileName.isEmpty()) {
+          safeFileName = "aivo-download-" + System.currentTimeMillis();
+        }
+
+        String safeMimeType = String.valueOf(mimeType).trim();
+
+        if (safeMimeType.isEmpty() || "null".equals(safeMimeType)) {
+          safeMimeType = "application/octet-stream";
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          ContentValues values = new ContentValues();
+          values.put(MediaStore.Downloads.DISPLAY_NAME, safeFileName);
+          values.put(MediaStore.Downloads.MIME_TYPE, safeMimeType);
+          values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+          values.put(MediaStore.Downloads.IS_PENDING, 1);
+
+          Uri uri = getContentResolver().insert(
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            values
+          );
+
+          if (uri == null) {
+            throw new Exception("download_uri_create_failed");
+          }
+
+          OutputStream outputStream = getContentResolver().openOutputStream(uri);
+
+          if (outputStream == null) {
+            throw new Exception("download_output_stream_failed");
+          }
+
+          outputStream.write(bytes);
+          outputStream.flush();
+          outputStream.close();
+
+          values.clear();
+          values.put(MediaStore.Downloads.IS_PENDING, 0);
+          getContentResolver().update(uri, values, null, null);
+        } else {
+          File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+          if (!downloadsDir.exists()) {
+            downloadsDir.mkdirs();
+          }
+
+          File outputFile = new File(downloadsDir, safeFileName);
+          FileOutputStream outputStream = new FileOutputStream(outputFile);
+          outputStream.write(bytes);
+          outputStream.flush();
+          outputStream.close();
+        }
+
+        runOnUiThread(() -> {
+          Toast.makeText(MainActivity.this, "İndirme tamamlandı", Toast.LENGTH_SHORT).show();
+        });
+      } catch (Exception error) {
+        runOnUiThread(() -> {
+          Toast.makeText(MainActivity.this, "İndirme kaydedilemedi", Toast.LENGTH_SHORT).show();
+        });
+      }
+    }
+
+    @JavascriptInterface
+    public void downloadFailed(String message) {
+      runOnUiThread(() -> {
+        Toast.makeText(MainActivity.this, "İndirme başlatılamadı", Toast.LENGTH_SHORT).show();
+      });
+    }
   }
 
   public class AivoPlayBillingBridge {
