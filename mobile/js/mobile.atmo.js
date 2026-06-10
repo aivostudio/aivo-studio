@@ -33,158 +33,52 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
-  function safeAtmoUrl(value){
-    return String(value == null ? "" : value).trim();
-  }
-
-  function normalizeAtmoProxyUrl(value){
-    const original = safeAtmoUrl(value);
-    if (!original) return "";
-
-    if (
-      !original.startsWith("/api/media/proxy?") &&
-      !original.includes("/api/media/proxy?")
-    ) {
-      return original;
-    }
-
-    try {
-      const marker = "/api/media/proxy?";
-      const query = original.includes(marker)
-        ? original.split(marker)[1] || ""
-        : original.split("?")[1] || "";
-
-      const params = new URLSearchParams(query);
-      const rawUrl = safeAtmoUrl(params.get("url"));
-
-      if (
-        rawUrl &&
-        (
-          rawUrl.startsWith("http://") ||
-          rawUrl.startsWith("https://")
-        )
-      ) {
-        return rawUrl;
-      }
-    } catch (err) {}
-
-    return original;
-  }
-
-  function isAtmoVideoOutput(output){
-    const type = safeAtmoUrl(
-      output?.type ||
-      output?.kind ||
-      output?.meta?.type ||
-      output?.meta?.kind
-    ).toLowerCase();
-
-    if (type && type !== "video") return false;
-
-    const app = safeAtmoUrl(
-      output?.meta?.app ||
-      output?.meta?.module ||
-      output?.meta?.routeKey
-    ).toLowerCase();
-
-    if (app && !app.includes("atmo")) return false;
-
-    return true;
-  }
-
-  function pickAtmoOutputUrl(output){
-    return safeAtmoUrl(
-      output?.archive_url ||
-      output?.archiveUrl ||
-      output?.url ||
-      output?.video_url ||
-      output?.videoUrl ||
-      output?.raw_url ||
-      output?.rawUrl ||
-      output?.final_video_url ||
-      output?.finalVideoUrl ||
-      output?.src ||
-      output?.meta?.archive_url ||
-      output?.meta?.archiveUrl ||
-      output?.meta?.url ||
-      output?.meta?.video_url ||
-      output?.meta?.videoUrl ||
-      output?.meta?.raw_url ||
-      output?.meta?.rawUrl ||
-      output?.meta?.final_video_url ||
-      output?.meta?.finalVideoUrl ||
-      output?.meta?.src ||
-      ""
-    );
-  }
-
-  function pickAtmoVideoUrl(data){
-    const outputs = Array.isArray(data?.outputs)
-      ? data.outputs.filter(isAtmoVideoOutput)
-      : [];
-
-    const directFinal = safeAtmoUrl(
-      data.video_url ||
-      data.videoUrl ||
-      data.final_url ||
-      data.finalUrl ||
-      data.final_video_url ||
-      data.finalVideoUrl ||
-      data.url ||
-      data.video?.url ||
-      data.output?.video?.url ||
-      data.meta?.final_video_url ||
-      data.meta?.finalVideoUrl ||
-      data.meta?.final_url ||
-      data.meta?.finalUrl ||
-      data.meta?.video_url ||
-      data.meta?.videoUrl ||
-      ""
-    );
-
-    if (directFinal) {
-      return normalizeAtmoProxyUrl(directFinal);
-    }
-
-    const finalizedOutput = outputs.find(function(output){
-      const variant = safeAtmoUrl(output?.meta?.variant).toLowerCase();
-
-      return (
-        variant === "finalized" ||
-        variant === "final" ||
-        output?.meta?.is_final === true
+   function pickPosterUrl(data){
+    const outputs = Array.isArray(data?.outputs) ? data.outputs : [];
+    const firstPosterOutput = outputs.find(function(output){
+      return output && (
+        output.poster_url ||
+        output.posterUrl ||
+        output.thumbnail_url ||
+        output.thumbnailUrl ||
+        output.thumb_url ||
+        output.thumbUrl ||
+        output.meta?.poster_url ||
+        output.meta?.posterUrl ||
+        output.meta?.thumbnail_url ||
+        output.meta?.thumbnailUrl ||
+        output.meta?.thumb_url ||
+        output.meta?.thumbUrl
       );
     });
 
-    const finalizedUrl = pickAtmoOutputUrl(finalizedOutput);
-    if (finalizedUrl) {
-      return normalizeAtmoProxyUrl(finalizedUrl);
-    }
-
-    const providerOutput = outputs.find(function(output){
-      return safeAtmoUrl(output?.meta?.variant).toLowerCase() === "provider";
-    });
-
-    const providerUrl = pickAtmoOutputUrl(providerOutput);
-    if (providerUrl) {
-      return normalizeAtmoProxyUrl(providerUrl);
-    }
-
-    const previewOutput = outputs.find(function(output){
-      return safeAtmoUrl(output?.meta?.variant).toLowerCase() === "preview";
-    });
-
-    const previewUrl = pickAtmoOutputUrl(previewOutput);
-    if (previewUrl) {
-      return normalizeAtmoProxyUrl(previewUrl);
-    }
-
-    const firstOutputUrl = pickAtmoOutputUrl(outputs[0]);
-    if (firstOutputUrl) {
-      return normalizeAtmoProxyUrl(firstOutputUrl);
-    }
-
-    return "";
+    return String(
+      data.poster_url ||
+      data.posterUrl ||
+      data.thumbnail_url ||
+      data.thumbnailUrl ||
+      data.thumb_url ||
+      data.thumbUrl ||
+      data.meta?.poster_url ||
+      data.meta?.posterUrl ||
+      data.meta?.thumbnail_url ||
+      data.meta?.thumbnailUrl ||
+      data.meta?.thumb_url ||
+      data.meta?.thumbUrl ||
+      firstPosterOutput?.poster_url ||
+      firstPosterOutput?.posterUrl ||
+      firstPosterOutput?.thumbnail_url ||
+      firstPosterOutput?.thumbnailUrl ||
+      firstPosterOutput?.thumb_url ||
+      firstPosterOutput?.thumbUrl ||
+      firstPosterOutput?.meta?.poster_url ||
+      firstPosterOutput?.meta?.posterUrl ||
+      firstPosterOutput?.meta?.thumbnail_url ||
+      firstPosterOutput?.meta?.thumbnailUrl ||
+      firstPosterOutput?.meta?.thumb_url ||
+      firstPosterOutput?.meta?.thumbUrl ||
+      ""
+    ).trim();
   }
    function renderMobileAtmoResults(){
     if (!resultsEl) return;
@@ -269,7 +163,15 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
         ""
       ).toLowerCase();
 
-         const videoUrl = pickAtmoVideoUrl(data);
+      const videoUrl = String(
+        data.video_url ||
+        data.final_url ||
+        data.url ||
+        data.video?.url ||
+        data.output?.video?.url ||
+        data.outputs?.[0]?.url ||
+        ""
+      ).trim();
 
       const job = mobileAtmoJobs.find(function(item){
         return item.id === jobId;
@@ -612,7 +514,23 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           );
         });
 
-            const videoUrl = pickAtmoVideoUrl(row);
+        const videoUrl = String(
+          row.video_url ||
+          row.videoUrl ||
+          row.final_url ||
+          row.output_url ||
+          row.url ||
+          row.meta?.video_url ||
+          row.meta?.videoUrl ||
+          row.meta?.final_url ||
+          row.outputs?.video_url ||
+          row.outputs?.videoUrl ||
+          firstVideoOutput?.url ||
+          firstVideoOutput?.video_url ||
+          firstVideoOutput?.videoUrl ||
+          firstVideoOutput?.src ||
+          ""
+        ).trim();
 
         const jobId = String(row.id || row.job_id || row.jobId || "").trim();
 
