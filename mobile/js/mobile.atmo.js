@@ -104,43 +104,156 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
 
     resultsEl.className = "mobile-atmo-results";
 
-     resultsEl.innerHTML = items.map(function(job){
+    window.__MOBILE_ATMO_CARD_CACHE__ = window.__MOBILE_ATMO_CARD_CACHE__ || new Map();
+
+    Array.from(resultsEl.children).forEach(function(child){
+      if (!child || !child.getAttribute || !child.getAttribute("data-mobile-atmo-job")) {
+        child.remove();
+      }
+    });
+
+    items.forEach(function(job){
+      const jobId = String(job.id || "").trim();
+      if (!jobId) return;
+
       const ready = !!job.videoUrl;
       const failed = String(job.status || "").toLowerCase() === "error";
-      const posterAttr = job.posterUrl
-        ? ` poster="${esc(job.posterUrl)}"`
-        : "";
 
-      return `
-        <article class="mobile-atmo-video-card ${failed ? "is-error" : ""}" data-mobile-atmo-job="${esc(job.id)}">
+      let card = window.__MOBILE_ATMO_CARD_CACHE__.get(jobId);
+
+      if (!card || !card.isConnected) {
+        card = document.createElement("article");
+        card.className = "mobile-atmo-video-card";
+        card.setAttribute("data-mobile-atmo-job", jobId);
+
+        card.innerHTML = `
           <div class="mobile-atmo-video-media">
-            ${
-              ready
-                 ? `<video class="mobile-atmo-video" src="${esc(job.videoUrl)}"${posterAttr} playsinline webkit-playsinline preload="metadata"></video>`
-                : failed
-                  ? `<div class="mobile-atmo-video-loading"><span>${atmoText("Video çıktısı alınamadı", "Video output could not be received")}</span></div>`
-                  : `<div class="mobile-atmo-video-loading"><span>${atmoText("Hazırlanıyor…", "Preparing…")}</span></div>`
-            }
+            <div class="mobile-atmo-video-loading"><span></span></div>
 
             <div class="mobile-atmo-video-actions">
-              <button type="button" data-mobile-atmo-act="download" ${ready ? "" : "disabled"}>⬇</button>
-              <button type="button" data-mobile-atmo-act="share" ${ready ? "" : "disabled"}>↗</button>
-              <button type="button" data-mobile-atmo-act="sound" ${ready ? "" : "disabled"}>🔇</button>
-              <button type="button" data-mobile-atmo-act="fullscreen" ${ready ? "" : "disabled"}>⛶</button>
+              <button type="button" data-mobile-atmo-act="download" disabled>⬇</button>
+              <button type="button" data-mobile-atmo-act="share" disabled>↗</button>
+              <button type="button" data-mobile-atmo-act="sound" disabled>🔇</button>
+              <button type="button" data-mobile-atmo-act="fullscreen" disabled>⛶</button>
               <button type="button" data-mobile-atmo-act="delete">🗑</button>
             </div>
 
-            ${
-              ready
-                ? `<button class="mobile-atmo-video-play" type="button" data-mobile-atmo-act="play">▶</button>`
-                : ``
-            }
+            <button class="mobile-atmo-video-play" type="button" data-mobile-atmo-act="play" hidden>▶</button>
           </div>
 
-          <div class="mobile-atmo-video-title">${esc(job.title || atmoText("Atmosfer video", "Atmosphere video"))}</div>
-        </article>
-      `;
-    }).join("");
+          <div class="mobile-atmo-video-title"></div>
+        `;
+
+        window.__MOBILE_ATMO_CARD_CACHE__.set(jobId, card);
+      }
+
+      card.classList.toggle("is-error", failed);
+      card.setAttribute("data-mobile-atmo-job", jobId);
+
+      const media = card.querySelector(".mobile-atmo-video-media");
+      const loading = card.querySelector(".mobile-atmo-video-loading");
+      const loadingText = loading ? loading.querySelector("span") : null;
+      const playBtn = card.querySelector('[data-mobile-atmo-act="play"]');
+      const titleEl = card.querySelector(".mobile-atmo-video-title");
+
+      const downloadBtn = card.querySelector('[data-mobile-atmo-act="download"]');
+      const shareBtn = card.querySelector('[data-mobile-atmo-act="share"]');
+      const soundBtn = card.querySelector('[data-mobile-atmo-act="sound"]');
+      const fullscreenBtn = card.querySelector('[data-mobile-atmo-act="fullscreen"]');
+
+      if (titleEl) {
+        titleEl.textContent = job.title || atmoText("Atmosfer video", "Atmosphere video");
+      }
+
+      if (ready && media) {
+        let video = card.querySelector("video.mobile-atmo-video");
+
+        if (!video) {
+          video = document.createElement("video");
+          video.className = "mobile-atmo-video";
+          video.setAttribute("playsinline", "");
+          video.setAttribute("webkit-playsinline", "");
+          video.setAttribute("preload", "metadata");
+
+          if (loading) {
+            media.insertBefore(video, loading);
+          } else {
+            media.insertBefore(video, media.firstChild);
+          }
+        }
+
+        const nextUrl = String(job.videoUrl || "").trim();
+        const prevUrl = String(video.getAttribute("data-src") || "").trim();
+        const currentUrl = String(video.currentSrc || video.src || "").trim();
+
+        if (nextUrl && prevUrl !== nextUrl && currentUrl !== nextUrl) {
+          video.setAttribute("data-src", nextUrl);
+          video.src = nextUrl;
+        }
+
+        if (job.posterUrl) {
+          video.setAttribute("poster", job.posterUrl);
+        } else {
+          video.removeAttribute("poster");
+        }
+
+        video.style.display = "";
+
+        if (loading) {
+          loading.style.display = "none";
+        }
+
+        if (playBtn) {
+          playBtn.hidden = false;
+        }
+
+        [downloadBtn, shareBtn, soundBtn, fullscreenBtn].forEach(function(btn){
+          if (btn) btn.removeAttribute("disabled");
+        });
+      } else {
+        const video = card.querySelector("video.mobile-atmo-video");
+
+        if (video) {
+          try {
+            video.pause();
+          } catch (err) {}
+
+          video.style.display = "none";
+        }
+
+        if (loading) {
+          loading.style.display = "";
+        }
+
+        if (loadingText) {
+          loadingText.textContent = failed
+            ? atmoText("Video çıktısı alınamadı", "Video output could not be received")
+            : atmoText("Hazırlanıyor…", "Preparing…");
+        }
+
+        if (playBtn) {
+          playBtn.hidden = true;
+        }
+
+        [downloadBtn, shareBtn, soundBtn, fullscreenBtn].forEach(function(btn){
+          if (btn) btn.setAttribute("disabled", "");
+        });
+      }
+
+      resultsEl.appendChild(card);
+    });
+
+    const wantedIds = new Set(items.map(function(job){
+      return String(job.id || "").trim();
+    }));
+
+    Array.from(resultsEl.children).forEach(function(child){
+      const childId = child.getAttribute && child.getAttribute("data-mobile-atmo-job");
+
+      if (childId && !wantedIds.has(childId)) {
+        child.remove();
+      }
+    });
   }
   function pollMobileAtmoJob(jobId){
     if (!jobId) return;
