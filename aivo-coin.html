@@ -350,7 +350,25 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.07);
     }
 
-     .coin-card-icon::before {
+    .coin-card-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.10);
+      color: #67e8f9;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .coin-card-icon[class*="coin-icon-"] {
+      font-size: 0;
+    }
+
+    .coin-card-icon[class*="coin-icon-"]::before {
       content: "";
       width: 22px;
       height: 22px;
@@ -383,7 +401,6 @@
       -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
       mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M2 12h20'/%3E%3Cpath d='M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'/%3E%3C/svg%3E");
     }
-
     .coin-card h3 {
       margin: 0 0 8px;
       font-size: 18px;
@@ -684,25 +701,25 @@
 
         <div class="coin-grid">
           <article class="coin-card">
-            <div class="coin-card-icon">🎬</div>
+          <div class="coin-card-icon coin-icon-community" aria-hidden="true"></div>
             <h3>AI üretim topluluğu</h3>
             <p>AIVO kullanıcıları, üreticiler ve topluluk üyeleri için ortak dijital ekosistem zemini.</p>
           </article>
 
           <article class="coin-card">
-            <div class="coin-card-icon">🎁</div>
+          <div class="coin-card-icon coin-icon-rewards" aria-hidden="true"></div>
             <h3>Kampanya ve ödüller</h3>
             <p>Gelecekte kampanya, özel erişim ve topluluk ödülleri için kullanılabilecek yapı.</p>
           </article>
 
           <article class="coin-card">
-            <div class="coin-card-icon">🚀</div>
+           <div class="coin-card-icon coin-icon-platform" aria-hidden="true"></div>
             <h3>Platform entegrasyonu</h3>
             <p>AIVO Studio içinde ileride değerlendirilebilecek dijital kullanım ve erişim senaryoları.</p>
           </article>
 
           <article class="coin-card">
-            <div class="coin-card-icon">🌐</div>
+          <div class="coin-card-icon coin-icon-visibility" aria-hidden="true"></div>
             <h3>Ekosistem görünürlüğü</h3>
             <p>AIVO markasının AI üretim dünyasındaki topluluk ve Web3 görünürlüğünü güçlendiren katman.</p>
           </article>
