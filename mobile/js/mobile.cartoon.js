@@ -158,18 +158,158 @@ function renderMobileCartoonResults(){
   }).join("");
 }
 
+function safeCartoonUrl(value){
+  return String(value == null ? "" : value).trim();
+}
+
+function normalizeCartoonProxyUrl(value){
+  const original = safeCartoonUrl(value);
+  if (!original) return "";
+
+  if (
+    !original.startsWith("/api/media/proxy?") &&
+    !original.includes("/api/media/proxy?")
+  ) {
+    return original;
+  }
+
+  try {
+    const marker = "/api/media/proxy?";
+    const query = original.includes(marker)
+      ? original.split(marker)[1] || ""
+      : original.split("?")[1] || "";
+
+    const params = new URLSearchParams(query);
+    const rawUrl = safeCartoonUrl(params.get("url"));
+
+    if (
+      rawUrl &&
+      (
+        rawUrl.startsWith("http://") ||
+        rawUrl.startsWith("https://")
+      )
+    ) {
+      return rawUrl;
+    }
+  } catch (err) {}
+
+  return original;
+}
+
+function isCartoonVideoOutput(output){
+  const type = safeCartoonUrl(
+    output?.type ||
+    output?.kind ||
+    output?.meta?.type ||
+    output?.meta?.kind
+  ).toLowerCase();
+
+  if (type && type !== "video") return false;
+
+  const app = safeCartoonUrl(
+    output?.meta?.app ||
+    output?.meta?.module ||
+    output?.meta?.routeKey
+  ).toLowerCase();
+
+  if (app && !app.includes("cartoon")) return false;
+
+  return true;
+}
+
+function pickCartoonOutputUrl(output){
+  return safeCartoonUrl(
+    output?.archive_url ||
+    output?.archiveUrl ||
+    output?.url ||
+    output?.video_url ||
+    output?.videoUrl ||
+    output?.raw_url ||
+    output?.rawUrl ||
+    output?.final_video_url ||
+    output?.finalVideoUrl ||
+    output?.src ||
+    output?.meta?.archive_url ||
+    output?.meta?.archiveUrl ||
+    output?.meta?.url ||
+    output?.meta?.video_url ||
+    output?.meta?.videoUrl ||
+    output?.meta?.raw_url ||
+    output?.meta?.rawUrl ||
+    output?.meta?.final_video_url ||
+    output?.meta?.finalVideoUrl ||
+    output?.meta?.src ||
+    ""
+  );
+}
+
 function pickCartoonVideoUrl(data){
-  return String(
+  const outputs = Array.isArray(data?.outputs)
+    ? data.outputs.filter(isCartoonVideoOutput)
+    : [];
+
+  const directFinal = safeCartoonUrl(
     data.video_url ||
+    data.videoUrl ||
     data.final_url ||
+    data.finalUrl ||
+    data.final_video_url ||
+    data.finalVideoUrl ||
     data.url ||
     data.video?.url ||
     data.output?.video?.url ||
     data.meta?.final_video_url ||
-    data.meta?.preview_video_url ||
-    data.outputs?.[0]?.url ||
+    data.meta?.finalVideoUrl ||
+    data.meta?.final_url ||
+    data.meta?.finalUrl ||
+    data.meta?.video_url ||
+    data.meta?.videoUrl ||
     ""
-  ).trim();
+  );
+
+  if (directFinal) {
+    return normalizeCartoonProxyUrl(directFinal);
+  }
+
+  const finalizedOutput = outputs.find(function(output){
+    const variant = safeCartoonUrl(output?.meta?.variant).toLowerCase();
+
+    return (
+      variant === "finalized" ||
+      variant === "final" ||
+      output?.meta?.is_final === true
+    );
+  });
+
+  const finalizedUrl = pickCartoonOutputUrl(finalizedOutput);
+  if (finalizedUrl) {
+    return normalizeCartoonProxyUrl(finalizedUrl);
+  }
+
+  const providerOutput = outputs.find(function(output){
+    return safeCartoonUrl(output?.meta?.variant).toLowerCase() === "provider";
+  });
+
+  const providerUrl = pickCartoonOutputUrl(providerOutput);
+  if (providerUrl) {
+    return normalizeCartoonProxyUrl(providerUrl);
+  }
+
+  const previewOutput = outputs.find(function(output){
+    return safeCartoonUrl(output?.meta?.variant).toLowerCase() === "preview";
+  });
+
+  const previewUrl = pickCartoonOutputUrl(previewOutput);
+  if (previewUrl) {
+    return normalizeCartoonProxyUrl(previewUrl);
+  }
+
+  const firstOutputUrl = pickCartoonOutputUrl(outputs[0]);
+  if (firstOutputUrl) {
+    return normalizeCartoonProxyUrl(firstOutputUrl);
+  }
+
+  return "";
 }
 function pickCartoonImageUrl(data){
   return String(
