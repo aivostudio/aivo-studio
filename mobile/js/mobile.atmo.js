@@ -398,6 +398,159 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
       }, 4000);
     });
   }
+    function openMobileAtmoReportSheet(job){
+    if (!job) return;
+
+    const oldSheet = document.getElementById("aivoMobileAtmoReportSheet");
+    if (oldSheet) {
+      oldSheet.remove();
+    }
+
+    const reportTitle = atmoText("İçeriği bildir", "Report content");
+    const reportSub = atmoText(
+      "Bu içerikle ilgili sorunu seç.",
+      "Select the issue related to this content."
+    );
+    const detailsLabel = atmoText("Açıklama", "Details");
+    const detailsPlaceholder = atmoText(
+      "İstersen kısa bir açıklama yaz...",
+      "Optionally write a short description..."
+    );
+    const cancelText = atmoText("Vazgeç", "Cancel");
+    const submitText = atmoText("Raporu gönder", "Submit report");
+
+    const reasons = [
+      atmoText("Rahatsız edici / saldırgan içerik", "Offensive or disturbing content"),
+      atmoText("Nefret / taciz / ayrımcılık", "Hate, harassment or discrimination"),
+      atmoText("Şiddet / tehlikeli içerik", "Violence or dangerous content"),
+      atmoText("Cinsel / uygunsuz içerik", "Sexual or inappropriate content"),
+      atmoText("Telif / marka ihlali", "Copyright or trademark issue"),
+      atmoText("Yanlış / aldatıcı içerik", "Misleading or deceptive content"),
+      atmoText("Diğer", "Other")
+    ];
+
+    const sheet = document.createElement("div");
+    sheet.id = "aivoMobileAtmoReportSheet";
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-modal", "true");
+    sheet.setAttribute("aria-label", reportTitle);
+    sheet.innerHTML = `
+      <div data-mobile-atmo-report-backdrop style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.54);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);"></div>
+      <div style="position:fixed;left:14px;right:14px;bottom:86px;z-index:9999;border-radius:28px;padding:18px;background:linear-gradient(135deg,rgba(24,26,42,.98),rgba(18,20,34,.98));border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.12);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;">
+          <div>
+            <div style="color:#fff;font-size:20px;font-weight:950;letter-spacing:-.035em;">${esc(reportTitle)}</div>
+            <div style="margin-top:5px;color:rgba(255,255,255,.62);font-size:13px;font-weight:800;line-height:1.35;">${esc(reportSub)}</div>
+          </div>
+          <button type="button" data-mobile-atmo-report-close style="width:38px;height:38px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font-size:22px;font-weight:900;">×</button>
+        </div>
+
+        <div style="display:grid;gap:8px;margin-bottom:14px;">
+          ${reasons.map(function(reason, index){
+            return `
+              <label style="display:flex;align-items:center;gap:10px;min-height:42px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.10);color:rgba(255,255,255,.90);font-size:13px;font-weight:850;">
+                <input type="radio" name="mobileAtmoReportReason" value="${esc(reason)}" ${index === 0 ? "checked" : ""} style="width:18px;height:18px;accent-color:#ec4899;">
+                <span>${esc(reason)}</span>
+              </label>
+            `;
+          }).join("")}
+        </div>
+
+        <label style="display:block;margin-bottom:14px;">
+          <span style="display:block;margin-bottom:7px;color:rgba(255,255,255,.76);font-size:12px;font-weight:950;">${esc(detailsLabel)}</span>
+          <textarea data-mobile-atmo-report-details maxlength="500" placeholder="${esc(detailsPlaceholder)}" style="width:100%;min-height:78px;resize:none;border-radius:16px;padding:12px;border:1px solid rgba(255,255,255,.12);outline:none;background:rgba(0,0,0,.24);color:#fff;font-size:13px;font-weight:750;"></textarea>
+        </label>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button type="button" data-mobile-atmo-report-close style="min-height:46px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:rgba(255,255,255,.86);font-size:14px;font-weight:950;">${esc(cancelText)}</button>
+          <button type="button" data-mobile-atmo-report-submit style="min-height:46px;border-radius:16px;border:0;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;font-size:14px;font-weight:950;box-shadow:0 0 24px rgba(236,72,153,.28);">${esc(submitText)}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(sheet);
+
+    function closeSheet(){
+      sheet.remove();
+    }
+
+    sheet.querySelectorAll("[data-mobile-atmo-report-close], [data-mobile-atmo-report-backdrop]").forEach(function(el){
+      el.addEventListener("click", closeSheet);
+    });
+
+    const submitBtn = sheet.querySelector("[data-mobile-atmo-report-submit]");
+    if (submitBtn) {
+      submitBtn.addEventListener("click", async function(){
+        const checkedReason = sheet.querySelector('input[name="mobileAtmoReportReason"]:checked');
+        const detailsEl = sheet.querySelector("[data-mobile-atmo-report-details]");
+
+        const payload = {
+          app: "atmo",
+          job_id: job.id || "",
+          content_url: job.videoUrl || "",
+          reason: checkedReason ? checkedReason.value : "",
+          details: detailsEl ? safeText(detailsEl.value) : "",
+          source: "mobile_app",
+          meta: {
+            module: "mobile.atmo",
+            platform: "mobile",
+            title: job.title || ""
+          }
+        };
+
+        if (!payload.reason) {
+          mobileAtmoToast("warning", atmoText(
+            "Lütfen bir rapor nedeni seç.",
+            "Please select a report reason."
+          ));
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = atmoText("Gönderiliyor...", "Sending...");
+
+        try {
+          const res = await fetch("/api/reports/create", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              "accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json().catch(function(){
+            return null;
+          });
+
+          if (!res.ok || !data || !data.ok) {
+            throw new Error(data && data.error ? data.error : "report_failed");
+          }
+
+          closeSheet();
+
+          const message = atmoText(
+            "Rapor alındı.",
+            "Report received."
+          );
+
+          setStatus(message);
+          mobileAtmoToast("success", message);
+        } catch (err) {
+          console.error("[MOBILE ATMO][REPORT ERROR]", err);
+
+          submitBtn.disabled = false;
+          submitBtn.textContent = atmoText("Raporu gönder", "Submit report");
+
+          mobileAtmoToast("error", atmoText(
+            "Rapor gönderilemedi. Lütfen tekrar dene.",
+            "Report could not be sent. Please try again."
+          ));
+        }
+      });
+    }
+  }
    function bindMobileAtmoResultActions(){
     if (!resultsEl || resultsEl.__mobileAtmoActionsBound) return;
     resultsEl.__mobileAtmoActionsBound = true;
@@ -573,6 +726,11 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
           navigator.clipboard.writeText(job.videoUrl).catch(function(){});
         }
 
+        return;
+      }
+
+        if (act === "report") {
+        openMobileAtmoReportSheet(job);
         return;
       }
 
