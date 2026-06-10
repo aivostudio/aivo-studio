@@ -1237,7 +1237,7 @@ if (shareBtn) {
         `;
 
         sheet.querySelectorAll(".mobile-channel-btn[data-stem-key]").forEach(function(btn){
-          btn.addEventListener("click", function(ev){
+            btn.addEventListener("click", async function(ev){
             ev.preventDefault();
             ev.stopPropagation();
 
