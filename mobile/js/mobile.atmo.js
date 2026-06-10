@@ -584,11 +584,10 @@ const proRatioEl = root.querySelector("#mobileAtmoProRatio");
   async function hydrateMobileAtmoLibrary(){
     if (!resultsEl) return;
 
-    resultsEl.className = "empty-card";
-    resultsEl.innerHTML = atmoText(
-      "Atmosfer videoları yükleniyor...",
-      "Atmosphere videos are loading..."
-    );
+      if (!resultsEl.querySelector('[data-mobile-atmo-job]')) {
+      resultsEl.className = "mobile-atmo-results";
+      resultsEl.innerHTML = "";
+    }
 
     try {
       const res = await fetch("/api/jobs/list?app=atmo", {
