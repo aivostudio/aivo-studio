@@ -675,12 +675,14 @@
         </aside>
          </section>
 
-     <section class="coin-section">
+<section class="coin-section" aria-label="AIVO COIN piyasa bağlantıları">
   <div
     style="
       border-radius: 34px;
       padding: 36px;
       background:
+        radial-gradient(720px 320px at 18% 0%, rgba(34,211,238,.16), transparent 62%),
+        radial-gradient(720px 320px at 84% 8%, rgba(236,72,153,.18), transparent 62%),
         linear-gradient(135deg, rgba(18,24,48,.92), rgba(32,16,40,.88));
       border: 1px solid rgba(255,255,255,.10);
       box-shadow:
@@ -693,7 +695,7 @@
         display:grid;
         grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
         gap: 28px;
-        align-items:end;
+        align-items:center;
         margin-bottom: 28px;
       "
     >
@@ -708,7 +710,7 @@
             margin-bottom:16px;
           "
         >
-          Canlı Grafik
+          Piyasa Ekranı
         </div>
 
         <h2
@@ -719,14 +721,14 @@
             letter-spacing:-.06em;
             font-weight:950;
             color:#fff;
-            max-width:640px;
+            max-width:680px;
           "
         >
-          AIVO / SOL grafiğini
+          AIVO / SOL
           <br>
-          Raydium’da takip
+          piyasa ekranını
           <br>
-          edin.
+          açın.
         </h2>
       </div>
 
@@ -741,36 +743,209 @@
           justify-self:end;
         "
       >
-        AIVO COIN’in Raydium üzerindeki AIVO/SOL paritesi, canlı fiyat hareketleri ve
-        swap ekranı doğrudan Raydium üzerinden bu alanda görüntülenir.
+        AIVO COIN’in Raydium, Jupiter ve DexScreener bağlantıları üzerinden AIVO/SOL piyasa görünümü,
+        swap ekranı ve işlem bilgileri üçüncü taraf platformlarda takip edilebilir.
       </p>
     </div>
 
     <div
       style="
+        position:relative;
+        min-height:360px;
         border-radius:28px;
         overflow:hidden;
         border:1px solid rgba(255,255,255,.10);
-        background:#081120;
+        background:
+          linear-gradient(180deg, rgba(9,15,31,.96), rgba(7,10,20,.98));
         box-shadow:
           inset 0 1px 0 rgba(255,255,255,.04),
           0 20px 50px rgba(0,0,0,.28);
       "
     >
-      <iframe
-        src="https://raydium.io/swap/?inputMint=sol&outputMint=D6zj7DksyaTJNzQkmjnViHryvYQmNkeeJYkHqp6AEwC9"
-        title="AIVO / SOL Raydium canlı grafik"
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
+      <div
         style="
-          width:100%;
-          height:760px;
-          border:0;
-          display:block;
-          background:#081120;
+          position:absolute;
+          inset:0;
+          background-image:
+            linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+          background-size: 86px 62px;
+          opacity:.42;
         "
-      ></iframe>
+        aria-hidden="true"
+      ></div>
+
+      <div
+        style="
+          position:absolute;
+          left:0;
+          right:0;
+          top:50%;
+          height:2px;
+          background:linear-gradient(90deg, transparent, rgba(34,211,238,.52), rgba(236,72,153,.46), transparent);
+          box-shadow:0 0 28px rgba(34,211,238,.30);
+        "
+        aria-hidden="true"
+      ></div>
+
+      <svg
+        viewBox="0 0 1000 320"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        style="
+          position:absolute;
+          inset:0;
+          width:100%;
+          height:100%;
+          opacity:.92;
+        "
+      >
+        <defs>
+          <linearGradient id="aivoChartLine" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#22d3ee" />
+            <stop offset="50%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#ec4899" />
+          </linearGradient>
+          <linearGradient id="aivoChartFill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity=".28" />
+            <stop offset="55%" stop-color="#8b5cf6" stop-opacity=".10" />
+            <stop offset="100%" stop-color="#ec4899" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+
+        <path
+          d="M0,250 C70,238 105,214 150,228 C205,246 235,178 285,190 C340,204 362,130 414,142 C470,154 492,82 550,96 C606,110 626,172 682,156 C738,140 760,210 812,198 C870,184 904,144 950,158 C978,166 992,150 1000,142 L1000,320 L0,320 Z"
+          fill="url(#aivoChartFill)"
+        />
+
+        <path
+          d="M0,250 C70,238 105,214 150,228 C205,246 235,178 285,190 C340,204 362,130 414,142 C470,154 492,82 550,96 C606,110 626,172 682,156 C738,140 760,210 812,198 C870,184 904,144 950,158 C978,166 992,150 1000,142"
+          fill="none"
+          stroke="url(#aivoChartLine)"
+          stroke-width="6"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <div
+        style="
+          position:relative;
+          z-index:2;
+          min-height:360px;
+          display:flex;
+          flex-direction:column;
+          justify-content:space-between;
+          padding:28px;
+        "
+      >
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            gap:16px;
+            flex-wrap:wrap;
+          "
+        >
+          <div>
+            <div
+              style="
+                color:rgba(238,242,255,.62);
+                font-size:13px;
+                font-weight:900;
+                letter-spacing:.12em;
+                text-transform:uppercase;
+                margin-bottom:8px;
+              "
+            >
+              Pair
+            </div>
+            <div
+              style="
+                color:#fff;
+                font-size:32px;
+                font-weight:950;
+                letter-spacing:-.04em;
+              "
+            >
+              AIVO / SOL
+            </div>
+          </div>
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:10px;
+              padding:12px 15px;
+              height:max-content;
+              border-radius:999px;
+              background:rgba(34,211,238,.10);
+              border:1px solid rgba(34,211,238,.20);
+              color:#67e8f9;
+              font-weight:900;
+            "
+          >
+            Solana • Raydium
+          </div>
+        </div>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap:12px;
+            max-width:620px;
+          "
+        >
+          <div
+            style="
+              padding:16px;
+              border-radius:20px;
+              background:rgba(7,10,20,.58);
+              border:1px solid rgba(255,255,255,.09);
+            "
+          >
+            <strong style="display:block;color:#fff;font-size:20px;margin-bottom:4px;">Raydium</strong>
+            <span style="color:rgba(238,242,255,.62);font-weight:700;">Swap ekranı</span>
+          </div>
+
+          <div
+            style="
+              padding:16px;
+              border-radius:20px;
+              background:rgba(7,10,20,.58);
+              border:1px solid rgba(255,255,255,.09);
+            "
+          >
+            <strong style="display:block;color:#fff;font-size:20px;margin-bottom:4px;">Jupiter</strong>
+            <span style="color:rgba(238,242,255,.62);font-weight:700;">Rota takibi</span>
+          </div>
+
+          <div
+            style="
+              padding:16px;
+              border-radius:20px;
+              background:rgba(7,10,20,.58);
+              border:1px solid rgba(255,255,255,.09);
+            "
+          >
+            <strong style="display:block;color:#fff;font-size:20px;margin-bottom:4px;">DexScreener</strong>
+            <span style="color:rgba(238,242,255,.62);font-weight:700;">Piyasa verisi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="coin-footer-actions" style="margin-top:26px;">
+      <a class="coin-btn primary" href="https://raydium.io/swap/?inputMint=sol&outputMint=D6zj7DksyaTJNzQkmjnViHryvYQmNkeeJYkHqp6AEwC9" target="_blank" rel="noopener">
+        Raydium’da Aç
+      </a>
+      <a class="coin-btn" href="https://jup.ag/swap/SOL-D6zj7DksyaTJNzQkmjnViHryvYQmNkeeJYkHqp6AEwC9" target="_blank" rel="noopener">
+        Jupiter’da Aç
+      </a>
+      <a class="coin-btn" href="https://dexscreener.com/solana/BKa6HcVBZeDDm3KjBjpNtJPnK9EcyoG1Ejdbeg4XhjWE" target="_blank" rel="noopener">
+        DexScreener’da Gör
+      </a>
     </div>
 
     <div
@@ -787,7 +962,7 @@
       "
     >
       AIVO COIN yatırım tavsiyesi değildir. Kripto varlıklar yüksek risk içerir.
-      Canlı piyasa verileri Raydium üzerindeki üçüncü taraf ekran üzerinden gösterilir.
+      Bu bölüm alım-satım yönlendirmesi değil, resmi piyasa bağlantılarını sunmak amacıyla hazırlanmıştır.
     </div>
   </div>
 </section>
