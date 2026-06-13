@@ -58,12 +58,14 @@
     }
   }
 
-  function boot() {
-    // önce unify’yi çağır (ekler, yüklenmesi async)
-    loadAuthUnifyFix();
-    // sonra topbar’ı bas
-    injectTopbar();
-  }
+function boot() {
+  // önce auth scriptlerini çağır (ekler, yüklenmesi async)
+  loadIndexAuth();
+  loadAuthUnifyFix();
+
+  // sonra topbar’ı bas
+  injectTopbar();
+}
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
