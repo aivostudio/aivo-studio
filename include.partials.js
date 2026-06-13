@@ -1,28 +1,10 @@
 /* =========================================================
-   PARTIALS INCLUDE (TOPBAR + AUTH MODAL) — SIMPLE + SAFE
+   PARTIALS INCLUDE (TOPBAR) — SIMPLE + SAFE (FINAL)
    ========================================================= */
 (function () {
   "use strict";
 
-  function qs(sel, root) {
-    return (root || document).querySelector(sel);
-  }
-
-  function loadIndexAuth() {
-    try {
-      var already = Array.from(document.scripts || []).some(function (s) {
-        return (s.src || "").includes("/index.auth.js");
-      });
-      if (already) return;
-
-      var s = document.createElement("script");
-      s.src = "/index.auth.js?v=20260423_1";
-      s.defer = true;
-      document.head.appendChild(s);
-    } catch (e) {
-      console.warn("[partials] index.auth loader error:", e);
-    }
-  }
+  function qs(sel, root) { return (root || document).querySelector(sel); }
 
   function loadAuthUnifyFix() {
     try {
@@ -32,7 +14,7 @@
       if (already) return;
 
       var s = document.createElement("script");
-      s.src = "/auth.unify.fix.js?v=2";
+      s.src = "/auth.unify.fix.js?v=2"; // cache break
       s.defer = true;
       document.head.appendChild(s);
     } catch (e) {
@@ -44,15 +26,11 @@
     var tries = 0;
     var t = setInterval(function () {
       tries++;
-
       if (typeof window.__AIVO_TOPBAR_REFRESH__ === "function") {
-        try {
-          window.__AIVO_TOPBAR_REFRESH__();
-        } catch (_) {}
+        try { window.__AIVO_TOPBAR_REFRESH__(); } catch (_) {}
         clearInterval(t);
       }
-
-      if (tries >= 40) clearInterval(t);
+      if (tries >= 40) clearInterval(t); // max 4s
     }, 100);
   }
 
@@ -63,44 +41,28 @@
     try {
       var res = await fetch("/partials/topbar.html", { cache: "no-store" });
       if (!res.ok) throw new Error("topbar fetch failed: " + res.status);
-
       var html = await res.text();
       mount.outerHTML = html;
 
+      // ✅ unify yoksa yükle (gecikmeli gelebilir)
       loadAuthUnifyFix();
 
+      // ✅ topbar geldi sinyali
       document.dispatchEvent(new CustomEvent("aivo:topbar:ready"));
 
+      // ✅ unify hazır olunca refresh (retry ile)
       refreshAuthUIWithRetry();
+
     } catch (e) {
       console.warn("[partials] topbar inject error:", e);
     }
   }
 
-  async function injectAuthModal() {
-    if (document.getElementById("loginModal")) return;
-
-    try {
-      var res = await fetch("/partials/auth-modal.html", { cache: "no-store" });
-      if (!res.ok) throw new Error("auth modal fetch failed: " + res.status);
-
-      var html = await res.text();
-      var wrap = document.createElement("div");
-      wrap.innerHTML = html;
-      document.body.appendChild(wrap);
-
-      document.dispatchEvent(new CustomEvent("aivo:auth-modal:ready"));
-    } catch (e) {
-      console.warn("[partials] auth modal inject error:", e);
-    }
-  }
-
   function boot() {
-    loadIndexAuth();
+    // önce unify’yi çağır (ekler, yüklenmesi async)
     loadAuthUnifyFix();
-
+    // sonra topbar’ı bas
     injectTopbar();
-    injectAuthModal();
   }
 
   if (document.readyState === "loading") {
