@@ -642,7 +642,7 @@
   <a class="coin-btn primary" href="https://dexscreener.com/solana/BKa6HcVBZeDDm3KjBjpNtJPnK9EcyoG1Ejdbeg4XhjWE" target="_blank" rel="noopener">
     DexScreener’da Gör
   </a>
-  <a class="coin-btn" href="https://t.me/aivocoinchannel" target="_blank" rel="noopener">
+  <a class="coin-btn" href="https://t.me/aivocoincommunity" target="_blank" rel="noopener">
     Telegram’a Katıl
   </a>
   <a class="coin-btn" href="/studio.v2.html" data-auth="required">
@@ -1555,5 +1555,159 @@
   </div>
 </div>
 <!-- ================= /LOGIN MODAL ================= -->
+  <script>
+(function () {
+  "use strict";
+
+  var browserLang = ((navigator.language || navigator.userLanguage || "tr") + "").toLowerCase();
+  var isTurkish = browserLang.indexOf("tr") === 0;
+
+  if (isTurkish) return;
+
+  document.documentElement.lang = "en";
+
+  document.title = "AIVO COIN • AIVO";
+
+  var metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) {
+    metaDescription.setAttribute(
+      "content",
+      "AIVO COIN is the official Solana-based digital utility token page for the AIVO AI ecosystem."
+    );
+  }
+
+  var ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) {
+    ogTitle.setAttribute("content", "AIVO COIN • AIVO AI Ecosystem");
+  }
+
+  var ogDescription = document.querySelector('meta[property="og:description"]');
+  if (ogDescription) {
+    ogDescription.setAttribute(
+      "content",
+      "AIVO COIN is the official Solana-based utility token page for the AIVO AI ecosystem. Mint and Freeze authorities are revoked."
+    );
+  }
+
+  var twitterTitle = document.querySelector('meta[name="twitter:title"]');
+  if (twitterTitle) {
+    twitterTitle.setAttribute("content", "AIVO COIN • AIVO AI Ecosystem");
+  }
+
+  var twitterDescription = document.querySelector('meta[name="twitter:description"]');
+  if (twitterDescription) {
+    twitterDescription.setAttribute(
+      "content",
+      "AIVO COIN is the official Solana-based utility token page for the AIVO AI ecosystem."
+    );
+  }
+
+  function setText(selector, text) {
+    var el = document.querySelector(selector);
+    if (el) el.textContent = text;
+  }
+
+  function replaceText(from, to) {
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    var node;
+
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue && node.nodeValue.indexOf(from) !== -1) {
+        node.nodeValue = node.nodeValue.replace(from, to);
+      }
+    }
+  }
+
+  setText(".coin-pill", "⚡ Live utility token on Solana");
+
+  var title = document.querySelector(".coin-title");
+  if (title) {
+    title.innerHTML = 'AIVO <span class="coin-word">COIN</span><span>AI creation ecosystem.</span>';
+  }
+
+  setText(
+    ".coin-sub",
+    "AIVO COIN is a digital utility token created on Solana for the AIVO AI ecosystem. This is the official AIVO token page for AIVO Studio, community access, ecosystem integrations and future in-platform utility scenarios."
+  );
+
+  var heroButtons = document.querySelectorAll(".coin-actions .coin-btn");
+  if (heroButtons[0]) heroButtons[0].textContent = "View on DexScreener";
+  if (heroButtons[1]) heroButtons[1].textContent = "Join Telegram";
+  if (heroButtons[2]) heroButtons[2].textContent = "Open AIVO Studio";
+
+  setText('[aria-label="AIVO COIN canlı durum"] .coin-kicker', "Live Status");
+  replaceText("AIVO COIN canlı durum", "AIVO COIN live status");
+  replaceText("AIVO COIN logosu", "AIVO COIN logo");
+
+  replaceText("Piyasa Ekranı", "Market Screen");
+  replaceText("piyasa ekranını", "market screen");
+  replaceText("açın.", "open.");
+  replaceText(
+    "AIVO COIN’in Raydium, Jupiter ve DexScreener bağlantıları üzerinden AIVO/SOL piyasa görünümü, swap ekranı ve işlem bilgileri üçüncü taraf platformlarda takip edilebilir.",
+    "AIVO/SOL market visibility, swap screens and trading information can be followed through official Raydium, Jupiter and DexScreener links."
+  );
+
+  replaceText("Swap ekranı", "Swap screen");
+  replaceText("Rota takibi", "Route tracking");
+  replaceText("Piyasa verisi", "Market data");
+
+  replaceText("Raydium’da Aç", "Open on Raydium");
+  replaceText("Jupiter’da Aç", "Open on Jupiter");
+  replaceText("DexScreener’da Gör", "View on DexScreener");
+
+  replaceText(
+    "AIVO COIN yatırım tavsiyesi değildir. Kripto varlıklar yüksek risk içerir. Bu bölüm alım-satım yönlendirmesi değil, resmi piyasa bağlantılarını sunmak amacıyla hazırlanmıştır.",
+    "AIVO COIN is not financial advice. Crypto assets carry high risk. This section is not a buy or sell recommendation; it only provides official market links."
+  );
+
+  replaceText("AIVO COIN nedir?", "What is AIVO COIN?");
+  replaceText(
+    "Yapay zekâ üretimi için dijital ekosistem katmanı.",
+    "A digital ecosystem layer for AI creation."
+  );
+  replaceText(
+    "AIVO COIN, AIVO’nun AI müzik, kapak, video, foto efekt, çizgifilm ve dudak senkron üretim araçlarının etrafında büyüyen dijital ekosistemi desteklemek için oluşturulmuştur. Token; topluluk, erişim, kampanya, ödül ve ileride platform içi entegrasyon senaryoları için konumlandırılmıştır.",
+    "AIVO COIN was created to support the growing digital ecosystem around AIVO’s AI music, cover art, video, photo effect, cartoon and lip sync generation tools. The token is positioned for community, access, campaigns, rewards and future in-platform integration scenarios."
+  );
+
+  replaceText("Solana ağı", "Solana network");
+  replaceText(
+    "Hızlı, düşük maliyetli ve yüksek erişilebilirlik hedefleyen Solana ağı üzerinde oluşturuldu.",
+    "Created on Solana, a fast and low-cost network designed for broad accessibility."
+  );
+
+  replaceText("Raydium havuzu", "Raydium pool");
+  replaceText(
+    "AIVO/SOL likidite havuzu Raydium üzerinde canlıdır ve DexScreener’dan takip edilebilir.",
+    "The AIVO/SOL liquidity pool is live on Raydium and can be tracked on DexScreener."
+  );
+
+  replaceText("AIVO ekosistemi", "AIVO ecosystem");
+  replaceText(
+    "AIVO Studio ve gelecekteki AI üretim özellikleriyle bağlantılı resmi ekosistem tokenıdır.",
+    "The official ecosystem token connected to AIVO Studio and future AI creation features."
+  );
+
+  replaceText("Utility odaklı", "Utility focused");
+  replaceText(
+    "Token; topluluk, erişim, kampanya ve platform içi dijital kullanım senaryoları için tasarlanmıştır.",
+    "Designed for community, access, campaigns and future in-platform digital utility scenarios."
+  );
+
+  replaceText("Güven ve şeffaflık", "Trust and transparency");
+  replaceText(
+    "Arz sabit. Yetkiler kapalı. Bilgiler açık.",
+    "Fixed supply. Authorities revoked. Information is public."
+  );
+  replaceText(
+    "AIVO COIN için temel güven bilgileri herkesin kontrol edebileceği şekilde açık tutulur. Mint Authority ve Freeze Authority kapatılmıştır. Böylece yeni token basma ve holder hesaplarını dondurma yetkileri devre dışıdır.",
+    "Core trust information for AIVO COIN is kept public and verifiable. Mint Authority and Freeze Authority are revoked, meaning new token minting and holder account freezing permissions are disabled."
+  );
+
+  replaceText("Toplam AIVO arzı", "Total AIVO supply");
+  replaceText("Canlı Grafiği Aç", "Open Live Chart");
+  replaceText("AIVO Ana Sayfa", "AIVO Home");
+})();
+</script>
 </body>
 </html>
