@@ -699,45 +699,11 @@ const returnTo = rawReturnTo.includes("mobile")
   return;
 }
 
-       setMessage("Giriş başarılı.", "is-ok");
+         setMessage("Giriş başarılı.", "is-ok");
 
-async function waitForMobileSession(){
-  for (let i = 0; i < 8; i++) {
-    try {
-      const meRes = await fetch("/api/auth/me", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-      if (meRes.ok) {
-        return true;
-      }
-    } catch (err) {}
-
-    await new Promise(function(resolve){
-      setTimeout(resolve, 350);
-    });
-  }
-
-  return false;
-}
-
-const sessionReady = await waitForMobileSession();
-
-if (!sessionReady) {
-  setMessage(
-    "Oturum hazırlanamadı. Lütfen tekrar giriş yap.",
-    "is-error"
-  );
-  return;
-}
-
-window.location.href = returnTo;
-          
+         setTimeout(function(){
+        window.location.href = "https://aivo.tr/studio.mobile.html";
+        }, 350);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
