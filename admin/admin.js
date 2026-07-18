@@ -860,9 +860,9 @@
     const usersStatus = $("usersStatus");
     const usersTable = $("usersTable");
 
-    if (btnUsersCsv) {
+       if (btnUsersCsv) {
       btnUsersCsv.addEventListener("click", function () {
-        exportUsersForResend();
+        exportUsersForResend(usersRaw);
       });
     }
 
