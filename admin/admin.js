@@ -1934,7 +1934,16 @@ function renderPlaySales(rows) {
       }
     }
 
-    if (btnUsersRefresh) btnUsersRefresh.addEventListener("click", loadUsers);
+      if (btnUsersRefresh) {
+      btnUsersRefresh.addEventListener("click", loadUsers);
+    }
+
+    const btnUsersCsv = $("btnUsersCsv");
+
+    if (btnUsersCsv) {
+      btnUsersCsv.addEventListener("click", exportUsersForResend);
+    }
+
     const btnUsersTopRefresh = $("btnUsersTopRefresh");
 
 if (btnUsersTopRefresh) {
