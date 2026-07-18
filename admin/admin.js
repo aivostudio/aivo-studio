@@ -169,11 +169,11 @@
     );
   }
 
-  function exportUsersForResend() {
+   function exportUsersForResend(usersList) {
     const seen = new Set();
     const rows = [];
 
-    for (const user of Array.isArray(usersRaw) ? usersRaw : []) {
+    for (const user of Array.isArray(usersList) ? usersList : []) {
       const email = cleanUserEmail(user && user.email);
       const role = norm(user && user.role);
       const disabled = Boolean(user && user.disabled);
