@@ -853,11 +853,18 @@
       });
     }
 
-    let usersRaw = [];
+      let usersRaw = [];
     const btnUsersRefresh = $("btnUsersRefresh");
+    const btnUsersCsv = $("btnUsersCsv");
     const usersSearch = $("usersSearch");
     const usersStatus = $("usersStatus");
     const usersTable = $("usersTable");
+
+    if (btnUsersCsv) {
+      btnUsersCsv.addEventListener("click", function () {
+        exportUsersForResend();
+      });
+    }
 
     const btnProductionStats = $("btnProductionStats");
     const prodStatsStatus = $("prodStatsStatus");
@@ -1936,12 +1943,6 @@ function renderPlaySales(rows) {
 
       if (btnUsersRefresh) {
       btnUsersRefresh.addEventListener("click", loadUsers);
-    }
-
-    const btnUsersCsv = $("btnUsersCsv");
-
-    if (btnUsersCsv) {
-      btnUsersCsv.addEventListener("click", exportUsersForResend);
     }
 
     const btnUsersTopRefresh = $("btnUsersTopRefresh");
