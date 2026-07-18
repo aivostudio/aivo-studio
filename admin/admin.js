@@ -143,6 +143,107 @@
     return list.filter((u) => norm(u && u.email).includes(s));
   }
 
+  function cleanUserEmail(value) {
+    const raw = String(value || "").trim().toLowerCase();
+    const mailMatch = raw.match(/mailto:([^\)\s]+)/i);
+    const bracketMatch = raw.match(/\[([^\]]+@[^\]]+)\]/i);
+
+    return String(
+      mailMatch
+        ? mailMatch[1]
+        : bracketMatch
+        ? bracketMatch[1]
+        : raw
+    ).trim();
+  }
+
+  function isValidUserEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""));
+  }
+
+  function csvCell(value) {
+    return (
+      '"' +
+      String(value == null ? "" : value).replace(/"/g, '""') +
+      '"'
+    );
+  }
+
+  function exportUsersForResend() {
+    const seen = new Set();
+    const rows = [];
+
+    for (const user of Array.isArray(usersRaw) ? usersRaw : []) {
+      const email = cleanUserEmail(user && user.email);
+      const role = norm(user && user.role);
+      const disabled = Boolean(user && user.disabled);
+
+      const unsubscribed = Boolean(
+        user &&
+          (
+            user.unsubscribed ||
+            user.emailUnsubscribed ||
+            user.mailUnsubscribed ||
+            user.marketingUnsubscribed
+          )
+      );
+
+      if (
+        !isValidUserEmail(email) ||
+        role === "admin" ||
+        disabled ||
+        unsubscribed ||
+        seen.has(email)
+      ) {
+        continue;
+      }
+
+      seen.add(email);
+      rows.push([email]);
+    }
+
+    if (!rows.length) {
+      const statusEl = $("usersStatus");
+
+      if (statusEl) {
+        statusEl.textContent = "CSV için uygun kullanıcı bulunamadı.";
+      }
+
+      return;
+    }
+
+    const csv =
+      "\uFEFFemail\r\n" +
+      rows
+        .map((row) => row.map(csvCell).join(","))
+        .join("\r\n") +
+      "\r\n";
+
+    const blob = new Blob([csv], {
+      type: "text/csv;charset=utf-8",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+
+    link.href = url;
+    link.download = "aivo-resend-contacts-" + date + ".csv";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+    const statusEl = $("usersStatus");
+
+    if (statusEl) {
+      statusEl.textContent =
+        rows.length + " kullanıcı CSV olarak indirildi.";
+    }
+  }
+
   let onlineSet = new Set();
 
   function renderUsers(list) {
