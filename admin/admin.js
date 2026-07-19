@@ -266,10 +266,27 @@
       return;
     }
 
-    if (statusEl) statusEl.textContent = "Hazır.";
+ if (statusEl) statusEl.textContent = "Hazır.";
 
-    for (const u of list) {
-      const tr = document.createElement("tr");
+// Kayıt tarihine göre: en yeni → en eski
+const sortedList = [...list].sort((a, b) => {
+  const getCreatedTime = (user) => {
+    const raw = user?.createdAt ?? user?.created ?? 0;
+    const numeric = Number(raw);
+
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric;
+    }
+
+    const parsed = Date.parse(String(raw || ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  return getCreatedTime(b) - getCreatedTime(a);
+});
+
+for (const u of sortedList) {
+  const tr = document.createElement("tr");
 
           const rawEmail = String(u.email || "");
       const mailMatch = rawEmail.match(/mailto:([^)\s]+)/i);
