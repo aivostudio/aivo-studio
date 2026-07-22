@@ -95,9 +95,9 @@ window.selectedJobId = window.selectedJobId || "";
   }
 
   function uiState(status){
-    const s = String(status || "").toLowerCase();
-    if (["ready", "done", "completed", "success", "succeeded"].includes(s)) return "ready";
-    if (["error", "failed", "fail"].includes(s)) return "error";
+    const s = String(status || "").trim().toLowerCase();
+    if (["ready", "done", "completed", "success", "succeeded", "complete"].includes(s)) return "ready";
+    if (["error", "failed", "fail", "failure", "rejected", "cancelled", "canceled"].includes(s)) return "error";
     return "processing";
   }
 
@@ -289,11 +289,22 @@ window.selectedJobId = window.selectedJobId || "";
     const dbSrc = String(dbItem?.__audio_src || "").trim();
     if (!dbSrc && oldSrc) out.__audio_src = oldSrc;
 
-    const oldState = String(oldItem?.__ui_state || "").trim();
-    const dbState = String(dbItem?.__ui_state || "").trim();
+    const oldState = uiState(oldItem?.__ui_state);
+    const dbState = uiState(dbItem?.__ui_state);
     if (oldState === "ready" && dbState !== "ready" && out.__audio_src) {
       out.__ui_state = "ready";
     }
+    if (oldState === "error" && dbState === "processing" && !out.__audio_src) {
+      out.__ui_state = "error";
+    }
+
+    const oldErrorMessage = String(oldItem?.__error_message || "").trim();
+    const newErrorMessage = String(out?.__error_message || "").trim();
+    if (!newErrorMessage && oldErrorMessage) out.__error_message = oldErrorMessage;
+
+    const oldFailCode = String(oldItem?.__fail_code || "").trim();
+    const newFailCode = String(out?.__fail_code || "").trim();
+    if (!newFailCode && oldFailCode) out.__fail_code = oldFailCode;
 
     const oldDur = String(oldItem?.__duration || "").trim();
     const dbDur = String(dbItem?.__duration || "").trim();
@@ -565,6 +576,12 @@ window.selectedJobId = window.selectedJobId || "";
     const id = String(jobId || "").trim();
     if (!alive || !id) return;
     if (isHiddenJobId(id)) return;
+
+    const existing = (jobs || []).find((x) => getJobId(x) === id) || {};
+    const existingState = uiState(existing.__ui_state);
+    if (existingState === "error") return;
+    if (existingState === "ready" && String(existing.__audio_src || "").trim()) return;
+
     if (TMAP.has(id)) return;
     const tid = setTimeout(() => {
       TMAP.delete(id);
@@ -587,20 +604,22 @@ window.selectedJobId = window.selectedJobId || "";
 
   function renderCard(job){
     const jobId = getJobId(job);
-    const st = job.__ui_state || "processing";
+    const st = uiState(job.__ui_state || "processing");
 
     const title =
       (String(job?.title || "").trim()) ||
       (String(job?.lyrics || "").replace(/\r/g, "").split("\n").map((s) => s.trim()).find(Boolean) || "") ||
       (String(job?.prompt || "").trim().split(/\s+/).slice(0, 2).join(" ") || "");
 
-    const sub = job.subtitle || "";
+    const sub = st === "error"
+      ? (job.__error_message || job.error_message || job.subtitle || "Üretim tamamlanamadı.")
+      : (job.subtitle || "");
     const dur = job.duration || job.__duration || "";
     const date = job.created_at || job.createdAt || job.__createdAt || "";
 
     const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
     const tagProc = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
-    const tagErr = `<span class="aivo-tag is-error">Hata</span>`;
+    const tagErr = `<span class="aivo-tag is-error">Üretim başarısız</span>`;
 
     const isReady = (st === "ready") && !!job.__audio_src;
     const isPlayingNow = !!isReady && String(currentJobId || "") === String(jobId || "") && !!audioEl && !audioEl.paused;
@@ -1626,11 +1645,105 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
   const POLL_BUSY = new Set();
   const POLL_LAST = new Map();
   if (!window.__AIVO_MUSIC_READY_TOASTED__) window.__AIVO_MUSIC_READY_TOASTED__ = new Set();
+  if (!window.__AIVO_MUSIC_ERROR_TOASTED__) window.__AIVO_MUSIC_ERROR_TOASTED__ = new Set();
   const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
+  const ERROR_TOASTED = window.__AIVO_MUSIC_ERROR_TOASTED__;
   const MUSIC_WORKER_ORIGIN = WORKER_ORIGIN || "https://aivo-archive-worker.aivostudioapp.workers.dev";
 
+  function getTopMediaiItems(j){
+    if (Array.isArray(j?.topmediai?.data)) return j.topmediai.data;
+    if (Array.isArray(j?.topmediai?.data?.data)) return j.topmediai.data.data;
+    return [];
+  }
+
+  function pickFailureFromStatus(j){
+    const failures = Array.isArray(j?.failures) ? j.failures : [];
+    const providerItems = getTopMediaiItems(j);
+    const failedItem =
+      failures[0] ||
+      providerItems.find((item) =>
+        Number(item?.status) === 3 ||
+        (item?.fail_code != null && String(item.fail_code).trim() !== "" && String(item.fail_code).trim() !== "0") ||
+        String(item?.fail_reason || "").trim() ||
+        /fail|error|reject/i.test(String(item?.state || ""))
+      ) ||
+      null;
+
+    const failCode = String(
+      j?.fail_code ||
+      failedItem?.fail_code ||
+      failedItem?.failCode ||
+      ""
+    ).trim();
+
+    const rawReason = String(
+      j?.message ||
+      j?.fail_reason ||
+      j?.error_message ||
+      failedItem?.fail_reason ||
+      failedItem?.failReason ||
+      j?.detail ||
+      ""
+    ).trim();
+
+    const reasonLower = rawReason.toLowerCase();
+    let message = rawReason || "Müzik üretimi tamamlanamadı.";
+
+    if (reasonLower.includes("insufficient account balance")) {
+      message = "Müzik sağlayıcısında yeterli bakiye bulunmuyor.";
+    } else if (
+      reasonLower.includes("musician infringement") ||
+      reasonLower.includes("artist name")
+    ) {
+      message = "İstek müzik sağlayıcısının içerik kontrolü tarafından reddedildi.";
+    }
+
+    const state = uiState(j?.status || j?.state || failedItem?.state);
+    const hasFailure =
+      state === "error" ||
+      Boolean(failCode) ||
+      Boolean(rawReason) ||
+      failures.length > 0 ||
+      Number(failedItem?.status) === 3;
+
+    return {
+      hasFailure,
+      failCode,
+      message,
+    };
+  }
+
+  function markJobFailed(id, existing, failure){
+    const baseId = getBaseIdFromJobId(id);
+    const errorMessage = String(failure?.message || "Müzik üretimi tamamlanamadı.").trim();
+
+    upsertJob({
+      ...existing,
+      job_id: id,
+      id,
+      __ui_state: "error",
+      __audio_src: "",
+      __pending_src: "",
+      __pending_output_id: "",
+      __pending_duration: "",
+      __error_message: errorMessage,
+      __fail_code: String(failure?.failCode || "").trim(),
+      __should_ready_toast: false,
+    });
+
+    clearPoll(id);
+    POLL_LAST.delete(id);
+    render();
+
+    const toastKey = baseId || id;
+    if (toastKey && !ERROR_TOASTED.has(toastKey)) {
+      ERROR_TOASTED.add(toastKey);
+      toast("error", errorMessage);
+    }
+  }
+
   function pickAudioFromStatus(j){
-    const tm0 = j?.topmediai?.data?.[0] || null;
+    const tm0 = getTopMediaiItems(j)[0] || null;
     const src =
       j?.audio?.src ||
       j?.audio_src ||
@@ -1692,6 +1805,18 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       if (isHiddenJobId(id)) return;
 
       const existing = (jobs || []).find((x) => getJobId(x) === id) || {};
+      const existingState = uiState(existing.__ui_state);
+
+      if (existingState === "error") {
+        clearPoll(id);
+        return;
+      }
+
+      if (existingState === "ready" && String(existing.__audio_src || "").trim()) {
+        clearPoll(id);
+        return;
+      }
+
       const providerSongId = String(existing.__provider_song_id || "").trim();
       const providerBase = getBaseIdFromJobId(id);
       const q = encodeURIComponent(providerSongId || providerBase);
@@ -1706,7 +1831,19 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
 
       if (isHiddenJobId(id)) return;
 
-      if (!r.ok || !j || j.ok === false) {
+      if (!r.ok || !j) {
+        schedulePoll(id, 1800);
+        return;
+      }
+
+      const failure = pickFailureFromStatus(j);
+
+      if (j.ok === false) {
+        if (failure.hasFailure) {
+          markJobFailed(id, existing, failure);
+          return;
+        }
+
         schedulePoll(id, 1800);
         return;
       }
@@ -1736,9 +1873,8 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       if (existing.provider_job_id) next.provider_job_id = existing.provider_job_id;
       if (existing.__provider_song_id) next.__provider_song_id = existing.__provider_song_id;
 
-      if (st === "error") {
-        upsertJob({ ...next, __ui_state: "error" });
-        render();
+      if (st === "error" || failure.hasFailure) {
+        markJobFailed(id, { ...existing, ...next }, failure);
         return;
       }
 
@@ -1785,14 +1921,14 @@ const familyWasAlreadyReady =
   String(existingOther.__ui_state || "") === "ready" &&
   !!String(existingOther.__audio_src || "").trim();
 
-      const meSrc = String(me.__pending_src || me.__audio_src || "").trim();
-      const otherSrc = String(other.__pending_src || other.__audio_src || "").trim();
+      const meSrc = String(existingMe.__pending_src || existingMe.__audio_src || "").trim();
+      const otherSrc = String(existingOther.__pending_src || existingOther.__audio_src || "").trim();
 
       if (meSrc && otherSrc) {
-        const meOut = String(me.__pending_output_id || me.output_id || "").trim();
-        const otherOut = String(other.__pending_output_id || other.output_id || "").trim();
-        const meDur = String(me.__pending_duration || me.__duration || "").trim();
-        const otherDur = String(other.__pending_duration || other.__duration || "").trim();
+        const meOut = String(existingMe.__pending_output_id || existingMe.output_id || "").trim();
+        const otherOut = String(existingOther.__pending_output_id || existingOther.output_id || "").trim();
+        const meDur = String(existingMe.__pending_duration || existingMe.__duration || "").trim();
+        const otherDur = String(existingOther.__pending_duration || existingOther.__duration || "").trim();
 
         upsertJob({
           job_id: id,
@@ -1804,9 +1940,9 @@ const familyWasAlreadyReady =
           __pending_src: "",
           __pending_output_id: "",
           __pending_duration: "",
-          __db_job_id: String(me.__db_job_id || existing.__db_job_id || "").trim(),
-          provider_job_id: String(me.provider_job_id || existing.provider_job_id || "").trim(),
-          __provider_song_id: String(me.__provider_song_id || existing.__provider_song_id || "").trim(),
+          __db_job_id: String(existingMe.__db_job_id || existing.__db_job_id || "").trim(),
+          provider_job_id: String(existingMe.provider_job_id || existing.provider_job_id || "").trim(),
+          __provider_song_id: String(existingMe.__provider_song_id || existing.__provider_song_id || "").trim(),
         });
 
         upsertJob({
@@ -1819,9 +1955,9 @@ const familyWasAlreadyReady =
           __pending_src: "",
           __pending_output_id: "",
           __pending_duration: "",
-          __db_job_id: String(other.__db_job_id || existing.__db_job_id || "").trim(),
-          provider_job_id: String(other.provider_job_id || existing.provider_job_id || "").trim(),
-          __provider_song_id: String(other.__provider_song_id || "").trim(),
+          __db_job_id: String(existingOther.__db_job_id || existing.__db_job_id || "").trim(),
+          provider_job_id: String(existingOther.provider_job_id || existing.provider_job_id || "").trim(),
+          __provider_song_id: String(existingOther.__provider_song_id || "").trim(),
         });
 
         render();
@@ -1888,6 +2024,27 @@ const familyWasAlreadyReady =
     ""
   ).trim();
 
+  const providerFailures = Array.isArray(meta?.provider_failures)
+    ? meta.provider_failures
+    : [];
+
+  const firstProviderFailure = providerFailures[0] || null;
+  const errorMessage = String(
+    meta?.error_message ||
+    meta?.fail_reason ||
+    row?.error_message ||
+    row?.message ||
+    firstProviderFailure?.fail_reason ||
+    ""
+  ).trim();
+
+  const failCode = String(
+    meta?.fail_code ||
+    row?.fail_code ||
+    firstProviderFailure?.fail_code ||
+    ""
+  ).trim();
+
   const baseCommon = {
     type: "music",
     __db_job_id: dbJobId,
@@ -1903,6 +2060,8 @@ const familyWasAlreadyReady =
     prompt: String(meta?.prompt || row?.prompt || "").trim(),
     subtitle: String(meta?.subtitle || "").trim(),
     __duration: duration,
+    __error_message: errorMessage,
+    __fail_code: failCode,
   };
 
   const cards = [];
@@ -2111,6 +2270,7 @@ function setMusicHostForEvents(el){
   const audioSrc = String(j?.__audio_src || "").trim();
 
   if (uiState === "ready" && audioSrc) return true;
+  if (uiState === "error") return true;
   if (audioSrc) return true;
 
   return false;
@@ -2147,7 +2307,8 @@ hydrateFromDBOnce();
           hydrateMergeWithDbRows(items);
           (jobs || []).slice(0, 60).forEach((j) => {
             const id = getJobId(j);
-            if (id && !isHiddenJobId(id)) poll(id);
+            const state = uiState(j?.__ui_state);
+            if (id && !isHiddenJobId(id) && state === "processing") poll(id);
           });
         }
       });
@@ -2173,7 +2334,8 @@ onMusicVisibilityChange = () => {
 
     (jobs || []).slice(0, 60).forEach((j) => {
       const id = getJobId(j);
-      if (id && !isHiddenJobId(id)) poll(id);
+      const state = uiState(j?.__ui_state);
+      if (id && !isHiddenJobId(id) && state === "processing") poll(id);
     });
 
 
