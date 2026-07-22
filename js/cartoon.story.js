@@ -3182,49 +3182,7 @@ if (!selectedScenes.length) {
 }
         }
 
-        const policyText = buildStoryPolicyText();
-        if (isStoryPolicyBlocked(policyText)) {
-          const storyIdeaEl = qs("[data-story-idea]", root);
-          const extraPromptEl = qs("[data-story-extra-prompt]", root);
-          const policyNote = ensureStoryPolicyNote(root, generateBtn);
-
-          if (storyIdeaEl) {
-            storyIdeaEl.style.borderColor = "rgba(255,110,140,.92)";
-            storyIdeaEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-          }
-
-          if (extraPromptEl) {
-            extraPromptEl.style.borderColor = "rgba(255,110,140,.92)";
-            extraPromptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-          }
-
-          generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-          generateBtn.style.borderColor = "rgba(255,110,140,.95)";
-          generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-          generateBtn.style.cursor = "not-allowed";
-          generateBtn.style.filter = "saturate(1.05)";
-
-          if (policyNote) {
-            policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine hikayeyi, sahneleri ve karakter davranışlarını tarif et.";
-            policyNote.style.display = "block";
-          }
-
-          syncCartoonStoryAssistantState({
-            policyState: "block",
-            generationState: "failed",
-            creditsConsumed: false,
-            refundExpected: false,
-            refundDone: false,
-            creditCost: 0,
-            lastJobId: "",
-            lastRequestId: "",
-            lastOutputUrl: "",
-            visibleError: "policy_blocked",
-            visiblePolicyNote: "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine hikayeyi, sahneleri ve karakter davranışlarını tarif et."
-          });
-
-          return;
-        }
+   
 
         const creditCost = getStoryEstimatedCredits();
         const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nToplam kredi: ${creditCost}.\nDevam edilsin mi?`;
