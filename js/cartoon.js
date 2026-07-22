@@ -1636,53 +1636,6 @@ if (mainBtn && root.contains(mainBtn)) {
           }
         }
 
-        const policyText = [
-          payload.extraPrompt,
-          payload.style,
-          payload.scene,
-          payload.action,
-          payload.mainCharacter,
-          ...(payload.helperCharacters || [])
-        ].filter(Boolean).join(" ");
-
-        if (isBasicPolicyBlocked(policyText)) {
-          const promptEl = qs("[data-cartoon-prompt-input]", root);
-          const policyNote = ensureBasicPolicyNote(root, generateBtn);
-
-          if (promptEl) {
-            promptEl.style.borderColor = "rgba(255,110,140,.92)";
-            promptEl.style.boxShadow = "0 0 0 1px rgba(255,110,140,.28), 0 10px 28px rgba(255,70,110,.10)";
-            promptEl.focus();
-          }
-
-          generateBtn.style.background = "linear-gradient(135deg, rgba(255,93,143,.92), rgba(255,62,62,.92))";
-          generateBtn.style.borderColor = "rgba(255,110,140,.95)";
-          generateBtn.style.boxShadow = "0 10px 30px rgba(255,80,120,.22), inset 0 1px 0 rgba(255,255,255,.18)";
-          generateBtn.style.cursor = "not-allowed";
-          generateBtn.style.filter = "saturate(1.05)";
-
-          if (policyNote) {
-            policyNote.textContent = "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve karakter aksiyonunu tarif et.";
-            policyNote.style.display = "block";
-          }
-
-          syncCartoonBasicAssistantState({
-            policyState: "block",
-            generationState: "failed",
-            creditsConsumed: false,
-            refundExpected: false,
-            refundDone: false,
-            creditCost: 0,
-            lastJobId: "",
-            lastRequestId: "",
-            lastOutputUrl: "",
-            visibleError: "policy_blocked",
-            visiblePolicyNote: "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve karakter aksiyonunu tarif et."
-          });
-
-          return;
-        }
-
         console.log("[CARTOON][BASIC_PAYLOAD_BEFORE_CREATE]", payload);
 
         let consumed = false;
