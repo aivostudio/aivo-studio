@@ -104,6 +104,7 @@ const DEFAMATION_TERMS = [
 
 const PROTECTED_WORK_TERMS = [
   'aynisini yap',
+  'aynısını yap',
   'birebir yap',
   'birebir üret',
   'birebir uret',
@@ -112,14 +113,22 @@ const PROTECTED_WORK_TERMS = [
   'exact copy',
   'copy this song',
   'copy this melody',
+  'copy the melody',
+  'copy the chorus',
+  'copy the lyrics',
   'bu sarkinin aynisi',
   'bu şarkının aynısı',
   'melodisini kullan',
   'nakaratini kullan',
+  'nakaratını kullan',
   'sozlerini kullan',
   'sözlerini kullan',
   'vokalini taklit et',
   'sesini taklit et',
+  'sesini kopyala',
+  'sesini klonla',
+  'voice clone',
+  'clone voice',
 ];
 
 function normalizeText(value) {
@@ -131,6 +140,33 @@ function normalizeText(value) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+const AMBIGUOUS_SINGLE_WORD_ARTIST_TERMS = new Set(
+  [
+    'hadise',
+    'simge',
+    'ozgun',
+    'özgün',
+    'duman',
+    'manga',
+    'athena',
+    'ceza',
+    'motive',
+    'contra',
+    'cakal',
+    'çakal',
+    'yalin',
+    'yalın',
+    'sila',
+    'sıla',
+    'mabel',
+    'fero',
+    'buray',
+    'linet',
+    'bengu',
+    'bengü',
+  ].map(normalizeText)
+);
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -151,6 +187,7 @@ function buildNormalizedPhraseRegex(term) {
 
 function containsAny(text, terms) {
   const haystack = normalizeText(text);
+
   return terms.some((term) => {
     const rx = buildNormalizedPhraseRegex(term);
     return rx ? rx.test(haystack) : false;
@@ -163,9 +200,11 @@ function pickMatchedTerms(text, terms, limit = 6) {
 
   for (const term of terms) {
     const rx = buildNormalizedPhraseRegex(term);
+
     if (rx && rx.test(haystack) && !hits.includes(term)) {
       hits.push(term);
     }
+
     if (hits.length >= limit) break;
   }
 
@@ -186,7 +225,11 @@ function replaceTermsCaseInsensitive(source, terms, replacement) {
       .join('\\s+');
 
     const rx = new RegExp(`(^|\\b)${pattern}(?=\\b|$)`, 'gi');
-    output = output.replace(rx, (match, lead) => `${lead}${replacement}`);
+
+    output = output.replace(
+      rx,
+      (match, lead) => `${lead}${replacement}`
+    );
   }
 
   return output;
@@ -206,16 +249,31 @@ function joinInput(fields) {
     .join(' \n ');
 }
 
+/*
+ * Müzik politikasında yalnızca prompt taranır.
+ * Şarkı sözleri, başlık, mood ve vokal seçimi taranmaz.
+ */
+function getMusicPolicyText(fields) {
+  return String(fields.prompt || '').trim();
+}
+
 function buildSafeAlternative(app) {
   if (app === 'music') {
     return 'Sanatçı adı yerine tür, dönem, tempo, duygu, enstrüman ve vokal karakteri gibi genel tanımlar kullan.';
   }
+
   if (app === 'video') {
     return 'Gerçek kişi yerine kurgu karakter, anonim persona veya genel sahne tanımı kullan.';
   }
-  if (app === 'cover' || app === 'image' || app === 'cartoon') {
+
+  if (
+    app === 'cover' ||
+    app === 'image' ||
+    app === 'cartoon'
+  ) {
     return 'Gerçek kişi veya kamu figürü yerine anonim karakter, genel stil ve güvenli sahne tanımı kullan.';
   }
+
   return 'Belirli kişi, sanatçı veya eser yerine genel tür, duygu, dönem ve anonim karakter tanımları kullan.';
 }
 
@@ -238,11 +296,24 @@ function rewritePrompt(app, original) {
   );
 
   if (app === 'music') {
-    output = replaceTermsCaseInsensitive(output, ARTIST_NAME_TERMS, 'özgün bir sanatçı kimliğiyle');
+    output = replaceTermsCaseInsensitive(
+      output,
+      ARTIST_NAME_TERMS,
+      'özgün bir sanatçı kimliğiyle'
+    );
   }
 
-  if (app === 'video' || app === 'cover' || app === 'image' || app === 'cartoon') {
-    output = replaceTermsCaseInsensitive(output, PUBLIC_FIGURE_TERMS, 'anonim bir karakter');
+  if (
+    app === 'video' ||
+    app === 'cover' ||
+    app === 'image' ||
+    app === 'cartoon'
+  ) {
+    output = replaceTermsCaseInsensitive(
+      output,
+      PUBLIC_FIGURE_TERMS,
+      'anonim bir karakter'
+    );
   }
 
   output = output
@@ -251,14 +322,23 @@ function rewritePrompt(app, original) {
     .trim();
 
   if (app === 'music') {
-    return output || 'Özgün, ticari olarak güvenli, belirli bir sanatçıyı taklit etmeyen müzik üret.';
+    return (
+      output ||
+      'Özgün, ticari olarak güvenli, belirli bir sanatçıyı taklit etmeyen müzik üret.'
+    );
   }
 
   if (app === 'video') {
-    return output || 'Özgün, anonim karakterlerle, gerçek kişiyi taklit etmeyen güvenli video üret.';
+    return (
+      output ||
+      'Özgün, anonim karakterlerle, gerçek kişiyi taklit etmeyen güvenli video üret.'
+    );
   }
 
-  return output || 'Özgün, belirli kişiyi veya korunan eseri taklit etmeyen güvenli içerik üret.';
+  return (
+    output ||
+    'Özgün, belirli kişiyi veya korunan eseri taklit etmeyen güvenli içerik üret.'
+  );
 }
 
 function makeResult({
@@ -282,14 +362,252 @@ function makeResult({
   };
 }
 
-function enforceMusicPolicy(text) {
-  const hitsArtistNames = pickMatchedTerms(text, ARTIST_NAME_TERMS, 8);
-  const hitsStyle = pickMatchedTerms(text, MUSIC_STYLE_TERMS);
-  const hitsProtected = pickMatchedTerms(text, PROTECTED_WORK_TERMS);
+/*
+ * Hadise, Simge, Duman, Ceza, Motive gibi günlük dilde de
+ * kullanılabilecek tek kelimelik isimlerde sanatçı bağlamı aranır.
+ */
+function hasArtistContextForTerm(text, term) {
+  const haystack = normalizeText(text);
+  const normalizedArtist = normalizeText(term);
 
-  const hasArtistName = hitsArtistNames.length > 0;
-  const hasStyleIntent = hitsStyle.length > 0;
-  const hasProtectedWork = hitsProtected.length > 0;
+  if (!haystack || !normalizedArtist) {
+    return false;
+  }
+
+  const artistPattern = normalizedArtist
+    .split(' ')
+    .filter(Boolean)
+    .map(escapeRegex)
+    .join('\\s+');
+
+  const possessiveSuffix =
+    '(?:\\s*(?:nin|nın|nun|nün|in|ın|un|ün))?';
+
+  const contextAfter = [
+    'gibi',
+    'tarzinda',
+    'tarzında',
+    'stilinde',
+    'soundunda',
+    'vokalinde',
+    'sesiyle',
+    'sesinde',
+    'sesini',
+    'vokalini',
+    'vokali',
+    'sarkisi',
+    'sarkısı',
+    'sarkisini',
+    'sarkısını',
+    'parcasi',
+    'parcası',
+    'parcasini',
+    'parcasını',
+    'tarzi',
+    'tarzı',
+    'style',
+    'voice',
+    'sound',
+  ].join('|');
+
+  const contextBefore = [
+    'sanatci',
+    'sarkici',
+    'rapci',
+    'muzisyen',
+    'artist',
+    'singer',
+    'rapper',
+    'like',
+    'in\\s+the\\s+style\\s+of',
+    'voice\\s+of',
+  ].join('|');
+
+  const rx = new RegExp(
+    `(?:^|\\s)${artistPattern}${possessiveSuffix}\\s+(?:${contextAfter})(?=\\s|$)` +
+      `|(?:^|\\s)(?:${contextBefore})\\s+${artistPattern}(?=\\s|$)`,
+    'i'
+  );
+
+  return rx.test(haystack);
+}
+
+function pickMatchedMusicArtistTerms(text, limit = 8) {
+  const haystack = normalizeText(text);
+  const hits = [];
+
+  for (const term of ARTIST_NAME_TERMS) {
+    const normalizedTerm = normalizeText(term);
+
+    if (!normalizedTerm) {
+      continue;
+    }
+
+    const rx = buildNormalizedPhraseRegex(normalizedTerm);
+
+    if (!rx || !rx.test(haystack)) {
+      continue;
+    }
+
+    const wordCount = normalizedTerm
+      .split(' ')
+      .filter(Boolean)
+      .length;
+
+    const ambiguousSingleWord =
+      wordCount === 1 &&
+      AMBIGUOUS_SINGLE_WORD_ARTIST_TERMS.has(
+        normalizedTerm
+      );
+
+    const shouldBlock =
+      wordCount >= 2 ||
+      !ambiguousSingleWord ||
+      hasArtistContextForTerm(
+        haystack,
+        normalizedTerm
+      );
+
+    if (
+      shouldBlock &&
+      !hits.includes(term)
+    ) {
+      hits.push(term);
+    }
+
+    if (hits.length >= limit) {
+      break;
+    }
+  }
+
+  return hits;
+}
+
+function hasExplicitMusicCopyRequest(text) {
+  const normalized = normalizeText(text);
+
+  const turkishPattern =
+    /\b(?:melodisini|nakaratini|nakaratını|sozlerini|vokalini|sesini)\s+(?:(?:aynen|birebir)\s+)?(?:kullan|taklit et|kopyala|klonla)\b/i;
+
+  const englishPattern =
+    /\b(?:voice clone|clone voice|copy the melody|copy the chorus|copy the lyrics|exact copy|copy this song|copy this melody)\b/i;
+
+  return (
+    turkishPattern.test(normalized) ||
+    englishPattern.test(normalized)
+  );
+}
+
+/*
+ * Müzik için daraltılmış politika:
+ *
+ * - Yalnızca prompt taranır.
+ * - Lyrics, title, mood ve vocal taranmaz.
+ * - Belirgin sanatçı isimleri engellenir.
+ * - Günlük dilde kullanılan tek kelimelik isimler,
+ *   yalnızca sanatçı bağlamında engellenir.
+ * - Açık eser kopyalama ve ses klonlama engellenir.
+ */
+function enforceMusicPolicy(
+  text,
+  explicitArtistText = ''
+) {
+  const contextualArtistHits =
+    pickMatchedMusicArtistTerms(text, 8);
+
+  const explicitArtistHits =
+    pickMatchedTerms(
+      explicitArtistText,
+      ARTIST_NAME_TERMS,
+      8
+    );
+
+  const hitsArtistNames = Array.from(
+    new Set([
+      ...contextualArtistHits,
+      ...explicitArtistHits,
+    ])
+  ).slice(0, 8);
+
+  const hitsProtected =
+    pickMatchedTerms(
+      text,
+      PROTECTED_WORK_TERMS,
+      8
+    );
+
+  const hasProtectedWork =
+    hitsProtected.length > 0 ||
+    hasExplicitMusicCopyRequest(text);
+
+  if (hasProtectedWork) {
+    return makeResult({
+      decision: 'block',
+      code: 'PROTECTED_WORK_MUSIC',
+      severity: 'high',
+      message:
+        'Belirli bir şarkının melodisini, sözlerini veya vokal kimliğini kopyalayan müzik üretilemez.',
+      reasons: [
+        'protected-work-music',
+      ],
+      matchedTerms: [
+        ...hitsArtistNames,
+        ...hitsProtected,
+      ].slice(0, 8),
+    });
+  }
+
+  if (hitsArtistNames.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'ARTIST_NAME_MUSIC',
+      severity: 'high',
+      message:
+        'Belirli bir sanatçı adı kullanılamaz. Sanatçı adı yerine tür, dönem, tempo, duygu ve enstrümanları tarif et.',
+      rewrittenPrompt: null,
+      reasons: [
+        'artist-name-music',
+      ],
+      matchedTerms:
+        hitsArtistNames,
+    });
+  }
+
+  return null;
+}
+
+/*
+ * Müzik dışındaki uygulamaların mevcut sanatçı
+ * kontrolü aynen korunur.
+ */
+function enforceLegacyArtistPolicy(text) {
+  const hitsArtistNames =
+    pickMatchedTerms(
+      text,
+      ARTIST_NAME_TERMS,
+      8
+    );
+
+  const hitsStyle =
+    pickMatchedTerms(
+      text,
+      MUSIC_STYLE_TERMS
+    );
+
+  const hitsProtected =
+    pickMatchedTerms(
+      text,
+      PROTECTED_WORK_TERMS
+    );
+
+  const hasArtistName =
+    hitsArtistNames.length > 0;
+
+  const hasStyleIntent =
+    hitsStyle.length > 0;
+
+  const hasProtectedWork =
+    hitsProtected.length > 0;
 
   if (hasProtectedWork) {
     return makeResult({
@@ -298,20 +616,33 @@ function enforceMusicPolicy(text) {
       severity: 'high',
       message:
         'Belirli bir şarkıyı, sözleri, melodiyi, vokal kimliğini veya düzenlemeyi taklit eden müzik üretilemez.',
-      reasons: ['protected-work-music'],
-      matchedTerms: [...hitsArtistNames, ...hitsProtected].slice(0, 8),
+      reasons: [
+        'protected-work-music',
+      ],
+      matchedTerms: [
+        ...hitsArtistNames,
+        ...hitsProtected,
+      ].slice(0, 8),
     });
   }
 
-  if (hasArtistName && hasStyleIntent) {
+  if (
+    hasArtistName &&
+    hasStyleIntent
+  ) {
     return makeResult({
       decision: 'block',
       code: 'ARTIST_STYLE_MUSIC',
       severity: 'high',
       message:
         'Belirli bir sanatçıyı veya tanınan vokal kimliğini taklit eden müzik üretilemez.',
-      reasons: ['artist-imitation-music'],
-      matchedTerms: [...hitsArtistNames, ...hitsStyle].slice(0, 8),
+      reasons: [
+        'artist-imitation-music',
+      ],
+      matchedTerms: [
+        ...hitsArtistNames,
+        ...hitsStyle,
+      ].slice(0, 8),
     });
   }
 
@@ -323,21 +654,47 @@ function enforceMusicPolicy(text) {
       message:
         'Belirli bir sanatçı, ünlü veya tanınan gerçek kişiyi doğrudan hedef alan video, görsel veya benzeri içerik üretilemez.',
       rewrittenPrompt: null,
-      reasons: ['artist-name-real-person'],
-      matchedTerms: hitsArtistNames,
+      reasons: [
+        'artist-name-real-person',
+      ],
+      matchedTerms:
+        hitsArtistNames,
     });
   }
+
   return null;
 }
 
 function enforcePersonPolicy(app, text) {
-  const hitsPublic = pickMatchedTerms(text, PUBLIC_FIGURE_TERMS, 8);
-  const hitsDefamation = pickMatchedTerms(text, DEFAMATION_TERMS, 8);
-  const hitsDeepfake = pickMatchedTerms(text, DEEPFAKE_TERMS, 8);
+  const hitsPublic =
+    pickMatchedTerms(
+      text,
+      PUBLIC_FIGURE_TERMS,
+      8
+    );
 
-  const hasPublicFigure = hitsPublic.length > 0;
-  const hasDefamation = hitsDefamation.length > 0;
-  const hasDeepfake = hitsDeepfake.length > 0;
+  const hitsDefamation =
+    pickMatchedTerms(
+      text,
+      DEFAMATION_TERMS,
+      8
+    );
+
+  const hitsDeepfake =
+    pickMatchedTerms(
+      text,
+      DEEPFAKE_TERMS,
+      8
+    );
+
+  const hasPublicFigure =
+    hitsPublic.length > 0;
+
+  const hasDefamation =
+    hitsDefamation.length > 0;
+
+  const hasDeepfake =
+    hitsDeepfake.length > 0;
 
   const isVisualApp =
     app === 'video' ||
@@ -346,31 +703,50 @@ function enforcePersonPolicy(app, text) {
     app === 'cartoon' ||
     app === 'photofx';
 
-  if (hasPublicFigure && hasDeepfake) {
+  if (
+    hasPublicFigure &&
+    hasDeepfake
+  ) {
     return makeResult({
       decision: 'block',
       code: 'DEEPFAKE_REAL_PERSON',
       severity: 'high',
       message:
         'Gerçek kişi, kamu figürü veya ünlü kişiyi sahte konuşma, deepfake veya yanıltıcı taklit ile gösteren içerik üretilemez.',
-      reasons: ['deepfake-real-person'],
-      matchedTerms: [...hitsPublic, ...hitsDeepfake].slice(0, 8),
+      reasons: [
+        'deepfake-real-person',
+      ],
+      matchedTerms: [
+        ...hitsPublic,
+        ...hitsDeepfake,
+      ].slice(0, 8),
     });
   }
 
-  if (hasPublicFigure && hasDefamation) {
+  if (
+    hasPublicFigure &&
+    hasDefamation
+  ) {
     return makeResult({
       decision: 'block',
       code: 'DEFAMATION_PUBLIC_FIGURE',
       severity: 'high',
       message:
         'Kamu figürü, siyasetçi, ünlü veya gerçek kişiyi aşağılayan, alay eden ya da itibar zedeleyen içerik üretilemez.',
-      reasons: ['defamation-public-figure'],
-      matchedTerms: [...hitsPublic, ...hitsDefamation].slice(0, 8),
+      reasons: [
+        'defamation-public-figure',
+      ],
+      matchedTerms: [
+        ...hitsPublic,
+        ...hitsDefamation,
+      ].slice(0, 8),
     });
   }
 
-  if (isVisualApp && hasPublicFigure) {
+  if (
+    isVisualApp &&
+    hasPublicFigure
+  ) {
     return makeResult({
       decision: 'rewrite',
       code: 'PUBLIC_FIGURE_REWRITE',
@@ -378,71 +754,184 @@ function enforcePersonPolicy(app, text) {
       message:
         'Gerçek kişi veya kamu figürü yerine anonim veya kurgu karakterle devam edilmelidir.',
       rewrittenPrompt: null,
-      reasons: ['public-figure-rewrite'],
-      matchedTerms: hitsPublic,
+      reasons: [
+        'public-figure-rewrite',
+      ],
+      matchedTerms:
+        hitsPublic,
     });
   }
 
-  if (isVisualApp && hasDeepfake && !hasPublicFigure) {
+  if (
+    isVisualApp &&
+    hasDeepfake &&
+    !hasPublicFigure
+  ) {
     return null;
   }
 
   return null;
 }
-function enforcePolicy(input = {}) {
-  const app = normalizeText(input.app || 'generic');
-  const raw = joinInput(input);
-  const text = normalizeText(raw);
 
-  if (!text) {
+function enforcePolicy(input = {}) {
+  const app =
+    normalizeText(
+      input.app ||
+      'generic'
+    );
+
+  /*
+   * Müzik diğer uygulamalardan ayrıdır.
+   */
+  if (app === 'music') {
+    const rawMusic =
+      getMusicPolicyText(input);
+
+    const textMusic =
+      normalizeText(rawMusic);
+
+    if (!textMusic) {
+      return makeResult({
+        decision: 'allow',
+        code: 'EMPTY_INPUT_ALLOW',
+        severity: 'low',
+        message:
+          'İstek boş olduğu için policy kontrolü izin verdi.',
+        rewrittenPrompt: null,
+        reasons: [],
+        matchedTerms: [],
+      });
+    }
+
+    const musicDecision =
+      enforceMusicPolicy(
+        textMusic,
+        String(
+          input.referenceArtist ||
+          input.artist ||
+          ''
+        ).trim()
+      );
+
+    if (musicDecision) {
+      return musicDecision;
+    }
+
     return makeResult({
       decision: 'allow',
-      code: 'EMPTY_INPUT_ALLOW',
+      code: 'MUSIC_ALLOW',
       severity: 'low',
-      message: 'İstek boş olduğu için policy kontrolü izin verdi.',
+      message:
+        'Müzik isteği policy kontrolünden geçti.',
       rewrittenPrompt: null,
       reasons: [],
       matchedTerms: [],
     });
   }
 
-  const musicDecision = enforceMusicPolicy(text);
-  if (musicDecision) {
-    if (musicDecision.decision === 'rewrite') {
-      return {
-        ...musicDecision,
-        rewrittenPrompt: rewritePrompt(app, raw),
-      };
-    }
-    return musicDecision;
+  /*
+   * Müzik dışındaki uygulamalar mevcut ortak akışı kullanır.
+   */
+  const raw =
+    joinInput(input);
+
+  const text =
+    normalizeText(raw);
+
+  if (!text) {
+    return makeResult({
+      decision: 'allow',
+      code: 'EMPTY_INPUT_ALLOW',
+      severity: 'low',
+      message:
+        'İstek boş olduğu için policy kontrolü izin verdi.',
+      rewrittenPrompt: null,
+      reasons: [],
+      matchedTerms: [],
+    });
   }
 
-  const personDecision = enforcePersonPolicy(app, text);
-  if (personDecision) {
-    if (personDecision.decision === 'rewrite') {
+  const artistDecision =
+    enforceLegacyArtistPolicy(text);
+
+  if (artistDecision) {
+    if (
+      artistDecision.decision ===
+      'rewrite'
+    ) {
       return {
-        ...personDecision,
-        rewrittenPrompt: rewritePrompt(app, raw),
+        ...artistDecision,
+        rewrittenPrompt:
+          rewritePrompt(
+            app,
+            raw
+          ),
       };
     }
+
+    return artistDecision;
+  }
+
+  const personDecision =
+    enforcePersonPolicy(
+      app,
+      text
+    );
+
+  if (personDecision) {
+    if (
+      personDecision.decision ===
+      'rewrite'
+    ) {
+      return {
+        ...personDecision,
+        rewrittenPrompt:
+          rewritePrompt(
+            app,
+            raw
+          ),
+      };
+    }
+
     return personDecision;
   }
 
   const hasSoftRisk =
-    containsAny(text, PUBLIC_FIGURE_TERMS) ||
-    containsAny(text, MUSIC_STYLE_TERMS);
+    containsAny(
+      text,
+      PUBLIC_FIGURE_TERMS
+    ) ||
+    containsAny(
+      text,
+      MUSIC_STYLE_TERMS
+    );
 
   if (hasSoftRisk) {
     return makeResult({
       decision: 'rewrite',
       code: 'SAFE_REWRITE',
       severity: 'medium',
-      message: `İstek güvenli genel dile dönüştürüldü. ${buildSafeAlternative(app)}`,
-      rewrittenPrompt: rewritePrompt(app, raw),
-      reasons: ['soft-risk-rewrite'],
+      message:
+        `İstek güvenli genel dile dönüştürüldü. ${buildSafeAlternative(app)}`,
+      rewrittenPrompt:
+        rewritePrompt(
+          app,
+          raw
+        ),
+      reasons: [
+        'soft-risk-rewrite',
+      ],
       matchedTerms: [
-        ...pickMatchedTerms(text, PUBLIC_FIGURE_TERMS, 3),
-        ...pickMatchedTerms(text, MUSIC_STYLE_TERMS, 3),
+        ...pickMatchedTerms(
+          text,
+          PUBLIC_FIGURE_TERMS,
+          3
+        ),
+        ...pickMatchedTerms(
+          text,
+          MUSIC_STYLE_TERMS,
+          3
+        ),
       ].slice(0, 6),
     });
   }
@@ -451,7 +940,8 @@ function enforcePolicy(input = {}) {
     decision: 'allow',
     code: 'ALLOW',
     severity: 'low',
-    message: 'İstek policy kontrolünden geçti.',
+    message:
+      'İstek policy kontrolünden geçti.',
     rewrittenPrompt: null,
     reasons: [],
     matchedTerms: [],
@@ -461,7 +951,9 @@ function enforcePolicy(input = {}) {
 function policyErrorResponse(result) {
   return {
     ok: false,
-    error: result.code || 'POLICY_BLOCKED',
+    error:
+      result.code ||
+      'POLICY_BLOCKED',
     message:
       result.message ||
       'Belirli sanatçı, kamu figürü veya gerçek kişiyi taklit eden veya aşağılayan içerik üretemem.',
