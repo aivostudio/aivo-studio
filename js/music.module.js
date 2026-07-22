@@ -1027,7 +1027,7 @@ const HARD_BLOCK_PATTERNS = [
   /\bsesini\s+(?:kopyala|klonla|taklit et)\b/i,
   /\bvokalini\s+(?:kopyala|klonla|taklit et)\b/i,
   /\b(?:voice clone|clone (?:his|her|their|the) voice|imitate (?:his|her|their|the) voice)\b/i,
-  /\b(?:melodisini|nakaratını|nakaratini|sözlerini|sozlerini)\s+(?:aynen|birebir\s+)?kullan\b/i,
+/\b(?:melodisini|nakaratını|nakaratini|sözlerini|sozlerini)\s+(?:(?:aynen|birebir)\s+)?kullan\b/i,
   /\b(?:exact copy|copy the melody|copy the chorus|copy the lyrics)\b/i
 ];
     const PUBLIC_FIGURE_TERMS = [
