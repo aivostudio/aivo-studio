@@ -18,6 +18,7 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.Purchase;
@@ -145,7 +146,12 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
     billingClient = BillingClient.newBuilder(this)
       .setListener(purchasesUpdatedListener)
-      .enablePendingPurchases()
+      .enablePendingPurchases(
+        PendingPurchasesParams
+          .newBuilder()
+          .enableOneTimeProducts()
+          .build()
+      )
       .build();
 
     billingClient.startConnection(new BillingClientStateListener() {
@@ -218,7 +224,7 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
     billingClient.queryProductDetailsAsync(
       params,
-      (billingResult, productDetailsList) -> {
+      (billingResult, queryProductDetailsResult) -> {
 
         if (
           billingResult.getResponseCode() !=
@@ -229,7 +235,7 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
         productDetailsMap.clear();
 
-        for (ProductDetails item : productDetailsList) {
+        for (ProductDetails item : queryProductDetailsResult.getProductDetailsList()) {
           productDetailsMap.put(
             item.getProductId(),
             item
