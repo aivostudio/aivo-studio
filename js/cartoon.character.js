@@ -1731,48 +1731,15 @@
       }
     }
 
-    const policyText = [
-      payload.name,
-      payload.prompt,
-      payload.style,
-      payload.type,
-      payload.hairType,
-      payload.hairColor,
-      payload.outfit,
-      payload.glasses,
-      payload.accessory,
-      payload.expression
-    ].filter(Boolean).join(" ");
-
-    resetCharacterPolicyUI(root, qs("#cartoon-character-desc", root), characterCreateBtn);
-
-    if (isCharacterPolicyBlocked(policyText)) {
-      const descInput = qs("#cartoon-character-desc", root);
-      showCharacterPolicyBlockedUI(root, descInput, characterCreateBtn);
-
-      syncCartoonCharacterAssistantState({
-        policyState: "block",
-        generationState: "failed",
-        creditsConsumed: false,
-        refundExpected: false,
-        refundDone: false,
-        creditCost: 0,
-        lastJobId: "",
-        lastRequestId: "",
-        lastOutputUrl: "",
-        visibleError: "policy_blocked",
-        visiblePolicyNote: "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine karakterin görünümünü ve özelliklerini tarif et.",
-        character: {
-          promptPresent: !!String(payload.prompt || "").trim(),
-          promptText: String(payload.prompt || "").trim(),
-          characterCreatePending: false
-        }
-      });
-
-      return;
-    }
+    resetCharacterPolicyUI(
+      root,
+      qs("#cartoon-character-desc", root),
+      characterCreateBtn
+    );
 
     console.log("[CARTOON][CHARACTER] payload =", payload);
+
+ 
     const hasReferenceImage =
       !!payload.referenceImageUrl ||
       !!payload.referenceFile;
