@@ -1015,32 +1015,20 @@ if (inlineOpen && inlineOpen.children.length > 0) return inlineOpen;
 
     const modeButtons = Array.from(switchEl.querySelectorAll("[data-mode-button]"));
     const advFields = Array.from(module.querySelectorAll('[data-visible-in="advanced"]'));
-    const HARD_BLOCK_TERMS = [
-      "deepfake",
-      "sesini kopyala",
-      "voice clone",
-      "dudak senkronu",
-      "lip sync"
-    ];
+const HARD_BLOCK_TERMS = [
+  "deepfake",
+  "sesini kopyala",
+  "sesini klonla",
+  "voice clone",
+  "clone voice"
+];
 
-   const HARD_BLOCK_PATTERNS = [
-  /\btarzında\b/i,
-  /\btarzinda\b/i,
-  /\bstilinde\b/i,
-  /\bin the style of\b/i,
-  /\bbirebir\b/i,
-  /\baynısı\b/i,
-  /\baynisi\b/i,
-  /\bsesini taklit et\b/i,
-  /\bvokalini taklit et\b/i,
-  /\bmelodisini kullan\b/i,
-  /\bnakaratini kullan\b/i,
-  /\bsözlerini kullan\b/i,
-  /\bsozlerini kullan\b/i,
-  /\bdalga geç\b/i,
-  /\bdalga gec\b/i,
-  /\başağıla\b/i,
-  /\basagila\b/i
+const HARD_BLOCK_PATTERNS = [
+  /\bsesini\s+(?:kopyala|klonla|taklit et)\b/i,
+  /\bvokalini\s+(?:kopyala|klonla|taklit et)\b/i,
+  /\b(?:voice clone|clone (?:his|her|their|the) voice|imitate (?:his|her|their|the) voice)\b/i,
+  /\b(?:melodisini|nakaratını|nakaratini|sözlerini|sozlerini)\s+(?:aynen|birebir\s+)?kullan\b/i,
+  /\b(?:exact copy|copy the melody|copy the chorus|copy the lyrics)\b/i
 ];
     const PUBLIC_FIGURE_TERMS = [
       "recep tayyip erdogan",
@@ -1360,10 +1348,7 @@ function evaluateMusicPolicyUI() {
 
   if (!generateBtn) return false;
 
-  const raw = [
-    String(promptEl?.value || "").trim(),
-    String(lyricsEl?.value || "").trim()
-  ].filter(Boolean).join(" ");
+ const raw = String(promptEl?.value || "").trim();
 
   const result = analyzeMusicPolicy(raw);
   const blocked = !!result.blocked;
@@ -1477,10 +1462,7 @@ function bindMusicPolicyUI() {
   generateBtn.addEventListener("click", (e) => {
     resetPolicyUI();
 
-    const raw = [
-      String(promptEl?.value || "").trim(),
-      String(lyricsEl?.value || "").trim()
-    ].filter(Boolean).join(" ");
+   const raw = String(promptEl?.value || "").trim();
 
     const result = analyzeMusicPolicy(raw);
     const blocked = !!result.blocked;
