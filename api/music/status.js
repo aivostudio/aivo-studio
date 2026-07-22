@@ -1,4 +1,14 @@
 const { neon } = require("@neondatabase/serverless");
+const { getRedis } = require("../_kv");
+
+const fetchFn = globalThis.fetch || require("node-fetch");
+
+// api/music/status.js
+// Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
+// - Ready: status 0/2 + audio URL
+// - Failed: status 3, negative status, fail_code/fail_reason, FAIL/ERROR state
+// - Ready output is exposed through R2 archive URL or same-origin media proxy
+// - Completed and failed states are synchronized to Neon
 
 function pickConn() {
   return (
@@ -12,7 +22,7 @@ function pickConn() {
 
 async function readJobObjFromDB(internalId) {
   const conn = pickConn();
-  if (!conn) return null;
+  if (!conn || !internalId) return null;
 
   try {
     const sql = neon(conn);
@@ -28,7 +38,7 @@ async function readJobObjFromDB(internalId) {
     const row = rows?.[0];
     if (!row) return null;
 
-    const provider_job_id = row.request_id ? String(row.request_id) : "";
+    const providerJobId = row.request_id ? String(row.request_id) : "";
     const meta = row.meta || {};
 
     const idsRaw =
@@ -38,33 +48,19 @@ async function readJobObjFromDB(internalId) {
       meta.songIds ||
       [];
 
-    const provider_song_ids = Array.isArray(idsRaw)
-      ? idsRaw.map((x) => String(x)).filter(Boolean)
+    const providerSongIds = Array.isArray(idsRaw)
+      ? idsRaw.map((value) => String(value || "").trim()).filter(Boolean)
       : [];
 
     return {
-      provider_job_id: provider_job_id || null,
-      provider_song_ids: provider_song_ids.length ? provider_song_ids : null,
+      provider_job_id: providerJobId || null,
+      provider_song_ids: providerSongIds.length ? providerSongIds : null,
     };
   } catch {
     return null;
   }
 }
-// api/music/status.js
-// Vercel route: Direct TopMediai v3 tasks poll + normalize to audio.src
-// FIX: Provider audio_url 302 redirect (audiopipe.suno.ai) -> duration Infinity/NaN + progress bar kırılıyor.
-// Çözüm: UI'ya her zaman SAME-ORIGIN URL ver:
-//   1) varsa R2 archive_url
-//   2) yoksa /api/media/proxy?url=... (same-origin, redirect/range/CORS stabilize)
-// Ayrıca: TopMediai status ready bazen 0 değil 2 gelebiliyor -> ready map genişletildi.
 
-const { getRedis } = require("../_kv");
-const fetchFn = globalThis.fetch || require("node-fetch");
-
-/**
- * copy-to-r2 helper'ını esnek resolve ediyoruz.
- * Beklenen: api/_lib/copy-to-r2.js içinde "url -> R2" kopyalayan bir fonksiyon.
- */
 function resolveCopyToR2() {
   try {
     // eslint-disable-next-line import/no-dynamic-require
@@ -83,32 +79,41 @@ function resolveCopyToR2() {
       mod?.copyFromURLToR2,
     ].filter((fn) => typeof fn === "function");
 
-    if (candidates.length) return candidates[0];
-    return null;
+    return candidates[0] || null;
   } catch {
     return null;
   }
 }
 
-function safeJsonParse(s) {
-  if (s && typeof s === "object") return s; // Redis zaten object döndürüyorsa
+function unwrapRedisValue(value) {
+  return value && typeof value === "object" && value.result
+    ? value.result
+    : value;
+}
+
+function safeJsonParse(value) {
+  if (value && typeof value === "object") return value;
+
   try {
-    return JSON.parse(s);
+    return JSON.parse(value);
   } catch {
     return null;
   }
 }
-function uniqStrings(arr) {
-  const out = [];
+
+function uniqStrings(values) {
+  const output = [];
   const seen = new Set();
-  for (const x of arr || []) {
-    const s = String(x || "").trim();
-    if (!s) continue;
-    if (seen.has(s)) continue;
-    seen.add(s);
-    out.push(s);
+
+  for (const value of values || []) {
+    const clean = String(value || "").trim();
+    if (!clean || seen.has(clean)) continue;
+
+    seen.add(clean);
+    output.push(clean);
   }
-  return out;
+
+  return output;
 }
 
 function nowIso() {
@@ -120,46 +125,209 @@ function nowIso() {
 }
 
 function buildMusicR2Key({ provider_job_id, trackId }) {
-  const pj = String(provider_job_id || "unknown").trim() || "unknown";
-  const tid = String(trackId || "track").trim() || "track";
-  return `outputs/music/${pj}/${tid}.mp3`;
+  const providerJobId =
+    String(provider_job_id || "unknown").trim() || "unknown";
+  const safeTrackId = String(trackId || "track").trim() || "track";
+
+  return `outputs/music/${providerJobId}/${safeTrackId}.mp3`;
 }
 
 function guessContentTypeFromUrl(url) {
-  const u = String(url || "");
-  if (u.includes(".mp3")) return "audio/mpeg";
-  if (u.includes(".wav")) return "audio/wav";
-  if (u.includes(".m4a")) return "audio/mp4";
+  const value = String(url || "").toLowerCase();
+
+  if (value.includes(".wav")) return "audio/wav";
+  if (value.includes(".m4a")) return "audio/mp4";
   return "audio/mpeg";
 }
 
 function getBaseUrl(req) {
   const proto =
-    (req.headers["x-forwarded-proto"] ? String(req.headers["x-forwarded-proto"]) : "")
+    String(req.headers["x-forwarded-proto"] || "")
       .split(",")[0]
       .trim() || "https";
-  const host = (req.headers["x-forwarded-host"] ? String(req.headers["x-forwarded-host"]) : "") ||
-    (req.headers.host ? String(req.headers.host) : "");
+
+  const host =
+    String(req.headers["x-forwarded-host"] || "").trim() ||
+    String(req.headers.host || "").trim();
+
   return `${proto}://${host}`;
 }
 
 function toProxyUrl(req, rawUrl) {
-  const base = getBaseUrl(req);
-  const u = String(rawUrl || "").trim();
-  if (!u) return null;
-  return `${base}/api/media/proxy?url=${encodeURIComponent(u)}`;
+  const cleanUrl = String(rawUrl || "").trim();
+  if (!cleanUrl) return null;
+
+  return `${getBaseUrl(req)}/api/media/proxy?url=${encodeURIComponent(
+    cleanUrl
+  )}`;
+}
+
+function normalizeProviderArray(top) {
+  if (Array.isArray(top?.data)) return top.data;
+  if (Array.isArray(top?.data?.data)) return top.data.data;
+  return [];
+}
+
+function readTopLevelProviderFailure(top, httpStatus) {
+  const providerStatus = Number(top?.status);
+  const message = String(
+    top?.message || top?.error || top?.msg || ""
+  ).trim();
+
+  const clientHttpFailure =
+    Number.isFinite(Number(httpStatus)) &&
+    Number(httpStatus) >= 400 &&
+    Number(httpStatus) < 500;
+
+  const providerRejected =
+    Number.isFinite(providerStatus) &&
+    providerStatus !== 0 &&
+    Boolean(message);
+
+  if (!clientHttpFailure && !providerRejected) return null;
+
+  return {
+    track_id: null,
+    status: Number.isFinite(providerStatus) ? providerStatus : null,
+    state: "failed",
+    fail_code: Number.isFinite(providerStatus) ? String(providerStatus) : null,
+    fail_reason:
+      message ||
+      `TopMediai status request failed with HTTP ${httpStatus}.`,
+  };
+}
+
+function getTrackId(item) {
+  return String(item?.song_id || item?.songId || item?.id || "").trim() || null;
+}
+
+function getAudioUrl(item) {
+  return (
+    item?.audio_url ||
+    item?.audioUrl ||
+    item?.audio ||
+    item?.mp3 ||
+    item?.url ||
+    null
+  );
+}
+
+function readFailure(item) {
+  const status = Number(item?.status);
+  const state = String(item?.state || "").trim();
+  const failCodeRaw = item?.fail_code ?? item?.failCode ?? null;
+  const failReason = String(
+    item?.fail_reason || item?.failReason || ""
+  ).trim();
+
+  const hasFailCode =
+    failCodeRaw !== null &&
+    failCodeRaw !== undefined &&
+    String(failCodeRaw).trim() !== "" &&
+    String(failCodeRaw).trim() !== "0";
+
+  const failed =
+    status === 3 ||
+    (Number.isFinite(status) && status < 0) ||
+    hasFailCode ||
+    Boolean(failReason) ||
+    /FAIL|FAILED|ERROR/i.test(state);
+
+  if (!failed) return null;
+
+  return {
+    track_id: getTrackId(item),
+    status: Number.isFinite(status) ? status : null,
+    state: state || null,
+    fail_code: hasFailCode ? String(failCodeRaw) : null,
+    fail_reason: failReason || "Müzik üretimi sağlayıcı tarafından reddedildi.",
+  };
+}
+
+async function syncJobRecord({
+  status,
+  outputs,
+  provider_job_id,
+  provider_song_ids,
+  internal_job_id,
+  topmediai,
+  failures,
+}) {
+  if (!status || !["completed", "failed"].includes(status)) return;
+
+  const conn = pickConn();
+  if (!conn) return;
+
+  try {
+    const sql = neon(conn);
+
+    const mergedMeta = {
+      ...(topmediai?.data?.[0]
+        ? { topmediai_first: topmediai.data[0] }
+        : {}),
+      provider_job_id: provider_job_id || null,
+      provider_song_ids: provider_song_ids || [],
+      internal_job_id: internal_job_id || null,
+      audio_src:
+        outputs?.[0]?.url ||
+        outputs?.[0]?.meta?.archive_url ||
+        outputs?.[0]?.meta?.audio_url ||
+        "",
+      provider_failures: failures || [],
+    };
+
+    if (internal_job_id) {
+      await sql`
+        update jobs
+        set
+          status = ${status},
+          outputs = ${Array.isArray(outputs) ? outputs : []},
+          meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
+          updated_at = now()
+        where app = ${"music"}
+          and deleted_at is null
+          and (
+            meta->>'internal_job_id' = ${internal_job_id}
+            or request_id = ${provider_job_id || ""}
+          )
+      `;
+
+      return;
+    }
+
+    if (provider_job_id) {
+      await sql`
+        update jobs
+        set
+          status = ${status},
+          outputs = ${Array.isArray(outputs) ? outputs : []},
+          meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
+          updated_at = now()
+        where app = ${"music"}
+          and deleted_at is null
+          and (
+            request_id = ${provider_job_id}
+            or meta->>'provider_job_id' = ${provider_job_id}
+          )
+      `;
+    }
+  } catch (error) {
+    console.warn("[api/music/status] db sync failed", error);
+  }
 }
 
 module.exports = async (req, res) => {
-  // build stamp
   res.setHeader(
     "x-aivo-status-build",
-    "status-direct-v3-topmediai-tasks-2026-03-02-r2-archive-no-redirect"
+    "status-direct-v3-topmediai-tasks-2026-07-23-failed-state-fix"
   );
 
   try {
     if (req.method !== "GET") {
-      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+      return res.status(405).json({
+        ok: false,
+        error: "method_not_allowed",
+      });
     }
 
     const raw = String(
@@ -173,138 +341,94 @@ module.exports = async (req, res) => {
     ).trim();
 
     if (!raw) {
-      return res.status(400).json({ ok: false, error: "missing_job_id" });
+      return res.status(400).json({
+        ok: false,
+        error: "missing_job_id",
+      });
     }
 
     const redis = getRedis();
 
-    // ---------------------------------------------------------
-    // 1) Resolve song ids
-    // ---------------------------------------------------------
     const isInternal = raw.startsWith("job_");
     const looksLikeUUID =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw);
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        raw
+      );
 
     let internal_job_id = isInternal || looksLikeUUID ? raw : null;
     let provider_job_id = !isInternal && !looksLikeUUID ? raw : null;
     let provider_song_ids = [];
 
-   async function readJobObjFromRedis(internalId) {
-  if (!internalId) return null;
+    async function readJobObjFromRedis(internalId) {
+      if (!internalId) return null;
 
-  const normalize = (v) =>
-    v && typeof v === "object" && v.result ? v.result : v;
+      const firstKey = `jobs/${internalId}/job.json`;
+      const firstRaw = unwrapRedisValue(await redis.get(firstKey));
+      const firstObject = firstRaw ? safeJsonParse(firstRaw) : null;
+      if (firstObject) return firstObject;
 
-  const k1 = `jobs/${internalId}/job.json`;
-  const t1raw = await redis.get(k1);
-  const t1 =
-    t1raw && typeof t1raw === "object" && t1raw.result
-      ? t1raw.result
-      : t1raw;
+      const secondKey = `job:${internalId}`;
+      const secondRaw = unwrapRedisValue(await redis.get(secondKey));
+      const secondObject = secondRaw ? safeJsonParse(secondRaw) : null;
 
-  const o1 = t1 ? safeJsonParse(t1) : null;
-  if (o1) return o1;
+      return secondObject || null;
+    }
 
-  const k2 = `job:${internalId}`;
-  const t2raw = await redis.get(k2);
-  const t2 =
-    t2raw && typeof t2raw === "object" && t2raw.result
-      ? t2raw.result
-      : t2raw;
+    if (isInternal || looksLikeUUID) {
+      let jobObj = await readJobObjFromRedis(internal_job_id);
 
-  const o2 = t2 ? safeJsonParse(t2) : null;
-  if (o2) return o2;
+      if (!jobObj) {
+        jobObj = await readJobObjFromDB(internal_job_id);
+      }
 
-  return null;
-}
-if (isInternal || looksLikeUUID) {
-  const jobObj = await readJobObjFromRedis(internal_job_id);
-  // DEBUG (only when probe=1): KV'de job var mı yok mu net görelim
-if (!jobObj && String(req.query.probe || "") === "1") {
-  const k1 = `jobs/${internal_job_id}/job.json`;
-  const k2 = `job:${internal_job_id}`;
-  const t1 = await redis.get(k1);
-  const t2 = await redis.get(k2);
+      if (!jobObj && String(req.query.probe || "") === "1") {
+        const firstKey = `jobs/${internal_job_id}/job.json`;
+        const secondKey = `job:${internal_job_id}`;
+        const firstValue = await redis.get(firstKey);
+        const secondValue = await redis.get(secondKey);
 
-  return res.status(200).json({
-    ok: false,
-    error: "debug_kv_missing_job",
-    internal_job_id,
-    debug: {
-      k1,
-      k1_exists: !!t1,
-      k1_sample: String(t1 || "").slice(0, 300),
-      k2,
-      k2_exists: !!t2,
-      k2_sample: String(t2 || "").slice(0, 300),
-    },
-  });
-}
+        return res.status(200).json({
+          ok: false,
+          error: "debug_kv_missing_job",
+          internal_job_id,
+          debug: {
+            first_key: firstKey,
+            first_exists: Boolean(firstValue),
+            first_sample: String(firstValue || "").slice(0, 300),
+            second_key: secondKey,
+            second_exists: Boolean(secondValue),
+            second_sample: String(secondValue || "").slice(0, 300),
+          },
+        });
+      }
 
-  provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+      provider_job_id =
+        String(jobObj?.provider_job_id || "").trim() || provider_job_id;
 
-  const idsRaw =
-    jobObj?.provider_song_ids ||
-    jobObj?.providerSongIds ||
-    jobObj?.song_ids ||
-    jobObj?.songIds ||
-    [];
-
-  provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-
-  if (provider_song_ids.length === 0 && provider_job_id) {
-    provider_song_ids = [String(provider_job_id)];
-  }
-
-      // 🔥 Fallback: if internal job not found in job store,
-// try resolving via provider_map scan
-if (isInternal && (!provider_job_id || provider_song_ids.length === 0)) {
-  // provider_map keys are stored as: provider_map:<provider_job_id>
-  // we don't know provider_job_id yet, so we must try scanning via known pattern
-
- const keys = await redis.keys("provider_map:*");
-  for (const key of keys) {
-    const rawMap = await redis.get(key);
-    const normalized =
-      rawMap && typeof rawMap === "object" && rawMap.result
-        ? rawMap.result
-        : rawMap;
-
-    const mapObj = normalized ? safeJsonParse(normalized) : null;
-    if (mapObj?.internal_job_id === internal_job_id) {
-      provider_job_id = String(mapObj?.provider_job_id || "").trim() || null;
-
-      const mapIdsRaw =
-        mapObj?.provider_song_ids ||
-        mapObj?.providerSongIds ||
-        mapObj?.song_ids ||
-        mapObj?.songIds ||
+      const idsRaw =
+        jobObj?.provider_song_ids ||
+        jobObj?.providerSongIds ||
+        jobObj?.song_ids ||
+        jobObj?.songIds ||
         [];
 
-      provider_song_ids = Array.isArray(mapIdsRaw)
-        ? uniqStrings(mapIdsRaw)
-        : [];
+      provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
 
-      break;
-    }
-  }
-}
-    } else {
-      if (raw.includes(",")) {
-        provider_song_ids = uniqStrings(raw.split(","));
-        provider_job_id = provider_song_ids[0] || provider_job_id;
-      } else {
-        const providerMapKey = `provider_map:${raw}`;
-        const mapText = await redis.get(providerMapKey);
-       const normalized =
-  mapText && typeof mapText === "object" && mapText.result
-    ? mapText.result
-    : mapText;
+      if (!provider_song_ids.length && provider_job_id) {
+        provider_song_ids = [String(provider_job_id)];
+      }
 
-const mapObj = normalized ? safeJsonParse(normalized) : null;
+      if (isInternal && (!provider_job_id || !provider_song_ids.length)) {
+        const keys = await redis.keys("provider_map:*");
 
-        if (mapObj?.internal_job_id) {
-          internal_job_id = String(mapObj.internal_job_id).trim() || null;
+        for (const key of keys) {
+          const rawMap = unwrapRedisValue(await redis.get(key));
+          const mapObj = rawMap ? safeJsonParse(rawMap) : null;
+
+          if (mapObj?.internal_job_id !== internal_job_id) continue;
+
+          provider_job_id =
+            String(mapObj?.provider_job_id || "").trim() || null;
 
           const mapIdsRaw =
             mapObj?.provider_song_ids ||
@@ -313,55 +437,109 @@ const mapObj = normalized ? safeJsonParse(normalized) : null;
             mapObj?.songIds ||
             [];
 
-          provider_song_ids = Array.isArray(mapIdsRaw) ? uniqStrings(mapIdsRaw) : [];
-          provider_job_id = String(mapObj?.provider_job_id || "").trim() || String(raw);
+          provider_song_ids = Array.isArray(mapIdsRaw)
+            ? uniqStrings(mapIdsRaw)
+            : [];
 
-          if (internal_job_id) {
-            const jobObj = await readJobObjFromRedis(internal_job_id);
-            // fallback: read mapping written by /api/music/generate.js
-if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && internal_job_id) {
-  const tMap = await redis.get(`internal_map:${internal_job_id}`);
-  const oMap = tMap ? safeJsonParse(tMap) : null;
-  if (oMap) {
-    provider_job_id = String(oMap.provider_job_id || "").trim() || provider_job_id;
-    const idsRaw =
-      oMap.provider_song_ids ||
-      oMap.providerSongIds ||
-      oMap.song_ids ||
-      oMap.songIds ||
-      [];
-    provider_song_ids = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : provider_song_ids;
-  }
-}
-
-            const idsRaw =
-              jobObj?.provider_song_ids ||
-              jobObj?.providerSongIds ||
-              jobObj?.song_ids ||
-              jobObj?.songIds ||
-              [];
-
-            const jobIds = Array.isArray(idsRaw) ? uniqStrings(idsRaw) : [];
-            if (jobIds.length) {
-              provider_song_ids = uniqStrings([...(provider_song_ids || []), ...jobIds]);
-            }
-
-            provider_job_id = String(jobObj?.provider_job_id || "").trim() || provider_job_id;
-          }
-
-          if (provider_song_ids.length === 0 && provider_job_id) {
-            provider_song_ids = [String(provider_job_id)];
-          }
-        } else {
-          provider_song_ids = [String(raw)];
-          provider_job_id = String(raw);
+          break;
         }
+      }
+    } else if (raw.includes(",")) {
+      provider_song_ids = uniqStrings(raw.split(","));
+      provider_job_id = provider_song_ids[0] || provider_job_id;
+    } else {
+      const providerMapKey = `provider_map:${raw}`;
+      const mapRaw = unwrapRedisValue(await redis.get(providerMapKey));
+      const mapObj = mapRaw ? safeJsonParse(mapRaw) : null;
+
+      if (mapObj?.internal_job_id) {
+        internal_job_id = String(mapObj.internal_job_id).trim() || null;
+
+        const mapIdsRaw =
+          mapObj?.provider_song_ids ||
+          mapObj?.providerSongIds ||
+          mapObj?.song_ids ||
+          mapObj?.songIds ||
+          [];
+
+        provider_song_ids = Array.isArray(mapIdsRaw)
+          ? uniqStrings(mapIdsRaw)
+          : [];
+
+        provider_job_id =
+          String(mapObj?.provider_job_id || "").trim() || String(raw);
+
+        if (internal_job_id) {
+          let jobObj = await readJobObjFromRedis(internal_job_id);
+
+          if (!jobObj) {
+            jobObj = await readJobObjFromDB(internal_job_id);
+          }
+
+          if (
+            (!jobObj ||
+              (!jobObj.provider_job_id && !jobObj.provider_song_ids)) &&
+            internal_job_id
+          ) {
+            const internalMapRaw = unwrapRedisValue(
+              await redis.get(`internal_map:${internal_job_id}`)
+            );
+            const internalMap = internalMapRaw
+              ? safeJsonParse(internalMapRaw)
+              : null;
+
+            if (internalMap) {
+              provider_job_id =
+                String(internalMap.provider_job_id || "").trim() ||
+                provider_job_id;
+
+              const internalIdsRaw =
+                internalMap.provider_song_ids ||
+                internalMap.providerSongIds ||
+                internalMap.song_ids ||
+                internalMap.songIds ||
+                [];
+
+              if (Array.isArray(internalIdsRaw)) {
+                provider_song_ids = uniqStrings(internalIdsRaw);
+              }
+            }
+          }
+
+          const jobIdsRaw =
+            jobObj?.provider_song_ids ||
+            jobObj?.providerSongIds ||
+            jobObj?.song_ids ||
+            jobObj?.songIds ||
+            [];
+
+          const jobIds = Array.isArray(jobIdsRaw)
+            ? uniqStrings(jobIdsRaw)
+            : [];
+
+          if (jobIds.length) {
+            provider_song_ids = uniqStrings([
+              ...provider_song_ids,
+              ...jobIds,
+            ]);
+          }
+
+          provider_job_id =
+            String(jobObj?.provider_job_id || "").trim() || provider_job_id;
+        }
+
+        if (!provider_song_ids.length && provider_job_id) {
+          provider_song_ids = [String(provider_job_id)];
+        }
+      } else {
+        provider_song_ids = [String(raw)];
+        provider_job_id = String(raw);
       }
     }
 
     provider_song_ids = uniqStrings(provider_song_ids);
 
-    if (provider_song_ids.length === 0) {
+    if (!provider_song_ids.length) {
       return res.status(200).json({
         ok: false,
         error: "missing_provider_song_ids",
@@ -372,10 +550,8 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       });
     }
 
-    // ---------------------------------------------------------
-    // 2) Call TopMediai v3 tasks
-    // ---------------------------------------------------------
     const KEY = process.env.TOPMEDIAI_API_KEY;
+
     if (!KEY) {
       return res.status(200).json({
         ok: false,
@@ -389,9 +565,11 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
     }
 
     const idsParam = provider_song_ids.join(",");
-    const url = `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(idsParam)}`;
+    const providerUrl = `https://api.topmediai.com/v3/music/tasks?ids=${encodeURIComponent(
+      idsParam
+    )}`;
 
-    const r = await fetchFn(url, {
+    const providerResponse = await fetchFn(providerUrl, {
       method: "GET",
       headers: {
         accept: "application/json",
@@ -399,8 +577,8 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       },
     });
 
-    const text = await r.text();
-    const top = safeJsonParse(text);
+    const providerText = await providerResponse.text();
+    const top = safeJsonParse(providerText);
 
     if (!top) {
       return res.status(200).json({
@@ -411,100 +589,143 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
         provider_job_id,
         provider_song_ids,
         internal_job_id,
-        upstream_status: r.status,
-        upstream_preview: String(text || "").slice(0, 400),
+        upstream_status: providerResponse.status,
+        upstream_preview: String(providerText || "").slice(0, 400),
       });
     }
 
-    // ---------------------------------------------------------
-    // 3) Normalize (MULTI-TRACK) + R2 Archive + SAME-ORIGIN URL
-    // ---------------------------------------------------------
-    const arr = Array.isArray(top?.data)
-      ? top.data
-      : Array.isArray(top?.data?.data)
-      ? top.data.data
-      : null;
+    const providerItems = normalizeProviderArray(top);
+    const topLevelFailure = readTopLevelProviderFailure(
+      top,
+      providerResponse.status
+    );
 
-    let anyFail = false;
-    let anyReady = false;
+    if (topLevelFailure && providerItems.length === 0) {
+      const failedData = {
+        ok: true,
+        provider: "topmediai",
+        provider_job_id,
+        provider_song_ids,
+        internal_job_id: internal_job_id || null,
+        state: "failed",
+        status: "failed",
+        outputs: [],
+        failures: [topLevelFailure],
+        error: "provider_status_request_failed",
+        message: topLevelFailure.fail_reason,
+        fail_code: topLevelFailure.fail_code,
+        topmediai: top,
+        archive_warning: null,
+      };
+
+      await syncJobRecord({
+        status: "failed",
+        outputs: [],
+        provider_job_id,
+        provider_song_ids,
+        internal_job_id,
+        topmediai: top,
+        failures: [topLevelFailure],
+      });
+
+      return res.status(200).json(failedData);
+    }
 
     const outputs = [];
-
+    const failures = [];
     const copyToR2 = resolveCopyToR2();
-    let archiveWarning = null;
-    if (!copyToR2) archiveWarning = "missing_copy_to_r2_helper";
 
-    // Ready mapping:
-    // - bazı örneklerde status:0 ready
-    // - bazılarında status:2 iken audio_url dolu (senin screenshot)
-    // - audio_url varsa ve status 0/2 ise ready kabul edeceğiz.
+    let archiveWarning = copyToR2 ? null : "missing_copy_to_r2_helper";
+    let anyReady = false;
+    let anyProcessing = false;
+
     const READY_STATUSES = new Set([0, 2]);
 
-    if (Array.isArray(arr) && arr.length) {
-      for (const item of arr) {
-        const st = Number(item?.status);
-        const trackId = String(item?.song_id || item?.id || "").trim() || null;
-        const urlMp3 = item?.audio_url || item?.audio || item?.mp3 || item?.url || null;
+    for (const item of providerItems) {
+      const statusNumber = Number(item?.status);
+      const trackId = getTrackId(item);
+      const audioUrl = getAudioUrl(item);
+      const failure = readFailure(item);
 
-        const ready = !!urlMp3 && (READY_STATUSES.has(st) || !Number.isFinite(st));
+      if (failure) {
+        failures.push(failure);
+        continue;
+      }
 
-        if (st < 0 || String(item?.state || "").toUpperCase().includes("FAIL")) {
-          anyFail = true;
-        }
+      const ready =
+        Boolean(audioUrl) &&
+        (READY_STATUSES.has(statusNumber) || !Number.isFinite(statusNumber));
 
-        if (ready && urlMp3) {
-          anyReady = true;
+      if (!ready) {
+        anyProcessing = true;
+        continue;
+      }
 
-          // default: SAME-ORIGIN proxy URL (redirect/range/CORS stabilize)
-          let finalUrl = toProxyUrl(req, urlMp3);
+      anyReady = true;
 
-          // optional: archive to R2 (stable) -> finalUrl becomes archive_url if produced
-          let archive_url = null;
+      let finalUrl = toProxyUrl(req, audioUrl);
+      let archiveUrl = null;
 
-          if (copyToR2) {
-            const key = buildMusicR2Key({ provider_job_id, trackId: trackId || provider_job_id });
+      if (copyToR2) {
+        const key = buildMusicR2Key({
+          provider_job_id,
+          trackId: trackId || provider_job_id,
+        });
 
-            try {
-              const result = await copyToR2({
-                url: urlMp3,
-                key,
-                contentType: guessContentTypeFromUrl(urlMp3),
-              });
-
-              archive_url =
-                (typeof result === "string" ? result : null) ||
-                result?.public_url ||
-                result?.url ||
-                result?.archive_url ||
-                null;
-
-              if (archive_url) {
-                finalUrl = archive_url; // ✅ UI artık R2 URL görür
-              } else {
-                archiveWarning = archiveWarning || "copy_to_r2_no_url_returned";
-              }
-            } catch (e) {
-              archiveWarning = `copy_to_r2_failed:${String(e?.message || e)}`;
-            }
-          }
-
-          outputs.push({
-            type: "audio",
-            url: finalUrl, // ✅ SAME-ORIGIN proxy OR R2 archive
-            meta: {
-              provider: "topmediai",
-              trackId: trackId || null,
-              status: st,
-              audio_url: urlMp3, // debug: provider url (redirect olabilir)
-              archive_url: archive_url, // varsa
-              archived_at: archive_url ? nowIso() : null,
-              // provider duration bazen -1 geliyor, yine de meta'ya koyuyoruz (UI isterse kullanır)
-              duration: typeof item?.duration === "number" ? item.duration : null,
-            },
+        try {
+          const result = await copyToR2({
+            url: audioUrl,
+            key,
+            contentType: guessContentTypeFromUrl(audioUrl),
           });
+
+          archiveUrl =
+            (typeof result === "string" ? result : null) ||
+            result?.public_url ||
+            result?.url ||
+            result?.archive_url ||
+            null;
+
+          if (archiveUrl) {
+            finalUrl = archiveUrl;
+          } else {
+            archiveWarning = archiveWarning || "copy_to_r2_no_url_returned";
+          }
+        } catch (error) {
+          archiveWarning = `copy_to_r2_failed:${String(
+            error?.message || error
+          )}`;
         }
       }
+
+      outputs.push({
+        type: "audio",
+        url: finalUrl,
+        meta: {
+          provider: "topmediai",
+          trackId: trackId || null,
+          status: Number.isFinite(statusNumber) ? statusNumber : null,
+          audio_url: audioUrl,
+          archive_url: archiveUrl,
+          archived_at: archiveUrl ? nowIso() : null,
+          duration:
+            typeof item?.duration === "number" ? item.duration : null,
+        },
+      });
     }
+
+    let normalizedStatus = "processing";
+
+    // A successful output must not be hidden because the sibling track failed.
+    if (anyReady) {
+      normalizedStatus = "completed";
+    } else if (failures.length > 0 && !anyProcessing) {
+      normalizedStatus = "failed";
+    } else if (failures.length > 0 && providerItems.length === failures.length) {
+      normalizedStatus = "failed";
+    }
+
+    const firstFailure = failures[0] || null;
 
     const data = {
       ok: true,
@@ -512,122 +733,51 @@ if ((!jobObj || (!jobObj.provider_job_id && !jobObj.provider_song_ids)) && inter
       provider_job_id,
       provider_song_ids,
       internal_job_id: internal_job_id || null,
-      state: "processing",
-      status: "processing",
+      state: normalizedStatus,
+      status: normalizedStatus,
       outputs,
+      failures,
       topmediai: top,
       archive_warning: archiveWarning,
+      ...(normalizedStatus === "failed"
+        ? {
+            error: "provider_generation_failed",
+            message:
+              firstFailure?.fail_reason ||
+              "Müzik üretimi sağlayıcı tarafından başarısız olarak işaretlendi.",
+            fail_code: firstFailure?.fail_code || null,
+          }
+        : {}),
     };
 
-    // Backward-compat: eski panel hâlâ data.audio.src arıyorsa
     if (outputs.length) {
       data.audio = {
-        src: outputs[0].url, // ✅ artık provider değil: proxy/R2
+        src: outputs[0].url,
         output_id: outputs[0]?.meta?.trackId || String(provider_job_id),
         duration: outputs[0]?.meta?.duration ?? null,
       };
     }
 
-     if (anyFail) {
-  data.state = "failed";
-  data.status = "failed";
-} else if (anyReady) {
-  data.state = "completed";
-  data.status = "completed";
-} else {
-  data.state = "processing";
-  data.status = "processing";
-}
-
-// ✅ READY olunca DB row da güncellensin ki /api/jobs/list doğru state dönsün
-if (data.status === "completed") {
-  try {
-    const conn = pickConn();
-    if (conn) {
-      const sql = neon(conn);
-
-      const mergedMeta = {
-        ...(data.topmediai?.data?.[0] ? { topmediai_first: data.topmediai.data[0] } : {}),
-        provider_job_id: provider_job_id || null,
-        provider_song_ids: provider_song_ids || [],
-        internal_job_id: internal_job_id || null,
-        audio_src:
-          data.audio?.src ||
-          outputs?.[0]?.url ||
-          outputs?.[0]?.meta?.archive_url ||
-          outputs?.[0]?.meta?.audio_url ||
-          "",
-      };
-
-      if (internal_job_id) {
-        await sql`
-          update jobs
-          set
-            status = ${"completed"},
-            outputs = ${outputs},
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
-            updated_at = now()
-          where app = ${"music"}
-            and deleted_at is null
-            and (
-              meta->>'internal_job_id' = ${internal_job_id}
-              or request_id = ${provider_job_id || ""}
-            )
-        `;
-      } else if (provider_job_id) {
-        await sql`
-          update jobs
-          set
-            status = ${"completed"},
-            outputs = ${outputs},
-            meta = coalesce(meta, '{}'::jsonb) || ${mergedMeta}::jsonb,
-            updated_at = now()
-          where app = ${"music"}
-            and deleted_at is null
-            and request_id = ${provider_job_id}
-        `;
-      }
-    }
-  } catch (e) {
-    console.warn("[api/music/status] db sync failed", e);
-  }
-}
-
-return res.status(200).json(data);
-    // DB sync: music row status/outputs güncellensin
-    try {
-      const conn = pickConn();
-      if (conn && provider_job_id) {
-        const sql = neon(conn);
-
-        await sql`
-          update jobs
-          set
-            status = ${data.status || "processing"},
-            outputs = ${Array.isArray(data.outputs) ? data.outputs : []},
-            updated_at = now()
-          where app = 'music'
-            and deleted_at is null
-            and (
-              request_id = ${String(provider_job_id)}
-              or meta->>'provider_job_id' = ${String(provider_job_id)}
-              or meta->>'internal_job_id' = ${String(internal_job_id || "")}
-            )
-        `;
-      }
-    } catch (e) {
-      console.warn("[api/music/status] db sync failed", e);
-    }
+    await syncJobRecord({
+      status: normalizedStatus,
+      outputs,
+      provider_job_id,
+      provider_song_ids,
+      internal_job_id,
+      topmediai: top,
+      failures,
+    });
 
     return res.status(200).json(data);
-  } catch (err) {
-    console.error("api/music/status error:", err);
+  } catch (error) {
+    console.error("api/music/status error:", error);
+
     return res.status(200).json({
       ok: false,
       error: "proxy_error",
       state: "processing",
       status: "processing",
-      detail: String(err?.message || err),
+      detail: String(error?.message || error),
     });
   }
 };
