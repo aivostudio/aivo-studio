@@ -788,6 +788,87 @@ function enforceAtmoPolicy(
 }
 
 /*
+ * PhotoFX için daraltılmış politika:
+ *
+ * - Yalnızca kullanıcının prompt alanı taranır.
+ * - Hazır efektler, presetler, hareket seviyesi, renk, geçiş, oran, süre,
+ *   çözünürlük ve sistem tarafından eklenen metinler filtre kararına katılmaz.
+ * - Duman, Hadise, Ceza, Simge, Özgün, Manga, Motive gibi günlük dilde
+ *   başka anlamı da bulunan tek kelimelik sanatçı adları tamamen yok sayılır.
+ * - Çok kelimeli veya ayırt edici sanatçı adları engellenir.
+ * - Yalnızca seed listesindeki belirli siyasi / kamu figürü isimleri engellenir.
+ * - Deepfake, face swap, gibi, stilinde, birebir ve benzeri genel ifadeler
+ *   PhotoFX promptunda ayrıca blok oluşturmaz.
+ * - Görsel yükleme filtresi ayrı media-policy akışında aynen kalır.
+ */
+function enforcePhotoFxPolicy(
+  text,
+  explicitArtistText = '',
+  explicitPersonText = ''
+) {
+  const artistText = [
+    text,
+    explicitArtistText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsArtistNames =
+    pickMatchedUnambiguousArtistTerms(
+      artistText,
+      8
+    );
+
+  const publicFigureText = [
+    text,
+    explicitPersonText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsPublicFigures =
+    pickMatchedTerms(
+      publicFigureText,
+      PUBLIC_FIGURES_TR_SEED,
+      8
+    );
+
+  if (hitsArtistNames.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'ARTIST_NAME_PHOTOFX',
+      severity: 'high',
+      message:
+        'Gerçek sanatçı adı Foto Efekt promptunda kullanılamaz. İsim yerine efekti, hareketi ve görsel atmosferi tarif et.',
+      rewrittenPrompt: null,
+      reasons: [
+        'artist-name-photofx',
+      ],
+      matchedTerms:
+        hitsArtistNames,
+    });
+  }
+
+  if (hitsPublicFigures.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'PUBLIC_FIGURE_NAME_PHOTOFX',
+      severity: 'high',
+      message:
+        'Gerçek siyasetçi veya kamu figürü adı Foto Efekt promptunda kullanılamaz. İsim yerine kurgu bir karakter veya genel sahne tanımı kullan.',
+      rewrittenPrompt: null,
+      reasons: [
+        'public-figure-name-photofx',
+      ],
+      matchedTerms:
+        hitsPublicFigures,
+    });
+  }
+
+  return null;
+}
+
+/*
  * Müzik dışındaki uygulamaların mevcut sanatçı
  * kontrolü aynen korunur.
  */
@@ -1145,6 +1226,62 @@ function enforcePolicy(input = {}) {
       severity: 'low',
       message:
         'Atmosfer isteği policy kontrolünden geçti.',
+      rewrittenPrompt: null,
+      reasons: [],
+      matchedTerms: [],
+    });
+  }
+
+  /*
+   * PhotoFX, eski ortak müzik-dışı filtreden ayrıdır.
+   * Yalnızca prompttaki ayırt edici sanatçı adları ile belirli siyasi /
+   * kamu figürü adları kontrol edilir. Eş anlamlı tek kelimelik sanatçı
+   * adları ve diğer genel risk kelimeleri PhotoFX için filtre oluşturmaz.
+   */
+  if (app === 'photofx' || app === 'photo-fx') {
+    const rawPhotoFx =
+      String(input.prompt || '').trim();
+
+    const textPhotoFx =
+      normalizeText(rawPhotoFx);
+
+    if (!textPhotoFx) {
+      return makeResult({
+        decision: 'allow',
+        code: 'EMPTY_INPUT_ALLOW',
+        severity: 'low',
+        message:
+          'İstek boş olduğu için policy kontrolü izin verdi.',
+        rewrittenPrompt: null,
+        reasons: [],
+        matchedTerms: [],
+      });
+    }
+
+    const photoFxDecision =
+      enforcePhotoFxPolicy(
+        textPhotoFx,
+        String(
+          input.referenceArtist ||
+          input.artist ||
+          ''
+        ).trim(),
+        String(
+          input.personName ||
+          ''
+        ).trim()
+      );
+
+    if (photoFxDecision) {
+      return photoFxDecision;
+    }
+
+    return makeResult({
+      decision: 'allow',
+      code: 'PHOTOFX_ALLOW',
+      severity: 'low',
+      message:
+        'Foto Efekt isteği policy kontrolünden geçti.',
       rewrittenPrompt: null,
       reasons: [],
       matchedTerms: [],
