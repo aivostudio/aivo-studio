@@ -168,6 +168,84 @@ const AMBIGUOUS_SINGLE_WORD_ARTIST_TERMS = new Set(
   ].map(normalizeText)
 );
 
+
+const VIDEO_GENERIC_PUBLIC_FIGURE_TERMS = new Set(
+  [
+    'cumhurbaskani',
+    'cumhurbaşkanı',
+    'cumhurbaskani yardimcisi',
+    'cumhurbaşkanı yardımcısı',
+    'reisicumhur',
+    'bakan',
+    'milletvekili',
+    'belediye baskani',
+    'belediye başkanı',
+    'vali',
+    'kaymakam',
+    'siyasetci',
+    'siyasetçi',
+    'politikaci',
+    'politikacı',
+    'kamu figuru',
+    'kamu figürü',
+    'devlet buyugu',
+    'devlet büyüğü',
+    'unlu',
+    'ünlü',
+    'famous',
+    'celebrity',
+    'president',
+    'politician',
+    'prime minister',
+    'king',
+    'queen',
+    'chancellor',
+    'taoiseach',
+    'premier',
+    'head of state',
+    'head of government',
+    'basbakan',
+    'başbakan',
+  ].map(normalizeText)
+);
+
+const VIDEO_DISTINCTIVE_SINGLE_PUBLIC_FIGURE_TERMS = new Set(
+  [
+    'erdogan',
+    'erdoğan',
+    'kilicdaroglu',
+    'kılıçdaroğlu',
+    'imamoglu',
+    'imamoğlu',
+    'bahceli',
+    'bahçeli',
+    'aksener',
+    'akşener',
+    'demirtas',
+    'demirtaş',
+    'ozdag',
+    'özdağ',
+    'davutoglu',
+    'davutoğlu',
+    'ataturk',
+    'atatürk',
+    'trump',
+    'macron',
+    'putin',
+    'zelensky',
+    'zelenskyy',
+    'netanyahu',
+    'modi',
+    'khamenei',
+    'maduro',
+    'bukele',
+    'orban',
+    'orbán',
+    'milei',
+    'lula',
+  ].map(normalizeText)
+);
+
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -526,6 +604,40 @@ function pickMatchedUnambiguousArtistTerms(text, limit = 8) {
   return hits;
 }
 
+function pickMatchedSpecificVideoPublicFigureTerms(text, limit = 8) {
+  const haystack = normalizeText(text);
+  const hits = [];
+
+  for (const term of PUBLIC_FIGURES_TR_SEED) {
+    const normalizedTerm = normalizeText(term);
+    if (!normalizedTerm) continue;
+    if (VIDEO_GENERIC_PUBLIC_FIGURE_TERMS.has(normalizedTerm)) continue;
+
+    const wordCount = normalizedTerm
+      .split(' ')
+      .filter(Boolean)
+      .length;
+
+    if (
+      wordCount < 2 &&
+      !VIDEO_DISTINCTIVE_SINGLE_PUBLIC_FIGURE_TERMS.has(normalizedTerm)
+    ) {
+      continue;
+    }
+
+    const rx = buildNormalizedPhraseRegex(normalizedTerm);
+    if (!rx || !rx.test(haystack)) continue;
+
+    if (!hits.includes(term)) {
+      hits.push(term);
+    }
+
+    if (hits.length >= limit) break;
+  }
+
+  return hits;
+}
+
 function hasExplicitMusicCopyRequest(text) {
   const normalized = normalizeText(text);
 
@@ -859,6 +971,85 @@ function enforcePhotoFxPolicy(
       rewrittenPrompt: null,
       reasons: [
         'public-figure-name-photofx',
+      ],
+      matchedTerms:
+        hitsPublicFigures,
+    });
+  }
+
+  return null;
+}
+
+/*
+ * Video / Resimden Video için daraltılmış politika:
+ *
+ * - Yalnızca kullanıcının prompt alanı taranır.
+ * - Model, oran, süre, çözünürlük ve sistem metinleri filtreye katılmaz.
+ * - Duman, Hadise, Ceza, Simge, Özgün, Manga ve Motive gibi günlük dilde
+ *   kullanılabilen tek kelimelik sanatçı adları tamamen yok sayılır.
+ * - Çok kelimeli veya ayırt edici sanatçı adları engellenir.
+ * - Yalnızca belirli siyasi / kamu figürü isimleri engellenir.
+ * - Gibi, stilinde, birebir, deepfake, face swap ve benzeri genel ifadeler
+ *   prompt tarafında ayrıca blok oluşturmaz.
+ * - Yüklenen görselin media-policy taraması bu fonksiyondan ayrıdır ve kalır.
+ */
+function enforceVideoPolicy(
+  text,
+  explicitArtistText = '',
+  explicitPersonText = ''
+) {
+  const artistText = [
+    text,
+    explicitArtistText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsArtistNames =
+    pickMatchedUnambiguousArtistTerms(
+      artistText,
+      8
+    );
+
+  const publicFigureText = [
+    text,
+    explicitPersonText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsPublicFigures =
+    pickMatchedSpecificVideoPublicFigureTerms(
+      publicFigureText,
+      8
+    );
+
+  if (hitsArtistNames.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'ARTIST_NAME_VIDEO',
+      severity: 'high',
+      message:
+        'Gerçek sanatçı adı video promptunda kullanılamaz. İsim yerine sahneyi, hareketi ve video hissini tarif et.',
+      rewrittenPrompt: null,
+      reasons: [
+        'artist-name-video',
+      ],
+      matchedTerms:
+        hitsArtistNames,
+    });
+  }
+
+  if (hitsPublicFigures.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'PUBLIC_FIGURE_NAME_VIDEO',
+      severity: 'high',
+      message:
+        'Gerçek siyasetçi veya kamu figürü adı video promptunda kullanılamaz. İsim yerine kurgu bir karakter veya genel sahne tanımı kullan.',
+      rewrittenPrompt: null,
+      reasons: [
+        'public-figure-name-video',
       ],
       matchedTerms:
         hitsPublicFigures,
@@ -1282,6 +1473,61 @@ function enforcePolicy(input = {}) {
       severity: 'low',
       message:
         'Foto Efekt isteği policy kontrolünden geçti.',
+      rewrittenPrompt: null,
+      reasons: [],
+      matchedTerms: [],
+    });
+  }
+
+  /*
+   * Video ve Resimden Video, eski ortak müzik-dışı filtreden ayrıdır.
+   * Yalnızca prompttaki ayırt edici sanatçı adları ile belirli siyasi /
+   * kamu figürü adları kontrol edilir. Görsel yükleme filtresi ayrı kalır.
+   */
+  if (app === 'video' || app === 'image-to-video' || app === 'image_video') {
+    const rawVideo =
+      String(input.prompt || '').trim();
+
+    const textVideo =
+      normalizeText(rawVideo);
+
+    if (!textVideo) {
+      return makeResult({
+        decision: 'allow',
+        code: 'EMPTY_INPUT_ALLOW',
+        severity: 'low',
+        message:
+          'İstek boş olduğu için policy kontrolü izin verdi.',
+        rewrittenPrompt: null,
+        reasons: [],
+        matchedTerms: [],
+      });
+    }
+
+    const videoDecision =
+      enforceVideoPolicy(
+        textVideo,
+        String(
+          input.referenceArtist ||
+          input.artist ||
+          ''
+        ).trim(),
+        String(
+          input.personName ||
+          ''
+        ).trim()
+      );
+
+    if (videoDecision) {
+      return videoDecision;
+    }
+
+    return makeResult({
+      decision: 'allow',
+      code: 'VIDEO_ALLOW',
+      severity: 'low',
+      message:
+        'Video isteği policy kontrolünden geçti.',
       rewrittenPrompt: null,
       reasons: [],
       matchedTerms: [],
