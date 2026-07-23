@@ -791,9 +791,9 @@ const state = {
         kind: "image",
         filename: file.name,
         contentType: file.type,
-        prompt: state.mode === "image" ? state.imagePrompt : state.prompt,
+        prompt: state.prompt,
         title: file.name,
-        description: (state.mode === "image" ? state.imagePrompt : state.prompt) || file.name,
+        description: state.prompt || file.name,
         source: "mobile_video_upload"
       })
     });
@@ -834,9 +834,9 @@ const state = {
         filename: file.name,
         contentType: file.type,
         public_url: publicUrl,
-        prompt: state.mode === "image" ? state.imagePrompt : state.prompt,
+        prompt: state.prompt,
         title: file.name,
-        description: (state.mode === "image" ? state.imagePrompt : state.prompt) || file.name,
+        description: state.prompt || file.name,
         source: "mobile_video_upload"
       })
     });
