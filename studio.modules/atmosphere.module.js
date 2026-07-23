@@ -1,5 +1,5 @@
 /* ============================================================================
-   atmosphere.module.js — V2 (FULL, clean) + ASPECT + GENERATE LOADING (3–5s)
+   atmosphere.module.js — V2 (FULL, clean) + ASPECT + GENERATE LOADING (3–5s) + NARROWED PROMPT FILTER
    + ✅ R2 UPLOAD (image/logo/audio) + preview + badge + generate-lock while uploading
    - Fix: Mode switch uses CAPTURE + stopPropagation to avoid global click blockers
    - Basic: scene select, effects multi-select, camera/duration, aspect, personalization (image/logo/audio)
@@ -325,36 +325,12 @@ async function withGenerateLoading(btn, run, root) {
 
   // ------------------------------------------------------------
   // 1.1) Policy helpers (PRO only)
+  // Narrowed rule set:
+  // - General descriptive words are allowed.
+  // - Only specific artist names and specific political/public figure names
+  //   trigger the prompt-side block in this file.
+  // - Image-upload filtering remains on the backend and is not changed here.
   // ------------------------------------------------------------
-  const HARD_BLOCK_TERMS = [
-    "deepfake",
-    "face swap",
-    "replace face",
-    "swap face",
-    "yuzunu koy",
-    "yüzünü koy",
-    "yuzunu ekle",
-    "yüzünü ekle",
-    "yuzunu kullan",
-    "yüzünü kullan",
-    "suratini kullan"
-  ];
-
-  const HARD_BLOCK_PATTERNS = [
-    /\bgibi\b/i,
-    /\btarzında\b/i,
-    /\btarzinda\b/i,
-    /\bstilinde\b/i,
-    /\bin the style of\b/i,
-    /\blike\b/i,
-    /\bbirebir\b/i,
-    /\baynısı\b/i,
-    /\baynisi\b/i,
-    /\bface of\b/i,
-    /\bwith the face of\b/i,
-    /\bimpersonat(e|ion)\b/i
-  ];
-
   const PUBLIC_FIGURE_TERMS = [
     "recep tayyip erdogan",
     "recep tayyip erdoğan",
@@ -391,21 +367,7 @@ async function withGenerateLoading(btn, run, root) {
     "mustafa kemal ataturk",
     "mustafa kemal atatürk",
     "ataturk",
-    "atatürk",
-    "cumhurbaskani",
-    "cumhurbaşkanı",
-    "bakan",
-    "milletvekili",
-    "belediye baskani",
-    "belediye başkanı",
-    "vali",
-    "kaymakam",
-    "siyasetci",
-    "siyasetçi",
-    "politikaci",
-    "politikacı",
-    "kamu figuru",
-    "kamu figürü"
+    "atatürk"
   ];
 
   const ARTIST_NAME_TERMS = [
@@ -574,23 +536,19 @@ function buildAtmoPolicyPhraseRegex(term) {
 
 function isAtmoPolicyBlocked(raw) {
   const text = normalizeAtmoPolicyText(raw);
+  if (!text) return false;
 
-  const hasBlockedTerm =
-    HARD_BLOCK_TERMS.some((term) => {
-      const rx = buildAtmoPolicyPhraseRegex(term);
-      return rx ? rx.test(text) : false;
-    }) ||
-    PUBLIC_FIGURE_TERMS.some((term) => {
-      const rx = buildAtmoPolicyPhraseRegex(term);
-      return rx ? rx.test(text) : false;
-    }) ||
-    ARTIST_NAME_TERMS.some((term) => {
-      const rx = buildAtmoPolicyPhraseRegex(term);
-      return rx ? rx.test(text) : false;
-    });
+  const matchesPublicFigure = PUBLIC_FIGURE_TERMS.some((term) => {
+    const rx = buildAtmoPolicyPhraseRegex(term);
+    return rx ? rx.test(text) : false;
+  });
 
-  const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-  return !!raw && (hasBlockedTerm || hasBlockedPattern);
+  const matchesArtist = ARTIST_NAME_TERMS.some((term) => {
+    const rx = buildAtmoPolicyPhraseRegex(term);
+    return rx ? rx.test(text) : false;
+  });
+
+  return matchesPublicFigure || matchesArtist;
 }
   if (!document.getElementById("aivoPolicyPulseStyle")) {
     const style = document.createElement("style");
@@ -1873,7 +1831,7 @@ function buildBasicPayload() {
             color:rgba(255,245,248,.96);
             text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
             animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
-          ">Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve video hissini tarif et.</span>
+          ">Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et.</span>
         `;
         }
 
@@ -1892,7 +1850,7 @@ function buildBasicPayload() {
           visibleError: "policy_blocked",
           visiblePolicyNote:
             readAtmoPolicyNote(root) ||
-            "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve video hissini tarif et."
+            "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et."
         });
 
         return;
