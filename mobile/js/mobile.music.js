@@ -1936,27 +1936,489 @@ miniAudioEl.play().then(function(){
     return false;
   }
 
-  async function pollMobileMusicJob(jobId, title){
+
+  // ------------------------------------------------------------
+  // Mobile music prompt policy — narrowed, prompt-only
+  // ------------------------------------------------------------
+  const MOBILE_MUSIC_HARD_BLOCK_TERMS = [
+    "deepfake",
+    "sesini kopyala",
+    "sesini klonla",
+    "voice clone",
+    "clone voice"
+  ];
+
+  const MOBILE_MUSIC_HARD_BLOCK_PATTERNS = [
+    /\bsesini\s+(?:kopyala|klonla|taklit et)\b/i,
+    /\bvokalini\s+(?:kopyala|klonla|taklit et)\b/i,
+    /\b(?:voice clone|clone (?:his|her|their|the) voice|imitate (?:his|her|their|the) voice)\b/i,
+    /\b(?:melodisini|nakaratını|nakaratini|sözlerini|sozlerini)\s+(?:(?:aynen|birebir)\s+)?kullan\b/i,
+    /\b(?:exact copy|copy the melody|copy the chorus|copy the lyrics)\b/i
+  ];
+
+  const MOBILE_MUSIC_PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan",
+    "recep tayyip erdoğan",
+    "erdogan",
+    "erdoğan",
+    "kemal kilicdaroglu",
+    "kemal kılıçdaroğlu",
+    "kilicdaroglu",
+    "kılıçdaroğlu",
+    "ekrem imamoglu",
+    "ekrem imamoğlu",
+    "imamoglu",
+    "imamoğlu",
+    "mansur yavas",
+    "mansur yavaş",
+    "devlet bahceli",
+    "devlet bahçeli",
+    "bahceli",
+    "bahçeli",
+    "meral aksener",
+    "meral akşener",
+    "aksener",
+    "akşener",
+    "ozgur ozel",
+    "özgür özel",
+    "selahattin demirtas",
+    "selahattin demirtaş",
+    "demirtas",
+    "demirtaş",
+    "umit ozdag",
+    "ümit özdağ",
+    "ozdag",
+    "özdağ",
+    "fatih erbakan",
+    "temel karamollaoglu",
+    "temel karamollaoğlu",
+    "muharrem ince",
+    "sinan ogan",
+    "sinan oğan",
+    "ali babacan",
+    "ahmet davutoglu",
+    "ahmet davutoğlu",
+    "davutoglu",
+    "davutoğlu",
+    "hulusi akar",
+    "hakan fidan",
+    "mehmet simsek",
+    "mehmet şimşek",
+    "suleyman soylu",
+    "süleyman soylu",
+    "bekir bozdag",
+    "bekir bozdağ",
+    "numan kurtulmus",
+    "numan kurtulmuş",
+    "omer celik",
+    "ömer çelik",
+    "binali yildirim",
+    "binali yıldırım",
+    "abdullah gul",
+    "abdullah gül",
+    "ahmet necdet sezer",
+    "turgut ozal",
+    "turgut özal",
+    "ismet inonu",
+    "ismet inönü",
+    "mustafa kemal ataturk",
+    "mustafa kemal atatürk",
+    "ataturk",
+    "atatürk",
+    "donald trump",
+    "vladimir putin",
+    "volodymyr zelenskyy",
+    "volodymyr zelensky",
+    "emmanuel macron",
+    "xi jinping",
+    "narendra modi",
+    "benjamin netanyahu"
+  ];
+
+  const MOBILE_MUSIC_ARTIST_TERMS = [
+    "tarkan",
+    "sezen aksu",
+    "ajda pekkan",
+    "sertab erener",
+    "mustafa sandal",
+    "kenan dogulu",
+    "kenan doğulu",
+    "hande yener",
+    "demet akalin",
+    "demet akalın",
+    "gulsen",
+    "gülşen",
+    "hadise",
+    "aleyna tilki",
+    "edis",
+    "murat boz",
+    "simge",
+    "simge sagin",
+    "simge sağın",
+    "sila",
+    "sıla",
+    "sila gencoglu",
+    "sıla gençoglu",
+    "ozcan deniz",
+    "özcan deniz",
+    "ebru gundes",
+    "ebru gündeş",
+    "ozgun",
+    "özgün",
+    "ferhat gocer",
+    "ferhat göçer",
+    "gokhan turkmen",
+    "gökhan türkmen",
+    "bengu",
+    "bengü",
+    "ziynet sali",
+    "zeynep bastik",
+    "zeynep bastık",
+    "mabel matiz",
+    "yildiz tilbe",
+    "yıldız tilbe",
+    "sibel can",
+    "linet",
+    "duman",
+    "mor ve otesi",
+    "mor ve ötesi",
+    "teoman",
+    "oguzhan koc",
+    "oğuzhan koç",
+    "cem adrian",
+    "ceylan ertem",
+    "haluk levent",
+    "levent yuksel",
+    "levent yüksel",
+    "baris manco",
+    "barış manço",
+    "mfo",
+    "mfö",
+    "athena",
+    "manga",
+    "sagopa kajmer",
+    "ceza",
+    "ezhel",
+    "ben fero",
+    "gazapizm",
+    "lvbel c5",
+    "uzi",
+    "reckol",
+    "cakal",
+    "çakal",
+    "semicenk",
+    "canozan",
+    "motive",
+    "khontkar",
+    "norm ender",
+    "contra",
+    "sansar salvo",
+    "selda bagcan",
+    "selda bağcan",
+    "muslum gurses",
+    "müslüm gürses",
+    "ibrahim tatlises",
+    "ibrahim tatlıses",
+    "orhan gencebay",
+    "ferdi tayfur",
+    "volkan konak",
+    "candan ercetin",
+    "nazan oncel",
+    "nazan öncel",
+    "yesim salkim",
+    "yeşim salkım",
+    "buray",
+    "irem derici",
+    "melek mosso",
+    "koray avci",
+    "koray avcı",
+    "madrigal",
+    "dedubluman",
+    "yalin",
+    "yalın",
+    "emre aydin",
+    "emre aydın",
+    "sefo",
+    "sertab"
+  ];
+
+  const MOBILE_MUSIC_AMBIGUOUS_ARTIST_TERMS = new Set([
+    "hadise",
+    "simge",
+    "sila",
+    "duman",
+    "manga",
+    "athena",
+    "ceza",
+    "motive",
+    "cakal",
+    "ozgun",
+    "yalin",
+    "buray",
+    "linet",
+    "madrigal",
+    "uzi",
+    "sefo",
+    "edis",
+    "sertab"
+  ]);
+
+  const MOBILE_MUSIC_ARTIST_CONTEXT_TERMS = [
+    "sanatci",
+    "sarkici",
+    "rapci",
+    "muzisyen",
+    "artist",
+    "singer",
+    "rapper",
+    "grup",
+    "grubu",
+    "band",
+    "tarzinda",
+    "stilinde",
+    "sesiyle",
+    "sesinde",
+    "sesini",
+    "vokalinde",
+    "vokalini",
+    "soundunda",
+    "sarkisi",
+    "sarkisini",
+    "album",
+    "albumu",
+    "albumunun",
+    "konseri",
+    "in the style of",
+    "voice of",
+    "sound of"
+  ];
+
+  function normalizeMobileMusicPolicyText(value){
+    return String(value || "")
+      .toLowerCase()
+      .replace(/ı/g, "i")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function buildMobileMusicPolicyPhraseRegex(term){
+    const normalized = normalizeMobileMusicPolicyText(term);
+    if (!normalized) return null;
+
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map(function(part){
+        return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      })
+      .join("\\s+");
+
+    return new RegExp("(^|\\s)" + pattern + "(?=\\s|$)", "i");
+  }
+
+  function containsMobileMusicPolicyPhrase(normalizedText, term){
+    const rx = buildMobileMusicPolicyPhraseRegex(term);
+    return rx ? rx.test(normalizedText) : false;
+  }
+
+  function hasMobileMusicArtistContext(normalizedText, artistTerm){
+    const artist = normalizeMobileMusicPolicyText(artistTerm);
+    if (!normalizedText || !artist) return false;
+
+    const words = normalizedText.split(" ").filter(Boolean);
+    const artistWords = artist.split(" ").filter(Boolean);
+
+    for (let i = 0; i <= words.length - artistWords.length; i += 1) {
+      const candidate = words.slice(i, i + artistWords.length).join(" ");
+      if (candidate !== artist) continue;
+
+      const contextWindow = words
+        .slice(
+          Math.max(0, i - 7),
+          Math.min(words.length, i + artistWords.length + 7)
+        )
+        .join(" ");
+
+      return MOBILE_MUSIC_ARTIST_CONTEXT_TERMS.some(function(contextTerm){
+        return containsMobileMusicPolicyPhrase(contextWindow, contextTerm);
+      });
+    }
+
+    return false;
+  }
+
+  function analyzeMobileMusicPolicy(raw){
+    const normalizedText = normalizeMobileMusicPolicyText(raw);
+    if (!normalizedText) return { blocked: false, reason: "" };
+
+    const hardBlocked =
+      MOBILE_MUSIC_HARD_BLOCK_TERMS.some(function(term){
+        return containsMobileMusicPolicyPhrase(normalizedText, term);
+      }) ||
+      MOBILE_MUSIC_HARD_BLOCK_PATTERNS.some(function(rx){
+        return rx.test(String(raw || ""));
+      });
+
+    const publicFigureBlocked = MOBILE_MUSIC_PUBLIC_FIGURE_TERMS.some(function(term){
+      return containsMobileMusicPolicyPhrase(normalizedText, term);
+    });
+
+    const artistBlocked = MOBILE_MUSIC_ARTIST_TERMS.some(function(term){
+      const normalizedTerm = normalizeMobileMusicPolicyText(term);
+      if (!normalizedTerm || !containsMobileMusicPolicyPhrase(normalizedText, normalizedTerm)) {
+        return false;
+      }
+
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+      if (wordCount >= 2) return true;
+
+      if (!MOBILE_MUSIC_AMBIGUOUS_ARTIST_TERMS.has(normalizedTerm)) {
+        return true;
+      }
+
+      return hasMobileMusicArtistContext(normalizedText, normalizedTerm);
+    });
+
+    const blocked = hardBlocked || publicFigureBlocked || artistBlocked;
+
+    return {
+      blocked,
+      reason: blocked
+        ? musicText(
+            "Sanatçı adı, kamu figürü veya taklit isteği algılandı.",
+            "Artist name, public figure, or imitation request detected."
+          )
+        : ""
+    };
+  }
+
+  function markMobileMusicPendingFailed(jobId, message){
+    resultsEl.querySelectorAll(".aivo-player-card.is-pending").forEach(function(card){
+      if (card.dataset.mobilePollJobId !== String(jobId || "")) return;
+
+      card.classList.remove("is-pending");
+      card.classList.add("is-error");
+
+      const subEl = card.querySelector(".aivo-player-sub");
+      if (subEl) {
+        subEl.textContent = message;
+        subEl.style.animation = "none";
+        subEl.style.color = "#fb7185";
+        subEl.style.textShadow = "none";
+      }
+    });
+  }
+
+  async function pollMobileMusicJob(jobId, title, refundCtx){
     let tries = 0;
+    let finished = false;
+    const MAX_TRIES = 100;
+
+    async function finishAsFailed(reason, data, isTimeout){
+      if (finished) return;
+      finished = true;
+
+      const providerMessage = String(
+        data?.message ||
+        data?.fail_reason ||
+        data?.error ||
+        reason ||
+        "mobile_music_failed"
+      ).trim();
+
+      const refunded = await refundMobileMusicCredits(
+        refundCtx,
+        isTimeout ? "mobile_music_poll_timeout" : "mobile_music_provider_failed",
+        {
+          job_id: String(jobId || ""),
+          error: providerMessage,
+          status: String(data?.status || data?.state || "failed")
+        }
+      );
+
+      const cardMessage = isTimeout
+        ? musicText("Zaman aşımı", "Timed out")
+        : musicText("Üretim başarısız", "Generation failed");
+
+      markMobileMusicPendingFailed(jobId, cardMessage);
+
+      statusEl.textContent = refunded
+        ? (
+            isTimeout
+              ? musicText(
+                  "Müzik üretimi zaman aşımına uğradı. Kredi iade edildi.",
+                  "Music generation timed out. Credits refunded."
+                )
+              : musicText(
+                  "Müzik üretilemedi. Kredi iade edildi.",
+                  "Music generation failed. Credits refunded."
+                )
+          )
+        : (
+            isTimeout
+              ? musicText(
+                  "Müzik üretimi zaman aşımına uğradı. Kredi iadesi kontrol edilemedi.",
+                  "Music generation timed out. Credit refund could not be confirmed."
+                )
+              : musicText(
+                  "Müzik üretilemedi. Kredi iadesi kontrol edilemedi.",
+                  "Music generation failed. Credit refund could not be confirmed."
+                )
+          );
+
+      if (!refunded && window.toast?.error) {
+        window.toast.error(
+          isTimeout
+            ? musicText(
+                "Müzik üretimi zaman aşımına uğradı.",
+                "Music generation timed out."
+              )
+            : musicText(
+                "Müzik üretilemedi.",
+                "Music generation failed."
+              )
+        );
+      }
+    }
 
     async function tick(){
+      if (finished) return;
       tries += 1;
 
       try {
         const res = await fetch("/api/music/status?job_id=" + encodeURIComponent(jobId), {
+          credentials: "include",
           headers: { "accept": "application/json" },
           cache: "no-store"
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(function(){ return null; });
+        const normalizedStatus = String(
+          data?.state ||
+          data?.status ||
+          "processing"
+        ).trim().toLowerCase();
 
-        const outputs = Array.isArray(data && data.outputs)
+        const outputs = Array.isArray(data?.outputs)
           ? data.outputs.filter(function(output){
-              return output && (output.url || output.audio_url);
+              return output && (
+                output.url ||
+                output.audio_url ||
+                output.archive_url ||
+                output.raw_url ||
+                output.src
+              );
             })
           : [];
 
-           if ((data.state === "completed" || data.status === "completed") && outputs.length) {
+        const ready = ["completed", "complete", "ready", "succeeded", "done"].includes(normalizedStatus);
+        const failed = ["failed", "error", "cancelled", "canceled"].includes(normalizedStatus);
+
+        if (ready && outputs.length) {
+          finished = true;
           statusEl.textContent = "";
 
           if (window.toast?.success) {
@@ -1984,13 +2446,14 @@ miniAudioEl.play().then(function(){
               card.remove();
             }
           });
-            outputs.forEach(function(output, index){
+
+          outputs.forEach(function(output, index){
             const card = document.createElement("div");
             card.className = "aivo-player-card is-ready";
             card.style.alignItems = "center";
             card.style.position = "relative";
-           card.style.gridTemplateColumns = "54px minmax(0,1fr) 118px";
-           card.style.paddingRight = "12px";
+            card.style.gridTemplateColumns = "54px minmax(0,1fr) 118px";
+            card.style.paddingRight = "12px";
             card.style.minHeight = "78px";
             card.style.padding = "12px";
             card.style.borderRadius = "18px";
@@ -1998,8 +2461,15 @@ miniAudioEl.play().then(function(){
             card.style.border = "1px solid rgba(255,255,255,.10)";
             card.style.boxShadow = "none";
 
-            const audioUrl = output.url || output.audio_url || "";
-                       const fallbackTitle = title || musicText(
+            const audioUrl =
+              output.url ||
+              output.audio_url ||
+              output.archive_url ||
+              output.raw_url ||
+              output.src ||
+              "";
+
+            const fallbackTitle = title || musicText(
               "Yeni müzik",
               "New music"
             );
@@ -2010,7 +2480,8 @@ miniAudioEl.play().then(function(){
                   "Versiyon",
                   "Version"
                 ) + " " + (index + 1);
-card.innerHTML = `
+
+            card.innerHTML = `
   <button
     class="mobile-ready-thumb"
     type="button"
@@ -2056,113 +2527,108 @@ card.innerHTML = `
     </button>
   </div>
 `;
-const playBtn = card.querySelector('[data-action="mobile-play"]');
-const downloadBtn = card.querySelector('[data-action="mobile-download"]');
-const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
-if (playBtn) {
-  playBtn.addEventListener("click", function(){
-    loadMiniPlayer({
-          title: cardTitle,
-      sub: index === 0
-        ? musicText(
-            "Orijinal",
-            "Original"
-          )
-        : musicText(
-            "Versiyon",
-            "Version"
-          ) + " " + (index + 1),
-      audioUrl
-    });
-  });
-}
+            const playBtn = card.querySelector('[data-action="mobile-play"]');
+            const downloadBtn = card.querySelector('[data-action="mobile-download"]');
+            const deleteBtn = card.querySelector('[data-action="mobile-remove"]');
 
-if (downloadBtn) {
-  downloadBtn.addEventListener("click", async function(e){
-    e.preventDefault();
-    e.stopPropagation();
+            if (playBtn) {
+              playBtn.addEventListener("click", function(){
+                loadMiniPlayer({
+                  title: cardTitle,
+                  sub: index === 0
+                    ? musicText(
+                        "Orijinal",
+                        "Original"
+                      )
+                    : musicText(
+                        "Versiyon",
+                        "Version"
+                      ) + " " + (index + 1),
+                  audioUrl
+                });
+              });
+            }
 
-    if (!audioUrl) return;
+            if (downloadBtn) {
+              downloadBtn.addEventListener("click", async function(e){
+                e.preventDefault();
+                e.stopPropagation();
 
-    let directUrl = String(audioUrl || "").trim();
-    const filename = index === 0
-      ? "aivo-music.mp3"
-      : "aivo-music-version-" + (index + 1) + ".mp3";
+                if (!audioUrl) return;
 
-    directUrl = directUrl.includes("#")
-      ? directUrl.split("#")[0]
-      : directUrl;
+                let directUrl = String(audioUrl || "").trim();
+                const filename = index === 0
+                  ? "aivo-music.mp3"
+                  : "aivo-music-version-" + (index + 1) + ".mp3";
 
-    if (
-      directUrl.startsWith("/api/media/proxy?url=") ||
-      directUrl.includes("/api/media/proxy?url=")
-    ) {
-      try {
-        const encoded = directUrl.split("url=")[1] || "";
-        directUrl = decodeURIComponent(encoded).split("#")[0];
-      } catch {}
-    }
+                directUrl = directUrl.includes("#")
+                  ? directUrl.split("#")[0]
+                  : directUrl;
 
-    try {
-      const response = await fetch(directUrl, {
-        method: "GET",
-        cache: "no-store"
-      });
+                if (
+                  directUrl.startsWith("/api/media/proxy?url=") ||
+                  directUrl.includes("/api/media/proxy?url=")
+                ) {
+                  try {
+                    const encoded = directUrl.split("url=")[1] || "";
+                    directUrl = decodeURIComponent(encoded).split("#")[0];
+                  } catch {}
+                }
 
-      if (!response.ok) {
-        throw new Error("mobile_music_generated_download_failed_" + response.status);
-      }
+                try {
+                  const response = await fetch(directUrl, {
+                    method: "GET",
+                    cache: "no-store"
+                  });
 
-      const blob = await response.blob();
-      const file = new File([blob], filename, {
-        type: blob.type || "audio/mpeg"
-      });
+                  if (!response.ok) {
+                    throw new Error("mobile_music_generated_download_failed_" + response.status);
+                  }
 
-      if (
-        navigator.canShare &&
-        navigator.canShare({ files: [file] }) &&
-        navigator.share
-      ) {
-        await navigator.share({
-          files: [file],
-          title: "AIVO Müzik"
-        });
-        return;
-      }
+                  const blob = await response.blob();
+                  const file = new File([blob], filename, {
+                    type: blob.type || "audio/mpeg"
+                  });
 
-      const objectUrl = URL.createObjectURL(blob);
+                  if (
+                    navigator.canShare &&
+                    navigator.canShare({ files: [file] }) &&
+                    navigator.share
+                  ) {
+                    await navigator.share({
+                      files: [file],
+                      title: "AIVO Müzik"
+                    });
+                    return;
+                  }
 
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      a.rel = "noopener";
-      a.style.display = "none";
+                  const objectUrl = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = objectUrl;
+                  a.download = filename;
+                  a.rel = "noopener";
+                  a.style.display = "none";
 
-      document.body.appendChild(a);
-      a.click();
+                  document.body.appendChild(a);
+                  a.click();
 
-      setTimeout(function(){
-        try {
-          a.remove();
-        } catch (err) {}
+                  setTimeout(function(){
+                    try { a.remove(); } catch (err) {}
+                    try { URL.revokeObjectURL(objectUrl); } catch (err) {}
+                  }, 1500);
+                } catch (err) {
+                  console.error("[MOBILE MUSIC][GENERATED DOWNLOAD ERROR]", err);
+                  window.open(directUrl, "_blank", "noopener");
+                }
+              });
+            }
 
-        try {
-          URL.revokeObjectURL(objectUrl);
-        } catch (err) {}
-      }, 1500);
-    } catch (err) {
-      console.error("[MOBILE MUSIC][GENERATED DOWNLOAD ERROR]", err);
-      window.open(directUrl, "_blank", "noopener");
-    }
-  });
-}
-
-if (deleteBtn) {
+            if (deleteBtn) {
               deleteBtn.addEventListener("click", function(){
                 card.remove();
 
-                     if (!resultsEl.querySelector(".aivo-player-card")) {
+                if (!resultsEl.querySelector(".aivo-player-card")) {
                   resultsEl.className = "empty-card";
                   resultsEl.innerHTML = musicText(
                     "Henüz mobil müzik üretimi başlatılmadı.",
@@ -2178,24 +2644,23 @@ if (deleteBtn) {
 
           return;
         }
-          } catch (err) {
-        const pollingError = musicText(
-          "Polling hatası:",
-          "Polling error:"
-        ) + " " + String(err && err.message ? err.message : err);
 
-        statusEl.textContent = pollingError;
-
-        if (window.toast?.error) {
-          window.toast.error(pollingError);
+        if (failed) {
+          await finishAsFailed("provider_generation_failed", data || {}, false);
+          return;
         }
+      } catch (err) {
+        console.warn("[MOBILE MUSIC][POLL RETRY]", err);
+      }
 
+      if (finished) return;
+
+      if (tries < MAX_TRIES) {
+        setTimeout(tick, 3000);
         return;
       }
 
-      if (tries < 40) {
-        setTimeout(tick, 3000);
-      }
+      await finishAsFailed("mobile_music_poll_timeout", {}, true);
     }
 
     tick();
@@ -2208,146 +2673,17 @@ if (deleteBtn) {
     const vocal = (vocalEl?.value || "Vokalli").trim();
     const lyrics = (lyricsEl.value || "").trim();
 
- const blockedTerms = [
-  "tarkan",
-  "sezen aksu",
-  "ajda pekkan",
-  "sertab erener",
-  "mustafa sandal",
-  "kenan dogulu",
-  "kenan doğulu",
-  "hande yener",
-  "demet akalin",
-  "demet akalın",
-  "gülşen",
-  "gulsen",
-  "hadise",
-  "aleyna tilki",
-  "edis",
-  "murat boz",
-  "simge sagin",
-  "simge sağın",
-  "sila",
-  "sıla",
-  "sila gencoglu",
-  "sıla gençoglu",
-  "özcan deniz",
-  "ozcan deniz",
-  "ebru gundes",
-  "ebru gündeş",
-  "özgün",
-  "ferhat gocer",
-  "ferhat göçer",
-  "gokhan turkmen",
-  "gökhan türkmen",
-  "bengu",
-  "bengü",
-  "ziynet sali",
-  "zeynep bastik",
-  "zeynep bastık",
-  "mabel matiz",
-  "yildiz tilbe",
-  "yıldız tilbe",
-  "sibel can",
-  "linet",
-  "duman",
-  "mor ve otesi",
-  "mor ve ötesi",
-  "teoman",
-  "oguzhan koc",
-  "oğuzhan koç",
-  "cem adrian",
-  "ceylan ertem",
-  "haluk levent",
-  "levent yuksel",
-  "levent yüksel",
-  "baris manco",
-  "barış manço",
-  "mfö",
-  "mfo",
-  "athena",
-  "manga",
-  "sagopa kajmer",
-  "ceza",
-  "ezhel",
-  "ben fero",
-  "gazapizm",
-  "lvbel c5",
-  "uzi",
-  "reckol",
-  "cakal",
-  "çakal",
-  "semicenk",
-  "canozan",
-  "motive",
-  "khontkar",
-  "norm ender",
-  "contra",
-  "sansar salvo",
-  "selda bagcan",
-  "selda bağcan",
-  "müslüm gürses",
-  "muslum gurses",
-  "ibrahim tatlises",
-  "ibrahim tatlıses",
-  "orhan gencebay",
-  "ferdi tayfur",
-  "volkan konak",
-  "candan ercetin",
-  "nazan oncel",
-  "nazan öncel",
-  "yesim salkim",
-  "yeşim salkım",
-  "buray",
-  "irem derici",
-  "melek mosso",
-  "koray avci",
-  "koray avcı",
-  "madrigal",
-  "dedubluman",
-  "yalin",
-  "yalın",
-  "emre aydin",
-  "emre aydın",
-  "sefo",
+    const policyResult = analyzeMobileMusicPolicy(prompt);
 
-  "tarzında",
-  "stilinde",
-  "voice of",
-  "in the style of",
-  "sesini taklit",
-  "birebir",
-  "voice clone",
-  "clone voice",
-  "same voice",
-  "aynı ses",
-  "aynı vokal",
-  "same vocal"
-];
+    if (policyResult.blocked) {
+      statusEl.textContent = policyResult.reason;
 
-const normalizedPrompt = (prompt + " " + lyrics).toLowerCase();
+      if (window.toast?.warning) {
+        window.toast.warning(policyResult.reason);
+      }
 
-const isPolicyBlocked = blockedTerms.some(function(term){
-  return normalizedPrompt.includes(term);
-});
-
-if (isPolicyBlocked) {
-  statusEl.textContent = musicText(
-    "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.",
-    "Artist name, public figure, or imitation request detected."
-  );
-
-  if (window.toast?.warning) {
-    window.toast.warning(
-      musicText(
-        "Sanatçı adı, kamu figürü veya taklit ifadesi algılandı.",
-        "Artist name, public figure, or imitation request detected."
-      )
-    );
-  }
-
-  return;
-}
+      return;
+    }
 
 if (!prompt) {
   statusEl.textContent = musicText(
@@ -2523,7 +2859,8 @@ if (window.toast?.loading) {
         title || musicText(
           "Yeni müzik",
           "New music"
-        )
+        ),
+        refundCtx
       );
     } catch (err) {
       const msg = String(err && err.message ? err.message : err);
