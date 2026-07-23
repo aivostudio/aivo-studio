@@ -166,6 +166,226 @@
   }
 
 
+
+  /*
+   * MOBİL KAPAK POLİTİKASI — masaüstündeki daraltılmış kontrolle aynı.
+   * Genel kelimeler serbesttir. Yalnızca belirgin sanatçı ve siyasi/kamu
+   * figürü isimleri, kredi düşülmeden ve üretim başlamadan önce engellenir.
+   */
+  const MOBILE_COVER_PUBLIC_FIGURE_TERMS = [
+    "recep tayyip erdogan", "recep tayyip erdoğan", "erdogan", "erdoğan", "kemal kilicdaroglu", "kemal kılıçdaroğlu", "kilicdaroglu",
+    "kılıçdaroğlu", "ekrem imamoglu", "ekrem imamoğlu", "imamoglu", "imamoğlu", "mansur yavas", "mansur yavaş",
+    "devlet bahceli", "devlet bahçeli", "bahceli", "bahçeli", "meral aksener", "meral akşener", "aksener",
+    "akşener", "ozgur ozel", "özgür özel", "ozel", "özel", "selahattin demirtas", "selahattin demirtaş",
+    "demirtas", "demirtaş", "umit ozdag", "ümit özdağ", "ozdag", "özdağ", "fatih erbakan",
+    "temel karamollaoglu", "temel karamollaoğlu", "muharrem ince", "sinan ogan", "sinan oğan", "ali babacan", "ahmet davutoglu",
+    "ahmet davutoğlu", "davutoglu", "davutoğlu", "hulusi akar", "hakan fidan", "mehmet simsek", "mehmet şimşek",
+    "simsek", "şimşek", "suleyman soylu", "süleyman soylu", "soylu", "bekir bozdag", "bekir bozdağ",
+    "bozdag", "bozdağ", "numan kurtulmus", "numan kurtulmuş", "kurtulmus", "kurtulmuş", "omer celik",
+    "ömer çelik", "celik", "çelik", "binali yildirim", "binali yıldırım", "abdullah gul", "abdullah gül",
+    "gul", "gül", "ahmet necdet sezer", "turgut ozal", "turgut özal", "ismet inonu", "ismet inönü",
+    "inonu", "inönü", "mustafa kemal ataturk", "mustafa kemal atatürk", "ataturk", "atatürk", "kemal ataturk",
+    "cumhurbaskani", "cumhurbaşkanı", "cumhurbaskani yardimcisi", "cumhurbaşkanı yardımcısı", "bakan", "milletvekili", "belediye baskani",
+    "belediye başkanı", "vali", "kaymakam", "siyasetci", "siyasetçi", "politikaci", "politikacı",
+    "kamu figuru", "kamu figürü", "devlet buyugu", "devlet büyüğü", "donald trump", "trump", "jd vance",
+    "j d vance", "vance", "keir starmer", "starmer", "emmanuel macron", "macron", "friedrich merz",
+    "merz", "frank walter steinmeier", "frank-walter steinmeier", "steinmeier", "giorgia meloni", "meloni", "sergio mattarella",
+    "mattarella", "pedro sanchez", "pedro sánchez", "sanchez", "sánchez", "felipe vi", "mark carney",
+    "carney", "claudia sheinbaum", "sheinbaum", "javier milei", "milei", "luiz inacio lula da silva", "luiz inácio lula da silva",
+    "lula", "lula da silva", "vladimir putin", "putin", "mikhail mishustin", "mishustin", "volodymyr zelenskyy",
+    "zelenskyy", "zelensky", "yulia svyrydenko", "svyrydenko", "xi jinping", "jinping", "li qiang",
+    "narendra modi", "modi", "droupadi murmu", "murmu", "benjamin netanyahu", "netanyahu", "isaac herzog",
+    "herzog", "masoud pezeshkian", "pezeshkian", "mojtaba khamenei", "khamenei", "mohammed bin salman", "muhammed bin salman",
+    "mbs", "salman", "king salman", "sheikh mohamed bin zayed al nahyan", "mohamed bin zayed", "mbz", "sheikh mohammed bin rashid al maktoum",
+    "mohammed bin rashid", "bin rashid", "abdullah ii", "king abdullah", "jafar hassan", "abdel fattah el sisi", "abdel fattah al sisi",
+    "sisi", "mostafa madbouly", "madbouly", "abiy ahmed", "abiy", "william ruto", "ruto",
+    "paul kagame", "kagame", "samia suluhu hassan", "samia suluhu", "samia", "cyril ramaphosa", "ramaphosa",
+    "bola tinubu", "tinubu", "bassirou diomaye faye", "diomaye faye", "ousmane sonko", "sonko", "john mahama",
+    "mahama", "netumbo nandi ndaitwah", "netumbo nandi-ndaitwah", "nandi ndaitwah", "hassan sheikh mohamud", "hassan sheikh", "hamza abdi barre",
+    "kais saied", "kais saïed", "saied", "saïed", "mohamed muizzu", "muizzu", "anwar ibrahim",
+    "anwar", "prabowo subianto", "prabowo", "lawrence wong", "wong", "tharman shanmugaratnam", "tharman",
+    "lee jae myung", "lee jae-myung", "shigeru ishiba", "ishiba", "naruhito", "anura kumara dissanayake", "dissanayake",
+    "paetongtarn shinawatra", "shinawatra", "maha vajiralongkorn", "to lam", "tô lâm", "luong cuong", "lương cường",
+    "pham minh chinh", "phạm minh chính", "hun manet", "hun sen", "norodom sihamoni", "thongloun sisoulith", "sisoulith",
+    "sonexay siphandone", "shehbaz sharif", "sharif", "asif ali zardari", "zardari", "muhammad yunus", "yunus",
+    "kassym jomart tokayev", "kassym-jomart tokayev", "tokayev", "shavkat mirziyoyev", "mirziyoyev", "sadyr japarov", "japarov",
+    "emomali rahmon", "rahmon", "nikol pashinyan", "pashinyan", "ilham aliyev", "aliyev", "irakli kobakhidze",
+    "kobakhidze", "mikheil kavelashvili", "kavelashvili", "maia sandu", "sandu", "aleksandar vucic", "aleksandar vučić",
+    "vucic", "vučić", "robert fico", "fico", "peter pellegrini", "pellegrini", "andrej plenkovic",
+    "andrej plenković", "plenkovic", "plenković", "petr pavel", "pavel", "donald tusk", "tusk",
+    "andrzej duda", "duda", "viktor orban", "viktor orbán", "orban", "orbán", "nicusor dan",
+    "nicușor dan", "ilie bolojan", "bolojan", "boyko borisov", "borisov", "rumen radev", "radev",
+    "kyriakos mitsotakis", "mitsotakis", "edi rama", "rama", "zoran milanovic", "zoran milanović", "milanovic",
+    "milanović", "andrej babis", "andrej babiš", "babis", "babiš", "micheal martin", "martin",
+    "rodrigo chaves", "chaves", "gustavo petro", "petro", "daniel noboa", "noboa", "nayib bukele",
+    "bukele", "bernardo arevalo", "bernardo arévalo", "arevalo", "arévalo", "xiomara castro", "castro",
+    "daniel ortega", "ortega", "rosario murillo", "murillo", "laurentino cortizo", "cortizo", "jose raul mulino",
+    "josé raúl mulino", "mulino", "luis abinader", "abinader", "irfaan ali", "ali", "chan santokhi",
+    "santokhi", "nicolas maduro", "nicolás maduro", "maduro", "yamandu orsi", "yamandú orsi", "orsi",
+    "prime minister", "president", "king", "queen", "chancellor", "taoiseach", "premier",
+    "head of state", "head of government", "basbakan", "başbakan"
+  ];
+  const MOBILE_COVER_ARTIST_NAME_TERMS = [
+    "tarkan", "sezen aksu", "ajda pekkan", "sertab erener", "mustafa sandal", "kenan dogulu", "kenan doğulu",
+    "hande yener", "demet akalin", "demet akalın", "gulsen", "gülşen", "hadise", "aleyna tilki",
+    "edis", "murat boz", "simge", "simge sagin", "simge sağın", "sila", "sıla",
+    "mabel matiz", "yildiz tilbe", "yıldız tilbe", "sibel can", "linet", "duman", "mor ve otesi",
+    "mor ve ötesi", "teoman", "oguzhan koc", "oğuzhan koç", "cem adrian", "haluk levent", "baris manco",
+    "barış manço", "athena", "manga", "sagopa kajmer", "ceza", "ezhel", "ben fero",
+    "gazapizm", "uzi", "cakal", "çakal", "semicenk", "motive", "khontkar",
+    "norm ender", "selda bagcan", "selda bağcan", "muslum gurses", "müslüm gürses", "ibrahim tatlises", "ibrahim tatlıses",
+    "orhan gencebay", "ferdi tayfur", "volkan konak", "candan ercetin", "nazan oncel", "nazan öncel", "buray",
+    "irem derici", "melek mosso", "madrigal", "dedubluman", "yalin", "yalın", "emre aydin",
+    "emre aydın", "sefo", "sertab"
+  ];
+
+  function normalizeMobileCoverPolicyText(value){
+    return String(value || "")
+      .toLowerCase()
+      .replace(/ı/g, "i")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  const MOBILE_COVER_GENERIC_PUBLIC_FIGURE_TERMS_RAW = [
+    "cumhurbaskani", "cumhurbaşkanı", "cumhurbaskani yardimcisi", "cumhurbaşkanı yardımcısı", "reisicumhur", "bakan", "milletvekili",
+    "belediye baskani", "belediye başkanı", "vali", "kaymakam", "siyasetci", "siyasetçi", "politikaci",
+    "politikacı", "kamu figuru", "kamu figürü", "devlet buyugu", "devlet büyüğü", "basbakan", "başbakan",
+    "unlu", "ünlü", "famous", "celebrity", "president", "politician", "prime minister",
+    "king", "queen", "chancellor", "taoiseach", "premier", "head of state", "head of government",
+    "leader", "lider"
+  ];
+  const MOBILE_COVER_AMBIGUOUS_PUBLIC_FIGURE_TERMS_RAW = [
+    "ozel", "özel", "gul", "gül", "celik", "çelik", "soylu",
+    "simsek", "şimşek", "akar", "ince", "yavas", "yavaş", "ali",
+    "salman", "samia", "anwar", "yunus", "pavel", "martin", "sisi",
+    "abiy"
+  ];
+  const MOBILE_COVER_AMBIGUOUS_ARTIST_TERMS_RAW = [
+    "hadise", "simge", "sila", "sıla", "duman", "manga", "athena",
+    "ceza", "motive", "cakal", "çakal", "yalin", "yalın", "buray",
+    "linet", "madrigal", "uzi", "sefo", "edis", "sertab"
+  ];
+  const MOBILE_COVER_ARTIST_CONTEXT_TERMS_RAW = [
+    "sanatci", "sanatçı", "sarkici", "şarkıcı", "rapci", "rapçi", "muzisyen",
+    "müzisyen", "artist", "singer", "rapper", "grup", "grubu", "grubunun",
+    "muzik grubu", "müzik grubu", "band", "tarzinda", "tarzında", "stilinde", "sesiyle",
+    "sesinde", "sesini", "vokalinde", "vokalini", "soundunda", "sarkisi", "şarkısı",
+    "sarkisini", "şarkısını", "album", "albumu", "albümü", "albumunun", "albümünün",
+    "kapagi", "kapağı", "konseri", "in the style of", "voice of", "sound of", "album cover"
+  ];
+
+  const MOBILE_COVER_GENERIC_PUBLIC_FIGURE_TERMS = new Set(
+    MOBILE_COVER_GENERIC_PUBLIC_FIGURE_TERMS_RAW.map(normalizeMobileCoverPolicyText)
+  );
+  const MOBILE_COVER_AMBIGUOUS_PUBLIC_FIGURE_TERMS = new Set(
+    MOBILE_COVER_AMBIGUOUS_PUBLIC_FIGURE_TERMS_RAW.map(normalizeMobileCoverPolicyText)
+  );
+  const MOBILE_COVER_AMBIGUOUS_ARTIST_TERMS = new Set(
+    MOBILE_COVER_AMBIGUOUS_ARTIST_TERMS_RAW.map(normalizeMobileCoverPolicyText)
+  );
+  const MOBILE_COVER_ARTIST_CONTEXT_TERMS =
+    MOBILE_COVER_ARTIST_CONTEXT_TERMS_RAW.map(normalizeMobileCoverPolicyText);
+
+  function buildMobileCoverPolicyPhraseRegex(term){
+    const normalized = normalizeMobileCoverPolicyText(term);
+    if (!normalized) return null;
+
+    const pattern = normalized
+      .split(" ")
+      .filter(Boolean)
+      .map(function(part){
+        return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      })
+      .join("\\s+");
+
+    return new RegExp("(^|\\s)" + pattern + "(?=\\s|$)", "i");
+  }
+
+  function containsMobileCoverPolicyPhrase(normalizedText, term){
+    const rx = buildMobileCoverPolicyPhraseRegex(term);
+    return rx ? rx.test(normalizedText) : false;
+  }
+
+  function hasMobileCoverArtistContext(normalizedText, artistTerm){
+    const artist = normalizeMobileCoverPolicyText(artistTerm);
+    if (!normalizedText || !artist) return false;
+
+    const words = normalizedText.split(" ").filter(Boolean);
+    const artistWords = artist.split(" ").filter(Boolean);
+
+    if (!words.length || !artistWords.length) return false;
+
+    for (let i = 0; i <= words.length - artistWords.length; i += 1) {
+      const candidate = words.slice(i, i + artistWords.length).join(" ");
+      if (candidate !== artist) continue;
+
+      const contextWindow = words
+        .slice(
+          Math.max(0, i - 6),
+          Math.min(words.length, i + artistWords.length + 6)
+        )
+        .join(" ");
+
+      return MOBILE_COVER_ARTIST_CONTEXT_TERMS.some(function(contextTerm){
+        return containsMobileCoverPolicyPhrase(contextWindow, contextTerm);
+      });
+    }
+
+    return false;
+  }
+
+  function isMobileCoverPolicyBlocked(raw){
+    const text = normalizeMobileCoverPolicyText(raw);
+    if (!text) return false;
+
+    const hasPublicFigureName = MOBILE_COVER_PUBLIC_FIGURE_TERMS.some(function(term){
+      const normalizedTerm = normalizeMobileCoverPolicyText(term);
+      if (!normalizedTerm) return false;
+
+      if (MOBILE_COVER_GENERIC_PUBLIC_FIGURE_TERMS.has(normalizedTerm)) {
+        return false;
+      }
+
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+
+      if (
+        wordCount === 1 &&
+        MOBILE_COVER_AMBIGUOUS_PUBLIC_FIGURE_TERMS.has(normalizedTerm)
+      ) {
+        return false;
+      }
+
+      return containsMobileCoverPolicyPhrase(text, normalizedTerm);
+    });
+
+    const hasArtistName = MOBILE_COVER_ARTIST_NAME_TERMS.some(function(term){
+      const normalizedTerm = normalizeMobileCoverPolicyText(term);
+      if (!normalizedTerm) return false;
+
+      if (!containsMobileCoverPolicyPhrase(text, normalizedTerm)) {
+        return false;
+      }
+
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+
+      if (wordCount >= 2) {
+        return true;
+      }
+
+      if (!MOBILE_COVER_AMBIGUOUS_ARTIST_TERMS.has(normalizedTerm)) {
+        return true;
+      }
+
+      return hasMobileCoverArtistContext(text, normalizedTerm);
+    });
+
+    return hasPublicFigureName || hasArtistName;
+  }
+
   function withCoverPrompt(raw, quality){
     const base = String(raw || "").trim();
 
@@ -888,6 +1108,23 @@ if (downloadBtn) {
         );
       }
 
+      return;
+    }
+
+    if (isMobileCoverPolicyBlocked(prompt)) {
+      const message = window.AIVO_LANG === "en"
+        ? "Real artist or political figure names cannot be used. Describe the scene and visual feeling without a real name."
+        : "Gerçek sanatçı veya siyasetçi adı kullanılamaz. İsim yerine sahneyi ve görsel hissi tarif et.";
+
+      statusEl.textContent = message;
+
+      if (window.toast?.warning) {
+        window.toast.warning(message);
+      } else if (window.toast?.error) {
+        window.toast.error(message);
+      }
+
+      promptEl.focus();
       return;
     }
 
