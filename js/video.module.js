@@ -129,35 +129,13 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   // ===============================
   // Policy helpers (Video)
   // ===============================
-  const VIDEO_HARD_BLOCK_TERMS = [
-    "deepfake",
-    "face swap",
-    "replace face",
-    "swap face",
-    "yuzunu koy",
-    "yüzünü koy",
-    "yuzunu ekle",
-    "yüzünü ekle",
-    "yuzunu kullan",
-    "yüzünü kullan",
-    "suratini kullan"
-  ];
-
-  const VIDEO_HARD_BLOCK_PATTERNS = [
-    /\bgibi\b/i,
-    /\btarzında\b/i,
-    /\btarzinda\b/i,
-    /\bstilinde\b/i,
-    /\bin the style of\b/i,
-    /\blike\b/i,
-    /\bbirebir\b/i,
-    /\baynısı\b/i,
-    /\baynisi\b/i,
-    /\bface of\b/i,
-    /\bwith the face of\b/i,
-    /\bimpersonat(e|ion)\b/i
-  ];
-
+  // ===============================
+  // Narrow prompt policy (Video)
+  // - General creative words and risk phrases are not prompt-side blocks.
+  // - Only specific artist names and specific political/public figure names
+  //   are checked here.
+  // - Uploaded-image scanning remains in the existing R2 media-policy flow.
+  // ===============================
   const VIDEO_PUBLIC_FIGURE_TERMS = [
     "recep tayyip erdogan",
     "recep tayyip erdoğan",
@@ -591,6 +569,106 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     "sertab"
   ];
 
+
+  const VIDEO_AMBIGUOUS_SINGLE_WORD_ARTIST_TERMS = new Set(
+    [
+      "hadise",
+      "simge",
+      "ozgun",
+      "özgün",
+      "duman",
+      "manga",
+      "athena",
+      "ceza",
+      "motive",
+      "contra",
+      "cakal",
+      "çakal",
+      "yalin",
+      "yalın",
+      "sila",
+      "sıla",
+      "mabel",
+      "fero",
+      "buray",
+      "linet",
+      "bengu",
+      "bengü"
+    ].map(normalizeVideoPolicyText)
+  );
+
+  const VIDEO_GENERIC_PUBLIC_FIGURE_TERMS = new Set(
+    [
+      "cumhurbaskani",
+      "cumhurbaşkanı",
+      "cumhurbaskani yardimcisi",
+      "cumhurbaşkanı yardımcısı",
+      "reisicumhur",
+      "bakan",
+      "milletvekili",
+      "belediye baskani",
+      "belediye başkanı",
+      "vali",
+      "kaymakam",
+      "siyasetci",
+      "siyasetçi",
+      "politikaci",
+      "politikacı",
+      "kamu figuru",
+      "kamu figürü",
+      "devlet buyugu",
+      "devlet büyüğü",
+      "prime minister",
+      "president",
+      "king",
+      "queen",
+      "chancellor",
+      "taoiseach",
+      "premier",
+      "head of state",
+      "head of government",
+      "basbakan",
+      "başbakan"
+    ].map(normalizeVideoPolicyText)
+  );
+
+  const VIDEO_DISTINCTIVE_SINGLE_PUBLIC_FIGURE_TERMS = new Set(
+    [
+      "erdogan",
+      "erdoğan",
+      "kilicdaroglu",
+      "kılıçdaroğlu",
+      "imamoglu",
+      "imamoğlu",
+      "bahceli",
+      "bahçeli",
+      "aksener",
+      "akşener",
+      "demirtas",
+      "demirtaş",
+      "ozdag",
+      "özdağ",
+      "davutoglu",
+      "davutoğlu",
+      "ataturk",
+      "atatürk",
+      "trump",
+      "macron",
+      "putin",
+      "zelensky",
+      "zelenskyy",
+      "netanyahu",
+      "modi",
+      "khamenei",
+      "maduro",
+      "bukele",
+      "orban",
+      "orbán",
+      "milei",
+      "lula"
+    ].map(normalizeVideoPolicyText)
+  );
+
   function qs(sel, root = document) {
     return root.querySelector(sel);
   }
@@ -623,23 +701,36 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
   function isVideoPolicyBlocked(raw) {
     const text = normalizeVideoPolicyText(raw);
+    if (!text) return false;
 
-    const hasBlockedTerm =
-      VIDEO_HARD_BLOCK_TERMS.some((term) => {
-        const rx = buildVideoPolicyPhraseRegex(term);
-        return rx ? rx.test(text) : false;
-      }) ||
-      VIDEO_PUBLIC_FIGURE_TERMS.some((term) => {
-        const rx = buildVideoPolicyPhraseRegex(term);
-        return rx ? rx.test(text) : false;
-      }) ||
-      VIDEO_ARTIST_NAME_TERMS.some((term) => {
-        const rx = buildVideoPolicyPhraseRegex(term);
-        return rx ? rx.test(text) : false;
-      });
+    const hasPublicFigureName = VIDEO_PUBLIC_FIGURE_TERMS.some((term) => {
+      const normalizedTerm = normalizeVideoPolicyText(term);
+      if (!normalizedTerm) return false;
+      if (VIDEO_GENERIC_PUBLIC_FIGURE_TERMS.has(normalizedTerm)) return false;
 
-    const hasBlockedPattern = VIDEO_HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+      if (wordCount < 2 && !VIDEO_DISTINCTIVE_SINGLE_PUBLIC_FIGURE_TERMS.has(normalizedTerm)) {
+        return false;
+      }
+
+      const rx = buildVideoPolicyPhraseRegex(normalizedTerm);
+      return rx ? rx.test(text) : false;
+    });
+
+    const hasArtistName = VIDEO_ARTIST_NAME_TERMS.some((term) => {
+      const normalizedTerm = normalizeVideoPolicyText(term);
+      if (!normalizedTerm) return false;
+
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+      if (wordCount === 1 && VIDEO_AMBIGUOUS_SINGLE_WORD_ARTIST_TERMS.has(normalizedTerm)) {
+        return false;
+      }
+
+      const rx = buildVideoPolicyPhraseRegex(normalizedTerm);
+      return rx ? rx.test(text) : false;
+    });
+
+    return hasPublicFigureName || hasArtistName;
   }
 
   function getVideoCreateButton(root) {
@@ -1202,20 +1293,12 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
   }
 
   function buildVideoPolicyText(root, mode = "text") {
-    const common = buildCommonPayload(root);
-
     const textPrompt = String(qs("#videoPrompt", root)?.value || "").trim();
     const imagePrompt = String(qs("#videoImagePrompt", root)?.value || "").trim();
 
-    return [
-      mode === "image" ? imagePrompt : textPrompt,
-      common?.model,
-      common?.ratio,
-      common?.duration,
-      common?.resolution
-    ]
-      .filter(Boolean)
-      .join(" ");
+    // Only the user's prompt is checked. Model, ratio, duration, resolution
+    // and system-added values do not participate in the prompt policy.
+    return mode === "image" ? imagePrompt : textPrompt;
   }
 
   async function createText() {
@@ -1248,7 +1331,7 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
       if (policyNote) {
         policyNote.textContent =
-          "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+          "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.";
         policyNote.style.display = "block";
       }
 
@@ -1443,7 +1526,7 @@ async function createImage() {
 
     if (policyNote) {
       policyNote.textContent =
-        "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine video sahnesini ve aksiyonu tarif et.";
+        "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.";
       policyNote.style.display = "block";
     }
 
