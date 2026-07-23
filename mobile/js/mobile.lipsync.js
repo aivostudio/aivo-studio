@@ -164,7 +164,11 @@
 
   function hasLipsyncBadLanguage(value){
     const text = normalizeLipsyncPolicyText(value);
+    if (!text) return false;
 
+    // Yalnızca tam kelime veya tam ifade eşleşmesi yapılır.
+    // Böylece "şikayet", "malzeme" ve "toplantı" gibi normal kelimeler
+    // içlerindeki kısa harf dizileri yüzünden yanlışlıkla engellenmez.
     const blockedTerms = [
       "amk",
       "aq",
@@ -184,20 +188,16 @@
       "tasak",
       "tassak",
       "ibne",
+      "pust",
       "kahpe",
       "kaltak",
       "aptal",
       "salak",
       "gerizekali",
-      "mal",
       "ezik",
       "asagilik",
-      "aşağılık",
-      "nefret",
       "geber",
-      "ol geber",
       "oldur",
-      "öldür",
       "katlet",
       "yok et"
     ];
@@ -209,9 +209,6 @@
       const pattern = safeTerm
         .split(/\s+/)
         .filter(Boolean)
-        .map(function(part){
-          return part + "[a-z0-9]*";
-        })
         .join("\\s+");
 
       const rx = new RegExp("(^|\\s)" + pattern + "(?=\\s|$)", "i");
