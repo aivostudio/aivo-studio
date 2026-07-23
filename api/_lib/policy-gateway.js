@@ -483,6 +483,49 @@ function pickMatchedMusicArtistTerms(text, limit = 8) {
   return hits;
 }
 
+/*
+ * Atmosfer için yanlış pozitif üretmemesi gereken sanatçı eşleşmesi:
+ *
+ * Hadise, Duman, Ceza, Simge, Özgün, Manga, Motive gibi günlük dilde
+ * başka anlamı da bulunan tek kelimelik adlar Atmosfer promptunda hiçbir
+ * koşulda isim filtresi oluşturmaz. Böylece "hafif duman", "ceza alanı",
+ * "beklenmedik hadise" gibi normal sahne anlatımları engellenmez.
+ *
+ * Çok kelimeli veya ayırt edici sanatçı adları engellenmeye devam eder.
+ */
+function pickMatchedUnambiguousArtistTerms(text, limit = 8) {
+  const haystack = normalizeText(text);
+  const hits = [];
+
+  for (const term of ARTIST_NAME_TERMS) {
+    const normalizedTerm = normalizeText(term);
+    if (!normalizedTerm) continue;
+
+    const wordCount = normalizedTerm
+      .split(' ')
+      .filter(Boolean)
+      .length;
+
+    if (
+      wordCount === 1 &&
+      AMBIGUOUS_SINGLE_WORD_ARTIST_TERMS.has(normalizedTerm)
+    ) {
+      continue;
+    }
+
+    const rx = buildNormalizedPhraseRegex(normalizedTerm);
+    if (!rx || !rx.test(haystack)) continue;
+
+    if (!hits.includes(term)) {
+      hits.push(term);
+    }
+
+    if (hits.length >= limit) break;
+  }
+
+  return hits;
+}
+
 function hasExplicitMusicCopyRequest(text) {
   const normalized = normalizeText(text);
 
@@ -653,6 +696,88 @@ function enforceCoverPolicy(
       rewrittenPrompt: null,
       reasons: [
         'public-figure-name-cover',
+      ],
+      matchedTerms:
+        hitsPublicFigures,
+    });
+  }
+
+  return null;
+}
+
+/*
+ * Atmosfer için daraltılmış politika:
+ *
+ * - Yalnızca kullanıcının prompt alanı taranır.
+ * - Hazır atmosfer stili, ışık, duygu, oran, süre, efektler ve sistem
+ *   tarafından eklenen metinler filtre kararına katılmaz.
+ * - Duman, Hadise, Ceza, Simge, Özgün, Manga, Motive gibi eş anlamlı veya
+ *   günlük dilde kullanılan tek kelimelik sanatçı adları tamamen yok sayılır.
+ * - Çok kelimeli veya ayırt edici sanatçı adları engellenir.
+ * - Yalnızca seed listesindeki belirli siyasi / kamu figürü isimleri engellenir.
+ * - Deepfake, taklit, "gibi", "stilinde", "birebir" ve benzeri risk kelimeleri
+ *   Atmosfer promptunda ayrıca blok oluşturmaz.
+ * - Görsel yükleme filtresi ayrı media-policy akışında kalır; bu fonksiyon
+ *   görsel taramasını değiştirmez.
+ */
+function enforceAtmoPolicy(
+  text,
+  explicitArtistText = '',
+  explicitPersonText = ''
+) {
+  const artistText = [
+    text,
+    explicitArtistText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsArtistNames =
+    pickMatchedUnambiguousArtistTerms(
+      artistText,
+      8
+    );
+
+  const publicFigureText = [
+    text,
+    explicitPersonText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsPublicFigures =
+    pickMatchedTerms(
+      publicFigureText,
+      PUBLIC_FIGURES_TR_SEED,
+      8
+    );
+
+  if (hitsArtistNames.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'ARTIST_NAME_ATMO',
+      severity: 'high',
+      message:
+        'Gerçek sanatçı adı Atmosfer promptunda kullanılamaz. İsim yerine sahneyi, hareketi, ışığı ve video hissini tarif et.',
+      rewrittenPrompt: null,
+      reasons: [
+        'artist-name-atmo',
+      ],
+      matchedTerms:
+        hitsArtistNames,
+    });
+  }
+
+  if (hitsPublicFigures.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'PUBLIC_FIGURE_NAME_ATMO',
+      severity: 'high',
+      message:
+        'Gerçek siyasetçi veya kamu figürü adı Atmosfer promptunda kullanılamaz. İsim yerine kurgu bir karakter veya genel sahne tanımı kullan.',
+      rewrittenPrompt: null,
+      reasons: [
+        'public-figure-name-atmo',
       ],
       matchedTerms:
         hitsPublicFigures,
@@ -971,7 +1096,63 @@ function enforcePolicy(input = {}) {
   }
 
   /*
-   * Müzik dışındaki uygulamalar mevcut ortak akışı kullanır.
+   * Atmosfer, eski ortak müzik-dışı filtreden ayrıdır.
+   * Yalnızca prompttaki ayırt edici sanatçı adları ile belirli siyasi /
+   * kamu figürü adları kontrol edilir. Eş anlamlı tek kelimelik sanatçı
+   * adları ve genel risk kelimeleri Atmosfer için filtre oluşturmaz.
+   */
+  if (app === 'atmo' || app === 'atmosphere') {
+    const rawAtmo =
+      String(input.prompt || '').trim();
+
+    const textAtmo =
+      normalizeText(rawAtmo);
+
+    if (!textAtmo) {
+      return makeResult({
+        decision: 'allow',
+        code: 'EMPTY_INPUT_ALLOW',
+        severity: 'low',
+        message:
+          'İstek boş olduğu için policy kontrolü izin verdi.',
+        rewrittenPrompt: null,
+        reasons: [],
+        matchedTerms: [],
+      });
+    }
+
+    const atmoDecision =
+      enforceAtmoPolicy(
+        textAtmo,
+        String(
+          input.referenceArtist ||
+          input.artist ||
+          ''
+        ).trim(),
+        String(
+          input.personName ||
+          ''
+        ).trim()
+      );
+
+    if (atmoDecision) {
+      return atmoDecision;
+    }
+
+    return makeResult({
+      decision: 'allow',
+      code: 'ATMO_ALLOW',
+      severity: 'low',
+      message:
+        'Atmosfer isteği policy kontrolünden geçti.',
+      rewrittenPrompt: null,
+      reasons: [],
+      matchedTerms: [],
+    });
+  }
+
+  /*
+   * Müzik dışındaki diğer uygulamalar mevcut ortak akışı kullanır.
    */
   const raw =
     joinInput(input);
