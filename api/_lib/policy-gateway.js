@@ -576,6 +576,92 @@ function enforceMusicPolicy(
   return null;
 }
 
+
+/*
+ * Kapak için daraltılmış politika:
+ *
+ * - Yalnızca kullanıcının prompt alanı taranır.
+ * - Hazır stil, kalite, oran, başlık ve sistem tarafından eklenen metinler
+ *   kullanıcı ihlali olarak değerlendirilmez.
+ * - Belirgin sanatçı isimleri engellenir.
+ * - Hadise, Özgün, Duman, Ceza gibi günlük dilde de kullanılabilen
+ *   tek kelimelik sanatçı isimleri yalnızca sanatçı bağlamında engellenir.
+ * - Yalnızca seed listesindeki belirli kamu figürü / siyasetçi isimleri
+ *   engellenir; başkan, president, king, queen, bakan gibi genel unvanlar
+ *   tek başına engellenmez.
+ * - Bunların dışındaki yaratıcı anlatımlar değiştirilmeden kabul edilir.
+ */
+function enforceCoverPolicy(
+  text,
+  explicitArtistText = '',
+  explicitPersonText = ''
+) {
+  const contextualArtistHits =
+    pickMatchedMusicArtistTerms(text, 8);
+
+  const explicitArtistHits =
+    pickMatchedTerms(
+      explicitArtistText,
+      ARTIST_NAME_TERMS,
+      8
+    );
+
+  const hitsArtistNames = Array.from(
+    new Set([
+      ...contextualArtistHits,
+      ...explicitArtistHits,
+    ])
+  ).slice(0, 8);
+
+  const publicFigureText = [
+    text,
+    explicitPersonText,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const hitsPublicFigures =
+    pickMatchedTerms(
+      publicFigureText,
+      PUBLIC_FIGURES_TR_SEED,
+      8
+    );
+
+  if (hitsArtistNames.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'ARTIST_NAME_COVER',
+      severity: 'high',
+      message:
+        'Gerçek sanatçı adı kapak promptunda kullanılamaz. İsim yerine sahneyi, duyguyu, renkleri ve görsel stili tarif et.',
+      rewrittenPrompt: null,
+      reasons: [
+        'artist-name-cover',
+      ],
+      matchedTerms:
+        hitsArtistNames,
+    });
+  }
+
+  if (hitsPublicFigures.length > 0) {
+    return makeResult({
+      decision: 'block',
+      code: 'PUBLIC_FIGURE_NAME_COVER',
+      severity: 'high',
+      message:
+        'Gerçek siyasetçi veya kamu figürü adı kapak promptunda kullanılamaz. İsim yerine kurgu bir karakter veya genel sahne tanımı kullan.',
+      rewrittenPrompt: null,
+      reasons: [
+        'public-figure-name-cover',
+      ],
+      matchedTerms:
+        hitsPublicFigures,
+    });
+  }
+
+  return null;
+}
+
 /*
  * Müzik dışındaki uygulamaların mevcut sanatçı
  * kontrolü aynen korunur.
@@ -823,6 +909,61 @@ function enforcePolicy(input = {}) {
       severity: 'low',
       message:
         'Müzik isteği policy kontrolünden geçti.',
+      rewrittenPrompt: null,
+      reasons: [],
+      matchedTerms: [],
+    });
+  }
+
+
+  /*
+   * Kapak, eski ortak müzik-dışı filtreden ayrıdır.
+   * Yalnızca kullanıcının promptu ile açık sanatçı / kişi alanları taranır.
+   */
+  if (app === 'cover') {
+    const rawCover =
+      String(input.prompt || '').trim();
+
+    const textCover =
+      normalizeText(rawCover);
+
+    if (!textCover) {
+      return makeResult({
+        decision: 'allow',
+        code: 'EMPTY_INPUT_ALLOW',
+        severity: 'low',
+        message:
+          'İstek boş olduğu için policy kontrolü izin verdi.',
+        rewrittenPrompt: null,
+        reasons: [],
+        matchedTerms: [],
+      });
+    }
+
+    const coverDecision =
+      enforceCoverPolicy(
+        textCover,
+        String(
+          input.referenceArtist ||
+          input.artist ||
+          ''
+        ).trim(),
+        String(
+          input.personName ||
+          ''
+        ).trim()
+      );
+
+    if (coverDecision) {
+      return coverDecision;
+    }
+
+    return makeResult({
+      decision: 'allow',
+      code: 'COVER_ALLOW',
+      severity: 'low',
+      message:
+        'Kapak isteği policy kontrolünden geçti.',
       rewrittenPrompt: null,
       reasons: [],
       matchedTerms: [],
