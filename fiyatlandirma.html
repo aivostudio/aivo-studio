@@ -33,9 +33,10 @@
 <link rel="stylesheet" href="/auth.modal.css?v=101" />
 
 
-  <!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-  <script src="/toast.manager.js?v=2" defer></script>
-  <script src="/js/assistant.widget.js?v=1" defer></script>
+<!-- ================= TOAST + DESKTOP I18N + AI ASSISTANT ================= -->
+<script src="/toast.manager.js?v=2" defer></script>
+<script src="/js/desktop.i18n.js?v=4" defer></script>
+<script src="/js/assistant.widget.js?v=2" defer></script>
 
   <!-- ================= PARTIALS (topbar inject) ================= -->
  <script src="/include.partials.js?v=5" defer></script>
@@ -580,149 +581,520 @@
 
 
 <!-- ================= PAGE ================= -->
-<main class="pricing-main">
+<main
+  class="pricing-main"
+  data-i18n-label="pricing.pageLabel"
+>
   <div class="container">
 
     <!-- HERO -->
     <section class="pricing-hero">
-      <div class="pricing-pill">AI Müzik, Kapak ve Video Üretimi</div>
-      <h1 class="pricing-title">Fiyatlandırma</h1>
-      <p class="pricing-sub">İhtiyacına göre kredi paketini seç.</p>
+      <div
+        class="pricing-pill"
+        data-i18n="pricing.heroPill"
+      >
+        AI Müzik, Kapak ve Video Üretimi
+      </div>
+
+      <h1
+        class="pricing-title"
+        data-i18n="pricing.heroTitle"
+      >
+        Fiyatlandırma
+      </h1>
+
+      <p
+        class="pricing-sub"
+        data-i18n="pricing.heroSubtitle"
+      >
+        İhtiyacına göre kredi paketini seç.
+      </p>
     </section>
 
     <!-- PACKS -->
-    <section class="pricing-section" id="packs" aria-label="Kredi Paketleri">
-      <h2 class="pricing-h2">Kredi Paketleri</h2>
-      <p class="pricing-h2sub">Tek seferlik kredi satın al.</p>
+    <section
+      class="pricing-section"
+      id="packs"
+      aria-label="Kredi Paketleri"
+      data-i18n-label="pricing.packagesLabel"
+    >
+      <h2
+        class="pricing-h2"
+        data-i18n="pricing.packagesTitle"
+      >
+        Kredi Paketleri
+      </h2>
+
+      <p
+        class="pricing-h2sub"
+        data-i18n="pricing.packagesSubtitle"
+      >
+        Tek seferlik ödeme ile kredi satın al.
+      </p>
 
       <div class="pricing-grid">
 
+        <!-- STARTER -->
         <article class="p-card">
           <div class="p-top">
-            <div class="p-badge">Başlangıç</div>
-            <div class="p-name">Yeni Kullanıcı</div>
-            <div class="p-price"><span class="p-amount">199₺</span><span class="p-per">/ 25 kredi</span></div>
-            <div class="p-metric">Kredi başına ₺7.96</div>
+            <div
+              class="p-badge"
+              data-i18n="pricing.starter.badge"
+            >
+              Başlangıç
+            </div>
+
+            <div
+              class="p-name"
+              data-i18n="pricing.starter.name"
+            >
+              Yeni Kullanıcı
+            </div>
+
+            <div class="p-price">
+              <span
+                class="p-amount"
+                data-i18n="pricing.starter.amount"
+              >
+                199 ₺
+              </span>
+
+              <span
+                class="p-per"
+                data-i18n="pricing.starter.creditAmount"
+              >
+                / 25 kredi
+              </span>
+            </div>
+
+            <div
+              class="p-metric"
+              data-i18n="pricing.starter.metric"
+            >
+              Kredi başına 7,96 ₺
+            </div>
           </div>
+
           <ul class="p-list">
-            <li><span class="ok">✓</span> 25 Kredi</li>
-            <li><span class="ok">✓</span> Temel kalite üretim</li>
-            <li><span class="ok">✓</span> Standart hız</li>
-            <li><span class="ok">✓</span> Kapak + Müzik</li>
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.starter.feature1">25 Kredi</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.starter.feature2">Temel kalite üretim</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.starter.feature3">Standart hız</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.starter.feature4">Kapak + Müzik</span>
+            </li>
           </ul>
+
           <div class="p-bottom">
             <div class="p-perks">
-              <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              <span
+                class="perk"
+                data-i18n="pricing.instantActivation"
+              >
+                🕒 Anında Aktivasyon
+              </span>
+
+              <span
+                class="perk"
+                data-i18n="pricing.securePayment"
+              >
+                🛡 Güvenli Ödeme
+              </span>
             </div>
-           <button class="p-btn" type="button" data-pack="baslangic">Paketi seç</button>
+
+            <button
+              class="p-btn"
+              type="button"
+              data-pack="baslangic"
+              data-i18n="pricing.selectPackage"
+            >
+              Paketi seç
+            </button>
           </div>
         </article>
 
+        <!-- STANDARD -->
         <article class="p-card p-pop">
-          <div class="p-popTag">★ En Popüler</div>
-          <div class="p-top">
-            <div class="p-badge">Standart</div>
-            <div class="p-name">Standart Paket</div>
-            <div class="p-price"><span class="p-amount">699₺</span><span class="p-per">/ 100 kredi</span></div>
-            <div class="p-metric">Kredi başına ₺6.99</div>
+          <div
+            class="p-popTag"
+            data-i18n="pricing.mostPopular"
+          >
+            ★ En Popüler
           </div>
+
+          <div class="p-top">
+            <div
+              class="p-badge"
+              data-i18n="pricing.standard.badge"
+            >
+              Standart
+            </div>
+
+            <div
+              class="p-name"
+              data-i18n="pricing.standard.name"
+            >
+              Standart Paket
+            </div>
+
+            <div class="p-price">
+              <span
+                class="p-amount"
+                data-i18n="pricing.standard.amount"
+              >
+                699 ₺
+              </span>
+
+              <span
+                class="p-per"
+                data-i18n="pricing.standard.creditAmount"
+              >
+                / 100 kredi
+              </span>
+            </div>
+
+            <div
+              class="p-metric"
+              data-i18n="pricing.standard.metric"
+            >
+              Kredi başına 6,99 ₺
+            </div>
+          </div>
+
           <ul class="p-list">
-            <li><span class="ok">✓</span> 100 Kredi</li>
-            <li><span class="ok">✓</span> Daha hızlı üretim</li>
-            <li><span class="ok">✓</span> Öncelikli sıra</li>
-            <li><span class="ok">✓</span> Müzik + Kapak</li>
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.standard.feature1">100 Kredi</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.standard.feature2">Daha hızlı üretim</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.standard.feature3">Öncelikli sıra</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.standard.feature4">Müzik + Kapak</span>
+            </li>
           </ul>
+
           <div class="p-bottom">
             <div class="p-perks">
-              <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              <span
+                class="perk"
+                data-i18n="pricing.instantActivation"
+              >
+                🕒 Anında Aktivasyon
+              </span>
+
+              <span
+                class="perk"
+                data-i18n="pricing.securePayment"
+              >
+                🛡 Güvenli Ödeme
+              </span>
             </div>
-           <button class="p-btn" type="button" data-pack="standart">Paketi seç</button>
+
+            <button
+              class="p-btn"
+              type="button"
+              data-pack="standart"
+              data-i18n="pricing.selectPackage"
+            >
+              Paketi seç
+            </button>
           </div>
         </article>
 
+        <!-- PRO -->
         <article class="p-card">
           <div class="p-top">
-            <div class="p-badge">Pro</div>
-            <div class="p-name">Yaratıcı Üretici</div>
-            <div class="p-price"><span class="p-amount">1.299₺</span><span class="p-per">/ 200 kredi</span></div>
-            <div class="p-metric">Kredi başına ₺6.49</div>
+            <div
+              class="p-badge"
+              data-i18n="pricing.pro.badge"
+            >
+              Pro
+            </div>
+
+            <div
+              class="p-name"
+              data-i18n="pricing.pro.name"
+            >
+              Yaratıcı Üretici
+            </div>
+
+            <div class="p-price">
+              <span
+                class="p-amount"
+                data-i18n="pricing.pro.amount"
+              >
+                1.299 ₺
+              </span>
+
+              <span
+                class="p-per"
+                data-i18n="pricing.pro.creditAmount"
+              >
+                / 200 kredi
+              </span>
+            </div>
+
+            <div
+              class="p-metric"
+              data-i18n="pricing.pro.metric"
+            >
+              Kredi başına 6,49 ₺
+            </div>
           </div>
+
           <ul class="p-list">
-            <li><span class="ok">✓</span> 200 Kredi</li>
-            <li><span class="ok">✓</span> Premium kalite</li>
-            <li><span class="ok">✓</span> Öncelikli destek</li>
-            <li><span class="ok">✓</span> Ticari kullanım</li>
-            <li><span class="ok">✓</span> Kapak + Müzik + Video</li>
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.pro.feature1">200 Kredi</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.pro.feature2">Premium kalite</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.pro.feature3">Öncelikli destek</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.pro.feature4">Ticari kullanım</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.pro.feature5">Kapak + Müzik + Video</span>
+            </li>
           </ul>
+
           <div class="p-bottom">
             <div class="p-perks">
-              <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              <span
+                class="perk"
+                data-i18n="pricing.instantActivation"
+              >
+                🕒 Anında Aktivasyon
+              </span>
+
+              <span
+                class="perk"
+                data-i18n="pricing.securePayment"
+              >
+                🛡 Güvenli Ödeme
+              </span>
             </div>
-           <button class="p-btn" type="button" data-pack="pro">Paketi seç</button>
+
+            <button
+              class="p-btn"
+              type="button"
+              data-pack="pro"
+              data-i18n="pricing.selectPackage"
+            >
+              Paketi seç
+            </button>
           </div>
         </article>
 
+        <!-- STUDIO -->
         <article class="p-card">
           <div class="p-top">
-            <div class="p-badge">Stüdyo</div>
-            <div class="p-name">Stüdyo / Ajans</div>
-            <div class="p-price"><span class="p-amount">2.999₺</span><span class="p-per">/ 500 kredi</span></div>
-            <div class="p-metric">Kredi başına ₺6.00</div>
+            <div
+              class="p-badge"
+              data-i18n="pricing.studio.badge"
+            >
+              Stüdyo
+            </div>
+
+            <div
+              class="p-name"
+              data-i18n="pricing.studio.name"
+            >
+              Stüdyo / Ajans
+            </div>
+
+            <div class="p-price">
+              <span
+                class="p-amount"
+                data-i18n="pricing.studio.amount"
+              >
+                2.999 ₺
+              </span>
+
+              <span
+                class="p-per"
+                data-i18n="pricing.studio.creditAmount"
+              >
+                / 500 kredi
+              </span>
+            </div>
+
+            <div
+              class="p-metric"
+              data-i18n="pricing.studio.metric"
+            >
+              Kredi başına 6,00 ₺
+            </div>
           </div>
+
           <ul class="p-list">
-            <li><span class="ok">✓</span> 500 Kredi</li>
-            <li><span class="ok">✓</span> Takım kullanımı</li>
-            <li><span class="ok">✓</span> Özel destek</li>
-            <li><span class="ok">✓</span> Ticari kullanım</li>
-            <li><span class="ok">✓</span> Yüksek hacimli üretim</li>
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.studio.feature1">500 Kredi</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.studio.feature2">Takım kullanımı</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.studio.feature3">Özel destek</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.studio.feature4">Ticari kullanım</span>
+            </li>
+
+            <li>
+              <span class="ok">✓</span>
+              <span data-i18n="pricing.studio.feature5">Yüksek hacimli üretim</span>
+            </li>
           </ul>
+
           <div class="p-bottom">
             <div class="p-perks">
-              <span class="perk">🕒 Anında Aktivasyon</span><span class="perk">🛡 Güvenli Ödeme</span>
+              <span
+                class="perk"
+                data-i18n="pricing.instantActivation"
+              >
+                🕒 Anında Aktivasyon
+              </span>
+
+              <span
+                class="perk"
+                data-i18n="pricing.securePayment"
+              >
+                🛡 Güvenli Ödeme
+              </span>
             </div>
-           <button class="p-btn" type="button" data-pack="studyo">Paketi seç</button>
+
+            <button
+              class="p-btn"
+              type="button"
+              data-pack="studyo"
+              data-i18n="pricing.selectPackage"
+            >
+              Paketi seç
+            </button>
           </div>
         </article>
 
       </div>
     </section>
 
-      <!-- ✅ KVKK (TEK, PRICING ONLY) -->
-      <section class="kvkk-wrap" id="kvkk" aria-label="KVKK Onayı">
-        <div class="kvkk-consent" data-kvkk-scope="pricing">
+    <!-- KVKK / PAYMENT INFORMATION -->
+    <section
+      class="kvkk-wrap"
+      id="kvkk"
+      aria-label="KVKK Onayı"
+    >
+      <div
+        class="kvkk-consent"
+        data-kvkk-scope="pricing"
+      >
 
-          <div class="kvkk-note">
-            <div class="kvkk-note-title">Bilgilendirme</div>
-            <div class="kvkk-note-text">
-              Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına anında tanımlanır ve AIVO Studio’da
-              müzik/kapak/video üretiminde kullanılır.
-            </div>
+        <div class="kvkk-note">
+          <div
+            class="kvkk-note-title"
+            data-i18n="pricing.infoTitle"
+          >
+            Bilgilendirme
           </div>
 
-          <p class="kvkk-text">
-            AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim,
-            ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması
-            Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin
-            yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla
-            işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin
-            detaylı bilgilere
-            <a href="/kurumsal/gizlilik.html" class="kvkk-link">Gizlilik Politikası</a>
-            üzerinden ulaşabileceğimi kabul ediyorum.
-          </p>
-
-          <label class="kvkk-row">
-            <input type="checkbox" data-kvkk-check />
-            <span>KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.</span>
-          </label>
-
-          <p class="kvkk-hint" data-kvkk-hint>
-            Devam etmek için KVKK onayını işaretlemelisin.
-          </p>
+          <div
+            class="kvkk-note-text"
+            data-i18n="pricing.infoText"
+          >
+            Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına anında tanımlanır ve AIVO Studio’da müzik, kapak ve video üretiminde kullanılır.
+          </div>
         </div>
-      </section>
 
-    </div>
-  </main>
+        <div
+          class="kvkk-note"
+          style="margin-top:12px;"
+        >
+          <div
+            class="kvkk-note-title"
+            data-i18n="pricing.currencyTitle"
+          >
+            Ödeme para birimi
+          </div>
+
+          <div
+            class="kvkk-note-text"
+            data-i18n="pricing.currencyText"
+          >
+            Ödemeler Türk Lirası (TRY) olarak tahsil edilir. Yabancı kartlarda bankanız tutarı kartınızın para birimine çevirebilir ve kur dönüşüm ücreti uygulayabilir.
+          </div>
+        </div>
+
+        <p
+          class="kvkk-text"
+          data-i18n-html="pricing.privacyTextHtml"
+        >
+          AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere <a href="/kurumsal/gizlilik.html" class="kvkk-link">Gizlilik Politikası</a> üzerinden ulaşabileceğimi kabul ediyorum.
+        </p>
+
+        <label class="kvkk-row">
+          <input
+            type="checkbox"
+            data-kvkk-check
+          />
+
+          <span data-i18n="pricing.kvkkLabel">
+            KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.
+          </span>
+        </label>
+
+        <p
+          class="kvkk-hint"
+          data-kvkk-hint
+          data-i18n="pricing.kvkkHint"
+        >
+          Devam etmek için KVKK onayını işaretlemelisin.
+        </p>
+
+      </div>
+    </section>
+
+  </div>
+</main>
 
   <!-- ================= FOOTER ================= -->
   <footer class="aivo-footer" id="footer">
