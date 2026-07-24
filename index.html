@@ -1410,194 +1410,383 @@
 </script>
 <!-- /AIVO Cookie Banner (Premium) -->
 
-
-
-
-
-
 <!-- ================= HERO ================= -->
 <section class="hero" id="topHero">
   <div class="container hero-inner">
 
-   <!-- LEFT -->
+    <!-- LEFT -->
     <div class="hero-left">
+
       <div class="badge">
         <span class="dot"></span>
-        AIVO Studio • AI ile içerik üretiminin yeni standardı
+
+        <span data-i18n="index.heroBadge">
+          AIVO Studio • AI ile içerik üretiminin yeni standardı
+        </span>
       </div>
 
       <h1 class="hero-title">
-        AIVO Studio
+        <span data-i18n="index.heroBrand">
+          AIVO Studio
+        </span>
+
         <span class="hero-title-subline">
-          İlhamı üretime dönüştür. <span class="swap-word" id="heroSwap">Müzik</span>
+          <span data-i18n="index.heroLine">
+            İlhamı üretime dönüştür.
+          </span>
+
+          <span
+            class="swap-word"
+            id="heroSwap"
+          >
+            Müzik
+          </span>
         </span>
       </h1>
 
       <p class="hero-sub" id="heroSub">
-        Çok modüllü AI içerik üretim platformu: müzik, video ve görsel üretimini tek yerde birleştirir.
+        Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.
       </p>
 
-<div class="hero-actions" style="display:grid;grid-template-columns:repeat(3,1fr);align-items:center;gap:14px;width:100%;max-width:820px;margin-top:28px;">
-  <a
-    class="btn btn-primary"
-    href="/studio.v2.html"
-    data-auth="required"
-    style="height:56px;width:100%;padding:0 18px;white-space:nowrap;font-size:18px;display:flex;align-items:center;justify-content:center;text-align:center;"
-  >
-    Studio’ya Gir
-  </a>
-
-<a
-  class="btn"
-  href="https://play.google.com/store/apps/details?id=tr.aivo.app"
-  target="_blank"
-  rel="noopener"
-  style="height:56px;width:100%;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(79,70,229,.24),rgba(31,182,255,.14));color:#fff;text-decoration:none;font-weight:900;font-size:18px;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 14px 42px rgba(79,70,229,.22);"
->
-  ▶ Google Play
-</a>
-
-  <a
-    class="btn"
-    href="https://apps.apple.com/tr/app/aivo/id6769188631?l=tr"
-    target="_blank"
-    rel="noopener"
-    style="height:56px;width:100%;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(124,58,237,.22),rgba(31,182,255,.16));color:#fff;text-decoration:none;font-weight:900;font-size:18px;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 14px 42px rgba(124,58,237,.24);"
-  >
-     App Store
-  </a>
-
-  <span class="cta-orb" aria-hidden="true"></span>
-</div>
-      <div class="hero-benefits" id="heroBenefits">
-       <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Profesyonel kalite hedefi</span></span>
-        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Telif ve kullanım hakları sende</span></span>
-        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Anında indir, paylaş</span></span>
-      </div>
-      <div class="hero-demo-video" style="margin-top:22px;width:min(520px,100%);border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.04);box-shadow:0 22px 60px rgba(0,0,0,.35);">
-  <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <div>
-     <div style="font-weight:900;color:#fff;font-size:15px;">Görselden Video Klip</div>
-<div style="font-size:12px;color:rgba(255,255,255,.68);margin-top:3px;">Görselini hareketli klip sahnesine dönüştür</div>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-<style>
-  @keyframes aivoYoutubePulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 0 rgba(236,72,153,0), 0 12px 30px rgba(0,0,0,.22);
-    }
-    50% {
-      transform: scale(1.035);
-      box-shadow: 0 0 26px rgba(236,72,153,.28), 0 16px 38px rgba(0,0,0,.30);
-    }
-  }
-
-  @keyframes aivoYoutubeShine {
-    0% {
-      transform: translateX(-130%) skewX(-18deg);
-    }
-    100% {
-      transform: translateX(230%) skewX(-18deg);
-    }
-  }
-
-  .aivo-youtube-edu-btn {
-    position: relative;
-    overflow: hidden;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255,255,255,.22);
-    background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
-    color: #fff;
-    border-radius: 999px;
-    padding: 9px 14px;
-    font-weight: 900;
-    text-decoration: none;
-    white-space: nowrap;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    animation: aivoYoutubePulse 2.8s ease-in-out infinite;
-  }
-
-  .aivo-youtube-edu-btn::after {
-    content: "";
-    position: absolute;
-    top: -40%;
-    left: 0;
-    width: 42%;
-    height: 180%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
-    animation: aivoYoutubeShine 3.6s ease-in-out infinite;
-    pointer-events: none;
-  }
-</style>
-
-<a
-  class="aivo-youtube-edu-btn"
-  href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr"
-  target="_blank"
-  rel="noopener"
-  onclick="
-    try {
-      if (typeof gtag === 'function') {
-        gtag('event', 'youtube_education_click', {
-          event_category: 'engagement',
-          event_label: 'home_hero_youtube_education_button',
-          value: 1
-        });
-      }
-    } catch(e) {}
-  "
->
-  🎬 YouTube’da Tüm Eğitimleri İzle
-</a>
-
-      <button
-        type="button"
-        onclick="const v=document.getElementById('imageToVideoHeroDemo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.currentTime=0; v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } }"
-        style="border:1px solid rgba(255,255,255,.16);background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;white-space:nowrap;"
+      <div
+        class="hero-actions"
+        style="
+          display:grid;
+          grid-template-columns:repeat(3,1fr);
+          align-items:center;
+          gap:14px;
+          width:100%;
+          max-width:820px;
+          margin-top:28px;
+        "
       >
-        🔊 Sesi Aç
-      </button>
-    </div>
-  </div>
+        <a
+          class="btn btn-primary"
+          href="/studio.v2.html"
+          data-auth="required"
+          data-i18n="index.enterStudio"
+          style="
+            height:56px;
+            width:100%;
+            padding:0 18px;
+            white-space:nowrap;
+            font-size:18px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+          "
+        >
+          Studio’ya Gir
+        </a>
 
-  <video
-    id="imageToVideoHeroDemo"
- src="https://media.aivo.tr/outputs/home/image-to-video/image-to-video-preview-1777719387477.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-    preload="auto"
-    controls
-   style="display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;"
-  ></video>
-</div>
+        <a
+          class="btn"
+          href="https://play.google.com/store/apps/details?id=tr.aivo.app"
+          target="_blank"
+          rel="noopener"
+          data-i18n="index.googlePlay"
+          style="
+            height:56px;
+            width:100%;
+            padding:0 18px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.18);
+            background:linear-gradient(
+              135deg,
+              rgba(255,255,255,.14),
+              rgba(79,70,229,.24),
+              rgba(31,182,255,.14)
+            );
+            color:#fff;
+            text-decoration:none;
+            font-weight:900;
+            font-size:18px;
+            white-space:nowrap;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            box-shadow:0 14px 42px rgba(79,70,229,.22);
+          "
+        >
+          ▶ Google Play
+        </a>
+
+        <a
+          class="btn"
+          href="https://apps.apple.com/tr/app/aivo/id6769188631?l=tr"
+          target="_blank"
+          rel="noopener"
+          data-i18n="index.appStore"
+          style="
+            height:56px;
+            width:100%;
+            padding:0 18px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.18);
+            background:linear-gradient(
+              135deg,
+              rgba(255,255,255,.16),
+              rgba(124,58,237,.22),
+              rgba(31,182,255,.16)
+            );
+            color:#fff;
+            text-decoration:none;
+            font-weight:900;
+            font-size:18px;
+            white-space:nowrap;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            box-shadow:0 14px 42px rgba(124,58,237,.24);
+          "
+        >
+           App Store
+        </a>
+
+        <span class="cta-orb" aria-hidden="true"></span>
+      </div>
+
+      <div class="hero-benefits" id="heroBenefits">
+
+        <span class="hb-item">
+          <span class="hb-check">✓</span>
+
+          <span
+            class="hb-text"
+            data-i18n="index.benefit.quality"
+          >
+            Profesyonel kalite hedefi
+          </span>
+        </span>
+
+        <span class="hb-item">
+          <span class="hb-check">✓</span>
+
+          <span
+            class="hb-text"
+            data-i18n="index.benefit.rights"
+          >
+            Telif ve kullanım hakları sende
+          </span>
+        </span>
+
+        <span class="hb-item">
+          <span class="hb-check">✓</span>
+
+          <span
+            class="hb-text"
+            data-i18n="index.benefit.download"
+          >
+            Anında indir, paylaş
+          </span>
+        </span>
+
+      </div>
+
+      <div
+        class="hero-demo-video"
+        style="
+          margin-top:22px;
+          width:min(520px,100%);
+          border:1px solid rgba(255,255,255,.12);
+          border-radius:22px;
+          overflow:hidden;
+          background:rgba(255,255,255,.04);
+          box-shadow:0 22px 60px rgba(0,0,0,.35);
+        "
+      >
+        <div
+          style="
+            padding:12px 14px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+          "
+        >
+          <div>
+            <div
+              data-i18n="index.demo.videoTitle"
+              style="
+                font-weight:900;
+                color:#fff;
+                font-size:15px;
+              "
+            >
+              Görselden Video Klip
+            </div>
+
+            <div
+              data-i18n="index.demo.videoSub"
+              style="
+                font-size:12px;
+                color:rgba(255,255,255,.68);
+                margin-top:3px;
+              "
+            >
+              Görselini hareketli klip sahnesine dönüştür
+            </div>
+          </div>
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:8px;
+              flex-wrap:wrap;
+              justify-content:flex-end;
+            "
+          >
+            <style>
+              @keyframes aivoYoutubePulse {
+                0%, 100% {
+                  transform:scale(1);
+                  box-shadow:
+                    0 0 0 rgba(236,72,153,0),
+                    0 12px 30px rgba(0,0,0,.22);
+                }
+
+                50% {
+                  transform:scale(1.035);
+                  box-shadow:
+                    0 0 26px rgba(236,72,153,.28),
+                    0 16px 38px rgba(0,0,0,.30);
+                }
+              }
+
+              @keyframes aivoYoutubeShine {
+                0% {
+                  transform:translateX(-130%) skewX(-18deg);
+                }
+
+                100% {
+                  transform:translateX(230%) skewX(-18deg);
+                }
+              }
+
+              .aivo-youtube-edu-btn {
+                position:relative;
+                overflow:hidden;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                border:1px solid rgba(255,255,255,.22);
+                background:linear-gradient(
+                  135deg,
+                  rgba(255,255,255,.16),
+                  rgba(255,255,255,.05)
+                );
+                color:#fff;
+                border-radius:999px;
+                padding:9px 14px;
+                font-weight:900;
+                text-decoration:none;
+                white-space:nowrap;
+                backdrop-filter:blur(6px);
+                -webkit-backdrop-filter:blur(6px);
+                animation:aivoYoutubePulse 2.8s ease-in-out infinite;
+              }
+
+              .aivo-youtube-edu-btn::after {
+                content:"";
+                position:absolute;
+                top:-40%;
+                left:0;
+                width:42%;
+                height:180%;
+                background:linear-gradient(
+                  90deg,
+                  transparent,
+                  rgba(255,255,255,.42),
+                  transparent
+                );
+                animation:aivoYoutubeShine 3.6s ease-in-out infinite;
+                pointer-events:none;
+              }
+            </style>
+
+            <a
+              class="aivo-youtube-edu-btn"
+              href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr"
+              target="_blank"
+              rel="noopener"
+              data-i18n="index.demo.youtube"
+              onclick="
+                try {
+                  if (typeof gtag === 'function') {
+                    gtag('event', 'youtube_education_click', {
+                      event_category: 'engagement',
+                      event_label: 'home_hero_youtube_education_button',
+                      value: 1
+                    });
+                  }
+                } catch(e) {}
+              "
+            >
+              🎬 YouTube’da Tüm Eğitimleri İzle
+            </a>
+
+            <button
+              id="heroSoundToggle"
+              type="button"
+              data-i18n="index.demo.soundOpen"
+              style="
+                border:1px solid rgba(255,255,255,.16);
+                background:linear-gradient(135deg,#8b5cf6,#ec4899);
+                color:#fff;
+                border-radius:999px;
+                padding:9px 13px;
+                font-weight:800;
+                cursor:pointer;
+                white-space:nowrap;
+              "
+            >
+              🔊 Sesi Aç
+            </button>
+          </div>
+        </div>
+
+        <video
+          id="imageToVideoHeroDemo"
+          src="https://media.aivo.tr/outputs/home/image-to-video/image-to-video-preview-1777719387477.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          controls
+          style="
+            display:block;
+            width:100%;
+            aspect-ratio:16/9;
+            object-fit:contain;
+            background:#000;
+          "
+        ></video>
+      </div>
     </div>
- 
+
     <!-- RIGHT -->
     <div class="hero-right" aria-hidden="true">
       <div class="hero-video">
-    <video
-  class="hero-video-el"
-  src="https://media.aivo.tr/outputs/home/hero/hero-preview-1776362906377.mp4"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto"></video>
+        <video
+          class="hero-video-el"
+          src="https://media.aivo.tr/outputs/home/hero/hero-preview-1776362906377.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
       </div>
     </div>
 
   </div>
 </section>
-
-
-  <!-- ================= /HERO ================= -->
+<!-- ================= /HERO ================= -->
 <!-- ================= AI ATMOSFER VIDEO (TEK PREMIUM KART) ================= -->
 <section id="atmosphere-video" class="atmo-section" aria-label="AI Atmosfer Video">
 
