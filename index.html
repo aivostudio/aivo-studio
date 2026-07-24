@@ -4813,181 +4813,380 @@
 
 
 <!-- ================= LOGIN MODAL (SINGLE SOURCE OF TRUTH) ================= -->
-<div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
-  <div class="login-backdrop" data-close="1"></div>
+<div
+  class="login-modal"
+  id="loginModal"
+  aria-hidden="true"
+  data-mode="login"
+>
+  <div
+    class="login-backdrop"
+    data-close="1"
+  ></div>
 
-  <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-    <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+  <div
+    class="login-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="loginTitle"
+  >
+    <button
+      class="login-x"
+      type="button"
+      data-close="1"
+      aria-label="Giriş penceresini kapat"
+      data-i18n-label="auth.closeLabel"
+    >
+      ×
+    </button>
 
     <div class="login-stage">
+
       <div class="login-hero">
-        <div class="login-kicker">AIVO Studio Access</div>
-        <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-        <p class="login-desc" id="loginDesc">
+        <div
+          class="login-kicker"
+          data-i18n="auth.access"
+        >
+          AIVO Studio Erişimi
+        </div>
+
+        <h3
+          id="loginTitle"
+          data-i18n="auth.loginTitle"
+        >
+          Tekrar hoş geldin 👋
+        </h3>
+
+        <p
+          class="login-desc"
+          id="loginDesc"
+          data-i18n="auth.loginDescription"
+        >
           AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
         </p>
       </div>
 
       <div class="login-flow">
-     <div class="login-social-row" id="googleBlock">
-  <button id="btnGoogleLogin" type="button" class="btn-google">
-    Google ile Giriş Yap
-  </button>
 
-  <button id="btnAppleLogin" type="button" class="btn-google btn-apple">
-    Apple ile Giriş Yap
-  </button>
-</div>
+        <div
+          class="login-social-row"
+          id="googleBlock"
+        >
+          <button
+            id="btnGoogleLogin"
+            type="button"
+            class="btn-google"
+            data-i18n="auth.googleLogin"
+          >
+            Google ile Giriş Yap
+          </button>
+
+          <button
+            id="btnAppleLogin"
+            type="button"
+            class="btn-google btn-apple"
+            data-i18n="auth.appleLogin"
+          >
+            Apple ile Giriş Yap
+          </button>
+        </div>
 
         <div class="login-or">
-          <span>veya email ile devam et</span>
+          <span data-i18n="auth.orEmail">
+            veya e-posta ile devam et
+          </span>
         </div>
 
         <div class="login-form-block login-email">
+
           <div class="login-form-head">
-            <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-            <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
+            <div
+              class="card-title"
+              id="authCardTitle"
+              data-i18n="auth.loginCardTitle"
+            >
+              E-posta ile Giriş
+            </div>
+
+            <div
+              class="card-sub"
+              id="authCardSub"
+              data-i18n="auth.loginCardDescription"
+            >
+              Hesabına e-posta adresinle giriş yap.
+            </div>
           </div>
 
-<div class="email-row email-row-2 aivo-float-row" id="loginFields">
-  <label class="aivo-float-field">
-    <input
-      id="loginEmail"
-      name="email"
-      type="email"
-      placeholder=" "
-      autocomplete="username"
-      autocapitalize="off"
-      autocorrect="off"
-      spellcheck="false"
-      inputmode="email"
-    />
-    <span class="aivo-float-label">E-posta</span>
-  </label>
+          <div
+            class="email-row email-row-2 aivo-float-row"
+            id="loginFields"
+          >
+            <label class="aivo-float-field">
+              <input
+                id="loginEmail"
+                name="email"
+                type="email"
+                placeholder=" "
+                autocomplete="username"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+                inputmode="email"
+              />
 
-  <label class="aivo-float-field aivo-float-field--icon">
-    <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
-
-    <input
-      id="loginPass"
-      name="password"
-      type="password"
-      placeholder=" "
-      autocomplete="current-password"
-      autocapitalize="off"
-      autocorrect="off"
-      spellcheck="false"
-    />
-
-    <span class="aivo-float-label">Şifre</span>
-
-    <button
-      type="button"
-      class="aivo-pass-toggle"
-      data-toggle-pass="loginPass"
-      aria-label="Şifreyi göster"
-    >
-      👁
-    </button>
-  </label>
-</div>
-
-<div id="registerExtra" style="display:none; margin-top:12px;">
-  <div class="auth-register-grid">
-    <div class="auth-form-field">
-      <div class="auth-form-label">Ad</div>
-      <label class="aivo-float-field aivo-float-field--icon">
-        <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">👤</span>
-        <input
-          id="registerName"
-          type="text"
-          placeholder="Adınız"
-          autocomplete="given-name"
-        />
-      </label>
-    </div>
-
-    <div class="auth-form-field">
-      <div class="auth-form-label">Soyad</div>
-      <label class="aivo-float-field">
-        <input
-          id="registerSurname"
-          type="text"
-          placeholder="Soyadınız"
-          autocomplete="family-name"
-        />
-      </label>
-    </div>
-  </div>
-
-  <div class="auth-form-field" style="margin-top:12px;">
-    <div class="auth-form-label">Email Adresi</div>
-    <label class="aivo-float-field aivo-float-field--icon">
-      <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">✉️</span>
-      <input
-        id="registerEmailView"
-        type="text"
-        placeholder="ornek@email.com"
-        autocomplete="email"
-      />
-    </label>
-  </div>
-
-  <div class="auth-form-field" style="margin-top:12px;">
-    <div class="auth-form-label">Şifre</div>
-    <label class="aivo-float-field aivo-float-field--icon">
-      <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
-      <input
-        id="registerPassView"
-        type="password"
-        placeholder="Şifreniz"
-        autocomplete="new-password"
-      />
-      <button
-        type="button"
-        class="aivo-pass-toggle"
-        data-toggle-pass="registerPassView"
-        aria-label="Şifreyi göster"
-      >
-        👁
-      </button>
-    </label>
-  </div>
-
-  <div class="auth-form-field" style="margin-top:12px;">
-    <div class="auth-form-label">Şifre Tekrar</div>
-    <label class="aivo-float-field aivo-float-field--icon">
-      <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
-      <input
-        id="registerPass2"
-        type="password"
-        placeholder="Şifrenizi tekrar girin"
-        autocomplete="new-password"
-      />
-      <button
-        type="button"
-        class="aivo-pass-toggle"
-        data-toggle-pass="registerPass2"
-        aria-label="Şifre tekrar alanını göster"
-      >
-        👁
-      </button>
-    </label>
-  </div>
-</div>
-
-<label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
-  <input id="kvkkCheck" type="checkbox" />
-  <span>Kullanım Şartları ve Gizlilik Politikası'nı kabul ediyorum</span>
-</label>
-
-          <div class="login-inline-meta" id="loginMeta">
-            <label class="remember-row" id="rememberRow">
-              <input type="checkbox" id="rememberMe" />
-              <span>Beni hatırla</span>
+              <span
+                class="aivo-float-label"
+                data-i18n="auth.email"
+              >
+                E-posta
+              </span>
             </label>
 
-            <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+            <label class="aivo-float-field aivo-float-field--icon">
+              <span
+                class="aivo-field-ico aivo-field-ico--left"
+                aria-hidden="true"
+              >
+                🔒
+              </span>
+
+              <input
+                id="loginPass"
+                name="password"
+                type="password"
+                placeholder=" "
+                autocomplete="current-password"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+              />
+
+              <span
+                class="aivo-float-label"
+                data-i18n="auth.password"
+              >
+                Şifre
+              </span>
+
+              <button
+                type="button"
+                class="aivo-pass-toggle"
+                data-toggle-pass="loginPass"
+                aria-label="Şifreyi göster"
+                data-i18n-label="auth.showPassword"
+              >
+                👁
+              </button>
+            </label>
+          </div>
+
+          <div
+            id="registerExtra"
+            style="display:none; margin-top:12px;"
+          >
+            <div class="auth-register-grid">
+
+              <div class="auth-form-field">
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.firstName"
+                >
+                  Ad
+                </div>
+
+                <label class="aivo-float-field aivo-float-field--icon">
+                  <span
+                    class="aivo-field-ico aivo-field-ico--left"
+                    aria-hidden="true"
+                  >
+                    👤
+                  </span>
+
+                  <input
+                    id="registerName"
+                    type="text"
+                    placeholder="Adınız"
+                    data-i18n-placeholder="auth.firstNamePlaceholder"
+                    autocomplete="given-name"
+                  />
+                </label>
+              </div>
+
+              <div class="auth-form-field">
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.lastName"
+                >
+                  Soyad
+                </div>
+
+                <label class="aivo-float-field">
+                  <input
+                    id="registerSurname"
+                    type="text"
+                    placeholder="Soyadınız"
+                    data-i18n-placeholder="auth.lastNamePlaceholder"
+                    autocomplete="family-name"
+                  />
+                </label>
+              </div>
+
+            </div>
+
+            <div
+              class="auth-form-field"
+              style="margin-top:12px;"
+            >
+              <div
+                class="auth-form-label"
+                data-i18n="auth.email"
+              >
+                E-posta
+              </div>
+
+              <label class="aivo-float-field aivo-float-field--icon">
+                <span
+                  class="aivo-field-ico aivo-field-ico--left"
+                  aria-hidden="true"
+                >
+                  ✉️
+                </span>
+
+                <input
+                  id="registerEmailView"
+                  type="email"
+                  placeholder="ornek@email.com"
+                  data-i18n-placeholder="auth.emailPlaceholder"
+                  autocomplete="email"
+                  autocapitalize="off"
+                  autocorrect="off"
+                  spellcheck="false"
+                  inputmode="email"
+                />
+              </label>
+            </div>
+
+            <div
+              class="auth-form-field"
+              style="margin-top:12px;"
+            >
+              <div
+                class="auth-form-label"
+                data-i18n="auth.password"
+              >
+                Şifre
+              </div>
+
+              <label class="aivo-float-field aivo-float-field--icon">
+                <span
+                  class="aivo-field-ico aivo-field-ico--left"
+                  aria-hidden="true"
+                >
+                  🔒
+                </span>
+
+                <input
+                  id="registerPassView"
+                  type="password"
+                  placeholder="Şifreniz"
+                  data-i18n-placeholder="auth.passwordPlaceholder"
+                  autocomplete="new-password"
+                />
+
+                <button
+                  type="button"
+                  class="aivo-pass-toggle"
+                  data-toggle-pass="registerPassView"
+                  aria-label="Şifreyi göster"
+                  data-i18n-label="auth.showPassword"
+                >
+                  👁
+                </button>
+              </label>
+            </div>
+
+            <div
+              class="auth-form-field"
+              style="margin-top:12px;"
+            >
+              <div
+                class="auth-form-label"
+                data-i18n="auth.repeatPassword"
+              >
+                Şifre Tekrar
+              </div>
+
+              <label class="aivo-float-field aivo-float-field--icon">
+                <span
+                  class="aivo-field-ico aivo-field-ico--left"
+                  aria-hidden="true"
+                >
+                  🔒
+                </span>
+
+                <input
+                  id="registerPass2"
+                  type="password"
+                  placeholder="Şifrenizi tekrar girin"
+                  data-i18n-placeholder="auth.repeatPasswordPlaceholder"
+                  autocomplete="new-password"
+                />
+
+                <button
+                  type="button"
+                  class="aivo-pass-toggle"
+                  data-toggle-pass="registerPass2"
+                  aria-label="Şifre tekrar alanını göster"
+                  data-i18n-label="auth.showRepeatPassword"
+                >
+                  👁
+                </button>
+              </label>
+            </div>
+
+          </div>
+
+          <label
+            class="auth-consent-row"
+            id="kvkkRow"
+            style="display:none; margin-top:12px;"
+          >
+            <input
+              id="kvkkCheck"
+              type="checkbox"
+            />
+
+            <span data-i18n="auth.acceptTerms">
+              Kullanım Şartları ve Gizlilik Politikası’nı kabul ediyorum
+            </span>
+          </label>
+
+          <div
+            class="login-inline-meta"
+            id="loginMeta"
+          >
+            <label
+              class="remember-row"
+              id="rememberRow"
+            >
+              <input
+                type="checkbox"
+                id="rememberMe"
+              />
+
+              <span data-i18n="auth.rememberMe">
+                Beni hatırla
+              </span>
+            </label>
+
+            <a
+              href="/forgot.html"
+              id="forgotPass"
+              class="link-muted"
+              data-i18n="auth.forgotPassword"
+            >
+              Şifreni mi unuttun?
+            </a>
           </div>
 
           <button
@@ -4995,23 +5194,57 @@
             type="button"
             class="btn-primary btn-login-full"
             data-auth-submit
+            data-i18n="auth.loginButton"
           >
             Giriş Yap
           </button>
+
         </div>
       </div>
 
-      <div class="login-switchbar" id="loginFooter">
+      <div
+        class="login-switchbar"
+        id="loginFooter"
+      >
         <div class="login-switchcopy">
-          <span id="authFooterText">AIVO’da yeni misin?</span>
-          <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+          <span
+            id="authFooterText"
+            data-i18n="auth.newUser"
+          >
+            AIVO’da yeni misin?
+          </span>
+
+          <span
+            id="authFooterText2"
+            data-i18n="auth.haveAccount"
+            style="display:none;"
+          >
+            Zaten hesabın var mı?
+          </span>
         </div>
 
         <div class="login-switchactions">
-          <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
-          <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+          <a
+            href="#"
+            id="goRegister"
+            class="link-accent"
+            data-i18n="auth.createFreeAccount"
+          >
+            Ücretsiz hesap oluştur →
+          </a>
+
+          <a
+            href="#"
+            id="goLogin"
+            class="link-accent"
+            data-i18n="auth.loginLink"
+            style="display:none;"
+          >
+            Giriş yap →
+          </a>
         </div>
       </div>
+
     </div>
   </div>
 </div>
