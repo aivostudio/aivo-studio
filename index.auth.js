@@ -1833,8 +1833,15 @@ try {
   else { modal.classList.remove("is-open"); modal.setAttribute("aria-hidden","true"); }
 } catch (_) {}
 
-const msg = encodeURIComponent("Girişiniz başarılı");
-window.location.href = `/studio.v2.html?tf=success&tm=${msg}`;
+const msg = encodeURIComponent(
+  typeof window.t === "function"
+    ? window.t("auth.success.login")
+    : "Girişiniz başarılı"
+);
+
+window.location.href =
+  `/studio.v2.html?tf=success&tm=${msg}`;
+
 return;
 } catch (err) {
   window.toast.error("Bağlantı hatası. Tekrar dene.");
