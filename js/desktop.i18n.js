@@ -334,11 +334,75 @@
       "index.photofx.cta":
         "Foto Effect Clip Oluştur →",
 
-      "index.photofx.bottomStrong":
+          "index.photofx.bottomStrong":
         "Tek kareden güçlü etki.",
 
       "index.photofx.bottomText":
         "İlk effect clip’ini kısa sürede oluştur.",
+
+      /* =========================
+         INDEX / LIP SYNC VIDEO
+         ========================= */
+
+      "index.lipsync.sectionLabel":
+        "AI Dudak Senkron Video",
+
+      "index.lipsync.title":
+        "AI Dudak Senkron Video",
+
+      "index.lipsync.subtitle":
+        "Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Karakterini konuştur, sosyal medya ve tanıtım için hazır video üret.",
+
+      "index.lipsync.barStrong":
+        "Fotoğraftan konuşan video.",
+
+      "index.lipsync.barText":
+        "Metin ya da ses dosyasıyla dudak senkron video üretimi",
+
+      "index.lipsync.soundOff":
+        "🔇 Sesi Aç",
+
+      "index.lipsync.soundOn":
+        "🔊 Ses Açık",
+
+      "index.lipsync.badgePhoto":
+        "🗣️ Konuşan Fotoğraf",
+
+      "index.lipsync.badgeVoice":
+        "🎙️ Ses / Metin",
+
+      "index.lipsync.badgeSocial":
+        "📱 Sosyal Medya",
+
+      "index.lipsync.cta":
+        "Dudak Senkron Video Oluştur →",
+
+      "index.lipsync.cardTitle":
+        "AI Dudak Senkron Video Oluştur",
+
+      "index.lipsync.description":
+        "Fotoğrafını konuştur, metin ya da sesle dudak senkron video üret. Tanıtım, sosyal medya, karakter sunumu ve hızlı içerik akışları için hazır görünüm al.",
+
+      "index.lipsync.bullet1":
+        "🗣️ Fotoğrafını konuşan videoya dönüştür",
+
+      "index.lipsync.bullet2":
+        "🎤 Şarkını AI vocalist’e okut, görselini konuştur ve dudak senkron video üret",
+
+      "index.lipsync.bullet3":
+        "📱 Reels, Shorts, tanıtım ve sosyal medya içerikleri için hazır çıktı al",
+
+      "index.lipsync.bullet4":
+        "✨ Markan, karakterin veya içerik fikrin için dikkat çekici video oluştur",
+
+      "index.lipsync.bullet5":
+        "⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan",
+
+      "index.lipsync.bottomStrong":
+        "Fotoğraftan konuşan videoya.",
+
+      "index.lipsync.bottomText":
+        "İlk dudak senkron videonu kısa sürede oluştur.",
 
       /* =========================
          COOKIE BANNER
@@ -794,11 +858,75 @@
       "index.photofx.cta":
         "Create Photo Effect Clip →",
 
-      "index.photofx.bottomStrong":
+         "index.photofx.bottomStrong":
         "Powerful impact from a single frame.",
 
       "index.photofx.bottomText":
         "Create your first effect clip in minutes.",
+
+      /* =========================
+         INDEX / LIP SYNC VIDEO
+         ========================= */
+
+      "index.lipsync.sectionLabel":
+        "AI Lip-Sync Video",
+
+      "index.lipsync.title":
+        "AI Lip-Sync Video",
+
+      "index.lipsync.subtitle":
+        "Upload a photo, enter text or add an audio file. Make your character speak and create a ready-to-share video for social media and promotions.",
+
+      "index.lipsync.barStrong":
+        "A talking video from a photo.",
+
+      "index.lipsync.barText":
+        "Create lip-sync videos using text or an audio file",
+
+      "index.lipsync.soundOff":
+        "🔇 Turn On Sound",
+
+      "index.lipsync.soundOn":
+        "🔊 Sound On",
+
+      "index.lipsync.badgePhoto":
+        "🗣️ Talking Photo",
+
+      "index.lipsync.badgeVoice":
+        "🎙️ Audio / Text",
+
+      "index.lipsync.badgeSocial":
+        "📱 Social Media",
+
+      "index.lipsync.cta":
+        "Create Lip-Sync Video →",
+
+      "index.lipsync.cardTitle":
+        "Create an AI Lip-Sync Video",
+
+      "index.lipsync.description":
+        "Make your photo speak and create a lip-sync video using text or audio. Get a polished result for promotions, social media, character presentations and fast content workflows.",
+
+      "index.lipsync.bullet1":
+        "🗣️ Turn your photo into a talking video",
+
+      "index.lipsync.bullet2":
+        "🎤 Let an AI vocalist perform your song, animate your visual and create a lip-sync video",
+
+      "index.lipsync.bullet3":
+        "📱 Get ready-to-share output for Reels, Shorts, promotions and social media",
+
+      "index.lipsync.bullet4":
+        "✨ Create an engaging video for your brand, character or content idea",
+
+      "index.lipsync.bullet5":
+        "⚡ Use a controlled production flow with clear credit and duration calculations",
+
+      "index.lipsync.bottomStrong":
+        "From a photo to a talking video.",
+
+      "index.lipsync.bottomText":
+        "Create your first lip-sync video in minutes.",
 
       /* =========================
          COOKIE BANNER
