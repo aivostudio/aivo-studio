@@ -276,11 +276,69 @@
       "index.cartoon.shot3Label":
         "Gücünü salar",
 
-      "index.cartoon.bottomStrong":
+       "index.cartoon.bottomStrong":
         "Karakterden akışa tek üretim hattı.",
 
       "index.cartoon.bottomText":
         "İlk çizgifilm akışını kısa sürede başlat.",
+
+      /* =========================
+         INDEX / PHOTO EFFECT CLIP
+         ========================= */
+
+      "index.photofx.sectionLabel":
+        "AI Foto Effect Clip",
+
+      "index.photofx.title":
+        "AI Foto Effect Clip",
+
+      "index.photofx.subtitle":
+        "Tek fotoğrafı al, efektle güçlendir, kısa video klibe dönüştür. Sosyal medyada daha canlı, daha premium, daha dikkat çekici görün.",
+
+      "index.photofx.barStrong":
+        "Tek kareden hareketli etki.",
+
+      "index.photofx.barText":
+        "Reels / Shorts / teaser paylaşımı için hızlı foto efekt klip üretimi",
+
+      "index.photofx.original":
+        "Orijinal",
+
+      "index.photofx.glow":
+        "Glow",
+
+      "index.photofx.shake":
+        "Shake",
+
+      "index.photofx.cardTitle":
+        "AI Foto Effect Clip Oluştur",
+
+      "index.photofx.description":
+        "Tek fotoğrafı premium görünen kısa video klibe dönüştür. Teaser, duyuru ve sosyal medya paylaşımlarında daha canlı, daha dikkat çekici görünüm al.",
+
+      "index.photofx.bullet1":
+        "🎬 Tek fotoğraftan kısa, dinamik ve paylaşılabilir effect clip üret",
+
+      "index.photofx.bullet2":
+        "✨ Glow, shake, flash ve stil katmanlarıyla görseli güçlendir",
+
+      "index.photofx.bullet3":
+        "🗣️ Tek fotoğrafı konuştur, dikkat çekici ve paylaşılabilir videoya dönüştür",
+
+      "index.photofx.bullet4":
+        "📱 Reels, Shorts, teaser ve duyuru postları için hazır görünüm al",
+
+      "index.photofx.bullet5":
+        "💬 Prompt komutuyla fotoğrafını konuştur, tek kareyi sahneye dönüştür",
+
+      "index.photofx.cta":
+        "Foto Effect Clip Oluştur →",
+
+      "index.photofx.bottomStrong":
+        "Tek kareden güçlü etki.",
+
+      "index.photofx.bottomText":
+        "İlk effect clip’ini kısa sürede oluştur.",
 
       /* =========================
          COOKIE BANNER
@@ -678,11 +736,69 @@
       "index.cartoon.shot3Label":
         "Releases her power",
 
-      "index.cartoon.bottomStrong":
+         "index.cartoon.bottomStrong":
         "One production pipeline from character to story flow.",
 
       "index.cartoon.bottomText":
         "Start your first cartoon sequence in minutes.",
+
+      /* =========================
+         INDEX / PHOTO EFFECT CLIP
+         ========================= */
+
+      "index.photofx.sectionLabel":
+        "AI Photo Effect Clip",
+
+      "index.photofx.title":
+        "AI Photo Effect Clip",
+
+      "index.photofx.subtitle":
+        "Take a single photo, enhance it with effects and turn it into a short video clip. Make your social content more dynamic, premium and eye-catching.",
+
+      "index.photofx.barStrong":
+        "Motion from a single frame.",
+
+      "index.photofx.barText":
+        "Create fast photo effect clips for Reels, Shorts and teaser posts",
+
+      "index.photofx.original":
+        "Original",
+
+      "index.photofx.glow":
+        "Glow",
+
+      "index.photofx.shake":
+        "Shake",
+
+      "index.photofx.cardTitle":
+        "Create an AI Photo Effect Clip",
+
+      "index.photofx.description":
+        "Turn a single photo into a premium-looking short video clip. Create a more dynamic and eye-catching visual for teasers, announcements and social media posts.",
+
+      "index.photofx.bullet1":
+        "🎬 Create a short, dynamic and shareable effect clip from one photo",
+
+      "index.photofx.bullet2":
+        "✨ Enhance your image with glow, shake, flash and style layers",
+
+      "index.photofx.bullet3":
+        "🗣️ Make a single photo speak and turn it into an engaging, shareable video",
+
+      "index.photofx.bullet4":
+        "📱 Get a ready-to-share visual for Reels, Shorts, teasers and announcements",
+
+      "index.photofx.bullet5":
+        "💬 Use a prompt to make your photo speak and turn one frame into a scene",
+
+      "index.photofx.cta":
+        "Create Photo Effect Clip →",
+
+      "index.photofx.bottomStrong":
+        "Powerful impact from a single frame.",
+
+      "index.photofx.bottomText":
+        "Create your first effect clip in minutes.",
 
       /* =========================
          COOKIE BANNER
