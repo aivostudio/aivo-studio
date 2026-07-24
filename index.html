@@ -1204,85 +1204,246 @@
   .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
 </style>
 
-<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
+<div
+  class="aivo-cc"
+  id="aivoCookieBanner"
+  aria-live="polite"
+>
   <div class="aivo-cc__card">
+
     <div class="aivo-cc__left">
       <div class="aivo-cc__title">
         <span class="aivo-cc__dot"></span>
-        Çerez Tercihleri
+
+        <span data-i18n="cookie.title">
+          Çerez Tercihleri
+        </span>
       </div>
-      <div class="aivo-cc__msg">
-        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
-        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+
+      <div
+        class="aivo-cc__msg"
+        data-i18n="cookie.message"
+      >
+        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
       </div>
+
       <div class="aivo-cc__links">
-        <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
+        <a
+          href="/kurumsal/gizlilik.html#cerez"
+          data-i18n="cookie.policy"
+        >
+          Çerez Politikası
+        </a>
+
+        <button
+          class="aivo-cc__textlink"
+          type="button"
+          id="aivoCcCustomize"
+          data-i18n="cookie.customize"
+        >
+          Özelleştir
+        </button>
       </div>
     </div>
 
     <div class="aivo-cc__actions">
-      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
-      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      <button
+        class="aivo-cc__btn"
+        type="button"
+        id="aivoCcDeny"
+        data-i18n="cookie.deny"
+      >
+        Reddet
+      </button>
+
+      <button
+        class="aivo-cc__btn aivo-cc__btn--primary"
+        type="button"
+        id="aivoCcAllow"
+        data-i18n="cookie.acceptAll"
+      >
+        Tümünü Kabul Et
+      </button>
     </div>
+
   </div>
 </div>
 
 <!-- AIVO Cookie Preferences Modal -->
-<div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
-  <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
+<div
+  class="aivo-ccm"
+  id="aivoCookieModal"
+  aria-hidden="true"
+>
+  <div
+    class="aivo-ccm__backdrop"
+    data-ccm-close="1"
+  ></div>
 
-  <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
+  <div
+    class="aivo-ccm__card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="aivoCcmTitle"
+  >
     <div class="aivo-ccm__head">
+
       <div>
-        <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
-        <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
+        <div
+          class="aivo-ccm__title"
+          id="aivoCcmTitle"
+          data-i18n="cookie.modalTitle"
+        >
+          Çerez Tercihleri
+        </div>
+
+        <div
+          class="aivo-ccm__sub"
+          data-i18n="cookie.modalSubtitle"
+        >
+          Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.
+        </div>
       </div>
-      <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
+
+      <button
+        class="aivo-ccm__x"
+        type="button"
+        data-ccm-close="1"
+        aria-label="Çerez penceresini kapat"
+        data-i18n-label="cookie.closeLabel"
+      >
+        ×
+      </button>
     </div>
 
     <div class="aivo-ccm__rows">
+
       <div class="aivo-ccm__row">
         <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Zorunlu</div>
-          <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+          <div
+            class="aivo-ccm__label"
+            data-i18n="cookie.necessary"
+          >
+            Zorunlu
+          </div>
+
+          <div
+            class="aivo-ccm__desc"
+            data-i18n="cookie.necessaryDesc"
+          >
+            Sitenin çalışması ve güvenlik için gereklidir.
+          </div>
         </div>
-        <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
-          <input type="checkbox" checked disabled />
+
+        <label
+          class="aivo-switch is-disabled"
+          aria-label="Zorunlu çerezler"
+          data-i18n-label="cookie.necessaryLabel"
+        >
+          <input
+            type="checkbox"
+            checked
+            disabled
+          />
+
           <span class="aivo-switch__track"></span>
         </label>
       </div>
 
       <div class="aivo-ccm__row">
         <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Analitik</div>
-          <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+          <div
+            class="aivo-ccm__label"
+            data-i18n="cookie.analytics"
+          >
+            Analitik
+          </div>
+
+          <div
+            class="aivo-ccm__desc"
+            data-i18n="cookie.analyticsDesc"
+          >
+            Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).
+          </div>
         </div>
-        <label class="aivo-switch" aria-label="Analitik çerezler">
-          <input type="checkbox" id="aivoPrefAnalytics" />
+
+        <label
+          class="aivo-switch"
+          aria-label="Analitik çerezler"
+          data-i18n-label="cookie.analyticsLabel"
+        >
+          <input
+            type="checkbox"
+            id="aivoPrefAnalytics"
+          />
+
           <span class="aivo-switch__track"></span>
         </label>
       </div>
 
       <div class="aivo-ccm__row">
         <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Pazarlama</div>
-          <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+          <div
+            class="aivo-ccm__label"
+            data-i18n="cookie.marketing"
+          >
+            Pazarlama
+          </div>
+
+          <div
+            class="aivo-ccm__desc"
+            data-i18n="cookie.marketingDesc"
+          >
+            Kampanya ve yeniden hedefleme (varsa).
+          </div>
         </div>
-        <label class="aivo-switch" aria-label="Pazarlama çerezler">
-          <input type="checkbox" id="aivoPrefMarketing" />
+
+        <label
+          class="aivo-switch"
+          aria-label="Pazarlama çerezleri"
+          data-i18n-label="cookie.marketingLabel"
+        >
+          <input
+            type="checkbox"
+            id="aivoPrefMarketing"
+          />
+
           <span class="aivo-switch__track"></span>
         </label>
       </div>
+
     </div>
 
     <div class="aivo-ccm__foot">
-      <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
+      <a
+        class="aivo-ccm__link"
+        href="/kurumsal/gizlilik.html#cerez"
+        data-i18n="cookie.policy"
+      >
+        Çerez Politikası
+      </a>
+
       <div class="aivo-ccm__actions">
-        <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
-        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+        <button
+          class="aivo-cc__btn"
+          type="button"
+          data-ccm-close="1"
+          data-i18n="cookie.cancel"
+        >
+          Vazgeç
+        </button>
+
+        <button
+          class="aivo-cc__btn aivo-cc__btn--primary"
+          type="button"
+          id="aivoCcmSave"
+          data-i18n="cookie.save"
+        >
+          Kaydet
+        </button>
       </div>
     </div>
+
   </div>
 </div>
 <!-- /AIVO Cookie Preferences Modal -->
