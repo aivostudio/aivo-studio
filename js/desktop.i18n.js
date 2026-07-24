@@ -805,8 +805,54 @@
         "Kayıt başarılı, ancak doğrulama e-postası gönderilemedi.",
       "auth.success.login":
         "Girişiniz başarılı",
-      "auth.success.logout":
+         "auth.success.logout":
         "Çıkış yapıldı",
+
+      /* =========================
+         FORGOT PASSWORD
+         ========================= */
+
+      "forgot.seoTitle":
+        "AIVO — Şifremi Unuttum",
+
+      "forgot.languageLabel":
+        "Dil seçimi",
+
+      "forgot.title":
+        "Şifremi Unuttum",
+
+      "forgot.description":
+        "E-posta adresini gir. Eğer sistemde kayıtlıysa şifre sıfırlama bağlantısı gönderilecektir.",
+
+      "forgot.emailLabel":
+        "E-posta",
+
+      "forgot.emailPlaceholder":
+        "ornek@site.com",
+
+      "forgot.sendButton":
+        "Şifre sıfırlama bağlantısı gönder",
+
+      "forgot.processing":
+        "Gönderiliyor...",
+
+      "forgot.invalidEmail":
+        "Lütfen geçerli bir e-posta adresi gir.",
+
+      "forgot.success":
+        "E-posta adresi sistemde kayıtlıysa sıfırlama bağlantısı gönderildi.",
+
+      "forgot.error":
+        "Bir hata oluştu. Lütfen tekrar dene.",
+
+      "forgot.testMode":
+        "TEST MODU: E-posta yerine bağlantı burada gösterilir:",
+
+      "forgot.backHome":
+        "Ana sayfaya dön",
+
+      "forgot.login":
+        "Giriş Yap",
 
       /* =========================
          TOAST
@@ -1613,8 +1659,54 @@
         "Registration was successful, but the verification email could not be sent.",
       "auth.success.login":
         "Signed in successfully",
-      "auth.success.logout":
+        "auth.success.logout":
         "Signed out successfully",
+
+      /* =========================
+         FORGOT PASSWORD
+         ========================= */
+
+      "forgot.seoTitle":
+        "AIVO — Forgot Password",
+
+      "forgot.languageLabel":
+        "Language selection",
+
+      "forgot.title":
+        "Forgot Your Password?",
+
+      "forgot.description":
+        "Enter your email address. If it is registered, we will send you a password reset link.",
+
+      "forgot.emailLabel":
+        "Email",
+
+      "forgot.emailPlaceholder":
+        "name@example.com",
+
+      "forgot.sendButton":
+        "Send Password Reset Link",
+
+      "forgot.processing":
+        "Sending...",
+
+      "forgot.invalidEmail":
+        "Enter a valid email address.",
+
+      "forgot.success":
+        "If the email address is registered, a password reset link has been sent.",
+
+      "forgot.error":
+        "Something went wrong. Please try again.",
+
+      "forgot.testMode":
+        "TEST MODE: The reset link is displayed here instead of being emailed:",
+
+      "forgot.backHome":
+        "Back to Home",
+
+      "forgot.login":
+        "Sign In",
 
       /* =========================
          TOAST
