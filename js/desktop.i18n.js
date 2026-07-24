@@ -843,8 +843,99 @@
       "pricing.kvkkLabel":
         "KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.",
 
-      "pricing.kvkkHint":
+         "pricing.kvkkHint":
         "Devam etmek için KVKK onayını işaretlemelisin.",
+
+      /* =========================
+         CORPORATE / ABOUT
+         ========================= */
+
+      "about.seoTitle":
+        "Hakkımızda • AIVO",
+
+      "about.seoDescription":
+        "AIVO Studio’nun yapay zekâ destekli müzik, video, kapak ve yaratıcı üretim yaklaşımını keşfedin.",
+
+      "about.pageLabel":
+        "AIVO Kurumsal Hakkımızda sayfası",
+
+      "about.backHome":
+        "← Ana Sayfaya Dön",
+
+      "about.eyebrow":
+        "KURUMSAL",
+
+      "about.title":
+        "Hakkımızda",
+
+      "about.hero":
+        "AIVO Studio, yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getirmek amacıyla kurulmuş yaratıcı bir üretim platformudur.",
+
+      "about.who.title":
+        "Biz Kimiz?",
+
+      "about.who.paragraph1":
+        "AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir platformda birleştiren, AI odaklı modern bir üretim stüdyosudur.",
+
+      "about.who.paragraph2":
+        "Hem yeni başlayanlar hem de profesyoneller için hızlı, esnek ve ölçeklenebilir bir üretim deneyimi sunmayı hedefler.",
+
+      "about.vision.title":
+        "Vizyonumuz",
+
+      "about.vision.text":
+        "Türkçe odaklı yapay zekâ üretiminde yeni bir standart belirlemek ve yaratıcı üretimi herkes için ulaşılabilir kılmak.",
+
+      "about.mission.title":
+        "Misyonumuz",
+
+      "about.mission.text":
+        "Kullanıcıların teknik detaylarla uğraşmadan fikirlerini müziğe, videoya ve görsele dönüştürebileceği güvenli, hızlı ve ilham verici bir üretim ortamı sağlamak.",
+
+      "about.offer.title":
+        "Ne Sunuyoruz?",
+
+      "about.offer.music":
+        "AI destekli müzik üretimi",
+
+      "about.offer.voice":
+        "Performans odaklı AI ses kaydı",
+
+      "about.offer.video":
+        "Metinden veya görselden AI video üretimi",
+
+      "about.offer.cover":
+        "AI kapak tasarımı",
+
+      "about.offer.credit":
+        "Kredi bazlı esnek kullanım",
+
+      "about.safeUse.title":
+        "İçerik Kullanım Kuralları",
+
+      "about.safeUse.intro":
+        "AIVO, güvenli ve yasal kullanım ilkesini benimser. Platform üzerinde üretilen içeriklerde telif hakkı ihlali, kimlik taklidi, kamu figürlerini hedef alan küçük düşürücü içerikler, yanıltıcı manipülasyonlar ve itibar zedeleyici üretimler kabul edilmez.",
+
+      "about.safeUse.rule1":
+        "Belirli bir sanatçının ismiyle birebir veya çok benzer müzik üretimi yasaktır.",
+
+      "about.safeUse.rule2":
+        "Mevcut bir şarkının sözlerini, melodisini, vokal tarzını veya düzenleme yapısını taklit eden üretimler yasaktır.",
+
+      "about.safeUse.rule3":
+        "Cumhurbaşkanı, siyasetçiler, kamu figürleri ve gerçek kişiler hakkında aşağılayıcı, alaycı veya itibar zedeleyici görsel veya video içerikler yasaktır.",
+
+      "about.safeUse.rule4":
+        "Deepfake, sahte konuşma, sahte görüntü ve kişiyi söylemediği ya da yapmadığı bir şeyi yapıyormuş gibi gösteren içerikler yasaktır.",
+
+      "about.safeUse.rule5":
+        "Telif, kişilik hakları ve yürürlükteki mevzuata aykırı olduğu değerlendirilen içerikler engellenebilir, kaldırılabilir veya hesap üzerinde işlem uygulanabilir.",
+
+      "about.safeUse.closing":
+        "Kullanıcılar, üretim yaparken genel tarz, duygu, tür, dönem ve teknik nitelikler üzerinden ilerlemeli; belirli kişi, sanatçı veya korunan eser taklidi talep etmemelidir.",
+
+      "about.footer.afterCompany":
+        "(Şirket sonrası)",
 
       /* =========================
          COOKIE BANNER
@@ -1972,8 +2063,99 @@
       "pricing.kvkkLabel":
         "I have read and accept the KVKK Privacy Notice.",
 
-      "pricing.kvkkHint":
+           "pricing.kvkkHint":
         "You must accept the KVKK notice before continuing.",
+
+      /* =========================
+         CORPORATE / ABOUT
+         ========================= */
+
+      "about.seoTitle":
+        "About Us • AIVO",
+
+      "about.seoDescription":
+        "Learn about AIVO Studio and its approach to AI-powered music, video, cover art and creative production.",
+
+      "about.pageLabel":
+        "AIVO Corporate About page",
+
+      "about.backHome":
+        "← Back to Home",
+
+      "about.eyebrow":
+        "COMPANY",
+
+      "about.title":
+        "About Us",
+
+      "about.hero":
+        "AIVO Studio is a creative production platform founded to make AI-powered music, video and cover art creation accessible to everyone.",
+
+      "about.who.title":
+        "Who Are We?",
+
+      "about.who.paragraph1":
+        "AIVO Studio is a modern, AI-focused production studio that brings music production, audio recording, video production and cover art design together on a single platform.",
+
+      "about.who.paragraph2":
+        "It aims to provide a fast, flexible and scalable production experience for both beginners and professionals.",
+
+      "about.vision.title":
+        "Our Vision",
+
+      "about.vision.text":
+        "To set a new standard for Turkish-focused AI creation and make creative production accessible to everyone.",
+
+      "about.mission.title":
+        "Our Mission",
+
+      "about.mission.text":
+        "To provide a safe, fast and inspiring production environment where users can turn their ideas into music, video and visual content without dealing with technical details.",
+
+      "about.offer.title":
+        "What Do We Offer?",
+
+      "about.offer.music":
+        "AI-powered music creation",
+
+      "about.offer.voice":
+        "Performance-focused AI voice recording",
+
+      "about.offer.video":
+        "AI video creation from text or images",
+
+      "about.offer.cover":
+        "AI cover art design",
+
+      "about.offer.credit":
+        "Flexible credit-based usage",
+
+      "about.safeUse.title":
+        "Content Usage Rules",
+
+      "about.safeUse.intro":
+        "AIVO follows the principles of safe and lawful use. Content generated on the platform must not infringe copyright, impersonate identities, target public figures with humiliating content, use deceptive manipulation or damage reputations.",
+
+      "about.safeUse.rule1":
+        "Generating music under the name of a specific artist in a directly imitative or highly similar manner is prohibited.",
+
+      "about.safeUse.rule2":
+        "Productions that imitate the lyrics, melody, vocal style or arrangement structure of an existing song are prohibited.",
+
+      "about.safeUse.rule3":
+        "Humiliating, mocking or reputation-damaging visual or video content about the President, politicians, public figures or real individuals is prohibited.",
+
+      "about.safeUse.rule4":
+        "Deepfakes, fabricated speech, fabricated imagery or content depicting a person as saying or doing something they did not say or do are prohibited.",
+
+      "about.safeUse.rule5":
+        "Content considered contrary to copyright, personality rights or applicable law may be blocked or removed, and action may be taken against the relevant account.",
+
+      "about.safeUse.closing":
+        "Users should base their requests on general style, mood, genre, era and technical characteristics, and must not request imitation of a specific person, artist or protected work.",
+
+      "about.footer.afterCompany":
+        "(After company setup)",
 
       /* =========================
          COOKIE BANNER
@@ -2457,32 +2639,65 @@
     }
   }
 
+  function getDocumentTranslationKey(
+    attributeName,
+    fallbackKey
+  ) {
+    var root = document.documentElement;
+
+    var key =
+      root && root.getAttribute
+        ? String(
+            root.getAttribute(attributeName) || ""
+          ).trim()
+        : "";
+
+    return key || fallbackKey;
+  }
+
   function applyDocumentMeta() {
-    document.title = translate("seo.title");
+    var titleKey = getDocumentTranslationKey(
+      "data-aivo-title-key",
+      "seo.title"
+    );
+
+    var descriptionKey =
+      getDocumentTranslationKey(
+        "data-aivo-description-key",
+        "seo.description"
+      );
+
+    var translatedTitle =
+      translate(titleKey);
+
+    var translatedDescription =
+      translate(descriptionKey);
+
+    document.title = translatedTitle;
 
     setMetaContent(
       'meta[name="description"]',
-      translate("seo.description")
+      translatedDescription
     );
 
     setMetaContent(
       'meta[property="og:title"]',
-      translate("seo.title")
+      translatedTitle
     );
 
     setMetaContent(
       'meta[property="og:description"]',
-      translate("seo.description")
+      translatedDescription
     );
 
     setMetaContent(
       'meta[name="twitter:title"]',
-      translate("seo.title")
+      translatedTitle
     );
 
     setMetaContent(
       'meta[name="twitter:description"]',
-      translate("seo.description")
+      translatedDescription
     );
   }
 
