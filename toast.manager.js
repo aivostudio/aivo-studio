@@ -12,6 +12,38 @@
     warning: "⚠",
   };
 
+  function getToastTitle(variant) {
+    const keys = {
+      success: "toast.title.success",
+      error: "toast.title.error",
+      warning: "toast.title.warning",
+      info: "toast.title.info",
+    };
+
+    const fallbacks = {
+      success: "Başarılı",
+      error: "Hata",
+      warning: "Uyarı",
+      info: "Bilgi",
+    };
+
+    const key =
+      keys[variant] ||
+      keys.info;
+
+    const fallback =
+      fallbacks[variant] ||
+      fallbacks.info;
+
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
+
+    return fallback;
+  }
+
   let container = null;
   let active = [];
   let uid = 0;
@@ -164,9 +196,7 @@ function makeToast({ variant, title, message, duration }) {
   h.className = "aivo-toast__title";
   h.textContent =
     title ||
-    (variant === "success" ? "Başarılı" :
-     variant === "error" ? "Hata" :
-     variant === "warning" ? "Uyarı" : "Bilgi");
+    getToastTitle(variant);
 
   const p = document.createElement("p");
   p.className = "aivo-toast__msg";
