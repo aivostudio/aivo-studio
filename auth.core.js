@@ -455,10 +455,20 @@
     } catch (_) {}
   }
 
-  function setBusy(btn, busy, text) {
+   function setBusy(btn, busy, text) {
     if (!btn) return;
     btn.disabled = !!busy;
     if (text != null) btn.textContent = text;
+  }
+
+  function authText(key, fallback) {
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
+
+    return fallback;
   }
 
   function waitForModalReady(cb) {
@@ -524,8 +534,16 @@
         return;
       }
 
-      const old = btn.textContent;
-      setBusy(btn, true, "Hesap oluşturuluyor...");
+          const old = btn.textContent;
+
+      setBusy(
+        btn,
+        true,
+        authText(
+          "auth.processing.register",
+          "Hesap oluşturuluyor..."
+        )
+      );
 
       try {
         const { res, text, data } = await postJSON("/api/auth/register", {
@@ -581,8 +599,16 @@
         try {
           if (window.toast) window.toast.error("Bağlantı hatası. Tekrar dene.");
         } catch (_) {}
-      } finally {
-        setBusy(btn, false, old || "Hesap Oluştur");
+          } finally {
+        setBusy(
+          btn,
+          false,
+          old ||
+            authText(
+              "auth.registerButton",
+              "Hesap Oluştur"
+            )
+        );
       }
       return;
     }
@@ -597,8 +623,16 @@
       return;
     }
 
-    const old = btn.textContent;
-    setBusy(btn, true, "Giriş yapılıyor...");
+      const old = btn.textContent;
+
+    setBusy(
+      btn,
+      true,
+      authText(
+        "auth.processing.login",
+        "Giriş yapılıyor..."
+      )
+    );
 
     try {
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
@@ -700,8 +734,16 @@ const resolvedSurname = firstNonEmpty(
       try {
         if (window.toast) toast.error("Bağlantı hatası", "Tekrar dene.");
       } catch (_) {}
-    } finally {
-      setBusy(btn, false, old || "Giriş Yap");
+       } finally {
+      setBusy(
+        btn,
+        false,
+        old ||
+          authText(
+            "auth.loginButton",
+            "Giriş Yap"
+          )
+      );
     }
   }
 
