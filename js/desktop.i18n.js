@@ -653,7 +653,7 @@
       "index.footer.contactHint":
         "Sorularınız için e-posta, WhatsApp destek hattı veya iletişim formunu kullanabilirsiniz.",
 
-      "index.footer.rights":
+         "index.footer.rights":
         "© 2025 AIVO. Tüm hakları saklıdır.",
 
       "index.footer.statusLabel":
@@ -661,6 +661,190 @@
 
       "index.footer.statusActive":
         "Aktif",
+
+      /* =========================
+         PRICING
+         ========================= */
+
+      "pricing.pageLabel":
+        "AIVO kredi paketleri ve fiyatlandırma",
+
+      "pricing.heroPill":
+        "AI Müzik, Kapak ve Video Üretimi",
+
+      "pricing.heroTitle":
+        "Fiyatlandırma",
+
+      "pricing.heroSubtitle":
+        "İhtiyacına göre kredi paketini seç.",
+
+      "pricing.packagesLabel":
+        "Kredi Paketleri",
+
+      "pricing.packagesTitle":
+        "Kredi Paketleri",
+
+      "pricing.packagesSubtitle":
+        "Tek seferlik ödeme ile kredi satın al.",
+
+      "pricing.mostPopular":
+        "★ En Popüler",
+
+      /* BAŞLANGIÇ */
+
+      "pricing.starter.badge":
+        "Başlangıç",
+
+      "pricing.starter.name":
+        "Yeni Kullanıcı",
+
+      "pricing.starter.amount":
+        "199 ₺",
+
+      "pricing.starter.creditAmount":
+        "/ 25 kredi",
+
+      "pricing.starter.metric":
+        "Kredi başına 7,96 ₺",
+
+      "pricing.starter.feature1":
+        "25 Kredi",
+
+      "pricing.starter.feature2":
+        "Temel kalite üretim",
+
+      "pricing.starter.feature3":
+        "Standart hız",
+
+      "pricing.starter.feature4":
+        "Kapak + Müzik",
+
+      /* STANDART */
+
+      "pricing.standard.badge":
+        "Standart",
+
+      "pricing.standard.name":
+        "Standart Paket",
+
+      "pricing.standard.amount":
+        "699 ₺",
+
+      "pricing.standard.creditAmount":
+        "/ 100 kredi",
+
+      "pricing.standard.metric":
+        "Kredi başına 6,99 ₺",
+
+      "pricing.standard.feature1":
+        "100 Kredi",
+
+      "pricing.standard.feature2":
+        "Daha hızlı üretim",
+
+      "pricing.standard.feature3":
+        "Öncelikli sıra",
+
+      "pricing.standard.feature4":
+        "Müzik + Kapak",
+
+      /* PRO */
+
+      "pricing.pro.badge":
+        "Pro",
+
+      "pricing.pro.name":
+        "Yaratıcı Üretici",
+
+      "pricing.pro.amount":
+        "1.299 ₺",
+
+      "pricing.pro.creditAmount":
+        "/ 200 kredi",
+
+      "pricing.pro.metric":
+        "Kredi başına 6,49 ₺",
+
+      "pricing.pro.feature1":
+        "200 Kredi",
+
+      "pricing.pro.feature2":
+        "Premium kalite",
+
+      "pricing.pro.feature3":
+        "Öncelikli destek",
+
+      "pricing.pro.feature4":
+        "Ticari kullanım",
+
+      "pricing.pro.feature5":
+        "Kapak + Müzik + Video",
+
+      /* STÜDYO */
+
+      "pricing.studio.badge":
+        "Stüdyo",
+
+      "pricing.studio.name":
+        "Stüdyo / Ajans",
+
+      "pricing.studio.amount":
+        "2.999 ₺",
+
+      "pricing.studio.creditAmount":
+        "/ 500 kredi",
+
+      "pricing.studio.metric":
+        "Kredi başına 6,00 ₺",
+
+      "pricing.studio.feature1":
+        "500 Kredi",
+
+      "pricing.studio.feature2":
+        "Takım kullanımı",
+
+      "pricing.studio.feature3":
+        "Özel destek",
+
+      "pricing.studio.feature4":
+        "Ticari kullanım",
+
+      "pricing.studio.feature5":
+        "Yüksek hacimli üretim",
+
+      /* ORTAK PAKET METİNLERİ */
+
+      "pricing.instantActivation":
+        "🕒 Anında Aktivasyon",
+
+      "pricing.securePayment":
+        "🛡 Güvenli Ödeme",
+
+      "pricing.selectPackage":
+        "Paketi seç",
+
+      /* ÖDEME VE KVKK */
+
+      "pricing.infoTitle":
+        "Bilgilendirme",
+
+      "pricing.infoText":
+        "Kredi paketleri tek seferliktir. Satın alma sonrası krediler hesabına anında tanımlanır ve AIVO Studio’da müzik, kapak ve video üretiminde kullanılır.",
+
+      "pricing.currencyTitle":
+        "Ödeme para birimi",
+
+      "pricing.currencyText":
+        "Ödemeler Türk Lirası (TRY) olarak tahsil edilir. Yabancı kartlarda bankanız tutarı kartınızın para birimine çevirebilir ve kur dönüşüm ücreti uygulayabilir.",
+
+      "pricing.privacyTextHtml":
+        "AIVO tarafından sunulan hizmetler kapsamında; kimlik, iletişim, ödeme ve kullanım bilgilerimin, 6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca hizmetlerin sunulması, sözleşme süreçlerinin yürütülmesi ve yasal yükümlülüklerin yerine getirilmesi amacıyla işlenebileceğini biliyorum. Kişisel verilerimin işlenmesine ilişkin detaylı bilgilere <a href=\"/kurumsal/gizlilik.html\" class=\"kvkk-link\">Gizlilik Politikası</a> üzerinden ulaşabileceğimi kabul ediyorum.",
+
+      "pricing.kvkkLabel":
+        "KVKK Aydınlatma Metni’ni okudum ve kabul ediyorum.",
+
+      "pricing.kvkkHint":
+        "Devam etmek için KVKK onayını işaretlemelisin.",
 
       /* =========================
          COOKIE BANNER
@@ -1598,7 +1782,7 @@
       "index.footer.contactHint":
         "Contact us by email, WhatsApp support or the contact form if you have any questions.",
 
-      "index.footer.rights":
+           "index.footer.rights":
         "© 2025 AIVO. All rights reserved.",
 
       "index.footer.statusLabel":
@@ -1606,6 +1790,190 @@
 
       "index.footer.statusActive":
         "Active",
+
+      /* =========================
+         PRICING
+         ========================= */
+
+      "pricing.pageLabel":
+        "AIVO credit packages and pricing",
+
+      "pricing.heroPill":
+        "AI Music, Cover Art and Video Creation",
+
+      "pricing.heroTitle":
+        "Pricing",
+
+      "pricing.heroSubtitle":
+        "Choose the credit package that suits your needs.",
+
+      "pricing.packagesLabel":
+        "Credit Packages",
+
+      "pricing.packagesTitle":
+        "Credit Packages",
+
+      "pricing.packagesSubtitle":
+        "Purchase credits with a one-time payment.",
+
+      "pricing.mostPopular":
+        "★ Most Popular",
+
+      /* STARTER */
+
+      "pricing.starter.badge":
+        "Starter",
+
+      "pricing.starter.name":
+        "New User",
+
+      "pricing.starter.amount":
+        "TRY 199",
+
+      "pricing.starter.creditAmount":
+        "/ 25 credits",
+
+      "pricing.starter.metric":
+        "TRY 7.96 per credit",
+
+      "pricing.starter.feature1":
+        "25 Credits",
+
+      "pricing.starter.feature2":
+        "Basic quality generation",
+
+      "pricing.starter.feature3":
+        "Standard speed",
+
+      "pricing.starter.feature4":
+        "Cover Art + Music",
+
+      /* STANDARD */
+
+      "pricing.standard.badge":
+        "Standard",
+
+      "pricing.standard.name":
+        "Standard Package",
+
+      "pricing.standard.amount":
+        "TRY 699",
+
+      "pricing.standard.creditAmount":
+        "/ 100 credits",
+
+      "pricing.standard.metric":
+        "TRY 6.99 per credit",
+
+      "pricing.standard.feature1":
+        "100 Credits",
+
+      "pricing.standard.feature2":
+        "Faster generation",
+
+      "pricing.standard.feature3":
+        "Priority queue",
+
+      "pricing.standard.feature4":
+        "Music + Cover Art",
+
+      /* PRO */
+
+      "pricing.pro.badge":
+        "Pro",
+
+      "pricing.pro.name":
+        "Creative Producer",
+
+      "pricing.pro.amount":
+        "TRY 1,299",
+
+      "pricing.pro.creditAmount":
+        "/ 200 credits",
+
+      "pricing.pro.metric":
+        "TRY 6.49 per credit",
+
+      "pricing.pro.feature1":
+        "200 Credits",
+
+      "pricing.pro.feature2":
+        "Premium quality",
+
+      "pricing.pro.feature3":
+        "Priority support",
+
+      "pricing.pro.feature4":
+        "Commercial use",
+
+      "pricing.pro.feature5":
+        "Cover Art + Music + Video",
+
+      /* STUDIO */
+
+      "pricing.studio.badge":
+        "Studio",
+
+      "pricing.studio.name":
+        "Studio / Agency",
+
+      "pricing.studio.amount":
+        "TRY 2,999",
+
+      "pricing.studio.creditAmount":
+        "/ 500 credits",
+
+      "pricing.studio.metric":
+        "TRY 6.00 per credit",
+
+      "pricing.studio.feature1":
+        "500 Credits",
+
+      "pricing.studio.feature2":
+        "Team usage",
+
+      "pricing.studio.feature3":
+        "Special support",
+
+      "pricing.studio.feature4":
+        "Commercial use",
+
+      "pricing.studio.feature5":
+        "High-volume generation",
+
+      /* SHARED PACKAGE TEXT */
+
+      "pricing.instantActivation":
+        "🕒 Instant Activation",
+
+      "pricing.securePayment":
+        "🛡 Secure Payment",
+
+      "pricing.selectPackage":
+        "Select Package",
+
+      /* PAYMENT AND PRIVACY */
+
+      "pricing.infoTitle":
+        "Information",
+
+      "pricing.infoText":
+        "Credit packages are one-time purchases. Credits are added to your account immediately after payment and can be used for music, cover art and video creation in AIVO Studio.",
+
+      "pricing.currencyTitle":
+        "Payment currency",
+
+      "pricing.currencyText":
+        "Payments are processed in Turkish Lira (TRY). Your card issuer may convert the amount to your local currency and may apply conversion fees.",
+
+      "pricing.privacyTextHtml":
+        "I understand that my identity, contact, payment and usage information may be processed under Turkish Personal Data Protection Law No. 6698 for providing the services, carrying out contractual processes and meeting legal obligations. Detailed information about the processing of personal data is available in the <a href=\"/kurumsal/gizlilik.html\" class=\"kvkk-link\">Privacy Policy</a>.",
+
+      "pricing.kvkkLabel":
+        "I have read and accept the KVKK Privacy Notice.",
+
+      "pricing.kvkkHint":
+        "You must accept the KVKK notice before continuing.",
 
       /* =========================
          COOKIE BANNER
