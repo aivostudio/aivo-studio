@@ -681,7 +681,11 @@ const resolvedSurname = firstNonEmpty(
         sessionStorage.removeItem("aivo_after_login");
       } catch (_) {}
 
-      const msg = encodeURIComponent("Girişiniz başarılı");
+         const msg = encodeURIComponent(
+        typeof window.t === "function"
+          ? window.t("auth.success.login")
+          : "Girişiniz başarılı"
+      );
 
       const rawAfter = String(after || "/studio.v2.html");
       const hashIndex = rawAfter.indexOf("#");
