@@ -760,7 +760,8 @@
       "auth.createFreeAccount": "Ücretsiz hesap oluştur →",
       "auth.loginLink": "Giriş yap →",
 
-      "auth.showPassword": "Şifreyi göster",
+         "auth.showPassword": "Şifreyi göster",
+      "auth.hidePassword": "Şifreyi gizle",
       "auth.showRepeatPassword": "Şifre tekrar alanını göster",
       "auth.closeLabel": "Giriş penceresini kapat",
 
@@ -771,23 +772,41 @@
       "auth.error.validEmail": "Lütfen geçerli bir e-posta gir.",
       "auth.error.firstName": "Lütfen ad gir.",
       "auth.error.lastName": "Lütfen soyad gir.",
+      "auth.error.fullName": "Lütfen ad ve soyad gir.",
       "auth.error.passwordLength": "Şifre en az 6 karakter olmalı.",
       "auth.error.passwordMismatch": "Şifreler uyuşmuyor.",
       "auth.error.acceptTerms":
         "KVKK ve kullanım şartlarını kabul etmelisin.",
       "auth.error.emailPassword": "E-posta ve şifre gir.",
+      "auth.error.emailAlreadyRegistered":
+        "Bu e-posta adresiyle zaten kayıt var.",
       "auth.error.invalidCredentials":
         "E-posta adresin ya da şifren hatalı.",
       "auth.error.emailNotVerified":
-        "E-posta adresini doğrulamadan giriş yapamazsın.",
+        "Önce e-posta adresine gönderilen onay bağlantısına tıkla.",
       "auth.error.userNotFound":
         "Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.",
-      "auth.error.registerFailed": "Kayıt başarısız.",
-      "auth.error.connection": "Bağlantı hatası. Tekrar dene.",
+      "auth.error.userBanned":
+        "Bu kullanıcı engellenmiş.",
+      "auth.error.userDisabled":
+        "Bu hesap devre dışı bırakılmış.",
+      "auth.error.registerFailed":
+        "Kayıt başarısız.",
+      "auth.error.loginFailed":
+        "Giriş başarısız.",
+      "auth.error.connection":
+        "Bağlantı hatası. Tekrar dene.",
 
       "auth.success.register":
         "Kayıt başarılı! Şimdi giriş yapabilirsin.",
-      "auth.success.login": "Girişiniz başarılı",
+      "auth.success.registerMailSent":
+        "Kayıt başarılı! Onay e-postanı kontrol et.",
+      "auth.success.registerMailFailed":
+        "Kayıt başarılı, ancak doğrulama e-postası gönderilemedi.",
+      "auth.success.login":
+        "Girişiniz başarılı",
+      "auth.success.logout":
+        "Çıkış yapıldı",
 
       /* =========================
          TOAST
@@ -1546,7 +1565,8 @@
       "auth.createFreeAccount": "Create a free account →",
       "auth.loginLink": "Sign in →",
 
-      "auth.showPassword": "Show password",
+          "auth.showPassword": "Show password",
+      "auth.hidePassword": "Hide password",
       "auth.showRepeatPassword": "Show repeated password",
       "auth.closeLabel": "Close sign-in window",
 
@@ -1557,25 +1577,44 @@
       "auth.error.validEmail": "Enter a valid email address.",
       "auth.error.firstName": "Enter your first name.",
       "auth.error.lastName": "Enter your last name.",
+      "auth.error.fullName": "Enter your first and last name.",
       "auth.error.passwordLength":
         "Password must contain at least 6 characters.",
-      "auth.error.passwordMismatch": "Passwords do not match.",
+      "auth.error.passwordMismatch":
+        "Passwords do not match.",
       "auth.error.acceptTerms":
-        "You must accept the privacy notice and terms.",
-      "auth.error.emailPassword": "Enter your email and password.",
+        "You must accept the Terms of Use and Privacy Policy.",
+      "auth.error.emailPassword":
+        "Enter your email and password.",
+      "auth.error.emailAlreadyRegistered":
+        "An account already exists with this email address.",
       "auth.error.invalidCredentials":
         "Your email address or password is incorrect.",
       "auth.error.emailNotVerified":
-        "Verify your email address before signing in.",
+        "Open the verification link sent to your email before signing in.",
       "auth.error.userNotFound":
         "No account was found with this email address.",
-      "auth.error.registerFailed": "Account registration failed.",
+      "auth.error.userBanned":
+        "This user has been blocked.",
+      "auth.error.userDisabled":
+        "This account has been disabled.",
+      "auth.error.registerFailed":
+        "Account registration failed.",
+      "auth.error.loginFailed":
+        "Sign-in failed.",
       "auth.error.connection":
         "Connection error. Please try again.",
 
       "auth.success.register":
         "Registration successful! You can now sign in.",
-      "auth.success.login": "Signed in successfully",
+      "auth.success.registerMailSent":
+        "Registration successful! Check your email to verify your account.",
+      "auth.success.registerMailFailed":
+        "Registration was successful, but the verification email could not be sent.",
+      "auth.success.login":
+        "Signed in successfully",
+      "auth.success.logout":
+        "Signed out successfully",
 
       /* =========================
          TOAST
