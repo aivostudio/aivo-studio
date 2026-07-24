@@ -4380,190 +4380,371 @@
 
 
 <!-- ================= FOOTER ================= -->
-<footer class="aivo-footer" id="footer">
+<footer
+  class="aivo-footer"
+  id="footer"
+  aria-label="AIVO alt bilgi alanı"
+  data-i18n-label="index.footer.sectionLabel"
+>
   <div class="aivo-wrap aivo-footer-top">
 
     <div class="aivo-footer-brand">
-      <div class="aivo-footer-logo">AIVO</div>
-      <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
-     <div class="aivo-social">
-  <a href="https://x.com/aivo_tr" target="_blank" rel="noopener" aria-label="AIVO X">X</a>
-  <a href="https://www.instagram.com/aivo.tr/" target="_blank" rel="noopener" aria-label="AIVO Instagram">IG</a>
-  <a href="https://www.youtube.com/@aivotr" target="_blank" rel="noopener" aria-label="AIVO YouTube">YT</a>
-</div>
+      <div class="aivo-footer-logo">
+        AIVO
+      </div>
 
-<div
-  class="aivo-footer-store-badges"
-  style="
-    margin-top: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: nowrap;
-    width: max-content;
-  "
->
-  <a
-    href="https://apps.apple.com/tr/app/aivo/id6769188631?l=tr"
-    target="_blank"
-    rel="noopener"
-    aria-label="AIVO App Store’da"
-    style="display:inline-flex;align-items:center;height:44px;text-decoration:none;flex:0 0 auto;"
-  >
-    <img
-      src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-      alt="Download on the App Store"
-      style="height:44px;width:auto;display:block;"
-    >
-  </a>
+      <p data-i18n="index.footer.tagline">
+        Türkçe odaklı AI müzik üretiminde yeni bir standart.
+      </p>
 
-  <a
-    href="https://play.google.com/store/apps/details?id=tr.aivo.app"
-    target="_blank"
-    rel="noopener"
-    aria-label="AIVO Google Play’de"
-    style="display:inline-flex;align-items:center;height:56px;text-decoration:none;flex:0 0 auto;"
-  >
-    <img
-      src="https://play.google.com/intl/en_us/badges/static/images/badges/tr_badge_web_generic.png"
-      alt="Google Play'den alın"
-      style="height:56px;width:auto;display:block;"
-    >
-  </a>
+      <div class="aivo-social">
+        <a
+          href="https://x.com/aivo_tr"
+          target="_blank"
+          rel="noopener"
+          aria-label="AIVO X"
+        >
+          X
+        </a>
 
-  <a
-    href="https://aivo.tr/studio.v2.html"
-    target="_blank"
-    rel="noopener"
-    aria-label="AIVO Web App"
-    style="
-      height:44px;
-      width:146px;
-      padding:0 10px;
-      box-sizing:border-box;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.72);
-      background:
-        radial-gradient(38px 30px at 16% 50%, rgba(34,211,238,.24), transparent 70%),
-        radial-gradient(48px 34px at 94% 50%, rgba(236,72,153,.25), transparent 72%),
-        #000;
-      color:#fff;
-      text-decoration:none;
-      flex:0 0 auto;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.16),
-        0 0 0 1px rgba(255,255,255,.04);
-    "
-  >
-    <img
-      src="/apple-touch-icon.png"
-      alt="AIVO"
-      style="
-        width:26px;
-        height:26px;
-        border-radius:7px;
-        display:block;
-        flex:0 0 auto;
-        box-shadow:0 0 12px rgba(34,211,238,.28), 0 0 14px rgba(236,72,153,.22);
-      "
-    >
-    <span
-      style="
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        line-height:1.02;
-        white-space:nowrap;
-      "
-    >
-   <span
-  style="
-    font-size:8px;
-    font-weight:400;
-    letter-spacing:.1px;
-    color:rgba(255,255,255,.78);
-  "
->Open in</span>
-<span
-  style="
-    font-size:18px;
-    font-weight:600;
-    letter-spacing:-.35px;
-    color:#fff;
-  "
->AIVO Web</span>
-    </span>
-  </a>
-</div>
+        <a
+          href="https://www.instagram.com/aivo.tr/"
+          target="_blank"
+          rel="noopener"
+          aria-label="AIVO Instagram"
+        >
+          IG
+        </a>
+
+        <a
+          href="https://www.youtube.com/@aivotr"
+          target="_blank"
+          rel="noopener"
+          aria-label="AIVO YouTube"
+        >
+          YT
+        </a>
+      </div>
+
+      <div
+        class="aivo-footer-store-badges"
+        style="
+          margin-top:14px;
+          display:flex;
+          align-items:center;
+          gap:8px;
+          flex-wrap:nowrap;
+          width:max-content;
+        "
+      >
+        <a
+          href="https://apps.apple.com/tr/app/aivo/id6769188631?l=tr"
+          target="_blank"
+          rel="noopener"
+          aria-label="AIVO’yu App Store’dan indir"
+          data-i18n-label="index.footer.appStoreLabel"
+          style="display:inline-flex;align-items:center;height:44px;text-decoration:none;flex:0 0 auto;"
+        >
+          <img
+            src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+            alt="App Store’dan indirin"
+            data-i18n-alt="index.footer.appStoreAlt"
+            style="height:44px;width:auto;display:block;"
+          >
+        </a>
+
+        <a
+          href="https://play.google.com/store/apps/details?id=tr.aivo.app"
+          target="_blank"
+          rel="noopener"
+          aria-label="AIVO’yu Google Play’den indir"
+          data-i18n-label="index.footer.googlePlayLabel"
+          style="display:inline-flex;align-items:center;height:56px;text-decoration:none;flex:0 0 auto;"
+        >
+          <img
+            src="https://play.google.com/intl/en_us/badges/static/images/badges/tr_badge_web_generic.png"
+            alt="Google Play’den alın"
+            data-i18n-alt="index.footer.googlePlayAlt"
+            data-i18n-attr="src:index.footer.googlePlayBadgeSrc"
+            style="height:56px;width:auto;display:block;"
+          >
+        </a>
+
+        <a
+          href="https://aivo.tr/studio.v2.html"
+          target="_blank"
+          rel="noopener"
+          aria-label="AIVO Web uygulamasını aç"
+          data-i18n-label="index.footer.webAppLabel"
+          style="
+            height:44px;
+            width:146px;
+            padding:0 10px;
+            box-sizing:border-box;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            border-radius:8px;
+            border:1px solid rgba(255,255,255,.72);
+            background:
+              radial-gradient(38px 30px at 16% 50%, rgba(34,211,238,.24), transparent 70%),
+              radial-gradient(48px 34px at 94% 50%, rgba(236,72,153,.25), transparent 72%),
+              #000;
+            color:#fff;
+            text-decoration:none;
+            flex:0 0 auto;
+            box-shadow:
+              inset 0 1px 0 rgba(255,255,255,.16),
+              0 0 0 1px rgba(255,255,255,.04);
+          "
+        >
+          <img
+            src="/apple-touch-icon.png"
+            alt="AIVO"
+            style="
+              width:26px;
+              height:26px;
+              border-radius:7px;
+              display:block;
+              flex:0 0 auto;
+              box-shadow:
+                0 0 12px rgba(34,211,238,.28),
+                0 0 14px rgba(236,72,153,.22);
+            "
+          >
+
+          <span
+            style="
+              display:flex;
+              flex-direction:column;
+              justify-content:center;
+              line-height:1.02;
+              white-space:nowrap;
+            "
+          >
+            <span
+              data-i18n="index.footer.webOpen"
+              style="
+                font-size:8px;
+                font-weight:400;
+                letter-spacing:.1px;
+                color:rgba(255,255,255,.78);
+              "
+            >
+              Web’de aç
+            </span>
+
+            <span
+              style="
+                font-size:18px;
+                font-weight:600;
+                letter-spacing:-.35px;
+                color:#fff;
+              "
+            >
+              AIVO Web
+            </span>
+          </span>
+        </a>
+      </div>
     </div>
 
     <div class="aivo-footer-col">
-      <h4>Hızlı Linkler</h4>
-      <a href="#top">Ana Sayfa</a>
-     <a href="/studio.v2.html" data-auth="required">Dashboard</a>
+      <h4 data-i18n="index.footer.quickLinks">
+        Hızlı Linkler
+      </h4>
 
+      <a
+        href="#top"
+        data-i18n="index.footer.home"
+      >
+        Ana Sayfa
+      </a>
+
+      <a
+        href="/studio.v2.html"
+        data-auth="required"
+        data-i18n="index.footer.dashboard"
+      >
+        Dashboard
+      </a>
     </div>
 
     <div class="aivo-footer-col">
-      <h4>Kurumsal</h4>
-      <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-      <a href="/kurumsal/ozellikler.html">Özellikler</a>
-      <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-      <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-      <a href="/kurumsal/iletisim.html">İletişim</a>
-    </div>
+      <h4 data-i18n="index.footer.company">
+        Kurumsal
+      </h4>
 
-<div class="aivo-footer-right">
-  <div class="aivo-badges">
-    <div class="aivo-badge">3D Secure<br><small>Güvenli ödeme</small></div>
-    <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
-<div class="aivo-badge">ETBİS<br><small>T.C. Ticaret Bakanlığı’na Kayıtlıdır</small></div>
-  </div>
-
-  <div class="aivo-contact">
-    <h4>İletişim</h4>
-
-    <div class="aivo-contact-list">
-      <a href="mailto:info@aivo.tr" class="aivo-contact-item" title="E-posta gönder">
-        <span class="aivo-contact-icon">✉</span>
-        <span class="aivo-contact-text"> info@aivo.tr</span>
+      <a
+        href="/kurumsal/hakkimizda.html"
+        data-i18n="index.footer.about"
+      >
+        Hakkımızda
       </a>
 
-      <a href="https://wa.me/905336108900" class="aivo-contact-item" title="WhatsApp Destek Hattı" target="_blank" rel="noopener">
-        <span class="aivo-contact-icon">💬</span>
-        <span class="aivo-contact-text">WhatsApp Destek Hattı: +90 533 610 89 00</span>
+      <a
+        href="/kurumsal/ozellikler.html"
+        data-i18n="index.footer.features"
+      >
+        Özellikler
       </a>
 
-     <div class="aivo-contact-item aivo-contact-item--address" title="Konum">
-  <span class="aivo-contact-icon">📍</span>
-  <span class="aivo-contact-text">Turhan Güneş Bulvarı No: 59/2, Ankara / Türkiye</span>
-</div>
+      <a
+        href="/kurumsal/gizlilik.html"
+        data-i18n="index.footer.privacy"
+      >
+        Gizlilik Politikası
+      </a>
+
+      <a
+        href="/kurumsal/mesafeli-satis.html"
+        data-i18n="index.footer.distanceSales"
+      >
+        Mesafeli Satış Sözleşmesi
+      </a>
 
       <a
         href="/kurumsal/iletisim.html"
-        class="aivo-contact-item"
-        title="İletişim sayfasına git"
+        data-i18n="index.footer.contact"
       >
-        <span class="aivo-contact-icon">→</span>
-        <span class="aivo-contact-text">Form</span>
+        İletişim
       </a>
     </div>
 
-    <small class="aivo-contact-hint">
-      Sorularınız için e-posta, WhatsApp destek hattı veya iletişim formunu kullanabilirsiniz.
-    </small>
-  </div>
-</div>
+    <div class="aivo-footer-right">
+
+      <div class="aivo-badges">
+        <div class="aivo-badge">
+          3D Secure
+          <br>
+
+          <small data-i18n="index.footer.securePayment">
+            Güvenli ödeme
+          </small>
+        </div>
+
+        <div class="aivo-badge">
+          VISA • MC • TROY
+          <br>
+
+          <small>
+            256-bit SSL
+          </small>
+        </div>
+
+        <div class="aivo-badge">
+          ETBİS
+          <br>
+
+          <small data-i18n="index.footer.etbisRegistered">
+            T.C. Ticaret Bakanlığı’na Kayıtlıdır
+          </small>
+        </div>
+      </div>
+
+      <div class="aivo-contact">
+        <h4 data-i18n="index.footer.contact">
+          İletişim
+        </h4>
+
+        <div class="aivo-contact-list">
+          <a
+            href="mailto:info@aivo.tr"
+            class="aivo-contact-item"
+            title="E-posta gönder"
+            data-i18n-title="index.footer.emailTitle"
+          >
+            <span class="aivo-contact-icon">
+              ✉
+            </span>
+
+            <span class="aivo-contact-text">
+              info@aivo.tr
+            </span>
+          </a>
+
+          <a
+            href="https://wa.me/905336108900"
+            class="aivo-contact-item"
+            title="WhatsApp Destek Hattı"
+            data-i18n-title="index.footer.whatsappTitle"
+            target="_blank"
+            rel="noopener"
+          >
+            <span class="aivo-contact-icon">
+              💬
+            </span>
+
+            <span
+              class="aivo-contact-text"
+              data-i18n="index.footer.whatsappText"
+            >
+              WhatsApp Destek Hattı: +90 533 610 89 00
+            </span>
+          </a>
+
+          <div
+            class="aivo-contact-item aivo-contact-item--address"
+            title="Konum"
+            data-i18n-title="index.footer.locationTitle"
+          >
+            <span class="aivo-contact-icon">
+              📍
+            </span>
+
+            <span
+              class="aivo-contact-text"
+              data-i18n="index.footer.address"
+            >
+              Turhan Güneş Bulvarı No: 59/2, Ankara / Türkiye
+            </span>
+          </div>
+
+          <a
+            href="/kurumsal/iletisim.html"
+            class="aivo-contact-item"
+            title="İletişim sayfasına git"
+            data-i18n-title="index.footer.contactPageTitle"
+          >
+            <span class="aivo-contact-icon">
+              →
+            </span>
+
+            <span
+              class="aivo-contact-text"
+              data-i18n="index.footer.form"
+            >
+              Form
+            </span>
+          </a>
+        </div>
+
+        <small
+          class="aivo-contact-hint"
+          data-i18n="index.footer.contactHint"
+        >
+          Sorularınız için e-posta, WhatsApp destek hattı veya iletişim formunu kullanabilirsiniz.
+        </small>
+      </div>
+    </div>
 
   </div>
 
   <div class="aivo-wrap aivo-footer-bottom">
-    <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
+    <div data-i18n="index.footer.rights">
+      © 2025 AIVO. Tüm hakları saklıdır.
+    </div>
+
     <div class="aivo-status">
-      Durum: <span class="dot"></span> Aktif
+      <span data-i18n="index.footer.statusLabel">
+        Durum:
+      </span>
+
+      <span class="dot"></span>
+
+      <span data-i18n="index.footer.statusActive">
+        Aktif
+      </span>
     </div>
   </div>
 </footer>
