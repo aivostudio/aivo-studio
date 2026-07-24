@@ -714,8 +714,12 @@
       "auth.registerDescription":
         "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur.",
 
-      "auth.googleLogin": "Google ile Giriş Yap",
+           "auth.googleLogin": "Google ile Giriş Yap",
+      "auth.googleRegister": "Google ile Kayıt Ol",
+
       "auth.appleLogin": "Apple ile Giriş Yap",
+      "auth.appleRegister": "Apple ile Kayıt Ol",
+
       "auth.orEmail": "veya e-posta ile devam et",
 
       "auth.loginCardTitle": "E-posta ile Giriş",
@@ -1496,8 +1500,12 @@
       "auth.registerDescription":
         "Create your free account to access AIVO Studio.",
 
-      "auth.googleLogin": "Continue with Google",
+          "auth.googleLogin": "Continue with Google",
+      "auth.googleRegister": "Sign up with Google",
+
       "auth.appleLogin": "Continue with Apple",
+      "auth.appleRegister": "Sign up with Apple",
+
       "auth.orEmail": "or continue with email",
 
       "auth.loginCardTitle": "Sign In with Email",
