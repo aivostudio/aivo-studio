@@ -600,32 +600,63 @@
           name: fullName
         });
 
-        if (!res.ok || data?.ok === false) {
+              if (!res.ok || data?.ok === false) {
           try {
             const registerErr =
               data?.error === "email_already_registered"
-                ? "Bu email ile zaten kayıt var."
+                ? authText(
+                    "auth.error.emailAlreadyRegistered",
+                    "Bu e-posta adresiyle zaten kayıt var."
+                  )
                 : data?.error === "email_invalid"
-                  ? "Geçerli bir email gir."
+                  ? authText(
+                      "auth.error.validEmail",
+                      "Lütfen geçerli bir e-posta gir."
+                    )
                   : data?.error === "password_too_short"
-                    ? "Şifre en az 6 karakter olmalı."
+                    ? authText(
+                        "auth.error.passwordLength",
+                        "Şifre en az 6 karakter olmalı."
+                      )
                     : data?.error === "name_required"
-                      ? "Ad soyad gir."
+                      ? authText(
+                          "auth.error.fullName",
+                          "Lütfen ad ve soyad gir."
+                        )
                       : data?.error === "user_banned"
-                        ? "Bu kullanıcı engellenmiş."
-                        : safeMsg(data?.error || data?.message || text || "Kayıt başarısız.");
+                        ? authText(
+                            "auth.error.userBanned",
+                            "Bu kullanıcı engellenmiş."
+                          )
+                        : authText(
+                            "auth.error.registerFailed",
+                            "Kayıt başarısız."
+                          );
 
-            if (window.toast) window.toast.error(registerErr);
+            if (window.toast) {
+              window.toast.error(registerErr);
+            }
           } catch (_) {}
+
           return;
         }
 
-             try {
+                   try {
           if (window.toast) {
             if (data?.mailSent) {
-              window.toast.success("Kayıt başarılı! Onay mailini kontrol et.");
+              window.toast.success(
+                authText(
+                  "auth.success.registerMailSent",
+                  "Kayıt başarılı! Onay e-postanı kontrol et."
+                )
+              );
             } else {
-              window.toast.warning("Kayıt başarılı, ama doğrulama maili gönderilemedi.");
+              window.toast.warning(
+                authText(
+                  "auth.success.registerMailFailed",
+                  "Kayıt başarılı, ancak doğrulama e-postası gönderilemedi."
+                )
+              );
             }
           }
         } catch (_) {}
@@ -642,10 +673,21 @@
 
         setMode(modal, "login");
         applyModeUI(modal);
-      } catch (err) {
-        console.error("AIVO_REGISTER_FETCH_FAIL:", err);
+            } catch (err) {
+        console.error(
+          "AIVO_REGISTER_FETCH_FAIL:",
+          err
+        );
+
         try {
-          if (window.toast) window.toast.error("Bağlantı hatası. Tekrar dene.");
+          if (window.toast) {
+            window.toast.error(
+              authText(
+                "auth.error.connection",
+                "Bağlantı hatası. Tekrar dene."
+              )
+            );
+          }
         } catch (_) {}
           } finally {
         setBusy(
@@ -664,10 +706,18 @@
     const email = v("loginEmail").toLowerCase();
     const pass = v("loginPass");
 
-    if (!isValidEmail(email) || !pass) {
+       if (!isValidEmail(email) || !pass) {
       try {
-        if (window.toast) toast.error("Eksik bilgi", "E-posta ve şifre gir.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.emailPassword",
+              "E-posta ve şifre gir."
+            )
+          );
+        }
       } catch (_) {}
+
       return;
     }
 
@@ -685,21 +735,39 @@
     try {
       const { res, text, data } = await postJSON("/api/auth/login", { email, password: pass });
 
-        if (!res.ok || data?.ok === false) {
+         if (!res.ok || data?.ok === false) {
         try {
           const loginErr =
             data?.error === "email_not_verified"
-            ? "Önce mailindeki onay linkine tıkla."
+              ? authText(
+                  "auth.error.emailNotVerified",
+                  "Önce e-posta adresine gönderilen onay bağlantısına tıkla."
+                )
               : data?.error === "invalid_credentials"
-                ? "Şifre yanlış."
+                ? authText(
+                    "auth.error.invalidCredentials",
+                    "E-posta adresin ya da şifren hatalı."
+                  )
                 : data?.error === "user_not_found"
-                  ? "Bu email ile kayıtlı kullanıcı bulunamadı."
+                  ? authText(
+                      "auth.error.userNotFound",
+                      "Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı."
+                    )
                   : data?.error === "user_disabled"
-                    ? "Bu hesap devre dışı bırakılmış."
-                    : safeMsg(data?.error || data?.message || text || "Giriş başarısız.");
+                    ? authText(
+                        "auth.error.userDisabled",
+                        "Bu hesap devre dışı bırakılmış."
+                      )
+                    : authText(
+                        "auth.error.loginFailed",
+                        "Giriş başarısız."
+                      );
 
-          if (window.toast) window.toast.error(loginErr);
+          if (window.toast) {
+            window.toast.error(loginErr);
+          }
         } catch (_) {}
+
         return;
       }
     const resolvedEmail = normalizeEmail(
@@ -778,9 +846,16 @@ const resolvedSurname = firstNonEmpty(
       const sep = basePart.includes("?") ? "&" : "?";
       window.location.href = `${basePart}${sep}tf=success&tm=${msg}${hashPart}`;
       return;
-    } catch (_) {
+        } catch (_) {
       try {
-        if (window.toast) toast.error("Bağlantı hatası", "Tekrar dene.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.connection",
+              "Bağlantı hatası. Tekrar dene."
+            )
+          );
+        }
       } catch (_) {}
        } finally {
       setBusy(
@@ -840,13 +915,28 @@ const resolvedSurname = firstNonEmpty(
       const input = targetId ? byId(targetId) : null;
       if (!input) return;
 
-      const isHidden = input.type === "password";
-      input.type = isHidden ? "text" : "password";
-      passToggle.textContent = isHidden ? "🙈" : "👁";
+         const isHidden =
+        input.type === "password";
+
+      input.type =
+        isHidden ? "text" : "password";
+
+      passToggle.textContent =
+        isHidden ? "🙈" : "👁";
+
       passToggle.setAttribute(
         "aria-label",
-        isHidden ? "Şifreyi gizle" : "Şifreyi göster"
+        isHidden
+          ? authText(
+              "auth.hidePassword",
+              "Şifreyi gizle"
+            )
+          : authText(
+              "auth.showPassword",
+              "Şifreyi göster"
+            )
       );
+
       return;
     }
      
@@ -983,10 +1073,23 @@ const resolvedSurname = firstNonEmpty(
         try { sessionStorage.removeItem(k); } catch (_) {}
       });
 
-      const msg = encodeURIComponent("Çıkış yapıldı");
-      const target = (redirectTo || "/");
-      const sep = target.includes("?") ? "&" : "?";
-      window.location.replace(`${target}${sep}tf=info&tm=${msg}`);
+           const msg = encodeURIComponent(
+        authText(
+          "auth.success.logout",
+          "Çıkış yapıldı"
+        )
+      );
+
+      const target =
+        redirectTo || "/";
+
+      const sep =
+        target.includes("?") ? "&" : "?";
+
+      window.location.replace(
+        `${target}${sep}tf=info&tm=${msg}`
+      );
+
       return;
     } catch (_) {
       try { localStorage.removeItem("aivo_logged_in"); } catch (_) {}
@@ -1003,10 +1106,23 @@ const resolvedSurname = firstNonEmpty(
       try { sessionStorage.removeItem("return_after_login"); } catch (_) {}
       try { sessionStorage.removeItem("aivo_intent"); } catch (_) {}
 
-      const msg = encodeURIComponent("Çıkış yapıldı");
-      const target = (redirectTo || "/");
-      const sep = target.includes("?") ? "&" : "?";
-      window.location.replace(`${target}${sep}tf=info&tm=${msg}`);
+          const msg = encodeURIComponent(
+        authText(
+          "auth.success.logout",
+          "Çıkış yapıldı"
+        )
+      );
+
+      const target =
+        redirectTo || "/";
+
+      const sep =
+        target.includes("?") ? "&" : "?";
+
+      window.location.replace(
+        `${target}${sep}tf=info&tm=${msg}`
+      );
+
       return;
     } finally {
       doLogout.__busy = false;
