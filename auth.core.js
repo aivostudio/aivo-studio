@@ -502,7 +502,25 @@
       const pass2 = v("registerPass2");
       const kvkk = on("kvkkCheck");
 
-      const fullName = [nameVal, surnameVal].filter(Boolean).join(" ").trim();
+          const fullName =
+        [nameVal, surnameVal]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+
+      const lang =
+        String(
+          window.AIVO_LANG ||
+          document.documentElement.getAttribute(
+            "lang"
+          ) ||
+          "tr"
+        )
+          .trim()
+          .toLowerCase()
+          .startsWith("en")
+            ? "en"
+            : "tr";
 
       if (!isValidEmail(email)) {
         if (window.toast) {
@@ -594,12 +612,19 @@
       );
 
       try {
-        const { res, text, data } = await postJSON("/api/auth/register", {
-          email,
-          password: pass,
-          name: fullName
-        });
-
+            const {
+          res,
+          text,
+          data
+        } = await postJSON(
+          "/api/auth/register",
+          {
+            email,
+            password: pass,
+            name: fullName,
+            lang
+          }
+        );
               if (!res.ok || data?.ok === false) {
           try {
             const registerErr =
