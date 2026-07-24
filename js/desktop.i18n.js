@@ -474,11 +474,96 @@
       "index.modules.videoCta":
         "Video Üret →",
 
-      "index.modules.ctaNote":
+        "index.modules.ctaNote":
         "Müzik, kapak ve video üretimine hemen başla",
 
       "index.modules.ctaButton":
         "Hemen Başla – Tamamen Ücretsiz ✨",
+
+      /* =========================
+         INDEX / CORPORATE SHOWCASE
+         ========================= */
+
+      "index.corporate.sectionLabel":
+        "AIVO Studio Kurumsal Bilgiler",
+
+      "index.corporate.eyebrow":
+        "KURUMSAL",
+
+      "index.corporate.title":
+        "AIVO Studio",
+
+      "index.corporate.lead":
+        "Yapay zekâ destekli müzik, video ve kapak üretimini herkes için erişilebilir hâle getiren yaratıcı üretim platformu.",
+
+      "index.corporate.aboutTitle":
+        "Hakkımızda",
+
+      "index.corporate.aboutText1":
+        "AIVO Studio; müzik üretimi, ses kaydı, video üretimi ve kapak tasarımını tek bir yapay zekâ destekli platformda sunar.",
+
+      "index.corporate.aboutText2":
+        "Hem yeni başlayanlar hem de profesyoneller için hızlı, esnek ve ölçeklenebilir bir üretim deneyimi sağlar.",
+
+      "index.corporate.aboutLinkTitle":
+        "AIVO Studio Hakkımızda",
+
+      "index.corporate.aboutLinkLabel":
+        "Hakkımızda sayfasını aç",
+
+      "index.corporate.featuresTitle":
+        "Özellikler",
+
+      "index.corporate.featuresText":
+        "AI müzik, ses, video ve kapak üretimi için geliştirilmiş güçlü ve esnek üretim araçları.",
+
+      "index.corporate.featuresMore":
+        "Tüm özellikleri görmek için →",
+
+      "index.corporate.featuresLinkTitle":
+        "AIVO Studio Özellikler",
+
+      "index.corporate.featuresLinkLabel":
+        "Özellikler sayfasını aç",
+
+      "index.corporate.privacyTitle":
+        "Gizlilik & Güven",
+
+      "index.corporate.privacyFeature1":
+        "KVKK / GDPR uyumlu",
+
+      "index.corporate.privacyFeature2":
+        "Kredi kartı bilgileri saklanmaz",
+
+      "index.corporate.privacyFeature3":
+        "Üretilen içerikler size aittir",
+
+      "index.corporate.privacyFeature4":
+        "256-bit SSL güvenliği",
+
+      "index.corporate.lastUpdated":
+        "Son güncelleme: 17 Aralık 2025",
+
+      "index.corporate.privacyLinkTitle":
+        "Gizlilik Politikası ve KVKK",
+
+      "index.corporate.privacyLinkLabel":
+        "Gizlilik ve KVKK sayfasını aç",
+
+      "index.corporate.salesTitle":
+        "Mesafeli Satış",
+
+      "index.corporate.salesText1":
+        "AIVO Studio üzerinden sunulan tüm hizmetler dijital niteliktedir. Krediler platform içi hizmetlerde kullanılır.",
+
+      "index.corporate.salesText2":
+        "Dijital hizmetlerin anında ifa edilmesi nedeniyle, kullanım durumuna göre cayma hakkı sınırlandırılabilir.",
+
+      "index.corporate.salesLinkTitle":
+        "Mesafeli Satış Sözleşmesi",
+
+      "index.corporate.salesLinkLabel":
+        "Mesafeli Satış Sözleşmesi sayfasını aç",
 
       /* =========================
          COOKIE BANNER
@@ -1074,11 +1159,96 @@
       "index.modules.videoCta":
         "Create Video →",
 
-      "index.modules.ctaNote":
+       "index.modules.ctaNote":
         "Start creating music, cover art and videos now",
 
       "index.modules.ctaButton":
         "Start Now – Completely Free ✨",
+
+      /* =========================
+         INDEX / CORPORATE SHOWCASE
+         ========================= */
+
+      "index.corporate.sectionLabel":
+        "AIVO Studio Company Information",
+
+      "index.corporate.eyebrow":
+        "COMPANY",
+
+      "index.corporate.title":
+        "AIVO Studio",
+
+      "index.corporate.lead":
+        "A creative platform that makes AI-powered music, video and cover art production accessible to everyone.",
+
+      "index.corporate.aboutTitle":
+        "About Us",
+
+      "index.corporate.aboutText1":
+        "AIVO Studio brings music creation, audio recording, video production and cover design together in one AI-powered platform.",
+
+      "index.corporate.aboutText2":
+        "It provides a fast, flexible and scalable creation experience for both beginners and professionals.",
+
+      "index.corporate.aboutLinkTitle":
+        "About AIVO Studio",
+
+      "index.corporate.aboutLinkLabel":
+        "Open the About Us page",
+
+      "index.corporate.featuresTitle":
+        "Features",
+
+      "index.corporate.featuresText":
+        "Powerful and flexible creation tools developed for AI music, audio, video and cover art production.",
+
+      "index.corporate.featuresMore":
+        "View all features →",
+
+      "index.corporate.featuresLinkTitle":
+        "AIVO Studio Features",
+
+      "index.corporate.featuresLinkLabel":
+        "Open the Features page",
+
+      "index.corporate.privacyTitle":
+        "Privacy & Trust",
+
+      "index.corporate.privacyFeature1":
+        "KVKK / GDPR compliant",
+
+      "index.corporate.privacyFeature2":
+        "Credit card details are not stored",
+
+      "index.corporate.privacyFeature3":
+        "Your generated content belongs to you",
+
+      "index.corporate.privacyFeature4":
+        "256-bit SSL security",
+
+      "index.corporate.lastUpdated":
+        "Last updated: December 17, 2025",
+
+      "index.corporate.privacyLinkTitle":
+        "Privacy Policy and KVKK",
+
+      "index.corporate.privacyLinkLabel":
+        "Open the Privacy and KVKK page",
+
+      "index.corporate.salesTitle":
+        "Distance Sales",
+
+      "index.corporate.salesText1":
+        "All services offered through AIVO Studio are digital. Credits are used for services within the platform.",
+
+      "index.corporate.salesText2":
+        "Because digital services are delivered immediately, the right of withdrawal may be limited depending on usage.",
+
+      "index.corporate.salesLinkTitle":
+        "Distance Sales Agreement",
+
+      "index.corporate.salesLinkLabel":
+        "Open the Distance Sales Agreement page",
 
       /* =========================
          COOKIE BANNER
