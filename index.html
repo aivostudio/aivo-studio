@@ -3831,27 +3831,46 @@
   </style>
 
   <div class="lipsync-wrap">
+
     <header class="lipsync-head">
-      <h2 class="lipsync-title">AI Dudak Senkron Video</h2>
-      <p class="lipsync-sub">
-        Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Karakterini konuştur,
-        sosyal medya ve tanıtım için hazır video üret.
+      <h2
+        class="lipsync-title"
+        data-i18n="index.lipsync.title"
+      >
+        AI Dudak Senkron Video
+      </h2>
+
+      <p
+        class="lipsync-sub"
+        data-i18n="index.lipsync.subtitle"
+      >
+        Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Karakterini konuştur, sosyal medya ve tanıtım için hazır video üret.
       </p>
     </header>
 
     <div class="lipsync-bar">
-      <strong>Fotoğraftan konuşan video.</strong>
-      Metin ya da ses dosyasıyla dudak senkron video üretimi
+      <strong data-i18n="index.lipsync.barStrong">
+        Fotoğraftan konuşan video.
+      </strong>
+
+      <span data-i18n="index.lipsync.barText">
+        Metin ya da ses dosyasıyla dudak senkron video üretimi
+      </span>
     </div>
 
-    <a class="lipsync-card"
-       href="/studio.v2.html#lipsync"
-       data-auth="required"
-       data-mod="lipsync-video">
+    <a
+      class="lipsync-card"
+      href="/studio.v2.html#lipsync"
+      data-auth="required"
+      data-mod="lipsync-video"
+    >
 
-      <div class="lipsync-preview" aria-hidden="true">
-              <div class="lipsync-stage">
-                  <video
+      <div
+        class="lipsync-preview"
+        aria-hidden="true"
+      >
+        <div class="lipsync-stage">
+          <video
             id="lipsyncPreviewVideo"
             class="lipsync-preview-video"
             src="https://media.aivo.tr/outputs/home/lipsync/aivo-lipsync-preview.mp4"
@@ -3859,54 +3878,183 @@
             muted
             loop
             playsinline
-            preload="auto">
-          </video>
+            preload="auto"
+          ></video>
 
-                  <button
+          <button
+            id="lipsyncSoundToggle"
             type="button"
             class="lipsync-sound-btn"
-            onclick="event.preventDefault(); event.stopPropagation(); const v=document.getElementById('lipsyncPreviewVideo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } } return false;"
+            data-i18n="index.lipsync.soundOff"
           >
             🔇 Sesi Aç
           </button>
         </div>
 
         <div class="lipsync-tags">
-          <span class="lipsync-badge">🗣️ Konuşan Fotoğraf</span>
-          <span class="lipsync-badge">🎙️ Ses / Metin</span>
-          <span class="lipsync-badge">📱 Sosyal Medya</span>
+          <span
+            class="lipsync-badge"
+            data-i18n="index.lipsync.badgePhoto"
+          >
+            🗣️ Konuşan Fotoğraf
+          </span>
+
+          <span
+            class="lipsync-badge"
+            data-i18n="index.lipsync.badgeVoice"
+          >
+            🎙️ Ses / Metin
+          </span>
+
+          <span
+            class="lipsync-badge"
+            data-i18n="index.lipsync.badgeSocial"
+          >
+            📱 Sosyal Medya
+          </span>
         </div>
 
-        <div class="lipsync-cta">
+        <div
+          class="lipsync-cta"
+          data-i18n="index.lipsync.cta"
+        >
           Dudak Senkron Video Oluştur →
         </div>
       </div>
 
       <div class="lipsync-copy">
-        <h3>AI Dudak Senkron Video Oluştur</h3>
+        <h3 data-i18n="index.lipsync.cardTitle">
+          AI Dudak Senkron Video Oluştur
+        </h3>
 
-        <div class="lipsync-copybox">
-          Fotoğrafını konuştur, metin ya da sesle dudak senkron video üret.
-          Tanıtım, sosyal medya, karakter sunumu ve hızlı içerik akışları için hazır görünüm al.
+        <div
+          class="lipsync-copybox"
+          data-i18n="index.lipsync.description"
+        >
+          Fotoğrafını konuştur, metin ya da sesle dudak senkron video üret. Tanıtım, sosyal medya, karakter sunumu ve hızlı içerik akışları için hazır görünüm al.
         </div>
 
         <ul class="lipsync-bullets">
-          <li>🗣️ Fotoğrafını konuşan videoya dönüştür</li>
-            <li>🎤 Şarkını AI vocalist’e okut, görselini konuştur ve dudak senkron video üret</li>
-          <li>📱 Reels, Shorts, tanıtım ve sosyal medya içerikleri için hazır çıktı al</li>
-          <li>✨ Markan, karakterin veya içerik fikrin için dikkat çekici video oluştur</li>
-          <li>⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan</li>
+          <li data-i18n="index.lipsync.bullet1">
+            🗣️ Fotoğrafını konuşan videoya dönüştür
+          </li>
+
+          <li data-i18n="index.lipsync.bullet2">
+            🎤 Şarkını AI vocalist’e okut, görselini konuştur ve dudak senkron video üret
+          </li>
+
+          <li data-i18n="index.lipsync.bullet3">
+            📱 Reels, Shorts, tanıtım ve sosyal medya içerikleri için hazır çıktı al
+          </li>
+
+          <li data-i18n="index.lipsync.bullet4">
+            ✨ Markan, karakterin veya içerik fikrin için dikkat çekici video oluştur
+          </li>
+
+          <li data-i18n="index.lipsync.bullet5">
+            ⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan
+          </li>
         </ul>
       </div>
+
     </a>
 
     <div class="lipsync-bottom">
-      <strong>Fotoğraftan konuşan videoya.</strong> İlk dudak senkron videonu kısa sürede oluştur.
+      <strong data-i18n="index.lipsync.bottomStrong">
+        Fotoğraftan konuşan videoya.
+      </strong>
+
+      <span data-i18n="index.lipsync.bottomText">
+        İlk dudak senkron videonu kısa sürede oluştur.
+      </span>
     </div>
+
   </div>
 </section>
 <!-- ================= /AI DUDAK SENKRON VIDEO ================= -->
 
+<script>
+(function () {
+  "use strict";
+
+  if (window.__AIVO_LIPSYNC_SOUND_RUNNING__) return;
+  window.__AIVO_LIPSYNC_SOUND_RUNNING__ = true;
+
+  function translate(key, fallback) {
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
+
+    return fallback;
+  }
+
+  function bootLipsyncSound() {
+    var video = document.getElementById(
+      "lipsyncPreviewVideo"
+    );
+
+    var button = document.getElementById(
+      "lipsyncSoundToggle"
+    );
+
+    if (!video || !button) return;
+
+    function syncButtonText() {
+      button.textContent = video.muted
+        ? translate(
+            "index.lipsync.soundOff",
+            "🔇 Sesi Aç"
+          )
+        : translate(
+            "index.lipsync.soundOn",
+            "🔊 Ses Açık"
+          );
+    }
+
+    button.addEventListener(
+      "click",
+      function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        video.muted = !video.muted;
+
+        if (!video.muted) {
+          var playPromise = video.play();
+
+          if (
+            playPromise &&
+            typeof playPromise.catch === "function"
+          ) {
+            playPromise.catch(function () {});
+          }
+        }
+
+        syncButtonText();
+      }
+    );
+
+    document.addEventListener(
+      "aivo:language-change",
+      syncButtonText
+    );
+
+    syncButtonText();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      bootLipsyncSound,
+      { once: true }
+    );
+  } else {
+    bootLipsyncSound();
+  }
+})();
+</script>
 
 
 
