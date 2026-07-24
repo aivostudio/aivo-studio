@@ -69,9 +69,33 @@ export default async function handler(req, res) {
   const user_id = String(body.user_id || "").trim();
   const email = normEmail(body.email);
   const plan = String(body.plan || "").trim().toLowerCase();
-  const source = String(body.source || "").trim().toLowerCase() === "mobile" ? "mobile" : "desktop";
+
+  const requestedLang = String(
+    body.lang ||
+    body.language ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const paymentLang =
+    requestedLang.startsWith("en")
+      ? "en"
+      : "tr";
+
+  const source =
+    String(body.source || "")
+      .trim()
+      .toLowerCase() === "mobile"
+        ? "mobile"
+        : "desktop";
+
   const return_path = String(body.return_path || "").trim();
-  const safeReturnPath = return_path.startsWith("/") ? return_path : "/studio.v2.html";
+
+  const safeReturnPath =
+    return_path.startsWith("/")
+      ? return_path
+      : "/studio.v2.html";
   if (!user_id || !email) {
     return json(res, 400, {
       ok: false,
