@@ -1096,46 +1096,143 @@
   </div>
 </main>
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="aivo-footer" id="footer">
-    <div class="aivo-wrap aivo-footer-top">
-      <div class="aivo-footer-brand">
-        <img src="/aivo-logo.png" alt="AIVO" class="aivo-footer-logo-img" loading="lazy">
-        <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
-      </div>
+<!-- ================= FOOTER ================= -->
+<footer
+  class="aivo-footer"
+  id="footer"
+  data-i18n-label="index.footer.sectionLabel"
+>
+  <div class="aivo-wrap aivo-footer-top">
 
-   <div class="aivo-footer-col">
-  <h4>Hızlı Linkler</h4>
-  <a href="/#top">Ana Sayfa</a>
-  <a href="/#modules">Özellikler</a>
-  <a href="/fiyatlandirma.html">Fiyatlandırma</a>
-  <a href="/studio.v2.html#dashboard" data-auth="required">Dashboard</a>
-  <a href="/studio.v2.html#invoices" data-auth="required">Faturalarım</a>
-</div>
+    <div class="aivo-footer-brand">
+      <img
+        src="/aivo-logo.png"
+        alt="AIVO"
+        class="aivo-footer-logo-img"
+        loading="lazy"
+      >
 
-      <div class="aivo-footer-col">
-        <h4>Kurumsal</h4>
-        <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-        <a href="/kurumsal/ozellikler.html">Özellikler</a>
-        <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-        <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-        <a href="/kurumsal/iletisim.html">İletişim</a>
-      </div>
+      <p data-i18n="index.footer.tagline">
+        Türkçe odaklı AI müzik üretiminde yeni bir standart.
+      </p>
+    </div>
 
-      <div class="aivo-footer-right">
-        <div class="aivo-contact">
-          <h4>İletişim</h4>
-          <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-        </div>
+    <div class="aivo-footer-col">
+      <h4 data-i18n="index.footer.quickLinks">
+        Hızlı Linkler
+      </h4>
+
+      <a
+        href="/#top"
+        data-i18n="index.footer.home"
+      >
+        Ana Sayfa
+      </a>
+
+      <a
+        href="/#modules"
+        data-i18n="index.footer.features"
+      >
+        Özellikler
+      </a>
+
+      <a
+        href="/fiyatlandirma.html"
+        data-i18n="topbar.pricing"
+      >
+        Fiyatlandırma
+      </a>
+
+      <a
+        href="/studio.v2.html#dashboard"
+        data-auth="required"
+        data-i18n="index.footer.dashboard"
+      >
+        Dashboard
+      </a>
+
+      <a
+        href="/studio.v2.html#invoices"
+        data-auth="required"
+        data-i18n="topbar.invoices"
+      >
+        Faturalarım
+      </a>
+    </div>
+
+    <div class="aivo-footer-col">
+      <h4 data-i18n="index.footer.company">
+        Kurumsal
+      </h4>
+
+      <a
+        href="/kurumsal/hakkimizda.html"
+        data-i18n="index.footer.about"
+      >
+        Hakkımızda
+      </a>
+
+      <a
+        href="/kurumsal/ozellikler.html"
+        data-i18n="index.footer.features"
+      >
+        Özellikler
+      </a>
+
+      <a
+        href="/kurumsal/gizlilik.html"
+        data-i18n="index.footer.privacy"
+      >
+        Gizlilik Politikası
+      </a>
+
+      <a
+        href="/kurumsal/mesafeli-satis.html"
+        data-i18n="index.footer.distanceSales"
+      >
+        Mesafeli Satış Sözleşmesi
+      </a>
+
+      <a
+        href="/kurumsal/iletisim.html"
+        data-i18n="index.footer.contact"
+      >
+        İletişim
+      </a>
+    </div>
+
+    <div class="aivo-footer-right">
+      <div class="aivo-contact">
+        <h4 data-i18n="index.footer.contact">
+          İletişim
+        </h4>
+
+        <a href="mailto:info@aivo.tr">
+          info@aivo.tr
+        </a>
       </div>
     </div>
 
-    <div class="aivo-wrap aivo-footer-bottom">
-      <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
-    </div>
-  </footer>
+  </div>
 
+  <div class="aivo-wrap aivo-footer-bottom">
+    <div data-i18n="index.footer.rights">
+      © 2025 AIVO. Tüm hakları saklıdır.
+    </div>
+
+    <div class="aivo-status">
+      <span data-i18n="index.footer.statusLabel">
+        Durum:
+      </span>
+
+      <span class="dot"></span>
+
+      <span data-i18n="index.footer.statusActive">
+        Aktif
+      </span>
+    </div>
+  </div>
+</footer>
 <!-- ================= LOGIN MODAL (SINGLE SOURCE OF TRUTH) ================= -->
 <div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
   <div class="login-backdrop" data-close="1"></div>
