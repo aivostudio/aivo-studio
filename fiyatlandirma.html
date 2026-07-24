@@ -1676,6 +1676,18 @@
         throw new Error("AUTH_ME_FAILED");
       }
 
+         var selectedLang =
+        String(
+          window.AIVO_LANG ||
+          document.documentElement.getAttribute("lang") ||
+          "tr"
+        )
+          .trim()
+          .toLowerCase()
+          .startsWith("en")
+            ? "en"
+            : "tr";
+
       var initRes = await fetch("/api/garanti/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1684,7 +1696,8 @@
         body: JSON.stringify({
           user_id: userId,
           email: email,
-          plan: plan
+          plan: plan,
+          lang: selectedLang
         })
       });
 
