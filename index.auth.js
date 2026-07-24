@@ -144,56 +144,192 @@ function getModalEl() {
 function applyModalMode(m, mode) {
   const isReg = mode === "register";
 
+  function setTranslatedText(element, key, fallback) {
+    if (!element) return;
+
+    element.setAttribute("data-i18n", key);
+
+    try {
+      element.textContent =
+        typeof window.t === "function"
+          ? window.t(key)
+          : fallback;
+    } catch (_) {
+      element.textContent = fallback;
+    }
+  }
+
   // Header
-  const title = m.querySelector("#loginTitle");
-  const desc  = m.querySelector("#loginDesc") || m.querySelector(".login-desc");
-  if (title) title.textContent = isReg ? "Email ile Kayıt" : "Tekrar hoş geldin 👋";
-  if (desc)  desc.textContent  = isReg
-    ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
-    : "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.";
+  const title =
+    m.querySelector("#loginTitle");
+
+  const desc =
+    m.querySelector("#loginDesc") ||
+    m.querySelector(".login-desc");
+
+  setTranslatedText(
+    title,
+    isReg
+      ? "auth.registerTitle"
+      : "auth.loginTitle",
+    isReg
+      ? "E-posta ile Kayıt"
+      : "Tekrar hoş geldin 👋"
+  );
+
+  setTranslatedText(
+    desc,
+    isReg
+      ? "auth.registerDescription"
+      : "auth.loginDescription",
+    isReg
+      ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+      : "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur."
+  );
 
   // Card titles
-  const cardTitle = m.querySelector("#authCardTitle");
-  const cardSub   = m.querySelector("#authCardSub");
-  if (cardTitle) cardTitle.textContent = isReg ? "Ücretsiz hesap oluştur" : "Email ile Giriş";
-  if (cardSub)   cardSub.textContent   = isReg
-    ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
-    : "Hesabına email adresinle giriş yap.";
+  const cardTitle =
+    m.querySelector("#authCardTitle");
 
-  // Blocks (your exact IDs)
-  const google   = document.getElementById("googleBlock");
-  const footer   = document.getElementById("loginFooter");
-  const loginMeta= document.getElementById("loginMeta");
-  const regMeta  = document.getElementById("registerMeta");
-  const extra    = document.getElementById("registerExtra");
-  const kvkkRow  = document.getElementById("kvkkRow");
+  const cardSub =
+    m.querySelector("#authCardSub");
 
-  if (google)    google.style.display    = "block";
-  if (footer)    footer.style.display    = "block";
-  if (loginMeta) loginMeta.style.display = isReg ? "none" : "flex";
-  if (regMeta)   regMeta.style.display   = isReg ? "flex" : "none";
-  if (extra)     extra.style.display     = isReg ? "flex" : "none";
-  if (kvkkRow)   kvkkRow.style.display   = isReg ? "flex" : "none";
+  setTranslatedText(
+    cardTitle,
+    isReg
+      ? "auth.registerCardTitle"
+      : "auth.loginCardTitle",
+    isReg
+      ? "Ücretsiz hesap oluştur"
+      : "E-posta ile Giriş"
+  );
 
-  // Submit text (your button id)
-  const btn = document.getElementById("btnAuthSubmit");
-  if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
+  setTranslatedText(
+    cardSub,
+    isReg
+      ? "auth.registerCardDescription"
+      : "auth.loginCardDescription",
+    isReg
+      ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+      : "Hesabına e-posta adresinle giriş yap."
+  );
+
+  // Blocks
+  const google =
+    document.getElementById("googleBlock");
+
+  const footer =
+    document.getElementById("loginFooter");
+
+  const loginMeta =
+    document.getElementById("loginMeta");
+
+  const regMeta =
+    document.getElementById("registerMeta");
+
+  const extra =
+    document.getElementById("registerExtra");
+
+  const kvkkRow =
+    document.getElementById("kvkkRow");
+
+  if (google) {
+    google.style.display = "block";
+  }
+
+  if (footer) {
+    footer.style.display = "block";
+  }
+
+  if (loginMeta) {
+    loginMeta.style.display =
+      isReg ? "none" : "flex";
+  }
+
+  if (regMeta) {
+    regMeta.style.display =
+      isReg ? "flex" : "none";
+  }
+
+  if (extra) {
+    extra.style.display =
+      isReg ? "flex" : "none";
+  }
+
+  if (kvkkRow) {
+    kvkkRow.style.display =
+      isReg ? "flex" : "none";
+  }
+
+  // Submit text
+  const btn =
+    document.getElementById("btnAuthSubmit");
+
+  setTranslatedText(
+    btn,
+    isReg
+      ? "auth.registerButton"
+      : "auth.loginButton",
+    isReg
+      ? "Hesap Oluştur"
+      : "Giriş Yap"
+  );
+
+  /*
+    Modal açıkken dil değiştirildiğinde
+    seçili moda ait doğru anahtarların
+    uygulanmasını garanti eder.
+  */
+  try {
+    if (
+      typeof window.aivoApplyI18n ===
+      "function"
+    ) {
+      window.aivoApplyI18n(m);
+    }
+  } catch (_) {}
 
   // Login’e dönünce register alanlarını temizle
   if (!isReg) {
-    const name     = document.getElementById("registerName");
-    const surname  = document.getElementById("registerSurname");
-    const email    = document.getElementById("registerEmailView");
-    const pass     = document.getElementById("registerPassView");
-    const pass2    = document.getElementById("registerPass2");
-    const kvkk     = document.getElementById("kvkkCheck");
+    const name =
+      document.getElementById(
+        "registerName"
+      );
+
+    const surname =
+      document.getElementById(
+        "registerSurname"
+      );
+
+    const email =
+      document.getElementById(
+        "registerEmailView"
+      );
+
+    const pass =
+      document.getElementById(
+        "registerPassView"
+      );
+
+    const pass2 =
+      document.getElementById(
+        "registerPass2"
+      );
+
+    const kvkk =
+      document.getElementById(
+        "kvkkCheck"
+      );
 
     if (name) name.value = "";
     if (surname) surname.value = "";
     if (email) email.value = "";
     if (pass) pass.value = "";
     if (pass2) pass2.value = "";
-    if (kvkk) kvkk.checked = false;
+
+    if (kvkk) {
+      kvkk.checked = false;
+    }
   }
 }
 
