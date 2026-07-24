@@ -493,9 +493,21 @@
                     "Content-Type":
                       "application/json"
                   },
-                  body: JSON.stringify({
-                    email: email
-                  })
+                body: JSON.stringify({
+           email: email,
+
+          lang:
+        String(
+      window.AIVO_LANG ||
+      document.documentElement.getAttribute("lang") ||
+      "tr"
+    )
+      .trim()
+      .toLowerCase()
+      .startsWith("en")
+        ? "en"
+        : "tr"
+     })
                 }
               );
 
