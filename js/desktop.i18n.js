@@ -137,6 +137,16 @@
 
       "index.heroSwap.music": "Müzik",
       "index.heroSwap.video": "Video",
+       "index.heroSwap.visual": "Görsel",
+
+"index.heroSwap.musicSub":
+  "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
+
+"index.heroSwap.videoSub":
+  "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
+
+"index.heroSwap.visualSub":
+  "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
       "index.heroSwap.cover": "Kapak",
       "index.heroSwap.atmosphere": "Atmosfer",
       "index.heroSwap.cartoon": "Çizgifilm",
@@ -459,6 +469,16 @@
 
       "index.heroSwap.music": "Music",
       "index.heroSwap.video": "Video",
+       "index.heroSwap.visual": "Visuals",
+
+"index.heroSwap.musicSub":
+  "Describe your style and let AIVO create studio-quality music.",
+
+"index.heroSwap.videoSub":
+  "Write your scene idea and let AIVO assemble the video automatically.",
+
+"index.heroSwap.visualSub":
+  "Enter a prompt and let AIVO create cover art and visuals in seconds.",
       "index.heroSwap.cover": "Cover Art",
       "index.heroSwap.atmosphere": "Atmosphere",
       "index.heroSwap.cartoon": "Cartoons",
