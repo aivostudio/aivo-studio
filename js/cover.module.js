@@ -224,38 +224,7 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     return j;
   }
 
-    const HARD_BLOCK_TERMS = [
-    "deepfake",
-    "face swap",
-    "yuzunu koy",
-    "yüzünü koy",
-    "yuzunu ekle",
-    "yüzünü ekle",
-    "replace face",
-    "swap face"
-  ];
-
-  const HARD_BLOCK_PATTERNS = [
-    /\bgibi\b/i,
-    /\btarzında\b/i,
-    /\btarzinda\b/i,
-    /\bstilinde\b/i,
-    /\bin the style of\b/i,
-    /\blike\b/i,
-    /\bbirebir\b/i,
-    /\baynısı\b/i,
-    /\baynisi\b/i,
-    /\byuzuyle\b/i,
-    /\byüzüyle\b/i,
-    /\byuzunu kullan\b/i,
-    /\byüzünü kullan\b/i,
-    /\bsuratini kullan\b/i,
-    /\bface of\b/i,
-    /\bwith the face of\b/i,
-    /\bimpersonat(e|ion)\b/i
-  ];
-
- const PUBLIC_FIGURE_TERMS = [
+  const PUBLIC_FIGURE_TERMS = [
   "recep tayyip erdogan",
   "recep tayyip erdoğan",
   "erdogan",
@@ -687,14 +656,170 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     "sertab"
   ];
 
+
+  /*
+   * KAPAK POLİTİKASI — DARALTILMIŞ İSİM KONTROLÜ
+   *
+   * Bu frontend kontrolü yalnızca gerçek sanatçı adlarını ve gerçek
+   * siyasetçi/kamu figürü adlarını engeller.
+   *
+   * "gibi", "benzer", "tarzında", "stilinde", "inspired by",
+   * "king", "queen", "president", "başkan", "bakan" gibi genel
+   * anlatımlar tek başına engel değildir.
+   *
+   * Hadise, Duman, Ceza, Simge gibi günlük dilde de kullanılan tek
+   * kelimeler yalnızca açık sanatçı/müzik bağlamında engellenir.
+   */
+
   function normalizePolicyText(value) {
     return String(value || "")
       .toLowerCase()
+      .replace(/ı/g, "i")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ")
       .replace(/\s+/g, " ")
       .trim();
   }
+
+  const GENERIC_PUBLIC_FIGURE_TERMS = new Set(
+    [
+      "cumhurbaskani",
+      "cumhurbaşkanı",
+      "cumhurbaskani yardimcisi",
+      "cumhurbaşkanı yardımcısı",
+      "reisicumhur",
+      "bakan",
+      "milletvekili",
+      "belediye baskani",
+      "belediye başkanı",
+      "vali",
+      "kaymakam",
+      "siyasetci",
+      "siyasetçi",
+      "politikaci",
+      "politikacı",
+      "kamu figuru",
+      "kamu figürü",
+      "devlet buyugu",
+      "devlet büyüğü",
+      "basbakan",
+      "başbakan",
+      "unlu",
+      "ünlü",
+      "famous",
+      "celebrity",
+      "president",
+      "politician",
+      "prime minister",
+      "king",
+      "queen",
+      "chancellor",
+      "taoiseach",
+      "premier",
+      "head of state",
+      "head of government",
+      "leader",
+      "lider"
+    ].map(normalizePolicyText)
+  );
+
+  const AMBIGUOUS_PUBLIC_FIGURE_TERMS = new Set(
+    [
+      "ozel",
+      "özel",
+      "gul",
+      "gül",
+      "celik",
+      "çelik",
+      "soylu",
+      "simsek",
+      "şimşek",
+      "akar",
+      "ince",
+      "yavas",
+      "yavaş",
+      "ali",
+      "salman",
+      "samia",
+      "anwar",
+      "yunus",
+      "pavel",
+      "martin",
+      "sisi",
+      "abiy"
+    ].map(normalizePolicyText)
+  );
+
+  const AMBIGUOUS_ARTIST_TERMS = new Set(
+    [
+      "hadise",
+      "simge",
+      "sila",
+      "sıla",
+      "duman",
+      "manga",
+      "athena",
+      "ceza",
+      "motive",
+      "cakal",
+      "çakal",
+      "yalin",
+      "yalın",
+      "buray",
+      "linet",
+      "madrigal",
+      "uzi",
+      "sefo",
+      "edis",
+      "sertab"
+    ].map(normalizePolicyText)
+  );
+
+  const ARTIST_CONTEXT_TERMS = [
+    "sanatci",
+    "sanatçı",
+    "sarkici",
+    "şarkıcı",
+    "rapci",
+    "rapçi",
+    "muzisyen",
+    "müzisyen",
+    "artist",
+    "singer",
+    "rapper",
+    "grup",
+    "grubu",
+    "grubunun",
+    "muzik grubu",
+    "müzik grubu",
+    "band",
+    "tarzinda",
+    "tarzında",
+    "stilinde",
+    "sesiyle",
+    "sesinde",
+    "sesini",
+    "vokalinde",
+    "vokalini",
+    "soundunda",
+    "sarkisi",
+    "şarkısı",
+    "sarkisini",
+    "şarkısını",
+    "album",
+    "albumu",
+    "albümü",
+    "albumunun",
+    "albümünün",
+    "kapagi",
+    "kapağı",
+    "konseri",
+    "in the style of",
+    "voice of",
+    "sound of",
+    "album cover"
+  ].map(normalizePolicyText);
   function toastError(msg) {
     if (window.toast?.error) return window.toast.error(msg);
     if (window.toast?.info) return window.toast.info(msg);
@@ -772,25 +897,98 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
     return new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
   }
 
+  function containsCoverPolicyPhrase(normalizedText, term) {
+    const rx = buildCoverPolicyPhraseRegex(term);
+    return rx ? rx.test(normalizedText) : false;
+  }
+
+  function hasCoverArtistContext(normalizedText, artistTerm) {
+    const artist = normalizePolicyText(artistTerm);
+    if (!normalizedText || !artist) return false;
+
+    const words = normalizedText.split(" ").filter(Boolean);
+    const artistWords = artist.split(" ").filter(Boolean);
+
+    if (!words.length || !artistWords.length) return false;
+
+    for (let i = 0; i <= words.length - artistWords.length; i += 1) {
+      const candidate = words.slice(i, i + artistWords.length).join(" ");
+      if (candidate !== artist) continue;
+
+      const contextWindow = words
+        .slice(
+          Math.max(0, i - 6),
+          Math.min(words.length, i + artistWords.length + 6)
+        )
+        .join(" ");
+
+      return ARTIST_CONTEXT_TERMS.some((contextTerm) =>
+        containsCoverPolicyPhrase(contextWindow, contextTerm)
+      );
+    }
+
+    return false;
+  }
+
   function isCoverPolicyBlocked(raw) {
     const text = normalizePolicyText(raw);
+    if (!text) return false;
 
-    const hasBlockedTerm =
-      HARD_BLOCK_TERMS.some((term) => {
-        const rx = buildCoverPolicyPhraseRegex(term);
-        return rx ? rx.test(text) : false;
-      }) ||
-      PUBLIC_FIGURE_TERMS.some((term) => {
-        const rx = buildCoverPolicyPhraseRegex(term);
-        return rx ? rx.test(text) : false;
-      }) ||
-      ARTIST_NAME_TERMS.some((term) => {
-        const rx = buildCoverPolicyPhraseRegex(term);
-        return rx ? rx.test(text) : false;
-      });
+    /*
+     * Kamu figürleri:
+     * - Genel unvanlar hiçbir zaman blok değildir.
+     * - Tam adlar ve ayırt edici siyasi isimler bloktur.
+     * - Ali, Gül, Özel, Çelik, İnce gibi tek başına belirli kişiyi
+     *   göstermeyen yaygın/çift anlamlı kelimeler blok değildir.
+     */
+    const hasPublicFigureName = PUBLIC_FIGURE_TERMS.some((term) => {
+      const normalizedTerm = normalizePolicyText(term);
+      if (!normalizedTerm) return false;
 
-    const hasBlockedPattern = HARD_BLOCK_PATTERNS.some((rx) => rx.test(raw));
-    return !!raw && (hasBlockedTerm || hasBlockedPattern);
+      if (GENERIC_PUBLIC_FIGURE_TERMS.has(normalizedTerm)) {
+        return false;
+      }
+
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+
+      if (
+        wordCount === 1 &&
+        AMBIGUOUS_PUBLIC_FIGURE_TERMS.has(normalizedTerm)
+      ) {
+        return false;
+      }
+
+      return containsCoverPolicyPhrase(text, normalizedTerm);
+    });
+
+    /*
+     * Sanatçılar:
+     * - Tam adlar ve ayırt edici sahne adları doğrudan bloktur.
+     * - Hadise, Duman, Ceza, Simge gibi günlük anlamlı tek kelimeler
+     *   yalnızca sanatçı/müzik bağlamında bloktur.
+     */
+    const hasArtistName = ARTIST_NAME_TERMS.some((term) => {
+      const normalizedTerm = normalizePolicyText(term);
+      if (!normalizedTerm) return false;
+
+      if (!containsCoverPolicyPhrase(text, normalizedTerm)) {
+        return false;
+      }
+
+      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
+
+      if (wordCount >= 2) {
+        return true;
+      }
+
+      if (!AMBIGUOUS_ARTIST_TERMS.has(normalizedTerm)) {
+        return true;
+      }
+
+      return hasCoverArtistContext(text, normalizedTerm);
+    });
+
+    return hasPublicFigureName || hasArtistName;
   }
     if (!document.getElementById("aivoPolicyPulseStyle")) {
     const style = document.createElement("style");
@@ -1209,7 +1407,7 @@ Sonra:
                 color:rgba(255,245,248,.96);
                 text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
                 animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
-              ">Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve görsel hissi tarif et.</span>
+              ">Gerçek sanatçı veya siyasetçi adı kullanılamaz. İsim yerine sahneyi ve görsel hissi tarif et.</span>
             `;
           }
 
@@ -1221,7 +1419,7 @@ Sonra:
             lastImageUrl: "",
             lastJobId: "",
             visibleError: "policy_blocked",
-            visiblePolicyNote: readCoverPolicyNote(root) || "Bu istek bu haliyle üretilemez. Sanatçı adı, kişi adı veya taklit çağrışımı yerine sahneyi ve görsel hissi tarif et."
+            visiblePolicyNote: readCoverPolicyNote(root) || "Gerçek sanatçı veya siyasetçi adı kullanılamaz. İsim yerine sahneyi ve görsel hissi tarif et."
           });
 
           return;

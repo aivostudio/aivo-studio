@@ -36,7 +36,10 @@ function normalizeLipsyncPolicyText(value) {
 
 function hasLipsyncBadLanguage(value) {
   const text = normalizeLipsyncPolicyText(value);
+  if (!text) return false;
 
+  // Frontend ile aynı tam kelime / tam ifade kuralı.
+  // Kelime kökünün devamına otomatik joker eklenmez.
   const blockedTerms = [
     "amk",
     "aq",
@@ -56,15 +59,14 @@ function hasLipsyncBadLanguage(value) {
     "tasak",
     "tassak",
     "ibne",
+    "pust",
     "kahpe",
     "kaltak",
     "aptal",
     "salak",
     "gerizekali",
-    "mal",
     "ezik",
     "asagilik",
-    "nefret",
     "geber",
     "oldur",
     "katlet",
@@ -75,17 +77,16 @@ function hasLipsyncBadLanguage(value) {
     const safeTerm = normalizeLipsyncPolicyText(term);
     if (!safeTerm) return false;
 
-   const pattern = safeTerm
-  .split(/\s+/)
-  .filter(Boolean)
-  .map((part) => `${part}[a-z0-9]*`)
-  .join("\\s+");
+    const pattern = safeTerm
+      .split(/\s+/)
+      .filter(Boolean)
+      .join("\\s+");
 
-const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
-
-return rx.test(text);
+    const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
+    return rx.test(text);
   });
 }
+
 async function prepareLipsyncImageForAspect({ imageUrl, aspectRatio, jobId }) {
   const safeImageUrl = String(imageUrl || "").trim();
   const safeAspectRatio = String(aspectRatio || "16:9").trim();
@@ -171,73 +172,93 @@ export default async function handler(req, res) {
 
     const body = req.body || {};
 
-const rawScript = String(body.script || "").trim();
-const audioUrl = String(body.audio_url || body.audioUrl || "").trim();
-const hasAudioMode = Boolean(audioUrl);
+    const rawScript = String(body.script || "").trim();
+    const audioUrl = String(body.audio_url || body.audioUrl || "").trim();
+    const hasAudioMode = Boolean(audioUrl);
 
-const script = hasAudioMode ? "" : rawScript;
+    const script = hasAudioMode ? "" : rawScript;
 
-const rawVoiceSpeed = Math.max(0.7, Math.min(1.3, Number(body.voiceSpeed || body.voice_speed || 1)));
-const voiceVolume = Math.max(0.8, Math.min(1.2, Number(body.voiceVolume || body.voice_volume || 1)));
-const resolution = String(body.resolution || "1080p").trim();
-const durationSeconds = Math.max(
-  10,
-  Math.min(60, Number(body.durationSeconds || body.duration || 10))
-);
+    const rawVoiceSpeed = Math.max(
+      0.7,
+      Math.min(1.3, Number(body.voiceSpeed || body.voice_speed || 1))
+    );
+    const voiceVolume = Math.max(
+      0.8,
+      Math.min(1.2, Number(body.voiceVolume || body.voice_volume || 1))
+    );
+    const resolution = String(body.resolution || "1080p").trim();
+    const durationSeconds = Math.max(
+      10,
+      Math.min(60, Number(body.durationSeconds || body.duration || 10))
+    );
 
-const charsPerSecond = 13;
+    const charsPerSecond = 13;
 
-const estimatedSpeechSeconds = hasAudioMode
-  ? Math.max(1, Math.ceil(Number(body.audioDurationSeconds || body.audio_duration_seconds || body.estimatedSpeechSeconds || body.estimated_speech_seconds || 1)))
-  : Math.max(1, Math.ceil(script.length / charsPerSecond));
+    const estimatedSpeechSeconds = hasAudioMode
+      ? Math.max(
+          1,
+          Math.ceil(
+            Number(
+              body.audioDurationSeconds ||
+              body.audio_duration_seconds ||
+              body.estimatedSpeechSeconds ||
+              body.estimated_speech_seconds ||
+              1
+            )
+          )
+        )
+      : Math.max(1, Math.ceil(script.length / charsPerSecond));
 
     const voiceSpeed = !hasAudioMode && estimatedSpeechSeconds <= 2
-  ? Math.min(rawVoiceSpeed, 1)
-  : rawVoiceSpeed;
+      ? Math.min(rawVoiceSpeed, 1)
+      : rawVoiceSpeed;
 
-const maxSpeechSeconds = durationSeconds;
+    const maxSpeechSeconds = durationSeconds;
 
-if (!hasAudioMode && estimatedSpeechSeconds > maxSpeechSeconds) {
-  return res.status(400).json({
-    ok: false,
-    error: "script_too_long",
-    message: `Bu metin yaklaşık ${estimatedSpeechSeconds} saniye sürer. Seçilen süre ${maxSpeechSeconds} saniye.`,
-    estimatedSpeechSeconds,
-    maxSpeechSeconds,
-    durationSeconds
-  });
-}
+    if (!hasAudioMode && estimatedSpeechSeconds > maxSpeechSeconds) {
+      return res.status(400).json({
+        ok: false,
+        error: "script_too_long",
+        message: `Bu metin yaklaşık ${estimatedSpeechSeconds} saniye sürer. Seçilen süre ${maxSpeechSeconds} saniye.`,
+        estimatedSpeechSeconds,
+        maxSpeechSeconds,
+        durationSeconds
+      });
+    }
 
-const cost = calculateCost(estimatedSpeechSeconds);
+    const cost = calculateCost(estimatedSpeechSeconds);
 
-if (!script && !hasAudioMode) {
-  return res.status(400).json({
-    ok: false,
-    error: "script_or_audio_required"
-  });
-}
+    if (!script && !hasAudioMode) {
+      return res.status(400).json({
+        ok: false,
+        error: "script_or_audio_required"
+      });
+    }
+
     if (!hasAudioMode && hasLipsyncBadLanguage(script)) {
-  return res.status(400).json({
-    ok: false,
-    error: "bad_language_policy",
-    message: LIPSYNC_BAD_TEXT_MESSAGE
-  });
-}
-    if (hasAudioMode) {
-  const audioSeconds = Number(
-    body.audioDurationSeconds ||
-    body.audio_duration_seconds ||
-    0
-  );
+      return res.status(400).json({
+        ok: false,
+        error: "bad_language_policy",
+        message: LIPSYNC_BAD_TEXT_MESSAGE
+      });
+    }
 
-  if (audioSeconds > 60) {
-    return res.status(400).json({
-      ok: false,
-      error: "audio_too_long",
-      message: "Ses dosyası en fazla 60 saniye olabilir."
-    });
-  }
-}
+    if (hasAudioMode) {
+      const audioSeconds = Number(
+        body.audioDurationSeconds ||
+        body.audio_duration_seconds ||
+        0
+      );
+
+      if (audioSeconds > 60) {
+        return res.status(400).json({
+          ok: false,
+          error: "audio_too_long",
+          message: "Ses dosyası en fazla 60 saniye olabilir."
+        });
+      }
+    }
+
     const sql = neon(conn);
 
     const userRows = await sql`
@@ -257,7 +278,7 @@ if (!script && !hasAudioMode) {
 
     const userUuid = String(userRows[0].id);
 
-      const metaSafe = {
+    const metaSafe = {
       app: "lipsync",
       kind: "lipsync_video",
       provider: "heygen_image_to_video",
@@ -302,172 +323,176 @@ if (!script && !hasAudioMode) {
 
     const jobId = String(inserted[0].id);
     const { getRedis } = await import("../_kv.js");
-const redis = getRedis();
-const dayKey = new Date().toISOString().slice(0, 10);
+    const redis = getRedis();
+    const dayKey = new Date().toISOString().slice(0, 10);
 
-await Promise.all([
-  redis.incr("stats:lipsync:total"),
-  redis.incr(`stats:lipsync:daily:${dayKey}`)
-]);
+    await Promise.all([
+      redis.incr("stats:lipsync:total"),
+      redis.incr(`stats:lipsync:daily:${dayKey}`)
+    ]);
 
-const imageUrl = String(body.image_url || body.imageUrl || "").trim();
+    const imageUrl = String(body.image_url || body.imageUrl || "").trim();
 
-let aspectRatio = String(body.aspectRatio || body.aspect_ratio || "16:9").trim();
+    let aspectRatio = String(
+      body.aspectRatio || body.aspect_ratio || "16:9"
+    ).trim();
 
-if (imageUrl) {
-  const imageCheckRes = await fetch(imageUrl);
+    if (imageUrl) {
+      const imageCheckRes = await fetch(imageUrl);
 
-  if (imageCheckRes.ok) {
-    const imageCheckBuffer = Buffer.from(await imageCheckRes.arrayBuffer());
-    const imageMeta = await sharp(imageCheckBuffer).metadata();
+      if (imageCheckRes.ok) {
+        const imageCheckBuffer = Buffer.from(await imageCheckRes.arrayBuffer());
+        const imageMeta = await sharp(imageCheckBuffer).metadata();
 
-    if (Number(imageMeta?.height || 0) > Number(imageMeta?.width || 0)) {
-      aspectRatio = "9:16";
+        if (Number(imageMeta?.height || 0) > Number(imageMeta?.width || 0)) {
+          aspectRatio = "9:16";
+        }
+      }
     }
-  }
-}
 
-const preparedImageUrl = await prepareLipsyncImageForAspect({
-  imageUrl,
-  aspectRatio,
-  jobId
-});
+    const preparedImageUrl = await prepareLipsyncImageForAspect({
+      imageUrl,
+      aspectRatio,
+      jobId
+    });
 
-    // HEYGEN VIDEO CREATE
-const LIPSYNC_ALLOWED_VOICES = {
-  tranquil_tulin: {
-    voice_id: process.env.HEYGEN_VOICE_ID,
-    voice_name: "Tranquil Tülin"
-  },
-  iker: {
-    voice_id: "117821d0abb146e89cc2a2e99f65d807",
-    voice_name: "Iker"
-  },
-  deep_dieter: {
-    voice_id: "118949676b0a46629d1ad52981c3ef84",
-    voice_name: "Deep Dieter"
-  },
-  william: {
-    voice_id: "13be37a20b2448b7ad9db1a8669e5569",
-    voice_name: "William Prescott"
-  },
-  menon: {
-    voice_id: "145980ae9ed74dd880175c44cc08615a",
-    voice_name: "Menon"
-  },
-  knox: {
-    voice_id: "158b76b48ed048d381951887e771e412",
-    voice_name: "Knox"
-  },
-  aaron: {
-    voice_id: "184c9014f94142ae949363089aaf53dd",
-    voice_name: "Aaron"
-  },
-  lily: {
-    voice_id: "14979664b31246cbb735cc86d17b7907",
-    voice_name: "Lily"
-  },
-  april: {
-    voice_id: "1508afc3681349ad842f2e7194b7eb22",
-    voice_name: "April"
-  },
-  tiffany: {
-    voice_id: "1519fd8fe5d440a2b58770a6762511de",
-    voice_name: "Tiffany"
-  },
-  brianna: {
-    voice_id: "154e13cce06c4452ba3b9865dcdf1434",
-    voice_name: "Brianna"
-  },
-  evelyn: {
-    voice_id: "15c34793e92442388fc489bbcd58992b",
-    voice_name: "Evelyn Harper"
-  },
-  laurel: {
-    voice_id: "162b75e583c465cb9ed047a538d8f6b",
-    voice_name: "Laurel"
-  },
-  seena: {
-    voice_id: "166aa8d7acd1495a83d34024ccb1505",
-    voice_name: "Seena Professional"
-  }
-};
-
-const requestedVoiceKey = String(body.voice_key || body.voiceKey || "tranquil_tulin").trim();
-const pickedVoice = LIPSYNC_ALLOWED_VOICES[requestedVoiceKey] || LIPSYNC_ALLOWED_VOICES.tranquil_tulin;
-
-const heygenPayload = hasAudioMode
-  ? {
-      type: "image",
-      image: {
-        type: "url",
-        url: preparedImageUrl
+    const LIPSYNC_ALLOWED_VOICES = {
+      tranquil_tulin: {
+        voice_id: process.env.HEYGEN_VOICE_ID,
+        voice_name: "Tranquil Tülin"
       },
-      audio_url: audioUrl,
-      resolution,
-      aspect_ratio: aspectRatio
-    }
-  : {
-      type: "image",
-      image: {
-        type: "url",
-        url: preparedImageUrl
+      iker: {
+        voice_id: "117821d0abb146e89cc2a2e99f65d807",
+        voice_name: "Iker"
       },
-      script,
-      voice_id: pickedVoice.voice_id,
-      resolution,
-      aspect_ratio: aspectRatio,
-      background: {
-        type: "color",
-        value: "#080816"
+      deep_dieter: {
+        voice_id: "118949676b0a46629d1ad52981c3ef84",
+        voice_name: "Deep Dieter"
       },
-     voice_settings: {
-  speed: voiceSpeed,
-  volume: voiceVolume
-}
+      william: {
+        voice_id: "13be37a20b2448b7ad9db1a8669e5569",
+        voice_name: "William Prescott"
+      },
+      menon: {
+        voice_id: "145980ae9ed74dd880175c44cc08615a",
+        voice_name: "Menon"
+      },
+      knox: {
+        voice_id: "158b76b48ed048d381951887e771e412",
+        voice_name: "Knox"
+      },
+      aaron: {
+        voice_id: "184c9014f94142ae949363089aaf53dd",
+        voice_name: "Aaron"
+      },
+      lily: {
+        voice_id: "14979664b31246cbb735cc86d17b7907",
+        voice_name: "Lily"
+      },
+      april: {
+        voice_id: "1508afc3681349ad842f2e7194b7eb22",
+        voice_name: "April"
+      },
+      tiffany: {
+        voice_id: "1519fd8fe5d440a2b58770a6762511de",
+        voice_name: "Tiffany"
+      },
+      brianna: {
+        voice_id: "154e13cce06c4452ba3b9865dcdf1434",
+        voice_name: "Brianna"
+      },
+      evelyn: {
+        voice_id: "15c34793e92442388fc489bbcd58992b",
+        voice_name: "Evelyn Harper"
+      },
+      laurel: {
+        voice_id: "162b75e583c465cb9ed047a538d8f6b",
+        voice_name: "Laurel"
+      },
+      seena: {
+        voice_id: "166aa8d7acd1495a83d34024ccb1505",
+        voice_name: "Seena Professional"
+      }
     };
 
-console.log("[LIPSYNC][HEYGEN_PAYLOAD]", JSON.stringify(heygenPayload, null, 2));
+    const requestedVoiceKey = String(
+      body.voice_key || body.voiceKey || "tranquil_tulin"
+    ).trim();
+    const pickedVoice =
+      LIPSYNC_ALLOWED_VOICES[requestedVoiceKey] ||
+      LIPSYNC_ALLOWED_VOICES.tranquil_tulin;
 
-const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
-  method: "POST",
-  headers: {
-    "x-api-key": process.env.HEYGEN_API_KEY,
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(heygenPayload)
-});
+    const heygenPayload = hasAudioMode
+      ? {
+          type: "image",
+          image: {
+            type: "url",
+            url: preparedImageUrl
+          },
+          audio_url: audioUrl,
+          resolution,
+          aspect_ratio: aspectRatio
+        }
+      : {
+          type: "image",
+          image: {
+            type: "url",
+            url: preparedImageUrl
+          },
+          script,
+          voice_id: pickedVoice.voice_id,
+          resolution,
+          aspect_ratio: aspectRatio,
+          background: {
+            type: "color",
+            value: "#080816"
+          },
+          voice_settings: {
+            speed: voiceSpeed,
+            volume: voiceVolume
+          }
+        };
 
-const heygenJson = await heygenRes.json();
+    console.log("[LIPSYNC][HEYGEN_PAYLOAD]", JSON.stringify(heygenPayload, null, 2));
 
-const providerJobId = heygenJson?.data?.video_id;
+    const heygenRes = await fetch("https://api.heygen.com/v3/videos", {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.HEYGEN_API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(heygenPayload)
+    });
 
-// DB UPDATE → provider job id kaydet
-await sql`
-  update jobs
-  set meta = jsonb_set(meta, '{provider_job_id}', to_jsonb(${providerJobId}::text), true)
-  where id = ${jobId}
-`;
+    const heygenJson = await heygenRes.json();
 
-return res.status(200).json({
-  ok: true,
-  app: "lipsync",
-  job_id: jobId,
-  provider: "heygen_image_to_video",
-  provider_job_id: providerJobId || null,
-  heygen_raw: heygenJson || null,
-  debug_image: {
-    original: imageUrl,
-    prepared: preparedImageUrl,
-    aspectRatio
-  },
-  user_uuid: inserted[0].user_uuid,
-  status: inserted[0].status,
-  created_at: inserted[0].created_at,
-  cost,
-  durationSeconds,
-  resolution
-});
+    const providerJobId = heygenJson?.data?.video_id;
+
+    await sql`
+      update jobs
+      set meta = jsonb_set(meta, '{provider_job_id}', to_jsonb(${providerJobId}::text), true)
+      where id = ${jobId}
+    `;
+
+    return res.status(200).json({
+      ok: true,
+      app: "lipsync",
+      job_id: jobId,
+      provider: "heygen_image_to_video",
+      provider_job_id: providerJobId || null,
+      heygen_raw: heygenJson || null,
+      debug_image: {
+        original: imageUrl,
+        prepared: preparedImageUrl,
+        aspectRatio
+      },
+      user_uuid: inserted[0].user_uuid,
+      status: inserted[0].status,
+      created_at: inserted[0].created_at,
+      cost,
+      durationSeconds,
+      resolution
+    });
   } catch (err) {
     return res.status(500).json({
       ok: false,

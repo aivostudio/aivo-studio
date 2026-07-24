@@ -106,9 +106,10 @@
 
 
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
+<!-- ================= TOAST MANAGER + DESKTOP I18N ================= -->
 <script src="/toast.manager.js?v=1" defer></script>
-  <script src="/js/assistant.widget.js?v=1" defer></script>
+<script src="/js/desktop.i18n.js?v=1" defer></script>
+<script src="/js/assistant.widget.js?v=1" defer></script>
 
 <!-- PARTIALS: topbar inject -->
 <script src="/include.partials.js?v=3" defer></script>
@@ -249,11 +250,6 @@
 })();
 </script>
 
-
-
-
-
-
 <body>
 
 <!-- ================= AIVO TOPBAR (FINAL / SINGLE SOURCE) ================= -->
@@ -265,230 +261,635 @@
       <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
     </a>
 
-    <!-- NAV -->
-    <nav class="aivo-nav" aria-label="Üst menü">
+<!-- NAV -->
+<nav
+  class="aivo-nav"
+  aria-label="Üst menü"
+  data-i18n-label="topbar.navLabel"
+>
 
-      <!-- ÜRÜNLER -->
-      <div class="nav-item has-dropdown" id="navProducts">
-        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-          Ürünler <span class="chevron">▾</span>
-        </button>
+  <!-- ÜRÜNLER -->
+  <div class="nav-item has-dropdown" id="navProducts">
+    <button
+      class="nav-link"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <span data-i18n="topbar.products">Ürünler</span>
+      <span class="chevron">▾</span>
+    </button>
 
-        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-          <div class="products-menu">
+    <div
+      class="dropdown dropdown--products"
+      aria-label="Ürünler menüsü"
+      data-i18n-label="topbar.productsMenuLabel"
+    >
+      <div class="products-menu">
 
-<!-- 1) AI MÜZİK  ÜRET  -->
-<a href="/studio.v2.html#music" data-auth="required" class="product-card" data-product="music">
-  <span class="pc-ico">🎵</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Müzik Üret</span>
-    <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-  </span>
-</a>
+        <!-- 1) AI MÜZİK ÜRET -->
+        <a
+          href="/studio.v2.html#music"
+          data-auth="required"
+          class="product-card"
+          data-product="music"
+        >
+          <span class="pc-ico">🎵</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.musicTitle"
+            >
+              AI Müzik Üret
+            </span>
 
-<!-- 2) AI KAPAK ÜRET -->
-<a href="/studio.v2.html#cover" data-auth="required" class="product-card" data-product="cover">
-  <span class="pc-ico">🖼️</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Kapak Üret</span>
-    <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-  </span>
-</a>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.musicSub"
+            >
+              Türkçe odaklı, hızlı üretim
+            </span>
+          </span>
+        </a>
 
-<!-- 3) AI ATMOSFER VIDEO -->
-<a href="/studio.v2.html#atmo"
-   data-auth="required"
-   class="product-card"
-   data-product="atmo">
-  <span class="pc-ico">🌫️</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Atmosfer Video</span>
-    <span class="pc-sub">Loop sahne & atmosfer</span>
-  </span>
-</a>
+        <!-- 2) AI KAPAK ÜRET -->
+        <a
+          href="/studio.v2.html#cover"
+          data-auth="required"
+          class="product-card"
+          data-product="cover"
+        >
+          <span class="pc-ico">🖼️</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.coverTitle"
+            >
+              AI Kapak Üret
+            </span>
 
-<!-- 4) AI ÇOCUK ÇİZGİFİLM -->
-<a href="/studio.v2.html#cartoon"
-   data-auth="required"
-   class="product-card sm-card sm-card--a"
-   data-product="cartoon">
-  <span class="pc-ico">🐠</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Çocuk Çizgifilm</span>
-    <span class="pc-sub">Preset karakterlerle sahne üretimi</span>
-  </span>
-</a>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.coverSub"
+            >
+              Kapak, afiş ve görsel içerik
+            </span>
+          </span>
+        </a>
 
-<!-- 5) AI FOTO EFEKT VIDEO CLIP -->
-<a href="/studio.v2.html#photofx"
-   data-auth="required"
-   class="product-card sm-card sm-card--b"
-   data-product="photofx">
-  <span class="pc-ico">✨</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Foto Efekt Video Clip</span>
-    <span class="pc-sub">Tek fotoğraftan hareketli efekt klip üret</span>
-  </span>
-</a>
+        <!-- 3) AI ATMOSFER VIDEO -->
+        <a
+          href="/studio.v2.html#atmo"
+          data-auth="required"
+          class="product-card"
+          data-product="atmo"
+        >
+          <span class="pc-ico">🌫️</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.atmoTitle"
+            >
+              AI Atmosfer Video
+            </span>
 
-<!-- 6) AI RESİMDEN VIDEO ÜRET -->
-<a href="/studio.v2.html#video" data-auth="required" class="product-card" data-product="video">
-  <span class="pc-ico">🎬</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Resimden Video Üret</span>
-    <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-  </span>
-</a>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.atmoSub"
+            >
+              Loop sahne ve atmosfer
+            </span>
+          </span>
+        </a>
 
+        <!-- 4) AI ÇOCUK ÇİZGİFİLM -->
+        <a
+          href="/studio.v2.html#cartoon"
+          data-auth="required"
+          class="product-card sm-card sm-card--a"
+          data-product="cartoon"
+        >
+          <span class="pc-ico">🐠</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.cartoonTitle"
+            >
+              AI Çocuk Çizgifilm
+            </span>
 
-          </div>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.cartoonSub"
+            >
+              Preset karakterlerle sahne üretimi
+            </span>
+          </span>
+        </a>
+
+        <!-- 5) AI FOTO EFEKT VIDEO CLIP -->
+        <a
+          href="/studio.v2.html#photofx"
+          data-auth="required"
+          class="product-card sm-card sm-card--b"
+          data-product="photofx"
+        >
+          <span class="pc-ico">✨</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.photofxTitle"
+            >
+              AI Foto Efekt Video Clip
+            </span>
+
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.photofxSub"
+            >
+              Tek fotoğraftan hareketli efekt klip üret
+            </span>
+          </span>
+        </a>
+
+        <!-- 6) AI RESİMDEN VIDEO ÜRET -->
+        <a
+          href="/studio.v2.html#video"
+          data-auth="required"
+          class="product-card"
+          data-product="video"
+        >
+          <span class="pc-ico">🎬</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.videoTitle"
+            >
+              AI Resimden Video Üret
+            </span>
+
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.videoSub"
+            >
+              Sosyal medya uyumlu çıktılar
+            </span>
+          </span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+  <!-- /ÜRÜNLER -->
+
+  <!-- KURUMSAL -->
+  <div class="nav-item has-dropdown" id="navCorp">
+    <button
+      class="nav-link"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <span data-i18n="topbar.corporate">Kurumsal</span>
+      <span class="chevron">▾</span>
+    </button>
+
+    <div
+      class="dropdown dropdown--corp"
+      aria-label="Kurumsal menüsü"
+      data-i18n-label="topbar.corporateMenuLabel"
+    >
+      <div class="corp-menu">
+        <div class="corp-grid">
+
+          <a
+            href="/kurumsal/hakkimizda.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">ⓘ</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.aboutTitle"
+              >
+                Hakkımızda
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.aboutSub"
+              >
+                AIVO’nun hikayesi
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/ozellikler.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">⚙︎</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.featuresTitle"
+              >
+                Özellikler
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.featuresSub"
+              >
+                Neler sunuyoruz
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/gizlilik.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">🔒</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.privacyTitle"
+              >
+                Gizlilik Politikası
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.privacySub"
+              >
+                KVKK / GDPR
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/mesafeli-satis.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">📄</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.distanceSalesTitle"
+              >
+                Mesafeli Satış
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.distanceSalesSub"
+              >
+                Sözleşme metni
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari"
+            class="corp-card"
+          >
+            <span class="cc-ico">🛡️</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.safeUseTitle"
+              >
+                Güvenli Kullanım
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.safeUseSub"
+              >
+                İçerik kuralları ve kullanım sınırları
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/iletisim.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">✉︎</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.contactTitle"
+              >
+                İletişim
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.contactSub"
+              >
+                info@aivo.tr
+              </span>
+            </span>
+          </a>
+
         </div>
       </div>
-      <!-- /ÜRÜNLER -->
+    </div>
+  </div>
+  <!-- /KURUMSAL -->
 
-      <!-- KURUMSAL -->
-      <div class="nav-item has-dropdown" id="navCorp">
-        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-          Kurumsal <span class="chevron">▾</span>
-        </button>
-
-        <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
-          <div class="corp-menu">
-  <div class="corp-grid">
-
-  <a href="/kurumsal/hakkimizda.html" class="corp-card">
-    <span class="cc-ico">ⓘ</span>
-    <span class="cc-txt">
-      <span class="cc-title">Hakkımızda</span>
-      <span class="cc-sub">AIVO’nun hikayesi</span>
-    </span>
+  <!-- EĞİTİM İÇERİKLERİ -->
+  <a
+    class="nav-link"
+    href="/egitim-icerikleri.html"
+    data-i18n="topbar.education"
+  >
+    Eğitim İçerikleri
   </a>
 
-  <a href="/kurumsal/ozellikler.html" class="corp-card">
-    <span class="cc-ico">⚙︎</span>
-    <span class="cc-txt">
-      <span class="cc-title">Özellikler</span>
-      <span class="cc-sub">Neler sunuyoruz</span>
-    </span>
+  <!-- AIVO COIN -->
+  <a
+    class="nav-link"
+    href="/aivo-coin.html"
+    data-i18n="topbar.coin"
+  >
+    AIVO COIN
   </a>
 
-  <a href="/kurumsal/gizlilik.html" class="corp-card">
-    <span class="cc-ico">🔒</span>
-    <span class="cc-txt">
-      <span class="cc-title">Gizlilik Politikası</span>
-      <span class="cc-sub">KVKK / GDPR</span>
-    </span>
+  <!-- FİYATLANDIRMA -->
+  <a
+    class="nav-link"
+    href="/fiyatlandirma.html"
+    data-i18n="topbar.pricing"
+  >
+    Fiyatlandırma
   </a>
 
-  <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
-    <span class="cc-ico">📄</span>
-    <span class="cc-txt">
-      <span class="cc-title">Mesafeli Satış</span>
-      <span class="cc-sub">Sözleşme metni</span>
-    </span>
-  </a>
+</nav>
+<!-- /NAV -->
 
-  <a href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari" class="corp-card">
-    <span class="cc-ico">🛡️</span>
-    <span class="cc-txt">
-      <span class="cc-title">Güvenli Kullanım</span>
-      <span class="cc-sub">İçerik kuralları &amp; kullanım sınırları</span>
-    </span>
-  </a>
+<!-- AUTH AREA (TEK OTORİTE) -->
+<div class="aivo-auth">
 
-  <a href="/kurumsal/iletisim.html" class="corp-card">
-    <span class="cc-ico">✉︎</span>
-    <span class="cc-txt">
-      <span class="cc-title">İletişim</span>
-      <span class="cc-sub">info@aivo.tr</span>
-    </span>
-  </a>
+  <!-- DESKTOP LANGUAGE SWITCH -->
+  <style>
+    #top .aivo-language-switch{
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:3px;
+      flex:0 0 auto;
+      border:1px solid rgba(160,120,255,.34);
+      border-radius:999px;
+      background:rgba(10,14,26,.18);
+      backdrop-filter:blur(18px) saturate(130%);
+      -webkit-backdrop-filter:blur(18px) saturate(130%);
+      box-shadow:
+        0 10px 28px rgba(0,0,0,.24),
+        inset 0 1px 0 rgba(255,255,255,.05);
+    }
 
-</div>
-          </div>
-        </div>
+    #top .aivo-language-button{
+      appearance:none;
+      min-width:34px;
+      height:30px;
+      padding:0 9px;
+      border:1px solid transparent;
+      border-radius:999px;
+      background:transparent;
+      color:rgba(255,255,255,.66);
+      font:inherit;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      cursor:pointer;
+      transition:
+        background .16s ease,
+        border-color .16s ease,
+        color .16s ease,
+        box-shadow .16s ease,
+        transform .16s ease;
+    }
+
+    #top .aivo-language-button:hover{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+      border-color:rgba(255,255,255,.10);
+    }
+
+    #top .aivo-language-button:active{
+      transform:scale(.96);
+    }
+
+    #top .aivo-language-button.is-active{
+      color:#fff;
+      border-color:rgba(170,135,255,.55);
+      background:linear-gradient(
+        135deg,
+        rgba(124,58,237,.46),
+        rgba(59,130,246,.30)
+      );
+      box-shadow:
+        0 6px 18px rgba(99,102,241,.20),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    @media (max-width:1100px){
+      #top .aivo-language-switch{
+        padding:2px;
+      }
+
+      #top .aivo-language-button{
+        min-width:31px;
+        height:28px;
+        padding:0 7px;
+        font-size:11px;
+      }
+    }
+  </style>
+
+  <div
+    class="aivo-language-switch"
+    role="group"
+    aria-label="Dil seçimi"
+    data-i18n-label="language.menuLabel"
+  >
+    <button
+      type="button"
+      class="aivo-language-button"
+      data-aivo-language="tr"
+      aria-pressed="false"
+    >
+      TR
+    </button>
+
+    <button
+      type="button"
+      class="aivo-language-button"
+      data-aivo-language="en"
+      aria-pressed="false"
+    >
+      EN
+    </button>
+  </div>
+  <!-- /DESKTOP LANGUAGE SWITCH -->
+
+  <!-- GUEST -->
+  <div class="auth-guest" id="authGuest">
+    <button
+      id="btnLoginTop"
+      class="btn btn-ghost"
+      type="button"
+      data-i18n="topbar.login"
+    >
+      Giriş Yap
+    </button>
+
+    <button
+      id="btnRegisterTop"
+      class="btn btn-primary"
+      type="button"
+      data-i18n="topbar.register"
+    >
+      Kayıt Ol
+    </button>
+  </div>
+
+  <!-- USER -->
+  <div class="auth-user" id="authUser" hidden>
+
+    <!-- KREDİ -->
+    <div class="top-credits" id="topCredits">
+      <div
+        class="credit-pill credit-pill--static"
+        title="Kredi bakiyesi"
+        data-i18n-title="topbar.creditBalanceTitle"
+      >
+        <span data-i18n="common.credit">Kredi</span>
+        <strong id="topCreditCount">0</strong>
       </div>
-      <!-- /KURUMSAL -->
 
-   <!-- EĞİTİM İÇERİKLERİ -->
-<a class="nav-link" href="/egitim-icerikleri.html">Eğitim İçerikleri</a>
+      <a
+        class="btn btn-ghost btn-credit-buy"
+        href="/fiyatlandirma.html#packs"
+        data-open-pricing="1"
+        data-i18n="topbar.buyCredit"
+      >
+        Kredi Al
+      </a>
+    </div>
 
-<!-- AIVO COIN -->
-<a class="nav-link" href="/aivo-coin.html">AIVO COIN</a>
+    <!-- USER MENU -->
+    <div class="user-menu-wrap" id="userMenuWrap">
+      <button
+        id="btnUserMenuTop"
+        class="user-pill"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span
+          class="user-ava"
+          id="topUserInitial"
+        >
+          H
+        </span>
 
-<!-- FİYATLANDIRMA -->
-<a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
-    </nav>
-    <!-- /NAV -->
+        <span
+          class="user-name"
+          id="topUserName"
+        >
+          Harun
+        </span>
 
-    <!-- AUTH AREA (TEK OTORİTE) -->
-    <div class="aivo-auth">
+        <span class="chev">▾</span>
+      </button>
 
-      <!-- GUEST -->
-      <div class="auth-guest" id="authGuest">
-        <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-        <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
-      </div>
+      <div
+        id="userMenuPanel"
+        class="user-menu"
+        aria-hidden="true"
+      >
+        <div class="user-menu-card">
 
-      <!-- USER -->
-      <div class="auth-user" id="authUser" hidden>
+          <div class="um-head">
+            <div class="um-ava" id="umAvatar">H</div>
 
-        <!-- KREDİ -->
-        <div class="top-credits" id="topCredits">
-          <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-            Kredi <strong id="topCreditCount">0</strong>
-          </div>
-          <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs" data-open-pricing="1">Kredi Al</a>
-        </div>
-
-        <!-- USER MENU -->
-        <div class="user-menu-wrap" id="userMenuWrap">
-          <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-            <span class="user-ava" id="topUserInitial">H</span>
-            <span class="user-name" id="topUserName">Harun</span>
-            <span class="chev">▾</span>
-          </button>
-
-          <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-            <div class="user-menu-card">
-
-              <div class="um-head">
-                <div class="um-ava" id="umAvatar">H</div>
-                <div class="um-meta">
-                  <div class="um-title" id="umName">Hesap</div>
-                  <div class="um-sub" id="umEmail"></div>
-                </div>
+            <div class="um-meta">
+              <div class="um-title" id="umName">
+                Hesap
               </div>
 
-              <div class="um-plan">
-                <span class="um-plan-ico">💎</span>
-                <span class="um-plan-txt" id="umPlan">Basic</span>
-              </div>
-
-              <div class="um-sep"></div>
-
-<a class="um-item" href="/studio.v2.html#profile"><span class="um-i">👤</span><span>Profil</span></a>
-<a class="um-item" href="/studio.v2.html#invoices"><span class="um-i">🧾</span><span>Faturalarım</span></a>
-<a class="um-item" href="/studio.v2.html#settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
-
-
-              <div class="um-sep"></div>
-
-              <button class="um-item um-logout" id="btnLogoutUnified" type="button"
-                      data-action="logout" data-redirect="/">
-                <span class="um-i">⟵</span><span>Çıkış Yap</span>
-              </button>
-
+              <div class="um-sub" id="umEmail"></div>
             </div>
           </div>
+
+          <div class="um-plan">
+            <span class="um-plan-ico">💎</span>
+            <span class="um-plan-txt" id="umPlan">
+              Basic
+            </span>
+          </div>
+
+          <div class="um-sep"></div>
+
+          <a
+            class="um-item"
+            href="/studio.v2.html#profile"
+          >
+            <span class="um-i">👤</span>
+            <span data-i18n="topbar.profile">
+              Profil
+            </span>
+          </a>
+
+          <a
+            class="um-item"
+            href="/studio.v2.html#invoices"
+          >
+            <span class="um-i">🧾</span>
+            <span data-i18n="topbar.invoices">
+              Faturalarım
+            </span>
+          </a>
+
+          <a
+            class="um-item"
+            href="/studio.v2.html#settings"
+          >
+            <span class="um-i">⚙</span>
+            <span data-i18n="topbar.settings">
+              Ayarlar
+            </span>
+          </a>
+
+          <div class="um-sep"></div>
+
+          <button
+            class="um-item um-logout"
+            id="btnLogoutUnified"
+            type="button"
+            data-action="logout"
+            data-redirect="/"
+          >
+            <span class="um-i">⟵</span>
+            <span data-i18n="topbar.logout">
+              Çıkış Yap
+            </span>
+          </button>
+
         </div>
-        <!-- /USER MENU -->
-
       </div>
-      <!-- /USER -->
-
     </div>
-    <!-- /AUTH -->
+    <!-- /USER MENU -->
+
+  </div>
+  <!-- /USER -->
+
+</div>
+<!-- /AUTH -->
 
   </div><!-- /.container.aivo-topbar-inner -->
 </header>
@@ -803,85 +1204,246 @@
   .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
 </style>
 
-<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
+<div
+  class="aivo-cc"
+  id="aivoCookieBanner"
+  aria-live="polite"
+>
   <div class="aivo-cc__card">
+
     <div class="aivo-cc__left">
       <div class="aivo-cc__title">
         <span class="aivo-cc__dot"></span>
-        Çerez Tercihleri
+
+        <span data-i18n="cookie.title">
+          Çerez Tercihleri
+        </span>
       </div>
-      <div class="aivo-cc__msg">
-        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
-        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+
+      <div
+        class="aivo-cc__msg"
+        data-i18n="cookie.message"
+      >
+        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
       </div>
+
       <div class="aivo-cc__links">
-        <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
+        <a
+          href="/kurumsal/gizlilik.html#cerez"
+          data-i18n="cookie.policy"
+        >
+          Çerez Politikası
+        </a>
+
+        <button
+          class="aivo-cc__textlink"
+          type="button"
+          id="aivoCcCustomize"
+          data-i18n="cookie.customize"
+        >
+          Özelleştir
+        </button>
       </div>
     </div>
 
     <div class="aivo-cc__actions">
-      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
-      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      <button
+        class="aivo-cc__btn"
+        type="button"
+        id="aivoCcDeny"
+        data-i18n="cookie.deny"
+      >
+        Reddet
+      </button>
+
+      <button
+        class="aivo-cc__btn aivo-cc__btn--primary"
+        type="button"
+        id="aivoCcAllow"
+        data-i18n="cookie.acceptAll"
+      >
+        Tümünü Kabul Et
+      </button>
     </div>
+
   </div>
 </div>
 
 <!-- AIVO Cookie Preferences Modal -->
-<div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
-  <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
+<div
+  class="aivo-ccm"
+  id="aivoCookieModal"
+  aria-hidden="true"
+>
+  <div
+    class="aivo-ccm__backdrop"
+    data-ccm-close="1"
+  ></div>
 
-  <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
+  <div
+    class="aivo-ccm__card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="aivoCcmTitle"
+  >
     <div class="aivo-ccm__head">
+
       <div>
-        <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
-        <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
+        <div
+          class="aivo-ccm__title"
+          id="aivoCcmTitle"
+          data-i18n="cookie.modalTitle"
+        >
+          Çerez Tercihleri
+        </div>
+
+        <div
+          class="aivo-ccm__sub"
+          data-i18n="cookie.modalSubtitle"
+        >
+          Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.
+        </div>
       </div>
-      <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
+
+      <button
+        class="aivo-ccm__x"
+        type="button"
+        data-ccm-close="1"
+        aria-label="Çerez penceresini kapat"
+        data-i18n-label="cookie.closeLabel"
+      >
+        ×
+      </button>
     </div>
 
     <div class="aivo-ccm__rows">
+
       <div class="aivo-ccm__row">
         <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Zorunlu</div>
-          <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+          <div
+            class="aivo-ccm__label"
+            data-i18n="cookie.necessary"
+          >
+            Zorunlu
+          </div>
+
+          <div
+            class="aivo-ccm__desc"
+            data-i18n="cookie.necessaryDesc"
+          >
+            Sitenin çalışması ve güvenlik için gereklidir.
+          </div>
         </div>
-        <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
-          <input type="checkbox" checked disabled />
+
+        <label
+          class="aivo-switch is-disabled"
+          aria-label="Zorunlu çerezler"
+          data-i18n-label="cookie.necessaryLabel"
+        >
+          <input
+            type="checkbox"
+            checked
+            disabled
+          />
+
           <span class="aivo-switch__track"></span>
         </label>
       </div>
 
       <div class="aivo-ccm__row">
         <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Analitik</div>
-          <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+          <div
+            class="aivo-ccm__label"
+            data-i18n="cookie.analytics"
+          >
+            Analitik
+          </div>
+
+          <div
+            class="aivo-ccm__desc"
+            data-i18n="cookie.analyticsDesc"
+          >
+            Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).
+          </div>
         </div>
-        <label class="aivo-switch" aria-label="Analitik çerezler">
-          <input type="checkbox" id="aivoPrefAnalytics" />
+
+        <label
+          class="aivo-switch"
+          aria-label="Analitik çerezler"
+          data-i18n-label="cookie.analyticsLabel"
+        >
+          <input
+            type="checkbox"
+            id="aivoPrefAnalytics"
+          />
+
           <span class="aivo-switch__track"></span>
         </label>
       </div>
 
       <div class="aivo-ccm__row">
         <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Pazarlama</div>
-          <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+          <div
+            class="aivo-ccm__label"
+            data-i18n="cookie.marketing"
+          >
+            Pazarlama
+          </div>
+
+          <div
+            class="aivo-ccm__desc"
+            data-i18n="cookie.marketingDesc"
+          >
+            Kampanya ve yeniden hedefleme (varsa).
+          </div>
         </div>
-        <label class="aivo-switch" aria-label="Pazarlama çerezler">
-          <input type="checkbox" id="aivoPrefMarketing" />
+
+        <label
+          class="aivo-switch"
+          aria-label="Pazarlama çerezleri"
+          data-i18n-label="cookie.marketingLabel"
+        >
+          <input
+            type="checkbox"
+            id="aivoPrefMarketing"
+          />
+
           <span class="aivo-switch__track"></span>
         </label>
       </div>
+
     </div>
 
     <div class="aivo-ccm__foot">
-      <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
+      <a
+        class="aivo-ccm__link"
+        href="/kurumsal/gizlilik.html#cerez"
+        data-i18n="cookie.policy"
+      >
+        Çerez Politikası
+      </a>
+
       <div class="aivo-ccm__actions">
-        <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
-        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+        <button
+          class="aivo-cc__btn"
+          type="button"
+          data-ccm-close="1"
+          data-i18n="cookie.cancel"
+        >
+          Vazgeç
+        </button>
+
+        <button
+          class="aivo-cc__btn aivo-cc__btn--primary"
+          type="button"
+          id="aivoCcmSave"
+          data-i18n="cookie.save"
+        >
+          Kaydet
+        </button>
       </div>
     </div>
+
   </div>
 </div>
 <!-- /AIVO Cookie Preferences Modal -->
@@ -1009,196 +1571,390 @@
 </script>
 <!-- /AIVO Cookie Banner (Premium) -->
 
-
-
-
-
-
 <!-- ================= HERO ================= -->
 <section class="hero" id="topHero">
   <div class="container hero-inner">
 
-   <!-- LEFT -->
+    <!-- LEFT -->
     <div class="hero-left">
+
       <div class="badge">
         <span class="dot"></span>
-        AIVO Studio • AI ile içerik üretiminin yeni standardı
+
+        <span data-i18n="index.heroBadge">
+          AIVO Studio • AI ile içerik üretiminin yeni standardı
+        </span>
       </div>
 
       <h1 class="hero-title">
-        AIVO Studio
+        <span data-i18n="index.heroBrand">
+          AIVO Studio
+        </span>
+
         <span class="hero-title-subline">
-          İlhamı üretime dönüştür. <span class="swap-word" id="heroSwap">Müzik</span>
+          <span data-i18n="index.heroLine">
+            İlhamı üretime dönüştür.
+          </span>
+
+          <span
+            class="swap-word"
+            id="heroSwap"
+          >
+            Müzik
+          </span>
         </span>
       </h1>
 
       <p class="hero-sub" id="heroSub">
-        Çok modüllü AI içerik üretim platformu: müzik, video ve görsel üretimini tek yerde birleştirir.
+        Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.
       </p>
 
-<div class="hero-actions" style="display:grid;grid-template-columns:repeat(3,1fr);align-items:center;gap:14px;width:100%;max-width:820px;margin-top:28px;">
-  <a
-    class="btn btn-primary"
-    href="/studio.v2.html"
-    data-auth="required"
-    style="height:56px;width:100%;padding:0 18px;white-space:nowrap;font-size:18px;display:flex;align-items:center;justify-content:center;text-align:center;"
-  >
-    Studio’ya Gir
-  </a>
-
-<a
-  class="btn"
-  href="https://play.google.com/store/apps/details?id=tr.aivo.app"
-  target="_blank"
-  rel="noopener"
-  style="height:56px;width:100%;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(79,70,229,.24),rgba(31,182,255,.14));color:#fff;text-decoration:none;font-weight:900;font-size:18px;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 14px 42px rgba(79,70,229,.22);"
->
-  ▶ Google Play
-</a>
-
-  <a
-    class="btn"
-    href="https://apps.apple.com/tr/app/aivo/id6769188631?l=tr"
-    target="_blank"
-    rel="noopener"
-    style="height:56px;width:100%;padding:0 18px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(124,58,237,.22),rgba(31,182,255,.16));color:#fff;text-decoration:none;font-weight:900;font-size:18px;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;box-shadow:0 14px 42px rgba(124,58,237,.24);"
-  >
-     App Store
-  </a>
-
-  <span class="cta-orb" aria-hidden="true"></span>
-</div>
-      <div class="hero-benefits" id="heroBenefits">
-       <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Profesyonel kalite hedefi</span></span>
-        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Telif ve kullanım hakları sende</span></span>
-        <span class="hb-item"><span class="hb-check">✓</span><span class="hb-text">Anında indir, paylaş</span></span>
-      </div>
-      <div class="hero-demo-video" style="margin-top:22px;width:min(520px,100%);border:1px solid rgba(255,255,255,.12);border-radius:22px;overflow:hidden;background:rgba(255,255,255,.04);box-shadow:0 22px 60px rgba(0,0,0,.35);">
-  <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-    <div>
-     <div style="font-weight:900;color:#fff;font-size:15px;">Görselden Video Klip</div>
-<div style="font-size:12px;color:rgba(255,255,255,.68);margin-top:3px;">Görselini hareketli klip sahnesine dönüştür</div>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-<style>
-  @keyframes aivoYoutubePulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 0 rgba(236,72,153,0), 0 12px 30px rgba(0,0,0,.22);
-    }
-    50% {
-      transform: scale(1.035);
-      box-shadow: 0 0 26px rgba(236,72,153,.28), 0 16px 38px rgba(0,0,0,.30);
-    }
-  }
-
-  @keyframes aivoYoutubeShine {
-    0% {
-      transform: translateX(-130%) skewX(-18deg);
-    }
-    100% {
-      transform: translateX(230%) skewX(-18deg);
-    }
-  }
-
-  .aivo-youtube-edu-btn {
-    position: relative;
-    overflow: hidden;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255,255,255,.22);
-    background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
-    color: #fff;
-    border-radius: 999px;
-    padding: 9px 14px;
-    font-weight: 900;
-    text-decoration: none;
-    white-space: nowrap;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    animation: aivoYoutubePulse 2.8s ease-in-out infinite;
-  }
-
-  .aivo-youtube-edu-btn::after {
-    content: "";
-    position: absolute;
-    top: -40%;
-    left: 0;
-    width: 42%;
-    height: 180%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
-    animation: aivoYoutubeShine 3.6s ease-in-out infinite;
-    pointer-events: none;
-  }
-</style>
-
-<a
-  class="aivo-youtube-edu-btn"
-  href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr"
-  target="_blank"
-  rel="noopener"
-  onclick="
-    try {
-      if (typeof gtag === 'function') {
-        gtag('event', 'youtube_education_click', {
-          event_category: 'engagement',
-          event_label: 'home_hero_youtube_education_button',
-          value: 1
-        });
-      }
-    } catch(e) {}
-  "
->
-  🎬 YouTube’da Tüm Eğitimleri İzle
-</a>
-
-      <button
-        type="button"
-        onclick="const v=document.getElementById('imageToVideoHeroDemo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.currentTime=0; v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } }"
-        style="border:1px solid rgba(255,255,255,.16);background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;border-radius:999px;padding:9px 13px;font-weight:800;cursor:pointer;white-space:nowrap;"
+      <div
+        class="hero-actions"
+        style="
+          display:grid;
+          grid-template-columns:repeat(3,1fr);
+          align-items:center;
+          gap:14px;
+          width:100%;
+          max-width:820px;
+          margin-top:28px;
+        "
       >
-        🔊 Sesi Aç
-      </button>
-    </div>
-  </div>
+        <a
+          class="btn btn-primary"
+          href="/studio.v2.html"
+          data-auth="required"
+          data-i18n="index.enterStudio"
+          style="
+            height:56px;
+            width:100%;
+            padding:0 18px;
+            white-space:nowrap;
+            font-size:18px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+          "
+        >
+          Studio’ya Gir
+        </a>
 
-  <video
-    id="imageToVideoHeroDemo"
- src="https://media.aivo.tr/outputs/home/image-to-video/image-to-video-preview-1777719387477.mp4"
-    autoplay
-    muted
-    loop
-    playsinline
-    preload="auto"
-    controls
-   style="display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;"
-  ></video>
-</div>
+        <a
+          class="btn"
+          href="https://play.google.com/store/apps/details?id=tr.aivo.app"
+          target="_blank"
+          rel="noopener"
+          data-i18n="index.googlePlay"
+          style="
+            height:56px;
+            width:100%;
+            padding:0 18px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.18);
+            background:linear-gradient(
+              135deg,
+              rgba(255,255,255,.14),
+              rgba(79,70,229,.24),
+              rgba(31,182,255,.14)
+            );
+            color:#fff;
+            text-decoration:none;
+            font-weight:900;
+            font-size:18px;
+            white-space:nowrap;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            box-shadow:0 14px 42px rgba(79,70,229,.22);
+          "
+        >
+          ▶ Google Play
+        </a>
+
+        <a
+          class="btn"
+          href="https://apps.apple.com/tr/app/aivo/id6769188631?l=tr"
+          target="_blank"
+          rel="noopener"
+          data-i18n="index.appStore"
+          style="
+            height:56px;
+            width:100%;
+            padding:0 18px;
+            border-radius:999px;
+            border:1px solid rgba(255,255,255,.18);
+            background:linear-gradient(
+              135deg,
+              rgba(255,255,255,.16),
+              rgba(124,58,237,.22),
+              rgba(31,182,255,.16)
+            );
+            color:#fff;
+            text-decoration:none;
+            font-weight:900;
+            font-size:18px;
+            white-space:nowrap;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            box-shadow:0 14px 42px rgba(124,58,237,.24);
+          "
+        >
+           App Store
+        </a>
+
+        <span class="cta-orb" aria-hidden="true"></span>
+      </div>
+
+      <div class="hero-benefits" id="heroBenefits">
+
+        <span class="hb-item">
+          <span class="hb-check">✓</span>
+
+          <span
+            class="hb-text"
+            data-i18n="index.benefit.quality"
+          >
+            Profesyonel kalite hedefi
+          </span>
+        </span>
+
+        <span class="hb-item">
+          <span class="hb-check">✓</span>
+
+          <span
+            class="hb-text"
+            data-i18n="index.benefit.rights"
+          >
+            Telif ve kullanım hakları sende
+          </span>
+        </span>
+
+        <span class="hb-item">
+          <span class="hb-check">✓</span>
+
+          <span
+            class="hb-text"
+            data-i18n="index.benefit.download"
+          >
+            Anında indir, paylaş
+          </span>
+        </span>
+
+      </div>
+
+      <div
+        class="hero-demo-video"
+        style="
+          margin-top:22px;
+          width:min(520px,100%);
+          border:1px solid rgba(255,255,255,.12);
+          border-radius:22px;
+          overflow:hidden;
+          background:rgba(255,255,255,.04);
+          box-shadow:0 22px 60px rgba(0,0,0,.35);
+        "
+      >
+        <div
+          style="
+            padding:12px 14px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+          "
+        >
+          <div>
+            <div
+              data-i18n="index.demo.videoTitle"
+              style="
+                font-weight:900;
+                color:#fff;
+                font-size:15px;
+              "
+            >
+              Görselden Video Klip
+            </div>
+
+            <div
+              data-i18n="index.demo.videoSub"
+              style="
+                font-size:12px;
+                color:rgba(255,255,255,.68);
+                margin-top:3px;
+              "
+            >
+              Görselini hareketli klip sahnesine dönüştür
+            </div>
+          </div>
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              gap:8px;
+              flex-wrap:wrap;
+              justify-content:flex-end;
+            "
+          >
+            <style>
+              @keyframes aivoYoutubePulse {
+                0%, 100% {
+                  transform:scale(1);
+                  box-shadow:
+                    0 0 0 rgba(236,72,153,0),
+                    0 12px 30px rgba(0,0,0,.22);
+                }
+
+                50% {
+                  transform:scale(1.035);
+                  box-shadow:
+                    0 0 26px rgba(236,72,153,.28),
+                    0 16px 38px rgba(0,0,0,.30);
+                }
+              }
+
+              @keyframes aivoYoutubeShine {
+                0% {
+                  transform:translateX(-130%) skewX(-18deg);
+                }
+
+                100% {
+                  transform:translateX(230%) skewX(-18deg);
+                }
+              }
+
+              .aivo-youtube-edu-btn {
+                position:relative;
+                overflow:hidden;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                border:1px solid rgba(255,255,255,.22);
+                background:linear-gradient(
+                  135deg,
+                  rgba(255,255,255,.16),
+                  rgba(255,255,255,.05)
+                );
+                color:#fff;
+                border-radius:999px;
+                padding:9px 14px;
+                font-weight:900;
+                text-decoration:none;
+                white-space:nowrap;
+                backdrop-filter:blur(6px);
+                -webkit-backdrop-filter:blur(6px);
+                animation:aivoYoutubePulse 2.8s ease-in-out infinite;
+              }
+
+              .aivo-youtube-edu-btn::after {
+                content:"";
+                position:absolute;
+                top:-40%;
+                left:0;
+                width:42%;
+                height:180%;
+                background:linear-gradient(
+                  90deg,
+                  transparent,
+                  rgba(255,255,255,.42),
+                  transparent
+                );
+                animation:aivoYoutubeShine 3.6s ease-in-out infinite;
+                pointer-events:none;
+              }
+            </style>
+
+            <a
+              class="aivo-youtube-edu-btn"
+              href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr"
+              target="_blank"
+              rel="noopener"
+              data-i18n="index.demo.youtube"
+              onclick="
+                try {
+                  if (typeof gtag === 'function') {
+                    gtag('event', 'youtube_education_click', {
+                      event_category: 'engagement',
+                      event_label: 'home_hero_youtube_education_button',
+                      value: 1
+                    });
+                  }
+                } catch(e) {}
+              "
+            >
+              🎬 YouTube’da Tüm Eğitimleri İzle
+            </a>
+
+            <button
+              id="heroSoundToggle"
+              type="button"
+              data-i18n="index.demo.soundOpen"
+              style="
+                border:1px solid rgba(255,255,255,.16);
+                background:linear-gradient(135deg,#8b5cf6,#ec4899);
+                color:#fff;
+                border-radius:999px;
+                padding:9px 13px;
+                font-weight:800;
+                cursor:pointer;
+                white-space:nowrap;
+              "
+            >
+              🔊 Sesi Aç
+            </button>
+          </div>
+        </div>
+
+        <video
+          id="imageToVideoHeroDemo"
+          src="https://media.aivo.tr/outputs/home/image-to-video/image-to-video-preview-1777719387477.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+          controls
+          style="
+            display:block;
+            width:100%;
+            aspect-ratio:16/9;
+            object-fit:contain;
+            background:#000;
+          "
+        ></video>
+      </div>
     </div>
- 
+
     <!-- RIGHT -->
     <div class="hero-right" aria-hidden="true">
       <div class="hero-video">
-    <video
-  class="hero-video-el"
-  src="https://media.aivo.tr/outputs/home/hero/hero-preview-1776362906377.mp4"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto"></video>
+        <video
+          class="hero-video-el"
+          src="https://media.aivo.tr/outputs/home/hero/hero-preview-1776362906377.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
       </div>
     </div>
 
   </div>
 </section>
-
-
-  <!-- ================= /HERO ================= -->
+<!-- ================= /HERO ================= -->
 <!-- ================= AI ATMOSFER VIDEO (TEK PREMIUM KART) ================= -->
-<section id="atmosphere-video" class="atmo-section" aria-label="AI Atmosfer Video">
+<section
+  id="atmosphere-video"
+  class="atmo-section"
+  aria-label="AI Atmosfer Video"
+  data-i18n-label="index.atmo.sectionLabel"
+>
 
   <style>
     /* =========================
@@ -1583,85 +2339,161 @@
 <div class="atmo-wrap">
 
   <header class="atmo-head">
-    <h2 class="atmo-title">AI Atmosfer Video</h2>
+    <h2
+      class="atmo-title"
+      data-i18n="index.atmo.title"
+    >
+      AI Atmosfer Video
+    </h2>
 
     <!-- RENK DÖNEN YER TAM BURASI -->
     <p class="atmo-sub">
-      <span class="atmo-subflow">
-        Klip çekemeyenler için <strong>loop’lanabilir</strong> atmosfer videoları.
-        Kar yağsın, yağmur aksın, ışıklar titresin.
+      <span
+        class="atmo-subflow"
+        data-i18n-html="index.atmo.subtitleHtml"
+      >
+        Klip çekemeyenler için <strong>loop’lanabilir</strong> atmosfer videoları. Kar yağsın, yağmur aksın, ışıklar titresin.
       </span>
     </p>
   </header>
 
   <div class="atmo-bar">
-    <strong>Klip alternatifi.</strong>
-    5-10-15 saniyelik kusursuz loop •
-    YouTube / Spotify arka planına hazır
+    <strong data-i18n="index.atmo.topStrong">
+      Klip alternatifi.
+    </strong>
+
+    <span data-i18n="index.atmo.topText">
+      5-10-15 saniyelik kusursuz loop • YouTube / Spotify arka planına hazır
+    </span>
   </div>
 
   <div class="sm-pack__grid sm-pack__grid--single">
-    <a class="sm-card sm-card--atmo"
-       href="/studio.v2.html"
-       data-auth="required"
-       data-mod="atmosphere-video"
-       style="background:
-         radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
-         radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
-         radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
-         linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
-         rgba(255,255,255,.03);">
-<div class="atmo-preview" aria-hidden="true">
-  <div class="atmo-preview__frame">
-   <video
-  class="atmo-preview-video"
-  src="https://media.aivo.tr/outputs/home/atmo/atmo-preview-1776362438867.mp4"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto">
-</video>
-  </div>
+    <a
+      class="sm-card sm-card--atmo"
+      href="/studio.v2.html"
+      data-auth="required"
+      data-mod="atmosphere-video"
+      style="background:
+        radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
+        radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
+        radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
+        linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
+        rgba(255,255,255,.03);"
+    >
 
-  <div class="sm-card__top">
-    <span class="sm-badge">🔥 SICAK</span>
-    <span class="sm-badge sm-badge--mini">🌧️ YAĞMUR</span>
-    <span class="sm-badge sm-badge--mini">❄️ KAR</span>
-    <span class="sm-badge sm-badge--mini">🍂 YAPRAK</span>
-    <span class="sm-badge sm-badge--mini">✨ IŞIK</span>
-    <span class="sm-badge sm-badge--mini">🌬️ RÜZGAR</span>
-    <span class="sm-badge sm-badge--mini">🌫️ SİS</span>
-  </div>
+      <div class="atmo-preview" aria-hidden="true">
+        <div class="atmo-preview__frame">
+          <video
+            class="atmo-preview-video"
+            src="https://media.aivo.tr/outputs/home/atmo/atmo-preview-1776362438867.mp4"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          ></video>
+        </div>
 
-  <div class="atmo-preview-band">
-    Atmosfer Video Oluştur →
-  </div>
-</div>
+        <div class="sm-card__top">
+          <span
+            class="sm-badge"
+            data-i18n="index.atmo.warm"
+          >
+            🔥 SICAK
+          </span>
 
-<div class="atmo-left">
-  <h3 class="sm-card__title">Atmosfer Video Oluştur</h3>
+          <span
+            class="sm-badge sm-badge--mini"
+            data-i18n="index.atmo.rain"
+          >
+            🌧️ YAĞMUR
+          </span>
 
-<div class="atmo-premiumcopy">
-  <p>
-    Klip çekmeden de şarkını, teaser’ını ya da markanı daha büyük, daha estetik ve daha profesyonel
-    gösterecek atmosfer videoları üret. AIVO; sahne hissi yüksek, premium görünen ve izleyicide
-    “hazır proje” etkisi bırakan görsel vitrinler oluşturur.
-  </p>
-</div>
+          <span
+            class="sm-badge sm-badge--mini"
+            data-i18n="index.atmo.snow"
+          >
+            ❄️ KAR
+          </span>
 
-<ul class="sm-card__bullets">
-  <li>🎬 Klibin yoksa boşluğu ucuz değil, premium bir görüntüyle doldur</li>
-  <li>✨ Tek sahnede daha zengin, daha derin ve daha dikkat çekici bir atmosfer kur</li>
-  <li>🎵 Şarkı çıkışı, teaser paylaşımı, lyric video ve dijital vitrin için hazır görünüm al</li>
-</ul>
-</div>
+          <span
+            class="sm-badge sm-badge--mini"
+            data-i18n="index.atmo.leaf"
+          >
+            🍂 YAPRAK
+          </span>
+
+          <span
+            class="sm-badge sm-badge--mini"
+            data-i18n="index.atmo.light"
+          >
+            ✨ IŞIK
+          </span>
+
+          <span
+            class="sm-badge sm-badge--mini"
+            data-i18n="index.atmo.wind"
+          >
+            🌬️ RÜZGAR
+          </span>
+
+          <span
+            class="sm-badge sm-badge--mini"
+            data-i18n="index.atmo.fog"
+          >
+            🌫️ SİS
+          </span>
+        </div>
+
+        <div
+          class="atmo-preview-band"
+          data-i18n="index.atmo.create"
+        >
+          Atmosfer Video Oluştur →
+        </div>
+      </div>
+
+      <div class="atmo-left">
+        <h3
+          class="sm-card__title"
+          data-i18n="index.atmo.cardTitle"
+        >
+          Atmosfer Video Oluştur
+        </h3>
+
+        <div class="atmo-premiumcopy">
+          <p data-i18n="index.atmo.description">
+            Klip çekmeden de şarkını, teaser’ını ya da markanı daha büyük, daha estetik ve daha profesyonel gösterecek atmosfer videoları üret. AIVO; sahne hissi yüksek, premium görünen ve izleyicide “hazır proje” etkisi bırakan görsel vitrinler oluşturur.
+          </p>
+        </div>
+
+        <ul class="sm-card__bullets">
+          <li data-i18n="index.atmo.bullet1">
+            🎬 Klibin yoksa boşluğu ucuz değil, premium bir görüntüyle doldur
+          </li>
+
+          <li data-i18n="index.atmo.bullet2">
+            ✨ Tek sahnede daha zengin, daha derin ve daha dikkat çekici bir atmosfer kur
+          </li>
+
+          <li data-i18n="index.atmo.bullet3">
+            🎵 Şarkı çıkışı, teaser paylaşımı, lyric video ve dijital vitrin için hazır görünüm al
+          </li>
+        </ul>
+      </div>
+
     </a>
   </div>
 
- <div class="atmo-bottom">
-  <strong>Hazır görünüm, hızlı başlangıç.</strong> İlk atmosfer videonu kısa sürede oluştur.
-</div>
+  <div class="atmo-bottom">
+    <strong data-i18n="index.atmo.bottomStrong">
+      Hazır görünüm, hızlı başlangıç.
+    </strong>
+
+    <span data-i18n="index.atmo.bottomText">
+      İlk atmosfer videonu kısa sürede oluştur.
+    </span>
+  </div>
 
 </div>
 </section>
@@ -1949,89 +2781,196 @@
 </style>
 
 <!-- ================= AI COCUK CIZGIFILM ================= -->
-<section id="child-cartoon" class="cartoon-section" aria-label="AI Çocuk Çizgifilm">
+<section
+  id="child-cartoon"
+  class="cartoon-section"
+  aria-label="AI Çocuk Çizgifilm"
+  data-i18n-label="index.cartoon.sectionLabel"
+>
   <div class="container cartoon-wrap">
 
     <div class="cartoon-head">
-      <h2 class="cartoon-title">AI Çocuk Çizgifilm</h2>
+      <h2
+        class="cartoon-title"
+        data-i18n="index.cartoon.title"
+      >
+        AI Çocuk Çizgifilm
+      </h2>
 
-      <p class="cartoon-slogan">
+      <p
+        class="cartoon-slogan"
+        data-i18n="index.cartoon.slogan"
+      >
         Karakterini yarat, hikâyeni kur, çizgifilmini üret.
       </p>
 
-     <div class="cartoon-bar">
-  Karakterden sahnelere, <strong>sahnelerden çizgifilme.</strong>
-</div>
+      <div class="cartoon-bar">
+        <span data-i18n="index.cartoon.barLead">
+          Karakterden sahnelere,
+        </span>
+
+        <strong data-i18n="index.cartoon.barStrong">
+          sahnelerden çizgifilme.
+        </strong>
+      </div>
     </div>
 
     <div class="cartoon-card">
+
       <div class="cartoon-left">
 
         <div class="cartoon-badges">
-          <span class="cartoon-badge">Karakter Yarat</span>
-          <span class="cartoon-badge">Tek Sahne</span>
-          <span class="cartoon-badge">Hikâye Modu</span>
-          <span class="cartoon-badge">3–6 Dakika Akış</span>
+          <span
+            class="cartoon-badge"
+            data-i18n="index.cartoon.badgeCharacter"
+          >
+            Karakter Yarat
+          </span>
+
+          <span
+            class="cartoon-badge"
+            data-i18n="index.cartoon.badgeScene"
+          >
+            Tek Sahne
+          </span>
+
+          <span
+            class="cartoon-badge"
+            data-i18n="index.cartoon.badgeStory"
+          >
+            Hikâye Modu
+          </span>
+
+          <span
+            class="cartoon-badge"
+            data-i18n="index.cartoon.badgeDuration"
+          >
+            3–6 Dakika Akış
+          </span>
         </div>
 
-        <h3 class="cartoon-card-title">
+        <h3
+          class="cartoon-card-title"
+          data-i18n="index.cartoon.cardTitle"
+        >
           Aynı karakterlerle sahne sahne ilerleyen çizgifilm akışı oluştur.
         </h3>
 
-        <p class="cartoon-card-text">
-          Preset ya da kendi karakterlerinle kısa sahneler üret, hikâyeni akışa dönüştür,
-          aynı karakter bütünlüğünü koruyarak 3–6 dakikaya kadar çizgifilm kurgusu hazırla.
+        <p
+          class="cartoon-card-text"
+          data-i18n="index.cartoon.description"
+        >
+          Preset ya da kendi karakterlerinle kısa sahneler üret, hikâyeni akışa dönüştür, aynı karakter bütünlüğünü koruyarak 3–6 dakikaya kadar çizgifilm kurgusu hazırla.
         </p>
 
         <ul class="cartoon-features">
-          <li>Karakter oluştur veya preset karakterle başla</li>
-          <li>Tek sahne ya da çok sahneli hikâye akışı kur</li>
-          <li>Aynı karakterlerle tutarlı çizgifilm üretimi</li>
+          <li data-i18n="index.cartoon.feature1">
+            Karakter oluştur veya preset karakterle başla
+          </li>
+
+          <li data-i18n="index.cartoon.feature2">
+            Tek sahne ya da çok sahneli hikâye akışı kur
+          </li>
+
+          <li data-i18n="index.cartoon.feature3">
+            Aynı karakterlerle tutarlı çizgifilm üretimi
+          </li>
         </ul>
 
         <div class="cartoon-actions">
-          <a class="cartoon-cta" href="/studio.v2.html#cartoon" data-auth="required">
+          <a
+            class="cartoon-cta"
+            href="/studio.v2.html#cartoon"
+            data-auth="required"
+            data-i18n="index.cartoon.cta"
+          >
             Çizgifilmini Oluştur →
           </a>
         </div>
 
       </div>
-      
+
       <div class="cartoon-right" aria-hidden="true">
-       <div class="cartoon-preview">
- <video
-  class="cartoon-preview-video"
-  src="https://media.aivo.tr/outputs/home/cartoon/cartoon-preview-1776361780431.mp4"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto">
-</video>
-</div>
 
-      <div class="cartoon-thumbs">
-<div class="cartoon-shot">
-  <img class="cartoon-thumb" src="https://media.aivo.tr/outputs/home/cartoon/cartoon-thumb-1-1776453135352.jpg" alt="Nova yaklaşır" loading="lazy" />
-  <div class="cartoon-shot-label">Yaklaşır</div>
-</div>
+        <div class="cartoon-preview">
+          <video
+            class="cartoon-preview-video"
+            src="https://media.aivo.tr/outputs/home/cartoon/cartoon-preview-1776361780431.mp4"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          ></video>
+        </div>
 
-<div class="cartoon-shot">
-  <img class="cartoon-thumb" src="https://media.aivo.tr/outputs/home/cartoon/cartoon-thumb-2-1776453138129.jpg" alt="Nova küreyi bulur" loading="lazy" />
-  <div class="cartoon-shot-label">Küreyi bulur</div>
-</div>
+        <div class="cartoon-thumbs">
 
-<div class="cartoon-shot">
-  <img class="cartoon-thumb" src="https://media.aivo.tr/outputs/home/cartoon/cartoon-thumb-3-1776453139950.jpg" alt="Nova gücünü salar" loading="lazy" />
-  <div class="cartoon-shot-label">Gücünü salar</div>
-</div>
-</div>
-      </div>
+          <div class="cartoon-shot">
+            <img
+              class="cartoon-thumb"
+              src="https://media.aivo.tr/outputs/home/cartoon/cartoon-thumb-1-1776453135352.jpg"
+              alt="Nova yaklaşır"
+              data-i18n-alt="index.cartoon.shot1Alt"
+              loading="lazy"
+            />
+
+            <div
+              class="cartoon-shot-label"
+              data-i18n="index.cartoon.shot1Label"
+            >
+              Yaklaşır
+            </div>
           </div>
-   <div class="cartoon-bottom">
-  <strong>Karakterden akışa tek üretim hattı.</strong> İlk çizgifilm akışını kısa sürede başlat.
-</div>
- 
+
+          <div class="cartoon-shot">
+            <img
+              class="cartoon-thumb"
+              src="https://media.aivo.tr/outputs/home/cartoon/cartoon-thumb-2-1776453138129.jpg"
+              alt="Nova küreyi bulur"
+              data-i18n-alt="index.cartoon.shot2Alt"
+              loading="lazy"
+            />
+
+            <div
+              class="cartoon-shot-label"
+              data-i18n="index.cartoon.shot2Label"
+            >
+              Küreyi bulur
+            </div>
+          </div>
+
+          <div class="cartoon-shot">
+            <img
+              class="cartoon-thumb"
+              src="https://media.aivo.tr/outputs/home/cartoon/cartoon-thumb-3-1776453139950.jpg"
+              alt="Nova gücünü salar"
+              data-i18n-alt="index.cartoon.shot3Alt"
+              loading="lazy"
+            />
+
+            <div
+              class="cartoon-shot-label"
+              data-i18n="index.cartoon.shot3Label"
+            >
+              Gücünü salar
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <div class="cartoon-bottom">
+      <strong data-i18n="index.cartoon.bottomStrong">
+        Karakterden akışa tek üretim hattı.
+      </strong>
+
+      <span data-i18n="index.cartoon.bottomText">
+        İlk çizgifilm akışını kısa sürede başlat.
+      </span>
+    </div>
 
   </div>
 </section>
@@ -2401,101 +3340,185 @@
 </style>
 
 <!-- ================= AI FOTO EFFECT CLIP ================= -->
-<section id="photofx-clip" aria-label="AI Foto Effect Clip">
+<section
+  id="photofx-clip"
+  aria-label="AI Foto Effect Clip"
+  data-i18n-label="index.photofx.sectionLabel"
+>
   <div class="photofx-wrap">
 
     <header class="photofx-head">
-      <h2 class="photofx-title">AI Foto Effect Clip</h2>
+      <h2
+        class="photofx-title"
+        data-i18n="index.photofx.title"
+      >
+        AI Foto Effect Clip
+      </h2>
+
       <p class="photofx-sub">
-        <span class="photofx-subflow">
-          Tek fotoğrafı al, efektle güçlendir, kısa video klibe dönüştür.
-          Sosyal medyada daha canlı, daha premium, daha dikkat çekici görün.
+        <span
+          class="photofx-subflow"
+          data-i18n="index.photofx.subtitle"
+        >
+          Tek fotoğrafı al, efektle güçlendir, kısa video klibe dönüştür. Sosyal medyada daha canlı, daha premium, daha dikkat çekici görün.
         </span>
       </p>
     </header>
 
     <div class="photofx-bar">
-      <strong>Tek kareden hareketli etki.</strong>
-      Reels / Shorts / teaser paylaşımı için hızlı foto efekt klip üretimi
+      <strong data-i18n="index.photofx.barStrong">
+        Tek kareden hareketli etki.
+      </strong>
+
+      <span data-i18n="index.photofx.barText">
+        Reels / Shorts / teaser paylaşımı için hızlı foto efekt klip üretimi
+      </span>
     </div>
 
-<div class="photofx-grid">
-  <a class="photofx-card"
-     href="/studio.v2.html#photofx"
-     data-auth="required"
-     data-mod="photofx-clip"
-     style="background:
-       radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
-       radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
-       radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
-       linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
-       rgba(255,255,255,.03);">
+    <div class="photofx-grid">
+      <a
+        class="photofx-card"
+        href="/studio.v2.html#photofx"
+        data-auth="required"
+        data-mod="photofx-clip"
+        style="background:
+          radial-gradient(900px 520px at 18% 22%, rgba(139,92,246,.50) 0%, transparent 62%),
+          radial-gradient(900px 520px at 82% 18%, rgba(59,130,246,.28) 0%, transparent 62%),
+          radial-gradient(900px 520px at 78% 78%, rgba(236,72,153,.18) 0%, transparent 62%),
+          linear-gradient(135deg, rgba(139,92,246,.14) 0%, rgba(59,130,246,.10) 55%, transparent 100%),
+          rgba(255,255,255,.03);"
+      >
 
-    <div class="photofx-preview" aria-hidden="true">
-      <div class="photofx-preview__frame">
-      <video
-  class="photofx-preview-video"
-  src="https://media.aivo.tr/outputs/home/photofx/photofx-preview-1776362545055.mp4"
-  autoplay
-  muted
-  loop
-  playsinline
-  preload="auto">
-</video>
-      </div>
+        <div
+          class="photofx-preview"
+          aria-hidden="true"
+        >
+          <div class="photofx-preview__frame">
+            <video
+              class="photofx-preview-video"
+              src="https://media.aivo.tr/outputs/home/photofx/photofx-preview-1776362545055.mp4"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+            ></video>
+          </div>
 
-<div class="photofx-thumbs">
-  <div class="photofx-shot">
-    <div class="photofx-thumb" aria-hidden="true" style="background-image:url('https://media.aivo.tr/outputs/home/photofx/photofx-original-1776453144535.jpg');"></div>
-    <div class="photofx-shot-label">Orijinal</div>
-  </div>
+          <div class="photofx-thumbs">
 
-  <div class="photofx-shot">
-    <div class="photofx-thumb" aria-hidden="true" style="background-image:url('https://media.aivo.tr/outputs/home/photofx/photofx-glow-1776453146217.jpg');"></div>
-    <div class="photofx-shot-label">Glow</div>
-  </div>
+            <div class="photofx-shot">
+              <div
+                class="photofx-thumb"
+                aria-hidden="true"
+                style="background-image:url('https://media.aivo.tr/outputs/home/photofx/photofx-original-1776453144535.jpg');"
+              ></div>
 
-  <div class="photofx-shot">
-    <div class="photofx-thumb" aria-hidden="true" style="background-image:url('https://media.aivo.tr/outputs/home/photofx/photofx-shake-1776453221075.jpg');"></div>
-    <div class="photofx-shot-label">Shake</div>
-  </div>
-</div>
+              <div
+                class="photofx-shot-label"
+                data-i18n="index.photofx.original"
+              >
+                Orijinal
+              </div>
+            </div>
+
+            <div class="photofx-shot">
+              <div
+                class="photofx-thumb"
+                aria-hidden="true"
+                style="background-image:url('https://media.aivo.tr/outputs/home/photofx/photofx-glow-1776453146217.jpg');"
+              ></div>
+
+              <div
+                class="photofx-shot-label"
+                data-i18n="index.photofx.glow"
+              >
+                Glow
+              </div>
+            </div>
+
+            <div class="photofx-shot">
+              <div
+                class="photofx-thumb"
+                aria-hidden="true"
+                style="background-image:url('https://media.aivo.tr/outputs/home/photofx/photofx-shake-1776453221075.jpg');"
+              ></div>
+
+              <div
+                class="photofx-shot-label"
+                data-i18n="index.photofx.shake"
+              >
+                Shake
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="photofx-left">
+          <h3 data-i18n="index.photofx.cardTitle">
+            AI Foto Effect Clip Oluştur
+          </h3>
+
+          <div class="photofx-copy">
+            <p data-i18n="index.photofx.description">
+              Tek fotoğrafı premium görünen kısa video klibe dönüştür. Teaser, duyuru ve sosyal medya paylaşımlarında daha canlı, daha dikkat çekici görünüm al.
+            </p>
+          </div>
+
+          <ul class="photofx-bullets">
+            <li data-i18n="index.photofx.bullet1">
+              🎬 Tek fotoğraftan kısa, dinamik ve paylaşılabilir effect clip üret
+            </li>
+
+            <li data-i18n="index.photofx.bullet2">
+              ✨ Glow, shake, flash ve stil katmanlarıyla görseli güçlendir
+            </li>
+
+            <li data-i18n="index.photofx.bullet3">
+              🗣️ Tek fotoğrafı konuştur, dikkat çekici ve paylaşılabilir videoya dönüştür
+            </li>
+
+            <li data-i18n="index.photofx.bullet4">
+              📱 Reels, Shorts, teaser ve duyuru postları için hazır görünüm al
+            </li>
+
+            <li data-i18n="index.photofx.bullet5">
+              💬 Prompt komutuyla fotoğrafını konuştur, tek kareyi sahneye dönüştür
+            </li>
+          </ul>
+
+          <div
+            class="photofx-cta"
+            data-i18n="index.photofx.cta"
+          >
+            Foto Effect Clip Oluştur →
+          </div>
+        </div>
+
+      </a>
     </div>
 
-    <div class="photofx-left">
-      <h3>AI Foto Effect Clip Oluştur</h3>
+    <div class="photofx-bottom">
+      <strong data-i18n="index.photofx.bottomStrong">
+        Tek kareden güçlü etki.
+      </strong>
 
-      <div class="photofx-copy">
-        <p>
-          Tek fotoğrafı premium görünen kısa video klibe dönüştür.
-          Teaser, duyuru ve sosyal medya paylaşımlarında daha canlı, daha dikkat çekici görünüm al.
-        </p>
-      </div>
-
-     <ul class="photofx-bullets">
-  <li>🎬 Tek fotoğraftan kısa, dinamik ve paylaşılabilir effect clip üret</li>
-  <li>✨ Glow, shake, flash ve stil katmanlarıyla görseli güçlendir</li>
-  <li>🗣️ Tek fotoğrafı konuştur, dikkat çekici ve paylaşılabilir videoya dönüştür</li>
-  <li>📱 Reels, Shorts, teaser ve duyuru postları için hazır görünüm al</li>
-  <li>💬 Prompt komutuyla fotoğrafını konuştur, tek kareyi sahneye dönüştür</li>
-</ul>
-
-<div class="photofx-cta">
-  Foto Effect Clip Oluştur →
-</div>
+      <span data-i18n="index.photofx.bottomText">
+        İlk effect clip’ini kısa sürede oluştur.
+      </span>
     </div>
-  </a>
-</div>
 
-<div class="photofx-bottom">
-  <strong>Tek kareden güçlü etki.</strong> İlk effect clip’ini kısa sürede oluştur.
-</div>
   </div>
 </section>
 <!-- ================= /AI FOTO EFFECT CLIP ================= -->
 
 <!-- ================= AI DUDAK SENKRON VIDEO ================= -->
-<section id="lipsync-video" aria-label="AI Dudak Senkron Video">
+<section
+  id="lipsync-video"
+  aria-label="AI Dudak Senkron Video"
+  data-i18n-label="index.lipsync.sectionLabel"
+>
   <style>
     #lipsync-video{
       position:relative;
@@ -2808,27 +3831,46 @@
   </style>
 
   <div class="lipsync-wrap">
+
     <header class="lipsync-head">
-      <h2 class="lipsync-title">AI Dudak Senkron Video</h2>
-      <p class="lipsync-sub">
-        Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Karakterini konuştur,
-        sosyal medya ve tanıtım için hazır video üret.
+      <h2
+        class="lipsync-title"
+        data-i18n="index.lipsync.title"
+      >
+        AI Dudak Senkron Video
+      </h2>
+
+      <p
+        class="lipsync-sub"
+        data-i18n="index.lipsync.subtitle"
+      >
+        Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Karakterini konuştur, sosyal medya ve tanıtım için hazır video üret.
       </p>
     </header>
 
     <div class="lipsync-bar">
-      <strong>Fotoğraftan konuşan video.</strong>
-      Metin ya da ses dosyasıyla dudak senkron video üretimi
+      <strong data-i18n="index.lipsync.barStrong">
+        Fotoğraftan konuşan video.
+      </strong>
+
+      <span data-i18n="index.lipsync.barText">
+        Metin ya da ses dosyasıyla dudak senkron video üretimi
+      </span>
     </div>
 
-    <a class="lipsync-card"
-       href="/studio.v2.html#lipsync"
-       data-auth="required"
-       data-mod="lipsync-video">
+    <a
+      class="lipsync-card"
+      href="/studio.v2.html#lipsync"
+      data-auth="required"
+      data-mod="lipsync-video"
+    >
 
-      <div class="lipsync-preview" aria-hidden="true">
-              <div class="lipsync-stage">
-                  <video
+      <div
+        class="lipsync-preview"
+        aria-hidden="true"
+      >
+        <div class="lipsync-stage">
+          <video
             id="lipsyncPreviewVideo"
             class="lipsync-preview-video"
             src="https://media.aivo.tr/outputs/home/lipsync/aivo-lipsync-preview.mp4"
@@ -2836,54 +3878,183 @@
             muted
             loop
             playsinline
-            preload="auto">
-          </video>
+            preload="auto"
+          ></video>
 
-                  <button
+          <button
+            id="lipsyncSoundToggle"
             type="button"
             class="lipsync-sound-btn"
-            onclick="event.preventDefault(); event.stopPropagation(); const v=document.getElementById('lipsyncPreviewVideo'); if(v){ v.muted=!v.muted; if(!v.muted){ v.play(); this.textContent='🔊 Ses Açık'; } else { this.textContent='🔇 Sesi Aç'; } } return false;"
+            data-i18n="index.lipsync.soundOff"
           >
             🔇 Sesi Aç
           </button>
         </div>
 
         <div class="lipsync-tags">
-          <span class="lipsync-badge">🗣️ Konuşan Fotoğraf</span>
-          <span class="lipsync-badge">🎙️ Ses / Metin</span>
-          <span class="lipsync-badge">📱 Sosyal Medya</span>
+          <span
+            class="lipsync-badge"
+            data-i18n="index.lipsync.badgePhoto"
+          >
+            🗣️ Konuşan Fotoğraf
+          </span>
+
+          <span
+            class="lipsync-badge"
+            data-i18n="index.lipsync.badgeVoice"
+          >
+            🎙️ Ses / Metin
+          </span>
+
+          <span
+            class="lipsync-badge"
+            data-i18n="index.lipsync.badgeSocial"
+          >
+            📱 Sosyal Medya
+          </span>
         </div>
 
-        <div class="lipsync-cta">
+        <div
+          class="lipsync-cta"
+          data-i18n="index.lipsync.cta"
+        >
           Dudak Senkron Video Oluştur →
         </div>
       </div>
 
       <div class="lipsync-copy">
-        <h3>AI Dudak Senkron Video Oluştur</h3>
+        <h3 data-i18n="index.lipsync.cardTitle">
+          AI Dudak Senkron Video Oluştur
+        </h3>
 
-        <div class="lipsync-copybox">
-          Fotoğrafını konuştur, metin ya da sesle dudak senkron video üret.
-          Tanıtım, sosyal medya, karakter sunumu ve hızlı içerik akışları için hazır görünüm al.
+        <div
+          class="lipsync-copybox"
+          data-i18n="index.lipsync.description"
+        >
+          Fotoğrafını konuştur, metin ya da sesle dudak senkron video üret. Tanıtım, sosyal medya, karakter sunumu ve hızlı içerik akışları için hazır görünüm al.
         </div>
 
         <ul class="lipsync-bullets">
-          <li>🗣️ Fotoğrafını konuşan videoya dönüştür</li>
-            <li>🎤 Şarkını AI vocalist’e okut, görselini konuştur ve dudak senkron video üret</li>
-          <li>📱 Reels, Shorts, tanıtım ve sosyal medya içerikleri için hazır çıktı al</li>
-          <li>✨ Markan, karakterin veya içerik fikrin için dikkat çekici video oluştur</li>
-          <li>⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan</li>
+          <li data-i18n="index.lipsync.bullet1">
+            🗣️ Fotoğrafını konuşan videoya dönüştür
+          </li>
+
+          <li data-i18n="index.lipsync.bullet2">
+            🎤 Şarkını AI vocalist’e okut, görselini konuştur ve dudak senkron video üret
+          </li>
+
+          <li data-i18n="index.lipsync.bullet3">
+            📱 Reels, Shorts, tanıtım ve sosyal medya içerikleri için hazır çıktı al
+          </li>
+
+          <li data-i18n="index.lipsync.bullet4">
+            ✨ Markan, karakterin veya içerik fikrin için dikkat çekici video oluştur
+          </li>
+
+          <li data-i18n="index.lipsync.bullet5">
+            ⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan
+          </li>
         </ul>
       </div>
+
     </a>
 
     <div class="lipsync-bottom">
-      <strong>Fotoğraftan konuşan videoya.</strong> İlk dudak senkron videonu kısa sürede oluştur.
+      <strong data-i18n="index.lipsync.bottomStrong">
+        Fotoğraftan konuşan videoya.
+      </strong>
+
+      <span data-i18n="index.lipsync.bottomText">
+        İlk dudak senkron videonu kısa sürede oluştur.
+      </span>
     </div>
+
   </div>
 </section>
 <!-- ================= /AI DUDAK SENKRON VIDEO ================= -->
 
+<script>
+(function () {
+  "use strict";
+
+  if (window.__AIVO_LIPSYNC_SOUND_RUNNING__) return;
+  window.__AIVO_LIPSYNC_SOUND_RUNNING__ = true;
+
+  function translate(key, fallback) {
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
+
+    return fallback;
+  }
+
+  function bootLipsyncSound() {
+    var video = document.getElementById(
+      "lipsyncPreviewVideo"
+    );
+
+    var button = document.getElementById(
+      "lipsyncSoundToggle"
+    );
+
+    if (!video || !button) return;
+
+    function syncButtonText() {
+      button.textContent = video.muted
+        ? translate(
+            "index.lipsync.soundOff",
+            "🔇 Sesi Aç"
+          )
+        : translate(
+            "index.lipsync.soundOn",
+            "🔊 Ses Açık"
+          );
+    }
+
+    button.addEventListener(
+      "click",
+      function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        video.muted = !video.muted;
+
+        if (!video.muted) {
+          var playPromise = video.play();
+
+          if (
+            playPromise &&
+            typeof playPromise.catch === "function"
+          ) {
+            playPromise.catch(function () {});
+          }
+        }
+
+        syncButtonText();
+      }
+    );
+
+    document.addEventListener(
+      "aivo:language-change",
+      syncButtonText
+    );
+
+    syncButtonText();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      bootLipsyncSound,
+      { once: true }
+    );
+  } else {
+    bootLipsyncSound();
+  }
+})();
+</script>
 
 
 
@@ -2897,59 +4068,164 @@
 
 
 <!-- ================= MODÜLLER / CTA ================= -->
-<section class="aivo-modules" id="modules">
+<section
+  class="aivo-modules"
+  id="modules"
+  aria-label="AI Yaratıcılık Platformu"
+  data-i18n-label="index.modules.sectionLabel"
+>
   <div class="aivo-wrap">
 
     <div class="aivo-modules-head">
-      <div class="aivo-pill">AI Yaratıcılık Platformu</div>
-      <h2 class="aivo-modules-title">Yaratıcılık Yolculuğunuza Başlayın</h2>
-      <p class="aivo-modules-sub">
-        Yapay zeka ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin.
-        Fikrinizi saniyeler içinde üretime dönüştürün.
+      <div
+        class="aivo-pill"
+        data-i18n="index.modules.pill"
+      >
+        AI Yaratıcılık Platformu
+      </div>
+
+      <h2
+        class="aivo-modules-title"
+        data-i18n="index.modules.title"
+      >
+        Yaratıcılık Yolculuğunuza Başlayın
+      </h2>
+
+      <p
+        class="aivo-modules-sub"
+        data-i18n="index.modules.subtitle"
+      >
+        Yapay zekâ ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin. Fikrinizi saniyeler içinde üretime dönüştürün.
       </p>
     </div>
 
     <div class="aivo-modules-grid">
+
       <article class="aivo-module-card is-music">
         <div class="aivo-module-ico">♪</div>
-        <h3>Müzik Üret</h3>
-        <p>Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.</p>
+
+        <h3 data-i18n="index.modules.musicTitle">
+          Müzik Üret
+        </h3>
+
+        <p data-i18n="index.modules.musicDescription">
+          Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.
+        </p>
+
         <ul>
-          <li>Anında üretim</li>
-          <li>Profesyonel kalite hedefi</li>
-          <li>Türkçe odak</li>
+          <li data-i18n="index.modules.musicFeature1">
+            Anında üretim
+          </li>
+
+          <li data-i18n="index.modules.musicFeature2">
+            Profesyonel kalite hedefi
+          </li>
+
+          <li data-i18n="index.modules.musicFeature3">
+            Türkçe odak
+          </li>
         </ul>
-        <a class="aivo-module-btn" href="/studio.v2.html" data-auth="required" data-gate="studio">Müzik Üret →</a>
+
+        <a
+          class="aivo-module-btn"
+          href="/studio.v2.html"
+          data-auth="required"
+          data-gate="studio"
+          data-i18n="index.modules.musicCta"
+        >
+          Müzik Üret →
+        </a>
       </article>
 
       <article class="aivo-module-card is-art">
         <div class="aivo-module-ico">▦</div>
-        <h3>Kapak Üret</h3>
-        <p>Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.</p>
+
+        <h3 data-i18n="index.modules.coverTitle">
+          Kapak Üret
+        </h3>
+
+        <p data-i18n="index.modules.coverDescription">
+          Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.
+        </p>
+
         <ul>
-          <li>Yüksek çözünürlük</li>
-          <li>Stil kontrolü</li>
-          <li>Ticari kullanım hedefi</li>
+          <li data-i18n="index.modules.coverFeature1">
+            Yüksek çözünürlük
+          </li>
+
+          <li data-i18n="index.modules.coverFeature2">
+            Stil kontrolü
+          </li>
+
+          <li data-i18n="index.modules.coverFeature3">
+            Ticari kullanım hedefi
+          </li>
         </ul>
-        <a class="aivo-module-btn" href="/studio.v2.html" data-auth="required" data-gate="studio">Kapak Üret →</a>
+
+        <a
+          class="aivo-module-btn"
+          href="/studio.v2.html"
+          data-auth="required"
+          data-gate="studio"
+          data-i18n="index.modules.coverCta"
+        >
+          Kapak Üret →
+        </a>
       </article>
 
       <article class="aivo-module-card is-video">
         <div class="aivo-module-ico">▸</div>
-        <h3>Video Üret</h3>
-        <p>Metinden veya görselden, sosyal medyaya uygun video çıktıları.</p>
+
+        <h3 data-i18n="index.modules.videoTitle">
+          Video Üret
+        </h3>
+
+        <p data-i18n="index.modules.videoDescription">
+          Metinden veya görselden, sosyal medyaya uygun video çıktıları.
+        </p>
+
         <ul>
-          <li>HD çıktı hedefi</li>
-          <li>Hızlı render akışı</li>
-          <li>Kolay paylaşım</li>
+          <li data-i18n="index.modules.videoFeature1">
+            HD çıktı hedefi
+          </li>
+
+          <li data-i18n="index.modules.videoFeature2">
+            Hızlı render akışı
+          </li>
+
+          <li data-i18n="index.modules.videoFeature3">
+            Kolay paylaşım
+          </li>
         </ul>
-        <a class="aivo-module-btn" href="/studio.v2.html" data-auth="required" data-gate="studio">Video Üret →</a>
+
+        <a
+          class="aivo-module-btn"
+          href="/studio.v2.html"
+          data-auth="required"
+          data-gate="studio"
+          data-i18n="index.modules.videoCta"
+        >
+          Video Üret →
+        </a>
       </article>
+
     </div>
 
     <div class="aivo-modules-cta">
-     <span class="aivo-cta-note">Müzik, kapak ve video üretimine hemen başla</span>
-      <a class="aivo-cta-big" href="/studio.v2.html" data-auth="required" data-gate="studio">
+      <span
+        class="aivo-cta-note"
+        data-i18n="index.modules.ctaNote"
+      >
+        Müzik, kapak ve video üretimine hemen başla
+      </span>
+
+      <a
+        class="aivo-cta-big"
+        href="/studio.v2.html"
+        data-auth="required"
+        data-gate="studio"
+        data-i18n="index.modules.ctaButton"
+      >
         Hemen Başla – Tamamen Ücretsiz ✨
       </a>
     </div>
@@ -3556,78 +4832,232 @@
   }, true);
 })();
 </script>
-
-
-
-<!-- ================= HERO SWAP SCRIPT ================= -->
+<!-- ================= HERO I18N + SWAP + SOUND ================= -->
 <script>
-(() => {
-  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
-  window.__AIVO_HERO_SWAP_RUNNING__ = true;
+(function () {
+  "use strict";
 
-  const elWord = document.getElementById("heroSwap");
-  if (!elWord) return;
+  if (window.__AIVO_HERO_I18N_RUNNING__) return;
+  window.__AIVO_HERO_I18N_RUNNING__ = true;
 
-  const elSub = document.getElementById("heroSub");
-  const root = document.documentElement;
+  function tr(key, fallback) {
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
 
-  function hexToRgb(hex){
-    const h = (hex || "").replace("#","").trim();
-    if (h.length !== 6) return { r:255, g:255, b:255 };
-    return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+    return fallback;
   }
 
-  const THEMES = [
-    { key:"music",  word:"Müzik",  sub:"Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",              accent:"#6F63FF", grad1:"#7C6BFF", grad2:"#2FB7FF" },
-    { key:"video",  word:"Video",  sub:"Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",             accent:"#2FB7FF", grad1:"#2FB7FF", grad2:"#6F63FF" },
-    { key:"visual", word:"Görsel", sub:"Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.", accent:"#9B7CFF", grad1:"#9B7CFF", grad2:"#2FB7FF" },
-  ];
+  function bootHero() {
+    const elWord = document.getElementById("heroSwap");
+    const elSub = document.getElementById("heroSub");
+    const soundButton = document.getElementById("heroSoundToggle");
+    const demoVideo = document.getElementById("imageToVideoHeroDemo");
+    const root = document.documentElement;
 
-  let i = 0;
-  const HOLD_MS = 2600;
-  const FADE_MS = 260;
-  const IN_MS   = 300;
+    if (!elWord) return;
 
-  function applyTheme(t) {
-    root.dataset.hero = t.key;
-    root.style.setProperty("--heroAccent", t.accent);
-    root.style.setProperty("--heroGrad1", t.grad1);
-    root.style.setProperty("--heroGrad2", t.grad2);
+    function hexToRgb(hex) {
+      const h = String(hex || "")
+        .replace("#", "")
+        .trim();
 
-    const { r, g, b } = hexToRgb(t.accent);
-    root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
-
-    elWord.textContent = t.word;
-    if (elSub) elSub.textContent = t.sub;
-  }
-
-  function tick() {
-    elWord.classList.add("swap-out");
-    if (elSub) elSub.classList.add("swap-out");
-
-    setTimeout(() => {
-      i = (i + 1) % THEMES.length;
-      applyTheme(THEMES[i]);
-
-      elWord.classList.remove("swap-out");
-      elWord.classList.add("swap-in");
-
-      if (elSub) {
-        elSub.classList.remove("swap-out");
-        elSub.classList.add("swap-in");
+      if (h.length !== 6) {
+        return {
+          r: 255,
+          g: 255,
+          b: 255
+        };
       }
 
-      setTimeout(() => {
-        elWord.classList.remove("swap-in");
-        if (elSub) elSub.classList.remove("swap-in");
-        setTimeout(tick, HOLD_MS);
-      }, IN_MS);
+      return {
+        r: parseInt(h.slice(0, 2), 16),
+        g: parseInt(h.slice(2, 4), 16),
+        b: parseInt(h.slice(4, 6), 16)
+      };
+    }
 
-    }, FADE_MS);
+    const THEMES = [
+      {
+        key: "music",
+        wordKey: "index.heroSwap.music",
+        subKey: "index.heroSwap.musicSub",
+        fallbackWord: "Müzik",
+        fallbackSub:
+          "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
+        accent: "#6F63FF",
+        grad1: "#7C6BFF",
+        grad2: "#2FB7FF"
+      },
+      {
+        key: "video",
+        wordKey: "index.heroSwap.video",
+        subKey: "index.heroSwap.videoSub",
+        fallbackWord: "Video",
+        fallbackSub:
+          "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
+        accent: "#2FB7FF",
+        grad1: "#2FB7FF",
+        grad2: "#6F63FF"
+      },
+      {
+        key: "visual",
+        wordKey: "index.heroSwap.visual",
+        subKey: "index.heroSwap.visualSub",
+        fallbackWord: "Görsel",
+        fallbackSub:
+          "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
+        accent: "#9B7CFF",
+        grad1: "#9B7CFF",
+        grad2: "#2FB7FF"
+      }
+    ];
+
+    let index = 0;
+
+    const HOLD_MS = 2600;
+    const FADE_MS = 260;
+    const IN_MS = 300;
+
+    function applyTheme(theme) {
+      root.dataset.hero = theme.key;
+
+      root.style.setProperty(
+        "--heroAccent",
+        theme.accent
+      );
+
+      root.style.setProperty(
+        "--heroGrad1",
+        theme.grad1
+      );
+
+      root.style.setProperty(
+        "--heroGrad2",
+        theme.grad2
+      );
+
+      const rgb = hexToRgb(theme.accent);
+
+      root.style.setProperty(
+        "--heroSubColor",
+        "rgba(" +
+          rgb.r +
+          "," +
+          rgb.g +
+          "," +
+          rgb.b +
+          ",0.55)"
+      );
+
+      elWord.textContent = tr(
+        theme.wordKey,
+        theme.fallbackWord
+      );
+
+      if (elSub) {
+        elSub.textContent = tr(
+          theme.subKey,
+          theme.fallbackSub
+        );
+      }
+    }
+
+    function syncSoundButton() {
+      if (!soundButton || !demoVideo) return;
+
+      soundButton.textContent = demoVideo.muted
+        ? tr(
+            "index.demo.soundOpen",
+            "🔊 Sesi Aç"
+          )
+        : tr(
+            "index.demo.soundOn",
+            "🔊 Ses Açık"
+          );
+    }
+
+    function tick() {
+      elWord.classList.add("swap-out");
+
+      if (elSub) {
+        elSub.classList.add("swap-out");
+      }
+
+      setTimeout(function () {
+        index = (index + 1) % THEMES.length;
+
+        applyTheme(THEMES[index]);
+
+        elWord.classList.remove("swap-out");
+        elWord.classList.add("swap-in");
+
+        if (elSub) {
+          elSub.classList.remove("swap-out");
+          elSub.classList.add("swap-in");
+        }
+
+        setTimeout(function () {
+          elWord.classList.remove("swap-in");
+
+          if (elSub) {
+            elSub.classList.remove("swap-in");
+          }
+
+          setTimeout(tick, HOLD_MS);
+        }, IN_MS);
+      }, FADE_MS);
+    }
+
+    if (soundButton && demoVideo) {
+      soundButton.addEventListener(
+        "click",
+        function () {
+          demoVideo.muted = !demoVideo.muted;
+
+          if (!demoVideo.muted) {
+            demoVideo.currentTime = 0;
+
+            const playPromise = demoVideo.play();
+
+            if (
+              playPromise &&
+              typeof playPromise.catch === "function"
+            ) {
+              playPromise.catch(function () {});
+            }
+          }
+
+          syncSoundButton();
+        }
+      );
+    }
+
+    document.addEventListener(
+      "aivo:language-change",
+      function () {
+        applyTheme(THEMES[index]);
+        syncSoundButton();
+      }
+    );
+
+    applyTheme(THEMES[index]);
+    syncSoundButton();
+
+    setTimeout(tick, HOLD_MS);
   }
 
-  applyTheme(THEMES[i]);
-  setTimeout(tick, HOLD_MS);
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      bootHero,
+      { once: true }
+    );
+  } else {
+    bootHero();
+  }
 })();
 </script>
 

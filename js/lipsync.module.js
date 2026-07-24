@@ -30,7 +30,11 @@ function normalizeLipsyncPolicyText(value) {
 
 function hasLipsyncBadLanguage(value) {
   const text = normalizeLipsyncPolicyText(value);
+  if (!text) return false;
 
+  // Yalnızca tam kelime veya tam ifade eşleşmesi yapılır.
+  // Böylece "şikayet", "malzeme" ve "toplantı" gibi normal kelimeler
+  // içlerindeki kısa harf dizileri yüzünden yanlışlıkla engellenmez.
   const blockedTerms = [
     "amk",
     "aq",
@@ -50,23 +54,16 @@ function hasLipsyncBadLanguage(value) {
     "tasak",
     "tassak",
     "ibne",
-    "top",
-    "puşt",
     "pust",
     "kahpe",
     "kaltak",
     "aptal",
     "salak",
     "gerizekali",
-    "mal",
     "ezik",
     "asagilik",
-    "aşağılık",
-    "nefret",
     "geber",
-    "ol geber",
     "oldur",
-    "öldür",
     "katlet",
     "yok et"
   ];
@@ -78,14 +75,12 @@ function hasLipsyncBadLanguage(value) {
     const pattern = safeTerm
       .split(/\s+/)
       .filter(Boolean)
-      .map((part) => `${part}[a-z0-9]*`)
       .join("\\s+");
 
     const rx = new RegExp(`(^|\\s)${pattern}(?=\\s|$)`, "i");
     return rx.test(text);
   });
 }
-
 function getLipsyncAudioMeta(file) {
   return new Promise((resolve) => {
     if (!file) {
