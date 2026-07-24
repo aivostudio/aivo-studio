@@ -398,11 +398,87 @@
       "index.lipsync.bullet5":
         "⚡ Kredi ve süre hesabıyla kontrollü üretim akışı kullan",
 
-      "index.lipsync.bottomStrong":
+          "index.lipsync.bottomStrong":
         "Fotoğraftan konuşan videoya.",
 
       "index.lipsync.bottomText":
         "İlk dudak senkron videonu kısa sürede oluştur.",
+
+      /* =========================
+         INDEX / MODULES
+         ========================= */
+
+      "index.modules.sectionLabel":
+        "AI Yaratıcılık Platformu",
+
+      "index.modules.pill":
+        "AI Yaratıcılık Platformu",
+
+      "index.modules.title":
+        "Yaratıcılık Yolculuğunuza Başlayın",
+
+      "index.modules.subtitle":
+        "Yapay zekâ ile müzik, kapak ve video üretmenin sınırsız dünyasını keşfedin. Fikrinizi saniyeler içinde üretime dönüştürün.",
+
+      "index.modules.musicTitle":
+        "Müzik Üret",
+
+      "index.modules.musicDescription":
+        "Tarzı seç, prompt yaz, üret ve varyasyonlarla zenginleştir.",
+
+      "index.modules.musicFeature1":
+        "Anında üretim",
+
+      "index.modules.musicFeature2":
+        "Profesyonel kalite hedefi",
+
+      "index.modules.musicFeature3":
+        "Türkçe odak",
+
+      "index.modules.musicCta":
+        "Müzik Üret →",
+
+      "index.modules.coverTitle":
+        "Kapak Üret",
+
+      "index.modules.coverDescription":
+        "Albüm kapağı, afiş ve görsel içerikler için tek tıkla üretim.",
+
+      "index.modules.coverFeature1":
+        "Yüksek çözünürlük",
+
+      "index.modules.coverFeature2":
+        "Stil kontrolü",
+
+      "index.modules.coverFeature3":
+        "Ticari kullanım hedefi",
+
+      "index.modules.coverCta":
+        "Kapak Üret →",
+
+      "index.modules.videoTitle":
+        "Video Üret",
+
+      "index.modules.videoDescription":
+        "Metinden veya görselden, sosyal medyaya uygun video çıktıları.",
+
+      "index.modules.videoFeature1":
+        "HD çıktı hedefi",
+
+      "index.modules.videoFeature2":
+        "Hızlı render akışı",
+
+      "index.modules.videoFeature3":
+        "Kolay paylaşım",
+
+      "index.modules.videoCta":
+        "Video Üret →",
+
+      "index.modules.ctaNote":
+        "Müzik, kapak ve video üretimine hemen başla",
+
+      "index.modules.ctaButton":
+        "Hemen Başla – Tamamen Ücretsiz ✨",
 
       /* =========================
          COOKIE BANNER
@@ -922,11 +998,87 @@
       "index.lipsync.bullet5":
         "⚡ Use a controlled production flow with clear credit and duration calculations",
 
-      "index.lipsync.bottomStrong":
+          "index.lipsync.bottomStrong":
         "From a photo to a talking video.",
 
       "index.lipsync.bottomText":
         "Create your first lip-sync video in minutes.",
+
+      /* =========================
+         INDEX / MODULES
+         ========================= */
+
+      "index.modules.sectionLabel":
+        "AI Creativity Platform",
+
+      "index.modules.pill":
+        "AI Creativity Platform",
+
+      "index.modules.title":
+        "Start Your Creative Journey",
+
+      "index.modules.subtitle":
+        "Explore the limitless world of AI-powered music, cover art and video creation. Turn your idea into content in seconds.",
+
+      "index.modules.musicTitle":
+        "Create Music",
+
+      "index.modules.musicDescription":
+        "Choose your style, enter a prompt, create and enrich it with variations.",
+
+      "index.modules.musicFeature1":
+        "Instant creation",
+
+      "index.modules.musicFeature2":
+        "Professional-quality results",
+
+      "index.modules.musicFeature3":
+        "Turkish-language focus",
+
+      "index.modules.musicCta":
+        "Create Music →",
+
+      "index.modules.coverTitle":
+        "Create Cover Art",
+
+      "index.modules.coverDescription":
+        "Create album covers, posters and visual content with one click.",
+
+      "index.modules.coverFeature1":
+        "High resolution",
+
+      "index.modules.coverFeature2":
+        "Style control",
+
+      "index.modules.coverFeature3":
+        "Built for commercial use",
+
+      "index.modules.coverCta":
+        "Create Cover Art →",
+
+      "index.modules.videoTitle":
+        "Create Video",
+
+      "index.modules.videoDescription":
+        "Create social-media-ready videos from text or images.",
+
+      "index.modules.videoFeature1":
+        "HD output",
+
+      "index.modules.videoFeature2":
+        "Fast rendering workflow",
+
+      "index.modules.videoFeature3":
+        "Easy sharing",
+
+      "index.modules.videoCta":
+        "Create Video →",
+
+      "index.modules.ctaNote":
+        "Start creating music, cover art and videos now",
+
+      "index.modules.ctaButton":
+        "Start Now – Completely Free ✨",
 
       /* =========================
          COOKIE BANNER
