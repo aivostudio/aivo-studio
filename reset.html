@@ -2,130 +2,857 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AIVO — Şifre Sıfırla</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  />
+
+  <title data-i18n="reset.seoTitle">
+    AIVO — Şifre Sıfırla
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="/toast.css?v=1"
+  >
+
   <style>
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0f1a;color:#e9eefc}
-    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-    .card{width:100%;max-width:520px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px;backdrop-filter:blur(10px)}
-    h1{margin:0 0 8px;font-size:22px}
-    p{margin:0 0 16px;opacity:.85;line-height:1.5}
-    label{display:block;margin:12px 0 6px;font-size:13px;opacity:.9}
-    input{width:100%;box-sizing:border-box;padding:12px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.22);color:#fff;outline:none}
-    button{margin-top:14px;width:100%;padding:12px 14px;border:0;border-radius:12px;background:#22c55e;color:#0b0f1a;font-weight:800;cursor:pointer}
-    button[disabled]{opacity:.55;cursor:not-allowed}
-    .small{font-size:12px;opacity:.8;margin-top:10px}
-    .row{display:flex;justify-content:space-between;gap:12px;margin-top:14px}
-    .link{color:#93c5fd;text-decoration:none;font-size:13px;opacity:.95}
-    .bad{border-color:rgba(239,68,68,.35)}
+    *{
+      box-sizing:border-box;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+      background:
+        radial-gradient(
+          720px 480px at 15% 80%,
+          rgba(236,72,153,.10),
+          transparent 65%
+        ),
+        radial-gradient(
+          760px 500px at 88% 20%,
+          rgba(37,99,235,.14),
+          transparent 65%
+        ),
+        #070a16;
+      color:#e9eefc;
+    }
+
+    .language-wrap{
+      position:fixed;
+      top:22px;
+      right:22px;
+      z-index:10;
+    }
+
+    .language-switch{
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:3px;
+      border:1px solid rgba(160,120,255,.34);
+      border-radius:999px;
+      background:rgba(10,14,26,.68);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:
+        0 10px 28px rgba(0,0,0,.24),
+        inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    .language-button{
+      min-width:38px;
+      height:32px;
+      padding:0 10px;
+      border:1px solid transparent;
+      border-radius:999px;
+      background:transparent;
+      color:rgba(255,255,255,.66);
+      font:inherit;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .language-button:hover{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+    }
+
+    .language-button.is-active{
+      color:#fff;
+      border-color:rgba(170,135,255,.55);
+      background:linear-gradient(
+        135deg,
+        rgba(124,58,237,.62),
+        rgba(59,130,246,.42)
+      );
+      box-shadow:
+        0 6px 18px rgba(99,102,241,.20),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:86px 24px 32px;
+    }
+
+    .card{
+      position:relative;
+      width:100%;
+      max-width:520px;
+      padding:28px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:24px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(34,30,70,.82),
+          rgba(10,14,31,.92)
+        );
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:
+        0 30px 80px rgba(0,0,0,.42),
+        inset 0 1px 0 rgba(255,255,255,.06);
+    }
+
+    .brand{
+      margin-bottom:24px;
+      color:#fff;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.4px;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:30px;
+      line-height:1.1;
+    }
+
+    .description{
+      margin:0 0 18px;
+      color:rgba(233,238,252,.76);
+      line-height:1.55;
+    }
+
+    .token-info{
+      margin:0 0 18px;
+      padding:11px 13px;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      background:rgba(255,255,255,.045);
+      color:rgba(233,238,252,.72);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .token-info.is-invalid{
+      border-color:rgba(239,68,68,.28);
+      background:rgba(239,68,68,.07);
+      color:#fecaca;
+    }
+
+    label{
+      display:block;
+      margin:14px 0 8px;
+      font-size:14px;
+      font-weight:750;
+    }
+
+    .password-field{
+      position:relative;
+    }
+
+    input{
+      width:100%;
+      padding:14px 50px 14px 15px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;
+      outline:none;
+      background:rgba(0,0,0,.24);
+      color:#fff;
+      font:inherit;
+    }
+
+    input:focus{
+      border-color:rgba(129,140,248,.78);
+      box-shadow:0 0 0 3px rgba(99,102,241,.15);
+    }
+
+    input.bad{
+      border-color:rgba(239,68,68,.72);
+      box-shadow:0 0 0 3px rgba(239,68,68,.10);
+    }
+
+    .password-toggle{
+      position:absolute;
+      top:50%;
+      right:10px;
+      width:36px;
+      height:36px;
+      padding:0;
+      border:0;
+      border-radius:10px;
+      transform:translateY(-50%);
+      background:transparent;
+      color:#fff;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    .password-toggle:hover{
+      background:rgba(255,255,255,.07);
+    }
+
+    .submit-button{
+      width:100%;
+      margin-top:18px;
+      padding:14px 16px;
+      border:0;
+      border-radius:14px;
+      background:linear-gradient(
+        135deg,
+        #8b5cf6,
+        #3b82f6
+      );
+      color:#fff;
+      font:inherit;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(79,70,229,.24);
+    }
+
+    .submit-button[disabled]{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .link{
+      color:#a5b4fc;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .link:hover{
+      color:#fff;
+    }
+
+    @media (max-width:600px){
+      .language-wrap{
+        top:14px;
+        right:14px;
+      }
+
+      .wrap{
+        padding:74px 14px 24px;
+      }
+
+      .card{
+        padding:22px;
+        border-radius:20px;
+      }
+
+      h1{
+        font-size:26px;
+      }
+
+      .row{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+    }
   </style>
 
-  <!-- TOAST CSS -->
-  <link rel="stylesheet" href="/toast.css?v=1">
+  <script
+    src="/js/desktop.i18n.js?v=5"
+    defer
+  ></script>
+
+  <script
+    src="/toast.manager.js?v=2"
+    defer
+  ></script>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Şifreyi Sıfırla</h1>
-      <p>Yeni şifreni belirle. Link süresi dolduysa tekrar sıfırlama isteği oluştur.</p>
 
-      <div id="tokenInfo" class="small"></div>
+  <div class="language-wrap">
+    <div
+      class="language-switch"
+      role="group"
+      aria-label="Dil seçimi"
+      data-i18n-label="reset.languageLabel"
+    >
+      <button
+        type="button"
+        class="language-button"
+        data-aivo-language="tr"
+        aria-pressed="false"
+      >
+        TR
+      </button>
 
-      <label for="pw1">Yeni Şifre</label>
-      <input id="pw1" type="password" placeholder="En az 8 karakter" autocomplete="new-password"/>
-
-      <label for="pw2">Yeni Şifre (Tekrar)</label>
-      <input id="pw2" type="password" placeholder="Tekrar" autocomplete="new-password"/>
-
-      <button id="btn" type="button">Şifreyi Güncelle</button>
-
-      <div class="row">
-        <a class="link" href="/forgot.html">Tekrar sıfırlama iste</a>
-        <a class="link" href="/login.html">Giriş</a>
-      </div>
+      <button
+        type="button"
+        class="language-button"
+        data-aivo-language="en"
+        aria-pressed="false"
+      >
+        EN
+      </button>
     </div>
   </div>
 
-  <!-- TOAST MANAGER -->
-  <script src="/toast.manager.js?v=1"></script>
+  <main class="wrap">
+    <section class="card">
+
+      <div class="brand">
+        AIVO Studio
+      </div>
+
+      <h1 data-i18n="reset.title">
+        Şifreyi Sıfırla
+      </h1>
+
+      <p
+        class="description"
+        data-i18n="reset.description"
+      >
+        Yeni şifreni belirle. Bağlantının süresi dolduysa tekrar şifre sıfırlama isteği oluştur.
+      </p>
+
+      <div
+        id="tokenInfo"
+        class="token-info"
+        aria-live="polite"
+      ></div>
+
+      <label
+        for="pw1"
+        data-i18n="reset.newPasswordLabel"
+      >
+        Yeni Şifre
+      </label>
+
+      <div class="password-field">
+        <input
+          id="pw1"
+          type="password"
+          placeholder="En az 8 karakter"
+          data-i18n-placeholder="reset.newPasswordPlaceholder"
+          autocomplete="new-password"
+        >
+
+        <button
+          type="button"
+          class="password-toggle"
+          data-toggle-password="pw1"
+          aria-label="Şifreyi göster"
+          data-i18n-label="auth.showPassword"
+        >
+          👁
+        </button>
+      </div>
+
+      <label
+        for="pw2"
+        data-i18n="reset.repeatPasswordLabel"
+      >
+        Yeni Şifre Tekrar
+      </label>
+
+      <div class="password-field">
+        <input
+          id="pw2"
+          type="password"
+          placeholder="Yeni şifreni tekrar gir"
+          data-i18n-placeholder="reset.repeatPasswordPlaceholder"
+          autocomplete="new-password"
+        >
+
+        <button
+          type="button"
+          class="password-toggle"
+          data-toggle-password="pw2"
+          aria-label="Şifreyi göster"
+          data-i18n-label="auth.showPassword"
+        >
+          👁
+        </button>
+      </div>
+
+      <button
+        id="btn"
+        class="submit-button"
+        type="button"
+        data-i18n="reset.updateButton"
+      >
+        Şifreyi Güncelle
+      </button>
+
+      <div class="row">
+        <a
+          class="link"
+          href="/forgot.html"
+          data-i18n="reset.requestAgain"
+        >
+          Tekrar sıfırlama iste
+        </a>
+
+        <a
+          class="link"
+          href="/login.html"
+          data-i18n="reset.login"
+        >
+          Giriş Yap
+        </a>
+      </div>
+
+    </section>
+  </main>
 
   <script>
-    const params = new URLSearchParams(location.search);
-    const token = (params.get("token") || "").trim();
+    (function () {
+      "use strict";
 
-    const tokenInfo = document.getElementById("tokenInfo");
-    const pw1 = document.getElementById("pw1");
-    const pw2 = document.getElementById("pw2");
-    const btn = document.getElementById("btn");
-
-    function markBad(el, bad) {
-      if (bad) el.classList.add("bad");
-      else el.classList.remove("bad");
-    }
-
-    if (!token) {
-      tokenInfo.textContent = "Token bulunamadı. Link geçersiz.";
-      btn.disabled = true;
-    } else {
-      tokenInfo.textContent = "Token alındı. (Güvenlik için gösterilmez)";
-    }
-
-    btn.addEventListener("click", async () => {
-      markBad(pw1, false);
-      markBad(pw2, false);
-
-      const p1 = (pw1.value || "");
-      const p2 = (pw2.value || "");
-
-      if (!token) {
-        toast.error("Geçersiz bağlantı", "Lütfen tekrar sıfırlama isteği oluştur.");
-        return;
-      }
-      if (p1.length < 8) {
-        markBad(pw1, true);
-        toast.error("Zayıf şifre", "Şifre en az 8 karakter olmalı.");
-        return;
-      }
-      if (p1 !== p2) {
-        markBad(pw2, true);
-        toast.error("Şifre uyuşmazlığı", "Girdiğin şifreler eşleşmiyor.");
-        return;
-      }
-
-      btn.disabled = true;
-
-      try {
-        const r = await fetch("/api/auth/reset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, password: p1 })
-        });
-
-        const data = await r.json().catch(() => ({}));
-
-        if (data && data.ok === true) {
-          toast.success(
-            "Şifre güncellendi",
-            "Giriş ekranına yönlendiriliyorsun."
+      function bootResetPage() {
+        const params =
+          new URLSearchParams(
+            window.location.search
           );
-          setTimeout(() => { location.href = "/login.html"; }, 900);
-        } else {
-          const reason = (data && data.reason) || "unknown";
-          if (reason === "expired")
-            toast.warning("Bağlantı süresi dolmuş", "Lütfen yeniden sıfırlama iste.");
-          else if (reason === "invalid")
-            toast.error("Geçersiz bağlantı", "Lütfen yeniden sıfırlama iste.");
-          else if (reason === "used")
-            toast.warning("Link kullanılmış", "Lütfen yeniden sıfırlama iste.");
-          else
-            toast.error("İşlem başarısız", "Lütfen tekrar dene.");
+
+        const token =
+          String(
+            params.get("token") || ""
+          ).trim();
+
+        const tokenInfo =
+          document.getElementById(
+            "tokenInfo"
+          );
+
+        const pw1 =
+          document.getElementById("pw1");
+
+        const pw2 =
+          document.getElementById("pw2");
+
+        const btn =
+          document.getElementById("btn");
+
+        const passwordToggles =
+          document.querySelectorAll(
+            "[data-toggle-password]"
+          );
+
+        let isBusy = false;
+
+        function text(key, fallback) {
+          try {
+            if (
+              typeof window.t ===
+              "function"
+            ) {
+              return window.t(key);
+            }
+          } catch (_) {}
+
+          return fallback;
         }
-      } catch (e) {
-        toast.error("Bağlantı hatası", "Lütfen tekrar dene.");
-      } finally {
-        btn.disabled = false;
+
+        function markBad(element, bad) {
+          if (!element) return;
+
+          element.classList.toggle(
+            "bad",
+            Boolean(bad)
+          );
+        }
+
+        function syncTokenInfo() {
+          if (!tokenInfo) return;
+
+          if (!token) {
+            tokenInfo.textContent =
+              text(
+                "reset.tokenMissing",
+                "Token bulunamadı. Bağlantı geçersiz."
+              );
+
+            tokenInfo.classList.add(
+              "is-invalid"
+            );
+
+            btn.disabled = true;
+
+            return;
+          }
+
+          tokenInfo.textContent =
+            text(
+              "reset.tokenReceived",
+              "Güvenli şifre sıfırlama bağlantısı doğrulandı."
+            );
+
+          tokenInfo.classList.remove(
+            "is-invalid"
+          );
+
+          if (!isBusy) {
+            btn.disabled = false;
+          }
+        }
+
+        function syncButtonText() {
+          if (!btn) return;
+
+          btn.textContent =
+            isBusy
+              ? text(
+                  "reset.processing",
+                  "Güncelleniyor..."
+                )
+              : text(
+                  "reset.updateButton",
+                  "Şifreyi Güncelle"
+                );
+        }
+
+        function syncPasswordToggles() {
+          passwordToggles.forEach(
+            function (toggle) {
+              const inputId =
+                toggle.getAttribute(
+                  "data-toggle-password"
+                );
+
+              const input =
+                document.getElementById(
+                  inputId
+                );
+
+              if (!input) return;
+
+              const isVisible =
+                input.type === "text";
+
+              toggle.textContent =
+                isVisible ? "🙈" : "👁";
+
+              toggle.setAttribute(
+                "aria-label",
+                isVisible
+                  ? text(
+                      "auth.hidePassword",
+                      "Şifreyi gizle"
+                    )
+                  : text(
+                      "auth.showPassword",
+                      "Şifreyi göster"
+                    )
+              );
+            }
+          );
+        }
+
+        passwordToggles.forEach(
+          function (toggle) {
+            toggle.addEventListener(
+              "click",
+              function () {
+                const inputId =
+                  toggle.getAttribute(
+                    "data-toggle-password"
+                  );
+
+                const input =
+                  document.getElementById(
+                    inputId
+                  );
+
+                if (!input) return;
+
+                input.type =
+                  input.type === "password"
+                    ? "text"
+                    : "password";
+
+                syncPasswordToggles();
+              }
+            );
+          }
+        );
+
+        btn.addEventListener(
+          "click",
+          async function () {
+            markBad(pw1, false);
+            markBad(pw2, false);
+
+            const password1 =
+              String(pw1.value || "");
+
+            const password2 =
+              String(pw2.value || "");
+
+            if (!token) {
+              window.toast.error(
+                text(
+                  "reset.toast.invalidLinkTitle",
+                  "Geçersiz bağlantı"
+                ),
+                text(
+                  "reset.toast.invalidLinkMessage",
+                  "Lütfen yeniden şifre sıfırlama isteği oluştur."
+                )
+              );
+
+              return;
+            }
+
+            if (password1.length < 8) {
+              markBad(pw1, true);
+
+              window.toast.error(
+                text(
+                  "reset.toast.weakPasswordTitle",
+                  "Zayıf şifre"
+                ),
+                text(
+                  "reset.toast.weakPasswordMessage",
+                  "Şifre en az 8 karakter olmalı."
+                )
+              );
+
+              return;
+            }
+
+            if (password1 !== password2) {
+              markBad(pw2, true);
+
+              window.toast.error(
+                text(
+                  "reset.toast.passwordMismatchTitle",
+                  "Şifre uyuşmazlığı"
+                ),
+                text(
+                  "reset.toast.passwordMismatchMessage",
+                  "Girdiğin şifreler eşleşmiyor."
+                )
+              );
+
+              return;
+            }
+
+            isBusy = true;
+            btn.disabled = true;
+            syncButtonText();
+
+            try {
+              const response =
+                await fetch(
+                  "/api/auth/reset",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type":
+                        "application/json"
+                    },
+                    body: JSON.stringify({
+                      token: token,
+                      password: password1
+                    })
+                  }
+                );
+
+              const data =
+                await response
+                  .json()
+                  .catch(function () {
+                    return {};
+                  });
+
+              if (
+                data &&
+                data.ok === true
+              ) {
+                window.toast.success(
+                  text(
+                    "reset.toast.successTitle",
+                    "Şifre güncellendi"
+                  ),
+                  text(
+                    "reset.toast.successMessage",
+                    "Giriş ekranına yönlendiriliyorsun."
+                  )
+                );
+
+                window.setTimeout(
+                  function () {
+                    window.location.href =
+                      "/login.html";
+                  },
+                  900
+                );
+
+                return;
+              }
+
+              const reason =
+                String(
+                  data &&
+                  data.reason
+                    ? data.reason
+                    : "unknown"
+                );
+
+              if (reason === "expired") {
+                window.toast.warning(
+                  text(
+                    "reset.toast.expiredTitle",
+                    "Bağlantının süresi dolmuş"
+                  ),
+                  text(
+                    "reset.toast.expiredMessage",
+                    "Lütfen yeniden şifre sıfırlama isteği oluştur."
+                  )
+                );
+              } else if (
+                reason === "invalid"
+              ) {
+                window.toast.error(
+                  text(
+                    "reset.toast.invalidLinkTitle",
+                    "Geçersiz bağlantı"
+                  ),
+                  text(
+                    "reset.toast.invalidLinkMessage",
+                    "Lütfen yeniden şifre sıfırlama isteği oluştur."
+                  )
+                );
+              } else if (
+                reason === "used"
+              ) {
+                window.toast.warning(
+                  text(
+                    "reset.toast.usedTitle",
+                    "Bağlantı daha önce kullanılmış"
+                  ),
+                  text(
+                    "reset.toast.usedMessage",
+                    "Lütfen yeniden şifre sıfırlama isteği oluştur."
+                  )
+                );
+              } else {
+                window.toast.error(
+                  text(
+                    "reset.toast.failedTitle",
+                    "İşlem başarısız"
+                  ),
+                  text(
+                    "reset.toast.failedMessage",
+                    "Lütfen tekrar dene."
+                  )
+                );
+              }
+            } catch (error) {
+              console.error(
+                "AIVO_RESET_PASSWORD_ERROR:",
+                error
+              );
+
+              window.toast.error(
+                text(
+                  "reset.toast.connectionTitle",
+                  "Bağlantı hatası"
+                ),
+                text(
+                  "reset.toast.connectionMessage",
+                  "Lütfen tekrar dene."
+                )
+              );
+            } finally {
+              isBusy = false;
+
+              if (token) {
+                btn.disabled = false;
+              }
+
+              syncButtonText();
+            }
+          }
+        );
+
+        function submitWithEnter(event) {
+          if (event.key !== "Enter") {
+            return;
+          }
+
+          event.preventDefault();
+          btn.click();
+        }
+
+        pw1.addEventListener(
+          "keydown",
+          submitWithEnter
+        );
+
+        pw2.addEventListener(
+          "keydown",
+          submitWithEnter
+        );
+
+        document.addEventListener(
+          "aivo:language-change",
+          function () {
+            syncTokenInfo();
+            syncButtonText();
+            syncPasswordToggles();
+          }
+        );
+
+        syncTokenInfo();
+        syncButtonText();
+        syncPasswordToggles();
       }
-    });
+
+      if (
+        document.readyState ===
+        "loading"
+      ) {
+        document.addEventListener(
+          "DOMContentLoaded",
+          bootResetPage,
+          { once: true }
+        );
+      } else {
+        bootResetPage();
+      }
+    })();
   </script>
+
 </body>
 </html>
