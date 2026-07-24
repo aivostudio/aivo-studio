@@ -4146,78 +4146,232 @@
   }, true);
 })();
 </script>
-
-
-
-<!-- ================= HERO SWAP SCRIPT ================= -->
+<!-- ================= HERO I18N + SWAP + SOUND ================= -->
 <script>
-(() => {
-  if (window.__AIVO_HERO_SWAP_RUNNING__) return;
-  window.__AIVO_HERO_SWAP_RUNNING__ = true;
+(function () {
+  "use strict";
 
-  const elWord = document.getElementById("heroSwap");
-  if (!elWord) return;
+  if (window.__AIVO_HERO_I18N_RUNNING__) return;
+  window.__AIVO_HERO_I18N_RUNNING__ = true;
 
-  const elSub = document.getElementById("heroSub");
-  const root = document.documentElement;
+  function tr(key, fallback) {
+    try {
+      if (typeof window.t === "function") {
+        return window.t(key);
+      }
+    } catch (_) {}
 
-  function hexToRgb(hex){
-    const h = (hex || "").replace("#","").trim();
-    if (h.length !== 6) return { r:255, g:255, b:255 };
-    return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+    return fallback;
   }
 
-  const THEMES = [
-    { key:"music",  word:"Müzik",  sub:"Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",              accent:"#6F63FF", grad1:"#7C6BFF", grad2:"#2FB7FF" },
-    { key:"video",  word:"Video",  sub:"Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",             accent:"#2FB7FF", grad1:"#2FB7FF", grad2:"#6F63FF" },
-    { key:"visual", word:"Görsel", sub:"Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.", accent:"#9B7CFF", grad1:"#9B7CFF", grad2:"#2FB7FF" },
-  ];
+  function bootHero() {
+    const elWord = document.getElementById("heroSwap");
+    const elSub = document.getElementById("heroSub");
+    const soundButton = document.getElementById("heroSoundToggle");
+    const demoVideo = document.getElementById("imageToVideoHeroDemo");
+    const root = document.documentElement;
 
-  let i = 0;
-  const HOLD_MS = 2600;
-  const FADE_MS = 260;
-  const IN_MS   = 300;
+    if (!elWord) return;
 
-  function applyTheme(t) {
-    root.dataset.hero = t.key;
-    root.style.setProperty("--heroAccent", t.accent);
-    root.style.setProperty("--heroGrad1", t.grad1);
-    root.style.setProperty("--heroGrad2", t.grad2);
+    function hexToRgb(hex) {
+      const h = String(hex || "")
+        .replace("#", "")
+        .trim();
 
-    const { r, g, b } = hexToRgb(t.accent);
-    root.style.setProperty("--heroSubColor", `rgba(${r},${g},${b},0.55)`);
-
-    elWord.textContent = t.word;
-    if (elSub) elSub.textContent = t.sub;
-  }
-
-  function tick() {
-    elWord.classList.add("swap-out");
-    if (elSub) elSub.classList.add("swap-out");
-
-    setTimeout(() => {
-      i = (i + 1) % THEMES.length;
-      applyTheme(THEMES[i]);
-
-      elWord.classList.remove("swap-out");
-      elWord.classList.add("swap-in");
-
-      if (elSub) {
-        elSub.classList.remove("swap-out");
-        elSub.classList.add("swap-in");
+      if (h.length !== 6) {
+        return {
+          r: 255,
+          g: 255,
+          b: 255
+        };
       }
 
-      setTimeout(() => {
-        elWord.classList.remove("swap-in");
-        if (elSub) elSub.classList.remove("swap-in");
-        setTimeout(tick, HOLD_MS);
-      }, IN_MS);
+      return {
+        r: parseInt(h.slice(0, 2), 16),
+        g: parseInt(h.slice(2, 4), 16),
+        b: parseInt(h.slice(4, 6), 16)
+      };
+    }
 
-    }, FADE_MS);
+    const THEMES = [
+      {
+        key: "music",
+        wordKey: "index.heroSwap.music",
+        subKey: "index.heroSwap.musicSub",
+        fallbackWord: "Müzik",
+        fallbackSub:
+          "Tarzını yaz. AIVO stüdyo kalitesinde üretim yapsın.",
+        accent: "#6F63FF",
+        grad1: "#7C6BFF",
+        grad2: "#2FB7FF"
+      },
+      {
+        key: "video",
+        wordKey: "index.heroSwap.video",
+        subKey: "index.heroSwap.videoSub",
+        fallbackWord: "Video",
+        fallbackSub:
+          "Senaryonu yaz. AIVO sahneleri otomatik kurgulasın.",
+        accent: "#2FB7FF",
+        grad1: "#2FB7FF",
+        grad2: "#6F63FF"
+      },
+      {
+        key: "visual",
+        wordKey: "index.heroSwap.visual",
+        subKey: "index.heroSwap.visualSub",
+        fallbackWord: "Görsel",
+        fallbackSub:
+          "Prompt ver. AIVO kapak ve görselleri saniyeler içinde üretsin.",
+        accent: "#9B7CFF",
+        grad1: "#9B7CFF",
+        grad2: "#2FB7FF"
+      }
+    ];
+
+    let index = 0;
+
+    const HOLD_MS = 2600;
+    const FADE_MS = 260;
+    const IN_MS = 300;
+
+    function applyTheme(theme) {
+      root.dataset.hero = theme.key;
+
+      root.style.setProperty(
+        "--heroAccent",
+        theme.accent
+      );
+
+      root.style.setProperty(
+        "--heroGrad1",
+        theme.grad1
+      );
+
+      root.style.setProperty(
+        "--heroGrad2",
+        theme.grad2
+      );
+
+      const rgb = hexToRgb(theme.accent);
+
+      root.style.setProperty(
+        "--heroSubColor",
+        "rgba(" +
+          rgb.r +
+          "," +
+          rgb.g +
+          "," +
+          rgb.b +
+          ",0.55)"
+      );
+
+      elWord.textContent = tr(
+        theme.wordKey,
+        theme.fallbackWord
+      );
+
+      if (elSub) {
+        elSub.textContent = tr(
+          theme.subKey,
+          theme.fallbackSub
+        );
+      }
+    }
+
+    function syncSoundButton() {
+      if (!soundButton || !demoVideo) return;
+
+      soundButton.textContent = demoVideo.muted
+        ? tr(
+            "index.demo.soundOpen",
+            "🔊 Sesi Aç"
+          )
+        : tr(
+            "index.demo.soundOn",
+            "🔊 Ses Açık"
+          );
+    }
+
+    function tick() {
+      elWord.classList.add("swap-out");
+
+      if (elSub) {
+        elSub.classList.add("swap-out");
+      }
+
+      setTimeout(function () {
+        index = (index + 1) % THEMES.length;
+
+        applyTheme(THEMES[index]);
+
+        elWord.classList.remove("swap-out");
+        elWord.classList.add("swap-in");
+
+        if (elSub) {
+          elSub.classList.remove("swap-out");
+          elSub.classList.add("swap-in");
+        }
+
+        setTimeout(function () {
+          elWord.classList.remove("swap-in");
+
+          if (elSub) {
+            elSub.classList.remove("swap-in");
+          }
+
+          setTimeout(tick, HOLD_MS);
+        }, IN_MS);
+      }, FADE_MS);
+    }
+
+    if (soundButton && demoVideo) {
+      soundButton.addEventListener(
+        "click",
+        function () {
+          demoVideo.muted = !demoVideo.muted;
+
+          if (!demoVideo.muted) {
+            demoVideo.currentTime = 0;
+
+            const playPromise = demoVideo.play();
+
+            if (
+              playPromise &&
+              typeof playPromise.catch === "function"
+            ) {
+              playPromise.catch(function () {});
+            }
+          }
+
+          syncSoundButton();
+        }
+      );
+    }
+
+    document.addEventListener(
+      "aivo:language-change",
+      function () {
+        applyTheme(THEMES[index]);
+        syncSoundButton();
+      }
+    );
+
+    applyTheme(THEMES[index]);
+    syncSoundButton();
+
+    setTimeout(tick, HOLD_MS);
   }
 
-  applyTheme(THEMES[i]);
-  setTimeout(tick, HOLD_MS);
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      bootHero,
+      { once: true }
+    );
+  } else {
+    bootHero();
+  }
 })();
 </script>
 
