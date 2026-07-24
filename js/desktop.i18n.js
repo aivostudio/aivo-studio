@@ -213,6 +213,76 @@
         "İlk atmosfer videonu kısa sürede oluştur.",
 
       /* =========================
+         INDEX / CHILD CARTOON
+         ========================= */
+
+      "index.cartoon.sectionLabel": "AI Çocuk Çizgifilm",
+      "index.cartoon.title": "AI Çocuk Çizgifilm",
+
+      "index.cartoon.slogan":
+        "Karakterini yarat, hikâyeni kur, çizgifilmini üret.",
+
+      "index.cartoon.barLead":
+        "Karakterden sahnelere,",
+
+      "index.cartoon.barStrong":
+        "sahnelerden çizgifilme.",
+
+      "index.cartoon.badgeCharacter":
+        "Karakter Yarat",
+
+      "index.cartoon.badgeScene":
+        "Tek Sahne",
+
+      "index.cartoon.badgeStory":
+        "Hikâye Modu",
+
+      "index.cartoon.badgeDuration":
+        "3–6 Dakika Akış",
+
+      "index.cartoon.cardTitle":
+        "Aynı karakterlerle sahne sahne ilerleyen çizgifilm akışı oluştur.",
+
+      "index.cartoon.description":
+        "Preset ya da kendi karakterlerinle kısa sahneler üret, hikâyeni akışa dönüştür, aynı karakter bütünlüğünü koruyarak 3–6 dakikaya kadar çizgifilm kurgusu hazırla.",
+
+      "index.cartoon.feature1":
+        "Karakter oluştur veya preset karakterle başla",
+
+      "index.cartoon.feature2":
+        "Tek sahne ya da çok sahneli hikâye akışı kur",
+
+      "index.cartoon.feature3":
+        "Aynı karakterlerle tutarlı çizgifilm üretimi",
+
+      "index.cartoon.cta":
+        "Çizgifilmini Oluştur →",
+
+      "index.cartoon.shot1Alt":
+        "Nova yaklaşır",
+
+      "index.cartoon.shot1Label":
+        "Yaklaşır",
+
+      "index.cartoon.shot2Alt":
+        "Nova küreyi bulur",
+
+      "index.cartoon.shot2Label":
+        "Küreyi bulur",
+
+      "index.cartoon.shot3Alt":
+        "Nova gücünü salar",
+
+      "index.cartoon.shot3Label":
+        "Gücünü salar",
+
+      "index.cartoon.bottomStrong":
+        "Karakterden akışa tek üretim hattı.",
+
+      "index.cartoon.bottomText":
+        "İlk çizgifilm akışını kısa sürede başlat.",
+
+      /* =========================
          COOKIE BANNER
          ========================= */
 
@@ -540,9 +610,79 @@
       "index.atmo.bullet3":
         "🎵 Get a ready-made visual for song releases, teasers, lyric videos and digital showcases",
 
-      "index.atmo.bottomStrong": "A polished look, without the wait.",
+       "index.atmo.bottomStrong": "A polished look, without the wait.",
       "index.atmo.bottomText":
         "Create your first atmosphere video in minutes.",
+
+      /* =========================
+         INDEX / CHILD CARTOON
+         ========================= */
+
+      "index.cartoon.sectionLabel": "AI Kids Cartoon",
+      "index.cartoon.title": "AI Kids Cartoon",
+
+      "index.cartoon.slogan":
+        "Create your character, build your story and produce your cartoon.",
+
+      "index.cartoon.barLead":
+        "From characters to scenes,",
+
+      "index.cartoon.barStrong":
+        "from scenes to cartoons.",
+
+      "index.cartoon.badgeCharacter":
+        "Create Character",
+
+      "index.cartoon.badgeScene":
+        "Single Scene",
+
+      "index.cartoon.badgeStory":
+        "Story Mode",
+
+      "index.cartoon.badgeDuration":
+        "3–6 Minute Flow",
+
+      "index.cartoon.cardTitle":
+        "Build a scene-by-scene cartoon flow with consistent characters.",
+
+      "index.cartoon.description":
+        "Create short scenes with preset or custom characters, turn your story into a sequence and build a cartoon up to 3–6 minutes while preserving character consistency.",
+
+      "index.cartoon.feature1":
+        "Create a character or start with a preset character",
+
+      "index.cartoon.feature2":
+        "Build a single scene or a multi-scene story flow",
+
+      "index.cartoon.feature3":
+        "Produce a consistent cartoon with the same characters",
+
+      "index.cartoon.cta":
+        "Create Your Cartoon →",
+
+      "index.cartoon.shot1Alt":
+        "Nova approaches",
+
+      "index.cartoon.shot1Label":
+        "Approaches",
+
+      "index.cartoon.shot2Alt":
+        "Nova finds the orb",
+
+      "index.cartoon.shot2Label":
+        "Finds the orb",
+
+      "index.cartoon.shot3Alt":
+        "Nova releases her power",
+
+      "index.cartoon.shot3Label":
+        "Releases her power",
+
+      "index.cartoon.bottomStrong":
+        "One production pipeline from character to story flow.",
+
+      "index.cartoon.bottomText":
+        "Start your first cartoon sequence in minutes.",
 
       /* =========================
          COOKIE BANNER
