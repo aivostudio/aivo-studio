@@ -851,8 +851,102 @@
       "forgot.backHome":
         "Ana sayfaya dön",
 
-      "forgot.login":
+         "forgot.login":
         "Giriş Yap",
+
+      /* =========================
+         RESET PASSWORD
+         ========================= */
+
+      "reset.seoTitle":
+        "AIVO — Şifre Sıfırla",
+
+      "reset.languageLabel":
+        "Dil seçimi",
+
+      "reset.title":
+        "Şifreyi Sıfırla",
+
+      "reset.description":
+        "Yeni şifreni belirle. Bağlantının süresi dolduysa tekrar şifre sıfırlama isteği oluştur.",
+
+      "reset.newPasswordLabel":
+        "Yeni Şifre",
+
+      "reset.newPasswordPlaceholder":
+        "En az 8 karakter",
+
+      "reset.repeatPasswordLabel":
+        "Yeni Şifre Tekrar",
+
+      "reset.repeatPasswordPlaceholder":
+        "Yeni şifreni tekrar gir",
+
+      "reset.updateButton":
+        "Şifreyi Güncelle",
+
+      "reset.processing":
+        "Güncelleniyor...",
+
+      "reset.requestAgain":
+        "Tekrar sıfırlama iste",
+
+      "reset.login":
+        "Giriş Yap",
+
+      "reset.tokenMissing":
+        "Token bulunamadı. Bağlantı geçersiz.",
+
+      "reset.tokenReceived":
+        "Güvenli şifre sıfırlama bağlantısı doğrulandı.",
+
+      "reset.toast.invalidLinkTitle":
+        "Geçersiz bağlantı",
+
+      "reset.toast.invalidLinkMessage":
+        "Lütfen yeniden şifre sıfırlama isteği oluştur.",
+
+      "reset.toast.weakPasswordTitle":
+        "Zayıf şifre",
+
+      "reset.toast.weakPasswordMessage":
+        "Şifre en az 8 karakter olmalı.",
+
+      "reset.toast.passwordMismatchTitle":
+        "Şifre uyuşmazlığı",
+
+      "reset.toast.passwordMismatchMessage":
+        "Girdiğin şifreler eşleşmiyor.",
+
+      "reset.toast.successTitle":
+        "Şifre güncellendi",
+
+      "reset.toast.successMessage":
+        "Giriş ekranına yönlendiriliyorsun.",
+
+      "reset.toast.expiredTitle":
+        "Bağlantının süresi dolmuş",
+
+      "reset.toast.expiredMessage":
+        "Lütfen yeniden şifre sıfırlama isteği oluştur.",
+
+      "reset.toast.usedTitle":
+        "Bağlantı daha önce kullanılmış",
+
+      "reset.toast.usedMessage":
+        "Lütfen yeniden şifre sıfırlama isteği oluştur.",
+
+      "reset.toast.failedTitle":
+        "İşlem başarısız",
+
+      "reset.toast.failedMessage":
+        "Lütfen tekrar dene.",
+
+      "reset.toast.connectionTitle":
+        "Bağlantı hatası",
+
+      "reset.toast.connectionMessage":
+        "Lütfen tekrar dene.",
 
       /* =========================
          TOAST
@@ -1705,8 +1799,102 @@
       "forgot.backHome":
         "Back to Home",
 
-      "forgot.login":
+         "forgot.login":
         "Sign In",
+
+      /* =========================
+         RESET PASSWORD
+         ========================= */
+
+      "reset.seoTitle":
+        "AIVO — Reset Password",
+
+      "reset.languageLabel":
+        "Language selection",
+
+      "reset.title":
+        "Reset Your Password",
+
+      "reset.description":
+        "Set your new password. If the link has expired, request a new password reset link.",
+
+      "reset.newPasswordLabel":
+        "New Password",
+
+      "reset.newPasswordPlaceholder":
+        "At least 8 characters",
+
+      "reset.repeatPasswordLabel":
+        "Repeat New Password",
+
+      "reset.repeatPasswordPlaceholder":
+        "Enter your new password again",
+
+      "reset.updateButton":
+        "Update Password",
+
+      "reset.processing":
+        "Updating...",
+
+      "reset.requestAgain":
+        "Request Another Reset Link",
+
+      "reset.login":
+        "Sign In",
+
+      "reset.tokenMissing":
+        "The reset token is missing. This link is invalid.",
+
+      "reset.tokenReceived":
+        "The secure password reset link has been verified.",
+
+      "reset.toast.invalidLinkTitle":
+        "Invalid Link",
+
+      "reset.toast.invalidLinkMessage":
+        "Request a new password reset link.",
+
+      "reset.toast.weakPasswordTitle":
+        "Weak Password",
+
+      "reset.toast.weakPasswordMessage":
+        "Your password must contain at least 8 characters.",
+
+      "reset.toast.passwordMismatchTitle":
+        "Passwords Do Not Match",
+
+      "reset.toast.passwordMismatchMessage":
+        "The passwords you entered do not match.",
+
+      "reset.toast.successTitle":
+        "Password Updated",
+
+      "reset.toast.successMessage":
+        "You are being redirected to the sign-in page.",
+
+      "reset.toast.expiredTitle":
+        "Link Expired",
+
+      "reset.toast.expiredMessage":
+        "Request a new password reset link.",
+
+      "reset.toast.usedTitle":
+        "Link Already Used",
+
+      "reset.toast.usedMessage":
+        "Request a new password reset link.",
+
+      "reset.toast.failedTitle":
+        "Update Failed",
+
+      "reset.toast.failedMessage":
+        "Please try again.",
+
+      "reset.toast.connectionTitle":
+        "Connection Error",
+
+      "reset.toast.connectionMessage":
+        "Please try again.",
 
       /* =========================
          TOAST
