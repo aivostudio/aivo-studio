@@ -559,11 +559,108 @@
       "index.corporate.salesText2":
         "Dijital hizmetlerin anında ifa edilmesi nedeniyle, kullanım durumuna göre cayma hakkı sınırlandırılabilir.",
 
-      "index.corporate.salesLinkTitle":
+         "index.corporate.salesLinkTitle":
         "Mesafeli Satış Sözleşmesi",
 
       "index.corporate.salesLinkLabel":
         "Mesafeli Satış Sözleşmesi sayfasını aç",
+
+      /* =========================
+         INDEX / FOOTER
+         ========================= */
+
+      "index.footer.sectionLabel":
+        "AIVO alt bilgi alanı",
+
+      "index.footer.tagline":
+        "Türkçe odaklı AI müzik üretiminde yeni bir standart.",
+
+      "index.footer.appStoreLabel":
+        "AIVO’yu App Store’dan indir",
+
+      "index.footer.appStoreAlt":
+        "App Store’dan indirin",
+
+      "index.footer.googlePlayLabel":
+        "AIVO’yu Google Play’den indir",
+
+      "index.footer.googlePlayAlt":
+        "Google Play’den alın",
+
+      "index.footer.googlePlayBadgeSrc":
+        "https://play.google.com/intl/en_us/badges/static/images/badges/tr_badge_web_generic.png",
+
+      "index.footer.webAppLabel":
+        "AIVO Web uygulamasını aç",
+
+      "index.footer.webOpen":
+        "Web’de aç",
+
+      "index.footer.quickLinks":
+        "Hızlı Linkler",
+
+      "index.footer.home":
+        "Ana Sayfa",
+
+      "index.footer.dashboard":
+        "Dashboard",
+
+      "index.footer.company":
+        "Kurumsal",
+
+      "index.footer.about":
+        "Hakkımızda",
+
+      "index.footer.features":
+        "Özellikler",
+
+      "index.footer.privacy":
+        "Gizlilik Politikası",
+
+      "index.footer.distanceSales":
+        "Mesafeli Satış Sözleşmesi",
+
+      "index.footer.contact":
+        "İletişim",
+
+      "index.footer.securePayment":
+        "Güvenli ödeme",
+
+      "index.footer.etbisRegistered":
+        "T.C. Ticaret Bakanlığı’na Kayıtlıdır",
+
+      "index.footer.emailTitle":
+        "E-posta gönder",
+
+      "index.footer.whatsappTitle":
+        "WhatsApp Destek Hattı",
+
+      "index.footer.whatsappText":
+        "WhatsApp Destek Hattı: +90 533 610 89 00",
+
+      "index.footer.locationTitle":
+        "Konum",
+
+      "index.footer.address":
+        "Turhan Güneş Bulvarı No: 59/2, Ankara / Türkiye",
+
+      "index.footer.contactPageTitle":
+        "İletişim sayfasına git",
+
+      "index.footer.form":
+        "Form",
+
+      "index.footer.contactHint":
+        "Sorularınız için e-posta, WhatsApp destek hattı veya iletişim formunu kullanabilirsiniz.",
+
+      "index.footer.rights":
+        "© 2025 AIVO. Tüm hakları saklıdır.",
+
+      "index.footer.statusLabel":
+        "Durum:",
+
+      "index.footer.statusActive":
+        "Aktif",
 
       /* =========================
          COOKIE BANNER
@@ -1244,11 +1341,108 @@
       "index.corporate.salesText2":
         "Because digital services are delivered immediately, the right of withdrawal may be limited depending on usage.",
 
-      "index.corporate.salesLinkTitle":
+          "index.corporate.salesLinkTitle":
         "Distance Sales Agreement",
 
       "index.corporate.salesLinkLabel":
         "Open the Distance Sales Agreement page",
+
+      /* =========================
+         INDEX / FOOTER
+         ========================= */
+
+      "index.footer.sectionLabel":
+        "AIVO website footer",
+
+      "index.footer.tagline":
+        "A new standard in AI-powered music creation.",
+
+      "index.footer.appStoreLabel":
+        "Download AIVO on the App Store",
+
+      "index.footer.appStoreAlt":
+        "Download on the App Store",
+
+      "index.footer.googlePlayLabel":
+        "Download AIVO on Google Play",
+
+      "index.footer.googlePlayAlt":
+        "Get it on Google Play",
+
+      "index.footer.googlePlayBadgeSrc":
+        "https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png",
+
+      "index.footer.webAppLabel":
+        "Open the AIVO Web App",
+
+      "index.footer.webOpen":
+        "Open in",
+
+      "index.footer.quickLinks":
+        "Quick Links",
+
+      "index.footer.home":
+        "Home",
+
+      "index.footer.dashboard":
+        "Dashboard",
+
+      "index.footer.company":
+        "Company",
+
+      "index.footer.about":
+        "About Us",
+
+      "index.footer.features":
+        "Features",
+
+      "index.footer.privacy":
+        "Privacy Policy",
+
+      "index.footer.distanceSales":
+        "Distance Sales Agreement",
+
+      "index.footer.contact":
+        "Contact",
+
+      "index.footer.securePayment":
+        "Secure payment",
+
+      "index.footer.etbisRegistered":
+        "Registered with the Republic of Türkiye Ministry of Trade",
+
+      "index.footer.emailTitle":
+        "Send an email",
+
+      "index.footer.whatsappTitle":
+        "WhatsApp Support Line",
+
+      "index.footer.whatsappText":
+        "WhatsApp Support Line: +90 533 610 89 00",
+
+      "index.footer.locationTitle":
+        "Location",
+
+      "index.footer.address":
+        "Turhan Güneş Boulevard No: 59/2, Ankara / Türkiye",
+
+      "index.footer.contactPageTitle":
+        "Open the Contact page",
+
+      "index.footer.form":
+        "Contact Form",
+
+      "index.footer.contactHint":
+        "Contact us by email, WhatsApp support or the contact form if you have any questions.",
+
+      "index.footer.rights":
+        "© 2025 AIVO. All rights reserved.",
+
+      "index.footer.statusLabel":
+        "Status:",
+
+      "index.footer.statusActive":
+        "Active",
 
       /* =========================
          COOKIE BANNER
