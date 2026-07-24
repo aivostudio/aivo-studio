@@ -140,67 +140,209 @@
   function applyModeUI(modal) {
     if (!modal) return;
 
-    const mode = String(modal.getAttribute("data-mode") || "login").toLowerCase();
+    const mode = String(
+      modal.getAttribute("data-mode") || "login"
+    ).toLowerCase();
+
     const isReg = mode === "register";
 
     const pick = function () {
       for (let i = 0; i < arguments.length; i++) {
         const sel = arguments[i];
+
         if (!sel) continue;
 
         let el = null;
 
-        if (sel[0] === "#") el = q(sel);
-        else el = byId(sel) || q("#" + sel);
+        if (sel[0] === "#") {
+          el = q(sel);
+        } else {
+          el = byId(sel) || q("#" + sel);
+        }
 
         if (el) return el;
       }
+
       return null;
     };
 
-    const showEl = (el, on, displayValue = "") => {
+    const showEl = (
+      el,
+      on,
+      displayValue = ""
+    ) => {
       if (!el) return;
-      el.style.display = on ? displayValue : "none";
-      el.setAttribute("aria-hidden", on ? "false" : "true");
+
+      el.style.display =
+        on ? displayValue : "none";
+
+      el.setAttribute(
+        "aria-hidden",
+        on ? "false" : "true"
+      );
     };
 
-    const setTextEl = (el, txt) => {
-      if (el) el.textContent = txt;
+    const setI18nText = (
+      el,
+      key,
+      fallback
+    ) => {
+      if (!el) return;
+
+      el.setAttribute(
+        "data-i18n",
+        key
+      );
+
+      try {
+        el.textContent =
+          typeof window.t === "function"
+            ? window.t(key)
+            : fallback;
+      } catch (_) {
+        el.textContent = fallback;
+      }
     };
 
-    const titleEl = pick("authCardTitle", "loginTitle");
-    const subEl = pick("authCardSub", "loginDesc");
+    const loginTitleEl =
+      pick("loginTitle");
 
-    const registerExtraEl = pick("registerExtra");
-    const registerNameEl = pick("registerName");
-    const registerPass2El = pick("registerPass2");
-    const kvkkRowEl = pick("kvkkRow");
+    const loginDescEl =
+      pick("loginDesc");
+
+    const cardTitleEl =
+      pick("authCardTitle");
+
+    const cardSubEl =
+      pick("authCardSub");
+
+    const registerExtraEl =
+      pick("registerExtra");
+
+    const registerNameEl =
+      pick("registerName");
+
+    const registerPass2El =
+      pick("registerPass2");
+
+    const kvkkRowEl =
+      pick("kvkkRow");
 
     const googleBlockEl =
-      pick("googleBlock", "authGoogleBlock", "authGoogleRow") ||
-      modal.querySelector('[data-auth-google], .google-auth, .auth-google, .social-auth');
+      pick(
+        "googleBlock",
+        "authGoogleBlock",
+        "authGoogleRow"
+      ) ||
+      modal.querySelector(
+        "[data-auth-google], .google-auth, .auth-google, .social-auth"
+      );
 
     const loginMetaEl =
       pick("loginMeta") ||
-      modal.querySelector('[data-auth-login-meta], .login-meta, .auth-login-meta');
+      modal.querySelector(
+        "[data-auth-login-meta], .login-meta, .auth-login-meta"
+      );
 
     const registerMetaEl =
       pick("registerMeta") ||
-      modal.querySelector('[data-auth-register-meta], .register-meta, .auth-register-meta');
+      modal.querySelector(
+        "[data-auth-register-meta], .register-meta, .auth-register-meta"
+      );
 
-    const footerLoginTextEl = pick("authFooterText");
-    const footerRegisterTextEl = pick("authFooterText2");
-    const goRegisterEl = pick("goRegister");
-    const goLoginEl = pick("goLogin");
+    const footerLoginTextEl =
+      pick("authFooterText");
 
-    setTextEl(titleEl, isReg ? "Ücretsiz hesap oluştur" : "Tekrar hoş geldin 👋");
-    setTextEl(
-      subEl,
+    const footerRegisterTextEl =
+      pick("authFooterText2");
+
+    const goRegisterEl =
+      pick("goRegister");
+
+    const goLoginEl =
+      pick("goLogin");
+
+    const googleBtnEl =
+      pick("btnGoogleLogin");
+
+    const appleBtnEl =
+      pick("btnAppleLogin");
+
+    const submitBtn =
+      getSubmitBtn();
+
+    /*
+      Üst modal başlığı
+    */
+    setI18nText(
+      loginTitleEl,
       isReg
-        ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
-        : "AIVO Studio’ya giriş yap veya ücretsiz hesap oluştur."
+        ? "auth.registerTitle"
+        : "auth.loginTitle",
+      isReg
+        ? "E-posta ile Kayıt"
+        : "Tekrar hoş geldin 👋"
     );
 
+    setI18nText(
+      loginDescEl,
+      isReg
+        ? "auth.registerDescription"
+        : "auth.loginDescription",
+      isReg
+        ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+        : "AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur."
+    );
+
+    /*
+      Form kartı başlığı
+    */
+    setI18nText(
+      cardTitleEl,
+      isReg
+        ? "auth.registerCardTitle"
+        : "auth.loginCardTitle",
+      isReg
+        ? "Ücretsiz hesap oluştur"
+        : "E-posta ile Giriş"
+    );
+
+    setI18nText(
+      cardSubEl,
+      isReg
+        ? "auth.registerCardDescription"
+        : "auth.loginCardDescription",
+      isReg
+        ? "AIVO Studio’ya erişmek için ücretsiz hesabını oluştur."
+        : "Hesabına e-posta adresinle giriş yap."
+    );
+
+    /*
+      Google ve Apple butonları
+    */
+    setI18nText(
+      googleBtnEl,
+      isReg
+        ? "auth.googleRegister"
+        : "auth.googleLogin",
+      isReg
+        ? "Google ile Kayıt Ol"
+        : "Google ile Giriş Yap"
+    );
+
+    setI18nText(
+      appleBtnEl,
+      isReg
+        ? "auth.appleRegister"
+        : "auth.appleLogin",
+      isReg
+        ? "Apple ile Kayıt Ol"
+        : "Apple ile Giriş Yap"
+    );
+
+    /*
+      Alan görünürlükleri
+    */
     showEl(registerExtraEl, isReg);
     showEl(registerNameEl, isReg);
     showEl(registerPass2El, isReg);
@@ -210,18 +352,80 @@
     showEl(loginMetaEl, !isReg);
     showEl(registerMetaEl, isReg);
 
-    const googleBtnEl = pick("btnGoogleLogin");
-    if (googleBtnEl) {
-      googleBtnEl.textContent = isReg ? "Google ile Kayıt Ol" : "Google ile Giriş Yap";
-    }
+    /*
+      Alt giriş / kayıt geçişi
+    */
+    setI18nText(
+      footerLoginTextEl,
+      "auth.newUser",
+      "AIVO’da yeni misin?"
+    );
 
-    showEl(footerLoginTextEl, !isReg);
-    showEl(goRegisterEl, !isReg, "inline");
-    showEl(footerRegisterTextEl, isReg);
-    showEl(goLoginEl, isReg, "inline");
+    setI18nText(
+      footerRegisterTextEl,
+      "auth.haveAccount",
+      "Zaten hesabın var mı?"
+    );
 
-    const btn = getSubmitBtn();
-    if (btn) btn.textContent = isReg ? "Hesap Oluştur" : "Giriş Yap";
+    setI18nText(
+      goRegisterEl,
+      "auth.createFreeAccount",
+      "Ücretsiz hesap oluştur →"
+    );
+
+    setI18nText(
+      goLoginEl,
+      "auth.loginLink",
+      "Giriş yap →"
+    );
+
+    showEl(
+      footerLoginTextEl,
+      !isReg
+    );
+
+    showEl(
+      goRegisterEl,
+      !isReg,
+      "inline"
+    );
+
+    showEl(
+      footerRegisterTextEl,
+      isReg
+    );
+
+    showEl(
+      goLoginEl,
+      isReg,
+      "inline"
+    );
+
+    /*
+      Ana gönder butonu
+    */
+    setI18nText(
+      submitBtn,
+      isReg
+        ? "auth.registerButton"
+        : "auth.loginButton",
+      isReg
+        ? "Hesap Oluştur"
+        : "Giriş Yap"
+    );
+
+    /*
+      Modal içinde kalan diğer data-i18n
+      alanlarını mevcut dilde uygula.
+    */
+    try {
+      if (
+        typeof window.aivoApplyI18n ===
+        "function"
+      ) {
+        window.aivoApplyI18n(modal);
+      }
+    } catch (_) {}
   }
 
   function openModal(mode) {
