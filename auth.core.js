@@ -505,32 +505,80 @@
       const fullName = [nameVal, surnameVal].filter(Boolean).join(" ").trim();
 
       if (!isValidEmail(email)) {
-        window.toast.error("Geçerli bir email gir.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.validEmail",
+              "Lütfen geçerli bir e-posta gir."
+            )
+          );
+        }
+
         return;
       }
 
       if (!nameVal) {
-        window.toast.error("Ad gir.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.firstName",
+              "Lütfen ad gir."
+            )
+          );
+        }
+
         return;
       }
 
       if (!surnameVal) {
-        window.toast.error("Soyad gir.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.lastName",
+              "Lütfen soyad gir."
+            )
+          );
+        }
+
         return;
       }
 
       if (!pass || pass.length < 6) {
-        window.toast.error("Şifre en az 6 karakter olmalı.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.passwordLength",
+              "Şifre en az 6 karakter olmalı."
+            )
+          );
+        }
+
         return;
       }
 
       if (!pass2 || pass !== pass2) {
-        window.toast.error("Şifreler uyuşmuyor.");
+        if (window.toast) {
+          window.toast.error(
+            authText(
+              "auth.error.passwordMismatch",
+              "Şifreler uyuşmuyor."
+            )
+          );
+        }
+
         return;
       }
 
       if (!kvkk) {
-        window.toast.warning("KVKK ve şartları kabul etmelisin.");
+        if (window.toast) {
+          window.toast.warning(
+            authText(
+              "auth.error.acceptTerms",
+              "KVKK ve kullanım şartlarını kabul etmelisin."
+            )
+          );
+        }
+
         return;
       }
 
