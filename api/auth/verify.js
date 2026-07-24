@@ -127,17 +127,51 @@ export default async function handler(req, res) {
     // ✅ mevcut user varsa çek (OVERWRITE ETME)
     const existing = await kvGetJson(`user:${verifiedEmail}`).catch(() => null);
 
-    const next = {
-      id: existing?.id || payload.id || crypto.randomUUID(),
-      email: verifiedEmail,
-      name: payload.name || existing?.name || "",
-      role: existing?.role || payload.role || "user",
-      createdAt: existing?.createdAt || payload.createdAt || now,
-      updatedAt: now,
-      verified: true,
-      disabled: existing?.disabled === true ? true : false,
-      // 🔥 kritik: passwordHash varsa yaz, yoksa eskisini KORU
-      passwordHash: payload.passwordHash || existing?.passwordHash || undefined,
+      const next = {
+      id:
+        existing?.id ||
+        payload.id ||
+        crypto.randomUUID(),
+
+      email:
+        verifiedEmail,
+
+      name:
+        payload.name ||
+        existing?.name ||
+        "",
+
+      lang:
+        existing?.lang ||
+        payload.lang ||
+        "tr",
+
+      role:
+        existing?.role ||
+        payload.role ||
+        "user",
+
+      createdAt:
+        existing?.createdAt ||
+        payload.createdAt ||
+        now,
+
+      updatedAt:
+        now,
+
+      verified:
+        true,
+
+      disabled:
+        existing?.disabled === true
+          ? true
+          : false,
+
+      // passwordHash varsa yaz, yoksa eskisini koru
+      passwordHash:
+        payload.passwordHash ||
+        existing?.passwordHash ||
+        undefined
     };
 
     Object.keys(next).forEach((k) => next[k] === undefined && delete next[k]);
