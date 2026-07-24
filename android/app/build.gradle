@@ -3,22 +3,26 @@ apply plugin: 'com.android.application'
 android {
     namespace = "tr.aivo.app"
     compileSdk = rootProject.ext.compileSdkVersion
+
     defaultConfig {
         applicationId "tr.aivo.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "1.0.3"
+        versionCode 25
+        versionName "1.0.21"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
         aaptOptions {
-             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
-             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+
     signingConfigs {
         release {
-            storeFile file(System.getenv("AIVO_UPLOAD_STORE_FILE") ?: "/Users/harunerkezen/aivo-upload-key.jks")
+            storeFile file(
+                System.getenv("AIVO_UPLOAD_STORE_FILE")
+                    ?: "${System.getProperty('user.home')}/AIVO-Keys/aivo-upload-key.jks"
+            )
             storePassword System.getenv("AIVO_UPLOAD_STORE_PASSWORD")
             keyAlias System.getenv("AIVO_UPLOAD_KEY_ALIAS") ?: "aivo"
             keyPassword System.getenv("AIVO_UPLOAD_KEY_PASSWORD")
@@ -35,21 +39,26 @@ android {
 }
 
 repositories {
-    flatDir{
+    flatDir {
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "com.android.billingclient:billing:7.1.1"
+
+    def billingVersion = "9.1.0"
+    implementation "com.android.billingclient:billing:$billingVersion"
+
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+
     implementation project(':capacitor-cordova-android-plugins')
 }
 
@@ -57,9 +66,12 @@ apply from: 'capacitor.build.gradle'
 
 try {
     def servicesJSON = file('google-services.json')
+
     if (servicesJSON.text) {
         apply plugin: 'com.google.gms.google-services'
     }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+} catch (Exception e) {
+    logger.info(
+        "google-services.json not found, google-services plugin not applied. Push Notifications won't work"
+    )
 }
