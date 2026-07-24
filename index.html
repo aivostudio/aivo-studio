@@ -261,241 +261,454 @@
       <img class="aivo-brand-logo" src="/aivo-logo.png" alt="AIVO" loading="eager" />
     </a>
 
-    <!-- NAV -->
-    <nav class="aivo-nav" aria-label="Üst menü">
+<!-- NAV -->
+<nav
+  class="aivo-nav"
+  aria-label="Üst menü"
+  data-i18n-label="topbar.navLabel"
+>
 
-      <!-- ÜRÜNLER -->
-      <div class="nav-item has-dropdown" id="navProducts">
-        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-          Ürünler <span class="chevron">▾</span>
-        </button>
+  <!-- ÜRÜNLER -->
+  <div class="nav-item has-dropdown" id="navProducts">
+    <button
+      class="nav-link"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <span data-i18n="topbar.products">Ürünler</span>
+      <span class="chevron">▾</span>
+    </button>
 
-        <div class="dropdown dropdown--products" aria-label="Ürünler menüsü">
-          <div class="products-menu">
+    <div
+      class="dropdown dropdown--products"
+      aria-label="Ürünler menüsü"
+      data-i18n-label="topbar.productsMenuLabel"
+    >
+      <div class="products-menu">
 
-<!-- 1) AI MÜZİK  ÜRET  -->
-<a href="/studio.v2.html#music" data-auth="required" class="product-card" data-product="music">
-  <span class="pc-ico">🎵</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Müzik Üret</span>
-    <span class="pc-sub">Türkçe odaklı, hızlı üretim</span>
-  </span>
-</a>
+        <!-- 1) AI MÜZİK ÜRET -->
+        <a
+          href="/studio.v2.html#music"
+          data-auth="required"
+          class="product-card"
+          data-product="music"
+        >
+          <span class="pc-ico">🎵</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.musicTitle"
+            >
+              AI Müzik Üret
+            </span>
 
-<!-- 2) AI KAPAK ÜRET -->
-<a href="/studio.v2.html#cover" data-auth="required" class="product-card" data-product="cover">
-  <span class="pc-ico">🖼️</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Kapak Üret</span>
-    <span class="pc-sub">Kapak, afiş, görsel içerik</span>
-  </span>
-</a>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.musicSub"
+            >
+              Türkçe odaklı, hızlı üretim
+            </span>
+          </span>
+        </a>
 
-<!-- 3) AI ATMOSFER VIDEO -->
-<a href="/studio.v2.html#atmo"
-   data-auth="required"
-   class="product-card"
-   data-product="atmo">
-  <span class="pc-ico">🌫️</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Atmosfer Video</span>
-    <span class="pc-sub">Loop sahne & atmosfer</span>
-  </span>
-</a>
+        <!-- 2) AI KAPAK ÜRET -->
+        <a
+          href="/studio.v2.html#cover"
+          data-auth="required"
+          class="product-card"
+          data-product="cover"
+        >
+          <span class="pc-ico">🖼️</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.coverTitle"
+            >
+              AI Kapak Üret
+            </span>
 
-<!-- 4) AI ÇOCUK ÇİZGİFİLM -->
-<a href="/studio.v2.html#cartoon"
-   data-auth="required"
-   class="product-card sm-card sm-card--a"
-   data-product="cartoon">
-  <span class="pc-ico">🐠</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Çocuk Çizgifilm</span>
-    <span class="pc-sub">Preset karakterlerle sahne üretimi</span>
-  </span>
-</a>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.coverSub"
+            >
+              Kapak, afiş ve görsel içerik
+            </span>
+          </span>
+        </a>
 
-<!-- 5) AI FOTO EFEKT VIDEO CLIP -->
-<a href="/studio.v2.html#photofx"
-   data-auth="required"
-   class="product-card sm-card sm-card--b"
-   data-product="photofx">
-  <span class="pc-ico">✨</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Foto Efekt Video Clip</span>
-    <span class="pc-sub">Tek fotoğraftan hareketli efekt klip üret</span>
-  </span>
-</a>
+        <!-- 3) AI ATMOSFER VIDEO -->
+        <a
+          href="/studio.v2.html#atmo"
+          data-auth="required"
+          class="product-card"
+          data-product="atmo"
+        >
+          <span class="pc-ico">🌫️</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.atmoTitle"
+            >
+              AI Atmosfer Video
+            </span>
 
-<!-- 6) AI RESİMDEN VIDEO ÜRET -->
-<a href="/studio.v2.html#video" data-auth="required" class="product-card" data-product="video">
-  <span class="pc-ico">🎬</span>
-  <span class="pc-txt">
-    <span class="pc-title">AI Resimden Video Üret</span>
-    <span class="pc-sub">Sosyal medya uyumlu çıktılar</span>
-  </span>
-</a>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.atmoSub"
+            >
+              Loop sahne ve atmosfer
+            </span>
+          </span>
+        </a>
 
+        <!-- 4) AI ÇOCUK ÇİZGİFİLM -->
+        <a
+          href="/studio.v2.html#cartoon"
+          data-auth="required"
+          class="product-card sm-card sm-card--a"
+          data-product="cartoon"
+        >
+          <span class="pc-ico">🐠</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.cartoonTitle"
+            >
+              AI Çocuk Çizgifilm
+            </span>
 
-          </div>
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.cartoonSub"
+            >
+              Preset karakterlerle sahne üretimi
+            </span>
+          </span>
+        </a>
+
+        <!-- 5) AI FOTO EFEKT VIDEO CLIP -->
+        <a
+          href="/studio.v2.html#photofx"
+          data-auth="required"
+          class="product-card sm-card sm-card--b"
+          data-product="photofx"
+        >
+          <span class="pc-ico">✨</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.photofxTitle"
+            >
+              AI Foto Efekt Video Clip
+            </span>
+
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.photofxSub"
+            >
+              Tek fotoğraftan hareketli efekt klip üret
+            </span>
+          </span>
+        </a>
+
+        <!-- 6) AI RESİMDEN VIDEO ÜRET -->
+        <a
+          href="/studio.v2.html#video"
+          data-auth="required"
+          class="product-card"
+          data-product="video"
+        >
+          <span class="pc-ico">🎬</span>
+          <span class="pc-txt">
+            <span
+              class="pc-title"
+              data-i18n="topbar.product.videoTitle"
+            >
+              AI Resimden Video Üret
+            </span>
+
+            <span
+              class="pc-sub"
+              data-i18n="topbar.product.videoSub"
+            >
+              Sosyal medya uyumlu çıktılar
+            </span>
+          </span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+  <!-- /ÜRÜNLER -->
+
+  <!-- KURUMSAL -->
+  <div class="nav-item has-dropdown" id="navCorp">
+    <button
+      class="nav-link"
+      type="button"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
+      <span data-i18n="topbar.corporate">Kurumsal</span>
+      <span class="chevron">▾</span>
+    </button>
+
+    <div
+      class="dropdown dropdown--corp"
+      aria-label="Kurumsal menüsü"
+      data-i18n-label="topbar.corporateMenuLabel"
+    >
+      <div class="corp-menu">
+        <div class="corp-grid">
+
+          <a
+            href="/kurumsal/hakkimizda.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">ⓘ</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.aboutTitle"
+              >
+                Hakkımızda
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.aboutSub"
+              >
+                AIVO’nun hikayesi
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/ozellikler.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">⚙︎</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.featuresTitle"
+              >
+                Özellikler
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.featuresSub"
+              >
+                Neler sunuyoruz
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/gizlilik.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">🔒</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.privacyTitle"
+              >
+                Gizlilik Politikası
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.privacySub"
+              >
+                KVKK / GDPR
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/mesafeli-satis.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">📄</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.distanceSalesTitle"
+              >
+                Mesafeli Satış
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.distanceSalesSub"
+              >
+                Sözleşme metni
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari"
+            class="corp-card"
+          >
+            <span class="cc-ico">🛡️</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.safeUseTitle"
+              >
+                Güvenli Kullanım
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.safeUseSub"
+              >
+                İçerik kuralları ve kullanım sınırları
+              </span>
+            </span>
+          </a>
+
+          <a
+            href="/kurumsal/iletisim.html"
+            class="corp-card"
+          >
+            <span class="cc-ico">✉︎</span>
+            <span class="cc-txt">
+              <span
+                class="cc-title"
+                data-i18n="topbar.corporate.contactTitle"
+              >
+                İletişim
+              </span>
+
+              <span
+                class="cc-sub"
+                data-i18n="topbar.corporate.contactSub"
+              >
+                info@aivo.tr
+              </span>
+            </span>
+          </a>
+
         </div>
       </div>
-      <!-- /ÜRÜNLER -->
+    </div>
+  </div>
+  <!-- /KURUMSAL -->
 
-      <!-- KURUMSAL -->
-      <div class="nav-item has-dropdown" id="navCorp">
-        <button class="nav-link" type="button" aria-haspopup="true" aria-expanded="false">
-          Kurumsal <span class="chevron">▾</span>
-        </button>
-
-        <div class="dropdown dropdown--corp" aria-label="Kurumsal menüsü">
-          <div class="corp-menu">
-  <div class="corp-grid">
-
-  <a href="/kurumsal/hakkimizda.html" class="corp-card">
-    <span class="cc-ico">ⓘ</span>
-    <span class="cc-txt">
-      <span class="cc-title">Hakkımızda</span>
-      <span class="cc-sub">AIVO’nun hikayesi</span>
-    </span>
+  <!-- EĞİTİM İÇERİKLERİ -->
+  <a
+    class="nav-link"
+    href="/egitim-icerikleri.html"
+    data-i18n="topbar.education"
+  >
+    Eğitim İçerikleri
   </a>
 
-  <a href="/kurumsal/ozellikler.html" class="corp-card">
-    <span class="cc-ico">⚙︎</span>
-    <span class="cc-txt">
-      <span class="cc-title">Özellikler</span>
-      <span class="cc-sub">Neler sunuyoruz</span>
-    </span>
+  <!-- AIVO COIN -->
+  <a
+    class="nav-link"
+    href="/aivo-coin.html"
+    data-i18n="topbar.coin"
+  >
+    AIVO COIN
   </a>
 
-  <a href="/kurumsal/gizlilik.html" class="corp-card">
-    <span class="cc-ico">🔒</span>
-    <span class="cc-txt">
-      <span class="cc-title">Gizlilik Politikası</span>
-      <span class="cc-sub">KVKK / GDPR</span>
-    </span>
+  <!-- FİYATLANDIRMA -->
+  <a
+    class="nav-link"
+    href="/fiyatlandirma.html"
+    data-i18n="topbar.pricing"
+  >
+    Fiyatlandırma
   </a>
 
-  <a href="/kurumsal/mesafeli-satis.html" class="corp-card">
-    <span class="cc-ico">📄</span>
-    <span class="cc-txt">
-      <span class="cc-title">Mesafeli Satış</span>
-      <span class="cc-sub">Sözleşme metni</span>
-    </span>
-  </a>
+</nav>
+<!-- /NAV -->
 
-  <a href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari" class="corp-card">
-    <span class="cc-ico">🛡️</span>
-    <span class="cc-txt">
-      <span class="cc-title">Güvenli Kullanım</span>
-      <span class="cc-sub">İçerik kuralları &amp; kullanım sınırları</span>
-    </span>
-  </a>
-
-  <a href="/kurumsal/iletisim.html" class="corp-card">
-    <span class="cc-ico">✉︎</span>
-    <span class="cc-txt">
-      <span class="cc-title">İletişim</span>
-      <span class="cc-sub">info@aivo.tr</span>
-    </span>
-  </a>
-
-</div>
-          </div>
-        </div>
-      </div>
-      <!-- /KURUMSAL -->
-
-   <!-- EĞİTİM İÇERİKLERİ -->
-<a class="nav-link" href="/egitim-icerikleri.html">Eğitim İçerikleri</a>
-
-<!-- AIVO COIN -->
-<a class="nav-link" href="/aivo-coin.html">AIVO COIN</a>
-
-<!-- FİYATLANDIRMA -->
-<a class="nav-link" href="/fiyatlandirma.html">Fiyatlandırma</a>
-    </nav>
-    <!-- /NAV -->
-
- <!-- AUTH AREA (TEK OTORİTE) -->
+<!-- AUTH AREA (TEK OTORİTE) -->
 <div class="aivo-auth">
 
   <!-- DESKTOP LANGUAGE SWITCH -->
-<style>
-  #top .aivo-language-switch{
-    display:inline-flex;
-    align-items:center;
-    gap:3px;
-    padding:3px;
-    flex:0 0 auto;
-    border:1px solid rgba(160,120,255,.34);
-    border-radius:999px;
-    background:rgba(10,14,26,.18);
-    backdrop-filter:blur(18px) saturate(130%);
-    -webkit-backdrop-filter:blur(18px) saturate(130%);
-    box-shadow:
-      0 10px 28px rgba(0,0,0,.24),
-      inset 0 1px 0 rgba(255,255,255,.05);
-  }
-
-  #top .aivo-language-button{
-    appearance:none;
-    min-width:34px;
-    height:30px;
-    padding:0 9px;
-    border:1px solid transparent;
-    border-radius:999px;
-    background:transparent;
-    color:rgba(255,255,255,.66);
-    font:inherit;
-    font-size:12px;
-    font-weight:800;
-    line-height:1;
-    cursor:pointer;
-    transition:
-      background .16s ease,
-      border-color .16s ease,
-      color .16s ease,
-      box-shadow .16s ease,
-      transform .16s ease;
-  }
-
-  #top .aivo-language-button:hover{
-    color:#fff;
-    background:rgba(255,255,255,.07);
-    border-color:rgba(255,255,255,.10);
-  }
-
-  #top .aivo-language-button:active{
-    transform:scale(.96);
-  }
-
-  #top .aivo-language-button.is-active{
-    color:#fff;
-    border-color:rgba(170,135,255,.55);
-    background:linear-gradient(
-      135deg,
-      rgba(124,58,237,.46),
-      rgba(59,130,246,.30)
-    );
-    box-shadow:
-      0 6px 18px rgba(99,102,241,.20),
-      inset 0 1px 0 rgba(255,255,255,.12);
-  }
-
-  @media (max-width:1100px){
+  <style>
     #top .aivo-language-switch{
-      padding:2px;
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:3px;
+      flex:0 0 auto;
+      border:1px solid rgba(160,120,255,.34);
+      border-radius:999px;
+      background:rgba(10,14,26,.18);
+      backdrop-filter:blur(18px) saturate(130%);
+      -webkit-backdrop-filter:blur(18px) saturate(130%);
+      box-shadow:
+        0 10px 28px rgba(0,0,0,.24),
+        inset 0 1px 0 rgba(255,255,255,.05);
     }
 
     #top .aivo-language-button{
-      min-width:31px;
-      height:28px;
-      padding:0 7px;
-      font-size:11px;
+      appearance:none;
+      min-width:34px;
+      height:30px;
+      padding:0 9px;
+      border:1px solid transparent;
+      border-radius:999px;
+      background:transparent;
+      color:rgba(255,255,255,.66);
+      font:inherit;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      cursor:pointer;
+      transition:
+        background .16s ease,
+        border-color .16s ease,
+        color .16s ease,
+        box-shadow .16s ease,
+        transform .16s ease;
     }
-  }
-</style>
+
+    #top .aivo-language-button:hover{
+      color:#fff;
+      background:rgba(255,255,255,.07);
+      border-color:rgba(255,255,255,.10);
+    }
+
+    #top .aivo-language-button:active{
+      transform:scale(.96);
+    }
+
+    #top .aivo-language-button.is-active{
+      color:#fff;
+      border-color:rgba(170,135,255,.55);
+      background:linear-gradient(
+        135deg,
+        rgba(124,58,237,.46),
+        rgba(59,130,246,.30)
+      );
+      box-shadow:
+        0 6px 18px rgba(99,102,241,.20),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    @media (max-width:1100px){
+      #top .aivo-language-switch{
+        padding:2px;
+      }
+
+      #top .aivo-language-button{
+        min-width:31px;
+        height:28px;
+        padding:0 7px;
+        font-size:11px;
+      }
+    }
+  </style>
 
   <div
     class="aivo-language-switch"
@@ -524,70 +737,159 @@
   <!-- /DESKTOP LANGUAGE SWITCH -->
 
   <!-- GUEST -->
-      <div class="auth-guest" id="authGuest">
-        <button id="btnLoginTop" class="btn btn-ghost" type="button">Giriş Yap</button>
-        <button id="btnRegisterTop" class="btn btn-primary" type="button">Kayıt Ol</button>
+  <div class="auth-guest" id="authGuest">
+    <button
+      id="btnLoginTop"
+      class="btn btn-ghost"
+      type="button"
+      data-i18n="topbar.login"
+    >
+      Giriş Yap
+    </button>
+
+    <button
+      id="btnRegisterTop"
+      class="btn btn-primary"
+      type="button"
+      data-i18n="topbar.register"
+    >
+      Kayıt Ol
+    </button>
+  </div>
+
+  <!-- USER -->
+  <div class="auth-user" id="authUser" hidden>
+
+    <!-- KREDİ -->
+    <div class="top-credits" id="topCredits">
+      <div
+        class="credit-pill credit-pill--static"
+        title="Kredi bakiyesi"
+        data-i18n-title="topbar.creditBalanceTitle"
+      >
+        <span data-i18n="common.credit">Kredi</span>
+        <strong id="topCreditCount">0</strong>
       </div>
 
-      <!-- USER -->
-      <div class="auth-user" id="authUser" hidden>
+      <a
+        class="btn btn-ghost btn-credit-buy"
+        href="/fiyatlandirma.html#packs"
+        data-open-pricing="1"
+        data-i18n="topbar.buyCredit"
+      >
+        Kredi Al
+      </a>
+    </div>
 
-        <!-- KREDİ -->
-        <div class="top-credits" id="topCredits">
-          <div class="credit-pill credit-pill--static" title="Kredi bakiyesi">
-            Kredi <strong id="topCreditCount">0</strong>
-          </div>
-          <a class="btn btn-ghost btn-credit-buy" href="/fiyatlandirma.html#packs" data-open-pricing="1">Kredi Al</a>
-        </div>
+    <!-- USER MENU -->
+    <div class="user-menu-wrap" id="userMenuWrap">
+      <button
+        id="btnUserMenuTop"
+        class="user-pill"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <span
+          class="user-ava"
+          id="topUserInitial"
+        >
+          H
+        </span>
 
-        <!-- USER MENU -->
-        <div class="user-menu-wrap" id="userMenuWrap">
-          <button id="btnUserMenuTop" class="user-pill" type="button" aria-haspopup="true" aria-expanded="false">
-            <span class="user-ava" id="topUserInitial">H</span>
-            <span class="user-name" id="topUserName">Harun</span>
-            <span class="chev">▾</span>
-          </button>
+        <span
+          class="user-name"
+          id="topUserName"
+        >
+          Harun
+        </span>
 
-          <div id="userMenuPanel" class="user-menu" aria-hidden="true">
-            <div class="user-menu-card">
+        <span class="chev">▾</span>
+      </button>
 
-              <div class="um-head">
-                <div class="um-ava" id="umAvatar">H</div>
-                <div class="um-meta">
-                  <div class="um-title" id="umName">Hesap</div>
-                  <div class="um-sub" id="umEmail"></div>
-                </div>
+      <div
+        id="userMenuPanel"
+        class="user-menu"
+        aria-hidden="true"
+      >
+        <div class="user-menu-card">
+
+          <div class="um-head">
+            <div class="um-ava" id="umAvatar">H</div>
+
+            <div class="um-meta">
+              <div class="um-title" id="umName">
+                Hesap
               </div>
 
-              <div class="um-plan">
-                <span class="um-plan-ico">💎</span>
-                <span class="um-plan-txt" id="umPlan">Basic</span>
-              </div>
-
-              <div class="um-sep"></div>
-
-<a class="um-item" href="/studio.v2.html#profile"><span class="um-i">👤</span><span>Profil</span></a>
-<a class="um-item" href="/studio.v2.html#invoices"><span class="um-i">🧾</span><span>Faturalarım</span></a>
-<a class="um-item" href="/studio.v2.html#settings"><span class="um-i">⚙</span><span>Ayarlar</span></a>
-
-
-              <div class="um-sep"></div>
-
-              <button class="um-item um-logout" id="btnLogoutUnified" type="button"
-                      data-action="logout" data-redirect="/">
-                <span class="um-i">⟵</span><span>Çıkış Yap</span>
-              </button>
-
+              <div class="um-sub" id="umEmail"></div>
             </div>
           </div>
+
+          <div class="um-plan">
+            <span class="um-plan-ico">💎</span>
+            <span class="um-plan-txt" id="umPlan">
+              Basic
+            </span>
+          </div>
+
+          <div class="um-sep"></div>
+
+          <a
+            class="um-item"
+            href="/studio.v2.html#profile"
+          >
+            <span class="um-i">👤</span>
+            <span data-i18n="topbar.profile">
+              Profil
+            </span>
+          </a>
+
+          <a
+            class="um-item"
+            href="/studio.v2.html#invoices"
+          >
+            <span class="um-i">🧾</span>
+            <span data-i18n="topbar.invoices">
+              Faturalarım
+            </span>
+          </a>
+
+          <a
+            class="um-item"
+            href="/studio.v2.html#settings"
+          >
+            <span class="um-i">⚙</span>
+            <span data-i18n="topbar.settings">
+              Ayarlar
+            </span>
+          </a>
+
+          <div class="um-sep"></div>
+
+          <button
+            class="um-item um-logout"
+            id="btnLogoutUnified"
+            type="button"
+            data-action="logout"
+            data-redirect="/"
+          >
+            <span class="um-i">⟵</span>
+            <span data-i18n="topbar.logout">
+              Çıkış Yap
+            </span>
+          </button>
+
         </div>
-        <!-- /USER MENU -->
-
       </div>
-      <!-- /USER -->
-
     </div>
-    <!-- /AUTH -->
+    <!-- /USER MENU -->
+
+  </div>
+  <!-- /USER -->
+
+</div>
+<!-- /AUTH -->
 
   </div><!-- /.container.aivo-topbar-inner -->
 </header>
