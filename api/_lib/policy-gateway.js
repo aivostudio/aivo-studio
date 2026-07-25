@@ -751,8 +751,48 @@ function enforceCoverPolicy(
   explicitArtistText = '',
   explicitPersonText = ''
 ) {
+  const normalizedCoverText =
+    normalizeText(text);
+
+  const visualMangaContext =
+    /\b(?:japanese\s+)?manga\s+(?:style|art|illustration|aesthetic|visual|drawing|comic|character)\b/i.test(
+      normalizedCoverText
+    ) ||
+    /\banime(?:\s+\w+){0,5}\s+manga\b/i.test(
+      normalizedCoverText
+    );
+
+  const explicitMangaBandContext =
+    /\bmanga\s+(?:grubu|band|muzik grubu|sarkisi|albumu|konseri|vokali|soundu)\b/i.test(
+      normalizedCoverText
+    );
+
   const contextualArtistHits =
-    pickMatchedMusicArtistTerms(text, 8);
+    pickMatchedMusicArtistTerms(text, 8)
+      .filter((term) => {
+        const normalizedTerm =
+          normalizeText(term);
+
+        if (normalizedTerm !== 'manga') {
+          return true;
+        }
+
+        /*
+         * "Japanese manga style", "manga art" ve benzeri
+         * görsel sanat tanımları maNga müzik grubu değildir.
+         *
+         * Açık müzik grubu bağlamında kullanılırsa engellenmeye
+         * devam eder.
+         */
+        if (
+          visualMangaContext &&
+          !explicitMangaBandContext
+        ) {
+          return false;
+        }
+
+        return true;
+      });
 
   const explicitArtistHits =
     pickMatchedTerms(
