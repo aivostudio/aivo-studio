@@ -1,526 +1,1940 @@
 /* ==========================================================
-   AIVO Studio – Music Generate (AUTO BIND, PRODUCTION)
+   AIVO Studio – Music Generate
    File: /js/studio.music.generate.js
+
+   - Desktop TR / EN support
+   - Music generation
+   - Credit consumption and refund
+   - Dynamic button translation
+   - Music job dispatch
+   - Status polling
    ========================================================== */
 
 async function generateMusic(payload) {
-  const r = await fetch("/api/music/generate", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const response =
+    await fetch(
+      "/api/music/generate",
+      {
+        method: "POST",
+        headers: {
+          "content-type":
+            "application/json"
+        },
+        body:
+          JSON.stringify(payload)
+      }
+    );
 
-  const j = await r.json();
-  if (!j.ok) throw new Error("generate_failed");
+  const result =
+    await response.json();
 
-  return j.provider_job_id;
+  if (!result.ok) {
+    throw new Error(
+      "generate_failed"
+    );
+  }
+
+  return result.provider_job_id;
 }
 
-/* =========================================================
-   AIVO Studio — Music Generate (AUTO BIND, PRODUCTION)
-   File: /js/studio.music.generate.js
-   ========================================================= */
-(function AIVO_STUDIO_MUSIC_GENERATE(){
-  if (window.__AIVO_STUDIO_MUSIC_GENERATE__) return;
-  window.__AIVO_STUDIO_MUSIC_GENERATE__ = true;
+/* ========================================================= */
 
-  const BTN_ID = "musicGenerateBtn";
-  const PROMPT_SEL = "#prompt";
+(function AIVO_STUDIO_MUSIC_GENERATE() {
+  "use strict";
 
-  let boundBtn = null;
+  if (
+    window.__AIVO_STUDIO_MUSIC_GENERATE__
+  ) {
+    return;
+  }
+
+  window.__AIVO_STUDIO_MUSIC_GENERATE__ =
+    true;
+
+  const BTN_ID =
+    "musicGenerateBtn";
+
+  const PROMPT_SELECTOR =
+    "#prompt";
+
+  const CREDIT_COST =
+    2;
+
+  const CREDIT_REASON =
+    "studio_music_generate";
+
+  let boundButton = null;
   let isBusy = false;
+  let moduleObserver = null;
 
-  function qs(sel, root=document){ return root.querySelector(sel); }
+  /* =========================================================
+     MODULE DICTIONARY
+     ========================================================= */
 
-  function sleep(ms){ return new Promise((r)=>setTimeout(r, ms)); }
+  const MUSIC_GENERATE_DICTIONARY = {
+    tr: {
+      "studio.music.generate.fixed":
+        "🎵 Müzik Üret (2 Kredi)",
 
-  function getPrompt(){
-    const el = qs(PROMPT_SEL);
-    return (el?.value || "").trim();
+      "studio.music.generate.loading":
+        "Üretiliyor...",
+
+      "studio.music.generate.promptRequired":
+        "Müzik üretmek için prompt yazmalısın.",
+
+      "studio.music.generate.creditConsumeFailed":
+        "Kredi düşülemedi. Lütfen bakiyeni kontrol et.",
+
+      "studio.music.generate.creditConsumed":
+        "2 kredi düşüldü.",
+
+      "studio.music.generate.creditConnectionError":
+        "Kredi düşümünde bağlantı hatası oluştu.",
+
+      "studio.music.generate.refunded":
+        "Müzik üretimi başarısız oldu. 2 kredi hesabına iade edildi.",
+
+      "studio.music.generate.policyFailedRefunded":
+        "Üretim başarısız oldu. Belirli sanatçı adı veya telifli şarkı sözü kullanmadığından emin ol. 2 kredi hesabına iade edildi.",
+
+      "studio.music.generate.policyFailed":
+        "Üretim başarısız oldu. Belirli sanatçı adı veya telifli şarkı sözü kullanmadığından emin ol.",
+
+      "studio.music.generate.startFailed":
+        "Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.",
+
+      "studio.music.generate.jobMissing":
+        "Üretim oluşturuldu ancak gerekli iş numarası alınamadı.",
+
+      "studio.music.generate.started":
+        "Müzik üretimi başladı.",
+
+      "studio.music.generate.ready":
+        "Müzik hazır.",
+
+      "studio.music.generate.genericError":
+        "Müzik üretiminde bir hata oluştu.",
+
+      "studio.music.generate.insufficientCredits":
+        "Bu işlem için yeterli krediniz bulunmuyor.",
+
+      "studio.music.generate.loginRequired":
+        "Kredi işlemi için yeniden giriş yapmanız gerekiyor."
+    },
+
+    en: {
+      "studio.music.generate.fixed":
+        "🎵 Generate Music (2 Credits)",
+
+      "studio.music.generate.loading":
+        "Generating...",
+
+      "studio.music.generate.promptRequired":
+        "Enter a prompt before generating music.",
+
+      "studio.music.generate.creditConsumeFailed":
+        "Credits could not be deducted. Please check your balance.",
+
+      "studio.music.generate.creditConsumed":
+        "2 credits deducted.",
+
+      "studio.music.generate.creditConnectionError":
+        "A connection error occurred while deducting credits.",
+
+      "studio.music.generate.refunded":
+        "Music generation failed. 2 credits were refunded to your account.",
+
+      "studio.music.generate.policyFailedRefunded":
+        "Generation failed. Make sure your request does not include a specific artist name or copyrighted lyrics. 2 credits were refunded to your account.",
+
+      "studio.music.generate.policyFailed":
+        "Generation failed. Make sure your request does not include a specific artist name or copyrighted lyrics.",
+
+      "studio.music.generate.startFailed":
+        "Music generation could not be started. Simplify your prompt and try again.",
+
+      "studio.music.generate.jobMissing":
+        "The generation was created, but the required job ID was not returned.",
+
+      "studio.music.generate.started":
+        "Music generation started.",
+
+      "studio.music.generate.ready":
+        "Your music is ready.",
+
+      "studio.music.generate.genericError":
+        "An error occurred during music generation.",
+
+      "studio.music.generate.insufficientCredits":
+        "You do not have enough credits for this operation.",
+
+      "studio.music.generate.loginRequired":
+        "Please sign in again to complete the credit operation."
+    }
+  };
+
+  /* =========================================================
+     TRANSLATION HELPERS
+     ========================================================= */
+
+  function normalizeLanguage(value) {
+    const language =
+      String(value || "")
+        .trim()
+        .toLowerCase();
+
+    return language.startsWith("en")
+      ? "en"
+      : "tr";
   }
 
-    function toastError(msg){
-    if (window.toast?.error) return window.toast.error(msg);
-    if (window.toast?.info) return window.toast.info(msg);
-    console.warn("[music.generate]", msg);
+  function currentLanguage() {
+    return normalizeLanguage(
+      window.AIVO_LANG ||
+      document.documentElement.lang ||
+      "tr"
+    );
   }
 
-  function toastSuccess(msg){
-    if (window.toast?.success) return window.toast.success(msg);
-    if (window.toast?.info) return window.toast.info(msg);
-    console.log("[music.generate]", msg);
+  function formatText(
+    value,
+    parameters
+  ) {
+    let output =
+      String(
+        value == null
+          ? ""
+          : value
+      );
+
+    if (
+      !parameters ||
+      typeof parameters !== "object"
+    ) {
+      return output;
+    }
+
+    Object.keys(parameters)
+      .forEach(function (key) {
+        output =
+          output.replace(
+            new RegExp(
+              "\\{" + key + "\\}",
+              "g"
+            ),
+            String(parameters[key])
+          );
+      });
+
+    return output;
   }
 
-  function dispatchJob(job){
+  function registerDictionary() {
     try {
-      window.dispatchEvent(new CustomEvent("aivo:job", { detail: job }));
-    } catch(e) {
-      console.warn("[music.generate] dispatch aivo:job failed:", e);
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window
+          .AIVO_STUDIO_I18N
+          .registerPack ===
+          "function"
+      ) {
+        window
+          .AIVO_STUDIO_I18N
+          .registerPack(
+            MUSIC_GENERATE_DICTIONARY
+          );
+
+        return;
+      }
+
+      if (
+        window.AIVO_I18N &&
+        window.AIVO_I18N.tr &&
+        window.AIVO_I18N.en
+      ) {
+        Object.assign(
+          window.AIVO_I18N.tr,
+          MUSIC_GENERATE_DICTIONARY.tr
+        );
+
+        Object.assign(
+          window.AIVO_I18N.en,
+          MUSIC_GENERATE_DICTIONARY.en
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "[music.generate] dictionary registration failed:",
+        error
+      );
     }
   }
 
-  async function callGenerateAPI(prompt){
+  function musicText(
+    key,
+    parameters
+  ) {
+    const language =
+      currentLanguage();
 
-    const titleEl  = document.querySelector('#songName');
-    const lyricsEl = document.querySelector('#lyrics');
-    const vocalEl  = document.querySelector('#vocalType');
-    const moodEl   = document.querySelector('#mood');
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window
+          .AIVO_STUDIO_I18N
+          .t ===
+          "function"
+      ) {
+        const translated =
+          window
+            .AIVO_STUDIO_I18N
+            .t(
+              key,
+              "",
+              parameters
+            );
 
-    const title  = titleEl  ? titleEl.value.trim()  : '';
-    const lyrics = lyricsEl ? lyricsEl.value.trim() : '';
+        if (
+          translated &&
+          translated !== key
+        ) {
+          return translated;
+        }
+      }
+    } catch (_) {}
 
-    const vocalText = vocalEl
-      ? (vocalEl.value || vocalEl.selectedOptions?.[0]?.textContent?.trim() || "")
-      : "";
+    try {
+      if (
+        typeof window.t ===
+        "function"
+      ) {
+        const translated =
+          window.t(
+            key,
+            parameters
+          );
 
-    const moodText = moodEl
-      ? (moodEl.value || moodEl.selectedOptions?.[0]?.textContent?.trim() || "")
-      : "";
+        if (
+          translated &&
+          translated !== key
+        ) {
+          return formatText(
+            translated,
+            parameters
+          );
+        }
+      }
+    } catch (_) {}
 
-    // placeholder ise boş gönder
-    const vocal = (vocalText === "Vokal tipini seç") ? "" : vocalText;
-    const mood  = (moodText  === "Ruh halini seç")   ? "" : moodText;
+    const languagePack =
+      MUSIC_GENERATE_DICTIONARY[
+        language
+      ] ||
+      MUSIC_GENERATE_DICTIONARY.tr;
 
-    // mode’u vokale göre ayarla (enstrümantal seçilmediyse vocals)
-    const mode = (vocal === "Enstrümantal (Vokalsiz)") ? "instrumental" : "vocals";
+    const fallbackPack =
+      MUSIC_GENERATE_DICTIONARY.tr;
 
-     const reference_audio_url = String(window.__MUSIC_REF_AUDIO_URL__ || "").trim();
+    return formatText(
+      languagePack[key] ||
+      fallbackPack[key] ||
+      key,
+      parameters
+    );
+  }
 
-     const payload = {
-      prompt,
-      mode,
-      title,
-      lyrics,
-      vocal,
-      mood,
+  /* =========================================================
+     GENERAL HELPERS
+     ========================================================= */
 
-      // ✅ Ref Audio URL only if present (boş göndermiyoruz)
-      ...(reference_audio_url ? { reference_audio_url } : {}),
+  function query(
+    selector,
+    root
+  ) {
+    return (
+      root || document
+    ).querySelector(selector);
+  }
 
-      use_credits: true,
-      charge: true,
-    credits: 2,
-     cost: 2,
+  function sleep(milliseconds) {
+    return new Promise(
+      function (resolve) {
+        setTimeout(
+          resolve,
+          milliseconds
+        );
+      }
+    );
+  }
+
+  function showToast(
+    type,
+    message
+  ) {
+    try {
+      if (
+        window.toast &&
+        typeof window.toast[type] ===
+          "function"
+      ) {
+        return window.toast[type](
+          message
+        );
+      }
+
+      if (
+        typeof window.toast ===
+        "function"
+      ) {
+        return window.toast(
+          message,
+          type
+        );
+      }
+
+      if (
+        window.Toast &&
+        typeof window.Toast.show ===
+          "function"
+      ) {
+        return window.Toast.show(
+          message,
+          type
+        );
+      }
+    } catch (error) {
+      console.warn(
+        "[music.generate] toast failed:",
+        error
+      );
+    }
+
+    if (type === "error") {
+      console.warn(
+        "[music.generate]",
+        message
+      );
+
+      return;
+    }
+
+    console.log(
+      "[music.generate]",
+      message
+    );
+  }
+
+  function toastError(message) {
+    showToast(
+      "error",
+      message
+    );
+  }
+
+  function toastSuccess(message) {
+    showToast(
+      "success",
+      message
+    );
+  }
+
+  function dispatchJob(job) {
+    try {
+      window.dispatchEvent(
+        new CustomEvent(
+          "aivo:job",
+          {
+            detail: job
+          }
+        )
+      );
+    } catch (error) {
+      console.warn(
+        "[music.generate] dispatch aivo:job failed:",
+        error
+      );
+    }
+  }
+
+  function getPrompt() {
+    const element =
+      query(PROMPT_SELECTOR);
+
+    return String(
+      element &&
+      element.value
+        ? element.value
+        : ""
+    ).trim();
+  }
+
+  /* =========================================================
+     BUTTON
+     ========================================================= */
+
+  function normalButtonText() {
+    return musicText(
+      "studio.music.generate.fixed"
+    );
+  }
+
+  function loadingButtonText() {
+    return musicText(
+      "studio.music.generate.loading"
+    );
+  }
+
+  function syncGenerateButton(
+    button
+  ) {
+    const target =
+      button ||
+      document.getElementById(
+        BTN_ID
+      );
+
+    if (!target) {
+      return;
+    }
+
+    if (
+      target.getAttribute(
+        "aria-busy"
+      ) === "true"
+    ) {
+      target.textContent =
+        loadingButtonText();
+
+      return;
+    }
+
+    target.textContent =
+      normalButtonText();
+
+    target.setAttribute(
+      "data-credit-cost",
+      String(CREDIT_COST)
+    );
+  }
+
+  function setButtonBusy(
+    button,
+    busy
+  ) {
+    if (!button) {
+      return;
+    }
+
+    button.disabled =
+      Boolean(busy);
+
+    button.classList.toggle(
+      "is-loading",
+      Boolean(busy)
+    );
+
+    if (busy) {
+      button.setAttribute(
+        "aria-busy",
+        "true"
+      );
+
+      button.textContent =
+        loadingButtonText();
+
+      return;
+    }
+
+    button.removeAttribute(
+      "aria-busy"
+    );
+
+    button.textContent =
+      normalButtonText();
+  }
+
+  /* =========================================================
+     CREDIT ERROR TRANSLATION
+     ========================================================= */
+
+  function creditErrorMessage(data) {
+    const raw =
+      String(
+        data &&
+        (
+          data.error ||
+          data.message
+        )
+          ? (
+              data.error ||
+              data.message
+            )
+          : ""
+      )
+        .trim()
+        .toLowerCase();
+
+    if (
+      raw.includes(
+        "insufficient"
+      ) ||
+      raw.includes(
+        "not_enough"
+      ) ||
+      raw.includes(
+        "yetersiz"
+      ) ||
+      raw.includes(
+        "balance"
+      ) ||
+      raw.includes(
+        "bakiye"
+      )
+    ) {
+      return musicText(
+        "studio.music.generate.insufficientCredits"
+      );
+    }
+
+    if (
+      raw.includes(
+        "unauthorized"
+      ) ||
+      raw.includes(
+        "login"
+      ) ||
+      raw.includes(
+        "session"
+      ) ||
+      raw.includes(
+        "auth"
+      ) ||
+      raw.includes(
+        "oturum"
+      )
+    ) {
+      return musicText(
+        "studio.music.generate.loginRequired"
+      );
+    }
+
+    return musicText(
+      "studio.music.generate.creditConsumeFailed"
+    );
+  }
+
+  /* =========================================================
+     API
+     ========================================================= */
+
+  async function callGenerateAPI(
+    prompt
+  ) {
+    const titleElement =
+      document.querySelector(
+        "#songName"
+      );
+
+    const lyricsElement =
+      document.querySelector(
+        "#lyrics"
+      );
+
+    const vocalElement =
+      document.querySelector(
+        "#vocalType"
+      );
+
+    const moodElement =
+      document.querySelector(
+        "#mood"
+      );
+
+    const title =
+      titleElement
+        ? titleElement.value.trim()
+        : "";
+
+    const lyrics =
+      lyricsElement
+        ? lyricsElement.value.trim()
+        : "";
+
+    /*
+      Values are intentionally read from option.value.
+
+      The visible option text can change according to the
+      selected language, while the values sent to the API
+      remain stable.
+    */
+
+    const vocalText =
+      vocalElement
+        ? String(
+            vocalElement.value ||
+            ""
+          ).trim()
+        : "";
+
+    const moodText =
+      moodElement
+        ? String(
+            moodElement.value ||
+            ""
+          ).trim()
+        : "";
+
+    const vocal =
+      vocalText;
+
+    const mood =
+      moodText;
+
+    const mode =
+      vocal ===
+      "Enstrümantal (Vokalsiz)"
+        ? "instrumental"
+        : "vocals";
+
+    const referenceAudioUrl =
+      String(
+        window
+          .__MUSIC_REF_AUDIO_URL__ ||
+        ""
+      ).trim();
+
+    const payload = {
+      prompt:
+        prompt,
+
+      mode:
+        mode,
+
+      title:
+        title,
+
+      lyrics:
+        lyrics,
+
+      vocal:
+        vocal,
+
+      mood:
+        mood,
+
+      use_credits:
+        true,
+
+      charge:
+        true,
+
+      credits:
+        CREDIT_COST,
+
+      cost:
+        CREDIT_COST,
+
+      ...(
+        referenceAudioUrl
+          ? {
+              reference_audio_url:
+                referenceAudioUrl
+            }
+          : {}
+      )
     };
 
-    const res = await fetch("/api/music/generate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
+    const response =
+      await fetch(
+        "/api/music/generate",
+        {
+          method: "POST",
+
+          headers: {
+            "content-type":
+              "application/json"
+          },
+
+          credentials:
+            "include",
+
+          body:
+            JSON.stringify(
+              payload
+            )
+        }
+      );
 
     let data = null;
-    try { data = await res.json(); }
-    catch { data = { ok:false, error:"non_json_response", status: res.status }; }
 
-    if (!res.ok || !data?.ok) {
-      const errMsg = data?.error || ("http_" + res.status);
-      throw new Error("generate_failed:" + errMsg);
+    try {
+      data =
+        await response.json();
+    } catch (_) {
+      data = {
+        ok: false,
+        error:
+          "non_json_response",
+        status:
+          response.status
+      };
+    }
+
+    if (
+      !response.ok ||
+      !data ||
+      !data.ok
+    ) {
+      const errorMessage =
+        data &&
+        data.error
+          ? data.error
+          : (
+              "http_" +
+              response.status
+            );
+
+      throw new Error(
+        "generate_failed:" +
+        errorMessage
+      );
     }
 
     return data;
   }
 
-  async function doGenerate(){
-    if (isBusy) return;
+  /* =========================================================
+     GENERATE
+     ========================================================= */
+
+  async function doGenerate() {
+    if (isBusy) {
+      return;
+    }
+
     isBusy = true;
 
-    // =========================================================
-    // ✅ BUTTON LOADING EFFECT (Cover ile aynı)
-    // - basınca disable + "Üretiliyor..." + class is-loading
-    // - minimum 3.5s sonra normale döner
-    // =========================================================
-    const btn = document.getElementById(BTN_ID);
-    const t0 = Date.now();
-    const prevText = btn ? btn.textContent : "";
-    if (btn) {
-      btn.disabled = true;
-      btn.classList.add("is-loading");
-      btn.textContent = "Üretiliyor...";
-      btn.setAttribute("aria-busy", "true");
-    }
+    const button =
+      document.getElementById(
+        BTN_ID
+      );
+
+    const startedAt =
+      Date.now();
+
+    setButtonBusy(
+      button,
+      true
+    );
+
     try {
-           const prompt = getPrompt();
-      if (!prompt){
-        toastError("Prompt yazmalısın");
+      const prompt =
+        getPrompt();
+
+      if (!prompt) {
+        toastError(
+          musicText(
+            "studio.music.generate.promptRequired"
+          )
+        );
+
         return;
       }
 
-      // ✅ UI meta: kart başlığı hiçbir aşamada "Müzik Üretimi" ile ezilmeyecek
-      const uiTitle  = String(document.querySelector("#songName")?.value || "").trim();
-      const uiLyrics = String(document.querySelector("#lyrics")?.value || "").trim();
-      const uiPrompt = String(document.querySelector("#prompt")?.value || "").trim();
+      /*
+        Preserve the user's own title, lyrics and prompt.
+        These values must never be translated.
+      */
 
-      window.__LAST_PROMPT__ = prompt;
+      const uiTitle =
+        String(
+          document
+            .querySelector(
+              "#songName"
+            )
+            ?.value ||
+          ""
+        ).trim();
 
-   
-        let consumed = false;
-      let consumeTransactionId = null;
-      const creditCost = 2;
-      const creditReason = "studio_music_generate";
-      const consumeRequestId = `music:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+      const uiLyrics =
+        String(
+          document
+            .querySelector(
+              "#lyrics"
+            )
+            ?.value ||
+          ""
+        ).trim();
 
-      async function refundMusicCredit(reason, extraMeta = {}) {
-        if (!consumed || !consumeTransactionId) return false;
+      const uiPrompt =
+        String(
+          document
+            .querySelector(
+              "#prompt"
+            )
+            ?.value ||
+          ""
+        ).trim();
 
-        try {
-          const refundRes = await fetch("/api/credits/refund", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "content-type": "application/json",
-              "accept": "application/json"
-            },
-            body: JSON.stringify({
-              app: "music",
-              action: creditReason,
-              amount: creditCost,
-              request_id: consumeRequestId,
-              related_transaction_id: consumeTransactionId,
-              reason,
-              meta: {
-                source: "studio.music.generate",
-                prompt,
-                ...extraMeta
-              }
-            })
-          });
+      window.__LAST_PROMPT__ =
+        prompt;
 
-          const refundData = await refundRes.json().catch(() => null);
+      let consumed = false;
 
-          if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
-            try {
-              const creditGetRes = await fetch("/api/credits/get", {
-                credentials: "include",
-                cache: "no-store",
-                headers: { "accept": "application/json" }
-              });
+      let consumeTransactionId =
+        null;
 
-              const creditGetData = await creditGetRes.json().catch(() => null);
+      const consumeRequestId =
+        "music:" +
+        Date.now() +
+        ":" +
+        Math.random()
+          .toString(36)
+          .slice(2, 8);
 
-              if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-                const topCreditCountEl = document.getElementById("topCreditCount");
-                if (topCreditCountEl) {
-                  topCreditCountEl.textContent = String(creditGetData.credits);
-                }
+      /* =====================================================
+         CREDIT REFUND
+         ===================================================== */
 
-                if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-                  window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-                }
-              }
-            } catch (_) {}
-
-            try { window.syncCreditsUI?.({ force: true }); } catch (_) {}
-            toastError("Müzik üretimi başarısız oldu, 2 kredi iade edildi.");
-            return true;
-          }
-        } catch (refundErr) {
-          console.error("[music.generate] refund failed:", refundErr);
+      async function refundMusicCredit(
+        reason,
+        extraMeta
+      ) {
+        if (
+          !consumed ||
+          !consumeTransactionId
+        ) {
+          return false;
         }
 
-        return false;
+        try {
+          const refundResponse =
+            await fetch(
+              "/api/credits/refund",
+              {
+                method: "POST",
+
+                credentials:
+                  "include",
+
+                headers: {
+                  "content-type":
+                    "application/json",
+
+                  "accept":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+                    app:
+                      "music",
+
+                    action:
+                      CREDIT_REASON,
+
+                    amount:
+                      CREDIT_COST,
+
+                    request_id:
+                      consumeRequestId,
+
+                    related_transaction_id:
+                      consumeTransactionId,
+
+                    reason:
+                      reason,
+
+                    meta: {
+                      source:
+                        "studio.music.generate",
+
+                      prompt:
+                        prompt,
+
+                      ...(
+                        extraMeta || {}
+                      )
+                    }
+                  })
+              }
+            );
+
+          const refundData =
+            await refundResponse
+              .json()
+              .catch(
+                function () {
+                  return null;
+                }
+              );
+
+          const refundAccepted =
+            refundResponse.ok &&
+            refundData &&
+            refundData.ok &&
+            (
+              refundData.refunded ||
+              refundData.deduped ||
+              refundData.skipped
+            );
+
+          if (!refundAccepted) {
+            return false;
+          }
+
+          try {
+            const creditGetResponse =
+              await fetch(
+                "/api/credits/get",
+                {
+                  credentials:
+                    "include",
+
+                  cache:
+                    "no-store",
+
+                  headers: {
+                    "accept":
+                      "application/json"
+                  }
+                }
+              );
+
+            const creditGetData =
+              await creditGetResponse
+                .json()
+                .catch(
+                  function () {
+                    return null;
+                  }
+                );
+
+            if (
+              creditGetData &&
+              creditGetData.ok &&
+              typeof
+                creditGetData.credits ===
+                "number"
+            ) {
+              const creditCountElement =
+                document.getElementById(
+                  "topCreditCount"
+                );
+
+              if (
+                creditCountElement
+              ) {
+                creditCountElement
+                  .textContent =
+                  String(
+                    creditGetData.credits
+                  );
+              }
+
+              if (
+                window.AIVO_STORE_V1 &&
+                typeof window
+                  .AIVO_STORE_V1
+                  .setCredits ===
+                  "function"
+              ) {
+                window
+                  .AIVO_STORE_V1
+                  .setCredits(
+                    creditGetData.credits
+                  );
+              }
+            }
+          } catch (_) {}
+
+          try {
+            if (
+              typeof window
+                .syncCreditsUI ===
+                "function"
+            ) {
+              window.syncCreditsUI({
+                force: true
+              });
+            }
+          } catch (_) {}
+
+          return true;
+        } catch (refundError) {
+          console.error(
+            "[music.generate] refund failed:",
+            refundError
+          );
+
+          return false;
+        }
       }
 
+      /* =====================================================
+         CONSUME CREDIT
+         ===================================================== */
+
       try {
-        const creditRes = await fetch("/api/credits/consume-ledger", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "content-type": "application/json",
-            "accept": "application/json"
-          },
-          body: JSON.stringify({
-            app: "music",
-            action: creditReason,
-            cost: creditCost,
-            request_id: consumeRequestId,
-            reason: creditReason
-          })
-        });
+        const creditResponse =
+          await fetch(
+            "/api/credits/consume-ledger",
+            {
+              method: "POST",
+
+              credentials:
+                "include",
+
+              headers: {
+                "content-type":
+                  "application/json",
+
+                "accept":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  app:
+                    "music",
+
+                  action:
+                    CREDIT_REASON,
+
+                  cost:
+                    CREDIT_COST,
+
+                  request_id:
+                    consumeRequestId,
+
+                  reason:
+                    CREDIT_REASON
+                })
+            }
+          );
 
         let creditData = null;
-        try { creditData = await creditRes.json(); }
-        catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
 
-        if (!creditRes.ok || !creditData?.ok) {
-          const msg =
-            creditData?.error ||
-            creditData?.message ||
-            "Kredi düşülemedi. Lütfen bakiyeni kontrol et.";
-          toastError(msg);
+        try {
+          creditData =
+            await creditResponse
+              .json();
+        } catch (_) {
+          creditData = {
+            ok: false,
+            error:
+              "non_json_response",
+            status:
+              creditResponse.status
+          };
+        }
+
+        if (
+          !creditResponse.ok ||
+          !creditData ||
+          !creditData.ok
+        ) {
+          toastError(
+            creditErrorMessage(
+              creditData
+            )
+          );
+
           return;
         }
 
         consumed = true;
+
         consumeTransactionId =
-          creditData?.transaction_id ||
-          creditData?.transaction?.id ||
+          creditData.transaction_id ||
+          (
+            creditData.transaction &&
+            creditData.transaction.id
+          ) ||
           null;
 
         try {
-          const creditGetRes = await fetch("/api/credits/get", {
-            credentials: "include",
-            cache: "no-store",
-            headers: { "accept": "application/json" }
-          });
+          const creditGetResponse =
+            await fetch(
+              "/api/credits/get",
+              {
+                credentials:
+                  "include",
 
-          const creditGetData = await creditGetRes.json().catch(() => null);
+                cache:
+                  "no-store",
 
-          if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-            const topCreditCountEl = document.getElementById("topCreditCount");
-            if (topCreditCountEl) {
-              topCreditCountEl.textContent = String(creditGetData.credits);
+                headers: {
+                  "accept":
+                    "application/json"
+                }
+              }
+            );
+
+          const creditGetData =
+            await creditGetResponse
+              .json()
+              .catch(
+                function () {
+                  return null;
+                }
+              );
+
+          if (
+            creditGetData &&
+            creditGetData.ok &&
+            typeof
+              creditGetData.credits ===
+              "number"
+          ) {
+            const creditCountElement =
+              document.getElementById(
+                "topCreditCount"
+              );
+
+            if (
+              creditCountElement
+            ) {
+              creditCountElement
+                .textContent =
+                String(
+                  creditGetData.credits
+                );
             }
 
-            if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-              window.AIVO_STORE_V1.setCredits(creditGetData.credits);
+            if (
+              window.AIVO_STORE_V1 &&
+              typeof window
+                .AIVO_STORE_V1
+                .setCredits ===
+                "function"
+            ) {
+              window
+                .AIVO_STORE_V1
+                .setCredits(
+                  creditGetData.credits
+                );
             }
           }
         } catch (_) {}
 
-        toastSuccess("2 kredi düşüldü");
+        toastSuccess(
+          musicText(
+            "studio.music.generate.creditConsumed"
+          )
+        );
+      } catch (creditError) {
+        console.error(
+          "[music.generate] credits consume failed:",
+          creditError
+        );
 
-      } catch (creditErr) {
-        console.error("[music.generate] credits consume failed:", creditErr);
-        toastError("Kredi düşümünde bağlantı hatası oluştu.");
+        toastError(
+          musicText(
+            "studio.music.generate.creditConnectionError"
+          )
+        );
+
         return;
       }
 
-      // 1) Direkt API
+      /* =====================================================
+         GENERATE API
+         ===================================================== */
+
       let result = null;
+
       try {
-        result = await callGenerateAPI(prompt);
-          } catch (apiErr) {
-        console.warn("[music.generate] /api/music/generate failed. Credit refund will be attempted:", apiErr);
+        result =
+          await callGenerateAPI(
+            prompt
+          );
+      } catch (apiError) {
+        console.warn(
+          "[music.generate] /api/music/generate failed. Credit refund will be attempted:",
+          apiError
+        );
 
-        await refundMusicCredit("music_generate_failed", {
-          error: String(apiErr?.message || apiErr || "generate_failed")
-        });
+        const refunded =
+          await refundMusicCredit(
+            "music_generate_failed",
+            {
+              error:
+                String(
+                  apiError &&
+                  apiError.message
+                    ? apiError.message
+                    : (
+                        apiError ||
+                        "generate_failed"
+                      )
+                )
+            }
+          );
 
-        toastError("Üretim başarısız. Sanatçı adı/telifli söz kullanma. 2 kredi iade edildi.");
+        toastError(
+          musicText(
+            refunded
+              ? "studio.music.generate.policyFailedRefunded"
+              : "studio.music.generate.policyFailed"
+          )
+        );
+
         return;
       }
 
-      // =========================================================
-      // ✅ RESULT NORMALIZE (FIXED)
-      // - backend artık provider_job_id döndürüyor: prov_music_...
-      // - status endpoint bunu bekliyor
-      // =========================================================
-      const provider_job_id =
-        result?.provider_job_id ||
-        result?.providerJobId ||
-        result?.data?.provider_job_id ||
-        result?.data?.providerJobId ||
+      /* =====================================================
+         NORMALIZE RESULT
+         ===================================================== */
+
+      const providerJobId =
+        result.provider_job_id ||
+        result.providerJobId ||
+        (
+          result.data &&
+          result.data.provider_job_id
+        ) ||
+        (
+          result.data &&
+          result.data.providerJobId
+        ) ||
         null;
 
-      const internal_job_id =
-        result?.job_id ||
-        result?.jobId ||
-        result?.internal_job_id ||
-        result?.id ||
-        result?.data?.job_id ||
-        result?.data?.id ||
+      const internalJobId =
+        result.job_id ||
+        result.jobId ||
+        result.internal_job_id ||
+        result.id ||
+        (
+          result.data &&
+          result.data.job_id
+        ) ||
+        (
+          result.data &&
+          result.data.id
+        ) ||
         null;
 
-      // ✅ provider_song_ids normalize (2 ayrı şarkı id'si buradan gelecek)
-      const provider_song_ids =
-        result?.provider_song_ids ||
-        result?.providerSongIds ||
-        result?.data?.provider_song_ids ||
-        result?.data?.providerSongIds ||
+      const providerSongIds =
+        result.provider_song_ids ||
+        result.providerSongIds ||
+        (
+          result.data &&
+          result.data.provider_song_ids
+        ) ||
+        (
+          result.data &&
+          result.data.providerSongIds
+        ) ||
         [];
 
-      // Öncelik provider id
-      const job_id = provider_job_id || internal_job_id;
+      const jobId =
+        providerJobId ||
+        internalJobId;
 
-      // ✅ KRİTİK: provider_job_id yoksa status poll yapamayız.
-      // Fallback internal UUID ile /api/music/status çalışmaz → "hazırlanıyor"da kalır.
-     if (!provider_job_id) {
-  console.warn("[music.generate] missing provider_job_id, result:", result);
-  toastError("Müzik üretimi başlatılamadı. Promptu sadeleştirip tekrar deneyin.");
-  return;
-}
+      /*
+        The status endpoint requires provider_job_id.
+      */
 
-          if (!job_id){
-        console.warn("[music.generate] generate response:", result);
-        toastError("Job oluşturuldu ama job_id / provider_job_id gelmedi.");
+      if (!providerJobId) {
+        console.warn(
+          "[music.generate] missing provider_job_id, result:",
+          result
+        );
+
+        toastError(
+          musicText(
+            "studio.music.generate.startFailed"
+          )
+        );
+
         return;
       }
 
-      // DEBUG
-      window.__LAST_MUSIC_GENERATE_RESPONSE__ = result;
-      window.__LAST_MUSIC_JOB_ID__ = job_id;
-      window.__LAST_MUSIC_PROVIDER_JOB_ID__ = provider_job_id;
-      window.__LAST_MUSIC_INTERNAL_JOB_ID__ = internal_job_id;
+      if (!jobId) {
+        console.warn(
+          "[music.generate] generate response:",
+          result
+        );
 
-      console.log("[music.generate] FULL_RESPONSE:", result);
-      console.log("[music.generate] job_id chosen:", job_id, {
-        provider_job_id,
-        internal_job_id
-      });
+        toastError(
+          musicText(
+            "studio.music.generate.jobMissing"
+          )
+        );
 
-      const isProviderJob = String(job_id).startsWith("prov_music_");
-      const jobType = "music"; // panel key music
+        return;
+      }
 
-      toastSuccess("Müzik üretimi başladı");
+      /* =====================================================
+         DEBUG STATE
+         ===================================================== */
 
-      // 1) Panel event
+      window
+        .__LAST_MUSIC_GENERATE_RESPONSE__ =
+        result;
+
+      window
+        .__LAST_MUSIC_JOB_ID__ =
+        jobId;
+
+      window
+        .__LAST_MUSIC_PROVIDER_JOB_ID__ =
+        providerJobId;
+
+      window
+        .__LAST_MUSIC_INTERNAL_JOB_ID__ =
+        internalJobId;
+
+      console.log(
+        "[music.generate] FULL_RESPONSE:",
+        result
+      );
+
+      console.log(
+        "[music.generate] job_id chosen:",
+        jobId,
+        {
+          provider_job_id:
+            providerJobId,
+
+          internal_job_id:
+            internalJobId
+        }
+      );
+
+      const isProviderJob =
+        String(jobId)
+          .startsWith(
+            "prov_music_"
+          );
+
+      const jobType =
+        "music";
+
+      toastSuccess(
+        musicText(
+          "studio.music.generate.started"
+        )
+      );
+
+      /* =====================================================
+         PANEL EVENT
+         ===================================================== */
+
       dispatchJob({
-        type: jobType,
-        kind: jobType,
+        type:
+          jobType,
 
-        job_id: job_id,
-        id: job_id,
+        kind:
+          jobType,
 
-        status: result?.state || result?.status || "queued",
+        job_id:
+          jobId,
 
-        // ✅ UI meta forward (title boş olabilir, OK)
-        title: uiTitle,
-        lyrics: uiLyrics,
-        prompt: uiPrompt,
+        id:
+          jobId,
 
-        __ui_state: "processing",
-        __audio_src: "",
+        status:
+          result.state ||
+          result.status ||
+          "queued",
 
-        // panel.music.js bunu direkt okuyor
-        provider_job_id: provider_job_id,
+        title:
+          uiTitle,
 
-        // ✅ EN KRİTİK: iki kart için farklı provider_song_id'ler buradan gelecek
-        provider_song_ids: Array.isArray(provider_song_ids) ? provider_song_ids : [],
+        lyrics:
+          uiLyrics,
 
-        // panel.music.js için gerçek job id (internal) sakla
-        __real_job_id: internal_job_id || job_id,
+        prompt:
+          uiPrompt,
 
-        // debug flagler kalsın
-        __provider_job: isProviderJob,
-        __provider_job_id: provider_job_id,
-        __internal_job_id: internal_job_id,
+        __ui_state:
+          "processing",
+
+        __audio_src:
+          "",
+
+        provider_job_id:
+          providerJobId,
+
+        provider_song_ids:
+          Array.isArray(
+            providerSongIds
+          )
+            ? providerSongIds
+            : [],
+
+        __real_job_id:
+          internalJobId ||
+          jobId,
+
+        __provider_job:
+          isProviderJob,
+
+        __provider_job_id:
+          providerJobId,
+
+        __internal_job_id:
+          internalJobId
       });
 
-      // 2) AIVO_JOBS store (varsa)
+      /* =====================================================
+         AIVO JOB STORE
+         ===================================================== */
+
       try {
-        if (window.AIVO_JOBS?.upsert) {
+        if (
+          window.AIVO_JOBS &&
+          typeof window
+            .AIVO_JOBS
+            .upsert ===
+            "function"
+        ) {
           window.AIVO_JOBS.upsert({
-            type: jobType,
-            kind: jobType,
-            job_id: job_id,
-            id: job_id,
-            status: result?.state || result?.status || "queued",
+            type:
+              jobType,
 
-            // ✅ UI meta forward (title boş olabilir, OK)
-            title: uiTitle,
-            lyrics: uiLyrics,
-            prompt: uiPrompt,
+            kind:
+              jobType,
 
-            createdAt: new Date().toISOString(),
-            __provider_job: isProviderJob,
-            __provider_job_id: provider_job_id,
-            __internal_job_id: internal_job_id,
+            job_id:
+              jobId,
+
+            id:
+              jobId,
+
+            status:
+              result.state ||
+              result.status ||
+              "queued",
+
+            title:
+              uiTitle,
+
+            lyrics:
+              uiLyrics,
+
+            prompt:
+              uiPrompt,
+
+            createdAt:
+              new Date()
+                .toISOString(),
+
+            __provider_job:
+              isProviderJob,
+
+            __provider_job_id:
+              providerJobId,
+
+            __internal_job_id:
+              internalJobId
           });
 
-          // =========================================================
-          // 🔁 POLL STATUS → READY OLUNCA UI'YI GÜNCELLE
-          // =========================================================
-          if (provider_job_id) {
-            const pollInterval = setInterval(async () => {
-              try {
-                const r = await fetch(
-                  `/api/music/status?provider_job_id=${encodeURIComponent(provider_job_id)}`
-                );
-                const st = await r.json();
+          /* ===============================================
+             STATUS POLLING
+             =============================================== */
 
-                console.log("[music.generate] poll status:", st);
+          if (providerJobId) {
+            const pollInterval =
+              setInterval(
+                async function () {
+                  try {
+                    const statusResponse =
+                      await fetch(
+                        "/api/music/status" +
+                        "?provider_job_id=" +
+                        encodeURIComponent(
+                          providerJobId
+                        )
+                      );
 
-                 if (st?.state === "ready" && st?.audio?.src) {
-                  clearInterval(pollInterval);
+                    const statusData =
+                      await statusResponse
+                        .json();
 
-                  console.log("[music.generate] READY → dispatch UI update", st);
+                    console.log(
+                      "[music.generate] poll status:",
+                      statusData
+                    );
 
-                  dispatchJob({
-                    type: "music",
-                    kind: "music",
-                    job_id: provider_job_id,
-                    id: provider_job_id,
-                    status: "ready",
-                    state: "ready",
+                    if (
+                      statusData &&
+                      statusData.state ===
+                        "ready" &&
+                      statusData.audio &&
+                      statusData.audio.src
+                    ) {
+                      clearInterval(
+                        pollInterval
+                      );
 
-                    // ✅ UI meta forward AGAIN (READY update title ezmesin)
-                    title: uiTitle,
-                    lyrics: uiLyrics,
-                    prompt: uiPrompt,
+                      console.log(
+                        "[music.generate] READY → dispatch UI update",
+                        statusData
+                      );
 
-                    __ui_state: "ready",
-                    __audio_src: st.audio.src,
-                    audio: { src: st.audio.src },
-                    mp3_url: st.audio.src,
-                    output_id: st.output_id,
-                    internal_job_id: st.internal_job_id,
-                    __provider_job: true,
-                    __provider_job_id: provider_job_id,
-                    __internal_job_id: st.internal_job_id,
-                  });
+                      dispatchJob({
+                        type:
+                          "music",
 
-                  toastSuccess("Müzik hazır");
-                }
-              } catch (e) {
-                console.warn("[music.generate] status poll failed:", e);
-              }
-            }, 1500);
+                        kind:
+                          "music",
+
+                        job_id:
+                          providerJobId,
+
+                        id:
+                          providerJobId,
+
+                        status:
+                          "ready",
+
+                        state:
+                          "ready",
+
+                        title:
+                          uiTitle,
+
+                        lyrics:
+                          uiLyrics,
+
+                        prompt:
+                          uiPrompt,
+
+                        __ui_state:
+                          "ready",
+
+                        __audio_src:
+                          statusData.audio.src,
+
+                        audio: {
+                          src:
+                            statusData.audio.src
+                        },
+
+                        mp3_url:
+                          statusData.audio.src,
+
+                        output_id:
+                          statusData.output_id,
+
+                        internal_job_id:
+                          statusData.internal_job_id,
+
+                        __provider_job:
+                          true,
+
+                        __provider_job_id:
+                          providerJobId,
+
+                        __internal_job_id:
+                          statusData.internal_job_id
+                      });
+
+                      toastSuccess(
+                        musicText(
+                          "studio.music.generate.ready"
+                        )
+                      );
+                    }
+                  } catch (
+                    statusError
+                  ) {
+                    console.warn(
+                      "[music.generate] status poll failed:",
+                      statusError
+                    );
+                  }
+                },
+                1500
+              );
           }
         }
-      } catch(e) {
-        console.warn("[music.generate] AIVO_JOBS.upsert failed:", e);
+      } catch (jobStoreError) {
+        console.warn(
+          "[music.generate] AIVO_JOBS.upsert failed:",
+          jobStoreError
+        );
       }
+    } catch (error) {
+      console.error(
+        "[music.generate] error:",
+        error
+      );
 
-    } catch (e) {
-      console.error("[music.generate] error:", e);
-      toastError("Müzik üretiminde hata oluştu.");
+      toastError(
+        musicText(
+          "studio.music.generate.genericError"
+        )
+      );
     } finally {
-      // minimum 3.5s loading görünsün (UX: basıldı hissi)
-      const minMs = 3500;
-      const dt = Date.now() - t0;
-      if (dt < minMs) await sleep(minMs - dt);
+      /*
+        Keep the loading state visible for at least
+        3.5 seconds so the button interaction is clear.
+      */
 
-      if (btn) {
-        btn.disabled = false;
-        btn.classList.remove("is-loading");
-        btn.textContent = prevText || "🎵 Müzik Üret";
-        btn.removeAttribute("aria-busy");
+      const minimumLoadingTime =
+        3500;
+
+      const elapsed =
+        Date.now() -
+        startedAt;
+
+      if (
+        elapsed <
+        minimumLoadingTime
+      ) {
+        await sleep(
+          minimumLoadingTime -
+          elapsed
+        );
       }
+
+      setButtonBusy(
+        button,
+        false
+      );
 
       isBusy = false;
     }
   }
 
-  function bind(){
-    const btn = document.getElementById(BTN_ID);
-    if (!btn) return;
+  /* =========================================================
+     BIND
+     ========================================================= */
 
-    if (boundBtn === btn) return;
-    boundBtn = btn;
+  function handleGenerateClick(
+    event
+  ) {
+    if (
+      event &&
+      event
+        .__aivoMusicGenerateHandled
+    ) {
+      return;
+    }
 
-    btn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      doGenerate();
-      return false;
-    });
+    if (event) {
+      event
+        .__aivoMusicGenerateHandled =
+        true;
 
-    console.log("[studio.music.generate] bound OK:", BTN_ID);
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    doGenerate();
   }
 
-// bind sadece 1 kere
-document.addEventListener("click", function(e){
-  const btn = e.target.closest("#musicGenerateBtn");
-  if (!btn) return;
+  function bind() {
+    const button =
+      document.getElementById(
+        BTN_ID
+      );
 
-  e.preventDefault();
-  e.stopPropagation();
-  doGenerate();
-});
+    if (!button) {
+      return;
+    }
 
-  window.addEventListener("DOMContentLoaded", bind);
-  window.addEventListener("load", bind);
+    syncGenerateButton(
+      button
+    );
 
+    if (
+      boundButton === button
+    ) {
+      return;
+    }
+
+    boundButton =
+      button;
+
+    button.addEventListener(
+      "click",
+      handleGenerateClick
+    );
+
+    console.log(
+      "[studio.music.generate] bound OK:",
+      BTN_ID
+    );
+  }
+
+  /*
+    Delegated listener is retained because the music module
+    is loaded dynamically into #moduleHost.
+  */
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      const button =
+        event.target &&
+        event.target.closest
+          ? event.target.closest(
+              "#musicGenerateBtn"
+            )
+          : null;
+
+      if (!button) {
+        return;
+      }
+
+      handleGenerateClick(
+        event
+      );
+    }
+  );
+
+  /* =========================================================
+     DYNAMIC MODULE OBSERVER
+     ========================================================= */
+
+  function startObserver() {
+    if (
+      moduleObserver ||
+      !document.body ||
+      typeof MutationObserver ===
+        "undefined"
+    ) {
+      return;
+    }
+
+    moduleObserver =
+      new MutationObserver(
+        function (mutations) {
+          const hasMusicButton =
+            mutations.some(
+              function (mutation) {
+                return Array.from(
+                  mutation.addedNodes ||
+                  []
+                ).some(
+                  function (node) {
+                    if (
+                      !node ||
+                      node.nodeType !== 1
+                    ) {
+                      return false;
+                    }
+
+                    if (
+                      node.id === BTN_ID
+                    ) {
+                      return true;
+                    }
+
+                    return Boolean(
+                      node.querySelector &&
+                      node.querySelector(
+                        "#" + BTN_ID
+                      )
+                    );
+                  }
+                );
+              }
+            );
+
+          if (hasMusicButton) {
+            requestAnimationFrame(
+              bind
+            );
+          }
+        }
+      );
+
+    moduleObserver.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+  }
+
+  /* =========================================================
+     LANGUAGE EVENTS
+     ========================================================= */
+
+  function refreshLanguage() {
+    registerDictionary();
+
+    setTimeout(
+      function () {
+        syncGenerateButton();
+      },
+      0
+    );
+  }
+
+  document.addEventListener(
+    "aivo:language-change",
+    refreshLanguage
+  );
+
+  document.addEventListener(
+    "aivo:studio:i18n-applied",
+    function () {
+      setTimeout(
+        function () {
+          syncGenerateButton();
+        },
+        0
+      );
+    }
+  );
+
+  document.addEventListener(
+    "aivo:module:loaded",
+    function () {
+      requestAnimationFrame(
+        bind
+      );
+    }
+  );
+
+  document.addEventListener(
+    "aivo:studio:module-loaded",
+    function () {
+      requestAnimationFrame(
+        bind
+      );
+    }
+  );
+
+  /* =========================================================
+     BOOT
+     ========================================================= */
+
+  registerDictionary();
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+        registerDictionary();
+        bind();
+        startObserver();
+      },
+      {
+        once: true
+      }
+    );
+  } else {
+    bind();
+    startObserver();
+  }
+
+  window.addEventListener(
+    "load",
+    function () {
+      bind();
+      syncGenerateButton();
+    }
+  );
 })();
