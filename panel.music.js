@@ -1,28 +1,158 @@
-(function AIVO_PANEL_MUSIC(){
+/* =========================================================
+   AIVO Studio - Music Right Panel
+   File: /panel.music.js
+
+   - Desktop TR / EN support
+   - Music list, playback, search and progress
+   - Download, lyrics, delete and stems actions
+   - DB hydration, provider polling and local cache
+   ========================================================= */
+
+(function AIVO_PANEL_MUSIC() {
+  "use strict";
+
   if (window.__AIVO_PANEL_MUSIC__) return;
   window.__AIVO_PANEL_MUSIC__ = true;
-
-  function waitForReady(cb){
-    const t0 = Date.now();
-    const T = setInterval(() => {
-      if (
-        window.RightPanel &&
-        typeof window.RightPanel.register === "function" &&
-        window.DBJobs &&
-        typeof window.DBJobs.create === "function"
-      ) {
-        clearInterval(T);
-        cb();
-      } else if (Date.now() - t0 > 8000) {
-        clearInterval(T);
-        console.warn("[panel.music] RightPanel/DBJobs not ready after 8s");
-      }
-    }, 50);
-  }
 
   const PANEL_KEY = "music";
   const LS_KEY_LEGACY = "aivo.music.jobs.v4";
   const WORKER_ORIGIN = "https://aivo-archive-worker.aivostudioapp.workers.dev";
+  const MUSIC_WORKER_ORIGIN = WORKER_ORIGIN;
+
+  const PANEL_DICTIONARY = {
+    tr: {
+      "studio.music.panel.title": "Müziklerim",
+      "studio.music.panel.retention": "⚠️ Müzik dosyaları 14 gün saklanır.",
+      "studio.music.panel.searchPlaceholder": "Müziklerde ara...",
+      "studio.music.panel.empty": "Henüz müzik yok.",
+      "studio.music.panel.noResults": "Aramana uygun müzik bulunamadı.",
+      "studio.music.panel.untitled": "İsimsiz Müzik",
+      "studio.music.panel.status.ready": "Hazır",
+      "studio.music.panel.status.processing": "Hazırlanıyor…",
+      "studio.music.panel.status.failed": "Üretim başarısız",
+      "studio.music.panel.error.generic": "Üretim tamamlanamadı.",
+      "studio.music.panel.error.providerBalance": "Müzik sağlayıcısında yeterli bakiye bulunmuyor.",
+      "studio.music.panel.error.policy": "İstek müzik sağlayıcısının içerik kontrolü tarafından reddedildi.",
+      "studio.music.panel.action.playPause": "Oynat/Durdur",
+      "studio.music.panel.action.progress": "İlerleme",
+      "studio.music.panel.action.splitStems": "Parçaları Ayır",
+      "studio.music.panel.action.download": "Dosyayı İndir",
+      "studio.music.panel.action.lyrics": "Şarkı Sözleri",
+      "studio.music.panel.action.delete": "Müziği Sil",
+      "studio.music.panel.notReady": "Henüz hazır değil.",
+      "studio.music.panel.playFailed": "Müzik oynatılamadı.",
+      "studio.music.panel.noDownload": "İndirilecek dosya yok.",
+      "studio.music.panel.downloadStarted": "İndirme başlatıldı.",
+      "studio.music.panel.downloadFailed": "Dosya indirilemedi.",
+      "studio.music.panel.readyToast": "Müzik hazır.",
+      "studio.music.panel.stems.ready": "Stems Hazır",
+      "studio.music.panel.stems.processing": "Stems…",
+      "studio.music.panel.stems.failed": "Stems Hata",
+      "studio.music.panel.stems.separating": "Parçalar ayrıştırılıyor…",
+      "studio.music.panel.stems.downloadWithin": "24 saat içinde indirin.",
+      "studio.music.panel.stems.downloadVocals": "Vokalleri indir",
+      "studio.music.panel.stems.downloadDrums": "Davulları indir",
+      "studio.music.panel.stems.downloadBass": "Bası indir",
+      "studio.music.panel.stems.downloadGuitar": "Gitarı indir",
+      "studio.music.panel.stems.downloadPiano": "Piyanoyu indir",
+      "studio.music.panel.stems.readyToast": "Kanal ayırma hazır.",
+      "studio.music.panel.stems.alreadyReady": "Stems zaten hazır.",
+      "studio.music.panel.stems.preparing": "Stems hazırlanıyor…",
+      "studio.music.panel.stems.musicFirst": "Önce müzik hazır olmalı.",
+      "studio.music.panel.stems.started": "Kanal ayırma işlemi başladı.",
+      "studio.music.panel.stems.startFailed": "Stems başlatılamadı.",
+      "studio.music.panel.stems.refunded": "İşlem başarısız oldu, kredi iade edildi.",
+      "studio.music.panel.stems.noChannel": "İndirilecek kanal yok.",
+      "studio.music.panel.stems.downloadStarted": "Kanal indirme başlatıldı.",
+      "studio.music.panel.lyrics.song": "Şarkı",
+      "studio.music.panel.lyrics.none": "Bu şarkıda söz yok.",
+      "studio.music.panel.lyrics.dialogLabel": "Şarkı Sözleri",
+      "studio.music.panel.lyrics.title": "Şarkı Sözleri — {title}",
+      "studio.music.panel.lyrics.copy": "Kopyala",
+      "studio.music.panel.lyrics.close": "Kapat",
+      "studio.music.panel.lyrics.copied": "Kopyalandı.",
+      "studio.music.panel.lyrics.copyFailed": "Kopyalama başarısız.",
+      "studio.music.panel.delete.dbMissing": "DB job id bulunamadı.",
+      "studio.music.panel.delete.failed": "Silme başarısız.",
+      "studio.music.panel.delete.error": "Silme hatası.",
+      "studio.music.panel.delete.success": "Silindi.",
+      "studio.music.panel.stems.modal.close": "Kapat",
+      "studio.music.panel.stems.modal.title": "Kanal Ayırma",
+      "studio.music.panel.stems.modal.description": "Bu işlem 5 kredi kullanır. Devam edilsin mi?",
+      "studio.music.panel.stems.modal.fine": "Bu işlem başlamadan önce kredi kesilir.",
+      "studio.music.panel.stems.modal.cancel": "İptal",
+      "studio.music.panel.stems.modal.confirm": "Onayla (5 Kredi)",
+      "studio.music.panel.stems.modal.loading": "Yükleniyor...",
+      "studio.music.panel.stems.creditFailed": "Kredi düşürülemedi. Lütfen bakiyeni kontrol et.",
+      "studio.music.panel.stems.creditConsumed": "5 kredi düşüldü."
+    },
+    en: {
+      "studio.music.panel.title": "My Music",
+      "studio.music.panel.retention": "⚠️ Music files are stored for 14 days.",
+      "studio.music.panel.searchPlaceholder": "Search music...",
+      "studio.music.panel.empty": "No music yet.",
+      "studio.music.panel.noResults": "No music matches your search.",
+      "studio.music.panel.untitled": "Untitled Track",
+      "studio.music.panel.status.ready": "Ready",
+      "studio.music.panel.status.processing": "Preparing…",
+      "studio.music.panel.status.failed": "Generation failed",
+      "studio.music.panel.error.generic": "Music generation could not be completed.",
+      "studio.music.panel.error.providerBalance": "The music provider does not have sufficient balance.",
+      "studio.music.panel.error.policy": "The request was rejected by the music provider's content checks.",
+      "studio.music.panel.action.playPause": "Play/Pause",
+      "studio.music.panel.action.progress": "Progress",
+      "studio.music.panel.action.splitStems": "Split Stems",
+      "studio.music.panel.action.download": "Download File",
+      "studio.music.panel.action.lyrics": "Lyrics",
+      "studio.music.panel.action.delete": "Delete Music",
+      "studio.music.panel.notReady": "The music is not ready yet.",
+      "studio.music.panel.playFailed": "The music could not be played.",
+      "studio.music.panel.noDownload": "There is no file to download.",
+      "studio.music.panel.downloadStarted": "Download started.",
+      "studio.music.panel.downloadFailed": "The file could not be downloaded.",
+      "studio.music.panel.readyToast": "Your music is ready.",
+      "studio.music.panel.stems.ready": "Stems Ready",
+      "studio.music.panel.stems.processing": "Stems…",
+      "studio.music.panel.stems.failed": "Stems Failed",
+      "studio.music.panel.stems.separating": "Separating stems…",
+      "studio.music.panel.stems.downloadWithin": "Download within 24 hours.",
+      "studio.music.panel.stems.downloadVocals": "Download vocals",
+      "studio.music.panel.stems.downloadDrums": "Download drums",
+      "studio.music.panel.stems.downloadBass": "Download bass",
+      "studio.music.panel.stems.downloadGuitar": "Download guitar",
+      "studio.music.panel.stems.downloadPiano": "Download piano",
+      "studio.music.panel.stems.readyToast": "Stem separation is ready.",
+      "studio.music.panel.stems.alreadyReady": "The stems are already ready.",
+      "studio.music.panel.stems.preparing": "Stems are being prepared…",
+      "studio.music.panel.stems.musicFirst": "The music must be ready first.",
+      "studio.music.panel.stems.started": "Stem separation started.",
+      "studio.music.panel.stems.startFailed": "Stem separation could not be started.",
+      "studio.music.panel.stems.refunded": "The operation failed and the credits were refunded.",
+      "studio.music.panel.stems.noChannel": "There is no stem to download.",
+      "studio.music.panel.stems.downloadStarted": "Stem download started.",
+      "studio.music.panel.lyrics.song": "Song",
+      "studio.music.panel.lyrics.none": "This song has no lyrics.",
+      "studio.music.panel.lyrics.dialogLabel": "Lyrics",
+      "studio.music.panel.lyrics.title": "Lyrics — {title}",
+      "studio.music.panel.lyrics.copy": "Copy",
+      "studio.music.panel.lyrics.close": "Close",
+      "studio.music.panel.lyrics.copied": "Copied.",
+      "studio.music.panel.lyrics.copyFailed": "Copy failed.",
+      "studio.music.panel.delete.dbMissing": "The database job ID could not be found.",
+      "studio.music.panel.delete.failed": "The music could not be deleted.",
+      "studio.music.panel.delete.error": "An error occurred while deleting the music.",
+      "studio.music.panel.delete.success": "Deleted.",
+      "studio.music.panel.stems.modal.close": "Close",
+      "studio.music.panel.stems.modal.title": "Split Stems",
+      "studio.music.panel.stems.modal.description": "This operation uses 5 credits. Continue?",
+      "studio.music.panel.stems.modal.fine": "Credits are deducted before the operation starts.",
+      "studio.music.panel.stems.modal.cancel": "Cancel",
+      "studio.music.panel.stems.modal.confirm": "Confirm (5 Credits)",
+      "studio.music.panel.stems.modal.loading": "Loading...",
+      "studio.music.panel.stems.creditFailed": "Credits could not be deducted. Please check your balance.",
+      "studio.music.panel.stems.creditConsumed": "5 credits deducted."
+    }
+  };
 
   let dbCtrl = null;
   let hostEl = null;
@@ -30,32 +160,125 @@
   let alive = false;
   let jobs = [];
   let rehydrateMusicPanel = null;
-let onMusicVisibilityChange = null;
+  let onMusicVisibilityChange = null;
+  let audioEl = null;
+  let rafId = 0;
+  let eqRaf = 0;
+  let eqLastTs = 0;
+  let currentJobId = null;
+  let searchQuery = "";
+
+  window.selectedJobId = window.selectedJobId || "";
 
   const hiddenDeletedIds = new Set();
   const hiddenDeletedBaseIds = new Set();
   const hiddenDeletedDbIds = new Set();
+  const eqBarsCache = { jobId: null, bars: null };
 
- let audioEl = null;
-let rafId = 0;
-let currentJobId = null;
-window.selectedJobId = window.selectedJobId || "";
+  const pollTimers = window.__AIVO_MUSIC_POLL_TIMERS__ || new Map();
+  window.__AIVO_MUSIC_POLL_TIMERS__ = pollTimers;
 
-  const qs = (s, r = document) => r.querySelector(s);
+  const pollBusy = new Set();
+  const pollLast = new Map();
 
-  function toast(type, msg){
+  const stemsTimers = window.__AIVO_MUSIC_STEMS_TIMERS__ || new Map();
+  window.__AIVO_MUSIC_STEMS_TIMERS__ = stemsTimers;
+
+  const readyToasted = window.__AIVO_MUSIC_READY_TOASTED__ || new Set();
+  window.__AIVO_MUSIC_READY_TOASTED__ = readyToasted;
+
+  const errorToasted = window.__AIVO_MUSIC_ERROR_TOASTED__ || new Set();
+  window.__AIVO_MUSIC_ERROR_TOASTED__ = errorToasted;
+
+  function registerDictionary() {
     try {
-      const t = window.toast;
-      if (!t) return;
-      if (type === "info" && t.info) return t.info(msg);
-      if (type === "success" && t.success) return t.success(msg);
-      if (type === "error" && t.error) return t.error(msg);
-      if (t.show) return t.show(msg);
-    } catch {}
+      if (window.AIVO_STUDIO_I18N?.registerPack) {
+        window.AIVO_STUDIO_I18N.registerPack(PANEL_DICTIONARY);
+        return;
+      }
+
+      if (window.AIVO_I18N?.tr && window.AIVO_I18N?.en) {
+        Object.assign(window.AIVO_I18N.tr, PANEL_DICTIONARY.tr);
+        Object.assign(window.AIVO_I18N.en, PANEL_DICTIONARY.en);
+      }
+    } catch (error) {
+      console.warn("[panel.music] dictionary registration failed", error);
+    }
   }
 
-  function esc(s){
-    return String(s ?? "")
+  function currentLanguage() {
+    try {
+      const fromStudio = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (String(fromStudio || "").toLowerCase().startsWith("en")) return "en";
+      if (String(fromStudio || "").toLowerCase().startsWith("tr")) return "tr";
+    } catch (_) {}
+
+    const raw = String(window.AIVO_LANG || document.documentElement.lang || "tr").toLowerCase();
+    return raw.startsWith("en") ? "en" : "tr";
+  }
+
+  function formatText(value, parameters) {
+    let output = String(value == null ? "" : value);
+    if (!parameters || typeof parameters !== "object") return output;
+
+    Object.keys(parameters).forEach((key) => {
+      output = output.replace(new RegExp("\\{" + key + "\\}", "g"), String(parameters[key]));
+    });
+
+    return output;
+  }
+
+  function mt(key, parameters) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, "", parameters);
+      if (translated && translated !== key) return translated;
+    } catch (_) {}
+
+    try {
+      const translated = window.t?.(key, parameters);
+      if (translated && translated !== key) return formatText(translated, parameters);
+    } catch (_) {}
+
+    const language = currentLanguage();
+    return formatText(
+      PANEL_DICTIONARY[language]?.[key] || PANEL_DICTIONARY.tr[key] || key,
+      parameters
+    );
+  }
+
+  function waitForReady(callback) {
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      if (
+        window.RightPanel &&
+        typeof window.RightPanel.register === "function" &&
+        window.DBJobs &&
+        typeof window.DBJobs.create === "function"
+      ) {
+        clearInterval(timer);
+        callback();
+      } else if (Date.now() - startedAt > 8000) {
+        clearInterval(timer);
+        console.warn("[panel.music] RightPanel/DBJobs not ready after 8s");
+      }
+    }, 50);
+  }
+
+  const qs = (selector, root = document) => root.querySelector(selector);
+
+  function toast(type, message) {
+    try {
+      const api = window.toast;
+      if (!api) return;
+      if (type === "info" && api.info) return api.info(message);
+      if (type === "success" && api.success) return api.success(message);
+      if (type === "error" && api.error) return api.error(message);
+      if (api.show) return api.show(message);
+    } catch (_) {}
+  }
+
+  function esc(value) {
+    return String(value ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
@@ -63,91 +286,94 @@ window.selectedJobId = window.selectedJobId || "";
       .replaceAll("'", "&#39;");
   }
 
-  function norm(s){
-    return String(s || "")
+  function norm(value) {
+    return String(value || "")
       .trim()
       .toLowerCase()
       .replaceAll("_", " ")
       .replace(/\s+/g, " ");
   }
 
-  function isMusicApp(x){
-    const a = norm(x);
-    return a === "music" || a.includes("music");
+  function isMusicApp(value) {
+    const normalized = norm(value);
+    return normalized === "music" || normalized.includes("music");
   }
 
-  function toMs(v){
-    if (v == null) return 0;
-    if (typeof v === "number" && Number.isFinite(v)) return v;
-    const s = String(v).trim();
-    if (!s) return 0;
-    if (/^\d{10,13}$/.test(s)) {
-      const n = Number(s);
-      return Number.isFinite(n) ? n : 0;
+  function toMs(value) {
+    if (value == null) return 0;
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+
+    const text = String(value).trim();
+    if (!text) return 0;
+
+    if (/^\d{10,13}$/.test(text)) {
+      const number = Number(text);
+      return Number.isFinite(number) ? number : 0;
     }
-    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(s) && !s.includes("T")) {
-      const iso = s.replace(" ", "T") + "Z";
-      const tIso = Date.parse(iso);
-      if (Number.isFinite(tIso)) return tIso;
+
+    if (/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}/.test(text) && !text.includes("T")) {
+      const parsedIso = Date.parse(text.replace(" ", "T") + "Z");
+      if (Number.isFinite(parsedIso)) return parsedIso;
     }
-    const t = Date.parse(s);
-    return Number.isFinite(t) ? t : 0;
+
+    const parsed = Date.parse(text);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
-  function uiState(status){
-    const s = String(status || "").trim().toLowerCase();
-    if (["ready", "done", "completed", "success", "succeeded", "complete"].includes(s)) return "ready";
-    if (["error", "failed", "fail", "failure", "rejected", "cancelled", "canceled"].includes(s)) return "error";
+  function uiState(status) {
+    const normalized = String(status || "").trim().toLowerCase();
+    if (["ready", "done", "completed", "success", "succeeded", "complete"].includes(normalized)) {
+      return "ready";
+    }
+    if (["error", "failed", "fail", "failure", "rejected", "cancelled", "canceled"].includes(normalized)) {
+      return "error";
+    }
     return "processing";
   }
 
-  function fmtTime(sec){
-    sec = Number(sec || 0);
-    if (!isFinite(sec) || sec < 0) sec = 0;
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return `${m}:${String(s).padStart(2, "0")}`;
+  function fmtTime(seconds) {
+    let value = Number(seconds || 0);
+    if (!Number.isFinite(value) || value < 0) value = 0;
+    const minutes = Math.floor(value / 60);
+    const remaining = Math.floor(value % 60);
+    return `${minutes}:${String(remaining).padStart(2, "0")}`;
   }
 
-  function getJobId(v){
-    return String(v?.job_id || v?.id || "").trim();
+  function getJobId(value) {
+    return String(value?.job_id || value?.id || "").trim();
   }
 
-  function getBaseIdFromJobId(jobId){
+  function getBaseIdFromJobId(jobId) {
     return String(jobId || "").trim().split("::")[0].trim();
   }
 
-  function getVariantOfJobId(jobId){
-    const s = String(jobId || "").trim();
-    if (s.endsWith("::orig")) return "orig";
-    if (s.endsWith("::rev1")) return "rev1";
+  function getVariantOfJobId(jobId) {
+    const value = String(jobId || "").trim();
+    if (value.endsWith("::orig")) return "orig";
+    if (value.endsWith("::rev1")) return "rev1";
     return "";
   }
 
-  function buildFamilyIds(baseId){
-    const b = String(baseId || "").trim();
-    if (!b) return [];
-    return [`${b}::orig`, `${b}::rev1`];
+  function buildFamilyIds(baseId) {
+    const value = String(baseId || "").trim();
+    return value ? [`${value}::orig`, `${value}::rev1`] : [];
   }
 
-  function isUuid(v){
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v || "").trim());
-  }
-
-  function isRowDeleted(row){
-    return !!(
-      row?.deleted_at ||
-      row?.deletedAt ||
-      row?.meta?.deleted_at ||
-      row?.meta?.deletedAt
+  function isUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      String(value || "").trim()
     );
   }
 
-  function getRowDbId(row){
+  function isRowDeleted(row) {
+    return Boolean(row?.deleted_at || row?.deletedAt || row?.meta?.deleted_at || row?.meta?.deletedAt);
+  }
+
+  function getRowDbId(row) {
     return String(row?.id || row?.job_id || row?.uuid || "").trim();
   }
 
-  function getRowProviderJobId(row){
+  function getRowProviderJobId(row) {
     return String(
       row?.meta?.provider_job_id ||
       row?.meta?.providerJobId ||
@@ -157,190 +383,175 @@ window.selectedJobId = window.selectedJobId || "";
     ).trim();
   }
 
-  function getRowBaseId(row){
+  function getRowBaseId(row) {
     const mapped = mapDbJobToCards(row);
     if (mapped.length) return getBaseIdFromJobId(getJobId(mapped[0]));
 
     const provider = getRowProviderJobId(row);
     if (provider) return provider;
 
-    const raw = String(row?.job_id || row?.id || "").trim();
-    return raw;
+    return String(row?.job_id || row?.id || "").trim();
   }
 
-  function isHiddenJobId(jobId){
+  function isHiddenJobId(jobId) {
     const id = String(jobId || "").trim();
     if (!id) return false;
     if (hiddenDeletedIds.has(id)) return true;
     const baseId = getBaseIdFromJobId(id);
-    if (baseId && hiddenDeletedBaseIds.has(baseId)) return true;
-    return false;
+    return Boolean(baseId && hiddenDeletedBaseIds.has(baseId));
   }
 
-  function isHiddenRow(row){
+  function isHiddenRow(row) {
     const dbId = getRowDbId(row);
     if (dbId && hiddenDeletedDbIds.has(dbId)) return true;
     const baseId = getRowBaseId(row);
-    if (baseId && hiddenDeletedBaseIds.has(baseId)) return true;
-    return false;
+    return Boolean(baseId && hiddenDeletedBaseIds.has(baseId));
   }
 
-  function clearHiddenDeleteMarksForBase(baseId){
-    const b = String(baseId || "").trim();
-    if (!b) return;
-    hiddenDeletedBaseIds.delete(b);
-    hiddenDeletedIds.delete(`${b}::orig`);
-    hiddenDeletedIds.delete(`${b}::rev1`);
-  }
-
-  function getCookieValue(name){
+  function getCookieValue(name) {
     try {
-      const s = String(document.cookie || "");
-      const parts = s.split(";").map((x) => x.trim());
-      for (const p of parts) {
-        if (!p) continue;
-        const i = p.indexOf("=");
-        if (i < 0) continue;
-        const k = p.slice(0, i).trim();
-        const v = p.slice(i + 1).trim();
-        if (k === name) return v;
+      const parts = String(document.cookie || "").split(";").map((part) => part.trim());
+      for (const part of parts) {
+        if (!part) continue;
+        const index = part.indexOf("=");
+        if (index < 0) continue;
+        if (part.slice(0, index).trim() === name) return part.slice(index + 1).trim();
       }
-    } catch {}
+    } catch (_) {}
     return "";
   }
 
-  function safeKeyPart(v){
-    return String(v || "")
+  function safeKeyPart(value) {
+    return String(value || "")
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9._-]+/g, "_")
       .replace(/^_+|_+$/g, "");
   }
 
-  function getMusicCacheScope(){
+  function getMusicCacheScope() {
     try {
       const authRaw = localStorage.getItem("aivo_auth_unified_v1");
       if (authRaw) {
         const auth = JSON.parse(authRaw);
-        const email =
-          String(auth?.email || auth?.user?.email || auth?.profile?.email || "").trim();
+        const email = String(auth?.email || auth?.user?.email || auth?.profile?.email || "").trim();
         if (email) return `mail:${safeKeyPart(email)}`;
 
-        const userId =
-          String(auth?.user_id || auth?.userId || auth?.user?.id || "").trim();
+        const userId = String(auth?.user_id || auth?.userId || auth?.user?.id || "").trim();
         if (userId) return `uid:${safeKeyPart(userId)}`;
       }
-    } catch {}
+    } catch (_) {}
 
     const sessionId = String(getCookieValue("aivo_session") || "").trim();
-    if (sessionId) return `sess:${safeKeyPart(sessionId.slice(0, 24))}`;
-
-    return "guest";
+    return sessionId ? `sess:${safeKeyPart(sessionId.slice(0, 24))}` : "guest";
   }
 
-  function getMusicCacheKey(){
+  function getMusicCacheKey() {
     return `aivo.music.jobs.v5.${getMusicCacheScope()}`;
   }
 
-  function clearLegacyMusicCache(){
-    try {
-      localStorage.removeItem(LS_KEY_LEGACY);
-    } catch {}
+  function clearLegacyMusicCache() {
+    try { localStorage.removeItem(LS_KEY_LEGACY); } catch (_) {}
   }
 
-  function saveJobs(){
+  function saveJobs() {
     try {
       clearLegacyMusicCache();
-
       const scope = getMusicCacheScope();
       const safeJobs = Array.isArray(jobs)
-        ? jobs.slice(0, 200).map((item) => ({
-            ...item,
-            __cache_scope: scope
-          }))
+        ? jobs.slice(0, 200).map((item) => ({ ...item, __cache_scope: scope }))
         : [];
-
       localStorage.setItem(getMusicCacheKey(), JSON.stringify(safeJobs));
-    } catch {}
+    } catch (_) {}
   }
 
-  function loadJobs(){
+  function loadJobs() {
     try {
       clearLegacyMusicCache();
-
       const scope = getMusicCacheScope();
-      const arr = JSON.parse(localStorage.getItem(getMusicCacheKey()) || "[]");
-      if (!Array.isArray(arr)) return [];
-
-      return arr.filter((item) => {
-        const itemScope = String(item?.__cache_scope || "").trim();
-        if (!itemScope) return false;
-        return itemScope === scope;
-      });
-    } catch {
+      const items = JSON.parse(localStorage.getItem(getMusicCacheKey()) || "[]");
+      if (!Array.isArray(items)) return [];
+      return items.filter((item) => String(item?.__cache_scope || "").trim() === scope);
+    } catch (_) {
       return [];
     }
   }
 
-  function mergePreferDbButKeepReady(oldItem, dbItem){
-    const out = { ...oldItem, ...dbItem };
+  function mergePreferDbButKeepReady(oldItem, dbItem) {
+    const output = { ...oldItem, ...dbItem };
 
     const oldSrc = String(oldItem?.__audio_src || "").trim();
     const dbSrc = String(dbItem?.__audio_src || "").trim();
-    if (!dbSrc && oldSrc) out.__audio_src = oldSrc;
+    if (!dbSrc && oldSrc) output.__audio_src = oldSrc;
 
     const oldState = uiState(oldItem?.__ui_state);
     const dbState = uiState(dbItem?.__ui_state);
-    if (oldState === "ready" && dbState !== "ready" && out.__audio_src) {
-      out.__ui_state = "ready";
-    }
-    if (oldState === "error" && dbState === "processing" && !out.__audio_src) {
-      out.__ui_state = "error";
-    }
+    if (oldState === "ready" && dbState !== "ready" && output.__audio_src) output.__ui_state = "ready";
+    if (oldState === "error" && dbState === "processing" && !output.__audio_src) output.__ui_state = "error";
 
-    const oldErrorMessage = String(oldItem?.__error_message || "").trim();
-    const newErrorMessage = String(out?.__error_message || "").trim();
-    if (!newErrorMessage && oldErrorMessage) out.__error_message = oldErrorMessage;
+    const keepIfMissing = (key) => {
+      const oldValue = String(oldItem?.[key] || "").trim();
+      const newValue = String(output?.[key] || "").trim();
+      if (!newValue && oldValue) output[key] = oldItem[key];
+    };
 
-    const oldFailCode = String(oldItem?.__fail_code || "").trim();
-    const newFailCode = String(out?.__fail_code || "").trim();
-    if (!newFailCode && oldFailCode) out.__fail_code = oldFailCode;
+    [
+      "__error_message",
+      "__fail_code",
+      "__duration",
+      "__db_job_id",
+      "provider_job_id",
+      "__provider_song_id"
+    ].forEach(keepIfMissing);
 
-    const oldDur = String(oldItem?.__duration || "").trim();
-    const dbDur = String(dbItem?.__duration || "").trim();
-    if (!dbDur && oldDur) out.__duration = oldDur;
-
-    const oldDb = String(oldItem?.__db_job_id || "").trim();
-    const newDb = String(out?.__db_job_id || "").trim();
-    if (!newDb && oldDb) out.__db_job_id = oldDb;
-
-    const oldProv = String(oldItem?.provider_job_id || "").trim();
-    const newProv = String(out?.provider_job_id || "").trim();
-    if (!newProv && oldProv) out.provider_job_id = oldProv;
-
-    const oldSong = String(oldItem?.__provider_song_id || "").trim();
-    const newSong = String(out?.__provider_song_id || "").trim();
-    if (!newSong && oldSong) out.__provider_song_id = oldSong;
-
-    return out;
+    return output;
   }
 
-  function upsertJob(job){
+  function upsertJob(job) {
     const id = getJobId(job);
-    if (!id) return;
-    if (isHiddenJobId(id)) return;
+    if (!id || isHiddenJobId(id)) return;
 
     const baseId = getBaseIdFromJobId(id);
     if (baseId && hiddenDeletedBaseIds.has(baseId)) return;
 
-    const i = jobs.findIndex((j) => getJobId(j) === id);
-    if (i >= 0) jobs[i] = mergePreferDbButKeepReady(jobs[i], job);
+    const index = jobs.findIndex((item) => getJobId(item) === id);
+    if (index >= 0) jobs[index] = mergePreferDbButKeepReady(jobs[index], job);
     else jobs.unshift(job);
 
     saveJobs();
   }
 
-  function removeJob(jobId){
+  function clearPoll(jobId) {
+    const id = String(jobId || "").trim();
+    const timer = pollTimers.get(id);
+    if (timer) clearTimeout(timer);
+    pollTimers.delete(id);
+  }
+
+  function clearAllPolls() {
+    for (const timer of pollTimers.values()) clearTimeout(timer);
+    pollTimers.clear();
+  }
+
+  function schedulePoll(jobId, delay) {
+    const id = String(jobId || "").trim();
+    if (!alive || !id || isHiddenJobId(id)) return;
+
+    const existing = jobs.find((item) => getJobId(item) === id) || {};
+    const state = uiState(existing.__ui_state);
+    if (state === "error") return;
+    if (state === "ready" && String(existing.__audio_src || "").trim()) return;
+    if (pollTimers.has(id)) return;
+
+    const timer = setTimeout(() => {
+      pollTimers.delete(id);
+      poll(id);
+    }, delay);
+
+    pollTimers.set(id, timer);
+  }
+
+  function removeJob(jobId) {
     const id = String(jobId || "").trim();
     if (!id) return;
 
@@ -349,7 +560,7 @@ window.selectedJobId = window.selectedJobId || "";
     if (baseId) hiddenDeletedBaseIds.add(baseId);
 
     if (currentJobId === id && audioEl) {
-      try { audioEl.pause(); } catch {}
+      try { audioEl.pause(); } catch (_) {}
       currentJobId = null;
       eqBarsCache.jobId = null;
       eqBarsCache.bars = null;
@@ -357,99 +568,93 @@ window.selectedJobId = window.selectedJobId || "";
     }
 
     clearPoll(id);
-    POLL_BUSY.delete(id);
-    POLL_LAST.delete(id);
-
-    jobs = jobs.filter((j) => getJobId(j) !== id);
+    pollBusy.delete(id);
+    pollLast.delete(id);
+    jobs = jobs.filter((item) => getJobId(item) !== id);
     saveJobs();
     render();
   }
 
-  let eqRaf = 0;
-  let __eqLastTs = 0;
-  const eqBarsCache = { jobId: null, bars: null };
-
-  function bindEqBarsForCurrentJob(){
+  function bindEqBarsForCurrentJob() {
     if (!currentJobId || !hostEl) {
       eqBarsCache.jobId = null;
       eqBarsCache.bars = null;
       return null;
     }
 
-    const jid = String(currentJobId);
-    if (eqBarsCache.jobId === jid && eqBarsCache.bars && eqBarsCache.bars.length) {
-      return eqBarsCache.bars;
-    }
+    const id = String(currentJobId);
+    if (eqBarsCache.jobId === id && eqBarsCache.bars?.length) return eqBarsCache.bars;
 
-    const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(jid)}"]`);
+    const card = hostEl.querySelector(`.aivo-player-card[data-job-id="${CSS.escape(id)}"]`);
     if (!card) {
-      eqBarsCache.jobId = jid;
+      eqBarsCache.jobId = id;
       eqBarsCache.bars = null;
       return null;
     }
 
     const bars = card.querySelectorAll(".aivo-player-btn .aivo-eq i");
-    eqBarsCache.jobId = jid;
-    eqBarsCache.bars = (bars && bars.length) ? bars : null;
+    eqBarsCache.jobId = id;
+    eqBarsCache.bars = bars?.length ? bars : null;
 
-    if (eqBarsCache.bars) {
-      eqBarsCache.bars.forEach((b) => {
-        b.style.willChange = "transform";
-        b.style.transformOrigin = "50% 100%";
-      });
-    }
+    eqBarsCache.bars?.forEach((bar) => {
+      bar.style.willChange = "transform";
+      bar.style.transformOrigin = "50% 100%";
+    });
 
     return eqBarsCache.bars;
   }
 
-  function initEqEngine(){
+  function initEqEngine() {
     if (!audioEl || audioEl.__eqInited) return;
     audioEl.__eqInited = true;
 
-    let ctx = null;
+    let context = null;
     try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      ctx = new AC();
-    } catch (e) {
-      console.warn("[music:eq] AudioContext not available", e);
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      context = new AudioContextClass();
+    } catch (error) {
+      console.warn("[music:eq] AudioContext not available", error);
       return;
     }
 
-    const analyser = ctx.createAnalyser();
+    const analyser = context.createAnalyser();
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.85;
 
-    let srcNode = null;
+    let sourceNode = null;
     try {
-      srcNode = ctx.createMediaElementSource(audioEl);
-    } catch (e) {
-      console.warn("[music:eq] createMediaElementSource failed", e);
+      sourceNode = context.createMediaElementSource(audioEl);
+    } catch (error) {
+      console.warn("[music:eq] createMediaElementSource failed", error);
       return;
     }
 
-    srcNode.connect(analyser);
-    analyser.connect(ctx.destination);
+    sourceNode.connect(analyser);
+    analyser.connect(context.destination);
 
-    const freq = new Uint8Array(analyser.frequencyBinCount);
-    audioEl.__eq = { ctx, analyser, freq };
+    audioEl.__eq = {
+      ctx: context,
+      analyser,
+      freq: new Uint8Array(analyser.frequencyBinCount)
+    };
 
     audioEl.addEventListener("play", () => {
-      try { ctx.resume?.(); } catch {}
+      try { context.resume?.(); } catch (_) {}
       bindEqBarsForCurrentJob();
       startEqLoop();
     }, { passive: true });
 
-    audioEl.addEventListener("pause", () => stopEqLoop(), { passive: true });
-    audioEl.addEventListener("ended", () => stopEqLoop(), { passive: true });
+    audioEl.addEventListener("pause", stopEqLoop, { passive: true });
+    audioEl.addEventListener("ended", stopEqLoop, { passive: true });
   }
 
-  function startEqLoop(){
+  function startEqLoop() {
     if (eqRaf) return;
-    __eqLastTs = 0;
+    eqLastTs = 0;
     eqTick();
   }
 
-  function stopEqLoop(){
+  function stopEqLoop() {
     if (eqRaf) {
       cancelAnimationFrame(eqRaf);
       eqRaf = 0;
@@ -457,71 +662,60 @@ window.selectedJobId = window.selectedJobId || "";
     setEqBars(0.08, 0.06, 0.04);
   }
 
-  function bandAvg(arr, a, b){
+  function bandAverage(array, start, end) {
     let sum = 0;
-    let n = 0;
-    const end = Math.min(arr.length, b);
-    for (let i = Math.max(0, a); i < end; i++) {
-      sum += arr[i];
-      n++;
+    let count = 0;
+    for (let index = Math.max(0, start); index < Math.min(array.length, end); index += 1) {
+      sum += array[index];
+      count += 1;
     }
-    return n ? (sum / n) : 0;
+    return count ? sum / count : 0;
   }
 
-  function clamp01(x){
-    if (x < 0) return 0;
-    if (x > 1) return 1;
-    return x;
+  function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
   }
 
-  function setEqBars(L, M, H){
+  function setEqBars(low, mid, high) {
     if (!currentJobId || !hostEl) return;
     const bars = bindEqBarsForCurrentJob();
-    if (!bars || !bars.length) return;
+    if (!bars?.length) return;
 
-    const v = [
-      0.20 + H * 0.70,
-      0.25 + M * 0.85,
-      0.30 + L * 1.00,
-      0.25 + L * 1.15,
-      0.30 + L * 1.00,
-      0.25 + M * 0.85,
-      0.20 + H * 0.70,
+    const values = [
+      0.20 + high * 0.70,
+      0.25 + mid * 0.85,
+      0.30 + low,
+      0.25 + low * 1.15,
+      0.30 + low,
+      0.25 + mid * 0.85,
+      0.20 + high * 0.70
     ];
 
-    for (let i = 0; i < bars.length; i++) {
-      const k = v[i] ?? 0.2;
-      const s = clamp01(k);
-      bars[i].style.transform = `scaleY(${0.15 + s * 1.15})`;
-    }
+    bars.forEach((bar, index) => {
+      const value = clamp01(values[index] ?? 0.2);
+      bar.style.transform = `scaleY(${0.15 + value * 1.15})`;
+    });
   }
 
-  function eqTick(){
+  function eqTick() {
     eqRaf = requestAnimationFrame(eqTick);
-
-    if (!audioEl || audioEl.paused) return;
-    const pack = audioEl.__eq;
-    if (!pack) return;
+    if (!audioEl || audioEl.paused || !audioEl.__eq) return;
 
     const now = performance.now();
-    if (now - __eqLastTs < 33) return;
-    __eqLastTs = now;
+    if (now - eqLastTs < 33) return;
+    eqLastTs = now;
 
-    const { analyser, freq } = pack;
+    const { analyser, freq } = audioEl.__eq;
     analyser.getByteFrequencyData(freq);
 
-    const low = bandAvg(freq, 2, 10);
-    const mid = bandAvg(freq, 10, 28);
-    const high = bandAvg(freq, 28, 60);
-
-    const L = clamp01(low / 255);
-    const M = clamp01(mid / 255);
-    const H = clamp01(high / 255);
-
-    setEqBars(L, M, H);
+    setEqBars(
+      clamp01(bandAverage(freq, 2, 10) / 255),
+      clamp01(bandAverage(freq, 10, 28) / 255),
+      clamp01(bandAverage(freq, 28, 60) / 255)
+    );
   }
 
-  function ensureAudio(){
+  function ensureAudio() {
     if (audioEl) return audioEl;
 
     audioEl = document.getElementById("aivoAudio");
@@ -536,14 +730,8 @@ window.selectedJobId = window.selectedJobId || "";
 
     initEqEngine();
 
-     audioEl.onloadedmetadata = () => {
-      updateProgressUI();
-    };
-
-    audioEl.ontimeupdate = () => {
-      updateProgressUI();
-    };
-
+    audioEl.onloadedmetadata = updateProgressUI;
+    audioEl.ontimeupdate = updateProgressUI;
     audioEl.onended = () => {
       updateProgressUI();
       setCardPlaying(currentJobId, false);
@@ -552,13 +740,11 @@ window.selectedJobId = window.selectedJobId || "";
       eqBarsCache.bars = null;
       stopRaf();
     };
-
     audioEl.onpause = () => {
       updateProgressUI();
       if (currentJobId) setCardPlaying(currentJobId, false);
       stopRaf();
     };
-
     audioEl.onplay = () => {
       if (currentJobId) setCardPlaying(currentJobId, true);
       bindEqBarsForCurrentJob();
@@ -569,244 +755,192 @@ window.selectedJobId = window.selectedJobId || "";
     return audioEl;
   }
 
-  if (!window.__AIVO_MUSIC_POLL_TIMERS__) window.__AIVO_MUSIC_POLL_TIMERS__ = new Map();
-  const TMAP = window.__AIVO_MUSIC_POLL_TIMERS__;
-
-  function schedulePoll(jobId, ms){
-    const id = String(jobId || "").trim();
-    if (!alive || !id) return;
-    if (isHiddenJobId(id)) return;
-
-    const existing = (jobs || []).find((x) => getJobId(x) === id) || {};
-    const existingState = uiState(existing.__ui_state);
-    if (existingState === "error") return;
-    if (existingState === "ready" && String(existing.__audio_src || "").trim()) return;
-
-    if (TMAP.has(id)) return;
-    const tid = setTimeout(() => {
-      TMAP.delete(id);
-      poll(id);
-    }, ms);
-    TMAP.set(id, tid);
+  function stemProxyUrl(url, label) {
+    const cleanUrl = String(url || "").trim();
+    if (!cleanUrl) return "";
+    const name = String(label || "stem").trim() || "stem";
+    return "/api/media/convert-wav?url=" + encodeURIComponent(cleanUrl) + "&filename=" + encodeURIComponent(name + ".wav");
   }
 
-  function clearPoll(jobId){
-    const id = String(jobId || "").trim();
-    const tid = TMAP.get(id);
-    if (tid) clearTimeout(tid);
-    TMAP.delete(id);
-  }
-
-  function clearAllPolls(){
-    for (const tid of TMAP.values()) clearTimeout(tid);
-    TMAP.clear();
-  }
-
-  function renderCard(job){
+  function renderCard(job) {
     const jobId = getJobId(job);
-    const st = uiState(job.__ui_state || "processing");
+    const state = uiState(job.__ui_state || "processing");
 
     const title =
-      (String(job?.title || "").trim()) ||
-      (String(job?.lyrics || "").replace(/\r/g, "").split("\n").map((s) => s.trim()).find(Boolean) || "") ||
-      (String(job?.prompt || "").trim().split(/\s+/).slice(0, 2).join(" ") || "");
+      String(job?.title || "").trim() ||
+      String(job?.lyrics || "").replace(/\r/g, "").split("\n").map((line) => line.trim()).find(Boolean) ||
+      String(job?.prompt || "").trim().split(/\s+/).slice(0, 2).join(" ") ||
+      mt("studio.music.panel.untitled");
 
-    const sub = st === "error"
-      ? (job.__error_message || job.error_message || job.subtitle || "Üretim tamamlanamadı.")
-      : (job.subtitle || "");
-    const dur = job.duration || job.__duration || "";
+    const subtitle = state === "error"
+      ? String(job.__error_message || job.error_message || job.subtitle || mt("studio.music.panel.error.generic"))
+      : String(job.subtitle || "");
+
+    const duration = job.duration || job.__duration || "";
     const date = job.created_at || job.createdAt || job.__createdAt || "";
+    const isReady = state === "ready" && Boolean(job.__audio_src);
+    const isPlaying = isReady && String(currentJobId || "") === String(jobId || "") && audioEl && !audioEl.paused;
 
-    const tagReady = `<span class="aivo-tag is-ready">Hazır</span>`;
-    const tagProc = `<span class="aivo-tag is-loading">Hazırlanıyor…</span>`;
-    const tagErr = `<span class="aivo-tag is-error">Üretim başarısız</span>`;
+    const statusTag = isReady
+      ? `<span class="aivo-tag is-ready">${esc(mt("studio.music.panel.status.ready"))}</span>`
+      : state === "error"
+        ? `<span class="aivo-tag is-error">${esc(mt("studio.music.panel.status.failed"))}</span>`
+        : `<span class="aivo-tag is-loading">${esc(mt("studio.music.panel.status.processing"))}</span>`;
 
-    const isReady = (st === "ready") && !!job.__audio_src;
-    const isPlayingNow = !!isReady && String(currentJobId || "") === String(jobId || "") && !!audioEl && !audioEl.paused;
-
-    const tags = isReady ? tagReady : (st === "error" ? tagErr : tagProc);
-
-    const leftBtn = `
-      <button class="aivo-player-btn"
+    const playPauseLabel = esc(mt("studio.music.panel.action.playPause"));
+    const playButton = `
+      <button
+        class="aivo-player-btn"
         data-action="toggle-play"
-        aria-label="Oynat/Durdur"
-        title="Oynat/Durdur"
+        aria-label="${playPauseLabel}"
+        title="${playPauseLabel}"
         ${isReady ? "" : "disabled"}
-        style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}">
-        <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "display:none" : ""}">
+        style="${isReady ? "" : "opacity:.45; cursor:not-allowed;"}"
+      >
+        <svg class="icon-play" viewBox="0 0 24 24" fill="none" style="${isPlaying ? "display:none" : ""}">
           <path d="M8 5v14l11-7z" fill="currentColor"></path>
         </svg>
-        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlayingNow ? "" : "display:none"}">
+        <svg class="icon-pause" viewBox="0 0 24 24" fill="none" style="${isPlaying ? "" : "display:none"}">
           <path d="M7 5h3v14H7zM14 5h3v14h-3z" fill="currentColor"></path>
         </svg>
-        <span class="aivo-eq" aria-hidden="true">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-        </span>
+        <span class="aivo-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
       </button>`;
-
-    const metaLeft = dur ? esc(dur) : "0:00";
-    const metaRight = date ? esc(date) : "";
 
     const stems = job?.stems || job?.__stems || null;
     const stemsStatus = String(stems?.status || "").toLowerCase();
-    const stemsOut = stems?.output || null;
+    const stemsOutput = stems?.output || null;
 
     const stemsBadge =
-      stemsStatus === "succeeded" ? `<span class="aivo-tag is-ready">Stems Hazır</span>` :
-      (["starting", "processing"].includes(stemsStatus) ? `<span class="aivo-tag is-loading">Stems…</span>` :
-      (stemsStatus === "failed" ? `<span class="aivo-tag is-error">Stems Hata</span>` : ""));
+      stemsStatus === "succeeded"
+        ? `<span class="aivo-tag is-ready">${esc(mt("studio.music.panel.stems.ready"))}</span>`
+        : ["starting", "processing"].includes(stemsStatus)
+          ? `<span class="aivo-tag is-loading">${esc(mt("studio.music.panel.stems.processing"))}</span>`
+          : stemsStatus === "failed"
+            ? `<span class="aivo-tag is-error">${esc(mt("studio.music.panel.stems.failed"))}</span>`
+            : "";
 
-    const px = (u, label) => {
-      u = String(u || "").trim();
-      if (!u) return "";
-      const name = String(label || "stem").trim() || "stem";
-      return "/api/media/convert-wav?url=" + encodeURIComponent(u) + "&filename=" + encodeURIComponent(name + ".wav");
+    const stemButton = (url, label, filename, icon, translationKey) => {
+      if (!url) return "";
+      const titleText = esc(mt(translationKey));
+      return `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(stemProxyUrl(url, label))}" data-filename="${esc(filename)}" title="${titleText}" aria-label="${titleText}">${icon}</button>`;
     };
 
-    const stemsControls =
-      (stemsStatus === "succeeded" && stemsOut) ? `
+    const stemsControls = stemsStatus === "succeeded" && stemsOutput
+      ? `
         <div class="aivo-stems aivo-stems-icons" aria-label="Stems">
-          ${stemsOut.vocals ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.vocals || "", "Vocals"))}" data-filename="Vocals.wav" title="Vocals indir" aria-label="Vocals indir">🎤</button>` : ``}
-          ${stemsOut.drums ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.drums || "", "Drums"))}" data-filename="Drums.wav" title="Drums indir" aria-label="Drums indir">🥁</button>` : ``}
-          ${stemsOut.bass ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.bass || "", "Bass"))}" data-filename="Bass.wav" title="Bass indir" aria-label="Bass indir">🔊</button>` : ``}
-          ${stemsOut.guitar ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.guitar || "", "Guitar"))}" data-filename="Guitar.wav" title="Guitar indir" aria-label="Guitar indir">🎸</button>` : ``}
-          ${stemsOut.piano ? `<button class="aivo-stem aivo-stem-ic" type="button" data-action="stem-download" data-url="${esc(px(stemsOut.piano || "", "Piano"))}" data-filename="Piano.wav" title="Piano indir" aria-label="Piano indir">🎹</button>` : ``}
-        </div>
+          ${stemButton(stemsOutput.vocals, "Vocals", "Vocals.wav", "🎤", "studio.music.panel.stems.downloadVocals")}
+          ${stemButton(stemsOutput.drums, "Drums", "Drums.wav", "🥁", "studio.music.panel.stems.downloadDrums")}
+          ${stemButton(stemsOutput.bass, "Bass", "Bass.wav", "🔊", "studio.music.panel.stems.downloadBass")}
+          ${stemButton(stemsOutput.guitar, "Guitar", "Guitar.wav", "🎸", "studio.music.panel.stems.downloadGuitar")}
+          ${stemButton(stemsOutput.piano, "Piano", "Piano.wav", "🎹", "studio.music.panel.stems.downloadPiano")}
+          <div class="aivo-stems-note">${esc(mt("studio.music.panel.stems.downloadWithin"))}</div>
+        </div>`
+      : ["starting", "processing"].includes(stemsStatus)
+        ? `<div class="aivo-stems aivo-stems-status">${esc(mt("studio.music.panel.stems.separating"))}</div>`
+        : stemsStatus === "failed"
+          ? `<div class="aivo-stems aivo-stems-status">${esc(mt("studio.music.panel.stems.failed"))}</div>`
+          : "";
 
-        <style>
-          .aivo-stems-icons{margin-top:8px !important;display:flex !important;flex-wrap:wrap !important;gap:6px !important;align-items:center !important;justify-content:flex-start !important;}
-          .aivo-stems-icons::after{content:"24 saat içinde indirin.";display:block;flex-basis:100%;margin-top:6px;font-size:12px;opacity:.7;}
-          .aivo-stems-icons .aivo-stem-ic{display:inline-flex !important;flex:0 0 26px !important;width:26px !important;min-width:26px !important;max-width:26px !important;height:26px !important;min-height:26px !important;max-height:26px !important;padding:0 !important;margin:0 !important;align-items:center !important;justify-content:center !important;border-radius:10px !important;border:1px solid rgba(255,255,255,.12) !important;background:rgba(255,255,255,.06) !important;text-decoration:none !important;user-select:none !important;line-height:1 !important;font-size:13px !important;}
-          .aivo-stems-icons .aivo-stem-ic:active{transform:translateY(1px) !important;}
-        </style>
-      ` : (["starting", "processing"].includes(stemsStatus) ? `
-        <div class="aivo-stems aivo-stems-status">Parçalar ayrıştırılıyor…</div>
-      ` : (stemsStatus === "failed" ? `
-        <div class="aivo-stems aivo-stems-status">Stems hata</div>
-      ` : ""));
+    const splitLabel = esc(mt("studio.music.panel.action.splitStems"));
+    const downloadLabel = esc(mt("studio.music.panel.action.download"));
+    const lyricsLabel = esc(mt("studio.music.panel.action.lyrics"));
+    const deleteLabel = esc(mt("studio.music.panel.action.delete"));
+    const progressLabel = esc(mt("studio.music.panel.action.progress"));
 
     return `
-      <div class="aivo-player-card ${isReady ? "is-ready" : (st === "error" ? "is-error" : "is-loading is-processing")} ${isPlayingNow ? "is-playing" : ""}"
+      <div
+        class="aivo-player-card ${isReady ? "is-ready" : state === "error" ? "is-error" : "is-loading is-processing"} ${isPlaying ? "is-playing" : ""}"
         data-job-id="${esc(jobId)}"
         data-src="${esc(job.__audio_src || "")}"
-        data-provider-song-id="${esc(job.__provider_song_id || "")}">
-        <div class="aivo-player-left">${leftBtn}</div>
-
+        data-provider-song-id="${esc(job.__provider_song_id || "")}"
+      >
+        <div class="aivo-player-left">${playButton}</div>
         <div class="aivo-player-mid">
           <div class="aivo-player-titleRow">
             <div class="aivo-player-title">${esc(title)}</div>
-            <div class="aivo-player-tags">${tags} ${stemsBadge}</div>
+            <div class="aivo-player-tags">${statusTag} ${stemsBadge}</div>
           </div>
-          <div class="aivo-player-sub">${esc(sub)}</div>
-
+          <div class="aivo-player-sub">${esc(subtitle)}</div>
           <div class="aivo-player-meta">
-            <span class="meta-dur">${metaLeft}</span>
+            <span class="meta-dur">${duration ? esc(duration) : "0:00"}</span>
             <span class="aivo-player-dot"></span>
-            <span class="meta-date">${metaRight}</span>
+            <span class="meta-date">${date ? esc(date) : ""}</span>
           </div>
-
-          <div class="aivo-progress" title="İlerleme">
-            <i style="width:${esc(job.__progress || 0)}%"></i>
-          </div>
-
+          <div class="aivo-progress" title="${progressLabel}"><i style="width:${esc(job.__progress || 0)}%"></i></div>
           <div class="aivo-player-controls">${stemsControls}</div>
         </div>
-
-         <div class="aivo-player-actions">
-        
-
-          <button class="aivo-action is-accent" data-action="stems_5_confirm" title="Parçaları Ayır" aria-label="Parçaları Ayır">
+        <div class="aivo-player-actions">
+          <button class="aivo-action is-accent" data-action="stems_5_confirm" title="${splitLabel}" aria-label="${splitLabel}">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
               <path d="M4 12h4M10 12h4M16 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
-          <button class="aivo-action is-blue" data-action="download" title="Dosyayı İndir" aria-label="Dosyayı İndir">⬇</button>
-          <button class="aivo-action" data-action="lyrics" title="Şarkı Sözleri" aria-label="Şarkı Sözleri">
+          <button class="aivo-action is-blue" data-action="download" title="${downloadLabel}" aria-label="${downloadLabel}">⬇</button>
+          <button class="aivo-action" data-action="lyrics" title="${lyricsLabel}" aria-label="${lyricsLabel}">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
               <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
               <path d="M14 3v6h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
             </svg>
           </button>
-          <button class="aivo-action is-danger" data-action="delete" title="Müziği Sil" aria-label="Müziği Sil">🗑</button>
+          <button class="aivo-action is-danger" data-action="delete" title="${deleteLabel}" aria-label="${deleteLabel}">🗑</button>
         </div>
       </div>`;
   }
 
-  let __searchQ = "";
-
-  function getMusicCardTitle(job){
-    return (
-      String(job?.title || "").trim() ||
-      String(job?.lyrics || "")
-        .replace(/\r/g, "")
-        .split("\n")
-        .map((s) => s.trim())
-        .find(Boolean) ||
+  function getMusicCardTitle(job) {
+    return String(job?.title || "").trim() ||
+      String(job?.lyrics || "").replace(/\r/g, "").split("\n").map((line) => line.trim()).find(Boolean) ||
       String(job?.prompt || "").trim().split(/\s+/).slice(0, 2).join(" ") ||
-      ""
-    );
+      "";
   }
 
-  function getMusicCardSub(job){
-    return String(job?.subtitle || "").trim();
+  function buildMusicSearchHaystack(job) {
+    return [getMusicCardTitle(job), String(job?.subtitle || "").trim()]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
   }
 
-  function buildMusicSearchHaystack(job){
-    const title = getMusicCardTitle(job).toLowerCase();
-    const sub = getMusicCardSub(job).toLowerCase();
-    return [title, sub].filter(Boolean).join(" ");
-  }
-
-  function render(){
+  function render() {
     if (!alive || !hostEl || !listEl) return;
-    if (window.RightPanel?.getCurrentKey?.() !== "music") return;
+    if (window.RightPanel?.getCurrentKey?.() !== PANEL_KEY) return;
 
-    const view = (jobs || []).filter((j) => {
-      const id = getJobId(j);
-      if (!id) return false;
-      if (isHiddenJobId(id)) return false;
-      return true;
+    const view = jobs.filter((job) => {
+      const id = getJobId(job);
+      return Boolean(id && !isHiddenJobId(id));
     });
 
-   view.sort((a, b) => {
-  const aid = getJobId(a);
-  const bid = getJobId(b);
-  const abase = getBaseIdFromJobId(aid);
-  const bbase = getBaseIdFromJobId(bid);
+    view.sort((a, b) => {
+      const aId = getJobId(a);
+      const bId = getJobId(b);
+      const aBase = getBaseIdFromJobId(aId);
+      const bBase = getBaseIdFromJobId(bId);
+      const aTime = toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
+      const bTime = toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
 
-  const ta = toMs(a?.created_at) || toMs(a?.createdAt) || toMs(a?.__createdAt) || 0;
-  const tb = toMs(b?.created_at) || toMs(b?.createdAt) || toMs(b?.__createdAt) || 0;
+      if (bTime !== aTime) return bTime - aTime;
+      if (bBase !== aBase) return bBase.localeCompare(aBase);
 
-  if (tb !== ta) return tb - ta;
-  if (bbase !== abase) return bbase.localeCompare(abase);
+      const aRank = aId.endsWith("::orig") ? 0 : aId.endsWith("::rev1") ? 1 : 9;
+      const bRank = bId.endsWith("::orig") ? 0 : bId.endsWith("::rev1") ? 1 : 9;
+      return aRank - bRank;
+    });
 
-  const ar = aid.endsWith("::orig") ? 0 : aid.endsWith("::rev1") ? 1 : 9;
-  const br = bid.endsWith("::orig") ? 0 : bid.endsWith("::rev1") ? 1 : 9;
-  return ar - br;
-});
+    const query = String(searchQuery || "").trim().toLowerCase();
+    const filtered = query ? view.filter((job) => buildMusicSearchHaystack(job).includes(query)) : view;
 
-    const q = String(__searchQ || "").trim().toLowerCase();
-
-    const filteredView = !q
-      ? view
-      : view.filter((job) => buildMusicSearchHaystack(job).includes(q));
-
-    if (!filteredView.length) {
-      listEl.innerHTML = `
-        <div class="aivo-empty">
-          <div class="aivo-empty-sub">${
-            q
-              ? "Aramana uygun müzik bulunamadı."
-              : "Henüz müzik yok."
-          }</div>
-        </div>`;
+    if (!filtered.length) {
+      listEl.innerHTML = `<div class="aivo-empty"><div class="aivo-empty-sub">${esc(
+        query ? mt("studio.music.panel.noResults") : mt("studio.music.panel.empty")
+      )}</div></div>`;
       return;
     }
-    listEl.innerHTML = filteredView.map(renderCard).join("");
+
+    listEl.innerHTML = filtered.map(renderCard).join("");
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
 
-     if (currentJobId && audioEl && !audioEl.paused) {
+    if (currentJobId && audioEl && !audioEl.paused) {
       setCardPlaying(currentJobId, true);
       bindEqBarsForCurrentJob();
       updateProgressUI();
@@ -814,12 +948,12 @@ window.selectedJobId = window.selectedJobId || "";
     }
   }
 
-  function getCard(jobId){
+  function getCard(jobId) {
     if (!hostEl) return null;
     return qs(`.aivo-player-card[data-job-id="${CSS.escape(String(jobId || ""))}"]`, hostEl);
   }
 
-  function setCardPlaying(jobId, isPlaying){
+  function setCardPlaying(jobId, isPlaying) {
     if (!jobId) return;
     const card = getCard(jobId);
     if (!card) return;
@@ -830,26 +964,29 @@ window.selectedJobId = window.selectedJobId || "";
       playIcon.style.display = isPlaying ? "none" : "";
       pauseIcon.style.display = isPlaying ? "" : "none";
     }
-    card.classList.toggle("is-playing", !!isPlaying);
+
+    card.classList.toggle("is-playing", Boolean(isPlaying));
   }
 
-  function updateProgressUI(){
+  function updateProgressUI() {
     if (!audioEl || !currentJobId) return;
     const card = getCard(currentJobId);
     if (!card) return;
 
-    const dur = audioEl.duration || 0;
-    const cur = audioEl.currentTime || 0;
-    const pct = dur > 0 ? Math.max(0, Math.min(100, (cur / dur) * 100)) : 0;
+    const duration = audioEl.duration || 0;
+    const current = audioEl.currentTime || 0;
+    const percentage = duration > 0 ? Math.max(0, Math.min(100, (current / duration) * 100)) : 0;
 
     const bar = qs(".aivo-progress i", card);
-    if (bar) bar.style.width = pct.toFixed(2) + "%";
+    if (bar) bar.style.width = percentage.toFixed(2) + "%";
 
-    const durEl = qs(".meta-dur", card);
-    if (durEl && dur > 0) durEl.textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+    const durationElement = qs(".meta-dur", card);
+    if (durationElement && duration > 0) {
+      durationElement.textContent = `${fmtTime(current)} / ${fmtTime(duration)}`;
+    }
   }
 
-  function startRaf(){
+  function startRaf() {
     stopRaf();
     const tick = () => {
       updateProgressUI();
@@ -858,77 +995,78 @@ window.selectedJobId = window.selectedJobId || "";
     rafId = requestAnimationFrame(tick);
   }
 
-  function stopRaf(){
+  function stopRaf() {
     if (rafId) cancelAnimationFrame(rafId);
     rafId = 0;
   }
 
-async function togglePlayFromCard(card){
-  if (!card) return;
+  async function togglePlayFromCard(card) {
+    if (!card) return;
 
-  const jobId = String(card.getAttribute("data-job-id") || "").trim();
-  if (!jobId || isHiddenJobId(jobId)) return;
+    const jobId = String(card.getAttribute("data-job-id") || "").trim();
+    if (!jobId || isHiddenJobId(jobId)) return;
 
-  const existing = (jobs || []).find((x) => getJobId(x) === jobId) || {};
-  const src = String(existing.__audio_src || card.dataset.src || "").trim();
-  if (!src) {
-    toast("info", "Henüz hazır değil");
-    return;
+    const existing = jobs.find((item) => getJobId(item) === jobId) || {};
+    const source = String(existing.__audio_src || card.dataset.src || "").trim();
+
+    if (!source) {
+      toast("info", mt("studio.music.panel.notReady"));
+      return;
+    }
+
+    const audio = ensureAudio();
+
+    if (currentJobId && currentJobId !== jobId) {
+      setCardPlaying(currentJobId, false);
+      try { audio.pause(); } catch (_) {}
+    }
+
+    if (currentJobId === jobId && !audio.paused) {
+      try { audio.pause(); } catch (_) {}
+      setCardPlaying(jobId, false);
+      return;
+    }
+
+    currentJobId = jobId;
+    setCardPlaying(jobId, true);
+    eqBarsCache.jobId = null;
+    eqBarsCache.bars = null;
+    bindEqBarsForCurrentJob();
+
+    try {
+      if (audio.src !== source) audio.src = source;
+      await audio.play();
+    } catch (error) {
+      console.warn("[panel.music] play failed", {
+        jobId,
+        source,
+        providerSongId: String(existing.__provider_song_id || ""),
+        uiState: String(existing.__ui_state || ""),
+        errorName: String(error?.name || ""),
+        errorMessage: String(error?.message || error || ""),
+        audioCurrentSrc: String(audio?.currentSrc || ""),
+        audioNetworkState: Number(audio?.networkState || 0),
+        audioReadyState: Number(audio?.readyState || 0)
+      });
+      setCardPlaying(jobId, false);
+      toast("error", mt("studio.music.panel.playFailed"));
+    }
   }
 
-  const A = ensureAudio();
+  function onProgressSeek(event) {
+    const progress = event.target.closest(".aivo-progress");
+    if (!progress) return;
 
-  if (currentJobId && currentJobId !== jobId) {
-    setCardPlaying(currentJobId, false);
-    try { A.pause(); } catch {}
-  }
-
-  if (currentJobId === jobId && !A.paused) {
-    try { A.pause(); } catch {}
-    setCardPlaying(jobId, false);
-    return;
-  }
-
-  currentJobId = jobId;
-  setCardPlaying(jobId, true);
-
-  eqBarsCache.jobId = null;
-  eqBarsCache.bars = null;
-  bindEqBarsForCurrentJob();
-
-  try {
-    if (A.src !== src) A.src = src;
-    await A.play();
-  } catch (e) {
-    console.warn("[panel.music] play failed", {
-      jobId,
-      src,
-      providerSongId: String(existing.__provider_song_id || ""),
-      uiState: String(existing.__ui_state || ""),
-      errorName: String(e?.name || ""),
-      errorMessage: String(e?.message || e || ""),
-      audioCurrentSrc: String(A?.currentSrc || ""),
-      audioNetworkState: Number(A?.networkState || 0),
-      audioReadyState: Number(A?.readyState || 0)
-    });
-    setCardPlaying(jobId, false);
-    toast("error", "Play başarısız (src açılamadı)");
-  }
-}
-  function onProgressSeek(e){
-    const wrap = e.target.closest(".aivo-progress");
-    if (!wrap) return;
-    const card = e.target.closest(".aivo-player-card");
+    const card = event.target.closest(".aivo-player-card");
     if (!card) return;
 
     const jobId = card.getAttribute("data-job-id");
     if (!jobId || jobId !== currentJobId) return;
-    if (!audioEl || !isFinite(audioEl.duration) || audioEl.duration <= 0) return;
+    if (!audioEl || !Number.isFinite(audioEl.duration) || audioEl.duration <= 0) return;
 
-    const rect = wrap.getBoundingClientRect();
-    const x = Math.min(Math.max(0, e.clientX - rect.left), rect.width);
-    const ratio = rect.width > 0 ? (x / rect.width) : 0;
-    audioEl.currentTime = ratio * audioEl.duration;
+    const rectangle = progress.getBoundingClientRect();
+    const x = Math.min(Math.max(0, event.clientX - rectangle.left), rectangle.width);
+    audioEl.currentTime = (rectangle.width > 0 ? x / rectangle.width : 0) * audioEl.duration;
     updateProgressUI();
   }
 
@@ -936,133 +1074,118 @@ async function togglePlayFromCard(card){
     let cleanUrl = String(url || "").trim();
     if (!cleanUrl) return false;
 
-    cleanUrl = cleanUrl.includes("#")
-      ? cleanUrl.split("#")[0]
-      : cleanUrl;
+    cleanUrl = cleanUrl.includes("#") ? cleanUrl.split("#")[0] : cleanUrl;
 
-    if (
-      cleanUrl.startsWith("/api/media/proxy?url=") ||
-      cleanUrl.includes("/api/media/proxy?url=")
-    ) {
+    if (cleanUrl.includes("/api/media/proxy?url=")) {
       try {
         const encoded = cleanUrl.split("url=")[1] || "";
         cleanUrl = decodeURIComponent(encoded).split("#")[0];
-      } catch {}
+      } catch (_) {}
     }
 
     try {
-      const response = await fetch(cleanUrl, {
-        method: "GET",
-        cache: "no-store"
-      });
-
-      if (!response.ok) {
-        throw new Error("download_fetch_failed_" + response.status);
-      }
+      const response = await fetch(cleanUrl, { method: "GET", cache: "no-store" });
+      if (!response.ok) throw new Error("download_fetch_failed_" + response.status);
 
       const blob = await response.blob();
       const objectUrl = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      a.rel = "noopener";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(() => {
-        URL.revokeObjectURL(objectUrl);
-      }, 1000);
-
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = filename;
+      anchor.rel = "noopener";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
       return true;
-    } catch (err) {
-      console.error("[panel.music] download failed", err);
+    } catch (error) {
+      console.error("[panel.music] download failed", error);
       window.open(cleanUrl, "_blank", "noopener");
       return false;
     }
   }
 
-  async function actionDownload(card){
+  async function actionDownload(card) {
     const jobId = String(card?.getAttribute("data-job-id") || "").trim();
-    const existing = (jobs || []).find((x) => getJobId(x) === jobId) || {};
-    const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
-    if (!src) {
-      toast("error", "İndirilecek dosya yok");
+    const existing = jobs.find((item) => getJobId(item) === jobId) || {};
+    const source = String(existing.__audio_src || card?.dataset?.src || "").trim();
+
+    if (!source) {
+      toast("error", mt("studio.music.panel.noDownload"));
       return;
     }
 
-    const ok = await downloadBlobFile(src, "music.mp3");
-    if (ok) toast("success", "İndirme başlatıldı");
+    const downloaded = await downloadBlobFile(source, "music.mp3");
+    if (downloaded) toast("success", mt("studio.music.panel.downloadStarted"));
+    else toast("error", mt("studio.music.panel.downloadFailed"));
   }
 
-  if (!window.__AIVO_MUSIC_STEMS_TIMERS__) window.__AIVO_MUSIC_STEMS_TIMERS__ = new Map();
-  const STEMS_TMAP = window.__AIVO_MUSIC_STEMS_TIMERS__;
+  function stemsSet(jobId, patch) {
+    const index = jobs.findIndex((item) => getJobId(item) === jobId);
+    if (index < 0) return;
 
-  function stemsSet(jobId, patch){
-    const i = jobs.findIndex((x) => getJobId(x) === jobId);
-    if (i < 0) return;
-
-    const cur = jobs[i].stems || jobs[i].__stems || {};
-    const next = { ...cur, ...patch, __ts: Date.now() };
-
-    jobs[i] = { ...jobs[i], stems: next };
+    const current = jobs[index].stems || jobs[index].__stems || {};
+    jobs[index] = {
+      ...jobs[index],
+      stems: { ...current, ...patch, __ts: Date.now() }
+    };
     saveJobs();
   }
 
-  async function stemsPost(body){
-    const r = await fetch("/api/music/stems", {
+  async function stemsPost(body) {
+    const response = await fetch("/api/music/stems", {
       method: "POST",
       credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body)
     });
-    const j = await r.json().catch(() => null);
-    if (!r.ok || !j) throw new Error((j && (j.error || j.message)) || ("http_" + r.status));
-    return j;
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data) {
+      throw new Error(data?.error || data?.message || "http_" + response.status);
+    }
+    return data;
   }
 
-  function stemsClearTimer(jobId){
-    const tid = STEMS_TMAP.get(jobId);
-    if (tid) clearTimeout(tid);
-    STEMS_TMAP.delete(jobId);
+  function stemsClearTimer(jobId) {
+    const timer = stemsTimers.get(jobId);
+    if (timer) clearTimeout(timer);
+    stemsTimers.delete(jobId);
   }
 
-  function stemsSchedulePoll(jobId, ms){
-    if (!alive || !jobId) return;
-    if (isHiddenJobId(jobId)) return;
-    if (STEMS_TMAP.has(jobId)) return;
+  function stemsSchedulePoll(jobId, delay) {
+    if (!alive || !jobId || isHiddenJobId(jobId) || stemsTimers.has(jobId)) return;
 
-    const tid = setTimeout(() => {
-      STEMS_TMAP.delete(jobId);
+    const timer = setTimeout(() => {
+      stemsTimers.delete(jobId);
       stemsPoll(jobId);
-    }, ms);
+    }, delay);
 
-    STEMS_TMAP.set(jobId, tid);
+    stemsTimers.set(jobId, timer);
   }
 
-  async function stemsPoll(jobId){
+  async function stemsPoll(jobId) {
     if (!alive || !jobId || isHiddenJobId(jobId)) return;
 
-    const existing = jobs.find((x) => getJobId(x) === jobId) || {};
+    const existing = jobs.find((item) => getJobId(item) === jobId) || {};
     const stems = existing.stems || existing.__stems || {};
-    const pid = String(stems.prediction_id || "").trim();
-    if (!pid) return;
+    const predictionId = String(stems.prediction_id || "").trim();
+    if (!predictionId) return;
 
     try {
-      const s = await stemsPost({ prediction_id: pid });
-      const status = String(s.status || "").toLowerCase();
+      const response = await stemsPost({ prediction_id: predictionId });
+      const status = String(response.status || "").toLowerCase();
       if (isHiddenJobId(jobId)) return;
 
-         if (status === "succeeded") {
-        stemsSet(jobId, { status: "succeeded", output: s.output || null, error: "" });
+      if (status === "succeeded") {
+        stemsSet(jobId, { status: "succeeded", output: response.output || null, error: "" });
         render();
-        toast("success", "Kanal ayırma hazır");
+        toast("success", mt("studio.music.panel.stems.readyToast"));
         return;
       }
 
       if (["failed", "canceled", "cancelled"].includes(status)) {
-        stemsSet(jobId, { status: "failed", error: s.error || status });
+        stemsSet(jobId, { status: "failed", error: response.error || status });
         render();
         return;
       }
@@ -1070,44 +1193,40 @@ async function togglePlayFromCard(card){
       stemsSet(jobId, { status: status || "processing" });
       render();
       stemsSchedulePoll(jobId, 2500);
-    } catch (e) {
-      stemsSet(jobId, { status: "failed", error: String(e?.message || e || "failed") });
+    } catch (error) {
+      stemsSet(jobId, { status: "failed", error: String(error?.message || error || "failed") });
       render();
     }
   }
 
-  async function actionStems(card, opts = {}){
-    const jobId = String(
-      opts?.job_id ||
-      card?.getAttribute("data-job-id") ||
-      ""
-    ).trim();
+  async function actionStems(card, options = {}) {
+    const jobId = String(options?.job_id || card?.getAttribute("data-job-id") || "").trim();
     if (!jobId || isHiddenJobId(jobId)) return;
 
-    const consumeTransactionId = String(opts?.consume_transaction_id || "").trim();
-    const consumeAmount = Number(opts?.consume_amount || 0) || 0;
-    const consumeAction = String(opts?.consume_action || "music_stems_split").trim();
-    const consumeRequestId = String(opts?.consume_request_id || `stems:${jobId}`).trim();
+    const consumeTransactionId = String(options?.consume_transaction_id || "").trim();
+    const consumeAmount = Number(options?.consume_amount || 0) || 0;
+    const consumeAction = String(options?.consume_action || "music_stems_split").trim();
+    const consumeRequestId = String(options?.consume_request_id || `stems:${jobId}`).trim();
 
-    const existing = jobs.find((x) => getJobId(x) === jobId) || {};
-    const src = String(existing.__audio_src || card?.dataset?.src || "").trim();
-    if (!src) {
-      toast("info", "Önce müzik hazır olmalı");
+    const existing = jobs.find((item) => getJobId(item) === jobId) || {};
+    const source = String(existing.__audio_src || card?.dataset?.src || "").trim();
+    if (!source) {
+      toast("info", mt("studio.music.panel.stems.musicFirst"));
       return;
     }
 
-    const stems = existing.stems || existing.__stems || {};
-    const curStatus = String(stems.status || "").toLowerCase();
-    const curPid = String(stems.prediction_id || "").trim();
+    const currentStems = existing.stems || existing.__stems || {};
+    const currentStatus = String(currentStems.status || "").toLowerCase();
+    const currentPredictionId = String(currentStems.prediction_id || "").trim();
 
-    if (curStatus === "succeeded") {
-      toast("info", "Stems zaten hazır");
+    if (currentStatus === "succeeded") {
+      toast("info", mt("studio.music.panel.stems.alreadyReady"));
       return;
     }
 
-    if (curPid && ["starting", "processing"].includes(curStatus)) {
+    if (currentPredictionId && ["starting", "processing"].includes(currentStatus)) {
       stemsSchedulePoll(jobId, 200);
-      toast("info", "Stems hazırlanıyor…");
+      toast("info", mt("studio.music.panel.stems.preparing"));
       return;
     }
 
@@ -1115,12 +1234,12 @@ async function togglePlayFromCard(card){
       if (!consumeTransactionId || consumeAmount <= 0) return false;
 
       try {
-        const refundRes = await fetch("/api/credits/refund", {
+        const refundResponse = await fetch("/api/credits/refund", {
           method: "POST",
           credentials: "include",
           headers: {
             "content-type": "application/json",
-            "accept": "application/json"
+            accept: "application/json"
           },
           body: JSON.stringify({
             app: "music",
@@ -1137,97 +1256,87 @@ async function togglePlayFromCard(card){
           })
         });
 
-        const refundData = await refundRes.json().catch(() => null);
-if (refundRes.ok && refundData?.ok && refundData?.refunded) {
-  try {
-    const creditGetRes = await fetch("/api/credits/get", {
-      credentials: "include",
-      cache: "no-store",
-      headers: { "accept": "application/json" }
-    });
+        const refundData = await refundResponse.json().catch(() => null);
+        const accepted = refundResponse.ok && refundData?.ok && (
+          refundData?.refunded || refundData?.deduped || refundData?.skipped
+        );
 
-    const creditGetData = await creditGetRes.json().catch(() => null);
+        if (!accepted) return false;
 
-    if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-      const topCreditCountEl = document.getElementById("topCreditCount");
-      if (topCreditCountEl) {
-        topCreditCountEl.textContent = String(creditGetData.credits);
-      }
+        if (refundData?.refunded) {
+          try {
+            const creditsResponse = await fetch("/api/credits/get", {
+              credentials: "include",
+              cache: "no-store",
+              headers: { accept: "application/json" }
+            });
+            const creditsData = await creditsResponse.json().catch(() => null);
+            if (creditsData?.ok && typeof creditsData.credits === "number") {
+              const topCreditCount = document.getElementById("topCreditCount");
+              if (topCreditCount) topCreditCount.textContent = String(creditsData.credits);
+              window.AIVO_STORE_V1?.setCredits?.(creditsData.credits);
+            }
+          } catch (_) {}
 
-      if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-        window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-      }
-    }
-  } catch (_) {}
-
-  try { window.syncCreditsUI?.({ force: true }); } catch {}
-  try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
-  return true;
-}
-
-        if (refundRes.ok && refundData?.ok && (refundData?.deduped || refundData?.skipped)) {
-          return true;
+          try { window.syncCreditsUI?.({ force: true }); } catch (_) {}
+          toast("error", mt("studio.music.panel.stems.refunded"));
         }
-      } catch (err) {
-        console.warn("[panel.music] refund failed", err);
-      }
 
-      return false;
+        return true;
+      } catch (error) {
+        console.warn("[panel.music] refund failed", error);
+        return false;
+      }
     }
 
     stemsClearTimer(jobId);
     stemsSet(jobId, { status: "starting", prediction_id: "", output: null, error: "" });
     render();
-    toast("info", "Kanal ayırma işlemi başladı");
+    toast("info", mt("studio.music.panel.stems.started"));
 
     try {
-      const c = await stemsPost({ audio_url: src });
-      const pid = String(c.id || c.prediction_id || "").trim();
-      const st = String(c.status || "starting").toLowerCase();
+      const response = await stemsPost({ audio_url: source });
+      const predictionId = String(response.id || response.prediction_id || "").trim();
+      const status = String(response.status || "starting").toLowerCase();
 
-      if (!pid) {
-        await tryRefund("stems_start_missing_prediction_id", {
-          stems_response: c || null
-        });
+      if (!predictionId) {
+        await tryRefund("stems_start_missing_prediction_id", { stems_response: response || null });
         throw new Error("missing_prediction_id");
       }
 
       if (isHiddenJobId(jobId)) return;
-
-      stemsSet(jobId, { status: st || "starting", prediction_id: pid, output: null, error: "" });
+      stemsSet(jobId, { status: status || "starting", prediction_id: predictionId, output: null, error: "" });
       render();
       stemsSchedulePoll(jobId, 1200);
-    } catch (e) {
+    } catch (error) {
       await tryRefund("stems_start_failed", {
-        error: String(e?.message || e || "failed")
+        error: String(error?.message || error || "failed")
       });
-
-      stemsSet(jobId, { status: "failed", error: String(e?.message || e || "failed") });
+      stemsSet(jobId, { status: "failed", error: String(error?.message || error || "failed") });
       render();
-      toast("error", "Stems başlatılamadı");
+      toast("error", mt("studio.music.panel.stems.startFailed"));
     }
   }
 
-  function actionLyrics(card){
+  function actionLyrics(card) {
     const jobId = String(card?.getAttribute("data-job-id") || "").trim();
     if (!jobId) return;
 
-    const old = document.getElementById("aivoLyricsModal");
-    if (old) old.remove();
+    document.getElementById("aivoLyricsModal")?.remove();
 
-    const existing = jobs.find((x) => getJobId(x) === jobId) || {};
+    const existing = jobs.find((item) => getJobId(item) === jobId) || {};
     const title =
       String(existing.title || "").trim() ||
       String(card?.querySelector?.(".aivo-player-title")?.textContent || "").trim() ||
-      "Şarkı";
+      mt("studio.music.panel.lyrics.song");
 
     const lyrics = String(existing.lyrics || "").trim();
     if (!lyrics) {
-      toast("info", "Bu şarkıda söz yok");
+      toast("info", mt("studio.music.panel.lyrics.none"));
       return;
     }
 
-    const durTextRaw =
+    const durationText =
       String(existing.__duration || existing.duration || "").trim() ||
       String(card?.querySelector?.(".meta-dur")?.textContent || "").trim();
 
@@ -1235,40 +1344,43 @@ if (refundRes.ok && refundData?.ok && refundData?.refunded) {
       String(existing.__createdAt || existing.created_at || existing.createdAt || "").trim() ||
       String(card?.querySelector?.(".meta-date")?.textContent || "").trim();
 
-    const styleId = "aivoLyricsModalStyle";
-    if (!document.getElementById(styleId)) {
-      const st = document.createElement("style");
-      st.id = styleId;
-      st.textContent = `
-#aivoLyricsModal{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:aivoFadeIn .18s ease-out;}
+    if (!document.getElementById("aivoLyricsModalStyle")) {
+      const style = document.createElement("style");
+      style.id = "aivoLyricsModalStyle";
+      style.textContent = `
+#aivoLyricsModal{position:fixed;inset:0;z-index:999999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);animation:aivoFadeIn .18s ease-out}
 @keyframes aivoFadeIn{from{opacity:0}to{opacity:1}}
-#aivoLyricsModal .aivoLm{width:min(860px,96vw);max-height:min(78vh,760px);border-radius:18px;overflow:hidden;position:relative;background:linear-gradient(180deg, rgba(30,18,56,.92), rgba(10,12,22,.92));border:1px solid rgba(140,100,255,.22);box-shadow:0 28px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset;transform:translateY(6px) scale(.99);animation:aivoPop .18s ease-out forwards;}
+#aivoLyricsModal .aivoLm{width:min(860px,96vw);max-height:min(78vh,760px);border-radius:18px;overflow:hidden;position:relative;background:linear-gradient(180deg,rgba(30,18,56,.92),rgba(10,12,22,.92));border:1px solid rgba(140,100,255,.22);box-shadow:0 28px 90px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04) inset;transform:translateY(6px) scale(.99);animation:aivoPop .18s ease-out forwards}
 @keyframes aivoPop{to{transform:translateY(0) scale(1)}}
-#aivoLyricsModal .aivoLmTop{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px 16px;border-bottom:1px solid rgba(255,255,255,.06);}
-#aivoLyricsModal .aivoLmLeft{display:flex;gap:12px;align-items:center;min-width:0;}
-#aivoLyricsModal .aivoLmIcon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;background:linear-gradient(135deg,#7c5cff,#ff4fd8);box-shadow:0 10px 28px rgba(124,92,255,.25);}
-#aivoLyricsModal .aivoLmTitleWrap{min-width:0;}
-#aivoLyricsModal .aivoLmTitle{font-weight:800;font-size:16px;letter-spacing:.2px;color:rgba(255,255,255,.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-#aivoLyricsModal .aivoLmMeta{margin-top:2px;font-size:12px;color:rgba(255,255,255,.55);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+#aivoLyricsModal .aivoLmTop{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;border-bottom:1px solid rgba(255,255,255,.06)}
+#aivoLyricsModal .aivoLmLeft{display:flex;gap:12px;align-items:center;min-width:0}
+#aivoLyricsModal .aivoLmIcon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;background:linear-gradient(135deg,#7c5cff,#ff4fd8);box-shadow:0 10px 28px rgba(124,92,255,.25)}
+#aivoLyricsModal .aivoLmTitleWrap{min-width:0}
+#aivoLyricsModal .aivoLmTitle{font-weight:800;font-size:16px;letter-spacing:.2px;color:rgba(255,255,255,.95);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#aivoLyricsModal .aivoLmMeta{margin-top:2px;font-size:12px;color:rgba(255,255,255,.55);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 #aivoLyricsModal .aivoLmDot{width:4px;height:4px;border-radius:99px;background:rgba(255,255,255,.28);display:inline-block}
-#aivoLyricsModal .aivoLmBtns{display:flex;gap:10px;align-items:center;}
-#aivoLyricsModal .aivoLmBtn{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:rgba(255,255,255,.92);border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;gap:8px;align-items:center;}
+#aivoLyricsModal .aivoLmBtns{display:flex;gap:10px;align-items:center}
+#aivoLyricsModal .aivoLmBtn{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:rgba(255,255,255,.92);border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer;display:flex;gap:8px;align-items:center}
 #aivoLyricsModal .aivoLmBtn:hover{background:rgba(255,255,255,.10)}
 #aivoLyricsModal .aivoLmX{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);cursor:pointer;font-size:18px;line-height:0}
 #aivoLyricsModal .aivoLmX:hover{background:rgba(255,255,255,.10);color:rgba(255,255,255,.92)}
-#aivoLyricsModal .aivoLmBody{padding:16px;max-height:calc(min(78vh,760px) - 72px);overflow:auto;}
+#aivoLyricsModal .aivoLmBody{padding:16px;max-height:calc(min(78vh,760px) - 72px);overflow:auto}
 #aivoLyricsModal .aivoLmBody::-webkit-scrollbar{width:10px}
 #aivoLyricsModal .aivoLmBody::-webkit-scrollbar-thumb{background:rgba(140,100,255,.28);border-radius:999px;border:2px solid rgba(10,12,22,.6)}
 #aivoLyricsModal .aivoLmBody::-webkit-scrollbar-track{background:rgba(255,255,255,.04)}
-#aivoLyricsModal .aivoLmLyrics{white-space:pre-wrap;line-height:1.6;font-size:14px;color:rgba(255,255,255,.84);padding:14px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);}
-      `;
-      document.head.appendChild(st);
+#aivoLyricsModal .aivoLmLyrics{white-space:pre-wrap;line-height:1.6;font-size:14px;color:rgba(255,255,255,.84);padding:14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}`;
+      document.head.appendChild(style);
     }
 
     const modal = document.createElement("div");
     modal.id = "aivoLyricsModal";
+
+    const dialogLabel = esc(mt("studio.music.panel.lyrics.dialogLabel"));
+    const copyLabel = esc(mt("studio.music.panel.lyrics.copy"));
+    const closeLabel = esc(mt("studio.music.panel.lyrics.close"));
+
     modal.innerHTML = `
-      <div class="aivoLm" role="dialog" aria-modal="true" aria-label="Şarkı Sözleri">
+      <div class="aivoLm" role="dialog" aria-modal="true" aria-label="${dialogLabel}">
         <div class="aivoLmTop">
           <div class="aivoLmLeft">
             <div class="aivoLmIcon" aria-hidden="true">
@@ -1279,320 +1391,258 @@ if (refundRes.ok && refundData?.ok && refundData?.refunded) {
               </svg>
             </div>
             <div class="aivoLmTitleWrap">
-              <div class="aivoLmTitle">Şarkı Sözleri — ${esc(title)}</div>
+              <div class="aivoLmTitle">${esc(mt("studio.music.panel.lyrics.title", { title }))}</div>
               <div class="aivoLmMeta">
-                ${durTextRaw ? (`<span>${esc(durTextRaw)}</span>`) : `<span>—</span>`}
+                <span>${durationText ? esc(durationText) : "—"}</span>
                 <span class="aivoLmDot"></span>
-                ${dateText ? (`<span>${esc(dateText)}</span>`) : `<span> </span>`}
+                <span>${dateText ? esc(dateText) : " "}</span>
               </div>
             </div>
           </div>
           <div class="aivoLmBtns">
-            <button class="aivoLmBtn" type="button" data-lyr-action="copy" title="Kopyala"><span aria-hidden="true">📋</span> Kopyala</button>
-            <button class="aivoLmX" type="button" data-lyr-action="close" aria-label="Kapat" title="Kapat">×</button>
+            <button class="aivoLmBtn" type="button" data-lyr-action="copy" title="${copyLabel}"><span aria-hidden="true">📋</span> ${copyLabel}</button>
+            <button class="aivoLmX" type="button" data-lyr-action="close" aria-label="${closeLabel}" title="${closeLabel}">×</button>
           </div>
         </div>
-        <div class="aivoLmBody">
-          <div class="aivoLmLyrics" id="aivoLmLyricsText">${esc(lyrics)}</div>
-        </div>
+        <div class="aivoLmBody"><div class="aivoLmLyrics" id="aivoLmLyricsText">${esc(lyrics)}</div></div>
       </div>`;
 
-    function closeLyricsModal(){
-      const m = document.getElementById("aivoLyricsModal");
-      if (m) m.remove();
-    }
+    const closeLyricsModal = () => document.getElementById("aivoLyricsModal")?.remove();
 
-    modal.addEventListener("click", async (ev) => {
-      const actBtn = ev.target.closest("[data-lyr-action]");
-      if (actBtn) {
-        const act = actBtn.getAttribute("data-lyr-action");
-        if (act === "close") return closeLyricsModal();
-        if (act === "copy") {
+    modal.addEventListener("click", async (event) => {
+      const actionButton = event.target.closest("[data-lyr-action]");
+      if (actionButton) {
+        const action = actionButton.getAttribute("data-lyr-action");
+        if (action === "close") return closeLyricsModal();
+        if (action === "copy") {
           try {
             await navigator.clipboard.writeText(lyrics);
-            toast("success", "Kopyalandı");
-          } catch {
+            toast("success", mt("studio.music.panel.lyrics.copied"));
+          } catch (_) {
             try {
-              const ta = document.createElement("textarea");
-              ta.value = lyrics;
-              ta.style.position = "fixed";
-              ta.style.left = "-9999px";
-              document.body.appendChild(ta);
-              ta.select();
+              const textarea = document.createElement("textarea");
+              textarea.value = lyrics;
+              textarea.style.position = "fixed";
+              textarea.style.left = "-9999px";
+              document.body.appendChild(textarea);
+              textarea.select();
               document.execCommand("copy");
-              ta.remove();
-              toast("success", "Kopyalandı");
-            } catch {
-              toast("error", "Kopyalama başarısız");
+              textarea.remove();
+              toast("success", mt("studio.music.panel.lyrics.copied"));
+            } catch (_) {
+              toast("error", mt("studio.music.panel.lyrics.copyFailed"));
             }
           }
           return;
         }
       }
-      if (ev.target === modal) closeLyricsModal();
+
+      if (event.target === modal) closeLyricsModal();
     });
 
-    document.addEventListener("keydown", function __aivoLyricsEsc(e){
-      if (e.key === "Escape") {
+    const onEscape = (event) => {
+      if (event.key === "Escape") {
         closeLyricsModal();
-        document.removeEventListener("keydown", __aivoLyricsEsc, true);
+        document.removeEventListener("keydown", onEscape, true);
       }
-    }, true);
+    };
 
+    document.addEventListener("keydown", onEscape, true);
     document.body.appendChild(modal);
   }
 
-  async function resolveDbRowForDelete(jobId, baseId){
+  async function resolveDbRowForDelete(jobId, baseId) {
     const familyIds = new Set(buildFamilyIds(baseId));
     familyIds.add(String(jobId || "").trim());
 
-    const familyJobs = (jobs || []).filter((x) => {
-      const xid = getJobId(x);
-      return xid && familyIds.has(xid);
+    const familyJobs = jobs.filter((item) => {
+      const id = getJobId(item);
+      return id && familyIds.has(id);
     });
 
-    for (const x of familyJobs) {
-      const dbId = String(x?.__db_job_id || x?.db_job_id || "").trim();
+    for (const item of familyJobs) {
+      const dbId = String(item?.__db_job_id || item?.db_job_id || "").trim();
       if (isUuid(dbId)) return { dbJobId: dbId, row: null, source: "memory_uuid" };
     }
 
     let memoryFallback = "";
-    for (const x of familyJobs) {
-      const dbId = String(x?.__db_job_id || x?.db_job_id || "").trim();
+    for (const item of familyJobs) {
+      const dbId = String(item?.__db_job_id || item?.db_job_id || "").trim();
       if (dbId && !memoryFallback) memoryFallback = dbId;
     }
 
     try {
-      const r = await fetch("/api/jobs/list?app=music", {
+      const response = await fetch("/api/jobs/list?app=music", {
         method: "GET",
         credentials: "include",
         headers: { accept: "application/json" },
         cache: "no-store"
       });
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) {
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) {
         return memoryFallback
           ? { dbJobId: memoryFallback, row: null, source: "memory_any" }
           : { dbJobId: "", row: null, source: "list_fail" };
       }
 
-      const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
-
+      const items = Array.isArray(data.items) ? data.items : Array.isArray(data.jobs) ? data.jobs : [];
       for (const row of items) {
         if (!row || isRowDeleted(row)) continue;
 
         const rowDbId = getRowDbId(row);
         const rowBaseId = getRowBaseId(row);
-        const cards = mapDbJobToCards(row);
-        const cardIds = cards.map((c) => getJobId(c)).filter(Boolean);
-
+        const cardIds = mapDbJobToCards(row).map((card) => getJobId(card)).filter(Boolean);
         const providerSongIds = Array.isArray(row?.meta?.provider_song_ids)
-          ? row.meta.provider_song_ids.map((v) => String(v || "").trim()).filter(Boolean)
-          : (Array.isArray(row?.provider_song_ids)
-            ? row.provider_song_ids.map((v) => String(v || "").trim()).filter(Boolean)
-            : []);
+          ? row.meta.provider_song_ids.map((value) => String(value || "").trim()).filter(Boolean)
+          : Array.isArray(row?.provider_song_ids)
+            ? row.provider_song_ids.map((value) => String(value || "").trim()).filter(Boolean)
+            : [];
 
-        const match =
+        const matches =
           (rowDbId && familyIds.has(rowDbId)) ||
           (rowBaseId && rowBaseId === baseId) ||
           cardIds.some((id) => familyIds.has(id)) ||
           providerSongIds.includes(baseId);
 
-        if (!match) continue;
-
-        return { dbJobId: rowDbId, row, source: "list" };
+        if (matches) return { dbJobId: rowDbId, row, source: "list" };
       }
-    } catch (e) {
-      console.warn("[panel.music] resolveDbRowForDelete failed", e);
+    } catch (error) {
+      console.warn("[panel.music] resolveDbRowForDelete failed", error);
     }
 
-    if (memoryFallback) return { dbJobId: memoryFallback, row: null, source: "memory_any" };
-    return { dbJobId: "", row: null, source: "none" };
+    return memoryFallback
+      ? { dbJobId: memoryFallback, row: null, source: "memory_any" }
+      : { dbJobId: "", row: null, source: "none" };
   }
-      
-async function actionDelete(card){
-  const jobId = String(card?.getAttribute("data-job-id") || "").trim();
-  console.log("[MUSIC_DELETE_FN]", { jobId });
-  if (!jobId) return;
 
-  const baseId = getBaseIdFromJobId(jobId);
-  const isRev = getVariantOfJobId(jobId) === "rev1";
-  const otherId = isRev ? `${baseId}::orig` : `${baseId}::rev1`;
-
-  const otherStillExists = (jobs || []).some((x) => getJobId(x) === otherId);
-
- if (otherStillExists) {
-  try {
-    const dbJobId = String(
-      (jobs || []).find((x) => getJobId(x) === jobId)?.__db_job_id || ""
-    ).trim();
-
-    if (!dbJobId) {
-      toast("error", "DB job id bulunamadı");
-      return;
-    }
-
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        job_id: dbJobId,
-        app: "music",
-        variant: getVariantOfJobId(jobId)
-      })
-    });
-
-    const j = await r.json().catch(() => null);
-
-    if (!r.ok || !j?.ok) {
-      toast("error", "Silme başarısız");
-      return;
-    }
-
+  function removeCardLocally(jobId) {
     hiddenDeletedIds.add(jobId);
     clearPoll(jobId);
-    POLL_BUSY.delete(jobId);
-    POLL_LAST.delete(jobId);
+    pollBusy.delete(jobId);
+    pollLast.delete(jobId);
     stemsClearTimer(jobId);
 
     if (currentJobId === jobId && audioEl) {
-      try { audioEl.pause(); } catch {}
+      try { audioEl.pause(); } catch (_) {}
       currentJobId = null;
       eqBarsCache.jobId = null;
       eqBarsCache.bars = null;
       stopRaf();
     }
 
-    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
+    jobs = jobs.filter((item) => getJobId(item) !== jobId);
     saveJobs();
     render();
-   toast("success", "Silindi");
-    return;
-  } catch (e) {
-    console.warn("[panel.music] variant delete failed", e);
-    toast("error", "Silme hatası");
-    return;
-  }
-}
-
-  const { dbJobId } = await resolveDbRowForDelete(jobId, baseId);
-
-  if (!dbJobId) {
-    hiddenDeletedIds.add(jobId);
-    clearPoll(jobId);
-    POLL_BUSY.delete(jobId);
-    POLL_LAST.delete(jobId);
-    stemsClearTimer(jobId);
-
-    if (currentJobId === jobId && audioEl) {
-      try { audioEl.pause(); } catch {}
-      currentJobId = null;
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
-      stopRaf();
-    }
-
-    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
-    saveJobs();
-    render();
-    toast("success", "Silindi");
-    return;
   }
 
-  try {
-    const r = await fetch("/api/jobs/delete", {
-      method: "POST",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ job_id: dbJobId })
-    });
+  async function actionDelete(card) {
+    const jobId = String(card?.getAttribute("data-job-id") || "").trim();
+    console.log("[MUSIC_DELETE_FN]", { jobId });
+    if (!jobId) return;
 
-    const j = await r.json().catch(() => null);
+    const baseId = getBaseIdFromJobId(jobId);
+    const isRevision = getVariantOfJobId(jobId) === "rev1";
+    const otherId = isRevision ? `${baseId}::orig` : `${baseId}::rev1`;
+    const otherStillExists = jobs.some((item) => getJobId(item) === otherId);
 
-    if (!r.ok || !j?.ok) {
-      const staleNotFound =
-        r.status === 404 ||
-        String(j?.error || "").trim() === "not_found_or_not_owned";
-
-      if (staleNotFound) {
-        hiddenDeletedIds.add(jobId);
-        clearPoll(jobId);
-        POLL_BUSY.delete(jobId);
-        POLL_LAST.delete(jobId);
-        stemsClearTimer(jobId);
-
-        if (currentJobId === jobId && audioEl) {
-          try { audioEl.pause(); } catch {}
-          currentJobId = null;
-          eqBarsCache.jobId = null;
-          eqBarsCache.bars = null;
-          stopRaf();
+    if (otherStillExists) {
+      try {
+        const dbJobId = String(jobs.find((item) => getJobId(item) === jobId)?.__db_job_id || "").trim();
+        if (!dbJobId) {
+          toast("error", mt("studio.music.panel.delete.dbMissing"));
+          return;
         }
 
-        jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
-        saveJobs();
-        render();
-      toast("success", "Silindi");
+        const response = await fetch("/api/jobs/delete", {
+          method: "POST",
+          credentials: "include",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            job_id: dbJobId,
+            app: "music",
+            variant: getVariantOfJobId(jobId)
+          })
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.ok) {
+          toast("error", mt("studio.music.panel.delete.failed"));
+          return;
+        }
+
+        removeCardLocally(jobId);
+        toast("success", mt("studio.music.panel.delete.success"));
+        return;
+      } catch (error) {
+        console.warn("[panel.music] variant delete failed", error);
+        toast("error", mt("studio.music.panel.delete.error"));
+        return;
+      }
+    }
+
+    const { dbJobId } = await resolveDbRowForDelete(jobId, baseId);
+    if (!dbJobId) {
+      removeCardLocally(jobId);
+      toast("success", mt("studio.music.panel.delete.success"));
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/jobs/delete", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ job_id: dbJobId })
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) {
+        const staleNotFound = response.status === 404 || String(data?.error || "").trim() === "not_found_or_not_owned";
+        if (staleNotFound) {
+          removeCardLocally(jobId);
+          toast("success", mt("studio.music.panel.delete.success"));
+          return;
+        }
+
+        toast("error", mt("studio.music.panel.delete.failed"));
         return;
       }
 
-      toast("error", "Silme başarısız");
-      return;
+      removeCardLocally(jobId);
+      toast("success", mt("studio.music.panel.delete.success"));
+      try { await hydrateFromDBOnce(); } catch (_) {}
+      try { dbCtrl?.hydrate?.(); } catch (_) {}
+    } catch (error) {
+      console.warn("[panel.music] delete failed", error);
+      toast("error", mt("studio.music.panel.delete.error"));
     }
-
-    hiddenDeletedIds.add(jobId);
-    clearPoll(jobId);
-    POLL_BUSY.delete(jobId);
-    POLL_LAST.delete(jobId);
-    stemsClearTimer(jobId);
-
-    if (currentJobId === jobId && audioEl) {
-      try { audioEl.pause(); } catch {}
-      currentJobId = null;
-      eqBarsCache.jobId = null;
-      eqBarsCache.bars = null;
-      stopRaf();
-    }
-
-    jobs = (jobs || []).filter((x) => getJobId(x) !== jobId);
-    saveJobs();
-    render();
-    toast("success", "Silindi");
-
-    try { await hydrateFromDBOnce(); } catch {}
-    try { dbCtrl?.hydrate?.(); } catch {}
-  } catch (e) {
-    console.warn("[panel.music] delete failed", e);
-    toast("error", "Silme hatası");
   }
-}
-async function onCardClick(e){
-  const btn = e.target.closest("[data-action]");
-  const card = e.target.closest(".aivo-player-card");
-  if (!card) return;
 
-  document.querySelectorAll(".aivo-player-card").forEach((el) => {
-    el.removeAttribute("data-selected-music-card");
-    el.classList.remove("is-selected");
-    el.removeAttribute("aria-selected");
-  });
+  async function onCardClick(event) {
+    const button = event.target.closest("[data-action]");
+    const card = event.target.closest(".aivo-player-card");
+    if (!card) return;
 
-card.setAttribute("data-selected-music-card", "true");
-card.classList.add("is-selected");
-card.setAttribute("aria-selected", "true");
-window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
+    document.querySelectorAll(".aivo-player-card").forEach((element) => {
+      element.removeAttribute("data-selected-music-card");
+      element.classList.remove("is-selected");
+      element.removeAttribute("aria-selected");
+    });
 
-  const act = btn?.dataset?.action || null;
-   if (!act) {
-  return;
-}
+    card.setAttribute("data-selected-music-card", "true");
+    card.classList.add("is-selected");
+    card.setAttribute("aria-selected", "true");
+    window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
 
-    e.preventDefault();
-    e.stopPropagation();
+    const action = button?.dataset?.action || null;
+    if (!action) return;
 
-    if (act === "stems_5_confirm") {
-      const job_id =
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (action === "stems_5_confirm") {
+      const jobId =
         card.getAttribute("data-job-id") ||
         card.dataset.jobId ||
         card.getAttribute("data-track-id") ||
@@ -1602,63 +1652,65 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
         "";
 
       window.openStemConfirmModal?.({
-        job_id,
-        onConfirm: async ({ job_id: confirmed_job_id, consume_transaction_id, consume_amount, consume_action } = {}) => {
+        job_id: jobId,
+        onConfirm: async ({
+          job_id: confirmedJobId,
+          consume_transaction_id: transactionId,
+          consume_amount: amount,
+          consume_action: consumeAction,
+          consume_request_id: requestId
+        } = {}) => {
           console.debug("[stems] confirmed 5 credits", {
-            job_id: confirmed_job_id || job_id,
-            consume_transaction_id,
-            consume_amount,
-            consume_action
+            job_id: confirmedJobId || jobId,
+            consume_transaction_id: transactionId,
+            consume_amount: amount,
+            consume_action: consumeAction,
+            consume_request_id: requestId
           });
 
           await actionStems(card, {
-            job_id: confirmed_job_id || job_id,
-            consume_transaction_id: consume_transaction_id || null,
-            consume_amount: Number(consume_amount || 0) || 0,
-            consume_action: consume_action || "music_stems_split"
+            job_id: confirmedJobId || jobId,
+            consume_transaction_id: transactionId || null,
+            consume_amount: Number(amount || 0) || 0,
+            consume_action: consumeAction || "music_stems_split",
+            consume_request_id: requestId || ""
           });
         }
       });
       return;
     }
-     if (act === "toggle-play") return togglePlayFromCard(card);
-    if (act === "stems") return actionStems(card);
-    if (act === "lyrics") return actionLyrics(card);
-    if (act === "download") return actionDownload(card);
-    if (act === "stem-download") {
-      const url = String(btn?.dataset?.url || "").trim();
-      const filename = String(btn?.dataset?.filename || "stem.wav").trim();
+
+    if (action === "toggle-play") return togglePlayFromCard(card);
+    if (action === "stems") return actionStems(card);
+    if (action === "lyrics") return actionLyrics(card);
+    if (action === "download") return actionDownload(card);
+
+    if (action === "stem-download") {
+      const url = String(button?.dataset?.url || "").trim();
+      const filename = String(button?.dataset?.filename || "stem.wav").trim();
       if (!url) {
-        toast("error", "İndirilecek kanal yok");
+        toast("error", mt("studio.music.panel.stems.noChannel"));
         return;
       }
 
-      const ok = await downloadBlobFile(url, filename);
-      if (ok) toast("success", "Kanal indirme başlatıldı");
+      const downloaded = await downloadBlobFile(url, filename);
+      if (downloaded) toast("success", mt("studio.music.panel.stems.downloadStarted"));
+      else toast("error", mt("studio.music.panel.downloadFailed"));
       return;
     }
-    if (act === "delete") return actionDelete(card);
 
-    toast("info", `Action: ${act}`);
+    if (action === "delete") return actionDelete(card);
   }
 
-  const POLL_BUSY = new Set();
-  const POLL_LAST = new Map();
-  if (!window.__AIVO_MUSIC_READY_TOASTED__) window.__AIVO_MUSIC_READY_TOASTED__ = new Set();
-  if (!window.__AIVO_MUSIC_ERROR_TOASTED__) window.__AIVO_MUSIC_ERROR_TOASTED__ = new Set();
-  const READY_TOASTED = window.__AIVO_MUSIC_READY_TOASTED__;
-  const ERROR_TOASTED = window.__AIVO_MUSIC_ERROR_TOASTED__;
-  const MUSIC_WORKER_ORIGIN = WORKER_ORIGIN || "https://aivo-archive-worker.aivostudioapp.workers.dev";
-
-  function getTopMediaiItems(j){
-    if (Array.isArray(j?.topmediai?.data)) return j.topmediai.data;
-    if (Array.isArray(j?.topmediai?.data?.data)) return j.topmediai.data.data;
+  function getTopMediaItems(data) {
+    if (Array.isArray(data?.topmediai?.data)) return data.topmediai.data;
+    if (Array.isArray(data?.topmediai?.data?.data)) return data.topmediai.data.data;
     return [];
   }
 
-  function pickFailureFromStatus(j){
-    const failures = Array.isArray(j?.failures) ? j.failures : [];
-    const providerItems = getTopMediaiItems(j);
+  function pickFailureFromStatus(data) {
+    const failures = Array.isArray(data?.failures) ? data.failures : [];
+    const providerItems = getTopMediaItems(data);
     const failedItem =
       failures[0] ||
       providerItems.find((item) =>
@@ -1670,35 +1722,32 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       null;
 
     const failCode = String(
-      j?.fail_code ||
+      data?.fail_code ||
       failedItem?.fail_code ||
       failedItem?.failCode ||
       ""
     ).trim();
 
     const rawReason = String(
-      j?.message ||
-      j?.fail_reason ||
-      j?.error_message ||
+      data?.message ||
+      data?.fail_reason ||
+      data?.error_message ||
       failedItem?.fail_reason ||
       failedItem?.failReason ||
-      j?.detail ||
+      data?.detail ||
       ""
     ).trim();
 
     const reasonLower = rawReason.toLowerCase();
-    let message = rawReason || "Müzik üretimi tamamlanamadı.";
+    let message = rawReason || mt("studio.music.panel.error.generic");
 
     if (reasonLower.includes("insufficient account balance")) {
-      message = "Müzik sağlayıcısında yeterli bakiye bulunmuyor.";
-    } else if (
-      reasonLower.includes("musician infringement") ||
-      reasonLower.includes("artist name")
-    ) {
-      message = "İstek müzik sağlayıcısının içerik kontrolü tarafından reddedildi.";
+      message = mt("studio.music.panel.error.providerBalance");
+    } else if (reasonLower.includes("musician infringement") || reasonLower.includes("artist name")) {
+      message = mt("studio.music.panel.error.policy");
     }
 
-    const state = uiState(j?.status || j?.state || failedItem?.state);
+    const state = uiState(data?.status || data?.state || failedItem?.state);
     const hasFailure =
       state === "error" ||
       Boolean(failCode) ||
@@ -1706,16 +1755,12 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       failures.length > 0 ||
       Number(failedItem?.status) === 3;
 
-    return {
-      hasFailure,
-      failCode,
-      message,
-    };
+    return { hasFailure, failCode, message };
   }
 
-  function markJobFailed(id, existing, failure){
+  function markJobFailed(id, existing, failure) {
     const baseId = getBaseIdFromJobId(id);
-    const errorMessage = String(failure?.message || "Müzik üretimi tamamlanamadı.").trim();
+    const errorMessage = String(failure?.message || mt("studio.music.panel.error.generic")).trim();
 
     upsertJob({
       ...existing,
@@ -1728,143 +1773,114 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       __pending_duration: "",
       __error_message: errorMessage,
       __fail_code: String(failure?.failCode || "").trim(),
-      __should_ready_toast: false,
+      __should_ready_toast: false
     });
 
     clearPoll(id);
-    POLL_LAST.delete(id);
+    pollLast.delete(id);
     render();
 
     const toastKey = baseId || id;
-    if (toastKey && !ERROR_TOASTED.has(toastKey)) {
-      ERROR_TOASTED.add(toastKey);
+    if (toastKey && !errorToasted.has(toastKey)) {
+      errorToasted.add(toastKey);
       toast("error", errorMessage);
     }
   }
 
-  function pickAudioFromStatus(j){
-    const tm0 = getTopMediaiItems(j)[0] || null;
-    const src =
-      j?.audio?.src ||
-      j?.audio_src ||
-      j?.result?.audio?.src ||
-      j?.result?.src ||
-      j?.job?.audio?.src ||
-      tm0?.audio_url ||
-      "";
-
-    const dur =
-      j?.duration ||
-      j?.audio?.duration ||
-      j?.result?.duration ||
-      tm0?.duration ||
-      "";
-
-    const outId =
-      j?.audio?.output_id ||
-      j?.output_id ||
-      j?.result?.output_id ||
-      j?.job?.output_id ||
-      "";
-
-    const title =
-      j?.title ||
-      tm0?.title ||
-      j?.job?.title ||
-      "";
-
-    const state =
-      j?.state ||
-      j?.status ||
-      j?.job?.status ||
-      "";
-
+  function pickAudioFromStatus(data) {
+    const topMedia = getTopMediaItems(data)[0] || null;
     return {
-      src: String(src || "").trim(),
-      duration: dur,
-      output_id: String(outId || "").trim(),
-      title: String(title || "").trim(),
-      state: String(state || "").trim(),
+      src: String(
+        data?.audio?.src ||
+        data?.audio_src ||
+        data?.result?.audio?.src ||
+        data?.result?.src ||
+        data?.job?.audio?.src ||
+        topMedia?.audio_url ||
+        ""
+      ).trim(),
+      duration:
+        data?.duration ||
+        data?.audio?.duration ||
+        data?.result?.duration ||
+        topMedia?.duration ||
+        "",
+      output_id: String(
+        data?.audio?.output_id ||
+        data?.output_id ||
+        data?.result?.output_id ||
+        data?.job?.output_id ||
+        ""
+      ).trim(),
+      title: String(data?.title || topMedia?.title || data?.job?.title || "").trim(),
+      state: String(data?.state || data?.status || data?.job?.status || "").trim()
     };
   }
 
-  async function poll(cardId){
+  async function poll(cardId) {
     const id = String(cardId || "").trim();
     if (!alive || !id || isHiddenJobId(id)) return;
 
     const now = Date.now();
-    const last = POLL_LAST.get(id) || 0;
-    if (now - last < 1200) return;
-    POLL_LAST.set(id, now);
+    const last = pollLast.get(id) || 0;
+    if (now - last < 1200 || pollBusy.has(id)) return;
 
-    if (POLL_BUSY.has(id)) return;
-    POLL_BUSY.add(id);
+    pollLast.set(id, now);
+    pollBusy.add(id);
 
     try {
       clearPoll(id);
       if (isHiddenJobId(id)) return;
 
-      const existing = (jobs || []).find((x) => getJobId(x) === id) || {};
+      const existing = jobs.find((item) => getJobId(item) === id) || {};
       const existingState = uiState(existing.__ui_state);
-
-      if (existingState === "error") {
-        clearPoll(id);
-        return;
-      }
-
-      if (existingState === "ready" && String(existing.__audio_src || "").trim()) {
-        clearPoll(id);
-        return;
-      }
+      if (existingState === "error") return;
+      if (existingState === "ready" && String(existing.__audio_src || "").trim()) return;
 
       const providerSongId = String(existing.__provider_song_id || "").trim();
       const providerBase = getBaseIdFromJobId(id);
-      const q = encodeURIComponent(providerSongId || providerBase);
+      const query = encodeURIComponent(providerSongId || providerBase);
 
-      const r = await fetch(`/api/music/status?provider_job_id=${q}`, {
+      const response = await fetch(`/api/music/status?provider_job_id=${query}`, {
         cache: "no-store",
-        credentials: "include",
+        credentials: "include"
       });
 
-      let j = null;
-      try { j = await r.json(); } catch { j = null; }
-
+      const data = await response.json().catch(() => null);
       if (isHiddenJobId(id)) return;
 
-      if (!r.ok || !j) {
+      if (!response.ok || !data) {
         schedulePoll(id, 1800);
         return;
       }
 
-      const failure = pickFailureFromStatus(j);
-
-      if (j.ok === false) {
+      const failure = pickFailureFromStatus(data);
+      if (data.ok === false) {
         if (failure.hasFailure) {
           markJobFailed(id, existing, failure);
           return;
         }
-
         schedulePoll(id, 1800);
         return;
       }
 
-      const { src, duration, output_id, title, state } = pickAudioFromStatus(j);
-      const st = uiState(state);
-      const playUrl = (!src && providerBase && output_id)
-        ? `${MUSIC_WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(output_id)}`
+      const { src, duration, output_id: outputId, title, state } = pickAudioFromStatus(data);
+      const normalizedState = uiState(state);
+      const playUrl = !src && providerBase && outputId
+        ? `${MUSIC_WORKER_ORIGIN}/files/play?job_id=${encodeURIComponent(providerBase)}&output_id=${encodeURIComponent(outputId)}`
         : "";
 
       const baseId = providerBase;
-      const isOrig = String(id).endsWith("::orig");
-      const otherId = isOrig ? `${baseId}::rev1` : `${baseId}::orig`;
+      const isOriginal = id.endsWith("::orig");
+      const otherId = isOriginal ? `${baseId}::rev1` : `${baseId}::orig`;
+      const gotAudio = Boolean(src || playUrl);
 
-      const gotAudio = !!(src || playUrl);
       const next = {
         job_id: id,
         id,
-        __ui_state: gotAudio ? "processing" : st,
+        __ui_state: gotAudio ? "processing" : normalizedState,
         __pending_src: src || playUrl || "",
-        __pending_output_id: output_id || existing.output_id || "",
+        __pending_output_id: outputId || existing.output_id || ""
       };
 
       if (duration) next.__pending_duration = String(duration);
@@ -1873,328 +1889,310 @@ window.selectedJobId = String(card.getAttribute("data-job-id") || "").trim();
       if (existing.provider_job_id) next.provider_job_id = existing.provider_job_id;
       if (existing.__provider_song_id) next.__provider_song_id = existing.__provider_song_id;
 
-      if (st === "error" || failure.hasFailure) {
+      if (normalizedState === "error" || failure.hasFailure) {
         markJobFailed(id, { ...existing, ...next }, failure);
         return;
       }
 
       upsertJob(next);
-   const readySrc = String(src || playUrl || "").trim();
+      const readySource = String(src || playUrl || "").trim();
 
-if (st === "ready" && readySrc) {
-  const shouldReadyToast = !!existing.__should_ready_toast;
-
-  upsertJob({
-    job_id: id,
-    id,
-    __ui_state: "ready",
-    __audio_src: readySrc,
-    __should_ready_toast: false,
-    output_id: output_id || existing.output_id || "",
-    ...(duration ? { __duration: String(duration) } : {}),
-    __pending_src: "",
-    __pending_output_id: "",
-    __pending_duration: "",
-    __db_job_id: String(existing.__db_job_id || "").trim(),
-    provider_job_id: String(existing.provider_job_id || "").trim(),
-    __provider_song_id: String(existing.__provider_song_id || "").trim(),
-    ...(title ? { title } : {})
-  });
-
-  clearPoll(id);
-  POLL_BUSY.delete(id);
-  render();
-
-  if (shouldReadyToast && id && !READY_TOASTED.has(id)) {
-    READY_TOASTED.add(id);
-    toast("success", "Müzik hazır");
-  }
-
-  return;
-}
-     const existingMe = (jobs || []).find((x) => getJobId(x) === id) || {};
-const existingOther = (jobs || []).find((x) => getJobId(x) === otherId) || {};
-
-const familyWasAlreadyReady =
-  String(existingMe.__ui_state || "") === "ready" &&
-  !!String(existingMe.__audio_src || "").trim() &&
-  String(existingOther.__ui_state || "") === "ready" &&
-  !!String(existingOther.__audio_src || "").trim();
-
-      const meSrc = String(existingMe.__pending_src || existingMe.__audio_src || "").trim();
-      const otherSrc = String(existingOther.__pending_src || existingOther.__audio_src || "").trim();
-
-      if (meSrc && otherSrc) {
-        const meOut = String(existingMe.__pending_output_id || existingMe.output_id || "").trim();
-        const otherOut = String(existingOther.__pending_output_id || existingOther.output_id || "").trim();
-        const meDur = String(existingMe.__pending_duration || existingMe.__duration || "").trim();
-        const otherDur = String(existingOther.__pending_duration || existingOther.__duration || "").trim();
+      if (normalizedState === "ready" && readySource) {
+        const shouldReadyToast = Boolean(existing.__should_ready_toast);
 
         upsertJob({
           job_id: id,
           id,
           __ui_state: "ready",
-          __audio_src: meSrc,
-          output_id: meOut,
-          ...(meDur ? { __duration: meDur } : {}),
+          __audio_src: readySource,
+          __should_ready_toast: false,
+          output_id: outputId || existing.output_id || "",
+          ...(duration ? { __duration: String(duration) } : {}),
           __pending_src: "",
           __pending_output_id: "",
           __pending_duration: "",
-          __db_job_id: String(existingMe.__db_job_id || existing.__db_job_id || "").trim(),
-          provider_job_id: String(existingMe.provider_job_id || existing.provider_job_id || "").trim(),
-          __provider_song_id: String(existingMe.__provider_song_id || existing.__provider_song_id || "").trim(),
+          __db_job_id: String(existing.__db_job_id || "").trim(),
+          provider_job_id: String(existing.provider_job_id || "").trim(),
+          __provider_song_id: String(existing.__provider_song_id || "").trim(),
+          ...(title ? { title } : {})
+        });
+
+        clearPoll(id);
+        pollBusy.delete(id);
+        render();
+
+        if (shouldReadyToast && id && !readyToasted.has(id)) {
+          readyToasted.add(id);
+          toast("success", mt("studio.music.panel.readyToast"));
+        }
+        return;
+      }
+
+      const existingCurrent = jobs.find((item) => getJobId(item) === id) || {};
+      const existingOther = jobs.find((item) => getJobId(item) === otherId) || {};
+      const familyWasAlreadyReady =
+        uiState(existingCurrent.__ui_state) === "ready" && Boolean(String(existingCurrent.__audio_src || "").trim()) &&
+        uiState(existingOther.__ui_state) === "ready" && Boolean(String(existingOther.__audio_src || "").trim());
+
+      const currentSource = String(existingCurrent.__pending_src || existingCurrent.__audio_src || "").trim();
+      const otherSource = String(existingOther.__pending_src || existingOther.__audio_src || "").trim();
+
+      if (currentSource && otherSource) {
+        const currentOutput = String(existingCurrent.__pending_output_id || existingCurrent.output_id || "").trim();
+        const otherOutput = String(existingOther.__pending_output_id || existingOther.output_id || "").trim();
+        const currentDuration = String(existingCurrent.__pending_duration || existingCurrent.__duration || "").trim();
+        const otherDuration = String(existingOther.__pending_duration || existingOther.__duration || "").trim();
+
+        upsertJob({
+          job_id: id,
+          id,
+          __ui_state: "ready",
+          __audio_src: currentSource,
+          output_id: currentOutput,
+          ...(currentDuration ? { __duration: currentDuration } : {}),
+          __pending_src: "",
+          __pending_output_id: "",
+          __pending_duration: "",
+          __db_job_id: String(existingCurrent.__db_job_id || existing.__db_job_id || "").trim(),
+          provider_job_id: String(existingCurrent.provider_job_id || existing.provider_job_id || "").trim(),
+          __provider_song_id: String(existingCurrent.__provider_song_id || existing.__provider_song_id || "").trim()
         });
 
         upsertJob({
           job_id: otherId,
           id: otherId,
           __ui_state: "ready",
-          __audio_src: otherSrc,
-          output_id: otherOut,
-          ...(otherDur ? { __duration: otherDur } : {}),
+          __audio_src: otherSource,
+          output_id: otherOutput,
+          ...(otherDuration ? { __duration: otherDuration } : {}),
           __pending_src: "",
           __pending_output_id: "",
           __pending_duration: "",
           __db_job_id: String(existingOther.__db_job_id || existing.__db_job_id || "").trim(),
           provider_job_id: String(existingOther.provider_job_id || existing.provider_job_id || "").trim(),
-          __provider_song_id: String(existingOther.__provider_song_id || "").trim(),
+          __provider_song_id: String(existingOther.__provider_song_id || "").trim()
         });
 
         render();
-
-           if (baseId && !READY_TOASTED.has(baseId) && !familyWasAlreadyReady) {
-  READY_TOASTED.add(baseId);
-  toast("success", "Müzik hazır");
-}
+        if (baseId && !readyToasted.has(baseId) && !familyWasAlreadyReady) {
+          readyToasted.add(baseId);
+          toast("success", mt("studio.music.panel.readyToast"));
+        }
         return;
       }
 
       render();
       schedulePoll(id, 1600);
-    } catch (e) {
+    } catch (_) {
       schedulePoll(id, 2000);
     } finally {
-      POLL_BUSY.delete(id);
+      pollBusy.delete(id);
     }
   }
 
- function mapDbJobToCards(row){
-  if (!row || isRowDeleted(row)) return [];
+  function mapDbJobToCards(row) {
+    if (!row || isRowDeleted(row)) return [];
 
-  const meta = row?.meta || {};
-  const appGuess = String(row?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
-  if (appGuess && !isMusicApp(appGuess)) return [];
+    const meta = row?.meta || {};
+    const appGuess = String(row?.app || meta?.app || meta?.module || meta?.routeKey || "").trim();
+    if (appGuess && !isMusicApp(appGuess)) return [];
 
-  const provider_job_id = getRowProviderJobId(row);
-  const dbJobId = getRowDbId(row);
-  const baseId = provider_job_id || String(row?.provider_job_id || row?.providerJobId || row?.job_id || row?.id || "").trim();
-  if (!baseId) return [];
+    const providerJobId = getRowProviderJobId(row);
+    const dbJobId = getRowDbId(row);
+    const baseId = providerJobId || String(row?.provider_job_id || row?.providerJobId || row?.job_id || row?.id || "").trim();
+    if (!baseId) return [];
 
-  const songIds = Array.isArray(meta?.provider_song_ids)
-    ? meta.provider_song_ids
-    : (Array.isArray(row?.provider_song_ids) ? row.provider_song_ids : []);
+    const songIds = Array.isArray(meta?.provider_song_ids)
+      ? meta.provider_song_ids
+      : Array.isArray(row?.provider_song_ids)
+        ? row.provider_song_ids
+        : [];
 
-  const songIdOrig = String(songIds[0] || provider_job_id || baseId).trim();
-  const songIdRev = String(songIds[1] || songIds[0] || provider_job_id || baseId).trim();
+    const originalSongId = String(songIds[0] || providerJobId || baseId).trim();
+    const revisionSongId = String(songIds[1] || songIds[0] || providerJobId || baseId).trim();
+    const deletedVariants = Array.isArray(meta?.deleted_variants)
+      ? meta.deleted_variants.map((value) => String(value || "").trim().toLowerCase()).filter(Boolean)
+      : [];
 
-  const deletedVariants = Array.isArray(meta?.deleted_variants)
-    ? meta.deleted_variants.map((v) => String(v || "").trim().toLowerCase()).filter(Boolean)
-    : [];
+    const createdMs = toMs(row?.created_at) || toMs(row?.createdAt) || toMs(meta?.created_at) || Date.now();
+    const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
+    const state = ["ready", "done", "completed", "success", "succeeded"].includes(rawStatus)
+      ? "ready"
+      : ["error", "failed", "fail"].includes(rawStatus)
+        ? "error"
+        : "processing";
 
-  const createdMs = toMs(row?.created_at) || toMs(row?.createdAt) || toMs(meta?.created_at) || Date.now();
-  const rawStatus = norm(row?.db_status || row?.status || row?.state || "");
-  const st =
-    ["ready", "done", "completed", "success", "succeeded"].includes(rawStatus) ? "ready" :
-    (["error", "failed", "fail"].includes(rawStatus) ? "error" : "processing");
+    const audioSource = String(
+      meta?.audio_src ||
+      meta?.audioUrl ||
+      row?.audio_src ||
+      row?.audioUrl ||
+      row?.result?.audio?.src ||
+      row?.result?.src ||
+      ""
+    ).trim();
 
-  const audioSrc = String(
-    meta?.audio_src ||
-    meta?.audioUrl ||
-    row?.audio_src ||
-    row?.audioUrl ||
-    row?.result?.audio?.src ||
-    row?.result?.src ||
-    ""
-  ).trim();
+    const duration = String(meta?.duration || row?.duration || row?.result?.duration || "").trim();
+    const providerFailures = Array.isArray(meta?.provider_failures) ? meta.provider_failures : [];
+    const firstProviderFailure = providerFailures[0] || null;
+    const errorMessage = String(
+      meta?.error_message ||
+      meta?.fail_reason ||
+      row?.error_message ||
+      row?.message ||
+      firstProviderFailure?.fail_reason ||
+      ""
+    ).trim();
+    const failCode = String(
+      meta?.fail_code ||
+      row?.fail_code ||
+      firstProviderFailure?.fail_code ||
+      ""
+    ).trim();
 
-  const duration = String(
-    meta?.duration ||
-    row?.duration ||
-    row?.result?.duration ||
-    ""
-  ).trim();
+    const common = {
+      type: "music",
+      __db_job_id: dbJobId,
+      provider_job_id: providerJobId || baseId,
+      __ui_state: state,
+      __audio_src: audioSource,
+      createdAt: createdMs,
+      __createdAt: row?.created_at || meta?.created_at || "",
+      created_at: row?.created_at || meta?.created_at || "",
+      updated_at: row?.updated_at || meta?.updated_at || "",
+      title: String(meta?.title || row?.title || "").trim(),
+      lyrics: String(meta?.lyrics || row?.lyrics || "").trim(),
+      prompt: String(meta?.prompt || row?.prompt || "").trim(),
+      subtitle: String(meta?.subtitle || "").trim(),
+      __duration: duration,
+      __error_message: errorMessage,
+      __fail_code: failCode
+    };
 
-  const providerFailures = Array.isArray(meta?.provider_failures)
-    ? meta.provider_failures
-    : [];
-
-  const firstProviderFailure = providerFailures[0] || null;
-  const errorMessage = String(
-    meta?.error_message ||
-    meta?.fail_reason ||
-    row?.error_message ||
-    row?.message ||
-    firstProviderFailure?.fail_reason ||
-    ""
-  ).trim();
-
-  const failCode = String(
-    meta?.fail_code ||
-    row?.fail_code ||
-    firstProviderFailure?.fail_code ||
-    ""
-  ).trim();
-
-  const baseCommon = {
-    type: "music",
-    __db_job_id: dbJobId,
-    provider_job_id: provider_job_id || baseId,
-    __ui_state: st,
-    __audio_src: audioSrc,
-    createdAt: createdMs,
-    __createdAt: row?.created_at || meta?.created_at || "",
-    created_at: row?.created_at || meta?.created_at || "",
-    updated_at: row?.updated_at || meta?.updated_at || "",
-    title: String(meta?.title || row?.title || "").trim(),
-    lyrics: String(meta?.lyrics || row?.lyrics || "").trim(),
-    prompt: String(meta?.prompt || row?.prompt || "").trim(),
-    subtitle: String(meta?.subtitle || "").trim(),
-    __duration: duration,
-    __error_message: errorMessage,
-    __fail_code: failCode,
-  };
-
-  const cards = [];
-
-  if (!deletedVariants.includes("orig")) {
-    cards.push({
-      ...baseCommon,
-      job_id: `${baseId}::orig`,
-      id: `${baseId}::orig`,
-      __provider_song_id: songIdOrig
-    });
-  }
-
-  if (!deletedVariants.includes("rev1")) {
-    cards.push({
-      ...baseCommon,
-      job_id: `${baseId}::rev1`,
-      id: `${baseId}::rev1`,
-      __provider_song_id: songIdRev
-    });
-  }
-
-  return cards;
-}
-
-function onJob(e){
-  const payload = e?.detail || e || {};
-  const baseId = String(payload.provider_job_id || payload.job_id || payload.id || "").trim();
-  if (!baseId) return;
-  if (hiddenDeletedBaseIds.has(baseId)) return;
-
-  const origId = `${baseId}::orig`;
-  const revId = `${baseId}::rev1`;
-
-  const providerJobId = String(payload.provider_job_id || "").trim();
-  const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
-
-  const songIdOrig = String(rawSongIds[0] || providerJobId || baseId).trim();
-  const songIdRev = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
-  const safeTitle = String(payload.title || "").trim();
-
-   const common = {
-    type: "music",
-    subtitle: String(payload.subtitle || "").trim(),
-    provider_job_id: providerJobId,
-    __ui_state: "processing",
-    __audio_src: "",
-    __should_ready_toast: true,
-    title: safeTitle,
-    lyrics: String(payload.lyrics || "").trim(),
-    prompt: String(payload.prompt || "").trim(),
-    __createdAt: payload.created_at || payload.createdAt || "",
-    createdAt: Date.now(),
-  };
-
-  upsertJob({ ...common, job_id: origId, id: origId, __provider_song_id: songIdOrig });
-  upsertJob({ ...common, job_id: revId, id: revId, __provider_song_id: songIdRev });
-
-  render();
-  poll(origId);
-  poll(revId);
-}
-
-function setMusicHostForEvents(el){
-  if (!window.__AIVO_MUSIC_EVENTS__) {
-    window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
-  }
-  window.__AIVO_MUSIC_EVENTS__.host = el || null;
-  if (window.__AIVO_MUSIC_EVENTS__.attached) return;
-  window.__AIVO_MUSIC_EVENTS__.attached = true;
-
-  window.addEventListener("click", (e) => {
-    try {
-      if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-      const H = window.__AIVO_MUSIC_EVENTS__.host;
-      if (!H || !H.contains(e.target)) return;
-      onCardClick(e);
-    } catch (err) {
-      console.warn("[panel.music] click handler error", err);
+    const cards = [];
+    if (!deletedVariants.includes("orig")) {
+      cards.push({
+        ...common,
+        job_id: `${baseId}::orig`,
+        id: `${baseId}::orig`,
+        __provider_song_id: originalSongId
+      });
     }
-  }, true);
 
-    window.addEventListener("pointerdown", (e) => {
+    if (!deletedVariants.includes("rev1")) {
+      cards.push({
+        ...common,
+        job_id: `${baseId}::rev1`,
+        id: `${baseId}::rev1`,
+        __provider_song_id: revisionSongId
+      });
+    }
+
+    return cards;
+  }
+
+  function onJob(event) {
+    const payload = event?.detail || event || {};
+    const baseId = String(payload.provider_job_id || payload.job_id || payload.id || "").trim();
+    if (!baseId || hiddenDeletedBaseIds.has(baseId)) return;
+
+    const originalId = `${baseId}::orig`;
+    const revisionId = `${baseId}::rev1`;
+    const providerJobId = String(payload.provider_job_id || "").trim();
+    const rawSongIds = Array.isArray(payload.provider_song_ids) ? payload.provider_song_ids : [];
+    const originalSongId = String(rawSongIds[0] || providerJobId || baseId).trim();
+    const revisionSongId = String(rawSongIds[1] || rawSongIds[0] || providerJobId || baseId).trim();
+    const safeTitle = String(payload.title || "").trim();
+
+    const common = {
+      type: "music",
+      subtitle: String(payload.subtitle || "").trim(),
+      provider_job_id: providerJobId,
+      __ui_state: "processing",
+      __audio_src: "",
+      __should_ready_toast: true,
+      title: safeTitle,
+      lyrics: String(payload.lyrics || "").trim(),
+      prompt: String(payload.prompt || "").trim(),
+      __createdAt: payload.created_at || payload.createdAt || "",
+      createdAt: Date.now()
+    };
+
+    upsertJob({ ...common, job_id: originalId, id: originalId, __provider_song_id: originalSongId });
+    upsertJob({ ...common, job_id: revisionId, id: revisionId, __provider_song_id: revisionSongId });
+
+    render();
+    poll(originalId);
+    poll(revisionId);
+  }
+
+  function setMusicHostForEvents(element) {
+    if (!window.__AIVO_MUSIC_EVENTS__) {
+      window.__AIVO_MUSIC_EVENTS__ = { attached: false, host: null };
+    }
+
+    window.__AIVO_MUSIC_EVENTS__.host = element || null;
+    if (window.__AIVO_MUSIC_EVENTS__.attached) return;
+    window.__AIVO_MUSIC_EVENTS__.attached = true;
+
+    window.addEventListener("click", (event) => {
       try {
-        if (window.RightPanel?.getCurrentKey?.() !== "music") return;
-        const H = window.__AIVO_MUSIC_EVENTS__.host;
-        if (!H || !H.contains(e.target)) return;
-        if (e.target.closest(".aivo-progress")) onProgressSeek(e);
-      } catch (err) {
-        console.warn("[panel.music] pointer handler error", err);
+        if (window.RightPanel?.getCurrentKey?.() !== PANEL_KEY) return;
+        const host = window.__AIVO_MUSIC_EVENTS__.host;
+        if (!host || !host.contains(event.target)) return;
+        onCardClick(event);
+      } catch (error) {
+        console.warn("[panel.music] click handler error", error);
+      }
+    }, true);
+
+    window.addEventListener("pointerdown", (event) => {
+      try {
+        if (window.RightPanel?.getCurrentKey?.() !== PANEL_KEY) return;
+        const host = window.__AIVO_MUSIC_EVENTS__.host;
+        if (!host || !host.contains(event.target)) return;
+        if (event.target.closest(".aivo-progress")) onProgressSeek(event);
+      } catch (error) {
+        console.warn("[panel.music] pointer handler error", error);
       }
     }, true);
   }
 
-  function onSearch(q){
-    __searchQ = String(q || "").trim().toLowerCase();
+  function onSearch(query) {
+    searchQuery = String(query || "").trim().toLowerCase();
     render();
   }
 
-  function getHeader(){
+  function getHeader() {
     return {
-      title: "Müziklerim",
-      meta: "⚠️ Müzik dosyaları 14 gün saklanır.",
-      searchPlaceholder: "Müziklerde ara...",
+      title: mt("studio.music.panel.title"),
+      meta: mt("studio.music.panel.retention"),
+      searchPlaceholder: mt("studio.music.panel.searchPlaceholder"),
       searchEnabled: true,
       resetSearch: false
     };
   }
 
-  function hydrateMergeWithDbRows(rows){
-    const safeRows = Array.isArray(rows) ? rows : [];
+  function hydrateMergeWithDbRows(rows) {
     const dbCards = [];
 
-    for (const row of safeRows) {
+    for (const row of Array.isArray(rows) ? rows : []) {
       if (!row || isRowDeleted(row) || isHiddenRow(row)) continue;
       const cards = mapDbJobToCards(row);
-      if (cards && cards.length) dbCards.push(...cards);
+      if (cards.length) dbCards.push(...cards);
     }
 
     const byId = new Map();
-
-    for (const c of dbCards) {
-      const id = getJobId(c);
+    for (const card of dbCards) {
+      const id = getJobId(card);
       if (!id || isHiddenJobId(id)) continue;
-      byId.set(id, c);
+      byId.set(id, card);
     }
 
-    for (const old of (jobs || [])) {
-      const id = getJobId(old);
+    for (const oldItem of jobs) {
+      const id = getJobId(oldItem);
       if (!id || isHiddenJobId(id)) continue;
-      if (byId.has(id)) {
-        byId.set(id, mergePreferDbButKeepReady(old, byId.get(id)));
-      }
+      if (byId.has(id)) byId.set(id, mergePreferDbButKeepReady(oldItem, byId.get(id)));
     }
 
     jobs = Array.from(byId.values());
@@ -2202,50 +2200,44 @@ function setMusicHostForEvents(el){
     render();
   }
 
-  async function hydrateFromDBOnce(){
+  async function hydrateFromDBOnce() {
     try {
-      const r = await fetch("/api/jobs/list?app=music", {
+      const response = await fetch("/api/jobs/list?app=music", {
         method: "GET",
         credentials: "include",
         headers: { accept: "application/json" },
-        cache: "no-store",
+        cache: "no-store"
       });
-      const j = await r.json().catch(() => null);
-      if (!r.ok || !j || !j.ok) return;
 
-      const items = Array.isArray(j.items) ? j.items : (Array.isArray(j.jobs) ? j.jobs : []);
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) return;
+
+      const items = Array.isArray(data.items) ? data.items : Array.isArray(data.jobs) ? data.jobs : [];
       hydrateMergeWithDbRows(items);
-    } catch (e) {
-      console.warn("[panel.music] hydrateFromDBOnce error", e);
+    } catch (error) {
+      console.warn("[panel.music] hydrateFromDBOnce error", error);
     }
   }
 
-  function mount(contentEl){
-    hostEl = contentEl;
+  function mount(contentElement) {
+    hostEl = contentElement;
     alive = true;
     setMusicHostForEvents(hostEl);
 
-       hostEl.innerHTML = `
+    hostEl.innerHTML = `
       <div class="rp-players">
         <div class="rp-playerCard">
           <div class="rp-body" id="musicList"></div>
         </div>
       </div>
       <style>
-        .aivo-empty-loading{
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          min-height:120px;
-        }
-        .aivo-empty-pulse{
-          animation:aivoMusicPulse 1.15s ease-in-out infinite;
-        }
-        @keyframes aivoMusicPulse{
-          0%{opacity:.38}
-          50%{opacity:1}
-          100%{opacity:.38}
-        }
+        .aivo-empty-loading{display:flex;align-items:center;justify-content:center;min-height:120px}
+        .aivo-empty-pulse{animation:aivoMusicPulse 1.15s ease-in-out infinite}
+        @keyframes aivoMusicPulse{0%{opacity:.38}50%{opacity:1}100%{opacity:.38}}
+        .aivo-stems-icons{margin-top:8px!important;display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important;justify-content:flex-start!important}
+        .aivo-stems-note{display:block;flex-basis:100%;margin-top:6px;font-size:12px;opacity:.7}
+        .aivo-stems-icons .aivo-stem-ic{display:inline-flex!important;flex:0 0 26px!important;width:26px!important;min-width:26px!important;max-width:26px!important;height:26px!important;min-height:26px!important;max-height:26px!important;padding:0!important;margin:0!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;border:1px solid rgba(255,255,255,.12)!important;background:rgba(255,255,255,.06)!important;text-decoration:none!important;user-select:none!important;line-height:1!important;font-size:13px!important}
+        .aivo-stems-icons .aivo-stem-ic:active{transform:translateY(1px)!important}
       </style>`;
 
     listEl = hostEl.querySelector("#musicList");
@@ -2255,34 +2247,28 @@ function setMusicHostForEvents(el){
 
     const mainAudio = document.getElementById("mainAudio");
     if (mainAudio) {
-      try { mainAudio.pause?.(); } catch {}
+      try { mainAudio.pause?.(); } catch (_) {}
       mainAudio.removeAttribute("src");
-      try { mainAudio.load?.(); } catch {}
+      try { mainAudio.load?.(); } catch (_) {}
       mainAudio.style.display = "none";
     }
 
-  jobs = loadJobs().filter((j) => {
-  const id = getJobId(j);
-  if (!id) return false;
-  if (isHiddenJobId(id)) return false;
+    jobs = loadJobs().filter((job) => {
+      const id = getJobId(job);
+      if (!id || isHiddenJobId(id)) return false;
 
-  const uiState = String(j?.__ui_state || "").trim().toLowerCase();
-  const audioSrc = String(j?.__audio_src || "").trim();
+      const state = String(job?.__ui_state || "").trim().toLowerCase();
+      const source = String(job?.__audio_src || "").trim();
+      return (state === "ready" && source) || state === "error" || Boolean(source);
+    });
 
-  if (uiState === "ready" && audioSrc) return true;
-  if (uiState === "error") return true;
-  if (audioSrc) return true;
+    render();
+    hydrateFromDBOnce();
 
-  return false;
-});
-
-render();
-hydrateFromDBOnce();
-
-    try { dbCtrl?.destroy?.(); } catch {}
+    try { dbCtrl?.destroy?.(); } catch (_) {}
     dbCtrl = null;
 
-    if (window.DBJobs && typeof window.DBJobs.create === "function") {
+    if (window.DBJobs?.create) {
       dbCtrl = window.DBJobs.create({
         app: "music",
         debug: false,
@@ -2290,73 +2276,71 @@ hydrateFromDBOnce();
         hydrateEveryMs: 15000,
         acceptJob: (job) => {
           if (!job || isRowDeleted(job)) return false;
-          const a = String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
-          if (a && !isMusicApp(a)) return false;
+          const app = String(job?.app || job?.meta?.app || job?.meta?.module || job?.meta?.routeKey || "").trim();
+          if (app && !isMusicApp(app)) return false;
+
           const baseId = getRowBaseId(job);
           const dbId = getRowDbId(job);
           if (baseId && hiddenDeletedBaseIds.has(baseId)) return false;
           if (dbId && hiddenDeletedDbIds.has(dbId)) return false;
           return true;
         },
-        acceptOutput: (o) => {
-          const t = norm(o?.type || o?.kind || o?.meta?.type || o?.meta?.kind || "");
-          return !t || t === "audio";
+        acceptOutput: (output) => {
+          const type = norm(output?.type || output?.kind || output?.meta?.type || output?.meta?.kind || "");
+          return !type || type === "audio";
         },
         onChange: (items) => {
           if (!alive) return;
           hydrateMergeWithDbRows(items);
-          (jobs || []).slice(0, 60).forEach((j) => {
-            const id = getJobId(j);
-            const state = uiState(j?.__ui_state);
-            if (id && !isHiddenJobId(id) && state === "processing") poll(id);
+          jobs.slice(0, 60).forEach((job) => {
+            const id = getJobId(job);
+            if (id && !isHiddenJobId(id) && uiState(job?.__ui_state) === "processing") poll(id);
           });
         }
       });
     }
 
-     window.addEventListener("aivo:job", onJob, true);
+    window.addEventListener("aivo:job", onJob, true);
 
-   rehydrateMusicPanel = async () => {
-  try { await hydrateFromDBOnce(); } catch {}
-  try { dbCtrl?.hydrate?.(); } catch {}
-};
+    rehydrateMusicPanel = async () => {
+      try { await hydrateFromDBOnce(); } catch (_) {}
+      try { dbCtrl?.hydrate?.(); } catch (_) {}
+    };
 
-onMusicVisibilityChange = () => {
-  if (document.visibilityState === "visible") rehydrateMusicPanel?.();
-};
+    onMusicVisibilityChange = () => {
+      if (document.visibilityState === "visible") rehydrateMusicPanel?.();
+    };
 
     window.addEventListener("focus", rehydrateMusicPanel);
     window.addEventListener("pageshow", rehydrateMusicPanel);
     document.addEventListener("visibilitychange", onMusicVisibilityChange);
 
-    setTimeout(() => { rehydrateMusicPanel(); }, 350);
-    setTimeout(() => { rehydrateMusicPanel(); }, 1200);
+    setTimeout(() => rehydrateMusicPanel?.(), 350);
+    setTimeout(() => rehydrateMusicPanel?.(), 1200);
 
-    (jobs || []).slice(0, 60).forEach((j) => {
-      const id = getJobId(j);
-      const state = uiState(j?.__ui_state);
-      if (id && !isHiddenJobId(id) && state === "processing") poll(id);
+    jobs.slice(0, 60).forEach((job) => {
+      const id = getJobId(job);
+      if (id && !isHiddenJobId(id) && uiState(job?.__ui_state) === "processing") poll(id);
     });
 
-
-    return () => destroy();
+    return destroy;
   }
 
-  function destroy(){
+  function destroy() {
     alive = false;
     setMusicHostForEvents(null);
     window.removeEventListener("aivo:job", onJob, true);
     window.removeEventListener("focus", rehydrateMusicPanel);
-window.removeEventListener("pageshow", rehydrateMusicPanel);
-document.removeEventListener("visibilitychange", onMusicVisibilityChange);
-window.removeEventListener("focus", rehydrateMusicPanel);
+    window.removeEventListener("pageshow", rehydrateMusicPanel);
+    document.removeEventListener("visibilitychange", onMusicVisibilityChange);
     clearAllPolls();
     stopRaf();
+    stopEqLoop();
 
-    try { dbCtrl?.destroy?.(); } catch {}
+    try { dbCtrl?.destroy?.(); } catch (_) {}
     dbCtrl = null;
 
-    try { if (audioEl) audioEl.pause(); } catch {}
+    try { audioEl?.pause?.(); } catch (_) {}
     currentJobId = null;
     eqBarsCache.jobId = null;
     eqBarsCache.bars = null;
@@ -2364,186 +2348,187 @@ window.removeEventListener("focus", rehydrateMusicPanel);
     listEl = null;
   }
 
-  function register(){
+  function register() {
     window.RightPanel.register(PANEL_KEY, { getHeader, mount, destroy, onSearch });
     console.log("[panel.music] registered");
   }
 
-  waitForReady(register);
+  function refreshPanelLanguage() {
+    registerDictionary();
 
-  window.addEventListener("pageshow", (ev) => {
-    try {
-      if (ev && ev.persisted) {
-        waitForReady(register);
-      }
-    } catch {}
-  }, { passive: true });
+    if (window.RightPanel?.getCurrentKey?.() === PANEL_KEY) {
+      try { window.RightPanel.setHeader?.(getHeader()); } catch (_) {}
+      render();
+    }
+  }
 
-  (function ensureStemConfirmModalHelpers(){
+  function ensureStemConfirmModalHelpers() {
     if (window.openStemConfirmModal) return;
 
-    const MODAL_ID = "aivoStemConfirmModal";
+    const modalId = "aivoStemConfirmModal";
 
-    function closeStemConfirmModal(){
-      const el = document.getElementById(MODAL_ID);
-      if (el) el.remove();
+    function closeStemConfirmModal() {
+      document.getElementById(modalId)?.remove();
     }
 
-    function openStemConfirmModal({ job_id, onConfirm }){
+    function openStemConfirmModal({ job_id: jobId, onConfirm }) {
       closeStemConfirmModal();
 
       const overlay = document.createElement("div");
-      overlay.id = MODAL_ID;
+      overlay.id = modalId;
+
+      const closeLabel = esc(mt("studio.music.panel.stems.modal.close"));
       overlay.innerHTML = `
         <div class="aivoStemOverlay" role="dialog" aria-modal="true">
           <div class="aivoStemModal">
-            <button class="aivoStemX" type="button" aria-label="Kapat">×</button>
-            <div class="aivoStemTitle">Kanal Ayırma</div>
-            <div class="aivoStemDesc">Bu işlem 5 kredi kullanır. Devam edilsin mi?</div>
-            <div class="aivoStemFine">Bu işlem başlamadan önce kredi kesilir.</div>
+            <button class="aivoStemX" type="button" aria-label="${closeLabel}">×</button>
+            <div class="aivoStemTitle">${esc(mt("studio.music.panel.stems.modal.title"))}</div>
+            <div class="aivoStemDesc">${esc(mt("studio.music.panel.stems.modal.description"))}</div>
+            <div class="aivoStemFine">${esc(mt("studio.music.panel.stems.modal.fine"))}</div>
             <div class="aivoStemBtns">
-              <button class="aivoStemBtn aivoStemCancel" type="button">İptal</button>
-              <button class="aivoStemBtn aivoStemOk" type="button">Onayla (5 Kredi)</button>
+              <button class="aivoStemBtn aivoStemCancel" type="button">${esc(mt("studio.music.panel.stems.modal.cancel"))}</button>
+              <button class="aivoStemBtn aivoStemOk" type="button">${esc(mt("studio.music.panel.stems.modal.confirm"))}</button>
             </div>
           </div>
         </div>
-
         <style>
-          .aivoStemOverlay{position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding:18px;}
-          .aivoStemModal{width:min(520px, 96vw); border-radius:18px; background:rgba(20,20,24,.92); border:1px solid rgba(255,255,255,.10); box-shadow: 0 20px 60px rgba(0,0,0,.55); padding:18px 18px 16px; position:relative;}
-          .aivoStemX{position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#fff; font-size:22px; line-height:32px; cursor:pointer;}
-          .aivoStemTitle{ color:#fff; font-weight:700; font-size:18px; margin-bottom:6px; }
-          .aivoStemDesc{ color:rgba(255,255,255,.82); font-size:14px; line-height:1.35; }
-          .aivoStemFine{ margin-top:8px; color:rgba(255,255,255,.55); font-size:12px; }
-          .aivoStemBtns{ margin-top:14px; display:flex; gap:10px; justify-content:flex-end; }
-          .aivoStemBtn{ border-radius:12px; padding:10px 12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#fff; cursor:pointer; font-weight:600; }
-          .aivoStemBtn:hover{ background:rgba(255,255,255,.10); }
-          .aivoStemOk{ background:rgba(140,90,255,.28); border:1px solid rgba(160,120,255,.45); }
-          .aivoStemOk:hover{ background:rgba(140,90,255,.36); }
-          .aivoStemBtn[disabled]{ opacity:.55; cursor:not-allowed; }
+          .aivoStemOverlay{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:18px}
+          .aivoStemModal{width:min(520px,96vw);border-radius:18px;background:rgba(20,20,24,.92);border:1px solid rgba(255,255,255,.10);box-shadow:0 20px 60px rgba(0,0,0,.55);padding:18px 18px 16px;position:relative}
+          .aivoStemX{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;font-size:22px;line-height:32px;cursor:pointer}
+          .aivoStemTitle{color:#fff;font-weight:700;font-size:18px;margin-bottom:6px}
+          .aivoStemDesc{color:rgba(255,255,255,.82);font-size:14px;line-height:1.35}
+          .aivoStemFine{margin-top:8px;color:rgba(255,255,255,.55);font-size:12px}
+          .aivoStemBtns{margin-top:14px;display:flex;gap:10px;justify-content:flex-end}
+          .aivoStemBtn{border-radius:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;cursor:pointer;font-weight:600}
+          .aivoStemBtn:hover{background:rgba(255,255,255,.10)}
+          .aivoStemOk{background:rgba(140,90,255,.28);border:1px solid rgba(160,120,255,.45)}
+          .aivoStemOk:hover{background:rgba(140,90,255,.36)}
+          .aivoStemBtn[disabled]{opacity:.55;cursor:not-allowed}
         </style>`;
 
-      overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) closeStemConfirmModal();
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) closeStemConfirmModal();
       });
 
-      const btnX = overlay.querySelector(".aivoStemX");
-      const btnCancel = overlay.querySelector(".aivoStemCancel");
-      const btnOk = overlay.querySelector(".aivoStemOk");
+      const closeButton = overlay.querySelector(".aivoStemX");
+      const cancelButton = overlay.querySelector(".aivoStemCancel");
+      const confirmButton = overlay.querySelector(".aivoStemOk");
 
-      btnX.addEventListener("click", () => closeStemConfirmModal());
-      btnCancel.addEventListener("click", () => closeStemConfirmModal());
+      closeButton.addEventListener("click", closeStemConfirmModal);
+      cancelButton.addEventListener("click", closeStemConfirmModal);
 
-       let locked = false;
-      btnOk.addEventListener("click", async () => {
+      let locked = false;
+      confirmButton.addEventListener("click", async () => {
         if (locked) return;
         locked = true;
-        btnOk.disabled = true;
-        const prev = btnOk.textContent;
-        btnOk.textContent = "Yükleniyor...";
+        confirmButton.disabled = true;
+        const previousText = confirmButton.textContent;
+        confirmButton.textContent = mt("studio.music.panel.stems.modal.loading");
 
         try {
-       const consumeAction = "music_stems_split";
-const consumeAmount = 5;
-const consumeRequestId = `stems:${job_id}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-      const creditRes = await fetch("/api/credits/consume-ledger", {
-  method: "POST",
-  credentials: "include",
-  headers: {
-    "content-type": "application/json",
-    "accept": "application/json"
-  },
-  body: JSON.stringify({
-    app: "music",
-    action: consumeAction,
-    cost: consumeAmount,
-    request_id: consumeRequestId,
-    job_id,
-    reason: consumeAction
-  })
-});
+          const consumeAction = "music_stems_split";
+          const consumeAmount = 5;
+          const consumeRequestId = `stems:${jobId}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
 
-          let creditData = null;
-          try { creditData = await creditRes.json(); }
-          catch { creditData = { ok:false, error:"non_json_response", status: creditRes.status }; }
+          const creditResponse = await fetch("/api/credits/consume-ledger", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "content-type": "application/json",
+              accept: "application/json"
+            },
+            body: JSON.stringify({
+              app: "music",
+              action: consumeAction,
+              cost: consumeAmount,
+              request_id: consumeRequestId,
+              job_id: jobId,
+              reason: consumeAction
+            })
+          });
 
-          if (!creditRes.ok || !creditData?.ok) {
-            const insufficient =
-              creditRes.status === 402 ||
-              creditData?.error === "insufficient_credits";
+          const creditData = await creditResponse.json().catch(() => ({
+            ok: false,
+            error: "non_json_response",
+            status: creditResponse.status
+          }));
 
-            const msg =
-              creditData?.error ||
-              creditData?.message ||
-              "Kredi düşürülemedi. Lütfen bakiyeni kontrol et.";
-
+          if (!creditResponse.ok || !creditData?.ok) {
+            const insufficient = creditResponse.status === 402 || creditData?.error === "insufficient_credits";
             if (insufficient) {
               closeStemConfirmModal();
-              try { window.location.href = "/pricing.html"; } catch {}
+              try { window.location.href = "/fiyatlandirma.html"; } catch (_) {}
               return;
             }
 
-            try { window.toast?.error?.(msg); } catch {}
-            btnOk.disabled = false;
-            btnOk.textContent = prev;
+            toast("error", mt("studio.music.panel.stems.creditFailed"));
+            confirmButton.disabled = false;
+            confirmButton.textContent = previousText;
             locked = false;
             return;
           }
 
           try {
-            const creditGetRes = await fetch("/api/credits/get", {
+            const creditsResponse = await fetch("/api/credits/get", {
               credentials: "include",
               cache: "no-store",
-              headers: { "accept": "application/json" }
+              headers: { accept: "application/json" }
             });
+            const creditsData = await creditsResponse.json().catch(() => null);
 
-            const creditGetData = await creditGetRes.json().catch(() => null);
-
-            if (creditGetData?.ok && typeof creditGetData.credits === "number") {
-              const topCreditCountEl = document.getElementById("topCreditCount");
-              if (topCreditCountEl) {
-                topCreditCountEl.textContent = String(creditGetData.credits);
-              }
-
-              if (window.AIVO_STORE_V1 && typeof window.AIVO_STORE_V1.setCredits === "function") {
-                window.AIVO_STORE_V1.setCredits(creditGetData.credits);
-              }
+            if (creditsData?.ok && typeof creditsData.credits === "number") {
+              const topCreditCount = document.getElementById("topCreditCount");
+              if (topCreditCount) topCreditCount.textContent = String(creditsData.credits);
+              window.AIVO_STORE_V1?.setCredits?.(creditsData.credits);
             }
           } catch (_) {}
 
-          try { window.toast?.success?.("5 kredi düşüldü"); } catch {}
+          toast("success", mt("studio.music.panel.stems.creditConsumed"));
 
-          await (onConfirm?.({
-            job_id,
+          await onConfirm?.({
+            job_id: jobId,
             consume_transaction_id: creditData?.transaction_id || creditData?.transaction?.id || null,
             consume_amount: consumeAmount,
             consume_action: consumeAction,
             consume_request_id: consumeRequestId
-          }));
+          });
 
           closeStemConfirmModal();
-        } catch (err) {
-          console.error("[stems] confirm failed", err);
-          btnOk.disabled = false;
-          btnOk.textContent = prev;
+        } catch (error) {
+          console.error("[stems] confirm failed", error);
+          confirmButton.disabled = false;
+          confirmButton.textContent = previousText;
           locked = false;
         }
       });
 
       document.body.appendChild(overlay);
 
-      const onKey = (e) => {
-        if (e.key === "Escape") {
-          document.removeEventListener("keydown", onKey);
+      const onEscape = (event) => {
+        if (event.key === "Escape") {
+          document.removeEventListener("keydown", onEscape);
           closeStemConfirmModal();
         }
       };
-      document.addEventListener("keydown", onKey);
+      document.addEventListener("keydown", onEscape);
 
-      console.debug("[stems] open confirm modal", { job_id });
+      console.debug("[stems] open confirm modal", { job_id: jobId });
     }
 
     window.openStemConfirmModal = openStemConfirmModal;
     window.closeStemConfirmModal = closeStemConfirmModal;
-  })();
+  }
+
+  registerDictionary();
+  ensureStemConfirmModalHelpers();
+  waitForReady(register);
+
+  document.addEventListener("aivo:language-change", refreshPanelLanguage);
+  document.addEventListener("aivo:studio:i18n-applied", refreshPanelLanguage);
+
+  window.addEventListener("pageshow", (event) => {
+    try {
+      if (event?.persisted) waitForReady(register);
+    } catch (_) {}
+  }, { passive: true });
 })();
