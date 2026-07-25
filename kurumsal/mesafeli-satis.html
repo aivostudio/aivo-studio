@@ -1,811 +1,1126 @@
 <!DOCTYPE html>
-<html lang="tr" class="aivoAuthPreload">
+<html
+  lang="tr"
+  class="aivoAuthPreload"
+  data-aivo-title-key="distance.seoTitle"
+  data-aivo-description-key="distance.seoDescription"
+>
 <head>
+  <meta charset="utf-8">
 
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
-  <meta name="theme-color" content="#070A14" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="color-scheme"
+    content="dark"
+  >
+
+  <meta
+    name="theme-color"
+    content="#070A14"
+  >
+
   <title>Mesafeli Satış Sözleşmesi • AIVO</title>
 
-  <!-- ✅ FOUC FIX -->
+  <meta
+    name="description"
+    content="AIVO Studio dijital hizmet ve kredi paketlerine ilişkin Mesafeli Satış Sözleşmesi."
+  >
+
+  <meta
+    property="og:title"
+    content="Mesafeli Satış Sözleşmesi • AIVO"
+  >
+
+  <meta
+    property="og:description"
+    content="AIVO Studio dijital hizmet ve kredi paketlerine ilişkin Mesafeli Satış Sözleşmesi."
+  >
+
+  <meta
+    name="twitter:title"
+    content="Mesafeli Satış Sözleşmesi • AIVO"
+  >
+
+  <meta
+    name="twitter:description"
+    content="AIVO Studio dijital hizmet ve kredi paketlerine ilişkin Mesafeli Satış Sözleşmesi."
+  >
+
+  <!-- FOUC FIX -->
   <style>
-    html, body { margin:0; min-height:100%; background:#070A14 !important; color:#e7ecff; }
-    body { background:#070A14 !important; }
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+
+    body {
+      background: #070A14 !important;
+    }
   </style>
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- FONTS -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet"
   >
 
-<!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=20260117" />
+  <!-- CORE -->
+  <link
+    rel="stylesheet"
+    href="/index.css?v=1002"
+  >
 
-<!-- ================= TOAST (GLOBAL) ================= -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <!-- TOAST -->
+  <link
+    rel="stylesheet"
+    href="/toast.css?v=2"
+  >
 
-<!-- ================= SAYFAYA ÖZEL ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=20260117" />
+  <!-- CORPORATE -->
+  <link
+    rel="stylesheet"
+    href="/kurumsal.css?v=20260117"
+  >
 
-<!-- ================= TOPBAR / DROPDOWN (ANA) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=104" />
+  <!-- TOPBAR / DROPDOWN -->
+  <link
+    rel="stylesheet"
+    href="/products.dropdown.css?v=104"
+  >
 
-<!-- ================= TOPBAR / DROPDOWN (OVERRIDE) ================= -->
-<link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
+  <link
+    rel="stylesheet"
+    href="/products.dropdown.override.css?v=4"
+  >
 
-<!-- ================= MODAL (EN SON) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=20260117" />
+  <!-- AUTH MODAL -->
+  <link
+    rel="stylesheet"
+    href="/auth.modal.css?v=101"
+  >
 
+  <!-- GLOBAL JS -->
+  <script
+    src="/toast.manager.js?v=2"
+    defer
+  ></script>
 
+  <script
+    src="/js/desktop.i18n.js?v=5"
+    defer
+  ></script>
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
-  <script src="/js/assistant.widget.js?v=1" defer></script>
+  <script
+    src="/js/assistant.widget.js?v=2"
+    defer
+  ></script>
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <script
+    src="/include.partials.js?v=5"
+    defer
+  ></script>
 
-<!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
-<script src="/auth.core.js?v=20260115x" defer></script>
-  <script src="/index.auth.js?v=20260423_1" defer></script>
+  <script
+    src="/auth.core.js?v=20260115x"
+    defer
+  ></script>
 
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <script
+    src="/index.auth.js?v=20260423_1"
+    defer
+  ></script>
 
-<!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <script
+    src="/auth-state.auto.js?v=20260118a"
+    defer
+  ></script>
 
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
+  <script
+    src="/auth.unify.fix.js?v=2"
+    defer
+  ></script>
+
+  <script
+    src="/store.js?v=2"
+    defer
+  ></script>
+
+  <style>
+    .page-distance .k-sec,
+    .page-distance .k-panel,
+    .page-distance .k-toc {
+      scroll-margin-top: 120px;
+    }
+
+    :root {
+      --cc-bg: rgba(8, 12, 24, 0.72);
+      --cc-stroke: rgba(255, 255, 255, 0.10);
+      --cc-text: rgba(235, 240, 255, 0.92);
+      --cc-sub: rgba(235, 240, 255, 0.70);
+      --cc-purple: #7c3aed;
+      --cc-purple2: #a855f7;
+    }
+
+    .aivo-cc {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      left: 14px;
+      z-index: 999999;
+      display: none;
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        transform 0.28s ease,
+        opacity 0.28s ease;
+    }
+
+    .aivo-cc.is-open {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .aivo-cc__card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px;
+      border: 1px solid var(--cc-stroke);
+      border-radius: 16px;
+      background: var(--cc-bg);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .aivo-cc__card::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -60px;
+      left: -60px;
+      height: 120px;
+      background:
+        radial-gradient(
+          closest-side,
+          rgba(168, 85, 247, 0.35),
+          transparent 70%
+        );
+      pointer-events: none;
+    }
+
+    .aivo-cc__left {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .aivo-cc__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--cc-text);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .aivo-cc__dot {
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          135deg,
+          var(--cc-purple),
+          var(--cc-purple2)
+        );
+      box-shadow:
+        0 0 0 4px rgba(124, 58, 237, 0.18);
+    }
+
+    .aivo-cc__msg {
+      overflow: hidden;
+      color: var(--cc-sub);
+      font-size: 13px;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+    }
+
+    .aivo-cc__links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .aivo-cc__links a {
+      color: rgba(220, 225, 255, 0.85);
+      opacity: 0.9;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .aivo-cc__actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .aivo-cc__btn {
+      height: 38px;
+      padding: 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(235, 240, 255, 0.92);
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .aivo-cc__btn:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .aivo-cc__btn--primary {
+      border: 0;
+      background:
+        linear-gradient(
+          135deg,
+          var(--cc-purple),
+          var(--cc-purple2)
+        );
+      color: #ffffff;
+      box-shadow:
+        0 14px 30px rgba(124, 58, 237, 0.28);
+    }
+
+    .aivo-cc__textlink {
+      padding: 0 6px;
+      border: 0;
+      background: none;
+      color: rgba(220, 225, 255, 0.90);
+      opacity: 0.9;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .aivo-ccm {
+      position: fixed;
+      inset: 0;
+      z-index: 1000000;
+      display: none;
+    }
+
+    .aivo-ccm.is-open {
+      display: block;
+    }
+
+    .aivo-ccm__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .aivo-ccm__card {
+      position: relative;
+      top: 10vh;
+      overflow: hidden;
+      width: min(720px, calc(100vw - 28px));
+      margin: 0 auto;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      background: rgba(8, 12, 24, 0.86);
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    .aivo-ccm__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .aivo-ccm__title {
+      color: rgba(235, 240, 255, 0.95);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .aivo-ccm__sub {
+      margin-top: 6px;
+      color: rgba(235, 240, 255, 0.72);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .aivo-ccm__x {
+      width: 38px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(235, 240, 255, 0.90);
+      cursor: pointer;
+    }
+
+    .aivo-ccm__rows {
+      padding: 10px 16px 6px;
+    }
+
+    .aivo-ccm__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .aivo-ccm__row:last-child {
+      border-bottom: 0;
+    }
+
+    .aivo-ccm__meta {
+      min-width: 0;
+    }
+
+    .aivo-ccm__label {
+      color: rgba(235, 240, 255, 0.92);
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .aivo-ccm__desc {
+      margin-top: 4px;
+      color: rgba(235, 240, 255, 0.68);
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    .aivo-ccm__foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .aivo-ccm__link {
+      color: rgba(220, 225, 255, 0.88);
+      font-size: 13px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .aivo-ccm__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .aivo-switch {
+      position: relative;
+      display: inline-block;
+      flex: 0 0 auto;
+      width: 48px;
+      height: 28px;
+    }
+
+    .aivo-switch input {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+    }
+
+    .aivo-switch__track {
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .aivo-switch__track::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: rgba(235, 240, 255, 0.92);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+      transform: translateX(0);
+      transition: transform 0.18s ease;
+    }
+
+    .aivo-switch input:checked + .aivo-switch__track {
+      border-color: rgba(255, 255, 255, 0.08);
+      background:
+        linear-gradient(
+          135deg,
+          #7c3aed,
+          #a855f7
+        );
+    }
+
+    .aivo-switch input:checked + .aivo-switch__track::after {
+      transform: translateX(20px);
+    }
+
+    .aivo-switch.is-disabled {
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    @media (max-width: 720px) {
+      .aivo-cc__card {
+        grid-template-columns: 1fr;
+      }
+
+      .aivo-cc__actions {
+        justify-content: flex-start;
+      }
+
+      .aivo-ccm__foot {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
-
-<body data-skin="corp">
-
-  <!-- ✅ TOPBAR tek kaynaktan -->
+<body
+  class="page-corp page-distance"
+  data-skin="corp"
+  style="background:#070A14;"
+>
+  <!-- TOPBAR -->
   <div data-include="topbar"></div>
 
-<!-- AIVO Cookie Banner (Premium) -->
-<style>
-  :root{
-    --cc-bg: rgba(8,12,24,.72);
-    --cc-stroke: rgba(255,255,255,.10);
-    --cc-text: rgba(235,240,255,.92);
-    --cc-sub: rgba(235,240,255,.70);
-    --cc-purple: #7c3aed;
-    --cc-purple2: #a855f7;
-  }
+  <!-- COOKIE BANNER -->
+  <div
+    class="aivo-cc"
+    id="aivoCookieBanner"
+    aria-live="polite"
+  >
+    <div class="aivo-cc__card">
 
-  .aivo-cc{
-    position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-    z-index: 999999;
-    display: none;
-    transform: translateY(18px);
-    opacity: 0;
-    transition: transform .28s ease, opacity .28s ease;
-  }
-  .aivo-cc.is-open{
-    transform: translateY(0);
-    opacity: 1;
-  }
+      <div class="aivo-cc__left">
 
-  .aivo-cc__card{
-    margin: 0 auto;
-    max-width: 1180px;
-    background: var(--cc-bg);
-    border: 1px solid var(--cc-stroke);
-    border-radius: 16px;
-    padding: 14px 14px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 60px rgba(0,0,0,.45);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 12px;
-    align-items: center;
-    overflow: hidden;
-    position: relative;
-  }
+        <div class="aivo-cc__title">
+          <span class="aivo-cc__dot"></span>
 
-  .aivo-cc__card:before{
-    content:"";
-    position:absolute;
-    inset:-40px -60px auto -60px;
-    height: 120px;
-    background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
-    pointer-events:none;
-    filter: blur(2px);
-  }
+          <span data-i18n="cookie.title">
+            Çerez Tercihleri
+          </span>
+        </div>
 
-  .aivo-cc__left{
-    min-width: 0;
-    display: grid;
-    gap: 6px;
-  }
-  .aivo-cc__title{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight: 700;
-    color: var(--cc-text);
-    letter-spacing: .2px;
-    font-size: 14px;
-  }
-  .aivo-cc__dot{
-    width: 10px; height: 10px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    box-shadow: 0 0 0 4px rgba(124,58,237,.18);
-    flex: 0 0 auto;
-  }
-  .aivo-cc__msg{
-    color: var(--cc-sub);
-    font-size: 13px;
-    line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .aivo-cc__links{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    font-size: 12px;
-  }
-  .aivo-cc__links a{
-    color: rgba(220,225,255,.85);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    opacity: .9;
-  }
-  .aivo-cc__links a:hover{ opacity: 1; }
+        <div
+          class="aivo-cc__msg"
+          data-i18n="cookie.message"
+        >
+          Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+        </div>
 
-  .aivo-cc__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
+        <div class="aivo-cc__links">
+          <a
+            href="/kurumsal/gizlilik.html#cerez"
+            data-i18n="cookie.policy"
+          >
+            Çerez Politikası
+          </a>
 
-  .aivo-cc__btn{
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.92);
-    font-weight: 650;
-    font-size: 13px;
-    cursor: pointer;
-    transition: transform .15s ease, background .15s ease, border-color .15s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .aivo-cc__btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.09);
-    border-color: rgba(255,255,255,.22);
-  }
+          <button
+            class="aivo-cc__textlink"
+            type="button"
+            id="aivoCcCustomize"
+            data-i18n="cookie.customize"
+          >
+            Özelleştir
+          </button>
+        </div>
 
-  .aivo-cc__btn--primary{
-    border: 0;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    color: #fff;
-    box-shadow: 0 14px 30px rgba(124,58,237,.28);
-  }
-  .aivo-cc__btn--primary:hover{
-    background: linear-gradient(135deg, #6d28d9, #9333ea);
-  }
-
-  .aivo-cc__textlink{
-    background: none;
-    border: none;
-    color: rgba(220,225,255,.9);
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 0 6px;
-    opacity: .9;
-  }
-  .aivo-cc__textlink:hover{ opacity: 1; }
-
-  @media (max-width: 720px){
-    .aivo-cc__card{
-      grid-template-columns: 1fr;
-    }
-    .aivo-cc__actions{
-      justify-content: flex-start;
-    }
-    .aivo-cc__msg{
-      -webkit-line-clamp: 3;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-    }
-  }
-
-  /* ===== Modal ===== */
-  .aivo-ccm{
-    position: fixed;
-    inset: 0;
-    z-index: 1000000;
-    display: none;
-  }
-  .aivo-ccm.is-open{ display:block; }
-
-  .aivo-ccm__backdrop{
-    position:absolute;
-    inset:0;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  .aivo-ccm__card{
-    position: relative;
-    width: min(720px, calc(100vw - 28px));
-    margin: 0 auto;
-    top: 10vh;
-    background: rgba(8,12,24,.86);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 18px;
-    box-shadow: 0 20px 80px rgba(0,0,0,.55);
-    overflow: hidden;
-  }
-
-  .aivo-ccm__head{
-    display:flex;
-    align-items:flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 16px 16px 12px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-  }
-  .aivo-ccm__title{
-    font-weight: 800;
-    font-size: 16px;
-    color: rgba(235,240,255,.95);
-    letter-spacing: .2px;
-  }
-  .aivo-ccm__sub{
-    margin-top: 6px;
-    font-size: 13px;
-    color: rgba(235,240,255,.72);
-    line-height: 1.45;
-  }
-  .aivo-ccm__x{
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.9);
-    cursor: pointer;
-  }
-  .aivo-ccm__x:hover{ background: rgba(255,255,255,.10); }
-
-  .aivo-ccm__rows{ padding: 10px 16px 6px; }
-  .aivo-ccm__row{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-  }
-  .aivo-ccm__row:last-child{ border-bottom: 0; }
-
-  .aivo-ccm__meta{ min-width:0; }
-  .aivo-ccm__label{
-    font-weight: 750;
-    color: rgba(235,240,255,.92);
-    font-size: 14px;
-  }
-  .aivo-ccm__desc{
-    margin-top: 4px;
-    color: rgba(235,240,255,.68);
-    font-size: 12.5px;
-    line-height: 1.35;
-  }
-
-  .aivo-ccm__foot{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px 16px;
-    border-top: 1px solid rgba(255,255,255,.08);
-  }
-  .aivo-ccm__link{
-    color: rgba(220,225,255,.88);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    font-size: 13px;
-    opacity: .9;
-  }
-  .aivo-ccm__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-  }
-
-  /* Switch */
-  .aivo-switch{
-    position: relative;
-    width: 48px;
-    height: 28px;
-    display:inline-block;
-    flex: 0 0 auto;
-  }
-  .aivo-switch input{
-    position:absolute;
-    opacity:0;
-    width:0;
-    height:0;
-  }
-  .aivo-switch__track{
-    position:absolute;
-    inset:0;
-    border-radius: 999px;
-    background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.14);
-    transition: background .18s ease, border-color .18s ease;
-  }
-  .aivo-switch__track:after{
-    content:"";
-    position:absolute;
-    top: 3px; left: 3px;
-    width: 20px; height: 20px;
-    border-radius: 999px;
-    background: rgba(235,240,255,.92);
-    transform: translateX(0);
-    transition: transform .18s ease;
-    box-shadow: 0 8px 18px rgba(0,0,0,.35);
-  }
-  .aivo-switch input:checked + .aivo-switch__track{
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
-    border-color: rgba(255,255,255,.08);
-  }
-  .aivo-switch input:checked + .aivo-switch__track:after{
-    transform: translateX(20px);
-  }
-  .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
-</style>
-
-<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
-  <div class="aivo-cc__card">
-    <div class="aivo-cc__left">
-      <div class="aivo-cc__title">
-        <span class="aivo-cc__dot"></span>
-        Çerez Tercihleri
       </div>
-      <div class="aivo-cc__msg">
-        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
-        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
-      </div>
-      <div class="aivo-cc__links">
-        <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
-      </div>
-    </div>
 
-    <div class="aivo-cc__actions">
-      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
-      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      <div class="aivo-cc__actions">
+        <button
+          class="aivo-cc__btn"
+          type="button"
+          id="aivoCcDeny"
+          data-i18n="cookie.deny"
+        >
+          Reddet
+        </button>
+
+        <button
+          class="aivo-cc__btn aivo-cc__btn--primary"
+          type="button"
+          id="aivoCcAllow"
+          data-i18n="cookie.acceptAll"
+        >
+          Tümünü Kabul Et
+        </button>
+      </div>
+
     </div>
   </div>
-</div>
 
-<!-- AIVO Cookie Preferences Modal -->
-<div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
-  <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
+  <!-- COOKIE MODAL -->
+  <div
+    class="aivo-ccm"
+    id="aivoCookieModal"
+    aria-hidden="true"
+  >
+    <div
+      class="aivo-ccm__backdrop"
+      data-ccm-close="1"
+    ></div>
 
-  <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
-    <div class="aivo-ccm__head">
-      <div>
-        <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
-        <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
-      </div>
-      <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
-    </div>
+    <div
+      class="aivo-ccm__card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="aivoCcmTitle"
+    >
+      <div class="aivo-ccm__head">
 
-    <div class="aivo-ccm__rows">
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Zorunlu</div>
-          <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+        <div>
+          <div
+            class="aivo-ccm__title"
+            id="aivoCcmTitle"
+            data-i18n="cookie.modalTitle"
+          >
+            Çerez Tercihleri
+          </div>
+
+          <div
+            class="aivo-ccm__sub"
+            data-i18n="cookie.modalSubtitle"
+          >
+            Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.
+          </div>
         </div>
-        <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
-          <input type="checkbox" checked disabled />
-          <span class="aivo-switch__track"></span>
-        </label>
+
+        <button
+          class="aivo-ccm__x"
+          type="button"
+          data-ccm-close="1"
+          aria-label="Çerez penceresini kapat"
+          data-i18n-label="cookie.closeLabel"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Analitik</div>
-          <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+      <div class="aivo-ccm__rows">
+
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div
+              class="aivo-ccm__label"
+              data-i18n="cookie.necessary"
+            >
+              Zorunlu
+            </div>
+
+            <div
+              class="aivo-ccm__desc"
+              data-i18n="cookie.necessaryDesc"
+            >
+              Sitenin çalışması ve güvenlik için gereklidir.
+            </div>
+          </div>
+
+          <label
+            class="aivo-switch is-disabled"
+            aria-label="Zorunlu çerezler"
+            data-i18n-label="cookie.necessaryLabel"
+          >
+            <input
+              type="checkbox"
+              checked
+              disabled
+            >
+
+            <span class="aivo-switch__track"></span>
+          </label>
         </div>
-        <label class="aivo-switch" aria-label="Analitik çerezler">
-          <input type="checkbox" id="aivoPrefAnalytics" />
-          <span class="aivo-switch__track"></span>
-        </label>
-      </div>
 
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Pazarlama</div>
-          <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div
+              class="aivo-ccm__label"
+              data-i18n="cookie.analytics"
+            >
+              Analitik
+            </div>
+
+            <div
+              class="aivo-ccm__desc"
+              data-i18n="cookie.analyticsDesc"
+            >
+              Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).
+            </div>
+          </div>
+
+          <label
+            class="aivo-switch"
+            aria-label="Analitik çerezler"
+            data-i18n-label="cookie.analyticsLabel"
+          >
+            <input
+              type="checkbox"
+              id="aivoPrefAnalytics"
+            >
+
+            <span class="aivo-switch__track"></span>
+          </label>
         </div>
-        <label class="aivo-switch" aria-label="Pazarlama çerezler">
-          <input type="checkbox" id="aivoPrefMarketing" />
-          <span class="aivo-switch__track"></span>
-        </label>
-      </div>
-    </div>
 
-    <div class="aivo-ccm__foot">
-      <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-      <div class="aivo-ccm__actions">
-        <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
-        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div
+              class="aivo-ccm__label"
+              data-i18n="cookie.marketing"
+            >
+              Pazarlama
+            </div>
+
+            <div
+              class="aivo-ccm__desc"
+              data-i18n="cookie.marketingDesc"
+            >
+              Kampanya ve yeniden hedefleme (varsa).
+            </div>
+          </div>
+
+          <label
+            class="aivo-switch"
+            aria-label="Pazarlama çerezleri"
+            data-i18n-label="cookie.marketingLabel"
+          >
+            <input
+              type="checkbox"
+              id="aivoPrefMarketing"
+            >
+
+            <span class="aivo-switch__track"></span>
+          </label>
+        </div>
+
       </div>
+
+      <div class="aivo-ccm__foot">
+        <a
+          class="aivo-ccm__link"
+          href="/kurumsal/gizlilik.html#cerez"
+          data-i18n="cookie.policy"
+        >
+          Çerez Politikası
+        </a>
+
+        <div class="aivo-ccm__actions">
+          <button
+            class="aivo-cc__btn"
+            type="button"
+            data-ccm-close="1"
+            data-i18n="cookie.cancel"
+          >
+            Vazgeç
+          </button>
+
+          <button
+            class="aivo-cc__btn aivo-cc__btn--primary"
+            type="button"
+            id="aivoCcmSave"
+            data-i18n="cookie.save"
+          >
+            Kaydet
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
-</div>
-<!-- /AIVO Cookie Preferences Modal -->
 
-<script>
-(function(){
-  // V2: kategori bazlı tercih
-  var PREF_KEY = "aivo_cookie_prefs_v1"; // JSON {necessary:true, analytics:boolean, marketing:boolean}
-  var LEGACY_KEY = "aivo_cookie_consent_v1"; // eski allow/deny (geri uyum)
-
-  var banner = document.getElementById("aivoCookieBanner");
-  var modal  = document.getElementById("aivoCookieModal");
-  if (!banner) return;
-
-  var $ = function(id){ return document.getElementById(id); };
-
-  function safeParse(json){
-    try { return JSON.parse(json); } catch(e){ return null; }
-  }
-
-  function getPrefs(){
-    // Yeni tercih varsa onu kullan
-    var raw = null;
-    try { raw = localStorage.getItem(PREF_KEY); } catch(e){}
-    var p = raw ? safeParse(raw) : null;
-    if (p && typeof p === "object") {
-      return { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
-    }
-
-    // Eski allow/deny varsa migrate et
-    var legacy = null;
-    try { legacy = localStorage.getItem(LEGACY_KEY); } catch(e){}
-    if (legacy === "allow") return { necessary:true, analytics:true, marketing:true };
-    if (legacy === "deny")  return { necessary:true, analytics:false, marketing:false };
-
-    return null; // hiç seçim yok
-  }
-
-  function setPrefs(p){
-    var prefs = { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
-    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch(e){}
-    // legacy uyum
-    try { localStorage.setItem(LEGACY_KEY, (prefs.analytics || prefs.marketing) ? "allow" : "deny"); } catch(e){}
-  }
-
-  function openBanner(){
-    banner.style.display = "block";
-    requestAnimationFrame(function(){ banner.classList.add("is-open"); });
-  }
-  function closeBanner(){
-    banner.classList.remove("is-open");
-    setTimeout(function(){ banner.style.display = "none"; }, 220);
-  }
-
-  function openModal(){
-    if (!modal) return;
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.documentElement.style.overflow = "hidden";
-  }
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.documentElement.style.overflow = "";
-  }
-
-  function syncModalUI(){
-    if (!modal) return;
-    var p = getPrefs() || { necessary:true, analytics:false, marketing:false };
-    var a = $("aivoPrefAnalytics");
-    var m = $("aivoPrefMarketing");
-    if (a) a.checked = !!p.analytics;
-    if (m) m.checked = !!p.marketing;
-  }
-
-  // İlk yükleme: seçim yoksa banner göster
-  var prefs = getPrefs();
-  if (!prefs) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function(){ requestAnimationFrame(openBanner); }, { once:true });
-    } else {
-      requestAnimationFrame(openBanner);
-    }
-  }
-
-  // Kabul / Reddet
-  $("aivoCcAllow")?.addEventListener("click", function(){
-    setPrefs({ analytics:true, marketing:true });
-    closeBanner();
-  });
-
-  $("aivoCcDeny")?.addEventListener("click", function(){
-    setPrefs({ analytics:false, marketing:false });
-    closeBanner();
-  });
-
-  // Özelleştir: modal aç
-  $("aivoCcCustomize")?.addEventListener("click", function(){
-    syncModalUI();
-    openModal();
-  });
-
-  // Modal close: backdrop / x / vazgeç
-  modal?.addEventListener("click", function(e){
-    var t = e.target;
-    if (t && t.getAttribute && t.getAttribute("data-ccm-close") === "1") closeModal();
-  });
-
-  // ESC ile kapat
-  document.addEventListener("keydown", function(e){
-    if (e.key === "Escape" && modal && modal.classList.contains("is-open")) closeModal();
-  });
-
-  // Kaydet
-  $("aivoCcmSave")?.addEventListener("click", function(){
-    var a = $("aivoPrefAnalytics")?.checked;
-    var m = $("aivoPrefMarketing")?.checked;
-    setPrefs({ analytics: !!a, marketing: !!m });
-    closeModal();
-    closeBanner();
-  });
-
-})();
-</script>
-<!-- /AIVO Cookie Banner (Premium) -->
-
-
-
-  <!-- ============ PAGE BODY ============ -->
-  <main class="container" style="padding-top: 36px; padding-bottom: 20px;">
-
-    <a href="/" class="btn btn-ghost" style="text-decoration:none; display:inline-flex; gap:10px; align-items:center;">
+  <!-- PAGE -->
+  <main
+    class="container"
+    style="padding-top:36px; padding-bottom:36px;"
+    aria-label="AIVO Mesafeli Satış Sözleşmesi sayfası"
+    data-i18n-label="distance.pageLabel"
+  >
+    <a
+      href="/"
+      class="btn btn-ghost"
+      style="text-decoration:none; display:inline-flex; gap:10px; align-items:center;"
+      data-i18n="distance.backHome"
+    >
       ← Ana Sayfaya Dön
     </a>
 
-    <!-- HERO -->
-    <section style="margin-top: 26px; margin-bottom: 18px;">
-      <div style="opacity:.7; font-weight:800; letter-spacing:.22em; font-size:12px;">KURUMSAL</div>
-      <h1 style="margin: 10px 0 8px; font-size: clamp(32px, 4vw, 48px); line-height: 1.08;">
+    <section
+      style="margin-top:26px; margin-bottom:18px;"
+    >
+      <div
+        style="opacity:.7; font-weight:800; letter-spacing:.22em; font-size:12px;"
+        data-i18n="distance.eyebrow"
+      >
+        KURUMSAL
+      </div>
+
+      <h1
+        style="margin:10px 0 8px; font-size:clamp(32px, 4vw, 48px); line-height:1.08;"
+        data-i18n="distance.title"
+      >
         Mesafeli Satış Sözleşmesi
       </h1>
-      <p style="margin:0; opacity:.78; max-width: 980px; line-height: 1.65;">
-        Bu sözleşme; AIVO Studio üzerinden sunulan dijital hizmetlere ilişkin abonelik/plan ve kredi satışını,
-        kullanım koşullarını ve tarafların hak-yükümlülüklerini düzenler.
-      </p>
-      <div style="margin-top:10px; opacity:.7;">Son güncelleme: <strong>27 Aralık 2025</strong></div>
-    </section>
 
-    <!-- IMPORTANT POINTS -->
-    <section class="k-panel" aria-label="Önemli Noktalar">
-      <h3>Önemli Noktalar</h3>
-      <div class="k-pills">
-        <div class="k-pill">
-          <strong>Dijital Hizmet</strong>
-          <span>Hizmet, çevrimiçi platform üzerinden sunulur; fiziksel teslimat yoktur.</span>
-        </div>
-        <div class="k-pill">
-          <strong>İfa ve Cayma</strong>
-          <span>Dijital hizmetin ifasına başlandıktan veya krediler kullanıldıktan sonra cayma hakkı sınırlandırılabilir.</span>
-        </div>
-        <div class="k-pill">
-          <strong>Güvenli Ödeme</strong>
-          <span>Ödemeler yetkili ödeme kuruluşları altyapısı ile alınır; kart bilgileri AIVO tarafından saklanmaz.</span>
-        </div>
+      <p
+        style="margin:0; opacity:.78; max-width:980px; line-height:1.65;"
+        data-i18n="distance.hero"
+      >
+        Bu sözleşme; AIVO Studio üzerinden sunulan dijital hizmetlere ilişkin abonelik/plan ve kredi satışını, kullanım koşullarını ve tarafların hak-yükümlülüklerini düzenler.
+      </p>
+
+      <div
+        style="margin-top:10px; opacity:.7;"
+      >
+        <span data-i18n="distance.updatedLabel">
+          Son güncelleme:
+        </span>
+
+        <strong data-i18n="distance.updatedDate">
+          27 Aralık 2025
+        </strong>
       </div>
     </section>
 
-    <!-- TOC -->
-    <section class="k-toc" aria-label="İçindekiler" style="margin-top:18px;">
-      <h3>İçindekiler</h3>
-      <div class="k-tocGrid">
-        <a href="#s1">1. Taraflar ve Tanımlar</a>
-        <a href="#s2">2. Sözleşmenin Konusu</a>
-        <a href="#s3">3. Hizmetin Kapsamı</a>
-        <a href="#s4">4. Sipariş ve Ödeme</a>
-        <a href="#s5">5. Teslimat / İfa</a>
-        <a href="#s6">6. Cayma Hakkı</a>
-        <a href="#s7">7. İade / İptal / Değişiklik</a>
-        <a href="#s8">8. Kullanım Kuralları</a>
-        <a href="#s9">9. Fikri Mülkiyet</a>
-        <a href="#s10">10. Kişisel Veriler</a>
-        <a href="#s11">11. Sorumluluğun Sınırlandırılması</a>
-        <a href="#s12">12. Uyuşmazlık ve Yürürlük</a>
-      </div>
-    </section>
+    <div
+      id="distanceContent"
+      data-i18n-html="distance.bodyHtml"
+    >
+      <section
+        class="k-panel"
+        aria-label="Önemli Noktalar"
+      >
+        <h3>Önemli Noktalar</h3>
 
-    <!-- SECTIONS -->
-    <section class="k-sec" id="s1">
-      <h2>1. Taraflar ve Tanımlar</h2>
-  <p><strong>Satıcı (Hizmet Sağlayıcı):</strong> AIVO Studio</p>
-<p>
-  <strong>Unvan:</strong> Harun Erkezen<br>
-  <strong>Adres:</strong> Merkez Mah. 155 Sk. Şahin Apartmanı B Blok No: 4 B İç Kapı No: 4 Kemer / Antalya<br>
-  <strong>Telefon:</strong> <a href="tel:+905324001762">0532 400 17 62</a><br>
-  <strong>Vergi Dairesi:</strong> Kemer<br>
-  <strong>Vergi No:</strong> 14341041806<br>
-  <strong>E-posta:</strong> <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-</p>
-      <p><strong>Alıcı (Kullanıcı):</strong> AIVO Studio platformu üzerinden hizmet satın alan gerçek veya tüzel kişi.</p>
-      <p>
-        Bu sözleşmede geçen;<br>
-        <strong>Platform:</strong> AIVO Studio web uygulaması ve ilgili dijital arayüzleri,<br>
-        <strong>Hizmet:</strong> AI destekli müzik, görsel/kapak ve video üretimi dahil dijital içerik üretim hizmetlerini,<br>
-        <strong>Kredi:</strong> Platform içinde hizmet kullanım hakkı sağlayan birim(leri),<br>
-        <strong>Plan/Abonelik:</strong> Belirli bir dönem için kredi veya kullanım hakkı içeren paketleri ifade eder.
-      </p>
-    </section>
+        <div class="k-pills">
 
-    <section class="k-sec" id="s2">
-      <h2>2. Sözleşmenin Konusu</h2>
-      <p>
-        İşbu Mesafeli Satış Sözleşmesi’nin konusu; Alıcı’nın Platform üzerinden dijital hizmet (SaaS) kapsamında sunulan
-        plan/abonelik ve/veya kredi satın alımına ilişkin koşulların belirlenmesi ile tarafların hak ve yükümlülüklerinin
-        düzenlenmesidir.
-      </p>
-    </section>
+          <div class="k-pill">
+            <strong>Dijital Hizmet</strong>
+            <span>Hizmet, çevrimiçi platform üzerinden sunulur; fiziksel teslimat yoktur.</span>
+          </div>
 
-    <section class="k-sec" id="s3">
-      <h2>3. Hizmetin Kapsamı</h2>
-      <p>Platform üzerinden sunulan hizmetler, ürün sayfalarında ve/veya satın alma ekranlarında açıklanır. Hizmet kapsamına örnekler:</p>
-      <ul>
-        <li>AI Müzik Üretimi (tür/tempo/mood/vokal parametreleri ile)</li>
-        <li>AI Görsel/Kapak Üretimi</li>
-        <li>AI Video Üretimi</li>
-        <li>Kredi bazlı kullanım ve/veya abonelik planları</li>
-      </ul>
-      <p>
-        Satıcı, hizmeti geliştirme, güncelleme, güvenlik iyileştirmesi yapma hakkını saklı tutar. Bu değişiklikler, hizmetin
-        temel niteliğini ortadan kaldırmadığı sürece Alıcı tarafından kabul edilir.
-      </p>
-    </section>
+          <div class="k-pill">
+            <strong>İfa ve Cayma</strong>
+            <span>Dijital hizmetin ifasına başlandıktan veya krediler kullanıldıktan sonra cayma hakkı sınırlandırılabilir.</span>
+          </div>
 
-    <section class="k-sec" id="s4">
-      <h2>4. Sipariş ve Ödeme</h2>
-      <p>
-        Alıcı, Platform üzerindeki satın alma adımlarını tamamlayarak sipariş verir. Ödeme; yetkili ödeme hizmet sağlayıcıları
-        aracılığı ile tahsil edilir. Satıcı, kredi kartı bilgilerini sistemlerinde saklamaz.
-      </p>
-      <p>
-        Satın alınan plan/kredi tutarı, ilgili satın alma ekranında gösterilir. Fiyatlara vergiler dahil olabilir; şirket kuruluşu ve
-        faturalama altyapısı sonrası vergi/etiket bilgileri güncellenebilir.
-      </p>
-    </section>
+          <div class="k-pill">
+            <strong>Güvenli Ödeme</strong>
+            <span>Ödemeler yetkili ödeme kuruluşları altyapısı ile alınır; kart bilgileri AIVO tarafından saklanmaz.</span>
+          </div>
 
-    <section class="k-sec" id="s5">
-      <h2>5. Teslimat / İfa</h2>
-      <p>
-        Hizmet, dijital nitelikte olup fiziki teslimat bulunmamaktadır. Ödeme onayını takiben plan/kredi kullanım hakkı
-        Alıcı hesabına tanımlanır ve hizmet ifasına başlanır.
-      </p>
-      <p>
-        Satıcı; bakım, mücbir sebep, güvenlik riski veya teknik zorunluluk hallerinde hizmeti geçici olarak durdurabilir.
-        Bu durumda makul çaba ile kesintinin azaltılması hedeflenir.
-      </p>
-    </section>
+        </div>
+      </section>
 
-  <section class="k-sec" id="s6">
-  <h2>6. Cayma Hakkı</h2>
-  <p>
-    Alıcı, mesafeli sözleşmeye konu satın alımda, mevzuatta öngörülen istisnalar saklı kalmak kaydıyla,
-    satın alma tarihinden itibaren 14 (ondört) gün içinde cayma hakkını kullanabilir.
-  </p>
-  <p>
-    Ancak dijital içerik ve dijital hizmetlerde, hizmetin ifasına Alıcı’nın açık onayı ile başlanmış olması,
-    plan veya kredilerin hesaba tanımlanması ve/veya kredilerin kullanılması halinde, cayma hakkı ilgili mevzuat
-    kapsamında sınırlandırılabilir veya kullanılamayabilir.
-  </p>
-  <p>
-    Cayma hakkının kullanılabilir olduğu durumlarda, talep
-    <a href="mailto:info@aivo.tr">info@aivo.tr</a> adresine yazılı olarak iletilmelidir.
-  </p>
-</section>
- <section class="k-sec" id="s7">
-  <h2>7. İade / İptal / Değişiklik</h2>
-  <p>
-    Kullanılmış krediler, hesaba tanımlanmış ve ifasına başlanmış dijital hizmetler bakımından iade ve iptal talepleri,
-    ilgili mevzuat ve Platform politikaları çerçevesinde değerlendirilir.
-  </p>
-  <ul>
-    <li>Ödeme hatası, mükerrer tahsilat veya teknik hata gibi durumlarda inceleme yapılır ve uygun bulunması halinde iade işlemi başlatılır.</li>
-    <li>Teknik arıza nedeniyle hizmetin hiç sağlanamaması veya önemli ölçüde sağlanamaması halinde, uygun görülmesi durumunda kredi iadesi, süre uzatımı veya ücret iadesi uygulanabilir.</li>
-    <li>İade ve iptal talepleri yazılı olarak <a href="mailto:info@aivo.tr">info@aivo.tr</a> adresine iletilmelidir.</li>
-    <li>İadesi onaylanan tutarlar, talebin onaylanmasını takip eden en geç 14 (ondört) gün içinde, ödeme yapılan yöntem üzerinden Alıcı’ya iade edilir.</li>
-  </ul>
-</section>
+      <section
+        class="k-toc"
+        aria-label="İçindekiler"
+        style="margin-top:18px;"
+      >
+        <h3>İçindekiler</h3>
 
-    <section class="k-sec" id="s8">
-      <h2>8. Kullanım Kuralları</h2>
-      <p>
-        Alıcı, Platform’u hukuka uygun şekilde kullanmayı; üçüncü kişilerin haklarını (telif, marka, kişilik hakları vb.)
-        ihlal etmemeyi kabul eder. Satıcı, ihlal şüphesinde hesabı inceleyebilir; gerekli hallerde erişimi kısıtlayabilir.
-      </p>
-      <p>
-        Alıcı, hesap güvenliğinden sorumludur. Hesap paylaşımı veya yetkisiz kullanım risklerinde Satıcı’ya bildirimde bulunmalıdır.
-      </p>
-    </section>
+        <div class="k-tocGrid">
+          <a href="#s1">1. Taraflar ve Tanımlar</a>
+          <a href="#s2">2. Sözleşmenin Konusu</a>
+          <a href="#s3">3. Hizmetin Kapsamı</a>
+          <a href="#s4">4. Sipariş ve Ödeme</a>
+          <a href="#s5">5. Teslimat / İfa</a>
+          <a href="#s6">6. Cayma Hakkı</a>
+          <a href="#s7">7. İade / İptal / Değişiklik</a>
+          <a href="#s8">8. Kullanım Kuralları</a>
+          <a href="#s9">9. Fikri Mülkiyet</a>
+          <a href="#s10">10. Kişisel Veriler</a>
+          <a href="#s11">11. Sorumluluğun Sınırlandırılması</a>
+          <a href="#s12">12. Uyuşmazlık ve Yürürlük</a>
+        </div>
+      </section>
 
-    <section class="k-sec" id="s9">
-      <h2>9. Fikri Mülkiyet</h2>
-      <p>
-        Platform’a ilişkin yazılım, arayüz, tasarım ve marka unsurlarının tüm hakları Satıcı’ya aittir.
-      </p>
-      <p>
-        Alıcı tarafından Platform kullanılarak üretilen çıktılara ilişkin kullanım ve hak sahipliği prensipleri, satın alınan planın
-        koşullarına ve ilgili politika sayfalarına tabidir. Alıcı, üçüncü kişilerin haklarını ihlal eden içerikleri üretmemeyi ve
-        kullanmamayı kabul eder.
-      </p>
-    </section>
+      <section
+        class="k-sec"
+        id="s1"
+      >
+        <h2>1. Taraflar ve Tanımlar</h2>
 
-    <section class="k-sec" id="s10">
-      <h2>10. Kişisel Veriler</h2>
-      <p>
-        Kişisel veriler, 6698 sayılı KVKK ve ilgili mevzuat uyarınca işlenir. Detaylı bilgi için
-        <a href="/kurumsal/gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası ve KVKK Aydınlatma Metni</a>
-        sayfasını inceleyebilirsiniz.
-      </p>
-    </section>
+        <p>
+          <strong>Satıcı (Hizmet Sağlayıcı):</strong>
+          AIVO Studio
+        </p>
 
-    <section class="k-sec" id="s11">
-      <h2>11. Sorumluluğun Sınırlandırılması</h2>
-      <p>
-        Satıcı, hizmeti “olduğu gibi” sunar; kesintisiz ve hatasız hizmet için makul çaba gösterir. Alıcı, internet/cihaz kaynaklı
-        sorunlardan Satıcı’nın sorumlu olmayabileceğini kabul eder.
-      </p>
-      <p>
-        Satıcı, dolaylı zararlar (kar kaybı, veri kaybı, iş kaybı vb.) bakımından, mevzuatın izin verdiği ölçüde sorumluluğu sınırlar.
-      </p>
-    </section>
+        <p>
+          <strong>Unvan:</strong> Harun Erkezen<br>
+          <strong>Adres:</strong> Merkez Mah. 155 Sk. Şahin Apartmanı B Blok No: 4 B İç Kapı No: 4 Kemer / Antalya<br>
+          <strong>Telefon:</strong>
+          <a href="tel:+905324001762">0532 400 17 62</a><br>
+          <strong>Vergi Dairesi:</strong> Kemer<br>
+          <strong>Vergi No:</strong> 14341041806<br>
+          <strong>E-posta:</strong>
+          <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+        </p>
 
-    <section class="k-sec" id="s12">
-      <h2>12. Uyuşmazlık ve Yürürlük</h2>
-      <p>
-        İşbu sözleşme, Alıcı’nın elektronik ortamda onaylaması ile yürürlüğe girer. Uyuşmazlıklarda Türkiye Cumhuriyeti hukuk kuralları
-        uygulanır. Tüketici sıfatını haiz Alıcı bakımından; tüketici hakem heyetleri ve tüketici mahkemeleri yetkilidir.
-      </p>
-    </section>
+        <p>
+          <strong>Alıcı (Kullanıcı):</strong>
+          AIVO Studio platformu üzerinden hizmet satın alan gerçek veya tüzel kişi.
+        </p>
 
+        <p>
+          Bu sözleşmede geçen;<br>
+          <strong>Platform:</strong> AIVO Studio web uygulaması ve ilgili dijital arayüzleri,<br>
+          <strong>Hizmet:</strong> AI destekli müzik, görsel/kapak ve video üretimi dahil dijital içerik üretim hizmetlerini,<br>
+          <strong>Kredi:</strong> Platform içinde hizmet kullanım hakkı sağlayan birim(leri),<br>
+          <strong>Plan/Abonelik:</strong> Belirli bir dönem için kredi veya kullanım hakkı içeren paketleri ifade eder.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s2"
+      >
+        <h2>2. Sözleşmenin Konusu</h2>
+
+        <p>
+          İşbu Mesafeli Satış Sözleşmesi’nin konusu; Alıcı’nın Platform üzerinden dijital hizmet (SaaS) kapsamında sunulan plan/abonelik ve/veya kredi satın alımına ilişkin koşulların belirlenmesi ile tarafların hak ve yükümlülüklerinin düzenlenmesidir.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s3"
+      >
+        <h2>3. Hizmetin Kapsamı</h2>
+
+        <p>
+          Platform üzerinden sunulan hizmetler, ürün sayfalarında ve/veya satın alma ekranlarında açıklanır. Hizmet kapsamına örnekler:
+        </p>
+
+        <ul>
+          <li>AI Müzik Üretimi (tür/tempo/mood/vokal parametreleri ile)</li>
+          <li>AI Görsel/Kapak Üretimi</li>
+          <li>AI Video Üretimi</li>
+          <li>Kredi bazlı kullanım ve/veya abonelik planları</li>
+        </ul>
+
+        <p>
+          Satıcı, hizmeti geliştirme, güncelleme, güvenlik iyileştirmesi yapma hakkını saklı tutar. Bu değişiklikler, hizmetin temel niteliğini ortadan kaldırmadığı sürece Alıcı tarafından kabul edilir.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s4"
+      >
+        <h2>4. Sipariş ve Ödeme</h2>
+
+        <p>
+          Alıcı, Platform üzerindeki satın alma adımlarını tamamlayarak sipariş verir. Ödeme; yetkili ödeme hizmet sağlayıcıları aracılığı ile tahsil edilir. Satıcı, kredi kartı bilgilerini sistemlerinde saklamaz.
+        </p>
+
+        <p>
+          Satın alınan plan/kredi tutarı, ilgili satın alma ekranında gösterilir. Fiyatlara vergiler dahil olabilir; şirket kuruluşu ve faturalama altyapısı sonrası vergi/etiket bilgileri güncellenebilir.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s5"
+      >
+        <h2>5. Teslimat / İfa</h2>
+
+        <p>
+          Hizmet, dijital nitelikte olup fiziki teslimat bulunmamaktadır. Ödeme onayını takiben plan/kredi kullanım hakkı Alıcı hesabına tanımlanır ve hizmet ifasına başlanır.
+        </p>
+
+        <p>
+          Satıcı; bakım, mücbir sebep, güvenlik riski veya teknik zorunluluk hallerinde hizmeti geçici olarak durdurabilir. Bu durumda makul çaba ile kesintinin azaltılması hedeflenir.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s6"
+      >
+        <h2>6. Cayma Hakkı</h2>
+
+        <p>
+          Alıcı, mesafeli sözleşmeye konu satın alımda, mevzuatta öngörülen istisnalar saklı kalmak kaydıyla, satın alma tarihinden itibaren 14 (ondört) gün içinde cayma hakkını kullanabilir.
+        </p>
+
+        <p>
+          Ancak dijital içerik ve dijital hizmetlerde, hizmetin ifasına Alıcı’nın açık onayı ile başlanmış olması, plan veya kredilerin hesaba tanımlanması ve/veya kredilerin kullanılması halinde, cayma hakkı ilgili mevzuat kapsamında sınırlandırılabilir veya kullanılamayabilir.
+        </p>
+
+        <p>
+          Cayma hakkının kullanılabilir olduğu durumlarda, talep
+          <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+          adresine yazılı olarak iletilmelidir.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s7"
+      >
+        <h2>7. İade / İptal / Değişiklik</h2>
+
+        <p>
+          Kullanılmış krediler, hesaba tanımlanmış ve ifasına başlanmış dijital hizmetler bakımından iade ve iptal talepleri, ilgili mevzuat ve Platform politikaları çerçevesinde değerlendirilir.
+        </p>
+
+        <ul>
+          <li>Ödeme hatası, mükerrer tahsilat veya teknik hata gibi durumlarda inceleme yapılır ve uygun bulunması halinde iade işlemi başlatılır.</li>
+          <li>Teknik arıza nedeniyle hizmetin hiç sağlanamaması veya önemli ölçüde sağlanamaması halinde, uygun görülmesi durumunda kredi iadesi, süre uzatımı veya ücret iadesi uygulanabilir.</li>
+          <li>İade ve iptal talepleri yazılı olarak <a href="mailto:info@aivo.tr">info@aivo.tr</a> adresine iletilmelidir.</li>
+          <li>İadesi onaylanan tutarlar, talebin onaylanmasını takip eden en geç 14 (ondört) gün içinde, ödeme yapılan yöntem üzerinden Alıcı’ya iade edilir.</li>
+        </ul>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s8"
+      >
+        <h2>8. Kullanım Kuralları</h2>
+
+        <p>
+          Alıcı, Platform’u hukuka uygun şekilde kullanmayı; üçüncü kişilerin haklarını (telif, marka, kişilik hakları vb.) ihlal etmemeyi kabul eder. Satıcı, ihlal şüphesinde hesabı inceleyebilir; gerekli hallerde erişimi kısıtlayabilir.
+        </p>
+
+        <p>
+          Alıcı, hesap güvenliğinden sorumludur. Hesap paylaşımı veya yetkisiz kullanım risklerinde Satıcı’ya bildirimde bulunmalıdır.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s9"
+      >
+        <h2>9. Fikri Mülkiyet</h2>
+
+        <p>
+          Platform’a ilişkin yazılım, arayüz, tasarım ve marka unsurlarının tüm hakları Satıcı’ya aittir.
+        </p>
+
+        <p>
+          Alıcı tarafından Platform kullanılarak üretilen çıktılara ilişkin kullanım ve hak sahipliği prensipleri, satın alınan planın koşullarına ve ilgili politika sayfalarına tabidir. Alıcı, üçüncü kişilerin haklarını ihlal eden içerikleri üretmemeyi ve kullanmamayı kabul eder.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s10"
+      >
+        <h2>10. Kişisel Veriler</h2>
+
+        <p>
+          Kişisel veriler, 6698 sayılı KVKK ve ilgili mevzuat uyarınca işlenir. Detaylı bilgi için
+          <a
+            href="/kurumsal/gizlilik.html"
+            target="_blank"
+            rel="noopener"
+          >
+            Gizlilik Politikası ve KVKK Aydınlatma Metni
+          </a>
+          sayfasını inceleyebilirsiniz.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s11"
+      >
+        <h2>11. Sorumluluğun Sınırlandırılması</h2>
+
+        <p>
+          Satıcı, hizmeti “olduğu gibi” sunar; kesintisiz ve hatasız hizmet için makul çaba gösterir. Alıcı, internet/cihaz kaynaklı sorunlardan Satıcı’nın sorumlu olmayabileceğini kabul eder.
+        </p>
+
+        <p>
+          Satıcı, dolaylı zararlar (kar kaybı, veri kaybı, iş kaybı vb.) bakımından, mevzuatın izin verdiği ölçüde sorumluluğu sınırlar.
+        </p>
+      </section>
+
+      <section
+        class="k-sec"
+        id="s12"
+      >
+        <h2>12. Uyuşmazlık ve Yürürlük</h2>
+
+        <p>
+          İşbu sözleşme, Alıcı’nın elektronik ortamda onaylaması ile yürürlüğe girer. Uyuşmazlıklarda Türkiye Cumhuriyeti hukuk kuralları uygulanır. Tüketici sıfatını haiz Alıcı bakımından; tüketici hakem heyetleri ve tüketici mahkemeleri yetkilidir.
+        </p>
+      </section>
+    </div>
   </main>
 
-  <!-- ================= FOOTER (INDEX/VITRIN) ================= -->
-  <footer class="aivo-footer" id="footer">
+  <!-- FOOTER -->
+  <footer
+    class="aivo-footer"
+    id="footer"
+    aria-label="AIVO alt bilgi alanı"
+    data-i18n-label="index.footer.sectionLabel"
+  >
     <div class="aivo-wrap aivo-footer-top">
 
       <div class="aivo-footer-brand">
-        <div class="aivo-footer-logo">AIVO</div>
-        <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
+        <div class="aivo-footer-logo">
+          AIVO
+        </div>
+
+        <p data-i18n="index.footer.tagline">
+          Türkçe odaklı AI müzik üretiminde yeni bir standart.
+        </p>
+
         <div class="aivo-social">
           <a href="#" aria-label="X">X</a>
           <a href="#" aria-label="Instagram">IG</a>
@@ -815,82 +1130,262 @@
       </div>
 
       <div class="aivo-footer-col">
-        <h4>Hızlı Linkler</h4>
-        <a href="/#top">Ana Sayfa</a>
-        <a href="/#modules">Özellikler</a>
-        <a href="/#fiyatlar">Fiyatlandırma</a>
-        <a href="/studio.html" data-auth="required">Dashboard</a>
+        <h4 data-i18n="index.footer.quickLinks">
+          Hızlı Linkler
+        </h4>
+
+        <a
+          href="/#top"
+          data-i18n="index.footer.home"
+        >
+          Ana Sayfa
+        </a>
+
+        <a
+          href="/#modules"
+          data-i18n="index.footer.features"
+        >
+          Özellikler
+        </a>
+
+        <a
+          href="/fiyatlandirma.html"
+          data-i18n="topbar.pricing"
+        >
+          Fiyatlandırma
+        </a>
+
+        <a
+          href="/studio.v2.html"
+          data-auth="required"
+          data-i18n="index.footer.dashboard"
+        >
+          Dashboard
+        </a>
       </div>
 
-    <div class="aivo-footer-col">
-  <h4>Kurumsal</h4>
-  <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-  <a href="/kurumsal/ozellikler.html">Özellikler</a>
-  <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-  <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-  <a href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari">Güvenli Kullanım</a>
-  <a href="/kurumsal/iletisim.html">İletişim</a>
-</div>
+      <div class="aivo-footer-col">
+        <h4 data-i18n="index.footer.company">
+          Kurumsal
+        </h4>
+
+        <a
+          href="/kurumsal/hakkimizda.html"
+          data-i18n="index.footer.about"
+        >
+          Hakkımızda
+        </a>
+
+        <a
+          href="/kurumsal/ozellikler.html"
+          data-i18n="index.footer.features"
+        >
+          Özellikler
+        </a>
+
+        <a
+          href="/kurumsal/gizlilik.html"
+          data-i18n="index.footer.privacy"
+        >
+          Gizlilik Politikası
+        </a>
+
+        <a
+          href="/kurumsal/mesafeli-satis.html"
+          data-i18n="index.footer.distanceSales"
+        >
+          Mesafeli Satış Sözleşmesi
+        </a>
+
+        <a
+          href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari"
+          data-i18n="topbar.corporate.safeUseTitle"
+        >
+          Güvenli Kullanım
+        </a>
+
+        <a
+          href="/kurumsal/iletisim.html"
+          data-i18n="index.footer.contact"
+        >
+          İletişim
+        </a>
+      </div>
 
       <div class="aivo-footer-right">
         <div class="aivo-badges">
-          <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
-          <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
-          <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+
+          <div class="aivo-badge">
+            GARANTİ BBVA
+            <br>
+
+            <small data-i18n="index.footer.securePayment">
+              Güvenli ödeme
+            </small>
+          </div>
+
+          <div class="aivo-badge">
+            VISA • MC • TROY
+            <br>
+
+            <small>256-bit SSL</small>
+          </div>
+
+          <div class="aivo-badge">
+            ETBİS
+            <br>
+
+            <small data-i18n="about.footer.afterCompany">
+              (Şirket sonrası)
+            </small>
+          </div>
+
         </div>
 
         <div class="aivo-contact">
-          <h4>İletişim</h4>
-          <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+          <h4 data-i18n="index.footer.contact">
+            İletişim
+          </h4>
+
+          <a href="mailto:info@aivo.tr">
+            info@aivo.tr
+          </a>
         </div>
       </div>
 
     </div>
 
     <div class="aivo-wrap aivo-footer-bottom">
-      <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+      <div data-i18n="index.footer.rights">
+        © 2025 AIVO. Tüm hakları saklıdır.
+      </div>
+
+      <div class="aivo-status">
+        <span data-i18n="index.footer.statusLabel">
+          Durum:
+        </span>
+
+        <span
+          class="dot"
+          aria-hidden="true"
+        ></span>
+
+        <span data-i18n="index.footer.statusActive">
+          Aktif
+        </span>
+      </div>
     </div>
   </footer>
 
-  <!-- ================= LOGIN MODAL (SINGLE SOURCE OF TRUTH) ================= -->
-  <div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
-    <div class="login-backdrop" data-close="1"></div>
+  <!-- LOGIN MODAL -->
+  <div
+    class="login-modal"
+    id="loginModal"
+    aria-hidden="true"
+    data-mode="login"
+  >
+    <div
+      class="login-backdrop"
+      data-close="1"
+    ></div>
 
-    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+    <div
+      class="login-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loginTitle"
+    >
+      <button
+        class="login-x"
+        type="button"
+        data-close="1"
+        aria-label="Giriş penceresini kapat"
+        data-i18n-label="auth.closeLabel"
+      >
+        ×
+      </button>
 
       <div class="login-stage">
+
         <div class="login-hero">
-          <div class="login-kicker">AIVO Studio Access</div>
-          <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-          <p class="login-desc" id="loginDesc">
+          <div
+            class="login-kicker"
+            data-i18n="auth.access"
+          >
+            AIVO Studio Erişimi
+          </div>
+
+          <h3
+            id="loginTitle"
+            data-i18n="auth.loginTitle"
+          >
+            Tekrar hoş geldin 👋
+          </h3>
+
+          <p
+            class="login-desc"
+            id="loginDesc"
+            data-i18n="auth.loginDescription"
+          >
             AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
           </p>
         </div>
 
         <div class="login-flow">
-          <div class="login-social-row" id="googleBlock">
-            <button id="btnGoogleLogin" type="button" class="btn-google">
+
+          <div
+            class="login-social-row"
+            id="googleBlock"
+          >
+            <button
+              id="btnGoogleLogin"
+              type="button"
+              class="btn-google"
+              data-i18n="auth.googleLogin"
+            >
               Google ile Giriş Yap
             </button>
 
-            <button id="btnAppleLogin" type="button" class="btn-google btn-apple">
+            <button
+              id="btnAppleLogin"
+              type="button"
+              class="btn-google btn-apple"
+              data-i18n="auth.appleLogin"
+            >
               Apple ile Giriş Yap
             </button>
           </div>
 
           <div class="login-or">
-            <span>veya email ile devam et</span>
+            <span data-i18n="auth.orEmail">
+              veya e-posta ile devam et
+            </span>
           </div>
 
           <div class="login-form-block login-email">
+
             <div class="login-form-head">
-              <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-              <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
+              <div
+                class="card-title"
+                id="authCardTitle"
+                data-i18n="auth.loginCardTitle"
+              >
+                E-posta ile Giriş
+              </div>
+
+              <div
+                class="card-sub"
+                id="authCardSub"
+                data-i18n="auth.loginCardDescription"
+              >
+                Hesabına e-posta adresinle giriş yap.
+              </div>
             </div>
 
-            <div class="email-row email-row-2 aivo-float-row" id="loginFields">
+            <div
+              class="email-row email-row-2 aivo-float-row"
+              id="loginFields"
+            >
               <label class="aivo-float-field">
                 <input
                   id="loginEmail"
@@ -902,12 +1397,23 @@
                   autocorrect="off"
                   spellcheck="false"
                   inputmode="email"
-                />
-                <span class="aivo-float-label">E-posta</span>
+                >
+
+                <span
+                  class="aivo-float-label"
+                  data-i18n="auth.email"
+                >
+                  E-posta
+                </span>
               </label>
 
               <label class="aivo-float-field aivo-float-field--icon">
-                <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+                <span
+                  class="aivo-field-ico aivo-field-ico--left"
+                  aria-hidden="true"
+                >
+                  🔒
+                </span>
 
                 <input
                   id="loginPass"
@@ -918,95 +1424,168 @@
                   autocapitalize="off"
                   autocorrect="off"
                   spellcheck="false"
-                />
+                >
 
-                <span class="aivo-float-label">Şifre</span>
+                <span
+                  class="aivo-float-label"
+                  data-i18n="auth.password"
+                >
+                  Şifre
+                </span>
 
                 <button
                   type="button"
                   class="aivo-pass-toggle"
                   data-toggle-pass="loginPass"
                   aria-label="Şifreyi göster"
+                  data-i18n-label="auth.showPassword"
                 >
                   👁
                 </button>
               </label>
             </div>
 
-            <div class="register-grid" id="registerExtra" style="display:none; margin-top:12px;">
+            <div
+              class="register-grid"
+              id="registerExtra"
+              style="display:none; margin-top:12px;"
+            >
               <div class="auth-form-field">
-                <div class="auth-form-label">Ad</div>
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.firstName"
+                >
+                  Ad
+                </div>
+
                 <label class="aivo-float-field">
                   <input
                     id="registerName"
                     type="text"
                     placeholder="Adınız"
+                    data-i18n-placeholder="auth.firstNamePlaceholder"
                     autocomplete="given-name"
-                  />
+                  >
                 </label>
               </div>
 
               <div class="auth-form-field">
-                <div class="auth-form-label">Soyad</div>
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.lastName"
+                >
+                  Soyad
+                </div>
+
                 <label class="aivo-float-field">
                   <input
                     id="registerSurname"
                     type="text"
                     placeholder="Soyadınız"
+                    data-i18n-placeholder="auth.lastNamePlaceholder"
                     autocomplete="family-name"
-                  />
+                  >
                 </label>
               </div>
 
-              <div class="auth-form-field" style="margin-top:12px;">
-                <div class="auth-form-label">E-posta</div>
+              <div
+                class="auth-form-field"
+                style="margin-top:12px;"
+              >
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.email"
+                >
+                  E-posta
+                </div>
+
                 <label class="aivo-float-field">
                   <input
                     id="registerEmailView"
                     type="email"
-                    placeholder="ornek@aivo.tr"
+                    placeholder="ornek@email.com"
+                    data-i18n-placeholder="auth.emailPlaceholder"
                     autocomplete="email"
+                    autocapitalize="off"
+                    autocorrect="off"
+                    spellcheck="false"
                     inputmode="email"
-                  />
+                  >
                 </label>
               </div>
 
-              <div class="auth-form-field" style="margin-top:12px;">
-                <div class="auth-form-label">Şifre</div>
+              <div
+                class="auth-form-field"
+                style="margin-top:12px;"
+              >
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.password"
+                >
+                  Şifre
+                </div>
+
                 <label class="aivo-float-field aivo-float-field--icon">
-                  <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+                  <span
+                    class="aivo-field-ico aivo-field-ico--left"
+                    aria-hidden="true"
+                  >
+                    🔒
+                  </span>
+
                   <input
                     id="registerPassView"
                     type="password"
                     placeholder="Şifreniz"
+                    data-i18n-placeholder="auth.passwordPlaceholder"
                     autocomplete="new-password"
-                  />
+                  >
+
                   <button
                     type="button"
                     class="aivo-pass-toggle"
                     data-toggle-pass="registerPassView"
                     aria-label="Şifreyi göster"
+                    data-i18n-label="auth.showPassword"
                   >
                     👁
                   </button>
                 </label>
               </div>
 
-              <div class="auth-form-field" style="margin-top:12px;">
-                <div class="auth-form-label">Şifre Tekrar</div>
+              <div
+                class="auth-form-field"
+                style="margin-top:12px;"
+              >
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.repeatPassword"
+                >
+                  Şifre Tekrar
+                </div>
+
                 <label class="aivo-float-field aivo-float-field--icon">
-                  <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+                  <span
+                    class="aivo-field-ico aivo-field-ico--left"
+                    aria-hidden="true"
+                  >
+                    🔒
+                  </span>
+
                   <input
                     id="registerPass2"
                     type="password"
                     placeholder="Şifrenizi tekrar girin"
+                    data-i18n-placeholder="auth.repeatPasswordPlaceholder"
                     autocomplete="new-password"
-                  />
+                  >
+
                   <button
                     type="button"
                     class="aivo-pass-toggle"
                     data-toggle-pass="registerPass2"
                     aria-label="Şifre tekrar alanını göster"
+                    data-i18n-label="auth.showRepeatPassword"
                   >
                     👁
                   </button>
@@ -1014,18 +1593,47 @@
               </div>
             </div>
 
-            <label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
-              <input id="kvkkCheck" type="checkbox" />
-              <span>Kullanım Şartları ve Gizlilik Politikası'nı kabul ediyorum</span>
+            <label
+              class="auth-consent-row"
+              id="kvkkRow"
+              style="display:none; margin-top:12px;"
+            >
+              <input
+                id="kvkkCheck"
+                type="checkbox"
+              >
+
+              <span data-i18n="auth.acceptTerms">
+                Kullanım Şartları ve Gizlilik Politikası’nı kabul ediyorum
+              </span>
             </label>
 
-            <div class="login-inline-meta" id="loginMeta">
-              <label class="remember-row" id="rememberRow">
-                <input type="checkbox" id="rememberMe" />
-                <span>Beni hatırla</span>
+            <div
+              class="login-inline-meta"
+              id="loginMeta"
+            >
+              <label
+                class="remember-row"
+                id="rememberRow"
+              >
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                >
+
+                <span data-i18n="auth.rememberMe">
+                  Beni hatırla
+                </span>
               </label>
 
-              <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+              <a
+                href="/forgot.html"
+                id="forgotPass"
+                class="link-muted"
+                data-i18n="auth.forgotPassword"
+              >
+                Şifreni mi unuttun?
+              </a>
             </div>
 
             <button
@@ -1033,196 +1641,1176 @@
               type="button"
               class="btn-primary btn-login-full"
               data-auth-submit
+              data-i18n="auth.loginButton"
             >
               Giriş Yap
             </button>
           </div>
         </div>
 
-        <div class="login-switchbar" id="loginFooter">
+        <div
+          class="login-switchbar"
+          id="loginFooter"
+        >
           <div class="login-switchcopy">
-            <span id="authFooterText">AIVO’da yeni misin?</span>
-            <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+            <span
+              id="authFooterText"
+              data-i18n="auth.newUser"
+            >
+              AIVO’da yeni misin?
+            </span>
+
+            <span
+              id="authFooterText2"
+              data-i18n="auth.haveAccount"
+              style="display:none;"
+            >
+              Zaten hesabın var mı?
+            </span>
           </div>
 
           <div class="login-switchactions">
-            <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
-            <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+            <a
+              href="#"
+              id="goRegister"
+              class="link-accent"
+              data-i18n="auth.createFreeAccount"
+            >
+              Ücretsiz hesap oluştur →
+            </a>
+
+            <a
+              href="#"
+              id="goLogin"
+              class="link-accent"
+              data-i18n="auth.loginLink"
+              style="display:none;"
+            >
+              Giriş yap →
+            </a>
           </div>
         </div>
+
       </div>
     </div>
   </div>
-  <!-- ================= /LOGIN MODAL ================= -->
 
-  <!-- ✅ AUTH UI (kurumsal/index aynı davranış) -->
+  <!-- COOKIE LOGIC -->
   <script>
-  (function AIVO_PAGE_AUTH_SINGLE(){
-    if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-    window.__AIVO_PAGE_AUTH_SINGLE__ = true;
+  (function AIVO_COOKIE_PREFERENCES() {
+    "use strict";
 
-    const $ = (s)=>document.querySelector(s);
+    var PREF_KEY =
+      "aivo_cookie_prefs_v1";
 
-    function setText(sel, val){
-      const el = $(sel);
-      if (!el) return;
-      el.textContent = val;
+    var LEGACY_KEY =
+      "aivo_cookie_consent_v1";
+
+    var banner =
+      document.getElementById(
+        "aivoCookieBanner"
+      );
+
+    var modal =
+      document.getElementById(
+        "aivoCookieModal"
+      );
+
+    if (!banner) return;
+
+    function byId(id) {
+      return document.getElementById(id);
     }
 
-    function showAuth(ok){
-      const g = document.getElementById('authGuest');
-      const u = document.getElementById('authUser');
-      const c = document.getElementById('topCredits');
-      if (g) g.hidden = !!ok;
-      if (u) u.hidden = !ok;
-      if (c) c.hidden = !ok;
-    }
-
-    function compute(user){
-      const email = (user && user.email ? String(user.email) : '').trim();
-      const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-      const src = (name || email || 'H').trim();
-      const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-      return { ch, name: (name || 'Hesap'), email: (email || '—') };
-    }
-
-    function apply(user){
-      const v = compute(user);
-      setText('#topUserInitial', v.ch);
-      setText('#topUserName', v.name);
-      setText('#umAvatar', v.ch);
-      setText('#umName', v.name);
-      setText('#umEmail', v.email);
-    }
-
-    function enforce(user){
-      let i = 0;
-      const t = setInterval(()=>{
-        i++;
-        apply(user);
-        if (i >= 40) clearInterval(t);
-      }, 150);
-    }
-
-    async function run(){
-      try{
-        const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-        if (r.status !== 200){
-          showAuth(false);
-          apply({ name:'Hesap', email:'' });
-          return;
-        }
-        const user = await r.json().catch(()=>({}));
-        showAuth(true);
-        apply(user);
-        enforce(user);
-      }catch(e){
-        showAuth(false);
-        apply({ name:'Hesap', email:'' });
+    function safeParse(value) {
+      try {
+        return JSON.parse(value);
+      } catch (_) {
+        return null;
       }
     }
 
-    if (document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', run, { once:true });
+    function getPrefs() {
+      var raw = null;
+
+      try {
+        raw =
+          localStorage.getItem(PREF_KEY);
+      } catch (_) {}
+
+      var parsed =
+        raw ? safeParse(raw) : null;
+
+      if (
+        parsed &&
+        typeof parsed === "object"
+      ) {
+        return {
+          necessary: true,
+          analytics: !!parsed.analytics,
+          marketing: !!parsed.marketing
+        };
+      }
+
+      var legacy = null;
+
+      try {
+        legacy =
+          localStorage.getItem(LEGACY_KEY);
+      } catch (_) {}
+
+      if (legacy === "allow") {
+        return {
+          necessary: true,
+          analytics: true,
+          marketing: true
+        };
+      }
+
+      if (legacy === "deny") {
+        return {
+          necessary: true,
+          analytics: false,
+          marketing: false
+        };
+      }
+
+      return null;
+    }
+
+    function setPrefs(value) {
+      var prefs = {
+        necessary: true,
+        analytics: !!value.analytics,
+        marketing: !!value.marketing
+      };
+
+      try {
+        localStorage.setItem(
+          PREF_KEY,
+          JSON.stringify(prefs)
+        );
+      } catch (_) {}
+
+      try {
+        localStorage.setItem(
+          LEGACY_KEY,
+          prefs.analytics ||
+          prefs.marketing
+            ? "allow"
+            : "deny"
+        );
+      } catch (_) {}
+    }
+
+    function openBanner() {
+      banner.style.display = "block";
+
+      requestAnimationFrame(function () {
+        banner.classList.add("is-open");
+      });
+    }
+
+    function closeBanner() {
+      banner.classList.remove("is-open");
+
+      setTimeout(function () {
+        banner.style.display = "none";
+      }, 220);
+    }
+
+    function openModal() {
+      if (!modal) return;
+
+      modal.classList.add("is-open");
+
+      modal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+
+      document.documentElement.style.overflow =
+        "hidden";
+    }
+
+    function closeModal() {
+      if (!modal) return;
+
+      modal.classList.remove("is-open");
+
+      modal.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      document.documentElement.style.overflow =
+        "";
+    }
+
+    function syncModalUI() {
+      var prefs =
+        getPrefs() || {
+          necessary: true,
+          analytics: false,
+          marketing: false
+        };
+
+      var analytics =
+        byId("aivoPrefAnalytics");
+
+      var marketing =
+        byId("aivoPrefMarketing");
+
+      if (analytics) {
+        analytics.checked =
+          !!prefs.analytics;
+      }
+
+      if (marketing) {
+        marketing.checked =
+          !!prefs.marketing;
+      }
+    }
+
+    if (!getPrefs()) {
+      if (
+        document.readyState === "loading"
+      ) {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            requestAnimationFrame(
+              openBanner
+            );
+          },
+          { once: true }
+        );
+      } else {
+        requestAnimationFrame(openBanner);
+      }
+    }
+
+    var allowButton =
+      byId("aivoCcAllow");
+
+    var denyButton =
+      byId("aivoCcDeny");
+
+    var customizeButton =
+      byId("aivoCcCustomize");
+
+    var saveButton =
+      byId("aivoCcmSave");
+
+    if (allowButton) {
+      allowButton.addEventListener(
+        "click",
+        function () {
+          setPrefs({
+            analytics: true,
+            marketing: true
+          });
+
+          closeBanner();
+        }
+      );
+    }
+
+    if (denyButton) {
+      denyButton.addEventListener(
+        "click",
+        function () {
+          setPrefs({
+            analytics: false,
+            marketing: false
+          });
+
+          closeBanner();
+        }
+      );
+    }
+
+    if (customizeButton) {
+      customizeButton.addEventListener(
+        "click",
+        function () {
+          syncModalUI();
+          openModal();
+        }
+      );
+    }
+
+    if (modal) {
+      modal.addEventListener(
+        "click",
+        function (event) {
+          var target = event.target;
+
+          if (
+            target &&
+            target.getAttribute &&
+            target.getAttribute(
+              "data-ccm-close"
+            ) === "1"
+          ) {
+            closeModal();
+          }
+        }
+      );
+    }
+
+    document.addEventListener(
+      "keydown",
+      function (event) {
+        if (
+          event.key === "Escape" &&
+          modal &&
+          modal.classList.contains(
+            "is-open"
+          )
+        ) {
+          closeModal();
+        }
+      }
+    );
+
+    if (saveButton) {
+      saveButton.addEventListener(
+        "click",
+        function () {
+          var analytics =
+            byId("aivoPrefAnalytics");
+
+          var marketing =
+            byId("aivoPrefMarketing");
+
+          setPrefs({
+            analytics:
+              !!(
+                analytics &&
+                analytics.checked
+              ),
+
+            marketing:
+              !!(
+                marketing &&
+                marketing.checked
+              )
+          });
+
+          closeModal();
+          closeBanner();
+        }
+      );
+    }
+  })();
+  </script>
+
+  <!-- AUTH UI -->
+  <script>
+  (function AIVO_PAGE_AUTH_SINGLE() {
+    "use strict";
+
+    if (
+      window.__AIVO_PAGE_AUTH_SINGLE__
+    ) {
+      return;
+    }
+
+    window.__AIVO_PAGE_AUTH_SINGLE__ =
+      true;
+
+    function query(selector) {
+      return document.querySelector(
+        selector
+      );
+    }
+
+    function translatedAccountName() {
+      try {
+        if (
+          typeof window.t === "function"
+        ) {
+          return window.t(
+            "common.account"
+          );
+        }
+      } catch (_) {}
+
+      return "Hesap";
+    }
+
+    function setText(selector, value) {
+      var element =
+        query(selector);
+
+      if (!element) return;
+
+      element.textContent = value;
+    }
+
+    function showAuth(isAuthenticated) {
+      var guest =
+        document.getElementById(
+          "authGuest"
+        );
+
+      var user =
+        document.getElementById(
+          "authUser"
+        );
+
+      var credits =
+        document.getElementById(
+          "topCredits"
+        );
+
+      if (guest) {
+        guest.hidden =
+          !!isAuthenticated;
+      }
+
+      if (user) {
+        user.hidden =
+          !isAuthenticated;
+      }
+
+      if (credits) {
+        credits.hidden =
+          !isAuthenticated;
+      }
+    }
+
+    function compute(user) {
+      var email =
+        user && user.email
+          ? String(user.email).trim()
+          : "";
+
+      var suppliedName =
+        user &&
+        (
+          user.name ||
+          user.fullName ||
+          user.displayName
+        )
+          ? String(
+              user.name ||
+              user.fullName ||
+              user.displayName
+            ).trim()
+          : "";
+
+      var fallbackName =
+        translatedAccountName();
+
+      var source =
+        (
+          suppliedName ||
+          email ||
+          fallbackName
+        ).trim();
+
+      return {
+        initial:
+          source[0]
+            ? source[0].toUpperCase()
+            : "H",
+
+        name:
+          suppliedName ||
+          fallbackName,
+
+        email:
+          email || "—"
+      };
+    }
+
+    function applyUser(user) {
+      var value = compute(user);
+
+      setText(
+        "#topUserInitial",
+        value.initial
+      );
+
+      setText(
+        "#topUserName",
+        value.name
+      );
+
+      setText(
+        "#umAvatar",
+        value.initial
+      );
+
+      setText(
+        "#umName",
+        value.name
+      );
+
+      setText(
+        "#umEmail",
+        value.email
+      );
+    }
+
+    function enforceUser(user) {
+      var count = 0;
+
+      var timer =
+        setInterval(function () {
+          count += 1;
+          applyUser(user);
+
+          if (count >= 40) {
+            clearInterval(timer);
+          }
+        }, 150);
+    }
+
+    async function run() {
+      try {
+        var response =
+          await fetch(
+            "/api/auth/me",
+            {
+              credentials: "include",
+              cache: "no-store"
+            }
+          );
+
+        if (response.status !== 200) {
+          showAuth(false);
+
+          applyUser({
+            name:
+              translatedAccountName(),
+            email: ""
+          });
+
+          return;
+        }
+
+        var user =
+          await response
+            .json()
+            .catch(function () {
+              return {};
+            });
+
+        showAuth(true);
+        applyUser(user);
+        enforceUser(user);
+      } catch (_) {
+        showAuth(false);
+
+        applyUser({
+          name:
+            translatedAccountName(),
+          email: ""
+        });
+      }
+    }
+
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        run,
+        { once: true }
+      );
     } else {
       run();
     }
 
-    document.addEventListener('click', async (e)=>{
-      const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-      if (!btn) return;
-      e.preventDefault();
-      try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-      showAuth(false);
-      apply({ name:'Hesap', email:'' });
-      location.assign(btn.getAttribute('data-redirect') || '/');
-    }, true);
+    document.addEventListener(
+      "click",
+      async function (event) {
+        var target =
+          event.target &&
+          event.target.closest
+            ? event.target.closest(
+                '[data-action="logout"], #btnLogoutTop, .um-logout'
+              )
+            : null;
+
+        if (!target) return;
+
+        event.preventDefault();
+
+        try {
+          await fetch(
+            "/api/auth/logout",
+            {
+              method: "POST",
+              credentials: "include"
+            }
+          );
+        } catch (_) {}
+
+        showAuth(false);
+
+        applyUser({
+          name:
+            translatedAccountName(),
+          email: ""
+        });
+
+        location.assign(
+          target.getAttribute(
+            "data-redirect"
+          ) || "/"
+        );
+      },
+      true
+    );
   })();
   </script>
-<script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  const $ = (s)=>document.querySelector(s);
+  <!-- PAGE TR / EN DICTIONARY -->
+  <script>
+  (function AIVO_DISTANCE_PAGE_I18N() {
+    "use strict";
 
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
+    var PAGE_DICTIONARY = {
+      tr: {
+        "distance.seoTitle":
+          "Mesafeli Satış Sözleşmesi • AIVO",
 
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
+        "distance.seoDescription":
+          "AIVO Studio dijital hizmet ve kredi paketlerine ilişkin Mesafeli Satış Sözleşmesi.",
 
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
+        "distance.pageLabel":
+          "AIVO Mesafeli Satış Sözleşmesi sayfası",
 
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
+        "distance.backHome":
+          "← Ana Sayfaya Dön",
 
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
+        "distance.eyebrow":
+          "KURUMSAL",
 
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
-        showAuth(false);
-        apply({ name:'Hesap', email:'' });
+        "distance.title":
+          "Mesafeli Satış Sözleşmesi",
+
+        "distance.hero":
+          "Bu sözleşme; AIVO Studio üzerinden sunulan dijital hizmetlere ilişkin abonelik/plan ve kredi satışını, kullanım koşullarını ve tarafların hak-yükümlülüklerini düzenler.",
+
+        "distance.updatedLabel":
+          "Son güncelleme:",
+
+        "distance.updatedDate":
+          "27 Aralık 2025",
+
+        "distance.bodyHtml": `
+          <section class="k-panel" aria-label="Önemli Noktalar">
+            <h3>Önemli Noktalar</h3>
+
+            <div class="k-pills">
+              <div class="k-pill">
+                <strong>Dijital Hizmet</strong>
+                <span>Hizmet, çevrimiçi platform üzerinden sunulur; fiziksel teslimat yoktur.</span>
+              </div>
+
+              <div class="k-pill">
+                <strong>İfa ve Cayma</strong>
+                <span>Dijital hizmetin ifasına başlandıktan veya krediler kullanıldıktan sonra cayma hakkı sınırlandırılabilir.</span>
+              </div>
+
+              <div class="k-pill">
+                <strong>Güvenli Ödeme</strong>
+                <span>Ödemeler yetkili ödeme kuruluşları altyapısı ile alınır; kart bilgileri AIVO tarafından saklanmaz.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="k-toc" aria-label="İçindekiler" style="margin-top:18px;">
+            <h3>İçindekiler</h3>
+
+            <div class="k-tocGrid">
+              <a href="#s1">1. Taraflar ve Tanımlar</a>
+              <a href="#s2">2. Sözleşmenin Konusu</a>
+              <a href="#s3">3. Hizmetin Kapsamı</a>
+              <a href="#s4">4. Sipariş ve Ödeme</a>
+              <a href="#s5">5. Teslimat / İfa</a>
+              <a href="#s6">6. Cayma Hakkı</a>
+              <a href="#s7">7. İade / İptal / Değişiklik</a>
+              <a href="#s8">8. Kullanım Kuralları</a>
+              <a href="#s9">9. Fikri Mülkiyet</a>
+              <a href="#s10">10. Kişisel Veriler</a>
+              <a href="#s11">11. Sorumluluğun Sınırlandırılması</a>
+              <a href="#s12">12. Uyuşmazlık ve Yürürlük</a>
+            </div>
+          </section>
+
+          <section class="k-sec" id="s1">
+            <h2>1. Taraflar ve Tanımlar</h2>
+
+            <p><strong>Satıcı (Hizmet Sağlayıcı):</strong> AIVO Studio</p>
+
+            <p>
+              <strong>Unvan:</strong> Harun Erkezen<br>
+              <strong>Adres:</strong> Merkez Mah. 155 Sk. Şahin Apartmanı B Blok No: 4 B İç Kapı No: 4 Kemer / Antalya<br>
+              <strong>Telefon:</strong> <a href="tel:+905324001762">0532 400 17 62</a><br>
+              <strong>Vergi Dairesi:</strong> Kemer<br>
+              <strong>Vergi No:</strong> 14341041806<br>
+              <strong>E-posta:</strong> <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+            </p>
+
+            <p>
+              <strong>Alıcı (Kullanıcı):</strong>
+              AIVO Studio platformu üzerinden hizmet satın alan gerçek veya tüzel kişi.
+            </p>
+
+            <p>
+              Bu sözleşmede geçen;<br>
+              <strong>Platform:</strong> AIVO Studio web uygulaması ve ilgili dijital arayüzleri,<br>
+              <strong>Hizmet:</strong> AI destekli müzik, görsel/kapak ve video üretimi dahil dijital içerik üretim hizmetlerini,<br>
+              <strong>Kredi:</strong> Platform içinde hizmet kullanım hakkı sağlayan birim(leri),<br>
+              <strong>Plan/Abonelik:</strong> Belirli bir dönem için kredi veya kullanım hakkı içeren paketleri ifade eder.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s2">
+            <h2>2. Sözleşmenin Konusu</h2>
+
+            <p>
+              İşbu Mesafeli Satış Sözleşmesi’nin konusu; Alıcı’nın Platform üzerinden dijital hizmet (SaaS) kapsamında sunulan plan/abonelik ve/veya kredi satın alımına ilişkin koşulların belirlenmesi ile tarafların hak ve yükümlülüklerinin düzenlenmesidir.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s3">
+            <h2>3. Hizmetin Kapsamı</h2>
+
+            <p>
+              Platform üzerinden sunulan hizmetler, ürün sayfalarında ve/veya satın alma ekranlarında açıklanır. Hizmet kapsamına örnekler:
+            </p>
+
+            <ul>
+              <li>AI Müzik Üretimi (tür/tempo/mood/vokal parametreleri ile)</li>
+              <li>AI Görsel/Kapak Üretimi</li>
+              <li>AI Video Üretimi</li>
+              <li>Kredi bazlı kullanım ve/veya abonelik planları</li>
+            </ul>
+
+            <p>
+              Satıcı, hizmeti geliştirme, güncelleme, güvenlik iyileştirmesi yapma hakkını saklı tutar. Bu değişiklikler, hizmetin temel niteliğini ortadan kaldırmadığı sürece Alıcı tarafından kabul edilir.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s4">
+            <h2>4. Sipariş ve Ödeme</h2>
+
+            <p>
+              Alıcı, Platform üzerindeki satın alma adımlarını tamamlayarak sipariş verir. Ödeme; yetkili ödeme hizmet sağlayıcıları aracılığı ile tahsil edilir. Satıcı, kredi kartı bilgilerini sistemlerinde saklamaz.
+            </p>
+
+            <p>
+              Satın alınan plan/kredi tutarı, ilgili satın alma ekranında gösterilir. Fiyatlara vergiler dahil olabilir; şirket kuruluşu ve faturalama altyapısı sonrası vergi/etiket bilgileri güncellenebilir.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s5">
+            <h2>5. Teslimat / İfa</h2>
+
+            <p>
+              Hizmet, dijital nitelikte olup fiziki teslimat bulunmamaktadır. Ödeme onayını takiben plan/kredi kullanım hakkı Alıcı hesabına tanımlanır ve hizmet ifasına başlanır.
+            </p>
+
+            <p>
+              Satıcı; bakım, mücbir sebep, güvenlik riski veya teknik zorunluluk hallerinde hizmeti geçici olarak durdurabilir. Bu durumda makul çaba ile kesintinin azaltılması hedeflenir.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s6">
+            <h2>6. Cayma Hakkı</h2>
+
+            <p>
+              Alıcı, mesafeli sözleşmeye konu satın alımda, mevzuatta öngörülen istisnalar saklı kalmak kaydıyla, satın alma tarihinden itibaren 14 (ondört) gün içinde cayma hakkını kullanabilir.
+            </p>
+
+            <p>
+              Ancak dijital içerik ve dijital hizmetlerde, hizmetin ifasına Alıcı’nın açık onayı ile başlanmış olması, plan veya kredilerin hesaba tanımlanması ve/veya kredilerin kullanılması halinde, cayma hakkı ilgili mevzuat kapsamında sınırlandırılabilir veya kullanılamayabilir.
+            </p>
+
+            <p>
+              Cayma hakkının kullanılabilir olduğu durumlarda, talep
+              <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+              adresine yazılı olarak iletilmelidir.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s7">
+            <h2>7. İade / İptal / Değişiklik</h2>
+
+            <p>
+              Kullanılmış krediler, hesaba tanımlanmış ve ifasına başlanmış dijital hizmetler bakımından iade ve iptal talepleri, ilgili mevzuat ve Platform politikaları çerçevesinde değerlendirilir.
+            </p>
+
+            <ul>
+              <li>Ödeme hatası, mükerrer tahsilat veya teknik hata gibi durumlarda inceleme yapılır ve uygun bulunması halinde iade işlemi başlatılır.</li>
+              <li>Teknik arıza nedeniyle hizmetin hiç sağlanamaması veya önemli ölçüde sağlanamaması halinde, uygun görülmesi durumunda kredi iadesi, süre uzatımı veya ücret iadesi uygulanabilir.</li>
+              <li>İade ve iptal talepleri yazılı olarak <a href="mailto:info@aivo.tr">info@aivo.tr</a> adresine iletilmelidir.</li>
+              <li>İadesi onaylanan tutarlar, talebin onaylanmasını takip eden en geç 14 (ondört) gün içinde, ödeme yapılan yöntem üzerinden Alıcı’ya iade edilir.</li>
+            </ul>
+          </section>
+
+          <section class="k-sec" id="s8">
+            <h2>8. Kullanım Kuralları</h2>
+
+            <p>
+              Alıcı, Platform’u hukuka uygun şekilde kullanmayı; üçüncü kişilerin haklarını (telif, marka, kişilik hakları vb.) ihlal etmemeyi kabul eder. Satıcı, ihlal şüphesinde hesabı inceleyebilir; gerekli hallerde erişimi kısıtlayabilir.
+            </p>
+
+            <p>
+              Alıcı, hesap güvenliğinden sorumludur. Hesap paylaşımı veya yetkisiz kullanım risklerinde Satıcı’ya bildirimde bulunmalıdır.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s9">
+            <h2>9. Fikri Mülkiyet</h2>
+
+            <p>
+              Platform’a ilişkin yazılım, arayüz, tasarım ve marka unsurlarının tüm hakları Satıcı’ya aittir.
+            </p>
+
+            <p>
+              Alıcı tarafından Platform kullanılarak üretilen çıktılara ilişkin kullanım ve hak sahipliği prensipleri, satın alınan planın koşullarına ve ilgili politika sayfalarına tabidir. Alıcı, üçüncü kişilerin haklarını ihlal eden içerikleri üretmemeyi ve kullanmamayı kabul eder.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s10">
+            <h2>10. Kişisel Veriler</h2>
+
+            <p>
+              Kişisel veriler, 6698 sayılı KVKK ve ilgili mevzuat uyarınca işlenir. Detaylı bilgi için
+              <a href="/kurumsal/gizlilik.html" target="_blank" rel="noopener">
+                Gizlilik Politikası ve KVKK Aydınlatma Metni
+              </a>
+              sayfasını inceleyebilirsiniz.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s11">
+            <h2>11. Sorumluluğun Sınırlandırılması</h2>
+
+            <p>
+              Satıcı, hizmeti “olduğu gibi” sunar; kesintisiz ve hatasız hizmet için makul çaba gösterir. Alıcı, internet/cihaz kaynaklı sorunlardan Satıcı’nın sorumlu olmayabileceğini kabul eder.
+            </p>
+
+            <p>
+              Satıcı, dolaylı zararlar (kar kaybı, veri kaybı, iş kaybı vb.) bakımından, mevzuatın izin verdiği ölçüde sorumluluğu sınırlar.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s12">
+            <h2>12. Uyuşmazlık ve Yürürlük</h2>
+
+            <p>
+              İşbu sözleşme, Alıcı’nın elektronik ortamda onaylaması ile yürürlüğe girer. Uyuşmazlıklarda Türkiye Cumhuriyeti hukuk kuralları uygulanır. Tüketici sıfatını haiz Alıcı bakımından; tüketici hakem heyetleri ve tüketici mahkemeleri yetkilidir.
+            </p>
+          </section>
+        `
+      },
+
+      en: {
+        "distance.seoTitle":
+          "Distance Sales Agreement • AIVO",
+
+        "distance.seoDescription":
+          "AIVO Studio Distance Sales Agreement concerning digital services and credit packages.",
+
+        "distance.pageLabel":
+          "AIVO Distance Sales Agreement page",
+
+        "distance.backHome":
+          "← Back to Home",
+
+        "distance.eyebrow":
+          "COMPANY",
+
+        "distance.title":
+          "Distance Sales Agreement",
+
+        "distance.hero":
+          "This agreement governs the sale of subscriptions, plans and credits for digital services offered through AIVO Studio, the applicable usage conditions and the rights and obligations of the parties.",
+
+        "distance.updatedLabel":
+          "Last updated:",
+
+        "distance.updatedDate":
+          "December 27, 2025",
+
+        "distance.bodyHtml": `
+          <section class="k-panel" aria-label="Important Information">
+            <h3>Important Information</h3>
+
+            <div class="k-pills">
+              <div class="k-pill">
+                <strong>Digital Service</strong>
+                <span>The service is provided through an online platform and no physical delivery is made.</span>
+              </div>
+
+              <div class="k-pill">
+                <strong>Performance and Withdrawal</strong>
+                <span>The right of withdrawal may be limited once performance of the digital service begins or credits are used.</span>
+              </div>
+
+              <div class="k-pill">
+                <strong>Secure Payment</strong>
+                <span>Payments are processed through authorized payment-service infrastructure. AIVO does not store card information.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="k-toc" aria-label="Contents" style="margin-top:18px;">
+            <h3>Contents</h3>
+
+            <div class="k-tocGrid">
+              <a href="#s1">1. Parties and Definitions</a>
+              <a href="#s2">2. Subject of the Agreement</a>
+              <a href="#s3">3. Scope of the Service</a>
+              <a href="#s4">4. Orders and Payment</a>
+              <a href="#s5">5. Delivery and Performance</a>
+              <a href="#s6">6. Right of Withdrawal</a>
+              <a href="#s7">7. Refunds, Cancellation and Changes</a>
+              <a href="#s8">8. Rules of Use</a>
+              <a href="#s9">9. Intellectual Property</a>
+              <a href="#s10">10. Personal Data</a>
+              <a href="#s11">11. Limitation of Liability</a>
+              <a href="#s12">12. Disputes and Entry into Force</a>
+            </div>
+          </section>
+
+          <section class="k-sec" id="s1">
+            <h2>1. Parties and Definitions</h2>
+
+            <p>
+              <strong>Seller (Service Provider):</strong>
+              AIVO Studio
+            </p>
+
+            <p>
+              <strong>Legal name:</strong> Harun Erkezen<br>
+              <strong>Address:</strong> Merkez Mah. 155 Sk. Şahin Apartmanı B Blok No: 4 B İç Kapı No: 4, Kemer / Antalya, Türkiye<br>
+              <strong>Telephone:</strong> <a href="tel:+905324001762">+90 532 400 17 62</a><br>
+              <strong>Tax office:</strong> Kemer<br>
+              <strong>Tax number:</strong> 14341041806<br>
+              <strong>Email:</strong> <a href="mailto:info@aivo.tr">info@aivo.tr</a>
+            </p>
+
+            <p>
+              <strong>Buyer (User):</strong>
+              The natural or legal person purchasing a service through the AIVO Studio platform.
+            </p>
+
+            <p>
+              For the purposes of this agreement:<br>
+              <strong>Platform</strong> means the AIVO Studio web application and its related digital interfaces;<br>
+              <strong>Service</strong> means digital-content creation services, including AI-powered music, visual or cover-art and video creation;<br>
+              <strong>Credit</strong> means a unit providing the right to use services within the Platform;<br>
+              <strong>Plan or Subscription</strong> means a package containing credits or usage rights for a specified period.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s2">
+            <h2>2. Subject of the Agreement</h2>
+
+            <p>
+              The purpose of this Distance Sales Agreement is to determine the conditions applying to the Buyer’s purchase of plans, subscriptions and/or credits offered as digital services through the Platform and to regulate the rights and obligations of the parties.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s3">
+            <h2>3. Scope of the Service</h2>
+
+            <p>
+              Services offered through the Platform are described on product pages and/or purchase screens. Examples include:
+            </p>
+
+            <ul>
+              <li>AI music creation using genre, tempo, mood and vocal parameters</li>
+              <li>AI visual and cover-art creation</li>
+              <li>AI video creation</li>
+              <li>Credit-based usage and/or subscription plans</li>
+            </ul>
+
+            <p>
+              The Seller reserves the right to improve and update the service and implement security improvements. Such changes are accepted by the Buyer provided that they do not remove the essential nature of the service.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s4">
+            <h2>4. Orders and Payment</h2>
+
+            <p>
+              The Buyer places an order by completing the purchase steps available on the Platform. Payment is collected through authorized payment-service providers. The Seller does not store credit-card information in its systems.
+            </p>
+
+            <p>
+              The price of the purchased plan or credits is displayed on the relevant purchase screen. Prices may include taxes. Tax and labeling information may be updated following changes to company and invoicing infrastructure.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s5">
+            <h2>5. Delivery and Performance</h2>
+
+            <p>
+              The service is digital and no physical delivery is made. Following payment approval, the plan or credit usage rights are added to the Buyer’s account and performance of the service begins.
+            </p>
+
+            <p>
+              The Seller may temporarily suspend the service due to maintenance, force majeure, security risks or technical requirements. Reasonable efforts will be made to reduce disruption.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s6">
+            <h2>6. Right of Withdrawal</h2>
+
+            <p>
+              Subject to the exceptions specified by applicable law, the Buyer may exercise the right of withdrawal within 14 days from the date of purchase under the distance agreement.
+            </p>
+
+            <p>
+              For digital content and digital services, the right of withdrawal may be limited or unavailable under applicable law where performance has begun with the Buyer’s express approval, the plan or credits have been added to the account and/or the credits have been used.
+            </p>
+
+            <p>
+              Where the right of withdrawal is available, the request must be submitted in writing to
+              <a href="mailto:info@aivo.tr">info@aivo.tr</a>.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s7">
+            <h2>7. Refunds, Cancellation and Changes</h2>
+
+            <p>
+              Refund and cancellation requests concerning used credits or digital services that have been added to an account and whose performance has begun are assessed in accordance with applicable law and Platform policies.
+            </p>
+
+            <ul>
+              <li>Payment errors, duplicate charges and technical errors will be investigated, and a refund will be initiated where appropriate.</li>
+              <li>Where a technical failure prevents the service from being provided at all or to a material extent, a credit refund, extension or monetary refund may be applied where appropriate.</li>
+              <li>Refund and cancellation requests must be submitted in writing to <a href="mailto:info@aivo.tr">info@aivo.tr</a>.</li>
+              <li>Approved refund amounts will be returned to the Buyer through the original payment method no later than 14 days following approval of the request.</li>
+            </ul>
+          </section>
+
+          <section class="k-sec" id="s8">
+            <h2>8. Rules of Use</h2>
+
+            <p>
+              The Buyer agrees to use the Platform lawfully and not to infringe the rights of third parties, including copyright, trademark and personality rights. Where an infringement is suspected, the Seller may examine the account and restrict access where necessary.
+            </p>
+
+            <p>
+              The Buyer is responsible for account security and must inform the Seller of account sharing or risks of unauthorized use.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s9">
+            <h2>9. Intellectual Property</h2>
+
+            <p>
+              All rights relating to the Platform’s software, interface, design and brand elements belong to the Seller.
+            </p>
+
+            <p>
+              Principles governing the use and ownership of outputs created by the Buyer through the Platform are subject to the conditions of the purchased plan and the relevant policy pages. The Buyer agrees not to create or use content that infringes third-party rights.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s10">
+            <h2>10. Personal Data</h2>
+
+            <p>
+              Personal data is processed in accordance with Turkish Personal Data Protection Law No. 6698 and related legislation. For detailed information, please review the
+              <a href="/kurumsal/gizlilik.html" target="_blank" rel="noopener">
+                Privacy Policy and KVKK Privacy Notice
+              </a>.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s11">
+            <h2>11. Limitation of Liability</h2>
+
+            <p>
+              The Seller provides the service on an “as is” basis and makes reasonable efforts to provide an uninterrupted and error-free service. The Buyer accepts that the Seller may not be responsible for issues caused by the Buyer’s internet connection or device.
+            </p>
+
+            <p>
+              To the extent permitted by applicable law, the Seller limits its liability for indirect losses, including loss of profit, data or business.
+            </p>
+          </section>
+
+          <section class="k-sec" id="s12">
+            <h2>12. Disputes and Entry into Force</h2>
+
+            <p>
+              This agreement enters into force when accepted electronically by the Buyer. The laws of the Republic of Türkiye apply to disputes. For Buyers qualifying as consumers, the competent consumer arbitration committees and consumer courts shall have jurisdiction.
+            </p>
+          </section>
+        `
+      }
+    };
+
+    var attempts = 0;
+    var maximumAttempts = 100;
+
+    function installDictionary() {
+      attempts += 1;
+
+      if (
+        !window.AIVO_I18N ||
+        !window.AIVO_I18N.tr ||
+        !window.AIVO_I18N.en
+      ) {
+        if (
+          attempts <
+          maximumAttempts
+        ) {
+          setTimeout(
+            installDictionary,
+            25
+          );
+        }
+
         return;
       }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
-      showAuth(false);
-      apply({ name:'Hesap', email:'' });
+
+      Object.assign(
+        window.AIVO_I18N.tr,
+        PAGE_DICTIONARY.tr
+      );
+
+      Object.assign(
+        window.AIVO_I18N.en,
+        PAGE_DICTIONARY.en
+      );
+
+      if (
+        typeof window.aivoApplyI18n ===
+        "function"
+      ) {
+        window.aivoApplyI18n(
+          document
+        );
+      }
     }
-  }
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
-
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        installDictionary,
+        { once: true }
+      );
+    } else {
+      installDictionary();
+    }
+  })();
+  </script>
 </body>
 </html>
