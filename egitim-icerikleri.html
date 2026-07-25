@@ -1,65 +1,276 @@
 <!DOCTYPE html>
-<html lang="tr" class="aivoAuthPreload">
+<html
+  lang="tr"
+  class="aivoAuthPreload"
+  data-aivo-title-key="education.seoTitle"
+  data-aivo-description-key="education.seoDescription"
+>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
-  <meta name="theme-color" content="#070A14" />
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="color-scheme"
+    content="dark"
+  >
+
+  <meta
+    name="theme-color"
+    content="#070A14"
+  >
 
   <title>Eğitim İçerikleri • AIVO</title>
-  <meta name="description" content="AIVO Studio eğitim videoları: AI müzik, kapak, video, çizgifilm, foto efekt ve dudak senkron kullanımı için rehber içerikler." />
 
-  <link rel="icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <meta
+    name="description"
+    content="AIVO Studio eğitim videoları: AI müzik, kapak, video, çizgifilm, foto efekt ve dudak senkron kullanımı için rehber içerikler."
+  >
 
-  <link rel="stylesheet" href="/index.css?v=1002" />
-  <link rel="stylesheet" href="/toast.css?v=2" />
-  <link rel="stylesheet" href="/products.dropdown.css?v=104" />
-  <link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
-  <link rel="stylesheet" href="/auth.modal.css?v=101" />
+  <meta
+    property="og:title"
+    content="Eğitim İçerikleri • AIVO"
+  >
 
-  <script src="/toast.manager.js?v=2" defer></script>
-  <script src="/include.partials.js?v=4" defer></script>
-  <script src="/auth.core.js?v=20260115x" defer></script>
-  <script src="/auth-state.auto.js?v=20260118a" defer></script>
-  <script src="/auth.unify.fix.js?v=2" defer></script>
-  <script src="/store.js?v=20260113" defer></script>
-  <script src="/js/assistant.widget.js?v=1" defer></script>
+  <meta
+    property="og:description"
+    content="AIVO Studio eğitim videoları: AI müzik, kapak, video, çizgifilm, foto efekt ve dudak senkron kullanımı için rehber içerikler."
+  >
 
+  <meta
+    property="og:type"
+    content="website"
+  >
+
+  <meta
+    property="og:url"
+    content="https://aivo.tr/egitim-icerikleri.html"
+  >
+
+  <meta
+    property="og:image"
+    content="https://aivo.tr/apple-touch-icon.png"
+  >
+
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  >
+
+  <meta
+    name="twitter:title"
+    content="Eğitim İçerikleri • AIVO"
+  >
+
+  <meta
+    name="twitter:description"
+    content="AIVO Studio eğitim videoları ve uygulamalı kullanım rehberleri."
+  >
+
+  <meta
+    name="twitter:image"
+    content="https://aivo.tr/apple-touch-icon.png"
+  >
+
+  <link
+    rel="canonical"
+    href="https://aivo.tr/egitim-icerikleri.html"
+  >
+
+  <link
+    rel="icon"
+    href="/favicon.ico"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    sizes="180x180"
+    href="/apple-touch-icon.png"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="32x32"
+    href="/favicon-32x32.png"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="16x16"
+    href="/favicon-16x16.png"
+  >
+
+  <!-- FOUC FIX -->
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       min-height: 100%;
-      background: #070A14;
+      background: #070A14 !important;
       color: #eef2ff;
-      font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #070A14 !important;
+    }
+  </style>
+
+  <!-- FONTS -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <!-- CORE -->
+  <link
+    rel="stylesheet"
+    href="/index.css?v=1002"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/toast.css?v=2"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/products.dropdown.css?v=104"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/products.dropdown.override.css?v=4"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/auth.modal.css?v=101"
+  >
+
+  <!-- GLOBAL JS -->
+  <script
+    src="/toast.manager.js?v=2"
+    defer
+  ></script>
+
+  <script
+    src="/js/desktop.i18n.js?v=5"
+    defer
+  ></script>
+
+  <script
+    src="/js/assistant.widget.js?v=2"
+    defer
+  ></script>
+
+  <script
+    src="/include.partials.js?v=5"
+    defer
+  ></script>
+
+  <script
+    src="/auth.core.js?v=20260115x"
+    defer
+  ></script>
+
+  <script
+    src="/index.auth.js?v=20260423_1"
+    defer
+  ></script>
+
+  <script
+    src="/auth-state.auto.js?v=20260118a"
+    defer
+  ></script>
+
+  <script
+    src="/auth.unify.fix.js?v=2"
+    defer
+  ></script>
+
+  <script
+    src="/store.js?v=2"
+    defer
+  ></script>
+
+  <!-- PAGE STYLES -->
+  <style>
+    :root {
+      --edu-bg: #070A14;
+      --edu-white: #ffffff;
+      --edu-text: rgba(238, 242, 255, 0.96);
+      --edu-muted: rgba(238, 242, 255, 0.72);
+      --edu-muted-soft: rgba(238, 242, 255, 0.64);
+      --edu-purple: #8b5cf6;
+      --edu-pink: #ec4899;
+      --edu-blue: #3b82f6;
+      --edu-cyan: #22d3ee;
+      --edu-border: rgba(255, 255, 255, 0.10);
+      --edu-panel: rgba(255, 255, 255, 0.045);
     }
 
     body {
       overflow-x: hidden;
+      font-family:
+        "Plus Jakarta Sans",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
     }
 
     .edu-page {
       position: relative;
+      isolation: isolate;
       min-height: 100vh;
       padding: 118px 0 70px;
       overflow: hidden;
-      isolation: isolate;
     }
 
     .edu-page::before {
       content: "";
       position: absolute;
       inset: -20%;
-      background:
-        radial-gradient(900px 520px at 16% 12%, rgba(139,92,246,.32), transparent 64%),
-        radial-gradient(900px 520px at 86% 16%, rgba(236,72,153,.24), transparent 62%),
-        radial-gradient(760px 520px at 52% 72%, rgba(59,130,246,.18), transparent 66%),
-        linear-gradient(180deg, rgba(7,10,20,0), rgba(7,10,20,.92));
-      filter: blur(28px);
       z-index: -2;
+      background:
+        radial-gradient(
+          900px 520px at 16% 12%,
+          rgba(139, 92, 246, 0.32),
+          transparent 64%
+        ),
+        radial-gradient(
+          900px 520px at 86% 16%,
+          rgba(236, 72, 153, 0.24),
+          transparent 62%
+        ),
+        radial-gradient(
+          760px 520px at 52% 72%,
+          rgba(59, 130, 246, 0.18),
+          transparent 66%
+        ),
+        linear-gradient(
+          180deg,
+          rgba(7, 10, 20, 0),
+          rgba(7, 10, 20, 0.92)
+        );
+      filter: blur(28px);
       pointer-events: none;
     }
 
@@ -67,24 +278,39 @@
       content: "";
       position: absolute;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: linear-gradient(to bottom, rgba(0,0,0,.70), transparent 72%);
       z-index: -1;
+      background-image:
+        linear-gradient(
+          rgba(255, 255, 255, 0.035) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.035) 1px,
+          transparent 1px
+        );
+      background-size: 64px 64px;
+      mask-image:
+        linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.70),
+          transparent 72%
+        );
       pointer-events: none;
     }
 
     .edu-wrap {
-      width: min(1180px, calc(100% - 32px));
+      width:
+        min(1180px, calc(100% - 32px));
       margin: 0 auto;
     }
 
+    /* HERO */
+
     .edu-hero {
-      text-align: center;
-      margin: 0 auto 34px;
       max-width: 930px;
+      margin: 0 auto 34px;
+      text-align: center;
     }
 
     .edu-pill {
@@ -92,171 +318,231 @@
       align-items: center;
       gap: 8px;
       padding: 10px 16px;
+      border:
+        1px solid rgba(255, 255, 255, 0.12);
       border-radius: 999px;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.88);
-      font-weight: 800;
+      background:
+        rgba(255, 255, 255, 0.07);
+      color:
+        rgba(255, 255, 255, 0.88);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 18px 44px rgba(0, 0, 0, 0.28);
       font-size: 13px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 44px rgba(0,0,0,.28);
+      font-weight: 800;
     }
 
     .edu-title {
       margin: 18px 0 12px;
-      font-size: clamp(42px, 6vw, 76px);
-      line-height: .96;
+      color: var(--edu-white);
+      font-size:
+        clamp(42px, 6vw, 76px);
+      font-weight: 800;
+      line-height: 0.96;
       letter-spacing: -0.055em;
-      font-weight: 950;
-      color: #fff;
     }
 
-   .edu-title span {
-  display: block;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: none;
-}
-
-    @keyframes eduFlow {
-      from { background-position: 0% 50%; }
-      to { background-position: 260% 50%; }
+    .edu-title span {
+      display: block;
+      background:
+        linear-gradient(
+          90deg,
+          var(--edu-purple),
+          var(--edu-pink)
+        );
+      color: transparent;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .edu-sub {
-      margin: 0 auto;
       max-width: 760px;
-      color: rgba(238,242,255,.72);
-      font-size: clamp(16px, 1.5vw, 20px);
-      line-height: 1.65;
+      margin: 0 auto;
+      color: var(--edu-muted);
+      font-size:
+        clamp(16px, 1.5vw, 20px);
       font-weight: 600;
+      line-height: 1.65;
     }
 
     .edu-actions {
-      margin-top: 24px;
       display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 12px;
       flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
     }
 
     .edu-btn {
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       min-height: 48px;
       padding: 0 18px;
+      border:
+        1px solid rgba(255, 255, 255, 0.14);
       border-radius: 999px;
+      background:
+        rgba(255, 255, 255, 0.06);
+      color: var(--edu-white);
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
       text-decoration: none;
-      color: #fff;
-      font-weight: 900;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+    }
+
+    .edu-btn:hover {
+      border-color:
+        rgba(255, 255, 255, 0.28);
+      background:
+        rgba(255, 255, 255, 0.10);
+      transform: translateY(-1px);
     }
 
     .edu-btn.primary {
       border: 0;
-      background: linear-gradient(135deg, #8b5cf6, #ec4899);
-      box-shadow: 0 18px 44px rgba(236,72,153,.22);
+      background:
+        linear-gradient(
+          135deg,
+          var(--edu-purple),
+          var(--edu-pink)
+        );
+      box-shadow:
+        0 18px 44px rgba(236, 72, 153, 0.22);
     }
+
+    /* SHOWCASE */
 
     .edu-showcase {
       margin-top: 38px;
       padding: 20px;
+      border:
+        1px solid var(--edu-border);
       border-radius: 34px;
       background:
-        radial-gradient(900px 420px at 18% 0%, rgba(139,92,246,.22), transparent 62%),
-        radial-gradient(900px 420px at 86% 8%, rgba(236,72,153,.18), transparent 62%),
-        rgba(255,255,255,.045);
-      border: 1px solid rgba(255,255,255,.10);
+        radial-gradient(
+          900px 420px at 18% 0%,
+          rgba(139, 92, 246, 0.22),
+          transparent 62%
+        ),
+        radial-gradient(
+          900px 420px at 86% 8%,
+          rgba(236, 72, 153, 0.18),
+          transparent 62%
+        ),
+        var(--edu-panel);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.08),
-        0 30px 90px rgba(0,0,0,.48);
-      backdrop-filter: blur(18px) saturate(120%);
-      -webkit-backdrop-filter: blur(18px) saturate(120%);
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 30px 90px rgba(0, 0, 0, 0.48);
+      backdrop-filter:
+        blur(18px) saturate(120%);
+      -webkit-backdrop-filter:
+        blur(18px) saturate(120%);
     }
 
     .edu-feature {
       display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 22px;
+      grid-template-columns:
+        minmax(0, 1.1fr)
+        minmax(0, 0.9fr);
       align-items: stretch;
+      gap: 22px;
     }
 
     .edu-video-frame {
       position: relative;
-      min-height: 360px;
-      border-radius: 28px;
       overflow: hidden;
-      background: #070A14;
-      border: 1px solid rgba(255,255,255,.12);
+      min-height: 360px;
+      border:
+        1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      background: var(--edu-bg);
     }
 
     .edu-video-frame video {
+      display: block;
       width: 100%;
       height: 100%;
       min-height: 360px;
-      display: block;
+      background: var(--edu-bg);
       object-fit: contain;
-      background: #070A14;
     }
 
     .edu-feature-copy {
-      padding: 24px;
-      border-radius: 28px;
-      background: rgba(7,10,20,.48);
-      border: 1px solid rgba(255,255,255,.09);
       display: flex;
       flex-direction: column;
       justify-content: center;
+      padding: 24px;
+      border:
+        1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 28px;
+      background:
+        rgba(7, 10, 20, 0.48);
     }
 
     .edu-kicker {
+      margin-bottom: 12px;
       color: #f0abfc;
       font-size: 13px;
-      letter-spacing: .18em;
-      font-weight: 900;
+      font-weight: 800;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      margin-bottom: 12px;
     }
 
     .edu-feature-copy h2 {
       margin: 0 0 12px;
-      font-size: clamp(28px, 3vw, 42px);
+      color: var(--edu-white);
+      font-size:
+        clamp(28px, 3vw, 42px);
       line-height: 1.05;
       letter-spacing: -0.035em;
     }
 
     .edu-feature-copy p {
       margin: 0;
-      color: rgba(255,255,255,.72);
-      line-height: 1.65;
+      color: var(--edu-muted);
       font-weight: 600;
+      line-height: 1.65;
     }
 
+    /* CATEGORIES */
+
     .edu-tabs {
-      margin: 30px 0 18px;
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      align-items: center;
       justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 30px 0 18px;
     }
 
     .edu-tab {
       padding: 10px 14px;
+      border:
+        1px solid rgba(255, 255, 255, 0.10);
       border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.82);
+      background:
+        rgba(255, 255, 255, 0.06);
+      color:
+        rgba(255, 255, 255, 0.82);
       font-size: 13px;
-      font-weight: 850;
+      font-weight: 800;
     }
+
+    /* TUTORIAL CARDS */
 
     .edu-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
       gap: 18px;
       margin-top: 18px;
     }
@@ -265,50 +551,68 @@
       position: relative;
       overflow: hidden;
       min-height: 310px;
+      border:
+        1px solid var(--edu-border);
       border-radius: 28px;
       background:
-        radial-gradient(520px 260px at 20% 0%, rgba(139,92,246,.22), transparent 60%),
-        rgba(255,255,255,.045);
-      border: 1px solid rgba(255,255,255,.10);
+        radial-gradient(
+          520px 260px at 20% 0%,
+          rgba(139, 92, 246, 0.22),
+          transparent 60%
+        ),
+        var(--edu-panel);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.08),
-        0 20px 60px rgba(0,0,0,.34);
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 20px 60px rgba(0, 0, 0, 0.34);
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .edu-card:hover {
+      border-color:
+        rgba(190, 130, 255, 0.42);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 26px 70px rgba(67, 35, 130, 0.34);
+      transform: translateY(-2px);
     }
 
     .edu-thumb {
-      height: 160px;
+      position: relative;
       overflow: hidden;
-      background: #070A14;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+      background: var(--edu-bg);
     }
 
-.edu-thumb {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  overflow: hidden;
-  background: #070A14;
-}
+    .edu-thumb::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(139, 92, 246, 0.18),
+          rgba(7, 10, 20, 0.90)
+        );
+      opacity: 0.85;
+    }
 
-.edu-thumb::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: inherit;
-  filter: blur(40px);
-  opacity: 0.4;
-  z-index: 0;
-}
-
-.edu-thumb video {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-  position: relative;
-  z-index: 1;
-}
+    .edu-thumb video {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--edu-bg);
+      object-fit: contain;
+    }
 
     .edu-card-body {
       padding: 18px;
@@ -316,17 +620,18 @@
 
     .edu-card h3 {
       margin: 0 0 8px;
+      color: var(--edu-white);
       font-size: 19px;
       line-height: 1.2;
-      color: #fff;
     }
 
     .edu-card p {
+      min-height: 64px;
       margin: 0 0 16px;
-      color: rgba(255,255,255,.66);
-      line-height: 1.52;
+      color: var(--edu-muted-soft);
       font-size: 14px;
       font-weight: 600;
+      line-height: 1.52;
     }
 
     .edu-card a {
@@ -335,24 +640,39 @@
       justify-content: center;
       min-height: 38px;
       padding: 0 14px;
+      border:
+        1px solid rgba(255, 255, 255, 0.12);
       border-radius: 999px;
-      color: #fff;
-      text-decoration: none;
-      font-weight: 900;
+      background:
+        rgba(255, 255, 255, 0.08);
+      color: var(--edu-white);
       font-size: 13px;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
+      font-weight: 800;
+      text-decoration: none;
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+    }
+
+    .edu-card a:hover {
+      border-color:
+        rgba(255, 255, 255, 0.26);
+      background:
+        rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
     }
 
     .edu-note {
       margin-top: 24px;
       padding: 18px 20px;
+      border:
+        1px solid var(--edu-border);
       border-radius: 24px;
-      background: rgba(255,255,255,.045);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.72);
-      line-height: 1.6;
+      background: var(--edu-panel);
+      color: var(--edu-muted);
       font-weight: 650;
+      line-height: 1.6;
       text-align: center;
     }
 
@@ -362,7 +682,8 @@
       }
 
       .edu-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
       }
     }
 
@@ -375,164 +696,993 @@
         grid-template-columns: 1fr;
       }
 
-      .edu-video-frame {
-        min-height: 260px;
+      .edu-showcase {
+        padding: 14px;
+        border-radius: 26px;
       }
 
+      .edu-video-frame,
       .edu-video-frame video {
         min-height: 260px;
       }
 
-      .edu-showcase {
-        padding: 14px;
-        border-radius: 26px;
+      .edu-feature-copy {
+        padding: 20px;
+        border-radius: 22px;
+      }
+
+      .edu-card p {
+        min-height: 0;
+      }
+
+      .edu-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .edu-btn {
+        width: 100%;
       }
     }
   </style>
 </head>
 
-<body class="page-education" style="background:#070A14;">
+<body
+  class="page-education"
+  style="background:#070A14;"
+>
+  <!-- TOPBAR -->
   <div data-include="topbar"></div>
 
-  <main class="edu-page">
+  <!-- PAGE -->
+  <main
+    class="edu-page"
+    aria-label="AIVO Eğitim İçerikleri sayfası"
+    data-i18n-label="education.pageLabel"
+  >
     <div class="edu-wrap">
 
+      <!-- HERO -->
       <section class="edu-hero">
-        <div class="edu-pill">🎬 AIVO Eğitim Merkezi</div>
+        <div
+          class="edu-pill"
+          data-i18n="education.hero.pill"
+        >
+          🎬 AIVO Eğitim Merkezi
+        </div>
 
         <h1 class="edu-title">
-          AIVO’yu öğren.
-          <span>Daha iyi üret.</span>
+          <span
+            style="
+              display:inline;
+              background:none;
+              color:#ffffff;
+              -webkit-text-fill-color:#ffffff;
+            "
+            data-i18n="education.hero.titleFirst"
+          >
+            AIVO’yu öğren.
+          </span>
+
+          <span data-i18n="education.hero.titleSecond">
+            Daha iyi üret.
+          </span>
         </h1>
 
-        <p class="edu-sub">
-          AI müzik, kapak, video, çocuk çizgi film, foto efekt ve dudak senkron üretimi için
-          kısa, net ve uygulamalı eğitim içerikleri.
+        <p
+          class="edu-sub"
+          data-i18n="education.hero.description"
+        >
+          AI müzik, kapak, video, çocuk çizgi film, foto efekt ve dudak senkron üretimi için kısa, net ve uygulamalı eğitim içerikleri.
         </p>
 
         <div class="edu-actions">
-          <a class="edu-btn primary" href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr" target="_blank" rel="noopener">
+          <a
+            class="edu-btn primary"
+            href="https://youtube.com/@aivotr?si=7dNeO_D4qQZ2ZOJr"
+            target="_blank"
+            rel="noopener"
+            data-i18n="education.hero.youtube"
+          >
             YouTube Eğitimlerini İzle
           </a>
-          <a class="edu-btn" href="/studio.v2.html" data-auth="required">
+
+          <a
+            class="edu-btn"
+            href="/studio.v2.html"
+            data-auth="required"
+            data-i18n="education.hero.studio"
+          >
             Studio’ya Git
           </a>
         </div>
       </section>
 
-      <section class="edu-showcase">
+      <!-- FEATURED TUTORIAL -->
+      <section
+        class="edu-showcase"
+        aria-label="AIVO eğitim videoları"
+        data-i18n-label="education.showcaseLabel"
+      >
         <div class="edu-feature">
+
           <div class="edu-video-frame">
-            <video controls preload="metadata" playsinline poster="/media/aivo-egitim-muzik-cover.png">
-              <source src="/media/aivo-egitim-muzik-small.mp4" type="video/mp4">
+            <video
+              controls
+              preload="metadata"
+              playsinline
+              poster="/media/aivo-egitim-muzik-cover.png"
+            >
+              <source
+                src="/media/aivo-egitim-muzik-small.mp4"
+                type="video/mp4"
+              >
             </video>
           </div>
 
           <div class="edu-feature-copy">
-            <div class="edu-kicker">Öne Çıkan Rehber</div>
-            <h2>AIVO Studio ile ilk içeriğini dakikalar içinde üret.</h2>
-            <p>
-              Bu bölümde AIVO Studio’nun temel kullanımını gösteren ana eğitim videosu yer alır.
-              Ürünleri tanımak, ilk üretimi başlatmak ve eğitim kartlarına geçmek için en hızlı başlangıç noktasıdır.
+            <div
+              class="edu-kicker"
+              data-i18n="education.feature.kicker"
+            >
+              Öne Çıkan Rehber
+            </div>
+
+            <h2 data-i18n="education.feature.title">
+              AIVO Studio ile ilk içeriğini dakikalar içinde üret.
+            </h2>
+
+            <p data-i18n="education.feature.description">
+              Bu bölümde AIVO Studio’nun temel kullanımını gösteren ana eğitim videosu yer alır. Ürünleri tanımak, ilk üretimi başlatmak ve eğitim kartlarına geçmek için en hızlı başlangıç noktasıdır.
             </p>
+          </div>
+
+        </div>
+
+        <!-- CATEGORIES -->
+        <div
+          class="edu-tabs"
+          aria-label="Eğitim kategorileri"
+          data-i18n-label="education.categoriesLabel"
+        >
+          <div
+            class="edu-tab"
+            data-i18n="education.category.start"
+          >
+            Başlangıç
+          </div>
+
+          <div
+            class="edu-tab"
+            data-i18n="education.category.music"
+          >
+            Müzik
+          </div>
+
+          <div
+            class="edu-tab"
+            data-i18n="education.category.video"
+          >
+            Video
+          </div>
+
+          <div
+            class="edu-tab"
+            data-i18n="education.category.cover"
+          >
+            Kapak
+          </div>
+
+          <div
+            class="edu-tab"
+            data-i18n="education.category.cartoon"
+          >
+            Çizgifilm
+          </div>
+
+          <div
+            class="edu-tab"
+            data-i18n="education.category.lipsync"
+          >
+            Dudak Senkron
           </div>
         </div>
 
-        <div class="edu-tabs">
-          <div class="edu-tab">Başlangıç</div>
-          <div class="edu-tab">Müzik</div>
-          <div class="edu-tab">Video</div>
-          <div class="edu-tab">Kapak</div>
-          <div class="edu-tab">Çizgifilm</div>
-          <div class="edu-tab">Dudak Senkron</div>
-        </div>
-
+        <!-- TUTORIAL GRID -->
         <div class="edu-grid">
+
+          <!-- MUSIC -->
           <article class="edu-card">
             <div class="edu-thumb">
-              <video muted preload="metadata" playsinline poster="/media/aivo-egitim-muzik-cover.png">
-                <source src="/media/aivo-egitim-muzik-small.mp4" type="video/mp4">
+              <video
+                muted
+                preload="metadata"
+                playsinline
+                poster="/media/aivo-egitim-muzik-cover.png"
+              >
+                <source
+                  src="/media/aivo-egitim-muzik-small.mp4"
+                  type="video/mp4"
+                >
               </video>
             </div>
+
             <div class="edu-card-body">
-              <h3>AI Müzik Nasıl Üretilir?</h3>
-              <p>Prompt, tarz, şarkı sözü ve üretim seçenekleriyle ilk müziğini oluştur.</p>
-              <a href="/media/aivo-egitim-muzik-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
+              <h3 data-i18n="education.music.title">
+                AI Müzik Nasıl Üretilir?
+              </h3>
+
+              <p data-i18n="education.music.description">
+                Prompt, tarz, şarkı sözü ve üretim seçenekleriyle ilk müziğini oluştur.
+              </p>
+
+              <a
+                href="/media/aivo-egitim-muzik-small.mp4"
+                target="_blank"
+                rel="noopener"
+                data-i18n="education.watch"
+              >
+                Videoyu İzle
+              </a>
             </div>
           </article>
 
+          <!-- COVER ART -->
           <article class="edu-card">
             <div class="edu-thumb">
-              <video muted preload="metadata" playsinline poster="/media/aivo-egitim-kapak-cover.png">
-                <source src="/media/aivo-egitim-kapak-small.mp4" type="video/mp4">
+              <video
+                muted
+                preload="metadata"
+                playsinline
+                poster="/media/aivo-egitim-kapak-cover.png"
+              >
+                <source
+                  src="/media/aivo-egitim-kapak-small.mp4"
+                  type="video/mp4"
+                >
               </video>
             </div>
+
             <div class="edu-card-body">
-              <h3>AI Kapak Görseli Nasıl Yapılır?</h3>
-              <p>Kapak görseli, afiş ve sosyal medya görseli üretimi için kısa rehber.</p>
-              <a href="/media/aivo-egitim-kapak-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
+              <h3 data-i18n="education.cover.title">
+                AI Kapak Görseli Nasıl Yapılır?
+              </h3>
+
+              <p data-i18n="education.cover.description">
+                Kapak görseli, afiş ve sosyal medya görseli üretimi için kısa rehber.
+              </p>
+
+              <a
+                href="/media/aivo-egitim-kapak-small.mp4"
+                target="_blank"
+                rel="noopener"
+                data-i18n="education.watch"
+              >
+                Videoyu İzle
+              </a>
             </div>
           </article>
 
+          <!-- IMAGE TO VIDEO -->
           <article class="edu-card">
             <div class="edu-thumb">
-              <video muted preload="metadata" playsinline poster="/media/aivo-egitim-video-cover.png">
-                <source src="/media/aivo-egitim-video-small.mp4" type="video/mp4">
+              <video
+                muted
+                preload="metadata"
+                playsinline
+                poster="/media/aivo-egitim-video-cover.png"
+              >
+                <source
+                  src="/media/aivo-egitim-video-small.mp4"
+                  type="video/mp4"
+                >
               </video>
             </div>
+
             <div class="edu-card-body">
-              <h3>AI Resimden Video Üretimi</h3>
-              <p>Bir görseli hareketli video sahnesine dönüştürmenin temel adımları.</p>
-              <a href="/media/aivo-egitim-video-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
+              <h3 data-i18n="education.video.title">
+                AI Resimden Video Üretimi
+              </h3>
+
+              <p data-i18n="education.video.description">
+                Bir görseli hareketli video sahnesine dönüştürmenin temel adımları.
+              </p>
+
+              <a
+                href="/media/aivo-egitim-video-small.mp4"
+                target="_blank"
+                rel="noopener"
+                data-i18n="education.watch"
+              >
+                Videoyu İzle
+              </a>
             </div>
           </article>
 
+          <!-- CARTOON -->
           <article class="edu-card">
             <div class="edu-thumb">
-              <video muted preload="metadata" playsinline poster="/media/aivo-egitim-cizgifilm-cover.png">
-                <source src="/media/aivo-egitim-cizgifilm-small.mp4" type="video/mp4">
+              <video
+                muted
+                preload="metadata"
+                playsinline
+                poster="/media/aivo-egitim-cizgifilm-cover.png"
+              >
+                <source
+                  src="/media/aivo-egitim-cizgifilm-small.mp4"
+                  type="video/mp4"
+                >
               </video>
             </div>
+
             <div class="edu-card-body">
-              <h3>AI Çocuk Çizgifilm Rehberi</h3>
-              <p>Karakter, sahne ve hikâye akışıyla çizgifilm üretmeye başla.</p>
-              <a href="/media/aivo-egitim-cizgifilm-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
+              <h3 data-i18n="education.cartoon.title">
+                AI Çocuk Çizgifilm Rehberi
+              </h3>
+
+              <p data-i18n="education.cartoon.description">
+                Karakter, sahne ve hikâye akışıyla çizgifilm üretmeye başla.
+              </p>
+
+              <a
+                href="/media/aivo-egitim-cizgifilm-small.mp4"
+                target="_blank"
+                rel="noopener"
+                data-i18n="education.watch"
+              >
+                Videoyu İzle
+              </a>
             </div>
           </article>
 
+          <!-- PHOTO EFFECTS -->
           <article class="edu-card">
             <div class="edu-thumb">
-              <video muted preload="metadata" playsinline poster="/media/aivo-egitim-photofx-cover.png">
-                <source src="/media/aivo-egitim-photofx-small.mp4" type="video/mp4">
+              <video
+                muted
+                preload="metadata"
+                playsinline
+                poster="/media/aivo-egitim-photofx-cover.png"
+              >
+                <source
+                  src="/media/aivo-egitim-photofx-small.mp4"
+                  type="video/mp4"
+                >
               </video>
             </div>
+
             <div class="edu-card-body">
-              <h3>AI Foto Efekt Video Clip</h3>
-              <p>Tek fotoğrafı glow, shake ve hareket efektleriyle video klibe çevir.</p>
-              <a href="/media/aivo-egitim-photofx-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
+              <h3 data-i18n="education.photofx.title">
+                AI Foto Efekt Video Clip
+              </h3>
+
+              <p data-i18n="education.photofx.description">
+                Tek fotoğrafı glow, shake ve hareket efektleriyle video klibe çevir.
+              </p>
+
+              <a
+                href="/media/aivo-egitim-photofx-small.mp4"
+                target="_blank"
+                rel="noopener"
+                data-i18n="education.watch"
+              >
+                Videoyu İzle
+              </a>
             </div>
           </article>
 
+          <!-- LIP SYNC -->
           <article class="edu-card">
             <div class="edu-thumb">
-              <video muted preload="metadata" playsinline poster="/media/aivo-egitim-lipsync-cover.png">
-                <source src="/media/aivo-egitim-lipsync-small.mp4" type="video/mp4">
+              <video
+                muted
+                preload="metadata"
+                playsinline
+                poster="/media/aivo-egitim-lipsync-cover.png"
+              >
+                <source
+                  src="/media/aivo-egitim-lipsync-small.mp4"
+                  type="video/mp4"
+                >
               </video>
             </div>
+
             <div class="edu-card-body">
-              <h3>AI Dudak Senkron Video</h3>
-              <p>Fotoğraf, metin veya ses dosyasıyla konuşan video oluşturmayı öğren.</p>
-              <a href="/media/aivo-egitim-lipsync-small.mp4" target="_blank" rel="noopener">Videoyu İzle</a>
+              <h3 data-i18n="education.lipsync.title">
+                AI Dudak Senkron Video
+              </h3>
+
+              <p data-i18n="education.lipsync.description">
+                Fotoğraf, metin veya ses dosyasıyla konuşan video oluşturmayı öğren.
+              </p>
+
+              <a
+                href="/media/aivo-egitim-lipsync-small.mp4"
+                target="_blank"
+                rel="noopener"
+                data-i18n="education.watch"
+              >
+                Videoyu İzle
+              </a>
             </div>
           </article>
+
         </div>
 
-      <div class="edu-note">
-  Yeni eğitim videoları düzenli olarak eklenecek. AIVO Studio’yu daha verimli kullanmak için bu sayfayı takip edebilirsin.
-</div>
+        <div
+          class="edu-note"
+          data-i18n="education.note"
+        >
+          Yeni eğitim videoları düzenli olarak eklenecek. AIVO Studio’yu daha verimli kullanmak için bu sayfayı takip edebilirsin.
+        </div>
       </section>
 
     </div>
   </main>
+
+  <!-- AUTH STATUS -->
+  <script>
+  (function AIVO_EDUCATION_AUTH_STATUS() {
+    "use strict";
+
+    if (
+      window.__AIVO_EDUCATION_AUTH_STATUS__
+    ) {
+      return;
+    }
+
+    window.__AIVO_EDUCATION_AUTH_STATUS__ =
+      true;
+
+    function setText(selector, value) {
+      var element =
+        document.querySelector(selector);
+
+      if (element) {
+        element.textContent = value;
+      }
+    }
+
+    function translatedAccountName() {
+      try {
+        if (
+          typeof window.t === "function"
+        ) {
+          return window.t(
+            "common.account"
+          );
+        }
+      } catch (_) {}
+
+      return "Hesap";
+    }
+
+    function showAuth(isAuthenticated) {
+      var guest =
+        document.getElementById(
+          "authGuest"
+        );
+
+      var user =
+        document.getElementById(
+          "authUser"
+        );
+
+      var credits =
+        document.getElementById(
+          "topCredits"
+        );
+
+      if (guest) {
+        guest.hidden =
+          !!isAuthenticated;
+      }
+
+      if (user) {
+        user.hidden =
+          !isAuthenticated;
+      }
+
+      if (credits) {
+        credits.hidden =
+          !isAuthenticated;
+      }
+    }
+
+    function applyUser(user) {
+      var email =
+        user && user.email
+          ? String(user.email).trim()
+          : "";
+
+      var suppliedName =
+        user &&
+        (
+          user.name ||
+          user.fullName ||
+          user.displayName
+        )
+          ? String(
+              user.name ||
+              user.fullName ||
+              user.displayName
+            ).trim()
+          : "";
+
+      var fallbackName =
+        translatedAccountName();
+
+      var source =
+        (
+          suppliedName ||
+          email ||
+          fallbackName
+        ).trim();
+
+      var initial =
+        source[0]
+          ? source[0].toUpperCase()
+          : "H";
+
+      setText(
+        "#topUserInitial",
+        initial
+      );
+
+      setText(
+        "#topUserName",
+        suppliedName || fallbackName
+      );
+
+      setText(
+        "#umAvatar",
+        initial
+      );
+
+      setText(
+        "#umName",
+        suppliedName || fallbackName
+      );
+
+      setText(
+        "#umEmail",
+        email || "—"
+      );
+    }
+
+    async function run() {
+      try {
+        var response =
+          await fetch(
+            "/api/auth/me",
+            {
+              credentials: "include",
+              cache: "no-store"
+            }
+          );
+
+        if (response.status !== 200) {
+          showAuth(false);
+
+          applyUser({
+            name:
+              translatedAccountName()
+          });
+
+          return;
+        }
+
+        var user =
+          await response
+            .json()
+            .catch(function () {
+              return {};
+            });
+
+        showAuth(true);
+        applyUser(user);
+      } catch (_) {
+        showAuth(false);
+
+        applyUser({
+          name:
+            translatedAccountName()
+        });
+      }
+    }
+
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        run,
+        { once: true }
+      );
+    } else {
+      run();
+    }
+
+    document.addEventListener(
+      "click",
+      async function (event) {
+        var target =
+          event.target &&
+          event.target.closest
+            ? event.target.closest(
+                '[data-action="logout"], #btnLogoutTop, .um-logout'
+              )
+            : null;
+
+        if (!target) {
+          return;
+        }
+
+        event.preventDefault();
+
+        try {
+          await fetch(
+            "/api/auth/logout",
+            {
+              method: "POST",
+              credentials: "include"
+            }
+          );
+        } catch (_) {}
+
+        location.assign(
+          target.getAttribute(
+            "data-redirect"
+          ) || "/"
+        );
+      },
+      true
+    );
+  })();
+  </script>
+
+  <!-- PAGE TR / EN DICTIONARY -->
+  <script>
+  (function AIVO_EDUCATION_PAGE_I18N() {
+    "use strict";
+
+    var PAGE_DICTIONARY = {
+      tr: {
+        "education.seoTitle":
+          "Eğitim İçerikleri • AIVO",
+
+        "education.seoDescription":
+          "AIVO Studio eğitim videoları: AI müzik, kapak, video, çizgifilm, foto efekt ve dudak senkron kullanımı için rehber içerikler.",
+
+        "education.pageLabel":
+          "AIVO Eğitim İçerikleri sayfası",
+
+        "education.hero.pill":
+          "🎬 AIVO Eğitim Merkezi",
+
+        "education.hero.titleFirst":
+          "AIVO’yu öğren.",
+
+        "education.hero.titleSecond":
+          "Daha iyi üret.",
+
+        "education.hero.description":
+          "AI müzik, kapak, video, çocuk çizgi film, foto efekt ve dudak senkron üretimi için kısa, net ve uygulamalı eğitim içerikleri.",
+
+        "education.hero.youtube":
+          "YouTube Eğitimlerini İzle",
+
+        "education.hero.studio":
+          "Studio’ya Git",
+
+        "education.showcaseLabel":
+          "AIVO eğitim videoları",
+
+        "education.feature.kicker":
+          "Öne Çıkan Rehber",
+
+        "education.feature.title":
+          "AIVO Studio ile ilk içeriğini dakikalar içinde üret.",
+
+        "education.feature.description":
+          "Bu bölümde AIVO Studio’nun temel kullanımını gösteren ana eğitim videosu yer alır. Ürünleri tanımak, ilk üretimi başlatmak ve eğitim kartlarına geçmek için en hızlı başlangıç noktasıdır.",
+
+        "education.categoriesLabel":
+          "Eğitim kategorileri",
+
+        "education.category.start":
+          "Başlangıç",
+
+        "education.category.music":
+          "Müzik",
+
+        "education.category.video":
+          "Video",
+
+        "education.category.cover":
+          "Kapak",
+
+        "education.category.cartoon":
+          "Çizgifilm",
+
+        "education.category.lipsync":
+          "Dudak Senkron",
+
+        "education.music.title":
+          "AI Müzik Nasıl Üretilir?",
+
+        "education.music.description":
+          "Prompt, tarz, şarkı sözü ve üretim seçenekleriyle ilk müziğini oluştur.",
+
+        "education.cover.title":
+          "AI Kapak Görseli Nasıl Yapılır?",
+
+        "education.cover.description":
+          "Kapak görseli, afiş ve sosyal medya görseli üretimi için kısa rehber.",
+
+        "education.video.title":
+          "AI Resimden Video Üretimi",
+
+        "education.video.description":
+          "Bir görseli hareketli video sahnesine dönüştürmenin temel adımları.",
+
+        "education.cartoon.title":
+          "AI Çocuk Çizgifilm Rehberi",
+
+        "education.cartoon.description":
+          "Karakter, sahne ve hikâye akışıyla çizgifilm üretmeye başla.",
+
+        "education.photofx.title":
+          "AI Foto Efekt Video Clip",
+
+        "education.photofx.description":
+          "Tek fotoğrafı glow, shake ve hareket efektleriyle video klibe çevir.",
+
+        "education.lipsync.title":
+          "AI Dudak Senkron Video",
+
+        "education.lipsync.description":
+          "Fotoğraf, metin veya ses dosyasıyla konuşan video oluşturmayı öğren.",
+
+        "education.watch":
+          "Videoyu İzle",
+
+        "education.note":
+          "Yeni eğitim videoları düzenli olarak eklenecek. AIVO Studio’yu daha verimli kullanmak için bu sayfayı takip edebilirsin."
+      },
+
+      en: {
+        "education.seoTitle":
+          "Tutorials • AIVO",
+
+        "education.seoDescription":
+          "AIVO Studio tutorials for AI music, cover art, video, cartoons, photo effects and lip-sync creation.",
+
+        "education.pageLabel":
+          "AIVO Tutorials page",
+
+        "education.hero.pill":
+          "🎬 AIVO Learning Center",
+
+        "education.hero.titleFirst":
+          "Learn AIVO.",
+
+        "education.hero.titleSecond":
+          "Create better.",
+
+        "education.hero.description":
+          "Short, clear and hands-on tutorials for AI music, cover art, video, children’s cartoons, photo effects and lip-sync creation.",
+
+        "education.hero.youtube":
+          "Watch YouTube Tutorials",
+
+        "education.hero.studio":
+          "Open Studio",
+
+        "education.showcaseLabel":
+          "AIVO tutorial videos",
+
+        "education.feature.kicker":
+          "Featured Guide",
+
+        "education.feature.title":
+          "Create your first content with AIVO Studio in minutes.",
+
+        "education.feature.description":
+          "This section features the main tutorial covering the basics of AIVO Studio. It is the fastest starting point for exploring the tools, beginning your first creation and moving on to the individual tutorial cards.",
+
+        "education.categoriesLabel":
+          "Tutorial categories",
+
+        "education.category.start":
+          "Getting Started",
+
+        "education.category.music":
+          "Music",
+
+        "education.category.video":
+          "Video",
+
+        "education.category.cover":
+          "Cover Art",
+
+        "education.category.cartoon":
+          "Cartoons",
+
+        "education.category.lipsync":
+          "Lip Sync",
+
+        "education.music.title":
+          "How to Create AI Music",
+
+        "education.music.description":
+          "Create your first song using prompts, style, lyrics and generation options.",
+
+        "education.cover.title":
+          "How to Create AI Cover Art",
+
+        "education.cover.description":
+          "A quick guide to creating cover art, posters and social media visuals.",
+
+        "education.video.title":
+          "AI Image-to-Video Creation",
+
+        "education.video.description":
+          "Learn the basic steps for transforming an image into a moving video scene.",
+
+        "education.cartoon.title":
+          "AI Children’s Cartoon Guide",
+
+        "education.cartoon.description":
+          "Start creating cartoons with characters, scenes and a structured story flow.",
+
+        "education.photofx.title":
+          "AI Photo Effects Video Clip",
+
+        "education.photofx.description":
+          "Turn a single photo into a video clip using glow, shake and motion effects.",
+
+        "education.lipsync.title":
+          "AI Lip-Sync Video",
+
+        "education.lipsync.description":
+          "Learn how to create a talking video using a photo, text or an audio file.",
+
+        "education.watch":
+          "Watch Video",
+
+        "education.note":
+          "New tutorial videos will be added regularly. Follow this page to use AIVO Studio more effectively."
+      }
+    };
+
+    var attempts = 0;
+    var maximumAttempts = 100;
+
+    function updateSocialMeta() {
+      var language =
+        String(
+          document.documentElement.lang ||
+          "tr"
+        ).toLowerCase();
+
+      var isEnglish =
+        language.indexOf("en") === 0;
+
+      var title =
+        isEnglish
+          ? "Tutorials • AIVO"
+          : "Eğitim İçerikleri • AIVO";
+
+      var description =
+        isEnglish
+          ? "AIVO Studio tutorials for AI music, cover art, video, cartoons, photo effects and lip-sync creation."
+          : "AIVO Studio eğitim videoları: AI müzik, kapak, video, çizgifilm, foto efekt ve dudak senkron kullanımı için rehber içerikler.";
+
+      var titleSelectors = [
+        'meta[property="og:title"]',
+        'meta[name="twitter:title"]'
+      ];
+
+      var descriptionSelectors = [
+        'meta[property="og:description"]',
+        'meta[name="twitter:description"]'
+      ];
+
+      titleSelectors.forEach(
+        function (selector) {
+          var element =
+            document.querySelector(selector);
+
+          if (element) {
+            element.setAttribute(
+              "content",
+              title
+            );
+          }
+        }
+      );
+
+      descriptionSelectors.forEach(
+        function (selector) {
+          var element =
+            document.querySelector(selector);
+
+          if (element) {
+            element.setAttribute(
+              "content",
+              description
+            );
+          }
+        }
+      );
+    }
+
+    function installDictionary() {
+      attempts += 1;
+
+      if (
+        !window.AIVO_I18N ||
+        !window.AIVO_I18N.tr ||
+        !window.AIVO_I18N.en
+      ) {
+        if (
+          attempts <
+          maximumAttempts
+        ) {
+          setTimeout(
+            installDictionary,
+            25
+          );
+        }
+
+        return;
+      }
+
+      Object.assign(
+        window.AIVO_I18N.tr,
+        PAGE_DICTIONARY.tr
+      );
+
+      Object.assign(
+        window.AIVO_I18N.en,
+        PAGE_DICTIONARY.en
+      );
+
+      if (
+        typeof window.aivoApplyI18n ===
+        "function"
+      ) {
+        window.aivoApplyI18n(
+          document
+        );
+      }
+
+      updateSocialMeta();
+    }
+
+    document.addEventListener(
+      "aivo:language-change",
+      function () {
+        setTimeout(
+          updateSocialMeta,
+          0
+        );
+      }
+    );
+
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        installDictionary,
+        { once: true }
+      );
+    } else {
+      installDictionary();
+    }
+  })();
+  </script>
 </body>
 </html>
