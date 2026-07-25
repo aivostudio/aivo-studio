@@ -1,16 +1,29 @@
-<section class="main-panel musicPage" data-module="music">
-
+<section
+  class="main-panel musicPage"
+  data-module="music"
+>
   <!-- ================= MUSIC MODULE ================= -->
 
   <!-- ****** GELENEKSEL VIEW ****** -->
-  <div class="music-view" data-music-view="geleneksel">
-
+  <div
+    class="music-view"
+    data-music-view="geleneksel"
+  >
     <!-- HEADER -->
     <div class="panel-header">
       <div class="page-head">
         <div class="page-head__box">
-          <h1 class="page-head__title">AI Müzik Üret</h1>
-          <p class="page-head__sub">
+          <h1
+            class="page-head__title"
+            data-i18n="studio.music.title"
+          >
+            AI Müzik Üret
+          </h1>
+
+          <p
+            class="page-head__sub"
+            data-i18n="studio.music.subtitle"
+          >
             Ritim, vokal, mood ve tür seç — AIVO şarkıyı senin için oluştursun.
           </p>
         </div>
@@ -18,11 +31,23 @@
     </div>
 
     <!-- ÇALIŞMA MODU -->
-    <div class="card" data-ui="workmode">
+    <div
+      class="card"
+      data-ui="workmode"
+    >
       <div class="card-header">
         <div>
-          <div class="card-title">Çalışma Modu</div>
-          <div class="card-subtitle">
+          <div
+            class="card-title"
+            data-i18n="studio.music.workMode.title"
+          >
+            Çalışma Modu
+          </div>
+
+          <div
+            class="card-subtitle"
+            data-i18n="studio.music.workMode.subtitle"
+          >
             Hızlı başlangıç için Basit Mod, detaylı kontrol için Gelişmiş Mod.
           </div>
         </div>
@@ -30,11 +55,30 @@
 
       <div class="card-body">
         <div class="mode-toggle">
-          <button class="mode-btn" type="button" data-mode-button="basic">
+          <button
+            class="mode-btn"
+            type="button"
+            data-mode-button="basic"
+            data-i18n="studio.music.mode.basic"
+          >
             Basit Mod
           </button>
-          <button class="mode-btn" type="button" data-mode-button="advanced">
-            Gelişmiş Mod <span class="mode-star">✦</span>
+
+          <button
+            class="mode-btn"
+            type="button"
+            data-mode-button="advanced"
+          >
+            <span data-i18n="studio.music.mode.advanced">
+              Gelişmiş Mod
+            </span>
+
+            <span
+              class="mode-star"
+              aria-hidden="true"
+            >
+              ✦
+            </span>
           </button>
         </div>
       </div>
@@ -44,68 +88,139 @@
     <div class="card">
       <div class="form-grid">
 
-        <!-- 1) ŞARKI ADI (FULL WIDTH) -->
+        <!-- 1) ŞARKI ADI -->
         <div class="form-field full">
-          <label for="songName">Şarkı Adı</label>
-          <input type="text"
-                 id="songName"
-                 placeholder="Örn: Kül Bahçesi, Midnight Drive..." />
+          <label
+            for="songName"
+            data-i18n="studio.music.songName"
+          >
+            Şarkı Adı
+          </label>
+
+          <input
+            type="text"
+            id="songName"
+            name="desktop_song_name"
+            autocomplete="off"
+            autocapitalize="sentences"
+            autocorrect="off"
+            spellcheck="false"
+            placeholder="Örn: Kül Bahçesi, Midnight Drive..."
+            data-i18n-placeholder="studio.music.songNamePlaceholder"
+          >
         </div>
 
-        <!-- 2) PROMPT (SOL / HALF) -->
+        <!-- 2) PROMPT -->
         <div class="form-field half">
-          <label for="prompt">Ek Açıklama / Prompt</label>
+          <label
+            for="prompt"
+            data-i18n="studio.music.prompt"
+          >
+            Ek Açıklama / Prompt
+          </label>
 
-          <textarea id="prompt"
-                    rows="6"
-                    maxlength="500"
-                    placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."></textarea>
+          <textarea
+            id="prompt"
+            name="desktop_music_prompt"
+            rows="6"
+            maxlength="500"
+            autocomplete="off"
+            autocapitalize="sentences"
+            autocorrect="off"
+            spellcheck="true"
+            placeholder="Müzikte özellikle vurgulamak istediğin detayları yaz..."
+            data-i18n-placeholder="studio.music.promptPlaceholder"
+          ></textarea>
 
-          <div class="char-counter"
-               data-counter-for="prompt">
+          <div
+            class="char-counter"
+            data-counter-for="prompt"
+          >
             0 / 500
           </div>
         </div>
 
-        <!-- 2) LYRICS (SAĞ / HALF) - SADECE ADVANCED -->
-        <div class="form-field half" data-visible-in="advanced">
-          <label for="lyrics">Şarkı Sözleri (isteğe bağlı)</label>
+        <!-- 3) LYRICS — SADECE ADVANCED -->
+        <div
+          class="form-field half"
+          data-visible-in="advanced"
+        >
+          <label
+            for="lyrics"
+            data-i18n="studio.music.lyrics"
+          >
+            Şarkı Sözleri (isteğe bağlı)
+          </label>
 
-          <textarea id="lyrics"
-                    rows="6"
-                    maxlength="5000"
-                    placeholder="Şarkı sözlerini buraya yazın..."></textarea>
+          <textarea
+            id="lyrics"
+            name="desktop_music_lyrics"
+            rows="6"
+            maxlength="5000"
+            autocomplete="off"
+            autocapitalize="sentences"
+            autocorrect="off"
+            spellcheck="true"
+            placeholder="Şarkı sözlerini buraya yazın..."
+            data-i18n-placeholder="studio.music.lyricsPlaceholder"
+          ></textarea>
 
-          <div class="char-counter"
-               data-counter-for="lyrics">
+          <div
+            class="char-counter"
+            data-counter-for="lyrics"
+          >
             0 / 5000
           </div>
         </div>
 
         <!--
-        3) UPLOAD (SOL / HALF) — geçici olarak kapatıldı
+        4) REFERANS SES YÜKLEME
+        Geçici olarak kapatıldı.
         Servis destekleyince tekrar açılacak.
 
         <div class="form-field half">
-          <label>Referans Ses Yükle (opsiyonel)</label>
+          <label>
+            Referans Ses Yükle (opsiyonel)
+          </label>
 
-          <input type="file" id="refAudio" accept=".mp3,.wav,.m4a" hidden />
+          <input
+            type="file"
+            id="refAudio"
+            accept=".mp3,.wav,.m4a"
+            hidden
+          >
 
-          <label class="upload-box" for="refAudio">
+          <label
+            class="upload-box"
+            for="refAudio"
+          >
             <div>
-              <strong>Ses dosyası seç veya sürükleyip bırak</strong><br />
-              <span class="upload-hint">MP3, WAV, M4A — maksimum 10MB</span>
+              <strong>
+                Ses dosyası seç veya sürükleyip bırak
+              </strong>
+
+              <br>
+
+              <span class="upload-hint">
+                MP3, WAV, M4A — maksimum 10MB
+              </span>
             </div>
           </label>
         </div>
         -->
 
         <!--
-        4) RECORD (SAĞ / HALF) - SADECE ADVANCED — geçici olarak kapatıldı
+        5) RECORD — SADECE ADVANCED
+        Geçici olarak kapatıldı.
         Servis destekleyince tekrar açılacak.
 
-        <div class="form-field half" data-visible-in="advanced">
-          <label>Record</label>
+        <div
+          class="form-field half"
+          data-visible-in="advanced"
+        >
+          <label>
+            Record
+          </label>
 
           <button
             class="upload-box"
@@ -115,84 +230,249 @@
             aria-controls="musicRecordModal"
           >
             <div>
-              <strong>🎙️ Record</strong><br />
-              <span class="upload-hint">Tıkla ve kayda başla</span>
+              <strong>
+                🎙️ Record
+              </strong>
+
+              <br>
+
+              <span class="upload-hint">
+                Tıkla ve kayda başla
+              </span>
             </div>
           </button>
 
-          <div class="record-preview" id="musicRecordPreview" hidden>
-            <audio id="musicRecordAudio" controls></audio>
-            <input type="hidden" id="musicRecordBlobUrl" value="" />
+          <div
+            class="record-preview"
+            id="musicRecordPreview"
+            hidden
+          >
+            <audio
+              id="musicRecordAudio"
+              controls
+            ></audio>
+
+            <input
+              type="hidden"
+              id="musicRecordBlobUrl"
+              value=""
+            >
           </div>
         </div>
 
-        <div class="modal" id="musicRecordModal" role="dialog" aria-modal="true" aria-hidden="true" hidden>
-          <div class="modal__backdrop" data-close="musicRecordModal"></div>
+        <div
+          class="modal"
+          id="musicRecordModal"
+          role="dialog"
+          aria-modal="true"
+          aria-hidden="true"
+          hidden
+        >
+          <div
+            class="modal__backdrop"
+            data-close="musicRecordModal"
+          ></div>
 
-          <div class="modal__panel" role="document">
+          <div
+            class="modal__panel"
+            role="document"
+          >
             <div class="modal__head">
-              <div class="modal__title" id="musicRecordTitle">Recording</div>
-              <button class="modal__close" type="button" data-close="musicRecordModal" aria-label="Close">✕</button>
+              <div
+                class="modal__title"
+                id="musicRecordTitle"
+              >
+                Recording
+              </div>
+
+              <button
+                class="modal__close"
+                type="button"
+                data-close="musicRecordModal"
+                aria-label="Close"
+              >
+                ✕
+              </button>
             </div>
 
             <div class="modal__body">
-              <div class="rec-timer" id="musicRecTimer">00:00</div>
-              <div class="rec-wave" id="musicRecWave"></div>
+              <div
+                class="rec-timer"
+                id="musicRecTimer"
+              >
+                00:00
+              </div>
 
-              <button class="rec-bigbtn" type="button" id="musicRecToggleBtn" aria-pressed="false">
+              <div
+                class="rec-wave"
+                id="musicRecWave"
+              ></div>
+
+              <button
+                class="rec-bigbtn"
+                type="button"
+                id="musicRecToggleBtn"
+                aria-pressed="false"
+              >
                 ●
               </button>
             </div>
 
             <div class="modal__foot">
-              <button class="btn" type="button" id="musicRecStartOverBtn">Start Over</button>
-              <button class="btn btn-primary" type="button" id="musicRecSaveBtn">Save</button>
+              <button
+                class="btn"
+                type="button"
+                id="musicRecStartOverBtn"
+              >
+                Start Over
+              </button>
+
+              <button
+                class="btn btn-primary"
+                type="button"
+                id="musicRecSaveBtn"
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
         -->
 
-        <!-- 5) MOOD + VOCAL (EN ALT / 2 KOLON) -->
-              <div class="form-field half" data-visible-in="advanced">
-          <label for="mood">Mood / Tür</label>
-          <select id="mood" name="desktop_track_style_select" autocomplete="off">
-            <option value="">Mood / tür seç</option>
-            <option value="pop, enerjik, Türkçe vokal">Pop, enerjik, Türkçe vokal</option>
-            <option value="rap, trap, güçlü beat">Rap / Trap</option>
-            <option value="arabesk, duygusal, Türkçe vokal">Arabesk / Duygusal</option>
-            <option value="slow, romantik, yumuşak vokal">Slow / Romantik</option>
-            <option value="elektronik, dans, club">Elektronik / Dans</option>
-            <option value="rock, gitar, güçlü vokal">Rock</option>
+        <!-- 6) MOOD -->
+        <div
+          class="form-field half"
+          data-visible-in="advanced"
+        >
+          <label
+            for="mood"
+            data-i18n="studio.music.mood"
+          >
+            Mood / Tür
+          </label>
+
+          <select
+            id="mood"
+            name="desktop_track_style_select"
+            autocomplete="off"
+          >
+            <option
+              value=""
+              data-i18n="studio.music.moodPlaceholder"
+            >
+              Mood / tür seç
+            </option>
+
+            <option
+              value="pop, enerjik, Türkçe vokal"
+              data-i18n="studio.music.mood.pop"
+            >
+              Pop, enerjik, Türkçe vokal
+            </option>
+
+            <option
+              value="rap, trap, güçlü beat"
+              data-i18n="studio.music.mood.rap"
+            >
+              Rap / Trap
+            </option>
+
+            <option
+              value="arabesk, duygusal, Türkçe vokal"
+              data-i18n="studio.music.mood.arabesk"
+            >
+              Arabesk / Duygusal
+            </option>
+
+            <option
+              value="slow, romantik, yumuşak vokal"
+              data-i18n="studio.music.mood.slow"
+            >
+              Slow / Romantik
+            </option>
+
+            <option
+              value="elektronik, dans, club"
+              data-i18n="studio.music.mood.electronic"
+            >
+              Elektronik / Dans
+            </option>
+
+            <option
+              value="rock, gitar, güçlü vokal"
+              data-i18n="studio.music.mood.rock"
+            >
+              Rock
+            </option>
           </select>
         </div>
 
-        <div class="form-field half" data-visible-in="advanced">
-          <label for="vocalType">Vokal Tipi</label>
-          <select id="vocalType">
-            <option value="">Vokal tipini seç</option>
-            <option>Erkek Vokal (AI)</option>
-            <option>Kadın Vokal (AI)</option>
-            <option>Enstrümantal (Vokalsiz)</option>
+        <!-- 7) VOCAL -->
+        <div
+          class="form-field half"
+          data-visible-in="advanced"
+        >
+          <label
+            for="vocalType"
+            data-i18n="studio.music.vocalType"
+          >
+            Vokal Tipi
+          </label>
+
+          <select
+            id="vocalType"
+            name="desktop_vocal_type_select"
+            autocomplete="off"
+          >
+            <option
+              value=""
+              data-i18n="studio.music.vocalPlaceholder"
+            >
+              Vokal tipini seç
+            </option>
+
+            <option
+              value="Erkek Vokal (AI)"
+              data-i18n="studio.music.vocal.male"
+            >
+              Erkek Vokal (AI)
+            </option>
+
+            <option
+              value="Kadın Vokal (AI)"
+              data-i18n="studio.music.vocal.female"
+            >
+              Kadın Vokal (AI)
+            </option>
+
+            <option
+              value="Enstrümantal (Vokalsiz)"
+              data-i18n="studio.music.vocal.instrumental"
+            >
+              Enstrümantal (Vokalsiz)
+            </option>
           </select>
         </div>
 
       </div>
     </div>
 
-      <!-- GENERATE -->
+    <!-- GENERATE -->
     <div class="card musicGenerateCard">
       <div class="form-field full">
-    <button class="primary-btn aivoBtnPrimary"
-        id="musicGenerateBtn"
-        type="button"
-        data-generate="music"
-        data-credit-cost="2">
-     🎵 Müzik Üret <span class="credit-mini">(2 Kredi)</span>
-    </button>
+        <button
+          class="primary-btn aivoBtnPrimary"
+          id="musicGenerateBtn"
+          type="button"
+          data-generate="music"
+          data-credit-cost="2"
+          data-i18n="studio.music.generateWithCredit"
+        >
+          🎵 Müzik Üret (2 Kredi)
+        </button>
       </div>
     </div>
 
   </div>
   <!-- ****** /GELENEKSEL VIEW ****** -->
-
 </section>
