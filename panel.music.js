@@ -1689,14 +1689,39 @@
     if (action === "stem-download") {
       const url = String(button?.dataset?.url || "").trim();
       const filename = String(button?.dataset?.filename || "stem.wav").trim();
+
       if (!url) {
         toast("error", mt("studio.music.panel.stems.noChannel"));
         return;
       }
 
-      const downloaded = await downloadBlobFile(url, filename);
-      if (downloaded) toast("success", mt("studio.music.panel.stems.downloadStarted"));
-      else toast("error", mt("studio.music.panel.downloadFailed"));
+      /*
+        Keep the browser's user activation alive.
+        Fetching the WAV first can cause Chrome/Safari to block the
+        later programmatic download after the asynchronous request.
+        The conversion endpoint is same-origin, so a direct anchor
+        download is both safer and faster.
+      */
+      try {
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.rel = "noopener";
+        anchor.style.display = "none";
+        document.body.appendChild(anchor);
+        anchor.click();
+
+        window.setTimeout(() => {
+          try { anchor.remove(); } catch (_) {}
+        }, 1200);
+
+        toast("success", mt("studio.music.panel.stems.downloadStarted"));
+      } catch (error) {
+        console.error("[panel.music] stem direct download failed", error);
+        window.open(url, "_blank", "noopener");
+        toast("error", mt("studio.music.panel.downloadFailed"));
+      }
+
       return;
     }
 
@@ -2236,7 +2261,7 @@
         .aivo-empty-pulse{animation:aivoMusicPulse 1.15s ease-in-out infinite}
         @keyframes aivoMusicPulse{0%{opacity:.38}50%{opacity:1}100%{opacity:.38}}
         .aivo-stems-icons{margin-top:8px!important;display:flex!important;flex-wrap:wrap!important;gap:6px!important;align-items:center!important;justify-content:flex-start!important;position:relative!important}
-        .aivo-stems-icons::before,.aivo-stems-icons::after{content:none!important;display:none!important}
+        #rightPanelHost .aivo-stems-icons::before,#rightPanelHost .aivo-stems-icons::after{content:none!important;display:none!important}
         .aivo-stems-note{display:flex!important;align-items:center!important;gap:7px!important;flex-basis:100%!important;width:max-content!important;max-width:100%!important;margin-top:8px!important;padding:7px 11px!important;border-radius:999px!important;color:rgba(255,255,255,.72)!important;font-size:12px!important;font-weight:800!important;line-height:1!important;opacity:1!important;background:radial-gradient(circle at 12% 50%,rgba(250,204,21,.18),transparent 34%),rgba(255,255,255,.045)!important;border:1px solid rgba(255,255,255,.10)!important}
         .aivo-stems-note::before{content:""!important;display:inline-block!important;flex:0 0 13px!important;width:13px!important;height:13px!important;background:linear-gradient(135deg,#fde68a,#f472ff)!important;filter:drop-shadow(0 0 6px rgba(245,158,11,.35))!important;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v6'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E") center/contain no-repeat!important;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v6'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E") center/contain no-repeat!important}
         .aivo-stems-icons .aivo-stem-ic{display:inline-flex!important;flex:0 0 26px!important;width:26px!important;min-width:26px!important;max-width:26px!important;height:26px!important;min-height:26px!important;max-height:26px!important;padding:0!important;margin:0!important;align-items:center!important;justify-content:center!important;border-radius:10px!important;border:1px solid rgba(255,255,255,.12)!important;background:rgba(255,255,255,.06)!important;text-decoration:none!important;user-select:none!important;line-height:1!important;font-size:0!important;color:transparent!important;position:relative!important;overflow:hidden!important}
