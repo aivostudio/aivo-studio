@@ -314,8 +314,123 @@
       "studio.music.delete.failed":
         "Müzik silinemedi.",
 
-      "studio.music.download.failed":
+           "studio.music.download.failed":
         "Müzik indirilemedi.",
+
+      /* =========================
+         COVER / FORM
+         ========================= */
+
+      "studio.cover.title":
+        "Kapak / Görsel Üret",
+
+      "studio.cover.subtitle":
+        "Spotify, Apple Music ve YouTube için kapaklarını AI ile tasarla.",
+
+      "studio.cover.beta":
+        "BETA",
+
+      "studio.cover.prompt":
+        "Prompt",
+
+      "studio.cover.promptPlaceholder":
+        "Örn: Gece şehirde yürüyen gizemli kadın, neon ışıklar, sinematik atmosfer",
+
+      "studio.cover.qualityLevel":
+        "Kalite Seviyesi",
+
+      "studio.cover.qualityArtist":
+        "Artist",
+
+      "studio.cover.qualityUltra":
+        "Cinematic Ultra HD",
+
+      "studio.cover.credit6":
+        "6 Kredi",
+
+      "studio.cover.credit9":
+        "9 Kredi",
+
+      "studio.cover.styleOptions":
+        "Stil Seçenekleri",
+
+      "studio.cover.styleRealistic":
+        "Gerçekçi",
+
+      "studio.cover.styleRealisticSub":
+        "Stüdyo ışığında net, doğal ve yüksek detaylı kapaklar",
+
+      "studio.cover.styleArtistic":
+        "Sanatsal",
+
+      "studio.cover.styleArtisticSub":
+        "Doku, ışık ve derin renklerle eser hissi veren kompozisyonlar",
+
+      "studio.cover.styleCartoon":
+        "Çizgi Film",
+
+      "studio.cover.styleCartoonSub":
+        "Temiz hatlar, canlı tonlar ve karakter odaklı eğlenceli stil",
+
+      "studio.cover.styleAbstract":
+        "Soyut",
+
+      "studio.cover.styleAbstractSub":
+        "Geometrik formlar ve yumuşak geçişlerle modern konsept tasarım",
+
+      "studio.cover.stylePhoto":
+        "Fotoğrafik",
+
+      "studio.cover.stylePhotoSub":
+        "Sinematik ışık, alan derinliği ve premium fotoğraf estetiği",
+
+      "studio.cover.styleAnime":
+        "Anime",
+
+      "studio.cover.styleAnimeSub":
+        "Manga dokusu, yumuşak ışık ve temiz çizgilerle anime dili",
+
+      "studio.cover.imageCount":
+        "Görüntü Sayısı",
+
+      "studio.cover.image1":
+        "1 Görüntü",
+
+      "studio.cover.image2":
+        "2 Görüntü",
+
+      "studio.cover.image4":
+        "4 Görüntü",
+
+      "studio.cover.aspectRatio":
+        "En / Boy Oranı",
+
+      "studio.cover.ratioSquare":
+        "Kare (1:1)",
+
+      "studio.cover.ratioVertical":
+        "Dikey (9:16)",
+
+      "studio.cover.ratioHorizontal":
+        "Yatay (16:9)",
+
+      "studio.cover.engineTitle":
+        "AIVO Kapak Motoru",
+
+      "studio.cover.requiredCredit":
+        "Gerekli Kredi:",
+
+      "studio.cover.engineDesc":
+        "6 kredi ile 1 kapak üretilir. Kalite artırımı daha fazla kredi tüketebilir.",
+
+      "studio.cover.generate6":
+        "🖼️ Kapak Üret (6 Kredi)",
+
+      "studio.cover.generate9":
+        "🖼️ Kapak Üret (9 Kredi)",
+
+      "studio.cover.generateWithCredit":
+        "🖼️ Kapak Üret ({count} Kredi)",
 
       /* =========================
          SUPPORT
@@ -617,8 +732,123 @@
       "studio.music.delete.failed":
         "Music could not be deleted.",
 
-      "studio.music.download.failed":
+          "studio.music.download.failed":
         "Music could not be downloaded.",
+
+      /* =========================
+         COVER / FORM
+         ========================= */
+
+      "studio.cover.title":
+        "Create Cover Art / Visual",
+
+      "studio.cover.subtitle":
+        "Design cover art for Spotify, Apple Music and YouTube with AI.",
+
+      "studio.cover.beta":
+        "BETA",
+
+      "studio.cover.prompt":
+        "Prompt",
+
+      "studio.cover.promptPlaceholder":
+        "E.g. A mysterious woman walking through a neon city at night, cinematic atmosphere",
+
+      "studio.cover.qualityLevel":
+        "Quality Level",
+
+      "studio.cover.qualityArtist":
+        "Artist",
+
+      "studio.cover.qualityUltra":
+        "Cinematic Ultra HD",
+
+      "studio.cover.credit6":
+        "6 Credits",
+
+      "studio.cover.credit9":
+        "9 Credits",
+
+      "studio.cover.styleOptions":
+        "Style Options",
+
+      "studio.cover.styleRealistic":
+        "Realistic",
+
+      "studio.cover.styleRealisticSub":
+        "Natural, sharp and highly detailed covers with studio lighting",
+
+      "studio.cover.styleArtistic":
+        "Artistic",
+
+      "studio.cover.styleArtisticSub":
+        "Expressive compositions with texture, light and deep colors",
+
+      "studio.cover.styleCartoon":
+        "Cartoon",
+
+      "studio.cover.styleCartoonSub":
+        "Clean lines, vivid colors and a playful character-focused style",
+
+      "studio.cover.styleAbstract":
+        "Abstract",
+
+      "studio.cover.styleAbstractSub":
+        "Modern concept designs with geometric forms and soft gradients",
+
+      "studio.cover.stylePhoto":
+        "Photographic",
+
+      "studio.cover.stylePhotoSub":
+        "Cinematic lighting, depth of field and a premium photography aesthetic",
+
+      "studio.cover.styleAnime":
+        "Anime",
+
+      "studio.cover.styleAnimeSub":
+        "Anime visuals with manga texture, soft lighting and clean lines",
+
+      "studio.cover.imageCount":
+        "Image Count",
+
+      "studio.cover.image1":
+        "1 Image",
+
+      "studio.cover.image2":
+        "2 Images",
+
+      "studio.cover.image4":
+        "4 Images",
+
+      "studio.cover.aspectRatio":
+        "Aspect Ratio",
+
+      "studio.cover.ratioSquare":
+        "Square (1:1)",
+
+      "studio.cover.ratioVertical":
+        "Portrait (9:16)",
+
+      "studio.cover.ratioHorizontal":
+        "Landscape (16:9)",
+
+      "studio.cover.engineTitle":
+        "AIVO Cover Engine",
+
+      "studio.cover.requiredCredit":
+        "Required Credits:",
+
+      "studio.cover.engineDesc":
+        "Generate one cover for 6 credits. Higher quality may use more credits.",
+
+      "studio.cover.generate6":
+        "🖼️ Generate Cover (6 Credits)",
+
+      "studio.cover.generate9":
+        "🖼️ Generate Cover (9 Credits)",
+
+      "studio.cover.generateWithCredit":
+        "🖼️ Generate Cover ({count} Credits)",
 
       /* =========================
          SUPPORT
