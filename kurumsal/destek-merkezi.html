@@ -1,610 +1,1802 @@
 <!DOCTYPE html>
-<html lang="tr" class="aivoAuthPreload">
+<html
+  lang="tr"
+  class="aivoAuthPreload"
+  data-aivo-title-key="support.seoTitle"
+  data-aivo-description-key="support.seoDescription"
+>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
-  <meta name="theme-color" content="#070A14" />
-  <title>AIVO — Destek Merkezi</title>
+  <meta charset="utf-8">
 
-  <!-- ✅ FOUC FIX -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="color-scheme"
+    content="dark"
+  >
+
+  <meta
+    name="theme-color"
+    content="#070A14"
+  >
+
+  <title>Destek Merkezi • AIVO</title>
+
+  <meta
+    name="description"
+    content="AIVO Studio hesap, kredi, ödeme, müzik, video, görsel üretimi ve teknik sorunlar için destek merkezi."
+  >
+
+  <meta
+    property="og:title"
+    content="Destek Merkezi • AIVO"
+  >
+
+  <meta
+    property="og:description"
+    content="AIVO Studio hesap, kredi, ödeme, müzik, video, görsel üretimi ve teknik sorunlar için destek merkezi."
+  >
+
+  <meta
+    name="twitter:title"
+    content="Destek Merkezi • AIVO"
+  >
+
+  <meta
+    name="twitter:description"
+    content="AIVO Studio hesap, kredi, ödeme, müzik, video, görsel üretimi ve teknik sorunlar için destek merkezi."
+  >
+
+  <!-- FOUC FIX -->
   <style>
-    html, body { margin:0; min-height:100%; background:#070A14 !important; color:#e7ecff; }
-    body { background:#070A14 !important; }
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #070A14 !important;
+      color: #e7ecff;
+    }
+
+    body {
+      background: #070A14 !important;
+    }
   </style>
 
-<!-- ================= CORE (Index/Pricing ile AYNI) ================= -->
-<link rel="stylesheet" href="/index.css?v=20260117" />
+  <!-- FONTS -->
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
 
-<!-- ================= TOAST (GLOBAL) ================= -->
-<link rel="stylesheet" href="/toast.css?v=1" />
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
 
-<!-- ================= SAYFAYA ÖZEL ================= -->
-<link rel="stylesheet" href="/kurumsal.css?v=20260117" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
 
-<!-- ================= TOPBAR / DROPDOWN (ANA) ================= -->
-<link rel="stylesheet" href="/products.dropdown.css?v=104" />
+  <!-- CORE -->
+  <link
+    rel="stylesheet"
+    href="/index.css?v=1002"
+  >
 
-<!-- ================= TOPBAR / DROPDOWN (OVERRIDE) ================= -->
-<link rel="stylesheet" href="/products.dropdown.override.css?v=4" />
+  <!-- TOAST -->
+  <link
+    rel="stylesheet"
+    href="/toast.css?v=2"
+  >
 
-<!-- ================= MODAL (EN SON) ================= -->
-<link rel="stylesheet" href="/auth.modal.css?v=20260117" />
+  <!-- CORPORATE -->
+  <link
+    rel="stylesheet"
+    href="/kurumsal.css?v=20260117"
+  >
 
+  <!-- TOPBAR / DROPDOWN -->
+  <link
+    rel="stylesheet"
+    href="/products.dropdown.css?v=104"
+  >
 
-<!-- ================= TOAST MANAGER (GLOBAL) ================= -->
-<script src="/toast.manager.js?v=1" defer></script>
-  <script src="/js/assistant.widget.js?v=1" defer></script>
+  <link
+    rel="stylesheet"
+    href="/products.dropdown.override.css?v=4"
+  >
 
-<!-- ================= PARTIALS (topbar inject) ================= -->
-<script src="/include.partials.js?v=3" defer></script>
+  <!-- AUTH MODAL -->
+  <link
+    rel="stylesheet"
+    href="/auth.modal.css?v=101"
+  >
 
-<!-- ================= AUTH CORE (tek otorite / index ile aynı) ================= -->
-<script src="/auth.core.js?v=20260115x" defer></script>
- <script src="/index.auth.js?v=20260423_1" defer></script>
+  <!-- GLOBAL JS -->
+  <script
+    src="/toast.manager.js?v=2"
+    defer
+  ></script>
 
-<!-- ✅ AUTO LOGIN (autofill / Enter) — SAFE -->
-<script src="/auth-state.auto.js?v=20260118a" defer></script>
+  <script
+    src="/js/desktop.i18n.js?v=5"
+    defer
+  ></script>
 
-<!-- ================= AUTH UNIFY (UI + menu + logout tek otorite) ================= -->
-<script src="/auth.unify.fix.js?v=1" defer></script>
+  <script
+    src="/js/assistant.widget.js?v=2"
+    defer
+  ></script>
 
-<!-- ================= STORE ================= -->
-<script src="/store.js?v=2" defer></script>
+  <script
+    src="/include.partials.js?v=5"
+    defer
+  ></script>
+
+  <script
+    src="/auth.core.js?v=20260115x"
+    defer
+  ></script>
+
+  <script
+    src="/index.auth.js?v=20260423_1"
+    defer
+  ></script>
+
+  <script
+    src="/auth-state.auto.js?v=20260118a"
+    defer
+  ></script>
+
+  <script
+    src="/auth.unify.fix.js?v=2"
+    defer
+  ></script>
+
+  <script
+    src="/store.js?v=2"
+    defer
+  ></script>
+
+  <!-- PAGE + COOKIE STYLES -->
+  <style>
+    :root {
+      --support-card:
+        rgba(13, 15, 27, 0.72);
+
+      --support-card-strong:
+        rgba(18, 16, 35, 0.82);
+
+      --support-border:
+        rgba(130, 120, 255, 0.18);
+
+      --support-border-hover:
+        rgba(185, 125, 255, 0.48);
+
+      --support-text:
+        rgba(240, 242, 255, 0.96);
+
+      --support-muted:
+        rgba(215, 220, 245, 0.70);
+
+      --support-purple:
+        #9b5cff;
+
+      --support-pink:
+        #ec4899;
+
+      --cc-bg:
+        rgba(8, 12, 24, 0.72);
+
+      --cc-stroke:
+        rgba(255, 255, 255, 0.10);
+
+      --cc-text:
+        rgba(235, 240, 255, 0.92);
+
+      --cc-sub:
+        rgba(235, 240, 255, 0.70);
+
+      --cc-purple:
+        #7c3aed;
+
+      --cc-purple-2:
+        #a855f7;
+    }
+
+    .support-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 38px 18px 42px;
+    }
+
+    .support-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .support-hero {
+      position: relative;
+      isolation: isolate;
+      margin-top: 26px;
+      margin-bottom: 28px;
+    }
+
+    .support-hero::before {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      top: -100px;
+      left: -120px;
+      width: 540px;
+      height: 380px;
+      background:
+        radial-gradient(
+          circle,
+          rgba(146, 72, 255, 0.20),
+          transparent 66%
+        );
+      filter: blur(12px);
+      pointer-events: none;
+    }
+
+    .support-eyebrow {
+      margin-bottom: 8px;
+      opacity: 0.72;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+    }
+
+    .support-title {
+      margin: 0 0 10px;
+      font-size:
+        clamp(32px, 4vw, 48px);
+      line-height: 1.08;
+    }
+
+    .support-subtitle {
+      max-width: 900px;
+      margin: 0;
+      color: var(--support-muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .support-status {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .support-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border:
+        1px solid rgba(140, 120, 255, 0.22);
+      border-radius: 999px;
+      background:
+        rgba(255, 255, 255, 0.035);
+      color:
+        rgba(230, 234, 255, 0.84);
+      font-size: 12px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .support-green-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: #36d577;
+      box-shadow:
+        0 0 12px rgba(54, 213, 119, 0.58);
+    }
+
+    .support-section {
+      margin-top: 30px;
+    }
+
+    .support-section-head {
+      margin-bottom: 14px;
+    }
+
+    .support-section-head h2 {
+      margin: 0 0 6px;
+      font-size: 23px;
+    }
+
+    .support-section-head p {
+      max-width: 850px;
+      margin: 0;
+      color: var(--support-muted);
+      line-height: 1.65;
+    }
+
+    .support-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .support-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 192px;
+      padding: 18px;
+      border:
+        1px solid var(--support-border);
+      border-radius: 18px;
+      background:
+        linear-gradient(
+          180deg,
+          rgba(18, 18, 37, 0.78),
+          rgba(9, 11, 22, 0.72)
+        );
+      box-shadow:
+        0 18px 60px rgba(0, 0, 0, 0.24);
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .support-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(
+          110% 120% at 15% 5%,
+          rgba(135, 80, 255, 0.17),
+          transparent 60%
+        );
+      pointer-events: none;
+    }
+
+    .support-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .support-card:hover {
+      border-color:
+        var(--support-border-hover);
+      box-shadow:
+        0 22px 70px rgba(80, 42, 155, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .support-card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 14px;
+      border:
+        1px solid rgba(170, 125, 255, 0.24);
+      border-radius: 13px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(143, 78, 255, 0.20),
+          rgba(236, 72, 153, 0.08)
+        );
+      font-size: 21px;
+    }
+
+    .support-card h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    .support-card p {
+      flex: 1;
+      margin: 0 0 15px;
+      color: var(--support-muted);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    .support-card a {
+      align-self: flex-start;
+      color:
+        rgba(200, 178, 255, 0.94);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .support-card a:hover {
+      color: #ffffff;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .support-steps {
+      display: grid;
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .support-step {
+      padding: 16px;
+      border:
+        1px solid var(--support-border);
+      border-radius: 16px;
+      background:
+        rgba(10, 12, 23, 0.62);
+    }
+
+    .support-step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      background:
+        linear-gradient(
+          135deg,
+          var(--support-purple),
+          var(--support-pink)
+        );
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow:
+        0 8px 24px rgba(139, 92, 246, 0.25);
+    }
+
+    .support-step h3 {
+      margin: 0 0 7px;
+      font-size: 15px;
+    }
+
+    .support-step p {
+      margin: 0;
+      color: var(--support-muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .support-faq-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .support-faq {
+      overflow: hidden;
+      border:
+        1px solid var(--support-border);
+      border-radius: 15px;
+      background:
+        rgba(10, 12, 23, 0.67);
+    }
+
+    .support-faq[open] {
+      border-color:
+        rgba(168, 110, 255, 0.42);
+      background:
+        rgba(17, 14, 31, 0.78);
+    }
+
+    .support-faq summary {
+      position: relative;
+      padding: 16px 52px 16px 17px;
+      color: var(--support-text);
+      font-size: 14px;
+      font-weight: 750;
+      list-style: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .support-faq summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .support-faq summary::after {
+      content: "+";
+      position: absolute;
+      top: 50%;
+      right: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border:
+        1px solid rgba(165, 120, 255, 0.25);
+      border-radius: 9px;
+      background:
+        rgba(255, 255, 255, 0.035);
+      color:
+        rgba(220, 205, 255, 0.88);
+      font-size: 18px;
+      font-weight: 500;
+      transform: translateY(-50%);
+    }
+
+    .support-faq[open] summary::after {
+      content: "−";
+    }
+
+    .support-faq-answer {
+      padding: 0 17px 17px;
+      color: var(--support-muted);
+      font-size: 13.5px;
+      line-height: 1.65;
+    }
+
+    .support-faq-answer p {
+      margin: 0;
+    }
+
+    .support-faq-answer a {
+      color:
+        rgba(192, 166, 255, 0.96);
+    }
+
+    .support-contact {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 20px;
+      overflow: hidden;
+      margin-top: 30px;
+      padding: 24px;
+      border:
+        1px solid rgba(174, 118, 255, 0.35);
+      border-radius: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(75, 35, 130, 0.34),
+          rgba(15, 17, 34, 0.82)
+        );
+      box-shadow:
+        0 24px 80px rgba(78, 35, 145, 0.20);
+    }
+
+    .support-contact::before {
+      content: "";
+      position: absolute;
+      top: -110px;
+      right: -60px;
+      width: 330px;
+      height: 250px;
+      background:
+        radial-gradient(
+          circle,
+          rgba(230, 73, 176, 0.25),
+          transparent 66%
+        );
+      pointer-events: none;
+    }
+
+    .support-contact > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .support-contact h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .support-contact p {
+      max-width: 720px;
+      margin: 0;
+      color: var(--support-muted);
+      line-height: 1.65;
+    }
+
+    .support-contact-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .support-contact-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border:
+        1px solid rgba(200, 165, 255, 0.32);
+      border-radius: 13px;
+      background:
+        rgba(255, 255, 255, 0.055);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 750;
+      text-decoration: none;
+      white-space: nowrap;
+      transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease;
+    }
+
+    .support-contact-button:hover {
+      border-color:
+        rgba(215, 185, 255, 0.55);
+      background:
+        rgba(255, 255, 255, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .support-contact-button--primary {
+      border: 0;
+      background:
+        linear-gradient(
+          135deg,
+          #8757ff,
+          #e5489c
+        );
+      box-shadow:
+        0 14px 34px rgba(135, 87, 255, 0.25);
+    }
+
+    /* COOKIE BANNER */
+
+    .aivo-cc {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      left: 14px;
+      z-index: 999999;
+      display: none;
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        transform 0.28s ease,
+        opacity 0.28s ease;
+    }
+
+    .aivo-cc.is-open {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .aivo-cc__card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px;
+      border:
+        1px solid var(--cc-stroke);
+      border-radius: 16px;
+      background: var(--cc-bg);
+      box-shadow:
+        0 18px 60px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .aivo-cc__card::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -60px;
+      left: -60px;
+      height: 120px;
+      background:
+        radial-gradient(
+          closest-side,
+          rgba(168, 85, 247, 0.35),
+          transparent 70%
+        );
+      pointer-events: none;
+    }
+
+    .aivo-cc__left {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .aivo-cc__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--cc-text);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .aivo-cc__dot {
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          135deg,
+          var(--cc-purple),
+          var(--cc-purple-2)
+        );
+      box-shadow:
+        0 0 0 4px rgba(124, 58, 237, 0.18);
+    }
+
+    .aivo-cc__msg {
+      overflow: hidden;
+      color: var(--cc-sub);
+      font-size: 13px;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+    }
+
+    .aivo-cc__links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .aivo-cc__links a {
+      color:
+        rgba(220, 225, 255, 0.85);
+      opacity: 0.9;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .aivo-cc__actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .aivo-cc__btn {
+      height: 38px;
+      padding: 0 14px;
+      border:
+        1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      background:
+        rgba(255, 255, 255, 0.06);
+      color:
+        rgba(235, 240, 255, 0.92);
+      font-size: 13px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .aivo-cc__btn:hover {
+      border-color:
+        rgba(255, 255, 255, 0.22);
+      background:
+        rgba(255, 255, 255, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .aivo-cc__btn--primary {
+      border: 0;
+      background:
+        linear-gradient(
+          135deg,
+          var(--cc-purple),
+          var(--cc-purple-2)
+        );
+      color: #ffffff;
+      box-shadow:
+        0 14px 30px rgba(124, 58, 237, 0.28);
+    }
+
+    .aivo-cc__textlink {
+      padding: 0 6px;
+      border: 0;
+      background: none;
+      color:
+        rgba(220, 225, 255, 0.90);
+      opacity: 0.9;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .aivo-ccm {
+      position: fixed;
+      inset: 0;
+      z-index: 1000000;
+      display: none;
+    }
+
+    .aivo-ccm.is-open {
+      display: block;
+    }
+
+    .aivo-ccm__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .aivo-ccm__card {
+      position: relative;
+      top: 10vh;
+      overflow: hidden;
+      width:
+        min(720px, calc(100vw - 28px));
+      margin: 0 auto;
+      border:
+        1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      background:
+        rgba(8, 12, 24, 0.86);
+      box-shadow:
+        0 20px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    .aivo-ccm__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 16px 12px;
+      border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .aivo-ccm__title {
+      color:
+        rgba(235, 240, 255, 0.95);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .aivo-ccm__sub {
+      margin-top: 6px;
+      color:
+        rgba(235, 240, 255, 0.72);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .aivo-ccm__x {
+      width: 38px;
+      height: 38px;
+      border:
+        1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      background:
+        rgba(255, 255, 255, 0.06);
+      color:
+        rgba(235, 240, 255, 0.90);
+      cursor: pointer;
+    }
+
+    .aivo-ccm__rows {
+      padding: 10px 16px 6px;
+    }
+
+    .aivo-ccm__row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .aivo-ccm__row:last-child {
+      border-bottom: 0;
+    }
+
+    .aivo-ccm__meta {
+      min-width: 0;
+    }
+
+    .aivo-ccm__label {
+      color:
+        rgba(235, 240, 255, 0.92);
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .aivo-ccm__desc {
+      margin-top: 4px;
+      color:
+        rgba(235, 240, 255, 0.68);
+      font-size: 12.5px;
+      line-height: 1.35;
+    }
+
+    .aivo-ccm__foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 16px;
+      border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .aivo-ccm__link {
+      color:
+        rgba(220, 225, 255, 0.88);
+      font-size: 13px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .aivo-ccm__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .aivo-switch {
+      position: relative;
+      display: inline-block;
+      flex: 0 0 auto;
+      width: 48px;
+      height: 28px;
+    }
+
+    .aivo-switch input {
+      position: absolute;
+      width: 0;
+      height: 0;
+      opacity: 0;
+    }
+
+    .aivo-switch__track {
+      position: absolute;
+      inset: 0;
+      border:
+        1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background:
+        rgba(255, 255, 255, 0.12);
+    }
+
+    .aivo-switch__track::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background:
+        rgba(235, 240, 255, 0.92);
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.35);
+      transform: translateX(0);
+      transition:
+        transform 0.18s ease;
+    }
+
+    .aivo-switch input:checked + .aivo-switch__track {
+      border-color:
+        rgba(255, 255, 255, 0.08);
+      background:
+        linear-gradient(
+          135deg,
+          #7c3aed,
+          #a855f7
+        );
+    }
+
+    .aivo-switch input:checked + .aivo-switch__track::after {
+      transform: translateX(20px);
+    }
+
+    .aivo-switch.is-disabled {
+      opacity: 0.65;
+      pointer-events: none;
+    }
+
+    @media (max-width: 980px) {
+      .support-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .support-steps {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .support-contact {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .support-grid,
+      .support-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .support-card {
+        min-height: 0;
+      }
+
+      .support-contact-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .support-contact-button {
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .aivo-cc__card {
+        grid-template-columns: 1fr;
+      }
+
+      .aivo-cc__actions {
+        justify-content: flex-start;
+      }
+
+      .aivo-ccm__foot {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
-
-<body class="page-help" data-skin="corp" style="background:#070A14;">
-
-  <!-- ✅ TOPBAR (TEK KAYNAK) -->
+<body
+  class="page-corp page-help"
+  data-skin="corp"
+  style="background:#070A14;"
+>
+  <!-- TOPBAR -->
   <div data-include="topbar"></div>
 
-<!-- AIVO Cookie Banner (Premium) -->
-<style>
-  :root{
-    --cc-bg: rgba(8,12,24,.72);
-    --cc-stroke: rgba(255,255,255,.10);
-    --cc-text: rgba(235,240,255,.92);
-    --cc-sub: rgba(235,240,255,.70);
-    --cc-purple: #7c3aed;
-    --cc-purple2: #a855f7;
-  }
+  <!-- COOKIE BANNER -->
+  <div
+    class="aivo-cc"
+    id="aivoCookieBanner"
+    aria-live="polite"
+  >
+    <div class="aivo-cc__card">
 
-  .aivo-cc{
-    position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: 14px;
-    z-index: 999999;
-    display: none;
-    transform: translateY(18px);
-    opacity: 0;
-    transition: transform .28s ease, opacity .28s ease;
-  }
-  .aivo-cc.is-open{
-    transform: translateY(0);
-    opacity: 1;
-  }
+      <div class="aivo-cc__left">
+        <div class="aivo-cc__title">
+          <span class="aivo-cc__dot"></span>
 
-  .aivo-cc__card{
-    margin: 0 auto;
-    max-width: 1180px;
-    background: var(--cc-bg);
-    border: 1px solid var(--cc-stroke);
-    border-radius: 16px;
-    padding: 14px 14px;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 18px 60px rgba(0,0,0,.45);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 12px;
-    align-items: center;
-    overflow: hidden;
-    position: relative;
-  }
+          <span data-i18n="cookie.title">
+            Çerez Tercihleri
+          </span>
+        </div>
 
-  .aivo-cc__card:before{
-    content:"";
-    position:absolute;
-    inset:-40px -60px auto -60px;
-    height: 120px;
-    background: radial-gradient(closest-side, rgba(168,85,247,.35), transparent 70%);
-    pointer-events:none;
-    filter: blur(2px);
-  }
+        <div
+          class="aivo-cc__msg"
+          data-i18n="cookie.message"
+        >
+          Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz. Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
+        </div>
 
-  .aivo-cc__left{
-    min-width: 0;
-    display: grid;
-    gap: 6px;
-  }
-  .aivo-cc__title{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-weight: 700;
-    color: var(--cc-text);
-    letter-spacing: .2px;
-    font-size: 14px;
-  }
-  .aivo-cc__dot{
-    width: 10px; height: 10px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    box-shadow: 0 0 0 4px rgba(124,58,237,.18);
-    flex: 0 0 auto;
-  }
-  .aivo-cc__msg{
-    color: var(--cc-sub);
-    font-size: 13px;
-    line-height: 1.35;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .aivo-cc__links{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    font-size: 12px;
-  }
-  .aivo-cc__links a{
-    color: rgba(220,225,255,.85);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    opacity: .9;
-  }
-  .aivo-cc__links a:hover{ opacity: 1; }
+        <div class="aivo-cc__links">
+          <a
+            href="/kurumsal/gizlilik.html#cerez"
+            data-i18n="cookie.policy"
+          >
+            Çerez Politikası
+          </a>
 
-  .aivo-cc__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .aivo-cc__btn{
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.92);
-    font-weight: 650;
-    font-size: 13px;
-    cursor: pointer;
-    transition: transform .15s ease, background .15s ease, border-color .15s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-  .aivo-cc__btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,.09);
-    border-color: rgba(255,255,255,.22);
-  }
-
-  .aivo-cc__btn--primary{
-    border: 0;
-    background: linear-gradient(135deg, var(--cc-purple), var(--cc-purple2));
-    color: #fff;
-    box-shadow: 0 14px 30px rgba(124,58,237,.28);
-  }
-  .aivo-cc__btn--primary:hover{
-    background: linear-gradient(135deg, #6d28d9, #9333ea);
-  }
-
-  .aivo-cc__textlink{
-    background: none;
-    border: none;
-    color: rgba(220,225,255,.9);
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 0 6px;
-    opacity: .9;
-  }
-  .aivo-cc__textlink:hover{ opacity: 1; }
-
-  @media (max-width: 720px){
-    .aivo-cc__card{
-      grid-template-columns: 1fr;
-    }
-    .aivo-cc__actions{
-      justify-content: flex-start;
-    }
-    .aivo-cc__msg{
-      -webkit-line-clamp: 3;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-    }
-  }
-
-  /* ===== Modal ===== */
-  .aivo-ccm{
-    position: fixed;
-    inset: 0;
-    z-index: 1000000;
-    display: none;
-  }
-  .aivo-ccm.is-open{ display:block; }
-
-  .aivo-ccm__backdrop{
-    position:absolute;
-    inset:0;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  .aivo-ccm__card{
-    position: relative;
-    width: min(720px, calc(100vw - 28px));
-    margin: 0 auto;
-    top: 10vh;
-    background: rgba(8,12,24,.86);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 18px;
-    box-shadow: 0 20px 80px rgba(0,0,0,.55);
-    overflow: hidden;
-  }
-
-  .aivo-ccm__head{
-    display:flex;
-    align-items:flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 16px 16px 12px;
-    border-bottom: 1px solid rgba(255,255,255,.08);
-  }
-  .aivo-ccm__title{
-    font-weight: 800;
-    font-size: 16px;
-    color: rgba(235,240,255,.95);
-    letter-spacing: .2px;
-  }
-  .aivo-ccm__sub{
-    margin-top: 6px;
-    font-size: 13px;
-    color: rgba(235,240,255,.72);
-    line-height: 1.45;
-  }
-  .aivo-ccm__x{
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.14);
-    background: rgba(255,255,255,.06);
-    color: rgba(235,240,255,.9);
-    cursor: pointer;
-  }
-  .aivo-ccm__x:hover{ background: rgba(255,255,255,.10); }
-
-  .aivo-ccm__rows{ padding: 10px 16px 6px; }
-  .aivo-ccm__row{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,.06);
-  }
-  .aivo-ccm__row:last-child{ border-bottom: 0; }
-
-  .aivo-ccm__meta{ min-width:0; }
-  .aivo-ccm__label{
-    font-weight: 750;
-    color: rgba(235,240,255,.92);
-    font-size: 14px;
-  }
-  .aivo-ccm__desc{
-    margin-top: 4px;
-    color: rgba(235,240,255,.68);
-    font-size: 12.5px;
-    line-height: 1.35;
-  }
-
-  .aivo-ccm__foot{
-    display:flex;
-    align-items:center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 16px 16px;
-    border-top: 1px solid rgba(255,255,255,.08);
-  }
-  .aivo-ccm__link{
-    color: rgba(220,225,255,.88);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    font-size: 13px;
-    opacity: .9;
-  }
-  .aivo-ccm__actions{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-  }
-
-  /* Switch */
-  .aivo-switch{
-    position: relative;
-    width: 48px;
-    height: 28px;
-    display:inline-block;
-    flex: 0 0 auto;
-  }
-  .aivo-switch input{
-    position:absolute;
-    opacity:0;
-    width:0;
-    height:0;
-  }
-  .aivo-switch__track{
-    position:absolute;
-    inset:0;
-    border-radius: 999px;
-    background: rgba(255,255,255,.12);
-    border: 1px solid rgba(255,255,255,.14);
-    transition: background .18s ease, border-color .18s ease;
-  }
-  .aivo-switch__track:after{
-    content:"";
-    position:absolute;
-    top: 3px; left: 3px;
-    width: 20px; height: 20px;
-    border-radius: 999px;
-    background: rgba(235,240,255,.92);
-    transform: translateX(0);
-    transition: transform .18s ease;
-    box-shadow: 0 8px 18px rgba(0,0,0,.35);
-  }
-  .aivo-switch input:checked + .aivo-switch__track{
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
-    border-color: rgba(255,255,255,.08);
-  }
-  .aivo-switch input:checked + .aivo-switch__track:after{
-    transform: translateX(20px);
-  }
-  .aivo-switch.is-disabled{ opacity: .65; pointer-events:none; }
-</style>
-
-<div class="aivo-cc" id="aivoCookieBanner" aria-live="polite">
-  <div class="aivo-cc__card">
-    <div class="aivo-cc__left">
-      <div class="aivo-cc__title">
-        <span class="aivo-cc__dot"></span>
-        Çerez Tercihleri
+          <button
+            class="aivo-cc__textlink"
+            type="button"
+            id="aivoCcCustomize"
+            data-i18n="cookie.customize"
+          >
+            Özelleştir
+          </button>
+        </div>
       </div>
-      <div class="aivo-cc__msg">
-        Deneyiminizi geliştirmek, hizmeti güvenli tutmak ve performansı ölçmek için çerezler kullanıyoruz.
-        Tercihlerinizi dilediğiniz zaman değiştirebilirsiniz.
-      </div>
-      <div class="aivo-cc__links">
-        <a href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-        <button class="aivo-cc__textlink" type="button" id="aivoCcCustomize">Özelleştir</button>
-      </div>
-    </div>
 
-    <div class="aivo-cc__actions">
-      <button class="aivo-cc__btn" type="button" id="aivoCcDeny">Reddet</button>
-      <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcAllow">Tümünü Kabul Et</button>
+      <div class="aivo-cc__actions">
+        <button
+          class="aivo-cc__btn"
+          type="button"
+          id="aivoCcDeny"
+          data-i18n="cookie.deny"
+        >
+          Reddet
+        </button>
+
+        <button
+          class="aivo-cc__btn aivo-cc__btn--primary"
+          type="button"
+          id="aivoCcAllow"
+          data-i18n="cookie.acceptAll"
+        >
+          Tümünü Kabul Et
+        </button>
+      </div>
+
     </div>
   </div>
-</div>
 
-<!-- AIVO Cookie Preferences Modal -->
-<div class="aivo-ccm" id="aivoCookieModal" aria-hidden="true">
-  <div class="aivo-ccm__backdrop" data-ccm-close="1"></div>
+  <!-- COOKIE MODAL -->
+  <div
+    class="aivo-ccm"
+    id="aivoCookieModal"
+    aria-hidden="true"
+  >
+    <div
+      class="aivo-ccm__backdrop"
+      data-ccm-close="1"
+    ></div>
 
-  <div class="aivo-ccm__card" role="dialog" aria-modal="true" aria-labelledby="aivoCcmTitle">
-    <div class="aivo-ccm__head">
-      <div>
-        <div class="aivo-ccm__title" id="aivoCcmTitle">Çerez Tercihleri</div>
-        <div class="aivo-ccm__sub">Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.</div>
-      </div>
-      <button class="aivo-ccm__x" type="button" data-ccm-close="1" aria-label="Kapat">×</button>
-    </div>
+    <div
+      class="aivo-ccm__card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="aivoCcmTitle"
+    >
+      <div class="aivo-ccm__head">
 
-    <div class="aivo-ccm__rows">
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Zorunlu</div>
-          <div class="aivo-ccm__desc">Sitenin çalışması ve güvenlik için gereklidir.</div>
+        <div>
+          <div
+            class="aivo-ccm__title"
+            id="aivoCcmTitle"
+            data-i18n="cookie.modalTitle"
+          >
+            Çerez Tercihleri
+          </div>
+
+          <div
+            class="aivo-ccm__sub"
+            data-i18n="cookie.modalSubtitle"
+          >
+            Hangi çerezlere izin vereceğini seçebilirsin. Zorunlu çerezler kapatılamaz.
+          </div>
         </div>
-        <label class="aivo-switch is-disabled" aria-label="Zorunlu çerezler">
-          <input type="checkbox" checked disabled />
-          <span class="aivo-switch__track"></span>
-        </label>
+
+        <button
+          class="aivo-ccm__x"
+          type="button"
+          data-ccm-close="1"
+          aria-label="Çerez penceresini kapat"
+          data-i18n-label="cookie.closeLabel"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Analitik</div>
-          <div class="aivo-ccm__desc">Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).</div>
+      <div class="aivo-ccm__rows">
+
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div
+              class="aivo-ccm__label"
+              data-i18n="cookie.necessary"
+            >
+              Zorunlu
+            </div>
+
+            <div
+              class="aivo-ccm__desc"
+              data-i18n="cookie.necessaryDesc"
+            >
+              Sitenin çalışması ve güvenlik için gereklidir.
+            </div>
+          </div>
+
+          <label
+            class="aivo-switch is-disabled"
+            aria-label="Zorunlu çerezler"
+            data-i18n-label="cookie.necessaryLabel"
+          >
+            <input
+              type="checkbox"
+              checked
+              disabled
+            >
+
+            <span class="aivo-switch__track"></span>
+          </label>
         </div>
-        <label class="aivo-switch" aria-label="Analitik çerezler">
-          <input type="checkbox" id="aivoPrefAnalytics" />
-          <span class="aivo-switch__track"></span>
-        </label>
-      </div>
 
-      <div class="aivo-ccm__row">
-        <div class="aivo-ccm__meta">
-          <div class="aivo-ccm__label">Pazarlama</div>
-          <div class="aivo-ccm__desc">Kampanya ve yeniden hedefleme (varsa).</div>
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div
+              class="aivo-ccm__label"
+              data-i18n="cookie.analytics"
+            >
+              Analitik
+            </div>
+
+            <div
+              class="aivo-ccm__desc"
+              data-i18n="cookie.analyticsDesc"
+            >
+              Performans ve kullanım istatistikleri (anonim/toplulaştırılmış).
+            </div>
+          </div>
+
+          <label
+            class="aivo-switch"
+            aria-label="Analitik çerezler"
+            data-i18n-label="cookie.analyticsLabel"
+          >
+            <input
+              type="checkbox"
+              id="aivoPrefAnalytics"
+            >
+
+            <span class="aivo-switch__track"></span>
+          </label>
         </div>
-        <label class="aivo-switch" aria-label="Pazarlama çerezler">
-          <input type="checkbox" id="aivoPrefMarketing" />
-          <span class="aivo-switch__track"></span>
-        </label>
-      </div>
-    </div>
 
-    <div class="aivo-ccm__foot">
-      <a class="aivo-ccm__link" href="/kurumsal/gizlilik.html#cerez">Çerez Politikası</a>
-      <div class="aivo-ccm__actions">
-        <button class="aivo-cc__btn" type="button" data-ccm-close="1">Vazgeç</button>
-        <button class="aivo-cc__btn aivo-cc__btn--primary" type="button" id="aivoCcmSave">Kaydet</button>
+        <div class="aivo-ccm__row">
+          <div class="aivo-ccm__meta">
+            <div
+              class="aivo-ccm__label"
+              data-i18n="cookie.marketing"
+            >
+              Pazarlama
+            </div>
+
+            <div
+              class="aivo-ccm__desc"
+              data-i18n="cookie.marketingDesc"
+            >
+              Kampanya ve yeniden hedefleme (varsa).
+            </div>
+          </div>
+
+          <label
+            class="aivo-switch"
+            aria-label="Pazarlama çerezleri"
+            data-i18n-label="cookie.marketingLabel"
+          >
+            <input
+              type="checkbox"
+              id="aivoPrefMarketing"
+            >
+
+            <span class="aivo-switch__track"></span>
+          </label>
+        </div>
+
       </div>
+
+      <div class="aivo-ccm__foot">
+        <a
+          class="aivo-ccm__link"
+          href="/kurumsal/gizlilik.html#cerez"
+          data-i18n="cookie.policy"
+        >
+          Çerez Politikası
+        </a>
+
+        <div class="aivo-ccm__actions">
+          <button
+            class="aivo-cc__btn"
+            type="button"
+            data-ccm-close="1"
+            data-i18n="cookie.cancel"
+          >
+            Vazgeç
+          </button>
+
+          <button
+            class="aivo-cc__btn aivo-cc__btn--primary"
+            type="button"
+            id="aivoCcmSave"
+            data-i18n="cookie.save"
+          >
+            Kaydet
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
-</div>
-<!-- /AIVO Cookie Preferences Modal -->
 
-<script>
-(function(){
-  // V2: kategori bazlı tercih
-  var PREF_KEY = "aivo_cookie_prefs_v1"; // JSON {necessary:true, analytics:boolean, marketing:boolean}
-  var LEGACY_KEY = "aivo_cookie_consent_v1"; // eski allow/deny (geri uyum)
+  <!-- PAGE -->
+  <main
+    class="container"
+    aria-label="AIVO Destek Merkezi sayfası"
+    data-i18n-label="support.pageLabel"
+  >
+    <div class="support-wrap">
 
-  var banner = document.getElementById("aivoCookieBanner");
-  var modal  = document.getElementById("aivoCookieModal");
-  if (!banner) return;
+      <a
+        href="/"
+        class="btn btn-ghost support-back"
+        data-i18n="support.backHome"
+      >
+        ← Ana Sayfaya Dön
+      </a>
 
-  var $ = function(id){ return document.getElementById(id); };
+      <!-- HERO -->
+      <section class="support-hero">
+        <div
+          class="support-eyebrow"
+          data-i18n="support.eyebrow"
+        >
+          DESTEK
+        </div>
 
-  function safeParse(json){
-    try { return JSON.parse(json); } catch(e){ return null; }
-  }
+        <h1
+          class="support-title"
+          data-i18n="support.title"
+        >
+          Destek Merkezi
+        </h1>
 
-  function getPrefs(){
-    // Yeni tercih varsa onu kullan
-    var raw = null;
-    try { raw = localStorage.getItem(PREF_KEY); } catch(e){}
-    var p = raw ? safeParse(raw) : null;
-    if (p && typeof p === "object") {
-      return { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
-    }
+        <p
+          class="support-subtitle"
+          data-i18n="support.hero"
+        >
+          AIVO Studio hesabınız, kredileriniz, ödemeleriniz ve yaratıcı üretim araçlarıyla ilgili hızlı çözümlere ulaşın.
+        </p>
 
-    // Eski allow/deny varsa migrate et
-    var legacy = null;
-    try { legacy = localStorage.getItem(LEGACY_KEY); } catch(e){}
-    if (legacy === "allow") return { necessary:true, analytics:true, marketing:true };
-    if (legacy === "deny")  return { necessary:true, analytics:false, marketing:false };
+        <div
+          class="support-status"
+          aria-label="Destek durumu"
+          data-i18n-label="support.statusLabel"
+        >
+          <span class="support-status-pill">
+            <span
+              class="support-green-dot"
+              aria-hidden="true"
+            ></span>
 
-    return null; // hiç seçim yok
-  }
+            <span data-i18n="support.statusActive">
+              Destek kanalları aktif
+            </span>
+          </span>
 
-  function setPrefs(p){
-    var prefs = { necessary:true, analytics:!!p.analytics, marketing:!!p.marketing };
-    try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch(e){}
-    // legacy uyum
-    try { localStorage.setItem(LEGACY_KEY, (prefs.analytics || prefs.marketing) ? "allow" : "deny"); } catch(e){}
-  }
+          <span
+            class="support-status-pill"
+            data-i18n="support.responseTime"
+          >
+            Genellikle 24 saat içinde yanıt
+          </span>
 
-  function openBanner(){
-    banner.style.display = "block";
-    requestAnimationFrame(function(){ banner.classList.add("is-open"); });
-  }
-  function closeBanner(){
-    banner.classList.remove("is-open");
-    setTimeout(function(){ banner.style.display = "none"; }, 220);
-  }
+          <span
+            class="support-status-pill"
+            data-i18n="support.safeNotice"
+          >
+            Şifrenizi veya kart bilgilerinizi paylaşmayın
+          </span>
+        </div>
+      </section>
 
-  function openModal(){
-    if (!modal) return;
-    modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.documentElement.style.overflow = "hidden";
-  }
-  function closeModal(){
-    if (!modal) return;
-    modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.documentElement.style.overflow = "";
-  }
+      <!-- CATEGORIES -->
+      <section class="support-section">
+        <div class="support-section-head">
+          <h2 data-i18n="support.categories.title">
+            Nasıl Yardımcı Olabiliriz?
+          </h2>
 
-  function syncModalUI(){
-    if (!modal) return;
-    var p = getPrefs() || { necessary:true, analytics:false, marketing:false };
-    var a = $("aivoPrefAnalytics");
-    var m = $("aivoPrefMarketing");
-    if (a) a.checked = !!p.analytics;
-    if (m) m.checked = !!p.marketing;
-  }
+          <p data-i18n="support.categories.description">
+            İhtiyacınıza en yakın konuyu seçerek ilgili çözüm ve yönlendirmelere ulaşabilirsiniz.
+          </p>
+        </div>
 
-  // İlk yükleme: seçim yoksa banner göster
-  var prefs = getPrefs();
-  if (!prefs) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", function(){ requestAnimationFrame(openBanner); }, { once:true });
-    } else {
-      requestAnimationFrame(openBanner);
-    }
-  }
+        <div class="support-grid">
 
-  // Kabul / Reddet
-  $("aivoCcAllow")?.addEventListener("click", function(){
-    setPrefs({ analytics:true, marketing:true });
-    closeBanner();
-  });
+          <article class="support-card">
+            <div
+              class="support-card-icon"
+              aria-hidden="true"
+            >
+              👤
+            </div>
 
-  $("aivoCcDeny")?.addEventListener("click", function(){
-    setPrefs({ analytics:false, marketing:false });
-    closeBanner();
-  });
+            <h3 data-i18n="support.account.title">
+              Hesap ve Giriş
+            </h3>
 
-  // Özelleştir: modal aç
-  $("aivoCcCustomize")?.addEventListener("click", function(){
-    syncModalUI();
-    openModal();
-  });
+            <p data-i18n="support.account.text">
+              Giriş, kayıt, şifre sıfırlama ve hesap erişimiyle ilgili yardım alın.
+            </p>
 
-  // Modal close: backdrop / x / vazgeç
-  modal?.addEventListener("click", function(e){
-    var t = e.target;
-    if (t && t.getAttribute && t.getAttribute("data-ccm-close") === "1") closeModal();
-  });
+            <a
+              href="/forgot.html"
+              data-i18n="support.account.link"
+            >
+              Şifremi sıfırla →
+            </a>
+          </article>
 
-  // ESC ile kapat
-  document.addEventListener("keydown", function(e){
-    if (e.key === "Escape" && modal && modal.classList.contains("is-open")) closeModal();
-  });
+          <article class="support-card">
+            <div
+              class="support-card-icon"
+              aria-hidden="true"
+            >
+              💳
+            </div>
 
-  // Kaydet
-  $("aivoCcmSave")?.addEventListener("click", function(){
-    var a = $("aivoPrefAnalytics")?.checked;
-    var m = $("aivoPrefMarketing")?.checked;
-    setPrefs({ analytics: !!a, marketing: !!m });
-    closeModal();
-    closeBanner();
-  });
+            <h3 data-i18n="support.payment.title">
+              Kredi ve Ödemeler
+            </h3>
 
-})();
-</script>
-<!-- /AIVO Cookie Banner (Premium) -->
+            <p data-i18n="support.payment.text">
+              Kredi satın alma, ödeme sonucu ve kredi bakiyesi hakkında bilgi alın.
+            </p>
 
+            <a
+              href="/fiyatlandirma.html"
+              data-i18n="support.payment.link"
+            >
+              Fiyatlandırmayı görüntüle →
+            </a>
+          </article>
 
+          <article class="support-card">
+            <div
+              class="support-card-icon"
+              aria-hidden="true"
+            >
+              🎵
+            </div>
 
-  <!-- ================= PAGE BODY ================= -->
-  <main class="container">
-    <a href="/" class="btn btn-ghost">← Ana Sayfaya Dön</a>
+            <h3 data-i18n="support.music.title">
+              AI Müzik Üretimi
+            </h3>
 
-    <div class="k-tag">KURUMSAL</div>
-    <h1 class="k-title">Destek Merkezi</h1>
-    <p class="k-sub">
-      AIVO Studio ile ilgili sık sorulan sorular, sorun giderme adımları ve destek kanalları.
-    </p>
+            <p data-i18n="support.music.text">
+              Müzik oluşturma, prompt hazırlama, üretim durumu ve çıktı sorunları için yardım alın.
+            </p>
 
-    <section class="k-sec" id="hesap">
-      <h2>Destek İletişim</h2>
-      <p>
-        Tüm destek talepleriniz için:
-        <a href="mailto:info@aivo.tr">info@aivo.tr</a>
-      </p>
-    </section>
+            <a
+              href="/studio.v2.html"
+              data-auth="required"
+              data-i18n="support.music.link"
+            >
+              AIVO Studio’yu aç →
+            </a>
+          </article>
+
+          <article class="support-card">
+            <div
+              class="support-card-icon"
+              aria-hidden="true"
+            >
+              🎬
+            </div>
+
+            <h3 data-i18n="support.visual.title">
+              Video ve Görsel Üretimi
+            </h3>
+
+            <p data-i18n="support.visual.text">
+              Video, kapak ve görsel üretim işlemleriyle ilgili genel sorun giderme adımlarını inceleyin.
+            </p>
+
+            <a
+              href="/kurumsal/ozellikler.html"
+              data-i18n="support.visual.link"
+            >
+              Özellikleri incele →
+            </a>
+          </article>
+
+          <article class="support-card">
+            <div
+              class="support-card-icon"
+              aria-hidden="true"
+            >
+              🔧
+            </div>
+
+            <h3 data-i18n="support.technical.title">
+              Teknik Sorunlar
+            </h3>
+
+            <p data-i18n="support.technical.text">
+              Sayfa yüklenmesi, tarayıcı, oturum ve geçici bağlantı sorunları için temel kontrolleri uygulayın.
+            </p>
+
+            <a
+              href="#sorun-giderme"
+              data-i18n="support.technical.link"
+            >
+              Sorun giderme adımları →
+            </a>
+          </article>
+
+          <article class="support-card">
+            <div
+              class="support-card-icon"
+              aria-hidden="true"
+            >
+              🔒
+            </div>
+
+            <h3 data-i18n="support.privacy.title">
+              Gizlilik ve Güvenlik
+            </h3>
+
+            <p data-i18n="support.privacy.text">
+              Kişisel veriler, çerezler, hesap güvenliği ve içerik kullanım kuralları hakkında bilgi alın.
+            </p>
+
+            <a
+              href="/kurumsal/gizlilik.html"
+              data-i18n="support.privacy.link"
+            >
+              Gizlilik politikasını aç →
+            </a>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- TROUBLESHOOTING -->
+      <section
+        class="support-section"
+        id="sorun-giderme"
+        style="scroll-margin-top:120px;"
+      >
+        <div class="support-section-head">
+          <h2 data-i18n="support.troubleshooting.title">
+            Hızlı Sorun Giderme
+          </h2>
+
+          <p data-i18n="support.troubleshooting.description">
+            Destek talebi göndermeden önce aşağıdaki temel kontroller çoğu geçici sorunu çözebilir.
+          </p>
+        </div>
+
+        <div class="support-steps">
+
+          <article class="support-step">
+            <div class="support-step-number">
+              1
+            </div>
+
+            <h3 data-i18n="support.step1.title">
+              Sayfayı Yenileyin
+            </h3>
+
+            <p data-i18n="support.step1.text">
+              Sayfayı normal şekilde yenileyin. Sorun devam ederse sert yenileme yapın.
+            </p>
+          </article>
+
+          <article class="support-step">
+            <div class="support-step-number">
+              2
+            </div>
+
+            <h3 data-i18n="support.step2.title">
+              Hesabı Kontrol Edin
+            </h3>
+
+            <p data-i18n="support.step2.text">
+              Doğru AIVO hesabıyla giriş yaptığınızdan ve oturumunuzun açık olduğundan emin olun.
+            </p>
+          </article>
+
+          <article class="support-step">
+            <div class="support-step-number">
+              3
+            </div>
+
+            <h3 data-i18n="support.step3.title">
+              Tarayıcıyı Kontrol Edin
+            </h3>
+
+            <p data-i18n="support.step3.text">
+              Güncel bir tarayıcı kullanın ve gerekli durumlarda gizli pencerede tekrar deneyin.
+            </p>
+          </article>
+
+          <article class="support-step">
+            <div class="support-step-number">
+              4
+            </div>
+
+            <h3 data-i18n="support.step4.title">
+              Destek Talebi Gönderin
+            </h3>
+
+            <p data-i18n="support.step4.text">
+              Sorun devam ederse hesap e-postanız, işlem zamanı ve ekran görüntüsüyle bize ulaşın.
+            </p>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="support-section">
+        <div class="support-section-head">
+          <h2 data-i18n="support.faq.title">
+            Sık Sorulan Sorular
+          </h2>
+
+          <p data-i18n="support.faq.description">
+            AIVO Studio kullanımıyla ilgili en çok sorulan soruların yanıtları.
+          </p>
+        </div>
+
+        <div class="support-faq-list">
+
+          <details class="support-faq">
+            <summary data-i18n="support.faq.login.question">
+              Hesabıma giriş yapamıyorum. Ne yapmalıyım?
+            </summary>
+
+            <div class="support-faq-answer">
+              <p data-i18n="support.faq.login.answer">
+                E-posta adresinizi ve şifrenizi kontrol edin. Şifrenizi hatırlamıyorsanız şifre sıfırlama sayfasını kullanın. Google veya Apple ile kayıt olduysanız aynı giriş yöntemini seçin.
+              </p>
+            </div>
+          </details>
+
+          <details class="support-faq">
+            <summary data-i18n="support.faq.credit.question">
+              Satın aldığım krediler hesabımda görünmüyor.
+            </summary>
+
+            <div class="support-faq-answer">
+              <p data-i18n="support.faq.credit.answer">
+                Önce sayfayı yenileyin ve doğru hesapla giriş yaptığınızı kontrol edin. Bakiye hâlâ görünmüyorsa kayıtlı e-posta adresiniz ve işlem tarihiyle destek ekibine ulaşın. Kart numaranızın tamamını paylaşmayın.
+              </p>
+            </div>
+          </details>
+
+          <details class="support-faq">
+            <summary data-i18n="support.faq.generation.question">
+              Üretim işlemi tamamlanmadı veya hata verdi.
+            </summary>
+
+            <div class="support-faq-answer">
+              <p data-i18n="support.faq.generation.answer">
+                Bağlantınızı kontrol edin ve sayfayı yeniledikten sonra işlemi tekrar deneyin. Sorun devam ederse kullandığınız üretim aracı, yaklaşık işlem zamanı ve görünen hata mesajıyla destek talebi gönderin.
+              </p>
+            </div>
+          </details>
+
+          <details class="support-faq">
+            <summary data-i18n="support.faq.refund.question">
+              İade veya iptal talebini nasıl iletebilirim?
+            </summary>
+
+            <div class="support-faq-answer">
+              <p>
+                <span data-i18n="support.faq.refund.answer">
+                  İade ve iptal talepleri ilgili mevzuat ve kullanım durumuna göre değerlendirilir. Ayrıntılı koşulları Mesafeli Satış Sözleşmesi’nde inceleyebilir ve talebinizi info@aivo.tr adresine gönderebilirsiniz.
+                </span>
+
+                <a
+                  href="/kurumsal/mesafeli-satis.html"
+                  data-i18n="support.faq.refund.link"
+                >
+                  Mesafeli Satış Sözleşmesi
+                </a>
+              </p>
+            </div>
+          </details>
+
+          <details class="support-faq">
+            <summary data-i18n="support.faq.commercial.question">
+              Oluşturduğum içerikleri ticari olarak kullanabilir miyim?
+            </summary>
+
+            <div class="support-faq-answer">
+              <p data-i18n="support.faq.commercial.answer">
+                Ticari kullanım; satın alınan paket, AIVO hizmet şartları, içerikte kullanılan materyaller ve yürürlükteki mevzuata bağlıdır. Üçüncü kişilerin telif, marka ve kişilik hakları ihlal edilmemelidir.
+              </p>
+            </div>
+          </details>
+
+          <details class="support-faq">
+            <summary data-i18n="support.faq.security.question">
+              AIVO destek ekibi benden şifre veya kart bilgisi ister mi?
+            </summary>
+
+            <div class="support-faq-answer">
+              <p data-i18n="support.faq.security.answer">
+                Hayır. Şifrenizi, doğrulama kodunuzu, kart numaranızın tamamını veya kart güvenlik kodunu hiçbir kişiyle paylaşmayın. Resmî destek iletişimi için info@aivo.tr adresini kullanın.
+              </p>
+            </div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section class="support-contact">
+        <div>
+          <h2 data-i18n="support.contact.title">
+            Sorununuz Devam Ediyor mu?
+          </h2>
+
+          <p data-i18n="support.contact.text">
+            Sorunun kısa açıklamasını, AIVO hesabınızda kullandığınız e-posta adresini, işlem zamanını ve varsa ekran görüntüsünü gönderin. Şifre veya kart bilgisi göndermeyin.
+          </p>
+        </div>
+
+        <div class="support-contact-actions">
+          <a
+            href="mailto:info@aivo.tr"
+            class="support-contact-button support-contact-button--primary"
+            data-i18n="support.contact.email"
+          >
+            E-posta Gönder
+          </a>
+
+          <a
+            href="tel:+905336108900"
+            class="support-contact-button"
+            data-i18n="support.contact.whatsapp"
+          >
+            WhatsApp Destek
+          </a>
+
+          <a
+            href="/kurumsal/iletisim.html"
+            class="support-contact-button"
+            data-i18n="support.contact.form"
+          >
+            İletişim Formu
+          </a>
+        </div>
+      </section>
+
+    </div>
   </main>
-  <!-- ================= /PAGE BODY ================= -->
 
-  <!-- ================= FOOTER ================= -->
-  <footer class="aivo-footer" id="footer">
+  <!-- FOOTER -->
+  <footer
+    class="aivo-footer"
+    id="footer"
+    aria-label="AIVO alt bilgi alanı"
+    data-i18n-label="index.footer.sectionLabel"
+  >
     <div class="aivo-wrap aivo-footer-top">
 
       <div class="aivo-footer-brand">
-        <div class="aivo-footer-logo">AIVO</div>
-        <p>Türkçe odaklı AI müzik üretiminde yeni bir standart.</p>
+        <div class="aivo-footer-logo">
+          AIVO
+        </div>
+
+        <p data-i18n="index.footer.tagline">
+          Türkçe odaklı AI müzik üretiminde yeni bir standart.
+        </p>
 
         <div class="aivo-social">
           <a href="#" aria-label="X">X</a>
@@ -615,83 +1807,264 @@
       </div>
 
       <div class="aivo-footer-col">
-        <h4>Hızlı Linkler</h4>
-        <a href="/#top">Ana Sayfa</a>
-        <a href="/#modules">Özellikler</a>
-        <a href="/fiyatlandirma.html">Fiyatlandırma</a>
-        <a href="/studio.html" data-auth="required">Dashboard</a>
+        <h4 data-i18n="index.footer.quickLinks">
+          Hızlı Linkler
+        </h4>
+
+        <a
+          href="/#top"
+          data-i18n="index.footer.home"
+        >
+          Ana Sayfa
+        </a>
+
+        <a
+          href="/#modules"
+          data-i18n="index.footer.features"
+        >
+          Özellikler
+        </a>
+
+        <a
+          href="/fiyatlandirma.html"
+          data-i18n="topbar.pricing"
+        >
+          Fiyatlandırma
+        </a>
+
+        <a
+          href="/studio.v2.html"
+          data-auth="required"
+          data-i18n="index.footer.dashboard"
+        >
+          Dashboard
+        </a>
       </div>
 
-    <div class="aivo-footer-col">
-  <h4>Kurumsal</h4>
-  <a href="/kurumsal/hakkimizda.html">Hakkımızda</a>
-  <a href="/kurumsal/ozellikler.html">Özellikler</a>
-  <a href="/kurumsal/gizlilik.html">Gizlilik Politikası</a>
-  <a href="/kurumsal/mesafeli-satis.html">Mesafeli Satış Sözleşmesi</a>
-  <a href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari">Güvenli Kullanım</a>
-  <a href="/kurumsal/iletisim.html">İletişim</a>
-</div>
+      <div class="aivo-footer-col">
+        <h4 data-i18n="index.footer.company">
+          Kurumsal
+        </h4>
+
+        <a
+          href="/kurumsal/hakkimizda.html"
+          data-i18n="index.footer.about"
+        >
+          Hakkımızda
+        </a>
+
+        <a
+          href="/kurumsal/ozellikler.html"
+          data-i18n="index.footer.features"
+        >
+          Özellikler
+        </a>
+
+        <a
+          href="/kurumsal/gizlilik.html"
+          data-i18n="index.footer.privacy"
+        >
+          Gizlilik Politikası
+        </a>
+
+        <a
+          href="/kurumsal/mesafeli-satis.html"
+          data-i18n="index.footer.distanceSales"
+        >
+          Mesafeli Satış Sözleşmesi
+        </a>
+
+        <a
+          href="/kurumsal/hakkimizda.html#icerik-kullanim-kurallari"
+          data-i18n="topbar.corporate.safeUseTitle"
+        >
+          Güvenli Kullanım
+        </a>
+
+        <a
+          href="/kurumsal/iletisim.html"
+          data-i18n="index.footer.contact"
+        >
+          İletişim
+        </a>
+      </div>
 
       <div class="aivo-footer-right">
         <div class="aivo-badges">
-          <div class="aivo-badge">PAYTR / iyzico<br><small>Güvenli ödeme</small></div>
-          <div class="aivo-badge">VISA • MC • TROY<br><small>256-bit SSL</small></div>
-          <div class="aivo-badge">ETBİS<br><small>(Şirket sonrası)</small></div>
+
+          <div class="aivo-badge">
+            GARANTİ BBVA
+            <br>
+
+            <small data-i18n="index.footer.securePayment">
+              Güvenli ödeme
+            </small>
+          </div>
+
+          <div class="aivo-badge">
+            VISA • MC • TROY
+            <br>
+
+            <small>
+              256-bit SSL
+            </small>
+          </div>
+
+          <div class="aivo-badge">
+            ETBİS
+            <br>
+
+            <small data-i18n="about.footer.afterCompany">
+              (Şirket sonrası)
+            </small>
+          </div>
+
         </div>
 
         <div class="aivo-contact">
-          <h4>İletişim</h4>
-          <a href="mailto:info@aivo.tr" class="aivo-contact-mail">info@aivo.tr</a>
+          <h4 data-i18n="index.footer.contact">
+            İletişim
+          </h4>
+
+          <a href="mailto:info@aivo.tr">
+            info@aivo.tr
+          </a>
         </div>
       </div>
 
     </div>
 
     <div class="aivo-wrap aivo-footer-bottom">
-      <div>© 2025 AIVO. Tüm hakları saklıdır.</div>
-      <div class="aivo-status">Durum: <span class="dot"></span> Aktif</div>
+      <div data-i18n="index.footer.rights">
+        © 2025 AIVO. Tüm hakları saklıdır.
+      </div>
+
+      <div class="aivo-status">
+        <span data-i18n="index.footer.statusLabel">
+          Durum:
+        </span>
+
+        <span
+          class="dot"
+          aria-hidden="true"
+        ></span>
+
+        <span data-i18n="index.footer.statusActive">
+          Aktif
+        </span>
+      </div>
     </div>
   </footer>
-  <!-- ================= /FOOTER ================= -->
 
-  <!-- ================= LOGIN MODAL (SINGLE SOURCE OF TRUTH) ================= -->
-  <div class="login-modal" id="loginModal" aria-hidden="true" data-mode="login">
-    <div class="login-backdrop" data-close="1"></div>
+  <!-- LOGIN MODAL -->
+  <div
+    class="login-modal"
+    id="loginModal"
+    aria-hidden="true"
+    data-mode="login"
+  >
+    <div
+      class="login-backdrop"
+      data-close="1"
+    ></div>
 
-    <div class="login-panel" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-      <button class="login-x" type="button" data-close="1" aria-label="Kapat">×</button>
+    <div
+      class="login-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loginTitle"
+    >
+      <button
+        class="login-x"
+        type="button"
+        data-close="1"
+        aria-label="Giriş penceresini kapat"
+        data-i18n-label="auth.closeLabel"
+      >
+        ×
+      </button>
 
       <div class="login-stage">
+
         <div class="login-hero">
-          <div class="login-kicker">AIVO Studio Access</div>
-          <h3 id="loginTitle">Tekrar hoş geldin 👋</h3>
-          <p class="login-desc" id="loginDesc">
+          <div
+            class="login-kicker"
+            data-i18n="auth.access"
+          >
+            AIVO Studio Erişimi
+          </div>
+
+          <h3
+            id="loginTitle"
+            data-i18n="auth.loginTitle"
+          >
+            Tekrar hoş geldin 👋
+          </h3>
+
+          <p
+            class="login-desc"
+            id="loginDesc"
+            data-i18n="auth.loginDescription"
+          >
             AIVO Studio’ya erişmek için giriş yap veya ücretsiz hesap oluştur.
           </p>
         </div>
 
         <div class="login-flow">
-          <div class="login-social-row" id="googleBlock">
-            <button id="btnGoogleLogin" type="button" class="btn-google">
+
+          <div
+            class="login-social-row"
+            id="googleBlock"
+          >
+            <button
+              id="btnGoogleLogin"
+              type="button"
+              class="btn-google"
+              data-i18n="auth.googleLogin"
+            >
               Google ile Giriş Yap
             </button>
 
-            <button id="btnAppleLogin" type="button" class="btn-google btn-apple">
+            <button
+              id="btnAppleLogin"
+              type="button"
+              class="btn-google btn-apple"
+              data-i18n="auth.appleLogin"
+            >
               Apple ile Giriş Yap
             </button>
           </div>
 
           <div class="login-or">
-            <span>veya email ile devam et</span>
+            <span data-i18n="auth.orEmail">
+              veya e-posta ile devam et
+            </span>
           </div>
 
           <div class="login-form-block login-email">
+
             <div class="login-form-head">
-              <div class="card-title" id="authCardTitle">Email ile Giriş</div>
-              <div class="card-sub" id="authCardSub">Hesabına email adresinle giriş yap.</div>
+              <div
+                class="card-title"
+                id="authCardTitle"
+                data-i18n="auth.loginCardTitle"
+              >
+                E-posta ile Giriş
+              </div>
+
+              <div
+                class="card-sub"
+                id="authCardSub"
+                data-i18n="auth.loginCardDescription"
+              >
+                Hesabına e-posta adresinle giriş yap.
+              </div>
             </div>
 
-            <div class="email-row email-row-2 aivo-float-row" id="loginFields">
+            <div
+              class="email-row email-row-2 aivo-float-row"
+              id="loginFields"
+            >
               <label class="aivo-float-field">
                 <input
                   id="loginEmail"
@@ -703,12 +2076,23 @@
                   autocorrect="off"
                   spellcheck="false"
                   inputmode="email"
-                />
-                <span class="aivo-float-label">E-posta</span>
+                >
+
+                <span
+                  class="aivo-float-label"
+                  data-i18n="auth.email"
+                >
+                  E-posta
+                </span>
               </label>
 
               <label class="aivo-float-field aivo-float-field--icon">
-                <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+                <span
+                  class="aivo-field-ico aivo-field-ico--left"
+                  aria-hidden="true"
+                >
+                  🔒
+                </span>
 
                 <input
                   id="loginPass"
@@ -719,95 +2103,168 @@
                   autocapitalize="off"
                   autocorrect="off"
                   spellcheck="false"
-                />
+                >
 
-                <span class="aivo-float-label">Şifre</span>
+                <span
+                  class="aivo-float-label"
+                  data-i18n="auth.password"
+                >
+                  Şifre
+                </span>
 
                 <button
                   type="button"
                   class="aivo-pass-toggle"
                   data-toggle-pass="loginPass"
                   aria-label="Şifreyi göster"
+                  data-i18n-label="auth.showPassword"
                 >
                   👁
                 </button>
               </label>
             </div>
 
-            <div class="register-grid" id="registerExtra" style="display:none; margin-top:12px;">
+            <div
+              class="register-grid"
+              id="registerExtra"
+              style="display:none; margin-top:12px;"
+            >
               <div class="auth-form-field">
-                <div class="auth-form-label">Ad</div>
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.firstName"
+                >
+                  Ad
+                </div>
+
                 <label class="aivo-float-field">
                   <input
                     id="registerName"
                     type="text"
                     placeholder="Adınız"
+                    data-i18n-placeholder="auth.firstNamePlaceholder"
                     autocomplete="given-name"
-                  />
+                  >
                 </label>
               </div>
 
               <div class="auth-form-field">
-                <div class="auth-form-label">Soyad</div>
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.lastName"
+                >
+                  Soyad
+                </div>
+
                 <label class="aivo-float-field">
                   <input
                     id="registerSurname"
                     type="text"
                     placeholder="Soyadınız"
+                    data-i18n-placeholder="auth.lastNamePlaceholder"
                     autocomplete="family-name"
-                  />
+                  >
                 </label>
               </div>
 
-              <div class="auth-form-field" style="margin-top:12px;">
-                <div class="auth-form-label">E-posta</div>
+              <div
+                class="auth-form-field"
+                style="margin-top:12px;"
+              >
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.email"
+                >
+                  E-posta
+                </div>
+
                 <label class="aivo-float-field">
                   <input
                     id="registerEmailView"
                     type="email"
-                    placeholder="ornek@aivo.tr"
+                    placeholder="ornek@email.com"
+                    data-i18n-placeholder="auth.emailPlaceholder"
                     autocomplete="email"
+                    autocapitalize="off"
+                    autocorrect="off"
+                    spellcheck="false"
                     inputmode="email"
-                  />
+                  >
                 </label>
               </div>
 
-              <div class="auth-form-field" style="margin-top:12px;">
-                <div class="auth-form-label">Şifre</div>
+              <div
+                class="auth-form-field"
+                style="margin-top:12px;"
+              >
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.password"
+                >
+                  Şifre
+                </div>
+
                 <label class="aivo-float-field aivo-float-field--icon">
-                  <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+                  <span
+                    class="aivo-field-ico aivo-field-ico--left"
+                    aria-hidden="true"
+                  >
+                    🔒
+                  </span>
+
                   <input
                     id="registerPassView"
                     type="password"
                     placeholder="Şifreniz"
+                    data-i18n-placeholder="auth.passwordPlaceholder"
                     autocomplete="new-password"
-                  />
+                  >
+
                   <button
                     type="button"
                     class="aivo-pass-toggle"
                     data-toggle-pass="registerPassView"
                     aria-label="Şifreyi göster"
+                    data-i18n-label="auth.showPassword"
                   >
                     👁
                   </button>
                 </label>
               </div>
 
-              <div class="auth-form-field" style="margin-top:12px;">
-                <div class="auth-form-label">Şifre Tekrar</div>
+              <div
+                class="auth-form-field"
+                style="margin-top:12px;"
+              >
+                <div
+                  class="auth-form-label"
+                  data-i18n="auth.repeatPassword"
+                >
+                  Şifre Tekrar
+                </div>
+
                 <label class="aivo-float-field aivo-float-field--icon">
-                  <span class="aivo-field-ico aivo-field-ico--left" aria-hidden="true">🔒</span>
+                  <span
+                    class="aivo-field-ico aivo-field-ico--left"
+                    aria-hidden="true"
+                  >
+                    🔒
+                  </span>
+
                   <input
                     id="registerPass2"
                     type="password"
                     placeholder="Şifrenizi tekrar girin"
+                    data-i18n-placeholder="auth.repeatPasswordPlaceholder"
                     autocomplete="new-password"
-                  />
+                  >
+
                   <button
                     type="button"
                     class="aivo-pass-toggle"
                     data-toggle-pass="registerPass2"
                     aria-label="Şifre tekrar alanını göster"
+                    data-i18n-label="auth.showRepeatPassword"
                   >
                     👁
                   </button>
@@ -815,18 +2272,47 @@
               </div>
             </div>
 
-            <label class="auth-consent-row" id="kvkkRow" style="display:none; margin-top:12px;">
-              <input id="kvkkCheck" type="checkbox" />
-              <span>Kullanım Şartları ve Gizlilik Politikası'nı kabul ediyorum</span>
+            <label
+              class="auth-consent-row"
+              id="kvkkRow"
+              style="display:none; margin-top:12px;"
+            >
+              <input
+                id="kvkkCheck"
+                type="checkbox"
+              >
+
+              <span data-i18n="auth.acceptTerms">
+                Kullanım Şartları ve Gizlilik Politikası’nı kabul ediyorum
+              </span>
             </label>
 
-            <div class="login-inline-meta" id="loginMeta">
-              <label class="remember-row" id="rememberRow">
-                <input type="checkbox" id="rememberMe" />
-                <span>Beni hatırla</span>
+            <div
+              class="login-inline-meta"
+              id="loginMeta"
+            >
+              <label
+                class="remember-row"
+                id="rememberRow"
+              >
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                >
+
+                <span data-i18n="auth.rememberMe">
+                  Beni hatırla
+                </span>
               </label>
 
-              <a href="/forgot.html" id="forgotPass" class="link-muted">Şifreni mi unuttun?</a>
+              <a
+                href="/forgot.html"
+                id="forgotPass"
+                class="link-muted"
+                data-i18n="auth.forgotPassword"
+              >
+                Şifreni mi unuttun?
+              </a>
             </div>
 
             <button
@@ -834,112 +2320,1067 @@
               type="button"
               class="btn-primary btn-login-full"
               data-auth-submit
+              data-i18n="auth.loginButton"
             >
               Giriş Yap
             </button>
           </div>
         </div>
 
-        <div class="login-switchbar" id="loginFooter">
+        <div
+          class="login-switchbar"
+          id="loginFooter"
+        >
           <div class="login-switchcopy">
-            <span id="authFooterText">AIVO’da yeni misin?</span>
-            <span id="authFooterText2" style="display:none;">Zaten hesabın var mı?</span>
+            <span
+              id="authFooterText"
+              data-i18n="auth.newUser"
+            >
+              AIVO’da yeni misin?
+            </span>
+
+            <span
+              id="authFooterText2"
+              data-i18n="auth.haveAccount"
+              style="display:none;"
+            >
+              Zaten hesabın var mı?
+            </span>
           </div>
 
           <div class="login-switchactions">
-            <a href="#" id="goRegister" class="link-accent">Ücretsiz hesap oluştur →</a>
-            <a href="#" id="goLogin" class="link-accent" style="display:none;">Giriş yap →</a>
+            <a
+              href="#"
+              id="goRegister"
+              class="link-accent"
+              data-i18n="auth.createFreeAccount"
+            >
+              Ücretsiz hesap oluştur →
+            </a>
+
+            <a
+              href="#"
+              id="goLogin"
+              class="link-accent"
+              data-i18n="auth.loginLink"
+              style="display:none;"
+            >
+              Giriş yap →
+            </a>
           </div>
         </div>
+
       </div>
     </div>
   </div>
-  <!-- ================= /LOGIN MODAL ================= -->
-  <!-- ================= /LOGIN MODAL ================= -->
-<script>
-(function AIVO_PAGE_AUTH_SINGLE(){
-  if (window.__AIVO_PAGE_AUTH_SINGLE__) return;
-  window.__AIVO_PAGE_AUTH_SINGLE__ = true;
 
-  const $ = (s)=>document.querySelector(s);
+  <!-- COOKIE LOGIC -->
+  <script>
+  (function AIVO_COOKIE_PREFERENCES() {
+    "use strict";
 
-  function setText(sel, val){
-    const el = $(sel);
-    if (!el) return;
-    el.textContent = val;
-  }
+    var PREF_KEY =
+      "aivo_cookie_prefs_v1";
 
-  function showAuth(ok){
-    const g = document.getElementById('authGuest');
-    const u = document.getElementById('authUser');
-    const c = document.getElementById('topCredits');
-    if (g) g.hidden = !!ok;
-    if (u) u.hidden = !ok;
-    if (c) c.hidden = !ok;
-  }
+    var LEGACY_KEY =
+      "aivo_cookie_consent_v1";
 
-  function compute(user){
-    const email = (user && user.email ? String(user.email) : '').trim();
-    const name  = (user && (user.name || user.fullName || user.displayName) ? String(user.name || user.fullName || user.displayName) : '').trim();
-    const src = (name || email || 'H').trim();
-    const ch  = (src[0] ? src[0].toUpperCase() : 'H');
-    return { ch, name: (name || 'Hesap'), email: (email || '—') };
-  }
+    var banner =
+      document.getElementById(
+        "aivoCookieBanner"
+      );
 
-  function apply(user){
-    const v = compute(user);
-    setText('#topUserInitial', v.ch);
-    setText('#topUserName', v.name);
-    setText('#umAvatar', v.ch);
-    setText('#umName', v.name);
-    setText('#umEmail', v.email);
-  }
+    var modal =
+      document.getElementById(
+        "aivoCookieModal"
+      );
 
-  // 6 sn enforce: diğer scriptler sonradan H basarsa geri al
-  function enforce(user){
-    let i = 0;
-    const t = setInterval(()=>{
-      i++;
-      apply(user);
-      if (i >= 40) clearInterval(t);
-    }, 150);
-  }
+    if (!banner) return;
 
-  async function run(){
-    try{
-      const r = await fetch('/api/auth/me', { credentials:'include', cache:'no-store' });
-      if (r.status !== 200){
+    function byId(id) {
+      return document.getElementById(id);
+    }
+
+    function safeParse(value) {
+      try {
+        return JSON.parse(value);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function getPrefs() {
+      var raw = null;
+
+      try {
+        raw =
+          localStorage.getItem(PREF_KEY);
+      } catch (_) {}
+
+      var parsed =
+        raw ? safeParse(raw) : null;
+
+      if (
+        parsed &&
+        typeof parsed === "object"
+      ) {
+        return {
+          necessary: true,
+          analytics: !!parsed.analytics,
+          marketing: !!parsed.marketing
+        };
+      }
+
+      var legacy = null;
+
+      try {
+        legacy =
+          localStorage.getItem(LEGACY_KEY);
+      } catch (_) {}
+
+      if (legacy === "allow") {
+        return {
+          necessary: true,
+          analytics: true,
+          marketing: true
+        };
+      }
+
+      if (legacy === "deny") {
+        return {
+          necessary: true,
+          analytics: false,
+          marketing: false
+        };
+      }
+
+      return null;
+    }
+
+    function setPrefs(value) {
+      var prefs = {
+        necessary: true,
+        analytics: !!value.analytics,
+        marketing: !!value.marketing
+      };
+
+      try {
+        localStorage.setItem(
+          PREF_KEY,
+          JSON.stringify(prefs)
+        );
+      } catch (_) {}
+
+      try {
+        localStorage.setItem(
+          LEGACY_KEY,
+          prefs.analytics ||
+          prefs.marketing
+            ? "allow"
+            : "deny"
+        );
+      } catch (_) {}
+    }
+
+    function openBanner() {
+      banner.style.display = "block";
+
+      requestAnimationFrame(function () {
+        banner.classList.add("is-open");
+      });
+    }
+
+    function closeBanner() {
+      banner.classList.remove("is-open");
+
+      setTimeout(function () {
+        banner.style.display = "none";
+      }, 220);
+    }
+
+    function openModal() {
+      if (!modal) return;
+
+      modal.classList.add("is-open");
+
+      modal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+
+      document.documentElement.style.overflow =
+        "hidden";
+    }
+
+    function closeModal() {
+      if (!modal) return;
+
+      modal.classList.remove("is-open");
+
+      modal.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      document.documentElement.style.overflow =
+        "";
+    }
+
+    function syncModalUI() {
+      var prefs =
+        getPrefs() || {
+          necessary: true,
+          analytics: false,
+          marketing: false
+        };
+
+      var analytics =
+        byId("aivoPrefAnalytics");
+
+      var marketing =
+        byId("aivoPrefMarketing");
+
+      if (analytics) {
+        analytics.checked =
+          !!prefs.analytics;
+      }
+
+      if (marketing) {
+        marketing.checked =
+          !!prefs.marketing;
+      }
+    }
+
+    if (!getPrefs()) {
+      if (
+        document.readyState === "loading"
+      ) {
+        document.addEventListener(
+          "DOMContentLoaded",
+          function () {
+            requestAnimationFrame(
+              openBanner
+            );
+          },
+          { once: true }
+        );
+      } else {
+        requestAnimationFrame(openBanner);
+      }
+    }
+
+    var allowButton =
+      byId("aivoCcAllow");
+
+    var denyButton =
+      byId("aivoCcDeny");
+
+    var customizeButton =
+      byId("aivoCcCustomize");
+
+    var saveButton =
+      byId("aivoCcmSave");
+
+    if (allowButton) {
+      allowButton.addEventListener(
+        "click",
+        function () {
+          setPrefs({
+            analytics: true,
+            marketing: true
+          });
+
+          closeBanner();
+        }
+      );
+    }
+
+    if (denyButton) {
+      denyButton.addEventListener(
+        "click",
+        function () {
+          setPrefs({
+            analytics: false,
+            marketing: false
+          });
+
+          closeBanner();
+        }
+      );
+    }
+
+    if (customizeButton) {
+      customizeButton.addEventListener(
+        "click",
+        function () {
+          syncModalUI();
+          openModal();
+        }
+      );
+    }
+
+    if (modal) {
+      modal.addEventListener(
+        "click",
+        function (event) {
+          var target = event.target;
+
+          if (
+            target &&
+            target.getAttribute &&
+            target.getAttribute(
+              "data-ccm-close"
+            ) === "1"
+          ) {
+            closeModal();
+          }
+        }
+      );
+    }
+
+    document.addEventListener(
+      "keydown",
+      function (event) {
+        if (
+          event.key === "Escape" &&
+          modal &&
+          modal.classList.contains(
+            "is-open"
+          )
+        ) {
+          closeModal();
+        }
+      }
+    );
+
+    if (saveButton) {
+      saveButton.addEventListener(
+        "click",
+        function () {
+          var analytics =
+            byId("aivoPrefAnalytics");
+
+          var marketing =
+            byId("aivoPrefMarketing");
+
+          setPrefs({
+            analytics:
+              !!(
+                analytics &&
+                analytics.checked
+              ),
+
+            marketing:
+              !!(
+                marketing &&
+                marketing.checked
+              )
+          });
+
+          closeModal();
+          closeBanner();
+        }
+      );
+    }
+  })();
+  </script>
+
+  <!-- AUTH UI -->
+  <script>
+  (function AIVO_PAGE_AUTH_SINGLE() {
+    "use strict";
+
+    if (
+      window.__AIVO_PAGE_AUTH_SINGLE__
+    ) {
+      return;
+    }
+
+    window.__AIVO_PAGE_AUTH_SINGLE__ =
+      true;
+
+    function query(selector) {
+      return document.querySelector(
+        selector
+      );
+    }
+
+    function translatedAccountName() {
+      try {
+        if (
+          typeof window.t === "function"
+        ) {
+          return window.t(
+            "common.account"
+          );
+        }
+      } catch (_) {}
+
+      return "Hesap";
+    }
+
+    function setText(selector, value) {
+      var element =
+        query(selector);
+
+      if (!element) return;
+
+      element.textContent = value;
+    }
+
+    function showAuth(isAuthenticated) {
+      var guest =
+        document.getElementById(
+          "authGuest"
+        );
+
+      var user =
+        document.getElementById(
+          "authUser"
+        );
+
+      var credits =
+        document.getElementById(
+          "topCredits"
+        );
+
+      if (guest) {
+        guest.hidden =
+          !!isAuthenticated;
+      }
+
+      if (user) {
+        user.hidden =
+          !isAuthenticated;
+      }
+
+      if (credits) {
+        credits.hidden =
+          !isAuthenticated;
+      }
+    }
+
+    function compute(user) {
+      var email =
+        user && user.email
+          ? String(user.email).trim()
+          : "";
+
+      var suppliedName =
+        user &&
+        (
+          user.name ||
+          user.fullName ||
+          user.displayName
+        )
+          ? String(
+              user.name ||
+              user.fullName ||
+              user.displayName
+            ).trim()
+          : "";
+
+      var fallbackName =
+        translatedAccountName();
+
+      var source =
+        (
+          suppliedName ||
+          email ||
+          fallbackName
+        ).trim();
+
+      return {
+        initial:
+          source[0]
+            ? source[0].toUpperCase()
+            : "H",
+
+        name:
+          suppliedName ||
+          fallbackName,
+
+        email:
+          email || "—"
+      };
+    }
+
+    function applyUser(user) {
+      var value = compute(user);
+
+      setText(
+        "#topUserInitial",
+        value.initial
+      );
+
+      setText(
+        "#topUserName",
+        value.name
+      );
+
+      setText(
+        "#umAvatar",
+        value.initial
+      );
+
+      setText(
+        "#umName",
+        value.name
+      );
+
+      setText(
+        "#umEmail",
+        value.email
+      );
+    }
+
+    function enforceUser(user) {
+      var count = 0;
+
+      var timer =
+        setInterval(function () {
+          count += 1;
+          applyUser(user);
+
+          if (count >= 40) {
+            clearInterval(timer);
+          }
+        }, 150);
+    }
+
+    async function run() {
+      try {
+        var response =
+          await fetch(
+            "/api/auth/me",
+            {
+              credentials: "include",
+              cache: "no-store"
+            }
+          );
+
+        if (response.status !== 200) {
+          showAuth(false);
+
+          applyUser({
+            name:
+              translatedAccountName(),
+            email: ""
+          });
+
+          return;
+        }
+
+        var user =
+          await response
+            .json()
+            .catch(function () {
+              return {};
+            });
+
+        showAuth(true);
+        applyUser(user);
+        enforceUser(user);
+      } catch (_) {
         showAuth(false);
-        apply({ name:'Hesap', email:'' });
+
+        applyUser({
+          name:
+            translatedAccountName(),
+          email: ""
+        });
+      }
+    }
+
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        run,
+        { once: true }
+      );
+    } else {
+      run();
+    }
+
+    document.addEventListener(
+      "click",
+      async function (event) {
+        var target =
+          event.target &&
+          event.target.closest
+            ? event.target.closest(
+                '[data-action="logout"], #btnLogoutTop, .um-logout'
+              )
+            : null;
+
+        if (!target) return;
+
+        event.preventDefault();
+
+        try {
+          await fetch(
+            "/api/auth/logout",
+            {
+              method: "POST",
+              credentials: "include"
+            }
+          );
+        } catch (_) {}
+
+        showAuth(false);
+
+        applyUser({
+          name:
+            translatedAccountName(),
+          email: ""
+        });
+
+        location.assign(
+          target.getAttribute(
+            "data-redirect"
+          ) || "/"
+        );
+      },
+      true
+    );
+  })();
+  </script>
+
+  <!-- PAGE TR / EN DICTIONARY -->
+  <script>
+  (function AIVO_SUPPORT_PAGE_I18N() {
+    "use strict";
+
+    var PAGE_DICTIONARY = {
+      tr: {
+        "support.seoTitle":
+          "Destek Merkezi • AIVO",
+
+        "support.seoDescription":
+          "AIVO Studio hesap, kredi, ödeme, müzik, video, görsel üretimi ve teknik sorunlar için destek merkezi.",
+
+        "support.pageLabel":
+          "AIVO Destek Merkezi sayfası",
+
+        "support.backHome":
+          "← Ana Sayfaya Dön",
+
+        "support.eyebrow":
+          "DESTEK",
+
+        "support.title":
+          "Destek Merkezi",
+
+        "support.hero":
+          "AIVO Studio hesabınız, kredileriniz, ödemeleriniz ve yaratıcı üretim araçlarıyla ilgili hızlı çözümlere ulaşın.",
+
+        "support.statusLabel":
+          "Destek durumu",
+
+        "support.statusActive":
+          "Destek kanalları aktif",
+
+        "support.responseTime":
+          "Genellikle 24 saat içinde yanıt",
+
+        "support.safeNotice":
+          "Şifrenizi veya kart bilgilerinizi paylaşmayın",
+
+        "support.categories.title":
+          "Nasıl Yardımcı Olabiliriz?",
+
+        "support.categories.description":
+          "İhtiyacınıza en yakın konuyu seçerek ilgili çözüm ve yönlendirmelere ulaşabilirsiniz.",
+
+        "support.account.title":
+          "Hesap ve Giriş",
+
+        "support.account.text":
+          "Giriş, kayıt, şifre sıfırlama ve hesap erişimiyle ilgili yardım alın.",
+
+        "support.account.link":
+          "Şifremi sıfırla →",
+
+        "support.payment.title":
+          "Kredi ve Ödemeler",
+
+        "support.payment.text":
+          "Kredi satın alma, ödeme sonucu ve kredi bakiyesi hakkında bilgi alın.",
+
+        "support.payment.link":
+          "Fiyatlandırmayı görüntüle →",
+
+        "support.music.title":
+          "AI Müzik Üretimi",
+
+        "support.music.text":
+          "Müzik oluşturma, prompt hazırlama, üretim durumu ve çıktı sorunları için yardım alın.",
+
+        "support.music.link":
+          "AIVO Studio’yu aç →",
+
+        "support.visual.title":
+          "Video ve Görsel Üretimi",
+
+        "support.visual.text":
+          "Video, kapak ve görsel üretim işlemleriyle ilgili genel sorun giderme adımlarını inceleyin.",
+
+        "support.visual.link":
+          "Özellikleri incele →",
+
+        "support.technical.title":
+          "Teknik Sorunlar",
+
+        "support.technical.text":
+          "Sayfa yüklenmesi, tarayıcı, oturum ve geçici bağlantı sorunları için temel kontrolleri uygulayın.",
+
+        "support.technical.link":
+          "Sorun giderme adımları →",
+
+        "support.privacy.title":
+          "Gizlilik ve Güvenlik",
+
+        "support.privacy.text":
+          "Kişisel veriler, çerezler, hesap güvenliği ve içerik kullanım kuralları hakkında bilgi alın.",
+
+        "support.privacy.link":
+          "Gizlilik politikasını aç →",
+
+        "support.troubleshooting.title":
+          "Hızlı Sorun Giderme",
+
+        "support.troubleshooting.description":
+          "Destek talebi göndermeden önce aşağıdaki temel kontroller çoğu geçici sorunu çözebilir.",
+
+        "support.step1.title":
+          "Sayfayı Yenileyin",
+
+        "support.step1.text":
+          "Sayfayı normal şekilde yenileyin. Sorun devam ederse sert yenileme yapın.",
+
+        "support.step2.title":
+          "Hesabı Kontrol Edin",
+
+        "support.step2.text":
+          "Doğru AIVO hesabıyla giriş yaptığınızdan ve oturumunuzun açık olduğundan emin olun.",
+
+        "support.step3.title":
+          "Tarayıcıyı Kontrol Edin",
+
+        "support.step3.text":
+          "Güncel bir tarayıcı kullanın ve gerekli durumlarda gizli pencerede tekrar deneyin.",
+
+        "support.step4.title":
+          "Destek Talebi Gönderin",
+
+        "support.step4.text":
+          "Sorun devam ederse hesap e-postanız, işlem zamanı ve ekran görüntüsüyle bize ulaşın.",
+
+        "support.faq.title":
+          "Sık Sorulan Sorular",
+
+        "support.faq.description":
+          "AIVO Studio kullanımıyla ilgili en çok sorulan soruların yanıtları.",
+
+        "support.faq.login.question":
+          "Hesabıma giriş yapamıyorum. Ne yapmalıyım?",
+
+        "support.faq.login.answer":
+          "E-posta adresinizi ve şifrenizi kontrol edin. Şifrenizi hatırlamıyorsanız şifre sıfırlama sayfasını kullanın. Google veya Apple ile kayıt olduysanız aynı giriş yöntemini seçin.",
+
+        "support.faq.credit.question":
+          "Satın aldığım krediler hesabımda görünmüyor.",
+
+        "support.faq.credit.answer":
+          "Önce sayfayı yenileyin ve doğru hesapla giriş yaptığınızı kontrol edin. Bakiye hâlâ görünmüyorsa kayıtlı e-posta adresiniz ve işlem tarihiyle destek ekibine ulaşın. Kart numaranızın tamamını paylaşmayın.",
+
+        "support.faq.generation.question":
+          "Üretim işlemi tamamlanmadı veya hata verdi.",
+
+        "support.faq.generation.answer":
+          "Bağlantınızı kontrol edin ve sayfayı yeniledikten sonra işlemi tekrar deneyin. Sorun devam ederse kullandığınız üretim aracı, yaklaşık işlem zamanı ve görünen hata mesajıyla destek talebi gönderin.",
+
+        "support.faq.refund.question":
+          "İade veya iptal talebini nasıl iletebilirim?",
+
+        "support.faq.refund.answer":
+          "İade ve iptal talepleri ilgili mevzuat ve kullanım durumuna göre değerlendirilir. Ayrıntılı koşulları Mesafeli Satış Sözleşmesi’nde inceleyebilir ve talebinizi info@aivo.tr adresine gönderebilirsiniz.",
+
+        "support.faq.refund.link":
+          "Mesafeli Satış Sözleşmesi",
+
+        "support.faq.commercial.question":
+          "Oluşturduğum içerikleri ticari olarak kullanabilir miyim?",
+
+        "support.faq.commercial.answer":
+          "Ticari kullanım; satın alınan paket, AIVO hizmet şartları, içerikte kullanılan materyaller ve yürürlükteki mevzuata bağlıdır. Üçüncü kişilerin telif, marka ve kişilik hakları ihlal edilmemelidir.",
+
+        "support.faq.security.question":
+          "AIVO destek ekibi benden şifre veya kart bilgisi ister mi?",
+
+        "support.faq.security.answer":
+          "Hayır. Şifrenizi, doğrulama kodunuzu, kart numaranızın tamamını veya kart güvenlik kodunu hiçbir kişiyle paylaşmayın. Resmî destek iletişimi için info@aivo.tr adresini kullanın.",
+
+        "support.contact.title":
+          "Sorununuz Devam Ediyor mu?",
+
+        "support.contact.text":
+          "Sorunun kısa açıklamasını, AIVO hesabınızda kullandığınız e-posta adresini, işlem zamanını ve varsa ekran görüntüsünü gönderin. Şifre veya kart bilgisi göndermeyin.",
+
+        "support.contact.email":
+          "E-posta Gönder",
+
+        "support.contact.whatsapp":
+          "WhatsApp Destek",
+
+        "support.contact.form":
+          "İletişim Formu"
+      },
+
+      en: {
+        "support.seoTitle":
+          "Help Center • AIVO",
+
+        "support.seoDescription":
+          "AIVO Studio help center for account access, credits, payments, music, video, image creation and technical issues.",
+
+        "support.pageLabel":
+          "AIVO Help Center page",
+
+        "support.backHome":
+          "← Back to Home",
+
+        "support.eyebrow":
+          "SUPPORT",
+
+        "support.title":
+          "Help Center",
+
+        "support.hero":
+          "Find quick solutions for your AIVO Studio account, credits, payments and creative production tools.",
+
+        "support.statusLabel":
+          "Support status",
+
+        "support.statusActive":
+          "Support channels active",
+
+        "support.responseTime":
+          "Usually answered within 24 hours",
+
+        "support.safeNotice":
+          "Never share your password or card information",
+
+        "support.categories.title":
+          "How Can We Help?",
+
+        "support.categories.description":
+          "Select the topic closest to your issue to find the relevant solution and guidance.",
+
+        "support.account.title":
+          "Account and Login",
+
+        "support.account.text":
+          "Get help with login, registration, password resets and account access.",
+
+        "support.account.link":
+          "Reset my password →",
+
+        "support.payment.title":
+          "Credits and Payments",
+
+        "support.payment.text":
+          "Find information about purchasing credits, payment results and your credit balance.",
+
+        "support.payment.link":
+          "View pricing →",
+
+        "support.music.title":
+          "AI Music Creation",
+
+        "support.music.text":
+          "Get help with music creation, prompt preparation, generation status and output issues.",
+
+        "support.music.link":
+          "Open AIVO Studio →",
+
+        "support.visual.title":
+          "Video and Image Creation",
+
+        "support.visual.text":
+          "Review general troubleshooting steps for video, cover-art and image creation.",
+
+        "support.visual.link":
+          "View features →",
+
+        "support.technical.title":
+          "Technical Issues",
+
+        "support.technical.text":
+          "Complete basic checks for page loading, browser, session and temporary connection issues.",
+
+        "support.technical.link":
+          "Troubleshooting steps →",
+
+        "support.privacy.title":
+          "Privacy and Security",
+
+        "support.privacy.text":
+          "Learn about personal data, cookies, account security and content usage rules.",
+
+        "support.privacy.link":
+          "Open Privacy Policy →",
+
+        "support.troubleshooting.title":
+          "Quick Troubleshooting",
+
+        "support.troubleshooting.description":
+          "Before submitting a support request, these basic checks can resolve many temporary issues.",
+
+        "support.step1.title":
+          "Refresh the Page",
+
+        "support.step1.text":
+          "Refresh the page normally. If the issue continues, perform a hard refresh.",
+
+        "support.step2.title":
+          "Check Your Account",
+
+        "support.step2.text":
+          "Make sure you are signed in with the correct AIVO account and that your session is active.",
+
+        "support.step3.title":
+          "Check Your Browser",
+
+        "support.step3.text":
+          "Use an up-to-date browser and try again in a private window where necessary.",
+
+        "support.step4.title":
+          "Submit a Support Request",
+
+        "support.step4.text":
+          "If the issue continues, contact us with your account email, transaction time and a screenshot.",
+
+        "support.faq.title":
+          "Frequently Asked Questions",
+
+        "support.faq.description":
+          "Answers to the most common questions about using AIVO Studio.",
+
+        "support.faq.login.question":
+          "I cannot sign in to my account. What should I do?",
+
+        "support.faq.login.answer":
+          "Check your email address and password. Use the password-reset page if you cannot remember your password. If you registered through Google or Apple, select the same sign-in method.",
+
+        "support.faq.credit.question":
+          "The credits I purchased are not visible in my account.",
+
+        "support.faq.credit.answer":
+          "First refresh the page and confirm that you are signed in to the correct account. If the balance is still missing, contact support with your registered email address and transaction date. Do not share your full card number.",
+
+        "support.faq.generation.question":
+          "My generation did not complete or returned an error.",
+
+        "support.faq.generation.answer":
+          "Check your connection and try the operation again after refreshing the page. If the issue continues, submit a support request with the creation tool used, approximate time and the displayed error message.",
+
+        "support.faq.refund.question":
+          "How can I submit a refund or cancellation request?",
+
+        "support.faq.refund.answer":
+          "Refund and cancellation requests are assessed according to applicable law and usage status. Review the detailed conditions in the Distance Sales Agreement and submit your request to info@aivo.tr.",
+
+        "support.faq.refund.link":
+          "Distance Sales Agreement",
+
+        "support.faq.commercial.question":
+          "Can I use the content I create commercially?",
+
+        "support.faq.commercial.answer":
+          "Commercial use depends on the purchased package, AIVO’s terms of service, materials used in the content and applicable law. Copyright, trademark and personality rights belonging to third parties must not be infringed.",
+
+        "support.faq.security.question":
+          "Will AIVO support ask me for my password or card information?",
+
+        "support.faq.security.answer":
+          "No. Never share your password, verification code, full card number or card security code with anyone. Use info@aivo.tr for official support communication.",
+
+        "support.contact.title":
+          "Is the Issue Still Continuing?",
+
+        "support.contact.text":
+          "Send a short description of the issue, the email address used for your AIVO account, the transaction time and a screenshot where available. Do not send passwords or card information.",
+
+        "support.contact.email":
+          "Send Email",
+
+        "support.contact.whatsapp":
+          "WhatsApp Support",
+
+        "support.contact.form":
+          "Contact Form"
+      }
+    };
+
+    var attempts = 0;
+    var maximumAttempts = 100;
+
+    function installDictionary() {
+      attempts += 1;
+
+      if (
+        !window.AIVO_I18N ||
+        !window.AIVO_I18N.tr ||
+        !window.AIVO_I18N.en
+      ) {
+        if (
+          attempts <
+          maximumAttempts
+        ) {
+          setTimeout(
+            installDictionary,
+            25
+          );
+        }
+
         return;
       }
-      const user = await r.json().catch(()=>({}));
-      showAuth(true);
-      apply(user);
-      enforce(user);
-    }catch(e){
-      showAuth(false);
-      apply({ name:'Hesap', email:'' });
+
+      Object.assign(
+        window.AIVO_I18N.tr,
+        PAGE_DICTIONARY.tr
+      );
+
+      Object.assign(
+        window.AIVO_I18N.en,
+        PAGE_DICTIONARY.en
+      );
+
+      if (
+        typeof window.aivoApplyI18n ===
+        "function"
+      ) {
+        window.aivoApplyI18n(
+          document
+        );
+      }
     }
-  }
 
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', run, { once:true });
-  } else {
-    run();
-  }
-
-  // logout
-  document.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('[data-action="logout"], #btnLogoutTop, .um-logout');
-    if (!btn) return;
-    e.preventDefault();
-    try{ await fetch('/api/auth/logout', { method:'POST', credentials:'include' }); }catch(_){}
-    showAuth(false);
-    apply({ name:'Hesap', email:'' });
-    location.assign(btn.getAttribute('data-redirect') || '/');
-  }, true);
-})();
-</script>
+    if (
+      document.readyState === "loading"
+    ) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        installDictionary,
+        { once: true }
+      );
+    } else {
+      installDictionary();
+    }
+  })();
+  </script>
 </body>
 </html>
