@@ -1136,17 +1136,69 @@ album cover
       return containsCoverPolicyPhrase(text, normalizedTerm);
     });
 
-    const hasArtistName = ARTIST_NAME_TERMS.some((term) => {
-      const normalizedTerm = normalizePolicyText(term);
-      if (!normalizedTerm || !containsCoverPolicyPhrase(text, normalizedTerm)) {
-        return false;
-      }
+const hasArtistName = ARTIST_NAME_TERMS.some((term) => {
+  const normalizedTerm = normalizePolicyText(term);
 
-      const wordCount = normalizedTerm.split(" ").filter(Boolean).length;
-      if (wordCount >= 2) return true;
-      if (!AMBIGUOUS_ARTIST_TERMS.has(normalizedTerm)) return true;
-      return hasCoverArtistContext(text, normalizedTerm);
-    });
+  if (
+    !normalizedTerm ||
+    !containsCoverPolicyPhrase(text, normalizedTerm)
+  ) {
+    return false;
+  }
+
+  const wordCount =
+    normalizedTerm
+      .split(" ")
+      .filter(Boolean)
+      .length;
+
+  if (wordCount >= 2) {
+    return true;
+  }
+
+  if (
+    !AMBIGUOUS_ARTIST_TERMS.has(normalizedTerm)
+  ) {
+    return true;
+  }
+
+  /*
+    "manga" aynı zamanda bir görsel sanat türüdür.
+
+    "Japanese manga style" ve "anime manga style"
+    gibi görsel tarifleri maNga müzik grubu sanıp
+    engellememeliyiz.
+
+    Yalnızca açıkça müzik grubu/sanatçı bağlamında
+    kullanıldığında engellenir.
+  */
+  if (normalizedTerm === "manga") {
+    const explicitMangaArtistPhrases = [
+      "manga grubu",
+      "manga muzik grubu",
+      "manga band",
+      "band manga",
+      "manga artist",
+      "manga sanatci",
+      "manga album cover",
+      "manga albumu",
+      "manga sarkisi"
+    ].map(normalizePolicyText);
+
+    return explicitMangaArtistPhrases.some(
+      (phrase) =>
+        containsCoverPolicyPhrase(
+          text,
+          phrase
+        )
+    );
+  }
+
+  return hasCoverArtistContext(
+    text,
+    normalizedTerm
+  );
+});
 
     return hasPublicFigureName || hasArtistName;
   }
