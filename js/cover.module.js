@@ -128,6 +128,8 @@ console.log("[cover.module] loaded ✅", new Date().toISOString());
      HELPERS / STATE
      ========================================================= */
 
+  let coverGenerationBusy = false;
+
   function qs(selector, root = document) {
     return root.querySelector(selector);
   }
@@ -1601,7 +1603,24 @@ album cover
   }
 
   async function runCoverGeneration(root, generateButton) {
+    if (
+      coverGenerationBusy ||
+      generateButton.getAttribute("aria-busy") === "true"
+    ) {
+      return;
+    }
+
+    coverGenerationBusy = true;
+
     const previousText = generateButton.textContent;
+
+    // Lock the button immediately. Credit validation can take a moment;
+    // without this lock, repeated clicks can start multiple generations.
+    generateButton.disabled = true;
+    generateButton.setAttribute("aria-busy", "true");
+    generateButton.textContent = coverText("studio.cover.dynamic.generating");
+    generateButton.classList.add("is-loading");
+
     let consumed = false;
     let consumeTransactionId = null;
 
@@ -1767,6 +1786,7 @@ album cover
         toastError(coverText("studio.cover.dynamic.failed"));
       }
     } finally {
+      coverGenerationBusy = false;
       generateButton.disabled = false;
       generateButton.removeAttribute("aria-busy");
       generateButton.classList.remove("is-loading");
@@ -1865,6 +1885,17 @@ album cover
       if (!generateButton || !root.contains(generateButton)) return;
 
       event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      if (
+        coverGenerationBusy ||
+        generateButton.getAttribute("aria-busy") === "true"
+      ) {
+        return;
+      }
 
       const promptEl = qs("#coverPrompt", root);
       const rawPrompt = String(promptEl?.value || "").trim();
@@ -1893,7 +1924,7 @@ album cover
         visiblePolicyNote: readCoverPolicyNote(root)
       });
 
-      runCoverGeneration(root, generateButton);
+      void runCoverGeneration(root, generateButton);
     },
     true
   );
