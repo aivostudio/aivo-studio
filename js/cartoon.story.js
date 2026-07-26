@@ -497,7 +497,13 @@ function showStoryCharacterLimitAlert() {
 
 
   function getStorySceneEditor(root) {
+    const editors = qsa("[data-story-scene-editor]", document);
+    const activeEditor = editors.find((editor) => {
+      return !editor.hidden && editor.classList.contains("is-open");
+    });
+
     return (
+      activeEditor ||
       qs("[data-story-scene-editor]", root || document) ||
       qs("[data-story-scene-editor]", document)
     );
@@ -1910,10 +1916,12 @@ function resetStoryCharacterImage(root, slot) {
       item.dataset.selected = isSelected ? "true" : "false";
 
       if (labelEl) {
+        labelEl.removeAttribute("data-i18n");
         labelEl.textContent = label || storyText("studio.cartoon.story.characterNotSelected", "Karakter seçilmedi", "No character selected");
       }
 
       if (fileEl) {
+        fileEl.removeAttribute("data-i18n");
         fileEl.textContent = image.fileName
           ? getShortFileName(image.fileName, 24)
           : storyText("studio.cartoon.story.imageNotUploaded", "Görsel yüklenmedi", "No image uploaded");
@@ -3205,7 +3213,8 @@ if (role === "helper") {
       }
 
       const sceneCharacterItem = e.target.closest(".story-scene-character-item");
-      if (sceneCharacterItem && getStorySceneEditor(root)?.contains(sceneCharacterItem)) {
+      const clickedSceneEditor = sceneCharacterItem?.closest("[data-story-scene-editor]");
+      if (sceneCharacterItem && clickedSceneEditor) {
         e.preventDefault();
 
         const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
