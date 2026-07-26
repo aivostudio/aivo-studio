@@ -7,8 +7,8 @@
     <div class="panel-header">
       <div class="page-head">
         <div class="page-head__box">
-          <h1 class="page-head__title">AI Atmosfer Video</h1>
-          <p class="page-head__sub">
+          <h1 class="page-head__title" data-i18n="studio.atmo.title">AI Atmosfer Video</h1>
+          <p class="page-head__sub" data-i18n="studio.atmo.subtitle">
            Klip çekemeyenler için: kar yağsın, yağmur aksın, ışık titresin — 4–15 sn sinematik atmosfer videoları üret.
          </p>
         </div>
@@ -19,11 +19,31 @@
     <div class="mode-shell" data-mode-shell="atmosphere">
 
       <!-- MODE SWITCH -->
-      <div class="mode-switch" role="tablist" aria-label="Mod Seçimi">
-        <button class="mode-tab is-active" type="button" role="tab" aria-selected="true" data-mode="basic">
+      <div
+        class="mode-switch"
+        role="tablist"
+        aria-label="Mod Seçimi"
+        data-i18n-label="studio.atmo.modeLabel"
+      >
+        <button
+          class="mode-tab is-active"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          data-mode="basic"
+          data-i18n="studio.atmo.mode.basic"
+        >
           Basit Mod
         </button>
-        <button class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="pro">
+
+        <button
+          class="mode-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          data-mode="pro"
+          data-i18n="studio.atmo.mode.super"
+        >
           Süper Mod ✨
         </button>
       </div>
@@ -35,69 +55,70 @@
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">Arka Mekan</div>
-              <div class="card-subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
+              <div class="card-title" data-i18n="studio.atmo.scene.title">Arka Mekan</div>
+              <div class="card-subtitle" data-i18n="studio.atmo.scene.subtitle">Hazır sahne seç veya kendi görselini yükle.</div>
             </div>
           </div>
+
 <div class="smpack-grid smpack-grid--themes" id="atmScenes">
   <button class="smpack-choice" type="button" data-atm-scene="winter_cafe">
-    <div class="smpack-choice__title">Kış Kafe</div>
-    <div class="smpack-choice__desc">Neon ışıklar, kar, sıcak vibe.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.winterCafe.title">Kış Kafe</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.winterCafe.desc">Neon ışıklar, kar, sıcak vibe.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="cozy_cabin">
-    <div class="smpack-choice__title">Dağ Evi</div>
-    <div class="smpack-choice__desc">Şömine, ahşap, cozy.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.cozyCabin.title">Dağ Evi</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.cozyCabin.desc">Şömine, ahşap, cozy.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="lake_cabin">
-    <div class="smpack-choice__title">Göl Kenarı</div>
-    <div class="smpack-choice__desc">Sakin, sinematik yansıma.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.lakeCabin.title">Göl Kenarı</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.lakeCabin.desc">Sakin, sinematik yansıma.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="city_night">
-    <div class="smpack-choice__title">Şehir Gecesi</div>
-    <div class="smpack-choice__desc">Bokeh, sokak lambaları.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.cityNight.title">Şehir Gecesi</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.cityNight.desc">Bokeh, sokak lambaları.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="rainy_window">
-    <div class="smpack-choice__title">Yağmurlu Pencere Önü</div>
-    <div class="smpack-choice__desc">Cam damlaları, loş ışık, duygusal hava.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.rainyWindow.title">Yağmurlu Pencere Önü</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.rainyWindow.desc">Cam damlaları, loş ışık, duygusal hava.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="city_rooftop_night">
-    <div class="smpack-choice__title">Gece Şehir Terası</div>
-    <div class="smpack-choice__desc">Şehir ışıkları, hafif rüzgar, sinematik görünüm.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.cityRooftop.title">Gece Şehir Terası</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.cityRooftop.desc">Şehir ışıkları, hafif rüzgar, sinematik görünüm.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="old_stone_street">
-    <div class="smpack-choice__title">Eski Taş Sokak</div>
-    <div class="smpack-choice__desc">Islak zemin, sıcak lambalar, klip hissi.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.oldStoneStreet.title">Eski Taş Sokak</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.oldStoneStreet.desc">Islak zemin, sıcak lambalar, klip hissi.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="attic_window">
-    <div class="smpack-choice__title">Çatı Katı Pencere Önü</div>
-    <div class="smpack-choice__desc">İçeride sıcak ışık, dışarıda gece hissi.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.atticWindow.title">Çatı Katı Pencere Önü</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.atticWindow.desc">İçeride sıcak ışık, dışarıda gece hissi.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="sea_cliffs">
-    <div class="smpack-choice__title">Deniz Kenarı Kayalıklar</div>
-    <div class="smpack-choice__desc">Rüzgar, ufuk, özgür ve sinematik atmosfer.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.seaCliffs.title">Deniz Kenarı Kayalıklar</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.seaCliffs.desc">Rüzgar, ufuk, özgür ve sinematik atmosfer.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="pine_mountain_road">
-    <div class="smpack-choice__title">Çam Ağaçlı Dağ Yolu</div>
-    <div class="smpack-choice__desc">Serin doğa, yol hissi, hafif yalnızlık.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.pineMountainRoad.title">Çam Ağaçlı Dağ Yolu</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.pineMountainRoad.desc">Serin doğa, yol hissi, hafif yalnızlık.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="sunset_highway">
-    <div class="smpack-choice__title">Gün Batımı Otoyol Kenarı</div>
-    <div class="smpack-choice__desc">Ufuk çizgisi, yol, melankolik akış.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.sunsetHighway.title">Gün Batımı Otoyol Kenarı</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.sunsetHighway.desc">Ufuk çizgisi, yol, melankolik akış.</div>
   </button>
 
   <button class="smpack-choice" type="button" data-atm-scene="dim_motel_corridor">
-    <div class="smpack-choice__title">Loş Motel Koridoru</div>
-    <div class="smpack-choice__desc">Sessiz, sinematik ve güçlü yalnızlık hissi.</div>
+    <div class="smpack-choice__title" data-i18n="studio.atmo.scene.dimMotelCorridor.title">Loş Motel Koridoru</div>
+    <div class="smpack-choice__desc" data-i18n="studio.atmo.scene.dimMotelCorridor.desc">Sessiz, sinematik ve güçlü yalnızlık hissi.</div>
   </button>
 </div>
         </div>
@@ -106,24 +127,76 @@
         <div class="card" id="atmCard">
           <div class="card-header">
             <div>
-              <div class="card-title">Atmosfer</div>
-              <div class="card-subtitle">İstediğin kadar seç. Örn: Kar + Işık</div>
+              <div class="card-title" data-i18n="studio.atmo.effects.title">Atmosfer</div>
+              <div class="card-subtitle" data-i18n="studio.atmo.effects.subtitle">İstediğin kadar seç. Örn: Kar + Işık</div>
             </div>
           </div>
 
-          <div class="smpack-row" id="atmEffects"
+          <div
+               class="smpack-row"
+               id="atmEffects"
                data-atm-max="999"
                data-atm-bound="0"
                data-selected=""
-               role="group" aria-label="Atmosfer Seçimleri">
+               role="group"
+               aria-label="Atmosfer Seçimleri"
+               data-i18n-label="studio.atmo.effects.label">
 
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="snow" aria-pressed="false">❄️ Kar</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="rain" aria-pressed="false">🌧️ Yağmur</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="leaf" aria-pressed="false">🍃 Yaprak</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="fog"  aria-pressed="false">🌫️ Sis</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="light" aria-pressed="false">✨ Işık</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="fire" aria-pressed="false">🔥 Ateş</button>
-            <button class="smpack-pill atm-pill" type="button" data-atm-eff="wind" aria-pressed="false">🌬️ Rüzgar</button>
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="snow"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.snow"
+            >❄️ Kar</button>
+
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="rain"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.rain"
+            >🌧️ Yağmur</button>
+
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="leaf"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.leaf"
+            >🍃 Yaprak</button>
+
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="fog"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.fog"
+            >🌫️ Sis</button>
+
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="light"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.light"
+            >✨ Işık</button>
+
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="fire"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.fire"
+            >🔥 Ateş</button>
+
+            <button
+              class="smpack-pill atm-pill"
+              type="button"
+              data-atm-eff="wind"
+              aria-pressed="false"
+              data-i18n="studio.atmo.effects.wind"
+            >🌬️ Rüzgar</button>
 
             <!-- legacy/form okuyucu garantisi -->
             <input type="hidden" id="atmEffectsValue" name="atmEffects" value="">
@@ -136,7 +209,7 @@
         <!-- (3) CAMERA + DURATION -->
      <div class="card">
   <div class="form-row">
-    <div class="form-label">Süre</div>
+    <div class="form-label" data-i18n="studio.atmo.duration">Süre</div>
     <select id="atmDuration" class="input">
       <option value="4" selected>4 sn</option>
       <option value="6">6 sn</option>
@@ -152,8 +225,8 @@
         <div class="card" id="atmPersonalCard">
           <div class="card-header">
             <div>
-              <div class="card-title">Kişiselleştirme (opsiyonel)</div>
-              <div class="card-subtitle">Oran / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
+              <div class="card-title" data-i18n="studio.atmo.personalization.title">Kişiselleştirme (opsiyonel)</div>
+              <div class="card-subtitle" data-i18n="studio.atmo.personalization.subtitle">Oran / logo / jingle ekleyebilirsin. Üret butonu burada.</div>
             </div>
           </div>
 
@@ -162,7 +235,7 @@
 
             <!-- 1) Oran + Opaklık + Spotify sessiz -->
             <div class="atmPersCol">
-              <div class="form-label">Oran</div>
+              <div class="form-label" data-i18n="studio.atmo.aspectRatio">Oran</div>
               <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
                 <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
                 <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
@@ -170,29 +243,32 @@
               </div>
 
               <div class="atmOpacityRow">
-                <div class="form-label">Opaklık</div>
+                <div class="form-label" data-i18n="studio.atmo.opacity">Opaklık</div>
                 <input id="atmLogoOpacity" type="range" min="0.7" max="1" step="0.05" value="0.9" style="width:100%;">
               </div>
 
               <label class="atmCheckRow">
                 <input type="checkbox" id="atmSilentCopy" checked>
-                Spotify Canvas için sessiz kopya üret
+                <span data-i18n="studio.atmo.silentCopy">Spotify Canvas için sessiz kopya üret</span>
               </label>
             </div>
 
          <!-- 2) Logo -->
 <div class="atmPersCol atmPersCol--credit">
-  <div class="form-label">Logo</div>
+  <div class="form-label" data-i18n="studio.atmo.logo">Logo</div>
 
   <div class="atmCreditInline atmCreditInline--center">
-    <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+    <span
+      class="atmCreditBadge atmCreditBadge--accent"
+      data-i18n="studio.atmo.credit.plus10"
+    >+10 Kredi</span>
   </div>
 
   <!-- ✅ Buton + Thumbnail aynı satır -->
   <div class="atmLogoTop">
     <label class="btn atmFileBtn" style="cursor:pointer;">
       <input type="file" id="atmLogoFile" accept="image/*" hidden>
-      🏷️ Logo Seç
+      <span data-i18n="studio.atmo.file.chooseLogo">🏷️ Logo Seç</span>
     </label>
 
     <!-- ✅ Thumbnail slot: SABİT, asla alta itmez -->
@@ -203,12 +279,19 @@
 
   <!-- ✅ Dosya adı + silme -->
   <div class="atmFileMeta">
-    <div class="atmFileName" id="atmLogoFileName">Dosya seçilmedi</div>
+    <div
+      class="atmFileName"
+      id="atmLogoFileName"
+      data-i18n="studio.atmo.file.notSelected"
+    >Dosya seçilmedi</div>
+
     <button
       type="button"
       id="atmLogoClear"
       aria-label="Yüklenen logoyu kaldır"
       title="Logoyu kaldır"
+      data-i18n-label="studio.atmo.file.removeLogoLabel"
+      data-i18n-title="studio.atmo.file.removeLogoTitle"
       style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
     >
       ×
@@ -217,39 +300,50 @@
 
   <div class="atmRow2">
     <select id="atmLogoPos" class="input">
-      <option value="tl">Sol Üst</option>
-      <option value="tr">Sağ Üst</option>
-      <option value="bl">Sol Alt</option>
-      <option value="br" selected>Sağ Alt</option>
-      <option value="center_small">Ortada (küçük)</option>
+      <option value="tl" data-i18n="studio.atmo.logoPosition.topLeft">Sol Üst</option>
+      <option value="tr" data-i18n="studio.atmo.logoPosition.topRight">Sağ Üst</option>
+      <option value="bl" data-i18n="studio.atmo.logoPosition.bottomLeft">Sol Alt</option>
+      <option value="br" selected data-i18n="studio.atmo.logoPosition.bottomRight">Sağ Alt</option>
+      <option value="center_small" data-i18n="studio.atmo.logoPosition.centerSmall">Ortada (küçük)</option>
     </select>
 
     <select id="atmLogoSize" class="input">
-      <option value="sm" selected>Küçük</option>
-      <option value="md">Orta</option>
+      <option value="sm" selected data-i18n="studio.atmo.logoSize.small">Küçük</option>
+      <option value="md" data-i18n="studio.atmo.logoSize.medium">Orta</option>
     </select>
   </div>
 </div>
+
 <!-- 3) Audio -->
 <div class="atmPersCol atmPersCol--credit">
-  <div class="form-label">Müzik / Jingle</div>
+  <div class="form-label" data-i18n="studio.atmo.audio">Müzik / Jingle</div>
 
   <div class="atmCreditInline atmCreditInline--center">
-    <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+    <span
+      class="atmCreditBadge atmCreditBadge--accent"
+      data-i18n="studio.atmo.credit.plus10"
+    >+10 Kredi</span>
   </div>
 
   <label class="btn atmFileBtn" style="cursor:pointer;">
     <input type="file" id="atmAudioFile" accept="audio/*" hidden>
-    🎵 Audio Seç
+    <span data-i18n="studio.atmo.file.chooseAudio">🎵 Audio Seç</span>
   </label>
 
   <div class="atmFileMeta">
-    <div class="atmFileName" id="atmAudioFileName">Dosya seçilmedi</div>
+    <div
+      class="atmFileName"
+      id="atmAudioFileName"
+      data-i18n="studio.atmo.file.notSelected"
+    >Dosya seçilmedi</div>
+
     <button
       type="button"
       id="atmAudioClear"
       aria-label="Yüklenen audioyu kaldır"
       title="Audioyu kaldır"
+      data-i18n-label="studio.atmo.file.removeAudioLabel"
+      data-i18n-title="studio.atmo.file.removeAudioTitle"
       style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
     >
       ×
@@ -265,7 +359,8 @@
           <button class="atmBigCtaBtn"
                   type="button"
                   data-atm-generate
-                  data-atm-mode="basic">
+                  data-atm-mode="basic"
+                  data-i18n="studio.atmo.generate.basic">
             🎬 Atmosfer Video Oluştur (30 Kredi)
           </button>
         </div>
@@ -481,9 +576,13 @@
   <!-- (1) SUPER PROMPT -->
   <div class="card" id="atmSuperPromptCard" style="margin-top:14px;">
     <div class="card-header" style="padding-bottom:8px; display:flex; justify-content:space-between; gap:12px;">
-      <div style="color:#fff;font-weight:600;font-size:14px;">
+      <div
+        style="color:#fff;font-weight:600;font-size:14px;"
+        data-i18n="studio.atmo.super.description"
+      >
       Sahne, kamera ve atmosferi tek cümlede anlat; referanslar yalnızca yön verir, birebir kopyalanmaz.
       </div>
+
       <div style="opacity:.7;font-size:12px;margin-top:2px; text-align:right;">
       
       </div>
@@ -495,6 +594,7 @@
         rows="6"
         maxlength="5000"
         placeholder="Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik..."
+        data-i18n-placeholder="studio.atmo.super.promptPlaceholder"
         style="width:100%;resize:none;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.25);color:#fff;border:1px solid rgba(255,255,255,.08);font-size:14px;min-height:150px;"
       ></textarea>
 
@@ -511,8 +611,8 @@
   <div class="card" id="atmProStyleCard" style="margin-top:0;">
     <div class="card-header">
       <div>
-        <div class="card-title">Atmosfer Stili</div>
-        <div class="card-subtitle">Işık ve duygu tonunu seç.</div>
+        <div class="card-title" data-i18n="studio.atmo.style.title">Atmosfer Stili</div>
+        <div class="card-subtitle" data-i18n="studio.atmo.style.subtitle">Işık ve duygu tonunu seç.</div>
       </div>
     </div>
 
@@ -520,24 +620,82 @@
   <div class="atmProStyleCols">
 
     <div class="atmProStyleCol">
-      <div class="atmProStyleGroupTitle">💡 Işık</div>
+      <div class="atmProStyleGroupTitle" data-i18n="studio.atmo.light.title">💡 Işık</div>
       <div class="atmProStyleStack">
-        <button class="smpack-pill" type="button" data-atm-light="warm">💡 Sıcak</button>
-        <button class="smpack-pill" type="button" data-atm-light="cool">❄️ Soğuk</button>
-        <button class="smpack-pill" type="button" data-atm-light="golden">🌅 Golden Hour</button>
-        <button class="smpack-pill" type="button" data-atm-light="neon">🟣 Neon</button>
-        <button class="smpack-pill" type="button" data-atm-light="moon">🌙 Ay Işığı</button>
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-light="warm"
+          data-i18n="studio.atmo.light.warm"
+        >💡 Sıcak</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-light="cool"
+          data-i18n="studio.atmo.light.cool"
+        >❄️ Soğuk</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-light="golden"
+          data-i18n="studio.atmo.light.golden"
+        >🌅 Golden Hour</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-light="neon"
+          data-i18n="studio.atmo.light.neon"
+        >🟣 Neon</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-light="moon"
+          data-i18n="studio.atmo.light.moon"
+        >🌙 Ay Işığı</button>
       </div>
     </div>
 
     <div class="atmProStyleCol">
-      <div class="atmProStyleGroupTitle">🎭 Duygu</div>
+      <div class="atmProStyleGroupTitle" data-i18n="studio.atmo.mood.title">🎭 Duygu</div>
       <div class="atmProStyleStack">
-        <button class="smpack-pill" type="button" data-atm-mood="romantic">💜 Romantik</button>
-        <button class="smpack-pill" type="button" data-atm-mood="cinematic">🎬 Sinematik</button>
-        <button class="smpack-pill" type="button" data-atm-mood="cozy">🫶 Cozy</button>
-        <button class="smpack-pill" type="button" data-atm-mood="mysterious">🕯️ Gizemli</button>
-        <button class="smpack-pill" type="button" data-atm-mood="lofi">📼 Lo-fi</button>
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-mood="romantic"
+          data-i18n="studio.atmo.mood.romantic"
+        >💜 Romantik</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-mood="cinematic"
+          data-i18n="studio.atmo.mood.cinematic"
+        >🎬 Sinematik</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-mood="cozy"
+          data-i18n="studio.atmo.mood.cozy"
+        >🫶 Cozy</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-mood="mysterious"
+          data-i18n="studio.atmo.mood.mysterious"
+        >🕯️ Gizemli</button>
+
+        <button
+          class="smpack-pill"
+          type="button"
+          data-atm-mood="lofi"
+          data-i18n="studio.atmo.mood.lofi"
+        >📼 Lo-fi</button>
       </div>
     </div>
    </div>
@@ -548,9 +706,13 @@
 <div class="card" id="atmProExportCard" style="margin-top:0;">
   <div class="card-header" style="padding-bottom:10px;">
     <div>
-      <div class="card-title">Export Ayarları</div>
-      <div class="card-subtitle">Oran ve süre seçimi.</div>
-      <div style="margin-top:8px;font-size:12px;line-height:1.45;opacity:.72;">
+      <div class="card-title" data-i18n="studio.atmo.export.title">Export Ayarları</div>
+      <div class="card-subtitle" data-i18n="studio.atmo.export.subtitle">Oran ve süre seçimi.</div>
+
+      <div
+        style="margin-top:8px;font-size:12px;line-height:1.45;opacity:.72;"
+        data-i18n="studio.atmo.export.preparationTime"
+      >
         Hazırlık süresi eklenen medya ve süreye göre artabilir. Ortalama hazırlık: 5–10 dk.
       </div>
     </div>
@@ -558,19 +720,31 @@
 
   <div style="display:grid;gap:14px;">
     <div style="padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);">
-      <div style="font-size:12px;font-weight:700;opacity:.78;margin-bottom:10px;">📐 Oran</div>
+      <div
+        style="font-size:12px;font-weight:700;opacity:.78;margin-bottom:10px;"
+        data-i18n="studio.atmo.export.aspect"
+      >📐 Oran</div>
+
       <div class="smpack-row" data-atm-aspect-wrap style="gap:8px;flex-wrap:wrap;">
         <button type="button" class="smpack-pill is-active" data-atm-aspect="16:9">16:9</button>
         <button type="button" class="smpack-pill" data-atm-aspect="1:1">1:1</button>
         <button type="button" class="smpack-pill" data-atm-aspect="9:16">9:16</button>
       </div>
-      <div style="margin-top:10px;font-size:12px;line-height:1.45;opacity:.64;">
+
+      <div
+        style="margin-top:10px;font-size:12px;line-height:1.45;opacity:.64;"
+        data-i18n="studio.atmo.export.aspectNote"
+      >
         Referans görsel yüklendiğinde oran kompozisyona göre etkilenebilir.
       </div>
     </div>
 
     <div style="padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);">
-      <div style="font-size:12px;font-weight:700;opacity:.78;margin-bottom:10px;">⏱️ Süre</div>
+      <div
+        style="font-size:12px;font-weight:700;opacity:.78;margin-bottom:10px;"
+        data-i18n="studio.atmo.export.duration"
+      >⏱️ Süre</div>
+
       <select id="atmProDuration">
         <option value="4" selected>4 sn</option>
         <option value="6">6 sn</option>
@@ -581,7 +755,10 @@
       </select>
     </div>
 
-    <div style="padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:12px;line-height:1.45;opacity:.78;">
+    <div
+      style="padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:12px;line-height:1.45;opacity:.78;"
+      data-i18n-html="studio.atmo.export.refImageNote"
+    >
       <strong>Not:</strong> Referans görsel minimum 300×300 px olmalıdır.
     </div>
   </div>
@@ -593,29 +770,52 @@
   <div class="card" id="atmProDetails" style="margin-top:14px;">
     <div class="card-header">
       <div>
-        <div class="card-title">Detay Efektler</div>
-        <div class="card-subtitle">Az ama premium (render sonrası düşük maliyet).</div>
+        <div class="card-title" data-i18n="studio.atmo.details.title">Detay Efektler</div>
+        <div class="card-subtitle" data-i18n="studio.atmo.details.subtitle">Az ama premium (render sonrası düşük maliyet).</div>
       </div>
     </div>
 
     <div class="atmProFxGrid">
-      <label class="atmFxItem"><input type="checkbox" id="atmProGrain">🎞️ Hafif Film Grain</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProGlow">✨ Bloom / Lens Glow</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProVignette">🌑 Vignette</label>
+      <label class="atmFxItem">
+        <input type="checkbox" id="atmProGrain">
+        <span data-i18n="studio.atmo.details.grain">🎞️ Hafif Film Grain</span>
+      </label>
 
-      <label class="atmFxItem"><input type="checkbox" id="atmProSharpen">🔍 Hafif Sharpen</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProMotionBlur">🌀 Motion Blur (Az)</label>
-      <label class="atmFxItem"><input type="checkbox" id="atmProDust">📽️ Film Dust / Scratch</label>
+      <label class="atmFxItem">
+        <input type="checkbox" id="atmProGlow">
+        <span data-i18n="studio.atmo.details.glow">✨ Bloom / Lens Glow</span>
+      </label>
+
+      <label class="atmFxItem">
+        <input type="checkbox" id="atmProVignette">
+        <span data-i18n="studio.atmo.details.vignette">🌑 Vignette</span>
+      </label>
+
+      <label class="atmFxItem">
+        <input type="checkbox" id="atmProSharpen">
+        <span data-i18n="studio.atmo.details.sharpen">🔍 Hafif Sharpen</span>
+      </label>
+
+      <label class="atmFxItem">
+        <input type="checkbox" id="atmProMotionBlur">
+        <span data-i18n="studio.atmo.details.motionBlur">🌀 Motion Blur (Az)</span>
+      </label>
+
+      <label class="atmFxItem">
+        <input type="checkbox" id="atmProDust">
+        <span data-i18n="studio.atmo.details.dust">📽️ Film Dust / Scratch</span>
+      </label>
     </div>
 
     <div class="atmLutRow">
-      <div class="atmLutLabel">🎨 Color Grade / LUT</div>
+      <div class="atmLutLabel" data-i18n="studio.atmo.lut.title">🎨 Color Grade / LUT</div>
+
       <select id="atmProLut" class="atmLutSelect">
-        <option value="" selected>Kapalı</option>
-        <option value="warm">Sıcak</option>
-        <option value="cold">Soğuk</option>
-        <option value="cinematic">Sinematik</option>
-        <option value="lofi">Lo-fi</option>
+        <option value="" selected data-i18n="studio.atmo.lut.off">Kapalı</option>
+        <option value="warm" data-i18n="studio.atmo.lut.warm">Sıcak</option>
+        <option value="cold" data-i18n="studio.atmo.lut.cold">Soğuk</option>
+        <option value="cinematic" data-i18n="studio.atmo.lut.cinematic">Sinematik</option>
+        <option value="lofi" data-i18n="studio.atmo.lut.lofi">Lo-fi</option>
       </select>
     </div>
   </div>
@@ -626,23 +826,29 @@
 
       <div class="atmProRefsHead atmProRefsHead--triple">
         <div class="atmProRefTop">
-          <div class="atmProRefsTitle">Ana Görsel</div>
+          <div class="atmProRefsTitle" data-i18n="studio.atmo.media.mainImage">Ana Görsel</div>
           <div class="atmCreditInline atmCreditInline--center">
-            <span class="atmCreditBadge">Ücretsiz</span>
+            <span class="atmCreditBadge" data-i18n="studio.atmo.credit.free">Ücretsiz</span>
           </div>
         </div>
 
         <div class="atmProRefTop">
-          <div class="atmProRefsTitle">Audio Yükle</div>
+          <div class="atmProRefsTitle" data-i18n="studio.atmo.media.uploadAudio">Audio Yükle</div>
           <div class="atmCreditInline atmCreditInline--center">
-            <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+            <span
+              class="atmCreditBadge atmCreditBadge--accent"
+              data-i18n="studio.atmo.credit.plus10"
+            >+10 Kredi</span>
           </div>
         </div>
 
         <div class="atmProRefTop">
-          <div class="atmProRefsTitle">Logo Yükle</div>
+          <div class="atmProRefsTitle" data-i18n="studio.atmo.media.uploadLogo">Logo Yükle</div>
           <div class="atmCreditInline atmCreditInline--center">
-            <span class="atmCreditBadge atmCreditBadge--accent">+10 Kredi</span>
+            <span
+              class="atmCreditBadge atmCreditBadge--accent"
+              data-i18n="studio.atmo.credit.plus10"
+            >+10 Kredi</span>
           </div>
         </div>
       </div>
@@ -650,28 +856,36 @@
       <div class="atmProRefsBtns">
         <label class="btn atmFileBtn" style="cursor:pointer;">
           <input type="file" id="atmProRefImageFile" accept="image/*" hidden>
-          🏞️ Resim Seç
+          <span data-i18n="studio.atmo.file.chooseImage">🏞️ Resim Seç</span>
         </label>
 
         <label class="btn atmFileBtn" style="cursor:pointer;">
           <input type="file" id="atmProAudioFile" accept="audio/*" hidden>
-          🎵 Audio Seç
+          <span data-i18n="studio.atmo.file.chooseAudio">🎵 Audio Seç</span>
         </label>
 
         <label class="btn atmFileBtn" style="cursor:pointer;">
           <input type="file" id="atmProLogoFile" accept="image/*" hidden>
-          🖼️ Logo Seç
+          <span data-i18n="studio.atmo.file.chooseProLogo">🖼️ Logo Seç</span>
         </label>
       </div>
 
       <div class="atmProRefsMeta">
         <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-          <span class="atmFileName" id="atmProRefImageFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+          <span
+            class="atmFileName"
+            id="atmProRefImageFileName"
+            style="min-width:0;flex:1;"
+            data-i18n="studio.atmo.file.notSelected"
+          >Dosya seçilmedi</span>
+
           <button
             type="button"
             id="atmProRefImageClear"
             aria-label="Yüklenen resmi kaldır"
             title="Resmi kaldır"
+            data-i18n-label="studio.atmo.file.removeImageLabel"
+            data-i18n-title="studio.atmo.file.removeImageTitle"
             style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
           >
             ×
@@ -679,12 +893,20 @@
         </label>
 
         <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-          <span class="atmFileName" id="atmProAudioFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+          <span
+            class="atmFileName"
+            id="atmProAudioFileName"
+            style="min-width:0;flex:1;"
+            data-i18n="studio.atmo.file.notSelected"
+          >Dosya seçilmedi</span>
+
           <button
             type="button"
             id="atmProAudioClear"
             aria-label="Yüklenen audioyu kaldır"
             title="Audioyu kaldır"
+            data-i18n-label="studio.atmo.file.removeAudioLabel"
+            data-i18n-title="studio.atmo.file.removeAudioTitle"
             style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
           >
             ×
@@ -692,12 +914,20 @@
         </label>
 
         <label class="atmFileMeta" style="display:flex;align-items:center;gap:8px;min-width:0;">
-          <span class="atmFileName" id="atmProLogoFileName" style="min-width:0;flex:1;">Dosya seçilmedi</span>
+          <span
+            class="atmFileName"
+            id="atmProLogoFileName"
+            style="min-width:0;flex:1;"
+            data-i18n="studio.atmo.file.notSelected"
+          >Dosya seçilmedi</span>
+
           <button
             type="button"
             id="atmProLogoClear"
             aria-label="Yüklenen logoyu kaldır"
             title="Logoyu kaldır"
+            data-i18n-label="studio.atmo.file.removeLogoLabel"
+            data-i18n-title="studio.atmo.file.removeLogoTitle"
             style="display:none;width:22px;height:22px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;flex:0 0 22px;align-items:center;justify-content:center;padding:0;line-height:1;"
           >
             ×
@@ -712,26 +942,37 @@
 
         <div class="atmProRefSelectCol">
           <select id="atmProLogoPos" class="input atmProSelect">
-            <option value="tl">Sol Üst</option>
-            <option value="tr">Sağ Üst</option>
-            <option value="bl">Sol Alt</option>
-            <option value="br" selected>Sağ Alt</option>
-            <option value="center_small">Ortada (küçük)</option>
+            <option value="tl" data-i18n="studio.atmo.logoPosition.topLeft">Sol Üst</option>
+            <option value="tr" data-i18n="studio.atmo.logoPosition.topRight">Sağ Üst</option>
+            <option value="bl" data-i18n="studio.atmo.logoPosition.bottomLeft">Sol Alt</option>
+            <option value="br" selected data-i18n="studio.atmo.logoPosition.bottomRight">Sağ Alt</option>
+            <option value="center_small" data-i18n="studio.atmo.logoPosition.centerSmall">Ortada (küçük)</option>
           </select>
         </div>
       </div>
 
       <div class="atmProRefsBottom">
-        <div id="atmProLogoStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+        <div
+          id="atmProLogoStatus"
+          data-i18n="studio.atmo.upload.ready"
+          style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);"
+        >
           Hazır ✓
         </div>
-        <div id="atmProRefImageStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+
+        <div
+          id="atmProRefImageStatus"
+          data-i18n="studio.atmo.upload.ready"
+          style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);"
+        >
           Hazır ✓
         </div>
-        <div id="atmProAudioStatus"
-             style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);">
+
+        <div
+          id="atmProAudioStatus"
+          data-i18n="studio.atmo.upload.ready"
+          style="display:none;font-size:12px;font-weight:800;padding:6px 10px;border-radius:999px;width:fit-content;border:1px solid rgba(120,255,190,.22);background:rgba(120,255,190,.08);"
+        >
           Hazır ✓
         </div>
       </div>
@@ -1181,7 +1422,8 @@
     <button class="atmBigCtaBtn atmBigCtaBtn--pro"
             type="button"
             data-atm-generate
-            data-atm-mode="pro">
+            data-atm-mode="pro"
+            data-i18n="studio.atmo.generate.super">
       🎬 Süper Atmosfer Video Oluştur (45 Kredi)
     </button>
   </div>
