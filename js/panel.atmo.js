@@ -6,6 +6,90 @@
   const APP_KEY = "atmo";
   const MAX_ITEMS = 30;
 
+
+  const ATMO_PANEL_FALLBACK = {
+    tr: {
+      "studio.atmo.panel.title": "Atmosfer Videolarım",
+      "studio.atmo.panel.empty": "Henüz atmosfer videosu bulunmuyor.",
+      "studio.atmo.panel.noResults": "Aramanızla eşleşen atmosfer videosu bulunamadı.",
+      "studio.atmo.panel.status.ready": "Hazır",
+      "studio.atmo.panel.status.processing": "İşleniyor",
+      "studio.atmo.panel.status.failed": "Hata",
+      "studio.atmo.download.success": "Atmosfer videosu indirildi.",
+      "studio.atmo.download.failed": "Atmosfer videosu indirilemedi.",
+      "studio.atmo.delete.success": "Atmosfer videosu silindi.",
+      "studio.atmo.delete.failed": "Atmosfer videosu silinemedi."
+    },
+    en: {
+      "studio.atmo.panel.title": "My Atmosphere Videos",
+      "studio.atmo.panel.empty": "No atmosphere videos yet.",
+      "studio.atmo.panel.noResults": "No atmosphere videos matched your search.",
+      "studio.atmo.panel.status.ready": "Ready",
+      "studio.atmo.panel.status.processing": "Processing",
+      "studio.atmo.panel.status.failed": "Failed",
+      "studio.atmo.download.success": "Atmosphere video downloaded.",
+      "studio.atmo.download.failed": "Atmosphere video could not be downloaded.",
+      "studio.atmo.delete.success": "Atmosphere video deleted.",
+      "studio.atmo.delete.failed": "Atmosphere video could not be deleted."
+    }
+  };
+
+  function getAtmoPanelLanguage() {
+    try {
+      if (window.AIVO_STUDIO_I18N?.getLanguage) {
+        return String(window.AIVO_STUDIO_I18N.getLanguage() || "tr")
+          .toLowerCase()
+          .startsWith("en") ? "en" : "tr";
+      }
+    } catch {}
+
+    return String(window.AIVO_LANG || document.documentElement.lang || "tr")
+      .toLowerCase()
+      .startsWith("en") ? "en" : "tr";
+  }
+
+  function atmoPanelText(key, fallback = "") {
+    try {
+      if (window.AIVO_STUDIO_I18N?.t) {
+        const translated = window.AIVO_STUDIO_I18N.t(key, fallback);
+        if (translated && translated !== key) return translated;
+      }
+    } catch {}
+
+    try {
+      if (typeof window.studioT === "function") {
+        const translated = window.studioT(key, fallback);
+        if (translated && translated !== key) return translated;
+      }
+    } catch {}
+
+    const lang = getAtmoPanelLanguage();
+    return ATMO_PANEL_FALLBACK[lang]?.[key] ||
+      ATMO_PANEL_FALLBACK.tr[key] ||
+      fallback ||
+      key;
+  }
+
+  function atmoPanelToast(type, message) {
+    if (!message) return;
+
+    try {
+      if (window.toast && typeof window.toast[type] === "function") {
+        window.toast[type](message);
+        return;
+      }
+
+      if (typeof window.toast === "function") {
+        window.toast(message, type);
+        return;
+      }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        window.Toast.show(message, type);
+      }
+    } catch {}
+  }
+
   const safeStr = (v) => String(v == null ? "" : v).trim();
   const esc = (s) =>
     safeStr(s)
@@ -274,7 +358,10 @@
     const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
+      return {
+        text: atmoPanelText("studio.atmo.panel.status.failed", "Hata"),
+        kind: "bad"
+      };
     }
 
     if (
@@ -283,7 +370,10 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: "Hazır", kind: "ok" };
+      return {
+        text: atmoPanelText("studio.atmo.panel.status.ready", "Hazır"),
+        kind: "ok"
+      };
     }
 
     if (
@@ -292,10 +382,16 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: "İşleniyor", kind: "mid" };
+      return {
+        text: atmoPanelText("studio.atmo.panel.status.processing", "İşleniyor"),
+        kind: "mid"
+      };
     }
 
-    return { text: st || "Hazır", kind: "mid" };
+    return {
+      text: st || atmoPanelText("studio.atmo.panel.status.ready", "Hazır"),
+      kind: "mid"
+    };
   }
 
   function createAtmosPanel(host) {
@@ -352,6 +448,14 @@ const onSearchInput = (e) => {
 
 document.addEventListener("input", onSearchInput, true);
 document.addEventListener("search", onSearchInput, true);
+
+const onAtmoPanelLanguageChange = () => {
+  lastRenderSignature = "";
+  render();
+};
+
+document.addEventListener("aivo:language-change", onAtmoPanelLanguageChange);
+document.addEventListener("aivo:studio:i18n-applied", onAtmoPanelLanguageChange);
 
 setTimeout(syncSearchFromInput, 0);
     const setHeaderMeta = (t) => {
@@ -646,23 +750,33 @@ function render() {
   const items = combinedItems();
 
   const hasProcessing = items.some((j) => isProcessing(j));
-  setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
+  setHeaderMeta(
+    hasProcessing
+      ? atmoPanelText("studio.atmo.panel.status.processing", "İşleniyor") + "…"
+      : atmoPanelText("studio.atmo.panel.status.ready", "Hazır")
+  );
 
+  // Video-ready toast ana Atmosphere modülü tarafından gösteriliyor.
+  // Panelde ikinci bir toast üretmeyerek çift bildirim engelleniyor.
   if (prevHasProcessing && !hasProcessing) {
     const readyJob = items.find((j) => isReady(j));
     const readyJobId = safeStr(readyJob?.job_id || readyJob?.id);
-
-    if (readyJobId && readyJobId !== lastReadyToastJobId) {
-      lastReadyToastJobId = readyJobId;
-      try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
-    }
+    if (readyJobId) lastReadyToastJobId = readyJobId;
   }
 
   prevHasProcessing = hasProcessing;
 
   if (!items.length) {
     const emptyHtml = `<div class="atmoEmpty">${
-      state.query ? "Aramana uygun atmos üretim bulunamadı." : "Henüz atmos üretim yok."
+      state.query
+        ? atmoPanelText(
+            "studio.atmo.panel.noResults",
+            "Aramanızla eşleşen atmosfer videosu bulunamadı."
+          )
+        : atmoPanelText(
+            "studio.atmo.panel.empty",
+            "Henüz atmosfer videosu bulunmuyor."
+          )
     }</div>`;
 
     if (lastRenderSignature !== emptyHtml) {
@@ -838,8 +952,25 @@ function render() {
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
+
+        atmoPanelToast(
+          "success",
+          atmoPanelText(
+            "studio.atmo.download.success",
+            "Atmosfer videosu indirildi."
+          )
+        );
       } catch (err) {
         console.error("[ATMO PANEL] download failed", err);
+
+        atmoPanelToast(
+          "error",
+          atmoPanelText(
+            "studio.atmo.download.failed",
+            "Atmosfer videosu indirilemedi."
+          )
+        );
+
         window.open(dlUrl, "_blank", "noopener");
       }
 
@@ -879,11 +1010,31 @@ if (act === "delete") {
     if (!ok) {
       deletedIds.delete(jobId);
       db.hydrate(true);
+
+      atmoPanelToast(
+        "error",
+        atmoPanelText(
+          "studio.atmo.delete.failed",
+          "Atmosfer videosu silinemedi."
+        )
+      );
     } else {
-      try { window.toast?.success?.("Video silindi"); } catch {}
+      atmoPanelToast(
+        "success",
+        atmoPanelText(
+          "studio.atmo.delete.success",
+          "Atmosfer videosu silindi."
+        )
+      );
     }
   } else {
-    try { window.toast?.success?.("Video silindi"); } catch {}
+    atmoPanelToast(
+      "success",
+      atmoPanelText(
+        "studio.atmo.delete.success",
+        "Atmosfer videosu silindi."
+      )
+    );
   }
 
   return;
@@ -1040,7 +1191,9 @@ const onJobCreated = (e) => {
 
           if (!key.includes("atmo")) return;
 
-          setHeaderMeta("İşleniyor…");
+          setHeaderMeta(
+            atmoPanelText("studio.atmo.panel.status.processing", "İşleniyor") + "…"
+          );
 
           upsertEphemeralProcessing({
             job_id: job?.job_id || job?.id,
@@ -1182,6 +1335,15 @@ function destroy() {
   } catch {}
 
   try {
+    document.removeEventListener("search", onSearchInput, true);
+  } catch {}
+
+  try {
+    document.removeEventListener("aivo:language-change", onAtmoPanelLanguageChange);
+    document.removeEventListener("aivo:studio:i18n-applied", onAtmoPanelLanguageChange);
+  } catch {}
+
+  try {
     db && db.destroy();
   } catch {}
 
@@ -1193,8 +1355,8 @@ function destroy() {
 
   window.RightPanel.register(APP_KEY, {
     header: {
-      title: "Atmosfer Video",
-      meta: "Hazır",
+      title: atmoPanelText("studio.atmo.panel.title", "Atmosfer Videolarım"),
+      meta: atmoPanelText("studio.atmo.panel.status.ready", "Hazır"),
   searchEnabled: true,
       resetSearch: true,
     },
