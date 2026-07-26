@@ -5,6 +5,30 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  function cartoonCharacterText(key, trText, enText) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key);
+
+      if (translated && translated !== key) {
+        return translated;
+      }
+    } catch {}
+
+    let lang = "tr";
+
+    try {
+      lang =
+        window.AIVO_STUDIO_I18N?.getLanguage?.() ||
+        window.AIVO_LANG ||
+        document.documentElement.lang ||
+        "tr";
+    } catch {}
+
+    return String(lang).toLowerCase().startsWith("en")
+      ? enText
+      : trText;
+  }
+
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
@@ -379,7 +403,11 @@
     const total = hasReferenceImage ? 30 : 20;
 
     btn.setAttribute("data-credit-cost", String(total));
-    btn.textContent = `🧩 Karakter Oluştur (${total} Kredi)`;
+    btn.textContent = cartoonCharacterText(
+      "studio.cartoon.character.generateWithCredit",
+      `🧩 Karakter Oluştur (${total} Kredi)`,
+      `🧩 Create Character (${total} Credits)`
+    ).replaceAll("{count}", String(total));
   }
 
   function updateCharacterDescCount(root) {
@@ -897,7 +925,11 @@
         const createBtn = root?.querySelector("[data-cartoon-character-create]");
         if (createBtn) {
           createBtn.disabled = false;
-          createBtn.textContent = "🧩 Karakter Oluştur";
+          createBtn.textContent = cartoonCharacterText(
+            "studio.cartoon.character.generateShort",
+            "🧩 Karakter Oluştur",
+            "🧩 Create Character"
+          );
         }
 
         syncCartoonCharacterAssistantState({
@@ -922,7 +954,15 @@
           renderCharacterOnly(root);
         }
 
-        try { window.toast?.success?.("Karakter hazır"); } catch {}
+        try {
+          window.toast?.success?.(
+            cartoonCharacterText(
+              "studio.cartoon.toast.characterReady",
+              "Karakteriniz hazır.",
+              "Your character is ready."
+            )
+          );
+        } catch {}
 
         return;
       }
@@ -1047,16 +1087,48 @@
                   }
                 });
 
-                try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+                try {
+                  window.toast?.error?.(
+                    cartoonCharacterText(
+                      "studio.cartoon.toast.creditRefunded",
+                      "İşlem başarısız oldu, kredi iade edildi.",
+                      "The operation failed and the credits were refunded."
+                    )
+                  );
+                } catch {}
               } else {
-                try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+                try {
+                  window.toast?.error?.(
+                    cartoonCharacterText(
+                      "studio.cartoon.toast.characterFailed",
+                      "Karakter oluşturulamadı.",
+                      "The character could not be created."
+                    )
+                  );
+                } catch {}
               }
             } else {
-              try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+              try {
+                window.toast?.error?.(
+                  cartoonCharacterText(
+                    "studio.cartoon.toast.characterFailed",
+                    "Karakter oluşturulamadı.",
+                    "The character could not be created."
+                  )
+                );
+              } catch {}
             }
           } catch (refundErr) {
             console.error("[CARTOON][CHARACTER] poll refund failed =", refundErr);
-            try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+            try {
+              window.toast?.error?.(
+                cartoonCharacterText(
+                  "studio.cartoon.toast.characterFailed",
+                  "Karakter oluşturulamadı.",
+                  "The character could not be created."
+                )
+              );
+            } catch {}
           }
         }
 
@@ -1065,7 +1137,11 @@
 
         if (createBtn) {
           createBtn.disabled = false;
-          createBtn.textContent = "🧩 Karakter Oluştur";
+          createBtn.textContent = cartoonCharacterText(
+            "studio.cartoon.character.generateShort",
+            "🧩 Karakter Oluştur",
+            "🧩 Create Character"
+          );
         }
 
         if (!refundDone) {
@@ -1111,7 +1187,11 @@
 
       if (createBtn) {
         createBtn.disabled = false;
-        createBtn.textContent = "🧩 Karakter Oluştur";
+        createBtn.textContent = cartoonCharacterText(
+          "studio.cartoon.character.generateShort",
+          "🧩 Karakter Oluştur",
+          "🧩 Create Character"
+        );
       }
 
       syncCartoonCharacterAssistantState({
@@ -1391,8 +1471,16 @@
         try {
           window.toast?.error?.(
             isPolicyBlocked
-              ? "Bu görsel kullanılamaz."
-              : "Yükleme hatası"
+              ? cartoonCharacterText(
+                  "studio.cartoon.error.mediaPolicyBlocked",
+                  "Bu görsel kullanılamaz.",
+                  "This image cannot be used."
+                )
+              : cartoonCharacterText(
+                  "studio.cartoon.error.uploadFailed",
+                  "Yükleme hatası.",
+                  "Upload failed."
+                )
           );
         } catch {}
       }
@@ -1674,7 +1762,15 @@
         }
       });
 
-      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+      try {
+        window.toast?.info?.(
+          cartoonCharacterText(
+            "studio.cartoon.error.descriptionRequired",
+            "Lütfen karakter için kısa bir tanım yazın.",
+            "Please enter a short description for the character."
+          )
+        );
+      } catch {}
       const descInput = qs("#cartoon-character-desc", root);
       if (descInput) descInput.focus();
       return;
@@ -1693,7 +1789,15 @@
           }
         });
 
-        try { window.toast?.info?.("Referans görsel henüz yükleniyor"); } catch {}
+        try {
+          window.toast?.info?.(
+            cartoonCharacterText(
+              "studio.cartoon.character.referenceUploading",
+              "Referans görsel henüz yükleniyor.",
+              "The reference image is still uploading."
+            )
+          );
+        } catch {}
         return;
       }
 
@@ -1722,8 +1826,16 @@
         try {
           window.toast?.error?.(
             isPolicyBlocked
-              ? "Bu görsel kullanılamaz."
-              : "Görseli değiştir veya yeniden yükle."
+              ? cartoonCharacterText(
+                  "studio.cartoon.error.mediaPolicyBlocked",
+                  "Bu görsel kullanılamaz.",
+                  "This image cannot be used."
+                )
+              : cartoonCharacterText(
+                  "studio.cartoon.character.referenceUploadFailed",
+                  "Görseli değiştir veya yeniden yükle.",
+                  "Change the image or upload it again."
+                )
           );
         } catch {}
 
@@ -1833,7 +1945,15 @@
             }
           });
 
-          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+          try {
+            window.toast?.error?.(
+              cartoonCharacterText(
+                "studio.cartoon.toast.creditRefunded",
+                "İşlem başarısız oldu, kredi iade edildi.",
+                "The operation failed and the credits were refunded."
+              )
+            );
+          } catch {}
           return true;
         }
       } catch (refundErr) {
@@ -1928,7 +2048,11 @@
 
     state.characterCreatePending = true;
     characterCreateBtn.disabled = true;
-    characterCreateBtn.textContent = "Karakter Oluşturuluyor...";
+    characterCreateBtn.textContent = cartoonCharacterText(
+      "studio.cartoon.character.generating",
+      "Karakter Oluşturuluyor...",
+      "Creating Character..."
+    );
 
     syncCartoonCharacterAssistantState({
       policyState: "allow",
@@ -1947,7 +2071,15 @@
     });
 
     try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
-    try { window.toast?.success?.("Karakter oluşturuluyor"); } catch {}
+    try {
+      window.toast?.success?.(
+        cartoonCharacterText(
+          "studio.cartoon.toast.characterStarted",
+          "Karakter oluşturma başlatıldı.",
+          "Character creation started."
+        )
+      );
+    } catch {}
 
     try {
       const r = await fetch("/api/providers/fal/cartoon/create", {
@@ -1991,7 +2123,11 @@
     } catch (err) {
       state.characterCreatePending = false;
       characterCreateBtn.disabled = false;
-      characterCreateBtn.textContent = "🧩 Karakter Oluştur";
+      characterCreateBtn.textContent = cartoonCharacterText(
+        "studio.cartoon.character.generateShort",
+        "🧩 Karakter Oluştur",
+        "🧩 Create Character"
+      );
 
       console.error("[CARTOON][CHARACTER] create error:", err);
 
@@ -2015,7 +2151,15 @@
       });
 
       if (!refunded) {
-        try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+        try {
+          window.toast?.error?.(
+            cartoonCharacterText(
+              "studio.cartoon.toast.characterFailed",
+              "Karakter oluşturulamadı.",
+              "The character could not be created."
+            )
+          );
+        } catch {}
       }
     }
   });
