@@ -14,6 +14,176 @@
   if (window.__ATM_V2_BIND__) return;
   window.__ATM_V2_BIND__ = true;
 
+
+  /* ------------------------------------------------------------
+     0.1) Runtime i18n helpers
+     ------------------------------------------------------------ */
+  const ATMO_RUNTIME_DICTIONARY = {
+    tr: {
+      "studio.atmo.runtime.generating": "Üretiliyor…",
+      "studio.atmo.runtime.imageAdded": "Resim eklendi.",
+      "studio.atmo.runtime.logoAdded": "Logo eklendi · +10 kredi",
+      "studio.atmo.runtime.audioAdded": "Müzik eklendi · +10 kredi",
+      "studio.atmo.runtime.imageRemoved": "Görsel kaldırıldı.",
+      "studio.atmo.runtime.logoRemoved": "Logo kaldırıldı · -10 kredi",
+      "studio.atmo.runtime.audioRemoved": "Müzik kaldırıldı · -10 kredi",
+      "studio.atmo.runtime.policyImageBlocked": "Bu görsel kullanılamaz.",
+      "studio.atmo.runtime.policyPromptBlocked": "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et.",
+      "studio.atmo.runtime.refundDefault": "İşlem başarısız oldu. Krediniz iade edildi.",
+      "studio.atmo.runtime.refundImageTooSmall": "Yüklenen görsel en az 300×300 px olmalı. Krediniz iade edildi.",
+      "studio.atmo.runtime.refundImageProbeException": "Görsel boyutu doğrulanamadı. Krediniz iade edildi.",
+      "studio.atmo.runtime.refundImageProbeFailed": "Görsel okunamadı. Krediniz iade edildi.",
+      "studio.atmo.runtime.imagePreview": "Görsel önizlemesi",
+      "studio.atmo.runtime.logoPreview": "Logo önizlemesi"
+    },
+    en: {
+      "studio.atmo.runtime.generating": "Generating…",
+      "studio.atmo.runtime.imageAdded": "Image added.",
+      "studio.atmo.runtime.logoAdded": "Logo added · +10 credits",
+      "studio.atmo.runtime.audioAdded": "Audio added · +10 credits",
+      "studio.atmo.runtime.imageRemoved": "Image removed.",
+      "studio.atmo.runtime.logoRemoved": "Logo removed · -10 credits",
+      "studio.atmo.runtime.audioRemoved": "Audio removed · -10 credits",
+      "studio.atmo.runtime.policyImageBlocked": "This image cannot be used.",
+      "studio.atmo.runtime.policyPromptBlocked": "This request cannot be generated as written. Describe the scene and video style without using the name of an artist or political figure.",
+      "studio.atmo.runtime.refundDefault": "The operation failed. Your credits were refunded.",
+      "studio.atmo.runtime.refundImageTooSmall": "The uploaded image must be at least 300×300 px. Your credits were refunded.",
+      "studio.atmo.runtime.refundImageProbeException": "The image dimensions could not be verified. Your credits were refunded.",
+      "studio.atmo.runtime.refundImageProbeFailed": "The image could not be read. Your credits were refunded.",
+      "studio.atmo.runtime.imagePreview": "Image preview",
+      "studio.atmo.runtime.logoPreview": "Logo preview"
+    }
+  };
+
+  function normalizeAtmoLanguage(value) {
+    return String(value || "").trim().toLowerCase().startsWith("en")
+      ? "en"
+      : "tr";
+  }
+
+  function getAtmoLanguage() {
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.getLanguage === "function"
+      ) {
+        return normalizeAtmoLanguage(window.AIVO_STUDIO_I18N.getLanguage());
+      }
+    } catch (_) {}
+
+    return normalizeAtmoLanguage(
+      window.AIVO_LANG ||
+      document.documentElement.lang ||
+      "tr"
+    );
+  }
+
+  function formatAtmoText(value, parameters) {
+    let output = String(value == null ? "" : value);
+
+    if (!parameters || typeof parameters !== "object") {
+      return output;
+    }
+
+    Object.keys(parameters).forEach((key) => {
+      output = output.replace(
+        new RegExp("\\{" + key + "\\}", "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function registerAtmoRuntimeDictionary() {
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.registerPack === "function"
+      ) {
+        window.AIVO_STUDIO_I18N.registerPack(ATMO_RUNTIME_DICTIONARY);
+        return;
+      }
+
+      if (window.AIVO_I18N?.tr && window.AIVO_I18N?.en) {
+        Object.assign(window.AIVO_I18N.tr, ATMO_RUNTIME_DICTIONARY.tr);
+        Object.assign(window.AIVO_I18N.en, ATMO_RUNTIME_DICTIONARY.en);
+      }
+    } catch (error) {
+      console.warn("[ATM][i18n] dictionary registration failed:", error);
+    }
+  }
+
+  function atmoText(key, fallback, parameters) {
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.t === "function"
+      ) {
+        const translated = window.AIVO_STUDIO_I18N.t(
+          key,
+          fallback || key,
+          parameters
+        );
+
+        if (translated && translated !== key) {
+          return translated;
+        }
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof window.studioT === "function") {
+        const translated = window.studioT(
+          key,
+          fallback || key,
+          parameters
+        );
+
+        if (translated && translated !== key) {
+          return translated;
+        }
+      }
+    } catch (_) {}
+
+    const lang = getAtmoLanguage();
+    const value =
+      ATMO_RUNTIME_DICTIONARY[lang]?.[key] ||
+      ATMO_RUNTIME_DICTIONARY.tr[key] ||
+      fallback ||
+      key;
+
+    return formatAtmoText(value, parameters);
+  }
+
+  function atmoToast(type, key, fallback, parameters) {
+    const message = atmoText(key, fallback, parameters);
+
+    try {
+      if (window.toast && typeof window.toast[type] === "function") {
+        window.toast[type](message);
+        return;
+      }
+
+      if (typeof window.toast === "function") {
+        window.toast(message, type);
+        return;
+      }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        window.Toast.show(message, type);
+        return;
+      }
+    } catch (error) {
+      console.warn("[ATM][i18n] toast failed:", error);
+    }
+
+    if (type === "error") console.error("[ATM]", message);
+    else console.log("[ATM]", message);
+  }
+
+  registerAtmoRuntimeDictionary();
+
   function getAtmoAssistantState() {
     if (!window.__AIVO_ATMO_ASSISTANT_STATE__) {
       window.__AIVO_ATMO_ASSISTANT_STATE__ = {
@@ -269,12 +439,12 @@ async function withGenerateLoading(btn, run, root) {
   btn.classList.add("is-pressed");
 
   const prevText = typeof btn.textContent === "string" ? btn.textContent : "";
-  if (prevText) btn.textContent = "Üretiliyor…";
+  if (prevText) btn.textContent = atmoText("studio.atmo.runtime.generating", "Üretiliyor…");
 
   const startedAt = Date.now();
 
   try {
-    try { window.toast?.success?.("Atmosfer video üretimi başladı"); } catch {}
+    atmoToast("success", "studio.atmo.toast.started", "Atmosfer video üretimi başlatıldı.");
 
     const res = await Promise.resolve().then(run);
     const remainingForEvent = Math.max(250, GEN_MAX_MS - (Date.now() - startedAt));
@@ -297,14 +467,22 @@ async function withGenerateLoading(btn, run, root) {
     return { ok: true, res, evt };
   } catch (err) {
     console.error("[ATM] generate error:", err);
-    try { window.toast?.error?.(String(err?.message || err || "generate_error")); } catch {}
+    atmoToast(
+      "error",
+      "studio.atmo.error.requestFailed",
+      "Atmosfer video üretimi başlatılamadı. Lütfen tekrar deneyin."
+    );
     return { ok: false, error: err };
   } finally {
     try {
       btn.disabled = false;
       btn.classList.remove("is-loading", "is-pressed");
       btn.removeAttribute("aria-busy");
-      if (prevText) btn.textContent = prevText;
+      if (typeof syncAtmoGenerateCredits === "function") {
+        syncAtmoGenerateCredits(r);
+      } else if (prevText) {
+        btn.textContent = prevText;
+      }
     } catch {}
 
     try { if (r && r.dataset) delete r.dataset.atmBusy; } catch {}
@@ -749,12 +927,20 @@ function isAtmoPolicyBlocked(raw) {
 
     if (basicBtn) {
       basicBtn.setAttribute("data-credit-cost", String(basicCalc.total));
-      basicBtn.textContent = `🎬 Atmosfer Video Oluştur (${basicCalc.total} Kredi)`;
+      basicBtn.textContent = atmoText(
+        "studio.atmo.generate.basicWithCredit",
+        "🎬 Atmosfer Video Oluştur ({count} Kredi)",
+        { count: basicCalc.total }
+      );
     }
 
     if (proBtn) {
       proBtn.setAttribute("data-credit-cost", String(proCalc.total));
-      proBtn.textContent = `✨ Süper Atmosfer Video Oluştur (${proCalc.total} Kredi)`;
+      proBtn.textContent = atmoText(
+        "studio.atmo.generate.superWithCredit",
+        "🎬 Süper Atmosfer Video Oluştur ({count} Kredi)",
+        { count: proCalc.total }
+      );
     }
   }
 
@@ -775,7 +961,12 @@ function isAtmoPolicyBlocked(raw) {
     if ((kind === "image" || kind === "logo") && !qs(`#${prevId}`, col)) {
       const img = document.createElement("img");
       img.id = prevId;
-      img.alt = kind + " preview";
+      img.alt = atmoText(
+        kind === "logo"
+          ? "studio.atmo.runtime.logoPreview"
+          : "studio.atmo.runtime.imagePreview",
+        kind === "logo" ? "Logo önizlemesi" : "Görsel önizlemesi"
+      );
       img.style.display = "none";
       img.style.width = "64px";
       img.style.height = "64px";
@@ -789,7 +980,7 @@ function isAtmoPolicyBlocked(raw) {
     if (!qs(`#${badgeId}`, col)) {
       const b = document.createElement("div");
       b.id = badgeId;
-      b.textContent = "Hazır ✓";
+      b.textContent = atmoText("studio.atmo.upload.ready", "Hazır ✓");
       b.style.display = "none";
       b.style.marginTop = "8px";
       b.style.fontSize = "12px";
@@ -841,15 +1032,19 @@ function isAtmoPolicyBlocked(raw) {
       const proAudioClearBtn = kind === "audio" ? document.getElementById("atmProAudioClear") : null;
 
       if (nameEl) {
-        if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
-        else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
-        else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
-        else nameEl.textContent = next.name || "Dosya seçilmedi";
+        if (next.status === "uploading") nameEl.textContent = atmoText("studio.atmo.upload.uploading", "Yükleniyor…");
+        else if (next.status === "ready") nameEl.textContent = next.name || atmoText("studio.atmo.upload.ready", "Hazır ✓");
+        else if (next.status === "error") nameEl.textContent = atmoText("studio.atmo.upload.failed", "Yükleme hatası");
+        else nameEl.textContent = next.name || atmoText("studio.atmo.file.notSelected", "Dosya seçilmedi");
       }
 
       if (statusEl) {
-        if (next.status === "ready") statusEl.style.display = "";
-        else statusEl.style.display = "none";
+        if (next.status === "ready") {
+          statusEl.style.display = "";
+          statusEl.textContent = atmoText("studio.atmo.upload.ready", "Hazır ✓");
+        } else {
+          statusEl.style.display = "none";
+        }
       }
 
       if (proLogoClearBtn) {
@@ -868,7 +1063,7 @@ function isAtmoPolicyBlocked(raw) {
         if (!b) return;
         b.toggleAttribute?.("disabled", uploading);
         b.classList.toggle?.("is-uploading", uploading);
-        if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
+        if (uploading) b.setAttribute("title", atmoText("studio.atmo.status.uploading", "Dosyalar yükleniyor..."));
         else b.removeAttribute("title");
       });
 
@@ -896,10 +1091,10 @@ function isAtmoPolicyBlocked(raw) {
     const prevEl = qs(`#${prevId}`, r);
 
     if (nameEl) {
-      if (next.status === "uploading") nameEl.textContent = "Yükleniyor…";
-      else if (next.status === "ready") nameEl.textContent = next.name || "Hazır ✓";
-      else if (next.status === "error") nameEl.textContent = "Yükleme hatası";
-      else nameEl.textContent = next.name || "Dosya seçilmedi";
+      if (next.status === "uploading") nameEl.textContent = atmoText("studio.atmo.upload.uploading", "Yükleniyor…");
+      else if (next.status === "ready") nameEl.textContent = next.name || atmoText("studio.atmo.upload.ready", "Hazır ✓");
+      else if (next.status === "error") nameEl.textContent = atmoText("studio.atmo.upload.failed", "Yükleme hatası");
+      else nameEl.textContent = next.name || atmoText("studio.atmo.file.notSelected", "Dosya seçilmedi");
     }
 
     if (clearEl) {
@@ -911,11 +1106,11 @@ function isAtmoPolicyBlocked(raw) {
       if (next.status === "uploading") badgeEl.style.display = "none";
       if (next.status === "error") {
         badgeEl.style.display = "";
-        badgeEl.textContent = "Hata";
+        badgeEl.textContent = atmoText("studio.atmo.upload.error", "Hata");
         badgeEl.style.border = "1px solid rgba(255,120,120,.25)";
         badgeEl.style.background = "rgba(255,120,120,.10)";
       } else {
-        badgeEl.textContent = "Hazır ✓";
+        badgeEl.textContent = atmoText("studio.atmo.upload.ready", "Hazır ✓");
         badgeEl.style.border = "1px solid rgba(120,255,190,.22)";
         badgeEl.style.background = "rgba(120,255,190,.08)";
       }
@@ -936,7 +1131,7 @@ function isAtmoPolicyBlocked(raw) {
       if (!b) return;
       b.toggleAttribute?.("disabled", uploading);
       b.classList.toggle?.("is-uploading", uploading);
-      if (uploading) b.setAttribute("title", "Dosyalar yükleniyor…");
+      if (uploading) b.setAttribute("title", atmoText("studio.atmo.status.uploading", "Dosyalar yükleniyor..."));
       else b.removeAttribute("title");
     });
   }
@@ -1120,13 +1315,19 @@ const isPolicyBlocked =
   errText.includes("gercek kisi") ||
   errText.includes("impersonation");
 
-  try {
-    window.toast?.error?.(
-      isPolicyBlocked
-        ? "Bu görsel kullanılamaz."
-        : "Yükleme hatası"
+  if (isPolicyBlocked) {
+    atmoToast(
+      "error",
+      "studio.atmo.runtime.policyImageBlocked",
+      "Bu görsel kullanılamaz."
     );
-  } catch {}
+  } else {
+    atmoToast(
+      "error",
+      "studio.atmo.upload.failed",
+      "Yükleme hatası"
+    );
+  }
 
   return null;
 }
@@ -1448,7 +1649,7 @@ document.addEventListener(
       syncAtmoGenerateCredits(root);
 
       if (file && uploaded?.url) {
-        try { window.toast?.success?.("Resim eklendi"); } catch {}
+        atmoToast("success", "studio.atmo.runtime.imageAdded", "Resim eklendi.");
       }
 
       return;
@@ -1461,7 +1662,7 @@ document.addEventListener(
       syncAtmoGenerateCredits(root);
 
       if (file && uploaded?.url) {
-        try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+        atmoToast("success", "studio.atmo.runtime.logoAdded", "Logo eklendi · +10 kredi");
       }
 
       return;
@@ -1474,7 +1675,7 @@ document.addEventListener(
       syncAtmoGenerateCredits(root);
 
       if (file && uploaded?.url) {
-        try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+        atmoToast("success", "studio.atmo.runtime.audioAdded", "Müzik eklendi · +10 kredi");
       }
 
       return;
@@ -1487,7 +1688,7 @@ document.addEventListener(
       syncAtmoGenerateCredits(root);
 
       if (file && uploaded?.url) {
-        try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+        atmoToast("success", "studio.atmo.runtime.logoAdded", "Logo eklendi · +10 kredi");
       }
 
       return;
@@ -1500,7 +1701,7 @@ document.addEventListener(
       syncAtmoGenerateCredits(root);
 
       if (file && uploaded?.url) {
-        try { window.toast?.success?.("Resim eklendi"); } catch {}
+        atmoToast("success", "studio.atmo.runtime.imageAdded", "Resim eklendi.");
       }
 
       return;
@@ -1513,7 +1714,7 @@ document.addEventListener(
       syncAtmoGenerateCredits(root);
 
       if (file && uploaded?.url) {
-        try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+        atmoToast("success", "studio.atmo.runtime.audioAdded", "Müzik eklendi · +10 kredi");
       }
 
       return;
@@ -1758,7 +1959,7 @@ function buildBasicPayload() {
     bindAtmoPolicyReset();
 
     if (isUploadingAny()) {
-      try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
+      atmoToast("info", "studio.atmo.status.uploading", "Dosyalar yükleniyor...");
       return;
     }
 
@@ -1789,7 +1990,7 @@ function buildBasicPayload() {
       resetAtmoPolicyUI(root, promptEl, btn);
 
       if (!raw) {
-        try { window.toast?.info?.("Süper Mod için önce prompt yazmalısın."); } catch {}
+        atmoToast("info", "studio.atmo.error.promptRequired", "Lütfen sahne ve atmosferi açıklayan bir prompt girin.");
         if (promptEl) promptEl.focus();
         return;
       }
@@ -1831,7 +2032,7 @@ function buildBasicPayload() {
             color:rgba(255,245,248,.96);
             text-shadow:0 0 10px rgba(255,255,255,.10), 0 0 22px rgba(255,120,150,.18);
             animation:aivoPolicyTextGlow 1.8s ease-in-out infinite;
-          ">Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et.</span>
+          ">${atmoText("studio.atmo.runtime.policyPromptBlocked", "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et.")}</span>
         `;
         }
 
@@ -1850,7 +2051,7 @@ function buildBasicPayload() {
           visibleError: "policy_blocked",
           visiblePolicyNote:
             readAtmoPolicyNote(root) ||
-            "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et."
+            atmoText("studio.atmo.runtime.policyPromptBlocked", "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et.")
         });
 
         return;
@@ -1880,14 +2081,14 @@ if (mode === "basic") {
   syncLegacyEffectsInput(root);
 
   if (!activeSceneBtn || !sceneKeyFromDom) {
-    try { window.toast?.info?.("Basit Mod için önce bir arka mekan seçmelisin."); } catch {}
+    atmoToast("info", "studio.atmo.error.sceneRequired", "Lütfen bir arka mekan seçin.");
     const firstScene = document.querySelector('#atmScenes .smpack-choice[data-atm-scene]');
     if (firstScene) firstScene.focus();
     return;
   }
 
   if (!selectedEffectsFromDom.length) {
-    try { window.toast?.info?.("En az 1 atmosfer seçmelisin."); } catch {}
+    atmoToast("info", "studio.atmo.error.effectRequired", "Lütfen en az bir atmosfer efekti seçin.");
     const firstEffect = document.querySelector('#atmEffects [data-atm-eff]');
     if (firstEffect) firstEffect.focus();
     return;
@@ -1970,17 +2171,17 @@ async function tryRefund(reason, extraMeta = {}) {
         ""
       ).toLowerCase();
 
-      let toastText = "İşlem başarısız oldu. Krediniz iade edildi.";
+      let toastText = atmoText("studio.atmo.runtime.refundDefault", "İşlem başarısız oldu. Krediniz iade edildi.");
 
       if (errText.includes("image_too_small") || errText.includes("300x300")) {
-        toastText = "Yüklenen görsel en az 300x300 olmalı. Krediniz iade edildi.";
+        toastText = atmoText("studio.atmo.runtime.refundImageTooSmall", "Yüklenen görsel en az 300×300 px olmalı. Krediniz iade edildi.");
       } else if (errText.includes("image_probe_exception")) {
-        toastText = "Görsel boyutu doğrulanamadı. Krediniz iade edildi.";
+        toastText = atmoText("studio.atmo.runtime.refundImageProbeException", "Görsel boyutu doğrulanamadı. Krediniz iade edildi.");
       } else if (errText.includes("image_probe_failed")) {
-        toastText = "Görsel okunamadı. Krediniz iade edildi.";
+        toastText = atmoText("studio.atmo.runtime.refundImageProbeFailed", "Görsel okunamadı. Krediniz iade edildi.");
       }
 
-      try { window.toast?.error?.(toastText); } catch {}
+      try { atmoToast("error", "", toastText); } catch {}
 
       return true;
     }
@@ -2067,7 +2268,12 @@ async function tryRefund(reason, extraMeta = {}) {
 
     try {
       if (creditCost > 0) {
-        window.toast?.success?.(`${creditCost} kredi düşüldü`);
+        atmoToast(
+          "success",
+          "studio.atmo.status.creditDeducted",
+          "{count} kredi kullanıldı.",
+          { count: creditCost }
+        );
       }
     } catch {}
 
@@ -2215,7 +2421,7 @@ if (logoClearBtn) {
   setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
   try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
   syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+  atmoToast("success", "studio.atmo.runtime.logoRemoved", "Logo kaldırıldı · -10 kredi");
   return;
 }
 
@@ -2236,7 +2442,7 @@ if (imageClearBtn) {
 
   setUploadUI(panel, "image", { status: "empty", url: "", name: "" });
   syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Görsel kaldırıldı"); } catch {}
+  atmoToast("success", "studio.atmo.runtime.imageRemoved", "Görsel kaldırıldı.");
   return;
 }
 
@@ -2257,7 +2463,7 @@ if (audioClearBtn) {
 
   setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
   syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+  atmoToast("success", "studio.atmo.runtime.audioRemoved", "Müzik kaldırıldı · -10 kredi");
   return;
 }
 const basicLogoClearBtn = closestWithin(e.target, "#atmLogoClear", root);
@@ -2278,7 +2484,7 @@ if (basicLogoClearBtn) {
   setUploadUI(panel, "logo", { status: "empty", url: "", name: "" });
   try { window.__ATMO_LOGO_PUBLIC_URL__ = ""; } catch {}
   syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+  atmoToast("success", "studio.atmo.runtime.logoRemoved", "Logo kaldırıldı · -10 kredi");
   return;
 }
 
@@ -2299,7 +2505,7 @@ if (basicAudioClearBtn) {
 
   setUploadUI(panel, "audio", { status: "empty", url: "", name: "" });
   syncAtmoGenerateCredits(root);
-  try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+  atmoToast("success", "studio.atmo.runtime.audioRemoved", "Müzik kaldırıldı · -10 kredi");
   return;
 }
       const btn = closestWithin(e.target, "[data-atm-generate]", root);
@@ -2314,7 +2520,7 @@ if (basicAudioClearBtn) {
       if (isUploadingAny()) {
         e.preventDefault();
         e.stopPropagation();
-        try { window.toast?.info?.("Dosyalar yükleniyor…"); } catch {}
+        atmoToast("info", "studio.atmo.status.uploading", "Dosyalar yükleniyor...");
         return;
       }
 
@@ -2336,6 +2542,14 @@ if (basicAudioClearBtn) {
     syncLegacyEffectsInput(root);
     syncAtmoGenerateCredits(root);
 
+    qsa('[data-atm-generate][aria-busy="true"], [data-atm-generate].is-loading', root)
+      .forEach((button) => {
+        button.textContent = atmoText(
+          "studio.atmo.runtime.generating",
+          "Üretiliyor…"
+        );
+      });
+
     const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
     if (shell) {
       const mode = state.mode || "basic";
@@ -2356,10 +2570,67 @@ if (basicAudioClearBtn) {
     }
   };
 
+  function refreshAtmoRuntimeLanguage() {
+    registerAtmoRuntimeDictionary();
+
+    const root = getAtmoPanelRoot();
+    if (!root) return;
+
+    syncAtmoGenerateCredits(root);
+
+    qsa('[data-atm-generate][aria-busy="true"], [data-atm-generate].is-loading', root)
+      .forEach((button) => {
+        button.textContent = atmoText(
+          "studio.atmo.runtime.generating",
+          "Üretiliyor…"
+        );
+      });
+
+    const shell = qs('.mode-shell[data-mode-shell="atmosphere"]', root);
+    const basicPanel = shell
+      ? qs('.mode-panel[data-mode-panel="basic"]', shell)
+      : root;
+    const proPanel = shell
+      ? qs('.mode-panel[data-mode-panel="pro"]', shell)
+      : root;
+
+    if (basicPanel) {
+      setUploadUI(basicPanel, "image", state.uploads.basicImage);
+      setUploadUI(basicPanel, "logo", state.uploads.logo);
+      setUploadUI(basicPanel, "audio", state.uploads.audio);
+    }
+
+    if (proPanel) {
+      setUploadUI(proPanel, "image", state.uploads.proImage);
+      setUploadUI(proPanel, "logo", state.uploads.logo);
+      setUploadUI(proPanel, "audio", state.uploads.audio);
+    }
+
+    const policyNote = proPanel?.querySelector?.("#atmPolicyNote");
+    if (policyNote && policyNote.style.display !== "none") {
+      const policyText = atmoText(
+        "studio.atmo.runtime.policyPromptBlocked",
+        "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan sahneyi ve video hissini tarif et."
+      );
+      const textTarget = policyNote.querySelector("span");
+      if (textTarget) textTarget.textContent = policyText;
+      else policyNote.textContent = policyText;
+    }
+  }
+
+  document.addEventListener("aivo:language-change", () => {
+    setTimeout(refreshAtmoRuntimeLanguage, 0);
+  });
+
+  document.addEventListener("aivo:studio:i18n-applied", () => {
+    setTimeout(refreshAtmoRuntimeLanguage, 0);
+  });
+
   init();
   setTimeout(init, 200);
   setTimeout(init, 800);
   setTimeout(init, 1600);
+  setTimeout(refreshAtmoRuntimeLanguage, 0);
 
   // ------------------------------------------------------------
   // ATMOS — PPE bridge (FINAL)
