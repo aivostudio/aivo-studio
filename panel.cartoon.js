@@ -166,8 +166,6 @@
   const toastError = (message) => showPanelToast("error", message);
   const toastInfo = (message) => showPanelToast("info", message);
 
-  registerPanelDictionary();
-
   const norm = (s) =>
     String(s || "")
       .trim()
@@ -1353,7 +1351,6 @@
     });
 
     const refreshPanelLanguage = () => {
-      registerPanelDictionary();
       renderCurrent();
       localizeCardControls(host);
 
@@ -1377,7 +1374,6 @@
 
     controller.start();
     document.addEventListener("aivo:language-change", refreshPanelLanguage);
-    document.addEventListener("aivo:studio:i18n-applied", refreshPanelLanguage);
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
     window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
@@ -1401,9 +1397,6 @@
         } catch {}
         try {
           document.removeEventListener("aivo:language-change", refreshPanelLanguage);
-        } catch {}
-        try {
-          document.removeEventListener("aivo:studio:i18n-applied", refreshPanelLanguage);
         } catch {}
         try {
           controlObserver.disconnect();
@@ -1457,7 +1450,6 @@
         },
 
         onShow(payload, context) {
-          registerPanelDictionary();
           if (context?.setHeader) {
             context.setHeader(translatedPanelHeader());
           }
