@@ -300,7 +300,6 @@
 
       if (!panelToastElement) return;
       panelToastElement.style.opacity = "0";
-      panelToastElement.style.transform = "translateY(8px)";
       panelToastElement.style.pointerEvents = "none";
     };
 
@@ -311,14 +310,15 @@
       toast.setAttribute("role", "status");
       toast.setAttribute("aria-live", "polite");
 
-      // IMPORTANT: This keeps the same right-side placement and paint model as
-      // the previously verified no-flash notice. It does not use the global
-      // toast portal and does not overlap the main cartoon workspace.
+      // Keep the AIVO toast visual without using the global toast portal.
+      // The toast is positioned relative to the main module area, matching
+      // the music panel placement while avoiding portal/layout repaint flash.
       toast.style.position = "fixed";
-      toast.style.right = "28px";
-      toast.style.bottom = "28px";
+      toast.style.left = "16px";
+      toast.style.right = "auto";
+      toast.style.bottom = "22px";
       toast.style.zIndex = "2147483000";
-      toast.style.width = "min(420px, calc(100vw - 56px))";
+      toast.style.width = "420px";
       toast.style.minHeight = "52px";
       toast.style.padding = "6px 14px";
       toast.style.boxSizing = "border-box";
@@ -332,8 +332,7 @@
       toast.style.boxShadow = "0 16px 42px rgba(0,0,0,.38)";
       toast.style.color = "rgba(255,255,255,.94)";
       toast.style.opacity = "0";
-      toast.style.transform = "translateY(8px)";
-      toast.style.transition = "opacity .16s ease, transform .16s ease";
+      toast.style.transition = "opacity .16s ease";
       toast.style.pointerEvents = "none";
       toast.style.backdropFilter = "none";
       toast.style.webkitBackdropFilter = "none";
@@ -409,8 +408,46 @@
       return toast;
     };
 
+    const positionPanelToast = (toast) => {
+      if (!toast) return;
+
+      const anchor =
+        document.getElementById("moduleHost") ||
+        document.querySelector("[data-module-host]") ||
+        document.getElementById("mainWorkspace") ||
+        host.closest("#moduleHost, #mainWorkspace") ||
+        host.parentElement;
+
+      const viewportPadding = 16;
+      const preferredWidth = 420;
+      const width = Math.min(
+        preferredWidth,
+        Math.max(280, window.innerWidth - viewportPadding * 2)
+      );
+
+      let left = Math.round((window.innerWidth - width) / 2);
+
+      try {
+        const rect = anchor?.getBoundingClientRect?.();
+        if (rect && rect.width > 0) {
+          left = Math.round(rect.left + (rect.width - width) / 2);
+        }
+      } catch {}
+
+      left = Math.max(
+        viewportPadding,
+        Math.min(left, window.innerWidth - width - viewportPadding)
+      );
+
+      toast.style.width = `${width}px`;
+      toast.style.left = `${left}px`;
+      toast.style.right = "auto";
+      toast.style.bottom = "22px";
+    };
+
     const showPanelToast = (type, trMessage, enMessage) => {
       const toast = ensurePanelToast();
+      positionPanelToast(toast);
       const isEnglish = panelLanguage() === "en";
 
       const titleMap = {
@@ -437,7 +474,6 @@
 
       toast.style.pointerEvents = "auto";
       toast.style.opacity = "1";
-      toast.style.transform = "translateY(0)";
 
       panelToastTimer = setTimeout(hidePanelToast, 2800);
     };
