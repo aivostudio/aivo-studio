@@ -23,21 +23,32 @@
 
   const panelLanguage = () => {
     try {
-      const language = window.AIVO_STUDIO_I18N?.getLanguage?.();
-      if (language) {
-        return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
-      }
-    } catch {}
+      const value = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (value) return String(value).toLowerCase().startsWith("en") ? "en" : "tr";
+    } catch (_) {}
 
     return String(
-      window.AIVO_LANG ||
-      document.documentElement.lang ||
-      "tr"
+      window.AIVO_LANG || document.documentElement.lang || "tr"
     ).toLowerCase().startsWith("en") ? "en" : "tr";
   };
 
   const panelText = (trText, enText) =>
     panelLanguage() === "en" ? enText : trText;
+
+  // Music panelindekiyle ayni ortak AIVO toast sistemi.
+  // Bu dosya toast DOM'u, portal stili veya yeni overlay olusturmaz.
+  const panelToast = (type, trMessage, enMessage) => {
+    const message = panelText(trMessage, enMessage);
+
+    try {
+      const api = window.toast;
+      if (!api) return;
+      if (type === "success" && api.success) return api.success(message);
+      if (type === "error" && api.error) return api.error(message);
+      if (type === "info" && api.info) return api.info(message);
+      if (api.show) return api.show(message);
+    } catch (_) {}
+  };
 
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
@@ -289,195 +300,6 @@
       if (elStatus) elStatus.textContent = t;
     };
 
-    let panelToastTimer = null;
-    let panelToastElement = null;
-
-    const hidePanelToast = () => {
-      if (panelToastTimer) {
-        clearTimeout(panelToastTimer);
-        panelToastTimer = null;
-      }
-
-      if (!panelToastElement) return;
-      panelToastElement.style.opacity = "0";
-      panelToastElement.style.pointerEvents = "none";
-    };
-
-    const ensurePanelToast = () => {
-      if (panelToastElement) return panelToastElement;
-
-      const toast = document.createElement("div");
-      toast.setAttribute("role", "status");
-      toast.setAttribute("aria-live", "polite");
-
-      // Keep the AIVO toast visual without using the global toast portal.
-      // The toast is positioned relative to the main module area, matching
-      // the music panel placement while avoiding portal/layout repaint flash.
-      toast.style.position = "fixed";
-      toast.style.left = "16px";
-      toast.style.right = "auto";
-      toast.style.bottom = "22px";
-      toast.style.zIndex = "2147483000";
-      toast.style.width = "420px";
-      toast.style.minHeight = "52px";
-      toast.style.padding = "6px 14px";
-      toast.style.boxSizing = "border-box";
-      toast.style.display = "grid";
-      toast.style.gridTemplateColumns = "32px minmax(0, 1fr) 32px";
-      toast.style.alignItems = "center";
-      toast.style.columnGap = "10px";
-      toast.style.borderRadius = "14px";
-      toast.style.border = "1px solid rgba(255,255,255,.22)";
-      toast.style.background = "rgba(20,20,30,.96)";
-      toast.style.boxShadow = "0 16px 42px rgba(0,0,0,.38)";
-      toast.style.color = "rgba(255,255,255,.94)";
-      toast.style.opacity = "0";
-      toast.style.transition = "opacity .16s ease";
-      toast.style.pointerEvents = "none";
-      toast.style.backdropFilter = "none";
-      toast.style.webkitBackdropFilter = "none";
-      toast.style.filter = "none";
-      toast.style.mixBlendMode = "normal";
-
-      const icon = document.createElement("div");
-      icon.style.width = "24px";
-      icon.style.height = "24px";
-      icon.style.margin = "0 auto";
-      icon.style.display = "grid";
-      icon.style.placeItems = "center";
-      icon.style.borderRadius = "999px";
-      icon.style.background = "rgba(255,255,255,.12)";
-      icon.style.border = "1px solid rgba(255,255,255,.18)";
-      icon.style.color = "#fff";
-      icon.style.fontSize = "13px";
-
-      const body = document.createElement("div");
-      body.style.minWidth = "0";
-      body.style.display = "flex";
-      body.style.flexDirection = "column";
-      body.style.alignItems = "center";
-      body.style.justifyContent = "center";
-      body.style.textAlign = "center";
-
-      const title = document.createElement("div");
-      title.style.width = "100%";
-      title.style.fontSize = "17px";
-      title.style.fontWeight = "800";
-      title.style.lineHeight = "1.08";
-      title.style.color = "rgba(255,255,255,.86)";
-
-      const message = document.createElement("div");
-      message.style.width = "100%";
-      message.style.marginTop = "4px";
-      message.style.fontSize = "14px";
-      message.style.fontWeight = "600";
-      message.style.lineHeight = "1.2";
-      message.style.color = "rgba(255,255,255,.68)";
-
-      const close = document.createElement("button");
-      close.type = "button";
-      close.textContent = "✕";
-      close.style.width = "24px";
-      close.style.height = "24px";
-      close.style.padding = "0";
-      close.style.display = "grid";
-      close.style.placeItems = "center";
-      close.style.background = "transparent";
-      close.style.border = "1px solid rgba(255,255,255,.18)";
-      close.style.borderRadius = "12px";
-      close.style.color = "rgba(255,255,255,.7)";
-      close.style.fontSize = "14px";
-      close.style.cursor = "pointer";
-      close.style.pointerEvents = "auto";
-      close.setAttribute("aria-label", panelText("Kapat", "Close"));
-      close.addEventListener("click", hidePanelToast);
-
-      body.appendChild(title);
-      body.appendChild(message);
-      toast.appendChild(icon);
-      toast.appendChild(body);
-      toast.appendChild(close);
-
-      toast.__icon = icon;
-      toast.__title = title;
-      toast.__message = message;
-      toast.__close = close;
-
-      document.body.appendChild(toast);
-      panelToastElement = toast;
-      return toast;
-    };
-
-    const positionPanelToast = (toast) => {
-      if (!toast) return;
-
-      const anchor =
-        document.getElementById("moduleHost") ||
-        document.querySelector("[data-module-host]") ||
-        document.getElementById("mainWorkspace") ||
-        host.closest("#moduleHost, #mainWorkspace") ||
-        host.parentElement;
-
-      const viewportPadding = 16;
-      const preferredWidth = 420;
-      const width = Math.min(
-        preferredWidth,
-        Math.max(280, window.innerWidth - viewportPadding * 2)
-      );
-
-      let left = Math.round((window.innerWidth - width) / 2);
-
-      try {
-        const rect = anchor?.getBoundingClientRect?.();
-        if (rect && rect.width > 0) {
-          left = Math.round(rect.left + (rect.width - width) / 2);
-        }
-      } catch {}
-
-      left = Math.max(
-        viewportPadding,
-        Math.min(left, window.innerWidth - width - viewportPadding)
-      );
-
-      toast.style.width = `${width}px`;
-      toast.style.left = `${left}px`;
-      toast.style.right = "auto";
-      toast.style.bottom = "22px";
-    };
-
-    const showPanelToast = (type, trMessage, enMessage) => {
-      const toast = ensurePanelToast();
-      positionPanelToast(toast);
-      const isEnglish = panelLanguage() === "en";
-
-      const titleMap = {
-        success: isEnglish ? "Success" : "Başarılı",
-        error: isEnglish ? "Error" : "Hata",
-        info: isEnglish ? "Information" : "Bilgi",
-      };
-
-      const iconMap = { success: "✓", error: "!", info: "i" };
-
-      toast.__icon.textContent = iconMap[type] || "i";
-      toast.__title.textContent = titleMap[type] || titleMap.info;
-      toast.__message.textContent = isEnglish ? enMessage : trMessage;
-      toast.__close.setAttribute("aria-label", isEnglish ? "Close" : "Kapat");
-
-      toast.style.borderColor =
-        type === "error"
-          ? "rgba(255,105,105,.42)"
-          : type === "info"
-            ? "rgba(120,190,255,.38)"
-            : "rgba(110,235,170,.38)";
-
-      if (panelToastTimer) clearTimeout(panelToastTimer);
-
-      toast.style.pointerEvents = "auto";
-      toast.style.opacity = "1";
-
-      panelToastTimer = setTimeout(hidePanelToast, 2800);
-    };
-
     const resolvePanelSearchInput = () => {
       const candidates = [
         ...document.querySelectorAll('input.rpSearch'),
@@ -685,44 +507,6 @@
             : "loading";
 
       if (window.AIVO_SHARED_VIDEO_CARD?.createCardHtml) {
-        let sharedCardHtml = window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
-          id: jid,
-          title,
-          sub,
-          badgeText,
-          badgeKind,
-          videoUrl: previewVideoUrl,
-          posterUrl: safeStr(
-            job?.poster_url ||
-            job?.thumbnail_url ||
-            job?.thumb_url ||
-            job?.meta?.poster_url ||
-            job?.meta?.thumbnail_url ||
-            job?.meta?.thumb_url ||
-            ""
-          ),
-          ratio,
-          ready,
-          canDownload: !!finalUrl,
-          canShare: ready,
-          canDelete: true,
-        });
-
-        const cardLabels = {
-          Oynat: panelText("Oynat", "Play"),
-          İndir: panelText("İndir", "Download"),
-          Paylaş: panelText("Paylaş", "Share"),
-          Büyüt: panelText("Büyüt", "Fullscreen"),
-          Sil: panelText("Sil", "Delete"),
-          "Sesi Aç": panelText("Sesi Aç", "Unmute"),
-        };
-
-        Object.entries(cardLabels).forEach(([from, to]) => {
-          sharedCardHtml = sharedCardHtml
-            .replaceAll(`title="${from}"`, `title="${esc(to)}"`)
-            .replaceAll(`aria-label="${from}"`, `aria-label="${esc(to)}"`);
-        });
-
  return (
   '<div class="cartoonPanelCardInner"' +
     ' data-job="' + esc(jid) + '"' +
@@ -731,7 +515,28 @@
     ' data-preview-url="' + esc(previewUrl) + '"' +
     ' data-fresh="' + esc(isFreshCard ? "1" : "0") + '"' +
   '>' +
-    sharedCardHtml +
+    window.AIVO_SHARED_VIDEO_CARD.createCardHtml({
+      id: jid,
+      title,
+      sub,
+      badgeText,
+      badgeKind,
+      videoUrl: previewVideoUrl,
+     posterUrl: safeStr(
+  job?.poster_url ||
+  job?.thumbnail_url ||
+  job?.thumb_url ||
+  job?.meta?.poster_url ||
+  job?.meta?.thumbnail_url ||
+  job?.meta?.thumb_url ||
+  ""
+),
+      ratio,
+      ready,
+      canDownload: !!finalUrl,
+      canShare: ready,
+      canDelete: true,
+    }) +
   '</div>'
 );
       }
@@ -896,7 +701,7 @@
 
        async function download(url, filename = "cartoon.mp4") {
       let cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return "failed";
+      if (!cleanUrl) return;
 
       cleanUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
@@ -937,38 +742,35 @@
           URL.revokeObjectURL(objectUrl);
         }, 1000);
 
-        return "downloaded";
+        panelToast(
+          "success",
+          "Çizgifilm videosu indirildi.",
+          "Cartoon video downloaded."
+        );
       } catch (err) {
         console.error("[CARTOON PANEL] download failed", err);
-        const opened = window.open(cleanUrl, "_blank", "noopener");
-        return opened ? "opened" : "failed";
+        window.open(cleanUrl, "_blank", "noopener");
+        panelToast(
+          "error",
+          "Çizgifilm videosu indirilemedi.",
+          "Cartoon video could not be downloaded."
+        );
       }
     }
 
-    async function share(url) {
+    function share(url) {
       const cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return "failed";
+      if (!cleanUrl) return;
 
       const directUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
         : cleanUrl;
 
-      try {
-        if (navigator.share) {
-          await navigator.share({ url: directUrl });
-          return "shared";
-        }
-
-        if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(directUrl);
-          return "copied";
-        }
-      } catch (error) {
-        if (error?.name === "AbortError") return "cancelled";
-        console.error("[CARTOON PANEL] share failed", error);
+      if (navigator.share) {
+        navigator.share({ url: directUrl }).catch(() => {});
+      } else {
+        navigator.clipboard?.writeText(directUrl).catch(() => {});
       }
-
-      return "failed";
     }
 
     host.addEventListener("click", async (e) => {
@@ -1022,29 +824,7 @@
         e.preventDefault();
         e.stopPropagation();
         if (!finalUrl) return;
-
-        const result = await download(finalUrl, `cartoon-${id}.mp4`);
-
-        if (result === "downloaded") {
-          showPanelToast(
-            "success",
-            "Çizgifilm videosu indirildi.",
-            "Cartoon video downloaded."
-          );
-        } else if (result === "opened") {
-          showPanelToast(
-            "info",
-            "Video yeni sekmede açıldı.",
-            "The video was opened in a new tab."
-          );
-        } else {
-          showPanelToast(
-            "error",
-            "Çizgifilm videosu indirilemedi.",
-            "Cartoon video could not be downloaded."
-          );
-        }
-
+        download(finalUrl, `cartoon-${id}.mp4`);
         return;
       }
 
@@ -1052,28 +832,7 @@
         e.preventDefault();
         e.stopPropagation();
         if (!sharePlaybackUrl) return;
-
-        const result = await share(sharePlaybackUrl);
-        if (result === "shared") {
-          showPanelToast(
-            "success",
-            "Paylaşım penceresi açıldı.",
-            "The share dialog was opened."
-          );
-        } else if (result === "copied") {
-          showPanelToast(
-            "success",
-            "Video bağlantısı kopyalandı.",
-            "Video link copied."
-          );
-        } else if (result !== "cancelled") {
-          showPanelToast(
-            "error",
-            "Video paylaşılamadı.",
-            "The video could not be shared."
-          );
-        }
-
+        share(sharePlaybackUrl);
         return;
       }
 
@@ -1095,7 +854,7 @@
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[CARTOON PANEL] delete failed");
-            showPanelToast(
+            panelToast(
               "error",
               "Çizgifilm videosu silinemedi.",
               "Cartoon video could not be deleted."
@@ -1107,7 +866,7 @@
             await controller?.hydrate?.(true);
           } catch {}
 
-          showPanelToast(
+          panelToast(
             "success",
             "Çizgifilm videosu silindi.",
             "Cartoon video deleted."
@@ -1118,7 +877,7 @@
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
-          showPanelToast(
+          panelToast(
             "error",
             "Çizgifilm videosu silinemedi.",
             "Cartoon video could not be deleted."
@@ -1368,12 +1127,6 @@
         } catch {}
         try {
           controller?.destroy?.();
-        } catch {}
-        try {
-          if (panelToastTimer) clearTimeout(panelToastTimer);
-          panelToastTimer = null;
-          panelToastElement?.remove?.();
-          panelToastElement = null;
         } catch {}
         try {
           host.innerHTML = "";
