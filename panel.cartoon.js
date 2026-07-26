@@ -301,107 +301,103 @@
       if (!localToastElement) return;
 
       localToastElement.style.opacity = "0";
-      localToastElement.style.transform = "translate(-50%, -4px)";
+      localToastElement.style.pointerEvents = "none";
+
+      if (localToastElement.__close) {
+        localToastElement.__close.style.pointerEvents = "none";
+      }
     };
 
     const ensureLocalToast = () => {
       if (localToastElement) return localToastElement;
 
       const toast = document.createElement("div");
+      toast.id = "cartoonPanelLocalToast";
       toast.setAttribute("role", "status");
       toast.setAttribute("aria-live", "polite");
       toast.style.position = "fixed";
-      toast.style.left = "50%";
-      toast.style.right = "auto";
+      toast.style.left = "0";
+      toast.style.right = "0";
       toast.style.bottom = "22px";
-      toast.style.zIndex = "99999";
+      toast.style.zIndex = "2147483000";
       toast.style.width = "min(420px, calc(100vw - 128px))";
-      toast.style.maxWidth = "min(420px, calc(100vw - 128px))";
-      toast.style.minHeight = "46px";
-      toast.style.padding = "5px 14px";
-      toast.style.margin = "0";
+      toast.style.minHeight = "52px";
+      toast.style.margin = "0 auto";
+      toast.style.padding = "6px 14px";
+      toast.style.boxSizing = "border-box";
+      toast.style.display = "grid";
+      toast.style.gridTemplateColumns = "32px minmax(0, 1fr) 32px";
+      toast.style.alignItems = "center";
+      toast.style.columnGap = "10px";
       toast.style.borderRadius = "14px";
       toast.style.border = "1px solid rgba(255,255,255,.22)";
-      toast.style.background = "rgba(20,20,30,.45)";
-      toast.style.backgroundImage = "none";
+      toast.style.background = "rgba(20,20,30,.90)";
       toast.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
       toast.style.color = "rgba(255,255,255,.94)";
       toast.style.opacity = "0";
-      toast.style.transform = "translate(-50%, -6px)";
-      toast.style.transition = "opacity .35s ease, transform .35s ease";
-      toast.style.pointerEvents = "auto";
+      toast.style.transition = "opacity .18s ease";
+      toast.style.pointerEvents = "none";
       toast.style.backdropFilter = "none";
       toast.style.webkitBackdropFilter = "none";
       toast.style.filter = "none";
       toast.style.mixBlendMode = "normal";
-      toast.style.boxSizing = "border-box";
+      toast.style.isolation = "isolate";
+      toast.style.contain = "layout paint style";
+      toast.style.willChange = "opacity";
+      toast.style.backfaceVisibility = "hidden";
 
       const icon = document.createElement("div");
-      icon.style.position = "absolute";
-      icon.style.left = "18px";
-      icon.style.top = "50%";
-      icon.style.transform = "translateY(-50%)";
       icon.style.width = "24px";
       icon.style.height = "24px";
       icon.style.display = "grid";
       icon.style.placeItems = "center";
+      icon.style.justifySelf = "center";
       icon.style.borderRadius = "999px";
       icon.style.background = "rgba(255,255,255,.12)";
       icon.style.border = "1px solid rgba(255,255,255,.18)";
       icon.style.color = "#fff";
       icon.style.fontSize = "13px";
-      icon.style.zIndex = "2";
+      icon.style.lineHeight = "1";
 
       const body = document.createElement("div");
-      body.style.position = "absolute";
-      body.style.left = "50%";
-      body.style.top = "50%";
-      body.style.transform = "translate(-50%, -50%)";
-      body.style.width = "calc(100% - 96px)";
-      body.style.maxWidth = "calc(100% - 96px)";
+      body.style.minWidth = "0";
       body.style.display = "flex";
       body.style.flexDirection = "column";
       body.style.alignItems = "center";
       body.style.justifyContent = "center";
-      body.style.margin = "0";
-      body.style.padding = "0";
       body.style.textAlign = "center";
       body.style.pointerEvents = "none";
 
       const title = document.createElement("p");
       title.style.width = "100%";
-      title.style.margin = "0 0 4px 0";
-      title.style.textAlign = "center";
+      title.style.margin = "0 0 3px 0";
       title.style.fontSize = "17px";
       title.style.fontWeight = "800";
       title.style.lineHeight = "1.08";
       title.style.letterSpacing = ".012em";
-      title.style.color = "rgba(255,255,255,.86)";
-      title.style.textShadow = "0 1px 0 rgba(255,255,255,.04), 0 8px 22px rgba(0,0,0,.24)";
+      title.style.color = "rgba(255,255,255,.90)";
 
       const message = document.createElement("p");
       message.style.width = "100%";
       message.style.margin = "0";
-      message.style.textAlign = "center";
       message.style.fontSize = "14px";
       message.style.fontWeight = "600";
       message.style.lineHeight = "1.2";
       message.style.letterSpacing = ".006em";
-      message.style.color = "rgba(255,255,255,.68)";
-      message.style.textShadow = "0 1px 0 rgba(255,255,255,.03), 0 6px 18px rgba(0,0,0,.18)";
+      message.style.color = "rgba(255,255,255,.72)";
+      message.style.whiteSpace = "nowrap";
+      message.style.overflow = "hidden";
+      message.style.textOverflow = "ellipsis";
 
       const close = document.createElement("button");
       close.type = "button";
       close.textContent = "✕";
       close.setAttribute("aria-label", localText("Bildirimi kapat", "Close notification"));
-      close.style.position = "absolute";
-      close.style.right = "18px";
-      close.style.top = "50%";
-      close.style.transform = "translateY(-50%)";
       close.style.width = "24px";
       close.style.height = "24px";
       close.style.display = "grid";
       close.style.placeItems = "center";
+      close.style.justifySelf = "center";
       close.style.padding = "0";
       close.style.background = "transparent";
       close.style.border = "1px solid rgba(255,255,255,.18)";
@@ -409,7 +405,7 @@
       close.style.color = "rgba(255,255,255,.7)";
       close.style.fontSize = "14px";
       close.style.cursor = "pointer";
-      close.style.zIndex = "2";
+      close.style.pointerEvents = "none";
       close.addEventListener("click", hideLocalToast);
 
       body.appendChild(title);
@@ -431,7 +427,6 @@
 
     const showLocalToast = (type, trText, enText) => {
       const toast = ensureLocalToast();
-      const message = localText(trText, enText);
 
       const titles = {
         success: localText("Başarılı", "Success"),
@@ -449,7 +444,7 @@
 
       toast.__icon.textContent = icons[type] || "i";
       toast.__title.textContent = titles[type] || titles.info;
-      toast.__message.textContent = message;
+      toast.__message.textContent = localText(trText, enText);
       toast.__close.setAttribute(
         "aria-label",
         localText("Bildirimi kapat", "Close notification")
@@ -459,16 +454,18 @@
         clearTimeout(localToastTimer);
       }
 
-      requestAnimationFrame(() => {
-        if (!localToastElement) return;
-        localToastElement.style.opacity = "1";
-        localToastElement.style.transform = "translate(-50%, 0)";
-      });
+      toast.style.pointerEvents = "none";
+      toast.__close.style.pointerEvents = "auto";
+      toast.style.opacity = "1";
 
       localToastTimer = setTimeout(() => {
         hideLocalToast();
       }, 3200);
     };
+
+    // Toast katmanı panel açılırken bir kez hazırlanır. Böylece indirme/silme
+    // anında yeni bir fixed katman oluşturulmaz ve ana ekran yeniden boyanmaz.
+    ensureLocalToast();
 
     const resolvePanelSearchInput = () => {
       const candidates = [
