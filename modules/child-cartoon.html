@@ -8,8 +8,8 @@
     <div class="panel-header">
       <div class="cartoon-hero">
         <div class="cartoon-hero__box">
-          <h1 class="cartoon-hero__title">AI Çocuk Çizgifilm</h1>
-          <p class="cartoon-hero__sub">
+          <h1 class="cartoon-hero__title" data-i18n="studio.cartoon.title">AI Çocuk Çizgifilm</h1>
+          <p class="cartoon-hero__sub" data-i18n="studio.cartoon.subtitle">
             Preset karakterlerle kısa çizgifilm sahneleri üret.
           </p>
         </div>
@@ -18,13 +18,13 @@
 
     <!-- MODE SWITCH -->
     <div class="cartoon-mode-shell" data-cartoon-mode-shell>
-      <div class="cartoon-mode-switch" role="tablist" aria-label="Mod Seçimi">
+      <div class="cartoon-mode-switch" role="tablist" aria-label="Mod Seçimi" data-i18n-label="studio.cartoon.mode.label">
         <button
           type="button"
           class="cartoon-mode-tab"
           role="tab"
           aria-selected="false"
-          data-cartoon-mode="character">
+          data-cartoon-mode="character" data-i18n="studio.cartoon.mode.character">
           Karakter Yarat
         </button>
 
@@ -33,7 +33,7 @@
           class="cartoon-mode-tab is-active"
           role="tab"
           aria-selected="true"
-          data-cartoon-mode="basic">
+          data-cartoon-mode="basic" data-i18n="studio.cartoon.mode.basic">
           Basit Mod
         </button>
 
@@ -42,7 +42,7 @@
           class="cartoon-mode-tab"
           role="tab"
           aria-selected="false"
-          data-cartoon-mode="story">
+          data-cartoon-mode="story" data-i18n="studio.cartoon.mode.story">
           Hikaye Modu ✨
         </button>
         <button
@@ -50,7 +50,7 @@
   class="cartoon-mode-tab"
   role="tab"
   aria-selected="false"
-  data-cartoon-mode="studio">
+  data-cartoon-mode="studio" data-i18n="studio.cartoon.mode.studio">
   Montaj Stüdyosu
 </button>
       </div>
@@ -61,17 +61,17 @@
 
       <section class="cartoon-block cartoon-block--compact">
         <div class="cartoon-block-head">
-          <h3>Karakter Yarat</h3>
+          <h3 data-i18n="studio.cartoon.character.title">Karakter Yarat</h3>
         </div>
 
         <div class="cartoon-field cartoon-field--full">
-          <label class="cartoon-field-label" for="cartoon-character-desc">Kısa Tanım</label>
+          <label class="cartoon-field-label" for="cartoon-character-desc" data-i18n="studio.cartoon.character.shortDescription">Kısa Tanım</label>
           <textarea
             id="cartoon-character-desc"
             class="cartoon-prompt-input"
             rows="4"
            maxlength="1000"
-            placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan"
+            placeholder="Örn: sarı yağmurluklu sevimli küçük tavşan" data-i18n-placeholder="studio.cartoon.character.descriptionPlaceholder"
             data-character-desc></textarea>
         </div>
       <div class="cartoon-prompt-meta">
@@ -81,56 +81,56 @@
           class="cartoon-form-grid-3"
           style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:16px;">
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-type">Tür</label>
+            <label class="cartoon-field-label" for="cartoon-character-type" data-i18n="studio.cartoon.character.type">Tür</label>
             <select id="cartoon-character-type" class="cartoon-select" data-character-type>
-              <option value="animal" selected>Hayvan</option>
-              <option value="human">İnsan</option>
-              <option value="fantasy">Fantastik</option>
-              <option value="object">Nesne</option>
-              <option value="custom">Serbest</option>
+              <option value="animal" selected data-i18n="studio.cartoon.character.type.animal">Hayvan</option>
+              <option value="human" data-i18n="studio.cartoon.character.type.human">İnsan</option>
+              <option value="fantasy" data-i18n="studio.cartoon.character.type.fantasy">Fantastik</option>
+              <option value="object" data-i18n="studio.cartoon.character.type.object">Nesne</option>
+              <option value="custom" data-i18n="studio.cartoon.character.type.custom">Serbest</option>
             </select>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-name">Karakter Adı</label>
+            <label class="cartoon-field-label" for="cartoon-character-name" data-i18n="studio.cartoon.character.name">Karakter Adı</label>
             <input
               id="cartoon-character-name"
               class="cartoon-select"
               type="text"
-              placeholder="Örn: Mini Tavşan"
+              placeholder="Örn: Mini Tavşan" data-i18n-placeholder="studio.cartoon.character.namePlaceholder"
               data-character-name>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-style">Stil</label>
+            <label class="cartoon-field-label" for="cartoon-character-style" data-i18n="studio.cartoon.character.style">Stil</label>
             <select id="cartoon-character-style" class="cartoon-select" data-character-style>
-              <option value="cute-3d" selected>Sevimli 3D</option>
-              <option value="soft-cartoon">Yumuşak Çizgifilm</option>
-              <option value="pastel">Pastel</option>
-              <option value="bright-kids">Parlak Çocuk Stili</option>
+              <option value="cute-3d" selected data-i18n="studio.cartoon.common.styleCute3d">Sevimli 3D</option>
+              <option value="soft-cartoon" data-i18n="studio.cartoon.common.styleSoftCartoon">Yumuşak Çizgifilm</option>
+              <option value="pastel" data-i18n="studio.cartoon.common.stylePastel">Pastel</option>
+              <option value="bright-kids" data-i18n="studio.cartoon.common.styleBrightKids">Parlak Çocuk Stili</option>
             </select>
           </div>
         </div>
 <div class="cartoon-field cartoon-field--full" style="margin-top:16px;">
   <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-    <label class="cartoon-field-label" style="margin:0;">
+    <label class="cartoon-field-label" style="margin:0;" data-i18n="studio.cartoon.character.uploadInstruction">
       Kendi veya çocuğunun fotoğrafını yükle, çizgi film karakterine dönüştür.
     </label>
 
     <div class="cartoon-credit-inline">
-      <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+      <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
       <label class="cartoon-upload-row" style="margin:0;">
         <input type="file" accept="image/*" hidden data-character-create-upload>
-        <span class="cartoon-upload-btn">Resim Seç</span>
-        <span class="cartoon-upload-text" data-character-create-file-name>Dosya seçilmedi</span>
+        <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseImage">Resim Seç</span>
+        <span class="cartoon-upload-text" data-character-create-file-name data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
         <button
           type="button"
           class="cartoon-upload-clear"
           data-character-create-upload-clear
           aria-label="Referans görseli kaldır"
           title="Resmi kaldır"
-          style="display:none;">
+          style="display:none;" data-i18n-label="studio.cartoon.common.removeImageLabel" data-i18n-title="studio.cartoon.common.removeImage">
           ×
         </button>
       </label>
@@ -142,14 +142,14 @@
 
       <section class="cartoon-block cartoon-block--compact">
         <div class="cartoon-block-head">
-          <h3>Karakterlerim</h3>
+          <h3 data-i18n="studio.cartoon.character.libraryTitle">Karakterlerim</h3>
         </div>
 
         <div
        
   class="cartoon-character-mini-grid"
   data-character-library>
-          <button type="button" class="cartoon-character-mini-card is-empty" disabled>
+          <button type="button" class="cartoon-character-mini-card is-empty" disabled data-i18n="studio.cartoon.character.libraryEmpty">
             Henüz karakter yok
           </button>
         </div>
@@ -157,80 +157,80 @@
 
       <section class="cartoon-block cartoon-block--compact">
         <div class="cartoon-block-head">
-          <h3>Gelişmiş Özelleştirme</h3>
+          <h3 data-i18n="studio.cartoon.character.advancedTitle">Gelişmiş Özelleştirme</h3>
         </div>
 
         <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-hair-type">Saç Tipi</label>
+            <label class="cartoon-field-label" for="cartoon-character-hair-type" data-i18n="studio.cartoon.character.hairType">Saç Tipi</label>
             <select id="cartoon-character-hair-type" class="cartoon-select" data-character-hair-type>
-              <option value="" selected>Seçiniz</option>
-              <option value="short">Kısa</option>
-              <option value="long">Uzun</option>
-              <option value="curly">Kıvırcık</option>
-              <option value="wavy">Dalgalı</option>
-              <option value="straight">Düz</option>
+              <option value="" selected data-i18n="studio.cartoon.common.select">Seçiniz</option>
+              <option value="short" data-i18n="studio.cartoon.character.hair.short">Kısa</option>
+              <option value="long" data-i18n="studio.cartoon.character.hair.long">Uzun</option>
+              <option value="curly" data-i18n="studio.cartoon.character.hair.curly">Kıvırcık</option>
+              <option value="wavy" data-i18n="studio.cartoon.character.hair.wavy">Dalgalı</option>
+              <option value="straight" data-i18n="studio.cartoon.character.hair.straight">Düz</option>
             </select>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-hair-color">Saç Rengi</label>
+            <label class="cartoon-field-label" for="cartoon-character-hair-color" data-i18n="studio.cartoon.character.hairColor">Saç Rengi</label>
             <select id="cartoon-character-hair-color" class="cartoon-select" data-character-hair-color>
-              <option value="" selected>Seçiniz</option>
-              <option value="black">Siyah</option>
-              <option value="brown">Kahverengi</option>
-              <option value="blonde">Sarı</option>
-              <option value="red">Kızıl</option>
-              <option value="pink">Pembe</option>
-              <option value="blue">Mavi</option>
+              <option value="" selected data-i18n="studio.cartoon.common.select">Seçiniz</option>
+              <option value="black" data-i18n="studio.cartoon.character.color.black">Siyah</option>
+              <option value="brown" data-i18n="studio.cartoon.character.color.brown">Kahverengi</option>
+              <option value="blonde" data-i18n="studio.cartoon.character.color.blonde">Sarı</option>
+              <option value="red" data-i18n="studio.cartoon.character.color.red">Kızıl</option>
+              <option value="pink" data-i18n="studio.cartoon.character.color.pink">Pembe</option>
+              <option value="blue" data-i18n="studio.cartoon.character.color.blue">Mavi</option>
             </select>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-outfit">Kıyafet</label>
+            <label class="cartoon-field-label" for="cartoon-character-outfit" data-i18n="studio.cartoon.character.outfit">Kıyafet</label>
             <select id="cartoon-character-outfit" class="cartoon-select" data-character-outfit>
-              <option value="" selected>Seçiniz</option>
-              <option value="dress">Elbise</option>
-              <option value="tshirt-shorts">Tişört + Şort</option>
-              <option value="hoodie">Kapüşonlu</option>
-              <option value="superhero">Süper Kahraman</option>
-              <option value="princess">Prenses</option>
-              <option value="school">Okul Kıyafeti</option>
+              <option value="" selected data-i18n="studio.cartoon.common.select">Seçiniz</option>
+              <option value="dress" data-i18n="studio.cartoon.character.outfit.dress">Elbise</option>
+              <option value="tshirt-shorts" data-i18n="studio.cartoon.character.outfit.tshirtShorts">Tişört + Şort</option>
+              <option value="hoodie" data-i18n="studio.cartoon.character.outfit.hoodie">Kapüşonlu</option>
+              <option value="superhero" data-i18n="studio.cartoon.character.outfit.superhero">Süper Kahraman</option>
+              <option value="princess" data-i18n="studio.cartoon.character.outfit.princess">Prenses</option>
+              <option value="school" data-i18n="studio.cartoon.character.outfit.school">Okul Kıyafeti</option>
             </select>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-glasses">Gözlük</label>
+            <label class="cartoon-field-label" for="cartoon-character-glasses" data-i18n="studio.cartoon.character.glasses">Gözlük</label>
             <select id="cartoon-character-glasses" class="cartoon-select" data-character-glasses>
-              <option value="" selected>Yok</option>
-              <option value="round">Yuvarlak</option>
-              <option value="square">Kare</option>
-              <option value="star">Yıldız</option>
-              <option value="heart">Kalp</option>
+              <option value="" selected data-i18n="studio.cartoon.common.none">Yok</option>
+              <option value="round" data-i18n="studio.cartoon.character.glasses.round">Yuvarlak</option>
+              <option value="square" data-i18n="studio.cartoon.character.glasses.square">Kare</option>
+              <option value="star" data-i18n="studio.cartoon.character.glasses.star">Yıldız</option>
+              <option value="heart" data-i18n="studio.cartoon.character.glasses.heart">Kalp</option>
             </select>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-accessory">Aksesuar</label>
+            <label class="cartoon-field-label" for="cartoon-character-accessory" data-i18n="studio.cartoon.character.accessory">Aksesuar</label>
             <select id="cartoon-character-accessory" class="cartoon-select" data-character-accessory>
-              <option value="" selected>Yok</option>
-              <option value="hat">Şapka</option>
-              <option value="bow">Fiyonk</option>
-              <option value="bag">Çanta</option>
-              <option value="wand">Sihirli Değnek</option>
-              <option value="crown">Taç</option>
+              <option value="" selected data-i18n="studio.cartoon.common.none">Yok</option>
+              <option value="hat" data-i18n="studio.cartoon.character.accessory.hat">Şapka</option>
+              <option value="bow" data-i18n="studio.cartoon.character.accessory.bow">Fiyonk</option>
+              <option value="bag" data-i18n="studio.cartoon.character.accessory.bag">Çanta</option>
+              <option value="wand" data-i18n="studio.cartoon.character.accessory.wand">Sihirli Değnek</option>
+              <option value="crown" data-i18n="studio.cartoon.character.accessory.crown">Taç</option>
             </select>
           </div>
 
           <div class="cartoon-field">
-            <label class="cartoon-field-label" for="cartoon-character-expression">Yüz İfadesi</label>
+            <label class="cartoon-field-label" for="cartoon-character-expression" data-i18n="studio.cartoon.character.expression">Yüz İfadesi</label>
             <select id="cartoon-character-expression" class="cartoon-select" data-character-expression>
-              <option value="" selected>Seçiniz</option>
-              <option value="happy">Mutlu</option>
-              <option value="excited">Heyecanlı</option>
-              <option value="cute">Sevimli</option>
-              <option value="calm">Sakin</option>
-              <option value="funny">Komik</option>
+              <option value="" selected data-i18n="studio.cartoon.common.select">Seçiniz</option>
+              <option value="happy" data-i18n="studio.cartoon.character.expression.happy">Mutlu</option>
+              <option value="excited" data-i18n="studio.cartoon.character.expression.excited">Heyecanlı</option>
+              <option value="cute" data-i18n="studio.cartoon.character.expression.cute">Sevimli</option>
+              <option value="calm" data-i18n="studio.cartoon.character.expression.calm">Sakin</option>
+              <option value="funny" data-i18n="studio.cartoon.character.expression.funny">Komik</option>
             </select>
           </div>
 
@@ -243,7 +243,7 @@
           type="button"
           class="cartoon-generate-btn"
           data-character-generate
-          data-cartoon-character-create>
+          data-cartoon-character-create data-i18n="studio.cartoon.character.generate">
           🧩 Karakter Oluştur (20 Kredi)
         </button>
       </footer>
@@ -254,7 +254,7 @@
       <!-- Ek Prompt -->
       <section class="cartoon-block">
         <div class="cartoon-block-head">
-          <h3>Ek Prompt</h3>
+          <h3 data-i18n="studio.cartoon.basic.promptTitle">Ek Prompt</h3>
         </div>
 
         <label class="cartoon-prompt-wrap" for="cartoonExtraPrompt">
@@ -265,7 +265,7 @@
             rows="3"
             maxlength="5000"
             data-cartoon-prompt-input
-            placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin"></textarea>
+            placeholder="Örn: mutlu görünsün, baloncuk olsun, yavaş hareket etsin" data-i18n-placeholder="studio.cartoon.basic.promptPlaceholder"></textarea>
 
           <div class="cartoon-prompt-meta">
            <span class="cartoon-prompt-count" data-cartoon-prompt-count>0 / 5000</span>
@@ -284,23 +284,23 @@
               <!-- Ana Karakter -->
               <section class="cartoon-block">
                 <div class="cartoon-block-head">
-                  <h3>Ana Karakter</h3>
+                  <h3 data-i18n="studio.cartoon.basic.mainCharacter">Ana Karakter</h3>
                 </div>
 
                 <div class="cartoon-character-grid cartoon-character-grid--stack">
                   <button type="button" class="cartoon-character-card is-selected" data-role="main" data-character="red-fish">
                     <span class="cartoon-character-thumb">🐟</span>
-                    <span class="cartoon-character-name">Kırmızı Balık</span>
+                    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.redFish">Kırmızı Balık</span>
                   </button>
 
                   <button type="button" class="cartoon-character-card" data-role="main" data-character="chick">
                     <span class="cartoon-character-thumb">🐥</span>
-                    <span class="cartoon-character-name">Civciv</span>
+                    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.chick">Civciv</span>
                   </button>
 
                   <button type="button" class="cartoon-character-card" data-role="main" data-character="duck">
                     <span class="cartoon-character-thumb">🦆</span>
-                    <span class="cartoon-character-name">Ördek</span>
+                    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.duck">Ördek</span>
                   </button>
                 </div>
               </section>
@@ -308,24 +308,24 @@
               <!-- Yardımcı Karakterler -->
               <section class="cartoon-block">
                 <div class="cartoon-block-head">
-                  <h3>Yardımcı Karakterler</h3>
+                  <h3 data-i18n="studio.cartoon.basic.helperCharacters">Yardımcı Karakterler</h3>
                   <span class="cartoon-count" data-helper-count>0/3</span>
                 </div>
 
                 <div class="cartoon-character-grid cartoon-character-grid--stack">
                   <button type="button" class="cartoon-character-card" data-role="helper" data-character="small-fish-school">
                     <span class="cartoon-character-thumb">🐠</span>
-                    <span class="cartoon-character-name">Küçük Balıklar</span>
+                    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.smallFish">Küçük Balıklar</span>
                   </button>
 
                   <button type="button" class="cartoon-character-card" data-role="helper" data-character="frog">
                     <span class="cartoon-character-thumb">🐸</span>
-                    <span class="cartoon-character-name">Kurbağa</span>
+                    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.frog">Kurbağa</span>
                   </button>
 
                   <button type="button" class="cartoon-character-card" data-role="helper" data-character="crab">
                     <span class="cartoon-character-thumb">🦀</span>
-                    <span class="cartoon-character-name">Yengeç</span>
+                    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.crab">Yengeç</span>
                   </button>
                 </div>
               </section>
@@ -334,83 +334,83 @@
             <!-- Sahne -->
             <section class="cartoon-block">
               <div class="cartoon-block-head">
-                <h3>Sahne</h3>
+                <h3 data-i18n="studio.cartoon.common.scene">Sahne</h3>
               </div>
 
               <div class="cartoon-scene-grid">
-                <button type="button" class="cartoon-mini-card is-selected" data-scene="underwater">Deniz Altı</button>
-                <button type="button" class="cartoon-mini-card" data-scene="pond">Gölet</button>
-                <button type="button" class="cartoon-mini-card" data-scene="forest">Orman</button>
-                <button type="button" class="cartoon-mini-card" data-scene="farm">Çiftlik</button>
-                <button type="button" class="cartoon-mini-card" data-scene="sky">Gökyüzü</button>
-                <button type="button" class="cartoon-mini-card" data-scene="beach">Plaj</button>
+                <button type="button" class="cartoon-mini-card is-selected" data-scene="underwater" data-i18n="studio.cartoon.basic.scene.underwater">Deniz Altı</button>
+                <button type="button" class="cartoon-mini-card" data-scene="pond" data-i18n="studio.cartoon.basic.scene.pond">Gölet</button>
+                <button type="button" class="cartoon-mini-card" data-scene="forest" data-i18n="studio.cartoon.basic.scene.forest">Orman</button>
+                <button type="button" class="cartoon-mini-card" data-scene="farm" data-i18n="studio.cartoon.basic.scene.farm">Çiftlik</button>
+                <button type="button" class="cartoon-mini-card" data-scene="sky" data-i18n="studio.cartoon.basic.scene.sky">Gökyüzü</button>
+                <button type="button" class="cartoon-mini-card" data-scene="beach" data-i18n="studio.cartoon.basic.scene.beach">Plaj</button>
               </div>
             </section>
 
             <!-- Aksiyon -->
             <section class="cartoon-block">
               <div class="cartoon-block-head">
-                <h3>Aksiyon</h3>
+                <h3 data-i18n="studio.cartoon.basic.actionTitle">Aksiyon</h3>
               </div>
 
               <div class="cartoon-pill-group">
-                <button type="button" class="cartoon-pill is-selected" data-action="swimming">Yüzüyor</button>
-                <button type="button" class="cartoon-pill" data-action="jumping">Zıplıyor</button>
-                <button type="button" class="cartoon-pill" data-action="playing">Oynuyor</button>
-                <button type="button" class="cartoon-pill" data-action="laughing">Gülüyor</button>
-                <button type="button" class="cartoon-pill" data-action="dancing">Dans Ediyor</button>
-                <button type="button" class="cartoon-pill" data-action="waving">El Sallıyor</button>
-                <button type="button" class="cartoon-pill" data-action="moving-slowly">Yavaş İlerliyor</button>
-                <button type="button" class="cartoon-pill" data-action="running">Koşuyor</button>
+                <button type="button" class="cartoon-pill is-selected" data-action="swimming" data-i18n="studio.cartoon.basic.action.swimming">Yüzüyor</button>
+                <button type="button" class="cartoon-pill" data-action="jumping" data-i18n="studio.cartoon.basic.action.jumping">Zıplıyor</button>
+                <button type="button" class="cartoon-pill" data-action="playing" data-i18n="studio.cartoon.basic.action.playing">Oynuyor</button>
+                <button type="button" class="cartoon-pill" data-action="laughing" data-i18n="studio.cartoon.basic.action.laughing">Gülüyor</button>
+                <button type="button" class="cartoon-pill" data-action="dancing" data-i18n="studio.cartoon.basic.action.dancing">Dans Ediyor</button>
+                <button type="button" class="cartoon-pill" data-action="waving" data-i18n="studio.cartoon.basic.action.waving">El Sallıyor</button>
+                <button type="button" class="cartoon-pill" data-action="moving-slowly" data-i18n="studio.cartoon.basic.action.movingSlowly">Yavaş İlerliyor</button>
+                <button type="button" class="cartoon-pill" data-action="running" data-i18n="studio.cartoon.basic.action.running">Koşuyor</button>
               </div>
             </section>
 
             <!-- Kişiselleştirme -->
 <section class="cartoon-block cartoon-block--compact">
   <div class="cartoon-block-head">
-    <h3>Kişiselleştirme <span class="cartoon-muted">(opsiyonel)</span></h3>
+    <h3><span data-i18n="studio.cartoon.basic.personalization">Kişiselleştirme</span> <span class="cartoon-muted" data-i18n="studio.cartoon.common.optional">(opsiyonel)</span></h3>
   </div>
 
   <div class="cartoon-form-grid-2 cartoon-form-grid-2--with-audio">
 <div class="cartoon-field">
-  <label class="cartoon-field-label" for="cartoon-duration">Süre</label>
+  <label class="cartoon-field-label" for="cartoon-duration" data-i18n="studio.cartoon.basic.duration">Süre</label>
   <select id="cartoon-duration" class="cartoon-select">
-    <option value="4" selected>4 Saniye</option>
-    <option value="6">6 Saniye</option>
-    <option value="8">8 Saniye</option>
-    <option value="10">10 Saniye</option>
-    <option value="12">12 Saniye</option>
-    <option value="15">15 Saniye</option>
+    <option value="4" selected data-i18n="studio.cartoon.common.duration4">4 Saniye</option>
+    <option value="6" data-i18n="studio.cartoon.common.duration6">6 Saniye</option>
+    <option value="8" data-i18n="studio.cartoon.common.duration8">8 Saniye</option>
+    <option value="10" data-i18n="studio.cartoon.common.duration10">10 Saniye</option>
+    <option value="12" data-i18n="studio.cartoon.common.duration12">12 Saniye</option>
+    <option value="15" data-i18n="studio.cartoon.common.duration15">15 Saniye</option>
   </select>
 </div>
     <div class="cartoon-field">
-      <label class="cartoon-field-label" for="cartoon-ratio">En / Boy Oranı</label>
+      <label class="cartoon-field-label" for="cartoon-ratio" data-i18n="studio.cartoon.basic.aspectRatio">En / Boy Oranı</label>
       <select id="cartoon-ratio" class="cartoon-select">
-        <option value="16:9" selected>Geniş (16:9)</option>
-        <option value="1:1">Kare (1:1)</option>
-        <option value="9:16">Dikey (9:16)</option>
+        <option value="16:9" selected data-i18n="studio.cartoon.common.ratioWide">Geniş (16:9)</option>
+        <option value="1:1" data-i18n="studio.cartoon.common.ratioSquare">Kare (1:1)</option>
+        <option value="9:16" data-i18n="studio.cartoon.common.ratioVertical">Dikey (9:16)</option>
       </select>
     </div>
 
 <div class="cartoon-form-grid-2 cartoon-form-grid-2--personalize cartoon-field--full">
   <div class="cartoon-field">
-    <label class="cartoon-field-label" for="cartoon-logo-position">Logo Yönü</label>
+    <label class="cartoon-field-label" for="cartoon-logo-position" data-i18n="studio.cartoon.basic.logoPosition">Logo Yönü</label>
     <select id="cartoon-logo-position" class="cartoon-select" data-basic-logo-position>
-      <option value="bottom-right" selected>Sağ Alt</option>
-      <option value="bottom-left">Sol Alt</option>
-      <option value="top-right">Sağ Üst</option>
-      <option value="top-left">Sol Üst</option>
-      <option value="center">Orta</option>
+      <option value="bottom-right" selected data-i18n="studio.cartoon.common.positionBottomRight">Sağ Alt</option>
+      <option value="bottom-left" data-i18n="studio.cartoon.common.positionBottomLeft">Sol Alt</option>
+      <option value="top-right" data-i18n="studio.cartoon.common.positionTopRight">Sağ Üst</option>
+      <option value="top-left" data-i18n="studio.cartoon.common.positionTopLeft">Sol Üst</option>
+      <option value="center" data-i18n="studio.cartoon.common.positionCenter">Orta</option>
     </select>
   </div>
 
   <div class="cartoon-field">
-    <label class="cartoon-field-label" for="cartoon-basic-style">Stil</label>
+    <label class="cartoon-field-label" for="cartoon-basic-style" data-i18n="studio.cartoon.character.style">Stil</label>
     <select id="cartoon-basic-style" class="cartoon-select" data-basic-style>
-      <option value="cute-3d">Sevimli 3D</option>
-      <option value="soft-cartoon" selected>Yumuşak Çizgifilm</option>
-      <option value="pastel">Pastel</option>
-      <option value="bright-kids">Parlak Çocuk Stili</option>
+      <option value="cute-3d" data-i18n="studio.cartoon.common.styleCute3d">Sevimli 3D</option>
+      <option value="soft-cartoon" selected data-i18n="studio.cartoon.common.styleSoftCartoon">Yumuşak Çizgifilm</option>
+      <option value="pastel" data-i18n="studio.cartoon.common.stylePastel">Pastel</option>
+      <option value="bright-kids" data-i18n="studio.cartoon.common.styleBrightKids">Parlak Çocuk Stili</option>
     </select>
   </div>
 </div>
@@ -421,75 +421,75 @@
 
   <div class="cartoon-field">
     <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-      <label class="cartoon-field-label" style="margin:0;">
+      <label class="cartoon-field-label" style="margin:0;" data-i18n="studio.cartoon.basic.uploadVoice">
         Kendi Sesini Yükle
       </label>
 
       <div class="cartoon-credit-inline" style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-        <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+        <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
         <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
           <input type="file" accept="audio/*" hidden data-audio-upload>
-          <span class="cartoon-upload-btn">Audio Seç</span>
+          <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseAudio">Audio Seç</span>
           <button
             type="button"
             class="cartoon-upload-clear"
             data-basic-audio-upload-clear
             aria-label="Yüklenen sesi kaldır"
             title="Sesi kaldır"
-            style="display:none;">
+            style="display:none;" data-i18n-label="studio.cartoon.common.removeAudioLabel" data-i18n-title="studio.cartoon.common.removeAudio">
             ×
           </button>
         </label>
 
-        <span class="cartoon-upload-text" data-basic-audio-upload-text>Dosya seçilmedi</span>
+        <span class="cartoon-upload-text" data-basic-audio-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
       </div>
     </div>
   </div>
 
   <div class="cartoon-field">
     <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-      <label class="cartoon-field-label" style="margin:0;">
+      <label class="cartoon-field-label" style="margin:0;" data-i18n="studio.cartoon.basic.uploadLogo">
         Logo Yükle
       </label>
 
       <div class="cartoon-credit-inline" style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-        <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+        <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
         <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
           <input type="file" accept="image/*" hidden data-basic-logo-upload>
-          <span class="cartoon-upload-btn">Logo Seç</span>
+          <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseLogo">Logo Seç</span>
           <button
             type="button"
             class="cartoon-upload-clear"
             data-basic-logo-upload-clear
             aria-label="Yüklenen logoyu kaldır"
             title="Logoyu kaldır"
-            style="display:none;">
+            style="display:none;" data-i18n-label="studio.cartoon.common.removeLogoLabel" data-i18n-title="studio.cartoon.common.removeLogo">
             ×
           </button>
         </label>
 
-        <span class="cartoon-upload-text" data-basic-logo-upload-text>Dosya seçilmedi</span>
+        <span class="cartoon-upload-text" data-basic-logo-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
       </div>
     </div>
   </div>
 
   <div class="cartoon-field">
     <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-      <label class="cartoon-field-label" style="margin:0;">
+      <label class="cartoon-field-label" style="margin:0;" data-i18n="studio.cartoon.basic.uploadCharacter">
         Kendi Karakterini Koy
       </label>
 
       <div class="cartoon-credit-inline" style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-        <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+        <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
         <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
           <input type="file" accept="image/*" hidden data-character-upload>
-          <span class="cartoon-upload-btn">Resim Seç</span>
+          <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseImage">Resim Seç</span>
         </label>
 
-        <span class="cartoon-upload-text" data-basic-upload-text>Dosya seçilmedi</span>
+        <span class="cartoon-upload-text" data-basic-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
       </div>
     </div>
   </div>
@@ -500,7 +500,7 @@
 
           <!-- CTA -->
           <div class="cartoon-cta">
-            <button type="button" class="cartoon-generate-btn" data-cartoon-generate>
+            <button type="button" class="cartoon-generate-btn" data-cartoon-generate data-i18n="studio.cartoon.basic.generate">
               🎬 Sahneyi Oluştur (30 Kredi)
             </button>
           </div>
@@ -519,18 +519,18 @@
 <!-- 1) Hikaye Özeti -->
 <section class="story-card story-summary-card">
  <div class="story-card-head">
-  <h4>Hikaye Özeti</h4>
-  <p class="story-card-helper">Önce hikayenin genel yapısını oluştur. Ardından sahnelere tıklayarak her sahneyi ayrı düzenle.</p>
+  <h4 data-i18n="studio.cartoon.story.summaryTitle">Hikaye Özeti</h4>
+  <p class="story-card-helper" data-i18n="studio.cartoon.story.summaryHelper">Önce hikayenin genel yapısını oluştur. Ardından sahnelere tıklayarak her sahneyi ayrı düzenle.</p>
 </div>
 
   <div class="story-field">
-    <label for="storyIdea">Hikaye Fikri</label>
+    <label for="storyIdea" data-i18n="studio.cartoon.story.idea">Hikaye Fikri</label>
     <textarea
       id="storyIdea"
       name="storyIdea"
       rows="5"
       maxlength="5000"
-      placeholder="Örn: Kırmızı balık kaybolan inciyi bulmak için arkadaşlarıyla ormanda ve gölette maceraya çıkar."
+      placeholder="Örn: Kırmızı balık kaybolan inciyi bulmak için arkadaşlarıyla ormanda ve gölette maceraya çıkar." data-i18n-placeholder="studio.cartoon.story.ideaPlaceholder"
       data-story-idea
     ></textarea>
     <div class="story-counter">
@@ -541,35 +541,35 @@
 
 <div class="story-grid story-grid-3">
   <div class="story-field">
-    <label for="storyTheme">Tema / Duygu</label>
+    <label for="storyTheme" data-i18n="studio.cartoon.story.theme">Tema / Duygu</label>
     <select id="storyTheme" name="storyTheme" data-story-theme>
-      <option value="">Seçiniz</option>
-      <option value="neseli">Neşeli</option>
-      <option value="merakli">Meraklı</option>
-      <option value="heyecanli">Heyecanlı</option>
-      <option value="duygusal">Duygusal</option>
-      <option value="eglenceli">Eğlenceli</option>
+      <option value="" data-i18n="studio.cartoon.common.select">Seçiniz</option>
+      <option value="neseli" data-i18n="studio.cartoon.story.theme.cheerful">Neşeli</option>
+      <option value="merakli" data-i18n="studio.cartoon.story.theme.curious">Meraklı</option>
+      <option value="heyecanli" data-i18n="studio.cartoon.character.expression.excited">Heyecanlı</option>
+      <option value="duygusal" data-i18n="studio.cartoon.story.theme.emotional">Duygusal</option>
+      <option value="eglenceli" data-i18n="studio.cartoon.story.theme.fun">Eğlenceli</option>
     </select>
   </div>
 
   <div class="story-field">
-    <label for="storyAge">Yaş Grubu</label>
+    <label for="storyAge" data-i18n="studio.cartoon.story.ageGroup">Yaş Grubu</label>
     <select id="storyAge" name="storyAge" data-story-age-group>
-      <option value="">Seçiniz</option>
-      <option value="3-5">3-5 Yaş</option>
-      <option value="5-7">5-7 Yaş</option>
-      <option value="7-9">7-9 Yaş</option>
+      <option value="" data-i18n="studio.cartoon.common.select">Seçiniz</option>
+      <option value="3-5" data-i18n="studio.cartoon.story.age3to5">3-5 Yaş</option>
+      <option value="5-7" data-i18n="studio.cartoon.story.age5to7">5-7 Yaş</option>
+      <option value="7-9" data-i18n="studio.cartoon.story.age7to9">7-9 Yaş</option>
     </select>
   </div>
 
   <div class="story-field">
-    <label for="storyStyle">Stil</label>
+    <label for="storyStyle" data-i18n="studio.cartoon.character.style">Stil</label>
     <select id="storyStyle" name="storyStyle" data-story-style>
-      <option value="">Seçiniz</option>
-      <option value="cute-3d">Sevimli 3D</option>
-      <option value="soft-cartoon">Yumuşak Çizgifilm</option>
-      <option value="pastel">Pastel</option>
-      <option value="bright-kids">Parlak Çocuk Stili</option>
+      <option value="" data-i18n="studio.cartoon.common.select">Seçiniz</option>
+      <option value="cute-3d" data-i18n="studio.cartoon.common.styleCute3d">Sevimli 3D</option>
+      <option value="soft-cartoon" data-i18n="studio.cartoon.common.styleSoftCartoon">Yumuşak Çizgifilm</option>
+      <option value="pastel" data-i18n="studio.cartoon.common.stylePastel">Pastel</option>
+      <option value="bright-kids" data-i18n="studio.cartoon.common.styleBrightKids">Parlak Çocuk Stili</option>
     </select>
   </div>
 </div>
@@ -577,54 +577,54 @@
 <!-- 2) Karakterler -->
 <section class="story-card story-characters-card">
   <div class="story-card-head">
-    <h4>Karakterler</h4>
-    <p class="story-card-note">Hazır karakterleri ücretsiz kullanabilir, kendi özel karakterini ayrı alandan ekleyebilirsin.</p>
+    <h4 data-i18n="studio.cartoon.story.charactersTitle">Karakterler</h4>
+    <p class="story-card-note" data-i18n="studio.cartoon.story.charactersNote">Hazır karakterleri ücretsiz kullanabilir, kendi özel karakterini ayrı alandan ekleyebilirsin.</p>
   </div>
 
   <!-- Hazır Karakterler -->
   <div class="cartoon-character-duo" style="margin-top:8px;">
     <section class="cartoon-block">
       <div class="cartoon-block-head">
-        <h3>Ana Karakter</h3>
+        <h3 data-i18n="studio.cartoon.basic.mainCharacter">Ana Karakter</h3>
       </div>
 
      <div class="cartoon-character-grid cartoon-character-grid--stack">
   <button type="button" class="cartoon-character-card" data-role="main" data-character="red-fish">
     <span class="cartoon-character-thumb">🐟</span>
-    <span class="cartoon-character-name">Kırmızı Balık</span>
+    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.redFish">Kırmızı Balık</span>
   </button>
 
   <button type="button" class="cartoon-character-card" data-role="main" data-character="chick">
     <span class="cartoon-character-thumb">🐥</span>
-    <span class="cartoon-character-name">Civciv</span>
+    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.chick">Civciv</span>
   </button>
 
   <button type="button" class="cartoon-character-card" data-role="main" data-character="duck">
     <span class="cartoon-character-thumb">🦆</span>
-    <span class="cartoon-character-name">Ördek</span>
+    <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.duck">Ördek</span>
   </button>
 </div>
     </section>
 
     <section class="cartoon-block">
      <div class="cartoon-block-head">
-  <h3>Yardımcı Karakterler</h3>
+  <h3 data-i18n="studio.cartoon.basic.helperCharacters">Yardımcı Karakterler</h3>
 </div>
 
       <div class="cartoon-character-grid cartoon-character-grid--stack">
         <button type="button" class="cartoon-character-card" data-role="helper" data-character="small-fish-school">
           <span class="cartoon-character-thumb">🐠</span>
-          <span class="cartoon-character-name">Küçük Balıklar</span>
+          <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.smallFish">Küçük Balıklar</span>
         </button>
 
         <button type="button" class="cartoon-character-card" data-role="helper" data-character="frog">
           <span class="cartoon-character-thumb">🐸</span>
-          <span class="cartoon-character-name">Kurbağa</span>
+          <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.frog">Kurbağa</span>
         </button>
 
         <button type="button" class="cartoon-character-card" data-role="helper" data-character="crab">
           <span class="cartoon-character-thumb">🦀</span>
-          <span class="cartoon-character-name">Yengeç</span>
+          <span class="cartoon-character-name" data-i18n="studio.cartoon.basic.character.crab">Yengeç</span>
         </button>
       </div>
     </section>
@@ -632,24 +632,24 @@
 
   <!-- Özel Karakterler -->
 <div class="story-card-head" style="margin-top:24px; text-align:center;">
-  <h4>Özel Karakterler (her seçim +10 Kredi)</h4>
-  <p class="story-card-note">Kendi fotoğrafını, çocuğunun görselini veya özel referans karakterlerini buradan ekle.</p>
+  <h4 data-i18n="studio.cartoon.story.specialCharactersTitle">Özel Karakterler (her seçim +10 Kredi)</h4>
+  <p class="story-card-note" data-i18n="studio.cartoon.story.specialCharactersNote">Kendi fotoğrafını, çocuğunun görselini veya özel referans karakterlerini buradan ekle.</p>
   <p
     class="story-card-note"
     style="margin:6px auto 0; max-width:760px; opacity:.78; font-size:14px; line-height:1.6; text-align:center;"
-  >
+   data-i18n="studio.cartoon.story.specialCharactersCreditNote">
     Her seçim için 10 kredi kullanılır. En fazla 4 karakter ekleyebilirsin.
   </p>
   <p
     class="story-card-note"
     style="margin:2px auto 0; max-width:760px; opacity:.72; font-size:14px; line-height:1.6; text-align:center;"
-  >
+   data-i18n="studio.cartoon.story.specialCharactersMoreNote">
     Daha fazlasını sahne açıklamasında yazabilirsin.
   </p>
   <p
   class="story-card-note"
   style="margin:2px auto 0; max-width:760px; opacity:.68; font-size:13px; line-height:1.6; text-align:center;"
->
+ data-i18n="studio.cartoon.story.specialCharactersSizeNote">
   Her karakter görseli için maksimum yükleme boyutu 10 MB'dir.
 </p>
 </div>
@@ -659,10 +659,10 @@
 >
   <div class="story-field story-character-field">
  <label for="storyMainCharacterImage" class="story-character-title">
-  <span class="story-character-title-text">Ana Karakter</span>
+  <span class="story-character-title-text" data-i18n="studio.cartoon.basic.mainCharacter">Ana Karakter</span>
 </label>
 <div class="cartoon-credit-inline" style="justify-content:center; margin:0 0 10px;">
-  <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+  <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 </div>
 
     <label
@@ -689,14 +689,14 @@
       <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="main"
-      >
+       data-i18n="studio.cartoon.common.chooseImage">
         Resim Seç
       </span>
 
       <span
         class="cartoon-upload-text"
         data-story-upload-name="main"
-      >
+       data-i18n="studio.cartoon.common.noFile">
         Dosya seçilmedi
       </span>
 
@@ -707,7 +707,7 @@
         title="Resmi kaldır"
         data-story-upload-remove="main"
         style="display:none;"
-      >
+       data-i18n-label="studio.cartoon.common.removeImageLabel" data-i18n-title="studio.cartoon.common.removeImage">
         ×
       </button>
     </label>
@@ -715,10 +715,10 @@
 
   <div class="story-field story-character-field">
  <label for="storyHelperCharacter1Image" class="story-character-title">
-  <span class="story-character-title-text">Yardımcı Karakter 1</span>
+  <span class="story-character-title-text" data-i18n="studio.cartoon.story.character.helper1">Yardımcı Karakter 1</span>
 </label>
 <div class="cartoon-credit-inline" style="justify-content:center; margin:0 0 10px;">
-  <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+  <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 </div>
 
     <label
@@ -745,14 +745,14 @@
       <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="helper1"
-      >
+       data-i18n="studio.cartoon.common.chooseImage">
         Resim Seç
       </span>
 
       <span
         class="cartoon-upload-text"
         data-story-upload-name="helper1"
-      >
+       data-i18n="studio.cartoon.common.noFile">
         Dosya seçilmedi
       </span>
 
@@ -763,7 +763,7 @@
         title="Resmi kaldır"
         data-story-upload-remove="helper1"
         style="display:none;"
-      >
+       data-i18n-label="studio.cartoon.common.removeImageLabel" data-i18n-title="studio.cartoon.common.removeImage">
         ×
       </button>
     </label>
@@ -771,10 +771,10 @@
 
   <div class="story-field story-character-field">
  <label for="storyHelperCharacter2Image" class="story-character-title">
-  <span class="story-character-title-text">Yardımcı Karakter 2</span>
+  <span class="story-character-title-text" data-i18n="studio.cartoon.story.character.helper2">Yardımcı Karakter 2</span>
 </label>
 <div class="cartoon-credit-inline" style="justify-content:center; margin:0 0 10px;">
-  <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+  <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 </div>
 
     <label
@@ -801,14 +801,14 @@
       <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="helper2"
-      >
+       data-i18n="studio.cartoon.common.chooseImage">
         Resim Seç
       </span>
 
       <span
         class="cartoon-upload-text"
         data-story-upload-name="helper2"
-      >
+       data-i18n="studio.cartoon.common.noFile">
         Dosya seçilmedi
       </span>
 
@@ -819,7 +819,7 @@
         title="Resmi kaldır"
         data-story-upload-remove="helper2"
         style="display:none;"
-      >
+       data-i18n-label="studio.cartoon.common.removeImageLabel" data-i18n-title="studio.cartoon.common.removeImage">
         ×
       </button>
     </label>
@@ -827,10 +827,10 @@
 
   <div class="story-field story-character-field">
 <label for="storyExtraCharacterImage" class="story-character-title">
-  <span class="story-character-title-text">Ek Karakter</span>
+  <span class="story-character-title-text" data-i18n="studio.cartoon.story.character.extra">Ek Karakter</span>
 </label>
 <div class="cartoon-credit-inline" style="justify-content:center; margin:0 0 10px;">
-  <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+  <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 </div>
 
     <label
@@ -857,14 +857,14 @@
       <span
         class="cartoon-upload-btn"
         data-story-upload-trigger="extra"
-      >
+       data-i18n="studio.cartoon.common.chooseImage">
         Resim Seç
       </span>
 
       <span
         class="cartoon-upload-text"
         data-story-upload-name="extra"
-      >
+       data-i18n="studio.cartoon.common.noFile">
         Dosya seçilmedi
       </span>
 
@@ -875,7 +875,7 @@
         title="Resmi kaldır"
         data-story-upload-remove="extra"
         style="display:none;"
-      >
+       data-i18n-label="studio.cartoon.common.removeImageLabel" data-i18n-title="studio.cartoon.common.removeImage">
         ×
       </button>
     </label>
@@ -886,20 +886,20 @@
 <!-- 3) Hikaye Akışı -->
 <section class="story-card story-flow-card">
   <div class="story-card-head-copy">
-  <h4>Hikaye Akışı</h4>
-  <small>Film süresine göre önerilen sahne dağılımı otomatik hazırlanır.</small>
-  <p class="story-flow-note">Minimum süre 3 dk ile başlar. Sahneleri ihtiyacınıza göre düzenleyebilirsiniz; tüm alanları doldurmanız gerekmez.</p>
+  <h4 data-i18n="studio.cartoon.story.flowTitle">Hikaye Akışı</h4>
+  <small data-i18n="studio.cartoon.story.flowHelper">Film süresine göre önerilen sahne dağılımı otomatik hazırlanır.</small>
+  <p class="story-flow-note" data-i18n="studio.cartoon.story.flowNote">Minimum süre 3 dk ile başlar. Sahneleri ihtiyacınıza göre düzenleyebilirsiniz; tüm alanları doldurmanız gerekmez.</p>
 </div>
 
     <div class="story-flow-duration-wrap">
-      <label class="story-flow-duration-label" for="storyFlowDuration">Film Süresi</label>
+      <label class="story-flow-duration-label" for="storyFlowDuration" data-i18n="studio.cartoon.story.filmDuration">Film Süresi</label>
 
       <div class="story-flow-duration-control">
        <select id="storyFlowDuration" data-story-flow-duration>
-  <option value="3" selected>3 dk · Önerilen</option>
-  <option value="4">4 dk</option>
-  <option value="5">5 dk</option>
-  <option value="6">6 dk</option>
+  <option value="3" selected data-i18n="studio.cartoon.story.duration3">3 dk · Önerilen</option>
+  <option value="4" data-i18n="studio.cartoon.story.duration4">4 dk</option>
+  <option value="5" data-i18n="studio.cartoon.story.duration5">5 dk</option>
+  <option value="6" data-i18n="studio.cartoon.story.duration6">6 dk</option>
 </select>
       </div>
     </div>
@@ -910,8 +910,8 @@
     <article class="story-section is-open" data-story-section="intro">
       <button type="button" class="story-section-head" data-story-section-toggle>
         <span class="story-section-copy">
-          <strong>Giriş</strong>
-          <small>Dünya, ana karakter ve hedef tanıtılır</small>
+          <strong data-i18n="studio.cartoon.story.section.intro">Giriş</strong>
+          <small data-i18n="studio.cartoon.story.section.introSub">Dünya, ana karakter ve hedef tanıtılır</small>
         </span>
         <span class="story-section-meta">
           <em>3 Sahne</em>
@@ -923,26 +923,26 @@
         <div class="story-scene-list">
           <button type="button" class="story-scene-row" data-story-scene-id="intro-1" data-edit-scene="intro-1">
             <span class="story-scene-copy">
-              <strong data-scene-title>Sahne 1 · Dünya Açılışı</strong>
-              <small data-scene-description>Ortam ve genel atmosfer kurulur.</small>
+              <strong data-scene-title><span data-i18n="studio.cartoon.common.scene">Sahne</span> 1 · <span data-i18n="studio.cartoon.story.blueprint.worldOpening.title">Dünya Açılışı</span></strong>
+              <small data-scene-description data-i18n="studio.cartoon.story.blueprint.worldOpening.description">Ortam ve genel atmosfer kurulur.</small>
             </span>
-            <span class="story-scene-meta" data-scene-duration>15 sn</span>
+            <span class="story-scene-meta" data-scene-duration data-i18n="studio.cartoon.common.duration15">15 sn</span>
           </button>
 
           <button type="button" class="story-scene-row" data-story-scene-id="intro-2" data-edit-scene="intro-2">
             <span class="story-scene-copy">
-              <strong data-scene-title>Sahne 2 · Ana Karakter Tanıtımı</strong>
-              <small data-scene-description>Ana karakter ilk kez görünür.</small>
+              <strong data-scene-title><span data-i18n="studio.cartoon.common.scene">Sahne</span> 2 · <span data-i18n="studio.cartoon.story.blueprint.mainIntro.title">Ana Karakter Tanıtımı</span></strong>
+              <small data-scene-description data-i18n="studio.cartoon.story.blueprint.mainIntro.description">Ana karakter ilk kez görünür.</small>
             </span>
-            <span class="story-scene-meta" data-scene-duration>15 sn</span>
+            <span class="story-scene-meta" data-scene-duration data-i18n="studio.cartoon.common.duration15">15 sn</span>
           </button>
 
           <button type="button" class="story-scene-row" data-story-scene-id="intro-3" data-edit-scene="intro-3">
             <span class="story-scene-copy">
-              <strong data-scene-title>Sahne 3 · Hedefin Ortaya Çıkışı</strong>
-              <small data-scene-description>Karakterin amacı netleşir.</small>
+              <strong data-scene-title><span data-i18n="studio.cartoon.common.scene">Sahne</span> 3 · <span data-i18n="studio.cartoon.story.blueprint.goalAppears.title">Hedefin Ortaya Çıkışı</span></strong>
+              <small data-scene-description data-i18n="studio.cartoon.story.blueprint.goalAppears.description">Karakterin amacı netleşir.</small>
             </span>
-            <span class="story-scene-meta" data-scene-duration>15 sn</span>
+            <span class="story-scene-meta" data-scene-duration data-i18n="studio.cartoon.common.duration15">15 sn</span>
           </button>
         </div>
       </div>
@@ -952,8 +952,8 @@
     <article class="story-section" data-story-section="setup">
       <button type="button" class="story-section-head" data-story-section-toggle>
         <span class="story-section-copy">
-          <strong>Kurulum</strong>
-          <small>Yardımcı unsur gelir, yolculuk başlar, ilk engel çıkar</small>
+          <strong data-i18n="studio.cartoon.story.section.setup">Kurulum</strong>
+          <small data-i18n="studio.cartoon.story.section.setupSub">Yardımcı unsur gelir, yolculuk başlar, ilk engel çıkar</small>
         </span>
         <span class="story-section-meta">
           <em>3 Sahne</em>
@@ -968,8 +968,8 @@
     <article class="story-section" data-story-section="adventure">
       <button type="button" class="story-section-head" data-story-section-toggle>
         <span class="story-section-copy">
-          <strong>Macera</strong>
-          <small>Olaylar büyür, denemeler artar, doruğa gidilir</small>
+          <strong data-i18n="studio.cartoon.story.section.adventure">Macera</strong>
+          <small data-i18n="studio.cartoon.story.section.adventureSub">Olaylar büyür, denemeler artar, doruğa gidilir</small>
         </span>
         <span class="story-section-meta">
           <em>4 Sahne</em>
@@ -984,8 +984,8 @@
     <article class="story-section" data-story-section="final">
       <button type="button" class="story-section-head" data-story-section-toggle>
         <span class="story-section-copy">
-          <strong>Final</strong>
-          <small>Sorun çözülür, hikaye sıcak bir kapanış yapar</small>
+          <strong data-i18n="studio.cartoon.story.section.final">Final</strong>
+          <small data-i18n="studio.cartoon.story.section.finalSub">Sorun çözülür, hikaye sıcak bir kapanış yapar</small>
         </span>
         <span class="story-section-meta">
           <em>2 Sahne</em>
@@ -1002,9 +1002,9 @@
 <section class="story-card story-settings-card is-collapsed">
   <button type="button" class="story-card-collapse" data-story-settings-toggle>
     <span>
-      <strong>Üretim Ayarları</strong>
-      <small>Oran, stil, logo ve müzik</small>
-      <small class="story-settings-note">
+      <strong data-i18n="studio.cartoon.story.settingsTitle">Üretim Ayarları</strong>
+      <small data-i18n="studio.cartoon.story.settingsSub">Oran, stil, logo ve müzik</small>
+      <small class="story-settings-note" data-i18n="studio.cartoon.story.settingsTimeNote">
         Süre uzadıkça ve logo, müzik, görsel eklendikçe hazırlık süresi artabilir. Video yaklaşık 5–10 dakikada hazır olur.
       </small>
     </span>
@@ -1015,21 +1015,21 @@
     <!-- 1. sıra -->
     <div class="story-grid story-grid-2">
       <div class="story-field">
-        <label for="storyAspectRatio">En / Boy Oranı</label>
+        <label for="storyAspectRatio" data-i18n="studio.cartoon.basic.aspectRatio">En / Boy Oranı</label>
         <select id="storyAspectRatio" name="storyAspectRatio" data-story-ratio>
-          <option value="16:9" selected>Geniş (16:9)</option>
-          <option value="9:16">Dikey (9:16)</option>
-          <option value="1:1">Kare (1:1)</option>
+          <option value="16:9" selected data-i18n="studio.cartoon.common.ratioWide">Geniş (16:9)</option>
+          <option value="9:16" data-i18n="studio.cartoon.common.ratioVertical">Dikey (9:16)</option>
+          <option value="1:1" data-i18n="studio.cartoon.common.ratioSquare">Kare (1:1)</option>
         </select>
       </div>
 
       <div class="story-field">
-        <label for="storyStyle">Stil</label>
+        <label for="storyStyle" data-i18n="studio.cartoon.character.style">Stil</label>
         <select id="storyStyle" name="storyStyle" data-story-style>
-          <option value="">Seçiniz</option>
-          <option value="cute-3d">Sevimli 3D</option>
-          <option value="soft-cartoon">Yumuşak Cartoon</option>
-          <option value="bright-kids">Parlak Çocuk Stili</option>
+          <option value="" data-i18n="studio.cartoon.common.select">Seçiniz</option>
+          <option value="cute-3d" data-i18n="studio.cartoon.common.styleCute3d">Sevimli 3D</option>
+          <option value="soft-cartoon" data-i18n="studio.cartoon.common.styleSoftCartoon">Yumuşak Cartoon</option>
+          <option value="bright-kids" data-i18n="studio.cartoon.common.styleBrightKids">Parlak Çocuk Stili</option>
         </select>
       </div>
     </div>
@@ -1037,21 +1037,21 @@
     <!-- 2. sıra -->
     <div class="story-grid story-grid-2" style="margin-top:16px;">
       <div class="story-field">
-        <label for="storyLogoPosition">Logo Yönü</label>
+        <label for="storyLogoPosition" data-i18n="studio.cartoon.basic.logoPosition">Logo Yönü</label>
         <select id="storyLogoPosition" name="storyLogoPosition" data-story-logo-position>
-          <option value="bottom-right" selected>Sağ Alt</option>
-          <option value="bottom-left">Sol Alt</option>
-          <option value="top-right">Sağ Üst</option>
-          <option value="top-left">Sol Üst</option>
-          <option value="center">Orta</option>
+          <option value="bottom-right" selected data-i18n="studio.cartoon.common.positionBottomRight">Sağ Alt</option>
+          <option value="bottom-left" data-i18n="studio.cartoon.common.positionBottomLeft">Sol Alt</option>
+          <option value="top-right" data-i18n="studio.cartoon.common.positionTopRight">Sağ Üst</option>
+          <option value="top-left" data-i18n="studio.cartoon.common.positionTopLeft">Sol Üst</option>
+          <option value="center" data-i18n="studio.cartoon.common.positionCenter">Orta</option>
         </select>
       </div>
 
       <div class="story-field">
-        <label for="storyIncludeMusic">Müziği Videoya Dahil Et</label>
+        <label for="storyIncludeMusic" data-i18n="studio.cartoon.story.includeMusic">Müziği Videoya Dahil Et</label>
         <select id="storyIncludeMusic" name="storyIncludeMusic" data-story-include-music>
-          <option value="no" selected>Hayır</option>
-          <option value="yes">Evet</option>
+          <option value="no" selected data-i18n="studio.cartoon.common.no">Hayır</option>
+          <option value="yes" data-i18n="studio.cartoon.common.yes">Evet</option>
         </select>
       </div>
     </div>
@@ -1060,22 +1060,22 @@
 <div class="story-grid story-grid-2" style="margin-top:16px;">
   <div class="story-field">
     <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-      <label style="margin:0;">Logo Yükle</label>
+      <label style="margin:0;" data-i18n="studio.cartoon.basic.uploadLogo">Logo Yükle</label>
 
       <div class="cartoon-credit-inline">
-        <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+        <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
         <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
           <input type="file" accept="image/*" hidden data-story-logo-upload>
-          <span class="cartoon-upload-btn">Logo Seç</span>
-          <span class="cartoon-upload-text" data-story-logo-upload-text>Dosya seçilmedi</span>
+          <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseLogo">Logo Seç</span>
+          <span class="cartoon-upload-text" data-story-logo-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
           <button
             type="button"
             class="cartoon-upload-clear"
             data-story-logo-upload-clear
             aria-label="Yüklenen logoyu kaldır"
             title="Logoyu kaldır"
-            style="display:none;">
+            style="display:none;" data-i18n-label="studio.cartoon.common.removeLogoLabel" data-i18n-title="studio.cartoon.common.removeLogo">
             ×
           </button>
         </label>
@@ -1085,22 +1085,22 @@
 
   <div class="story-field">
     <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-      <label style="margin:0;">Müzik Yükle</label>
+      <label style="margin:0;" data-i18n="studio.cartoon.story.uploadMusic">Müzik Yükle</label>
 
       <div class="cartoon-credit-inline">
-        <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+        <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
         <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
           <input type="file" accept="audio/*" hidden data-story-audio-upload>
-          <span class="cartoon-upload-btn">Audio Seç</span>
-          <span class="cartoon-upload-text" data-story-audio-upload-text>Dosya seçilmedi</span>
+          <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseAudio">Audio Seç</span>
+          <span class="cartoon-upload-text" data-story-audio-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
           <button
             type="button"
             class="cartoon-upload-clear"
             data-story-audio-upload-clear
             aria-label="Yüklenen müziği kaldır"
             title="Müziği kaldır"
-            style="display:none;">
+            style="display:none;" data-i18n-label="studio.cartoon.common.removeMusicLabel" data-i18n-title="studio.cartoon.common.removeMusic">
             ×
           </button>
         </label>
@@ -1114,7 +1114,7 @@
 <!-- Alt sabit CTA -->
 <footer class="story-footer">
   <div class="story-footer-info">12 sahne · yaklaşık 3 dk · sahne başı ort. 15 sn</div>
-<button type="button" class="story-primary-btn" data-story-generate>
+<button type="button" class="story-primary-btn" data-story-generate data-i18n="studio.cartoon.story.generate">
   🎬 Hikayeyi Oluştur (Başlangıç 30 Kredi)
 </button>
 </footer>
@@ -1123,21 +1123,21 @@
 <aside class="story-scene-editor" data-story-scene-editor hidden>
   <div class="story-scene-editor-card">
     <div class="story-card-head">
-      <h4 data-scene-editor-heading>Sahne Düzenle</h4>
+      <h4 data-scene-editor-heading data-i18n="studio.cartoon.story.editorTitle" data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">Sahne Düzenle</h4>
     </div>
 
     <div class="story-field">
-      <label for="sceneTitle">Sahne Başlığı</label>
-      <input id="sceneTitle" name="sceneTitle" type="text" data-scene-editor-title />
+      <label for="sceneTitle" data-i18n="studio.cartoon.story.sceneHeading">Sahne Başlığı</label>
+      <input id="sceneTitle" name="sceneTitle" type="text" data-scene-editor-title / data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">
     </div>
 
     <div class="story-field">
-      <label for="sceneDescription">Sahne Açıklaması</label>
-      <textarea id="sceneDescription" name="sceneDescription" rows="4" data-scene-editor-description></textarea>
+      <label for="sceneDescription" data-i18n="studio.cartoon.story.sceneDescription">Sahne Açıklaması</label>
+      <textarea id="sceneDescription" name="sceneDescription" rows="4" data-scene-editor-description data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle"></textarea>
     </div>
 
    <div class="story-field story-scene-characters-field" data-scene-character-picker>
-  <label>Sahnedeki Karakterler</label>
+  <label data-i18n="studio.cartoon.story.sceneCharacters">Sahnedeki Karakterler</label>
 
   <input
     id="sceneCharacters"
@@ -1145,7 +1145,7 @@
     type="hidden"
     value=""
     data-scene-editor-characters
-  />
+  / data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">
 
   <div class="story-scene-character-grid" data-scene-character-picker-options>
     <button
@@ -1157,8 +1157,8 @@
     >
       <span class="story-scene-character-dot"></span>
       <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Ana Karakter</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
+        <strong data-scene-character-label data-i18n="studio.cartoon.basic.mainCharacter">Ana Karakter</strong>
+        <small data-scene-character-file data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</small>
       </span>
     </button>
 
@@ -1171,8 +1171,8 @@
     >
       <span class="story-scene-character-dot"></span>
       <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Yardımcı Karakter 1</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
+        <strong data-scene-character-label data-i18n="studio.cartoon.story.character.helper1">Yardımcı Karakter 1</strong>
+        <small data-scene-character-file data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</small>
       </span>
     </button>
 
@@ -1185,8 +1185,8 @@
     >
       <span class="story-scene-character-dot"></span>
       <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Yardımcı Karakter 2</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
+        <strong data-scene-character-label data-i18n="studio.cartoon.story.character.helper2">Yardımcı Karakter 2</strong>
+        <small data-scene-character-file data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</small>
       </span>
     </button>
 
@@ -1199,32 +1199,32 @@
     >
       <span class="story-scene-character-dot"></span>
       <span class="story-scene-character-copy">
-        <strong data-scene-character-label>Ek Karakter</strong>
-        <small data-scene-character-file>Dosya seçilmedi</small>
+        <strong data-scene-character-label data-i18n="studio.cartoon.story.character.extra">Ek Karakter</strong>
+        <small data-scene-character-file data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</small>
       </span>
     </button>
   </div>
 
-  <div class="story-scene-character-empty" data-scene-character-picker-empty hidden>
+  <div class="story-scene-character-empty" data-scene-character-picker-empty hidden data-i18n="studio.cartoon.story.sceneCharacterEmpty">
     Önce üst bölümden karakter seç.
   </div>
 </div>
 <div class="story-grid story-grid-2">
   <div class="story-field">
-    <label for="sceneDuration">Süre</label>
-    <select id="sceneDuration" name="sceneDuration" data-scene-editor-duration>
-      <option value="4">4 sn</option>
-      <option value="6">6 sn</option>
-      <option value="8">8 sn</option>
-      <option value="10">10 sn</option>
-      <option value="12">12 sn</option>
-      <option value="15">15 sn</option>
+    <label for="sceneDuration" data-i18n="studio.cartoon.basic.duration">Süre</label>
+    <select id="sceneDuration" name="sceneDuration" data-scene-editor-duration data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">
+      <option value="4" data-i18n="studio.cartoon.common.duration4">4 sn</option>
+      <option value="6" data-i18n="studio.cartoon.common.duration6">6 sn</option>
+      <option value="8" data-i18n="studio.cartoon.common.duration8">8 sn</option>
+      <option value="10" data-i18n="studio.cartoon.common.duration10">10 sn</option>
+      <option value="12" data-i18n="studio.cartoon.common.duration12">12 sn</option>
+      <option value="15" data-i18n="studio.cartoon.common.duration15">15 sn</option>
     </select>
 
     <div
       data-scene-credit-note
       style="margin-top:10px; font-size:13px; line-height:1.5; font-weight:700; color:rgba(255,255,255,.70);"
-    >
+     data-i18n="studio.cartoon.story.sceneCreditNote">
        Her +2 sn için +5 kredi eklenir.
     </div>
 
@@ -1255,43 +1255,43 @@
   </div>
 
   <div class="story-field">
-    <label for="sceneMood">Sahne Duygusu</label>
-    <select id="sceneMood" name="sceneMood" data-scene-editor-mood>
-      <option value="">Seçiniz</option>
-      <option value="neseli">Neşeli</option>
-      <option value="merakli">Meraklı</option>
-      <option value="heyecanli">Heyecanlı</option>
-      <option value="duygusal">Duygusal</option>
-      <option value="eglenceli">Eğlenceli</option>
+    <label for="sceneMood" data-i18n="studio.cartoon.story.sceneMood">Sahne Duygusu</label>
+    <select id="sceneMood" name="sceneMood" data-scene-editor-mood data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">
+      <option value="" data-i18n="studio.cartoon.common.select">Seçiniz</option>
+      <option value="neseli" data-i18n="studio.cartoon.story.theme.cheerful">Neşeli</option>
+      <option value="merakli" data-i18n="studio.cartoon.story.theme.curious">Meraklı</option>
+      <option value="heyecanli" data-i18n="studio.cartoon.character.expression.excited">Heyecanlı</option>
+      <option value="duygusal" data-i18n="studio.cartoon.story.theme.emotional">Duygusal</option>
+      <option value="eglenceli" data-i18n="studio.cartoon.story.theme.fun">Eğlenceli</option>
     </select>
   </div>
 </div>
 
     <div class="story-field">
-      <label for="sceneType">Sahne Tipi</label>
-      <select id="sceneType" name="sceneType" data-scene-editor-type>
-        <option value="">Seçiniz</option>
-        <option value="giris">Giriş</option>
-        <option value="diyalog">Diyalog</option>
-        <option value="aksiyon">Aksiyon</option>
-        <option value="gecis">Geçiş</option>
-        <option value="final">Final</option>
+      <label for="sceneType" data-i18n="studio.cartoon.story.sceneType">Sahne Tipi</label>
+      <select id="sceneType" name="sceneType" data-scene-editor-type data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">
+        <option value="" data-i18n="studio.cartoon.common.select">Seçiniz</option>
+        <option value="giris" data-i18n="studio.cartoon.story.section.intro">Giriş</option>
+        <option value="diyalog" data-i18n="studio.cartoon.story.sceneType.dialogue">Diyalog</option>
+        <option value="aksiyon" data-i18n="studio.cartoon.basic.actionTitle">Aksiyon</option>
+        <option value="gecis" data-i18n="studio.cartoon.story.sceneType.transition">Geçiş</option>
+        <option value="final" data-i18n="studio.cartoon.story.section.final">Final</option>
       </select>
     </div>
 
     <div class="story-field">
-      <label for="sceneDirectorNote">Ek Yönetmen Notu</label>
+      <label for="sceneDirectorNote" data-i18n="studio.cartoon.story.directorNote">Ek Yönetmen Notu</label>
       <textarea
         id="sceneDirectorNote"
         name="sceneDirectorNote"
         rows="3"
-        placeholder="Örn: kamera soldan açılsın, karakter koşarak gelsin"
+        placeholder="Örn: kamera soldan açılsın, karakter koşarak gelsin" data-i18n-placeholder="studio.cartoon.story.directorNotePlaceholder"
         data-scene-editor-note
-      ></textarea>
+       data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle"></textarea>
     </div>
     <div class="story-editor-actions">
-      <button type="button" class="story-ghost-btn" data-scene-cancel>İptal</button>
-      <button type="button" class="story-primary-btn" data-scene-save>Kaydet</button>
+      <button type="button" class="story-ghost-btn" data-scene-cancel data-i18n="studio.cartoon.story.cancel">İptal</button>
+      <button type="button" class="story-primary-btn" data-scene-save data-i18n="studio.cartoon.story.save">Kaydet</button>
     </div>
   </div>
 </aside>
@@ -1304,22 +1304,22 @@
 
 <section class="story-card studio-card studio-card--compact">
   <div class="story-card-head">
-    <h4>Sahneleri Birleştir</h4>
+    <h4 data-i18n="studio.cartoon.studio.combineTitle">Sahneleri Birleştir</h4>
     <p class="story-card-helper">
-      Final videoya girecek sahneleri seç ve sırala.<br>
-      Yüklediğin her video ayrı sahne olarak listeye eklenecek.
+      <span data-i18n="studio.cartoon.studio.combineHelper1">Final videoya girecek sahneleri seç ve sırala.</span><br>
+      <span data-i18n="studio.cartoon.studio.combineHelper2">Yüklediğin her video ayrı sahne olarak listeye eklenecek.</span>
     </p>
   </div>
 
   <div class="studio-upload-box">
     <div class="story-grid story-grid-2">
       <div class="story-field">
-        <label>Video Yükle</label>
+        <label data-i18n="studio.cartoon.studio.uploadVideo">Video Yükle</label>
         <label class="cartoon-upload-row cartoon-upload-row--compact">
           <input type="file" accept="video/*" multiple hidden data-studio-video-upload>
-          <span class="cartoon-upload-btn">Videoları Seç</span>
+          <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseVideos">Videoları Seç</span>
           <span class="cartoon-upload-text" data-studio-video-upload-text>
-          
+            <span data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
           </span>
         </label>
       </div>
@@ -1332,15 +1332,15 @@
     <div class="studio-scene-row" data-studio-scene-row data-scene-id="">
       <label class="studio-scene-check">
         <input type="checkbox" data-scene-include>
-        <span>Dahil</span>
+        <span data-i18n="studio.cartoon.studio.include">Dahil</span>
       </label>
 
-      <button type="button" class="studio-scene-thumb" data-scene-preview>
+      <button type="button" class="studio-scene-thumb" data-scene-preview data-i18n="studio.cartoon.studio.preview">
         Önizleme
       </button>
 
       <div class="studio-scene-copy">
-        <strong data-scene-title>Sahne</strong>
+        <strong data-scene-title data-i18n="studio.cartoon.common.scene">Sahne</strong>
         <small data-scene-duration>0 sn</small>
       </div>
 
@@ -1364,7 +1364,7 @@
                   justify-content:center;
                   font-size:16px;
                   line-height:1;
-                ">✎</button>
+                " data-i18n-label="studio.cartoon.studio.editTitle" data-i18n-title="studio.cartoon.studio.editTitle">✎</button>
         <button type="button"
                 data-scene-remove
                 title="Sahneyi sil"
@@ -1382,7 +1382,7 @@
                   justify-content:center;
                   font-size:16px;
                   line-height:1;
-                ">🗑</button>
+                " data-i18n-label="studio.cartoon.studio.deleteScene" data-i18n-title="studio.cartoon.studio.deleteScene">🗑</button>
       </div>
     </div>
   </template>
@@ -1395,29 +1395,29 @@
 
 <section class="story-card studio-card studio-card--compact">
   <div class="story-card-head">
-    <h4>Ses Ekle/Logo Ekle</h4>
-    <p class="story-card-helper">Kendi ses dosyanı yükleyip final videoya ekle.</p>
+    <h4 data-i18n="studio.cartoon.studio.mediaTitle">Ses Ekle/Logo Ekle</h4>
+    <p class="story-card-helper" data-i18n="studio.cartoon.studio.mediaHelper">Kendi ses dosyanı yükleyip final videoya ekle.</p>
   </div>
 
   <div class="story-grid story-grid-2">
     <div class="story-field">
       <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-        <label style="margin:0;">Kendi Sesini Yükle</label>
+        <label style="margin:0;" data-i18n="studio.cartoon.basic.uploadVoice">Kendi Sesini Yükle</label>
 
         <div class="cartoon-credit-inline">
-          <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+          <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
           <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
             <input type="file" accept="audio/*" hidden data-studio-voice-upload>
-            <span class="cartoon-upload-btn">Ses Seç</span>
-            <span class="cartoon-upload-text" data-studio-voice-upload-text>Dosya seçilmedi</span>
+            <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseVoice">Ses Seç</span>
+            <span class="cartoon-upload-text" data-studio-voice-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
             <button
               type="button"
               class="cartoon-upload-clear"
               data-studio-voice-upload-clear
               aria-label="Yüklenen sesi kaldır"
               title="Sesi kaldır"
-              style="display:none;">
+              style="display:none;" data-i18n-label="studio.cartoon.common.removeAudioLabel" data-i18n-title="studio.cartoon.common.removeAudio">
               ×
             </button>
           </label>
@@ -1426,10 +1426,10 @@
     </div>
 
     <div class="story-field">
-      <label>Ses</label>
+      <label data-i18n="studio.cartoon.studio.voice">Ses</label>
       <select data-studio-voice-enabled>
-        <option value="off" selected>Kapalı</option>
-        <option value="on">Açık</option>
+        <option value="off" selected data-i18n="studio.cartoon.common.off">Kapalı</option>
+        <option value="on" data-i18n="studio.cartoon.common.on">Açık</option>
       </select>
     </div>
   </div>
@@ -1437,22 +1437,22 @@
   <div class="story-grid story-grid-2" style="margin-top:16px;">
     <div class="story-field">
       <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
-        <label style="margin:0;">Logo Yükle</label>
+        <label style="margin:0;" data-i18n="studio.cartoon.basic.uploadLogo">Logo Yükle</label>
 
         <div class="cartoon-credit-inline">
-          <span class="cartoon-credit-badge cartoon-credit-badge--accent">+10 Kredi</span>
+          <span class="cartoon-credit-badge cartoon-credit-badge--accent" data-i18n="studio.cartoon.common.plus10Credits">+10 Kredi</span>
 
           <label class="cartoon-upload-row cartoon-upload-row--compact" style="margin:0;">
             <input type="file" accept="image/*" hidden data-studio-logo-upload>
-            <span class="cartoon-upload-btn">Logo Seç</span>
-            <span class="cartoon-upload-text" data-studio-logo-upload-text>Dosya seçilmedi</span>
+            <span class="cartoon-upload-btn" data-i18n="studio.cartoon.common.chooseLogo">Logo Seç</span>
+            <span class="cartoon-upload-text" data-studio-logo-upload-text data-i18n="studio.cartoon.common.noFile">Dosya seçilmedi</span>
             <button
               type="button"
               class="cartoon-upload-clear"
               data-studio-logo-upload-clear
               aria-label="Yüklenen logoyu kaldır"
               title="Logoyu kaldır"
-              style="display:none;">
+              style="display:none;" data-i18n-label="studio.cartoon.common.removeLogoLabel" data-i18n-title="studio.cartoon.common.removeLogo">
               ×
             </button>
           </label>
@@ -1461,13 +1461,13 @@
     </div>
 
     <div class="story-field">
-      <label>Logo Yönü</label>
+      <label data-i18n="studio.cartoon.basic.logoPosition">Logo Yönü</label>
       <select data-studio-logo-position>
-        <option value="bottom-right" selected>Sağ Alt</option>
-        <option value="bottom-left">Sol Alt</option>
-        <option value="top-right">Sağ Üst</option>
-        <option value="top-left">Sol Üst</option>
-        <option value="center">Orta</option>
+        <option value="bottom-right" selected data-i18n="studio.cartoon.common.positionBottomRight">Sağ Alt</option>
+        <option value="bottom-left" data-i18n="studio.cartoon.common.positionBottomLeft">Sol Alt</option>
+        <option value="top-right" data-i18n="studio.cartoon.common.positionTopRight">Sağ Üst</option>
+        <option value="top-left" data-i18n="studio.cartoon.common.positionTopLeft">Sol Üst</option>
+        <option value="center" data-i18n="studio.cartoon.common.positionCenter">Orta</option>
       </select>
     </div>
   </div>
@@ -1475,6 +1475,6 @@
 
 <section class="story-card studio-card studio-card--compact">
   <div class="studio-final-actions">
-    <button type="button" class="story-primary-btn" data-studio-export>🎬 Patlat Çıktıyı Al (Video Başı 5 Kredi)</button>
+    <button type="button" class="story-primary-btn" data-studio-export data-i18n="studio.cartoon.studio.export">🎬 Patlat Çıktıyı Al (Video Başı 5 Kredi)</button>
   </div>
 </section>
