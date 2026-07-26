@@ -1613,19 +1613,56 @@ function getStoryCharacterToastLabel(slot) {
     state.sceneEditorDraftSlots = Array.isArray(scene?.characterSlots)
       ? scene.characterSlots.map((slot) => safeText(slot)).filter(Boolean)
       : [];
+    state.sceneEditorDraftFields = {
+      title: String(scene?.title || ""),
+      description: String(scene?.description || ""),
+      duration: normalizeStorySceneDuration(scene?.duration || "4"),
+      mood: String(scene?.mood || ""),
+      type: String(scene?.type || ""),
+      directorNote: String(scene?.directorNote || "")
+    };
   }
 
   function clearSceneEditorDraft() {
     state.sceneEditorDraftSceneId = "";
     state.sceneEditorDraftSlots = [];
+    state.sceneEditorDraftFields = null;
+  }
+
+  function ensureSceneEditorDraft(scene) {
+    const sceneId = safeText(scene?.id || state.editingSceneId);
+
+    if (
+      safeText(state.sceneEditorDraftSceneId) !== sceneId ||
+      !state.sceneEditorDraftFields
+    ) {
+      beginSceneEditorDraft(sceneId);
+    }
+
+    return state.sceneEditorDraftFields || {
+      title: "",
+      description: "",
+      duration: "4",
+      mood: "",
+      type: "",
+      directorNote: ""
+    };
+  }
+
+  function setSceneEditorDraftField(field, value) {
+    const scene = getSceneById(state.editingSceneId);
+    const draft = ensureSceneEditorDraft(scene);
+
+    state.sceneEditorDraftFields = {
+      ...draft,
+      [field]: value
+    };
+
+    return state.sceneEditorDraftFields;
   }
 
   function getSceneEditorDraftSlots(scene) {
-    const sceneId = safeText(scene?.id || state.editingSceneId);
-
-    if (safeText(state.sceneEditorDraftSceneId) !== sceneId) {
-      beginSceneEditorDraft(sceneId);
-    }
+    ensureSceneEditorDraft(scene);
 
     return Array.isArray(state.sceneEditorDraftSlots)
       ? state.sceneEditorDraftSlots.map((slot) => safeText(slot)).filter(Boolean)
@@ -2345,6 +2382,7 @@ function fillSceneEditor(root, sceneId) {
   const scene = getSceneById(sceneId);
   if (!editor || !scene) return;
 
+  const draft = ensureSceneEditorDraft(scene);
   const heading = qs("[data-scene-editor-heading]", editor);
   const title = qs("[data-scene-editor-title]", editor);
   const description = qs("[data-scene-editor-description]", editor);
@@ -2354,15 +2392,17 @@ function fillSceneEditor(root, sceneId) {
   const note = qs("[data-scene-editor-note]", editor);
 
   if (heading) heading.textContent = scene.title || storyText("studio.cartoon.story.editorTitle", "Sahne Düzenle", "Edit Scene");
-  if (title) title.value = scene.title || "";
-  if (description) description.value = scene.description || "";
+  if (title && title.value !== String(draft.title || "")) title.value = String(draft.title || "");
+  if (description && description.value !== String(draft.description || "")) description.value = String(draft.description || "");
 
   renderSceneCharacterPicker(root, scene);
 
-  if (duration) duration.value = normalizeStorySceneDuration(scene.duration);
-  if (mood) mood.value = scene.mood || "";
-  if (type) type.value = scene.type || "";
-  if (note) note.value = scene.directorNote || "";
+  if (duration && duration.value !== normalizeStorySceneDuration(draft.duration)) {
+    duration.value = normalizeStorySceneDuration(draft.duration);
+  }
+  if (mood && mood.value !== String(draft.mood || "")) mood.value = String(draft.mood || "");
+  if (type && type.value !== String(draft.type || "")) type.value = String(draft.type || "");
+  if (note && note.value !== String(draft.directorNote || "")) note.value = String(draft.directorNote || "");
 
   syncSceneEditorCreditPreview(root);
 }
@@ -2966,13 +3006,15 @@ function syncSceneEditorCreditPreview(root) {
     const editor = getStorySceneEditor(root);
     if (!editor) return;
 
-    const title = safeText(qs("[data-scene-editor-title]", editor)?.value);
-    const description = safeText(qs("[data-scene-editor-description]", editor)?.value);
-    const duration = normalizeStorySceneDuration(qs("[data-scene-editor-duration]", editor)?.value || "15");
+    const scene = getSceneById(state.editingSceneId);
+    const draft = ensureSceneEditorDraft(scene);
+    const title = safeText(draft.title);
+    const description = safeText(draft.description);
+    const duration = normalizeStorySceneDuration(draft.duration || "15");
     const characterSlots = getSceneCharacterPickerValues(root);
-    const mood = safeText(qs("[data-scene-editor-mood]", editor)?.value);
-    const type = safeText(qs("[data-scene-editor-type]", editor)?.value);
-    const note = clampText(qs("[data-scene-editor-note]", editor)?.value, 1000);
+    const mood = safeText(draft.mood);
+    const type = safeText(draft.type);
+    const note = clampText(draft.directorNote, 1000);
 
    if (!title) {
   syncCartoonStoryAssistantState({
@@ -3776,6 +3818,32 @@ if (!selectedScenes.length) {
       const root = getCartoonRoot();
       if (!root) return;
 
+      const editor = getStorySceneEditor(root);
+
+      const sceneTitleInput = e.target.closest("[data-scene-editor-title]");
+      if (sceneTitleInput && editor?.contains(sceneTitleInput)) {
+        setSceneEditorDraftField("title", String(sceneTitleInput.value || ""));
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const sceneDescriptionInput = e.target.closest("[data-scene-editor-description]");
+      if (sceneDescriptionInput && editor?.contains(sceneDescriptionInput)) {
+        setSceneEditorDraftField("description", String(sceneDescriptionInput.value || ""));
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const sceneDirectorNoteInput = e.target.closest("[data-scene-editor-note]");
+      if (sceneDirectorNoteInput && editor?.contains(sceneDirectorNoteInput)) {
+        setSceneEditorDraftField(
+          "directorNote",
+          clampText(sceneDirectorNoteInput.value, 1000)
+        );
+        resetStoryPolicyUI(root);
+        return;
+      }
+
       const storyIdea = e.target.closest("[data-story-idea]");
       if (storyIdea && root.contains(storyIdea)) {
         state.storyIdea = clampText(storyIdea.value, 5000);
@@ -3850,9 +3918,27 @@ if (!selectedScenes.length) {
       }
       const sceneEditorDuration = e.target.closest("[data-scene-editor-duration]");
 if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDuration)) {
+  setSceneEditorDraftField(
+    "duration",
+    normalizeStorySceneDuration(sceneEditorDuration.value || "4")
+  );
   syncSceneEditorCreditPreview(root);
   return;
 }
+
+      const sceneEditorMood = e.target.closest("[data-scene-editor-mood]");
+      if (sceneEditorMood && getStorySceneEditor(root)?.contains(sceneEditorMood)) {
+        setSceneEditorDraftField("mood", String(sceneEditorMood.value || ""));
+        resetStoryPolicyUI(root);
+        return;
+      }
+
+      const sceneEditorType = e.target.closest("[data-scene-editor-type]");
+      if (sceneEditorType && getStorySceneEditor(root)?.contains(sceneEditorType)) {
+        setSceneEditorDraftField("type", String(sceneEditorType.value || ""));
+        resetStoryPolicyUI(root);
+        return;
+      }
       const mainCharacter = e.target.closest("[data-story-main-character]");
       if (mainCharacter && root.contains(mainCharacter)) {
         state.mainCharacter = mainCharacter.value || "";
