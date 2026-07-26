@@ -1202,6 +1202,9 @@ const state = (window.__CARTOON_STORY_STATE__ =
   function setStoryGenerateButton(root, loading) {
     const btn = root?.querySelector("[data-story-generate]");
     if (!btn) return;
+    // This label contains a live credit total. Keep the global i18n pass
+    // from restoring the static "starting at 30 credits" HTML text.
+    btn.removeAttribute("data-i18n");
    btn.disabled = !!loading;
    btn.textContent = loading
      ? storyText(
@@ -1790,6 +1793,8 @@ function resetStoryCharacterImage(root, slot) {
     const asset = getStoryLogoAsset();
 
     if (!textEl) return;
+    // File state is dynamic; do not let static i18n text overwrite it.
+    textEl.removeAttribute("data-i18n");
 
     if (!asset.file) {
       textEl.textContent = storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
@@ -1831,6 +1836,8 @@ function resetStoryCharacterImage(root, slot) {
     const asset = getStoryAudioAsset();
 
     if (!textEl) return;
+    // File state is dynamic; do not let static i18n text overwrite it.
+    textEl.removeAttribute("data-i18n");
 
     if (!asset.file) {
       textEl.textContent = storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
@@ -2531,6 +2538,8 @@ function syncSceneEditorCreditPreview(root) {
 
   const liveEl = qs("[data-scene-credit-live]", editor);
   const btn = qs("[data-story-generate]", root);
+  if (btn) btn.removeAttribute("data-i18n");
+  if (liveEl) liveEl.removeAttribute("data-i18n");
 
   const total = getStoryEstimatedCreditsWithSceneDraft(root);
 
@@ -2549,6 +2558,11 @@ function syncSceneEditorCreditPreview(root) {
   function syncStoryGenerateButtonCredit(root) {
   const btn = qs("[data-story-generate]", root);
   if (!btn) return;
+
+  // The button value is calculated from live uploads/scenes. The HTML
+  // data-i18n value is only the initial 30-credit label and must not
+  // overwrite this calculated total after another UI render.
+  btn.removeAttribute("data-i18n");
 
   const total = getStoryEstimatedCredits();
   btn.setAttribute("data-credit-cost", String(total));
@@ -4371,6 +4385,10 @@ function updateStoryCharacterUploadUI(root, slot) {
 
   if (!uploadBtn || !nameEl || !clearBtn || !imageState) return;
 
+  // This field shows the live file/upload state. Removing data-i18n here
+  // prevents a later translation pass from replacing the filename with
+  // the static "No file selected" label.
+  nameEl.removeAttribute("data-i18n");
   uploadBtn.hidden = false;
 
   if (!imageState.file) {
