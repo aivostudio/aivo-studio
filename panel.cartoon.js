@@ -292,41 +292,168 @@
     let localToastTimer = null;
     let localToastElement = null;
 
-    const showLocalToast = (type, trText, enText) => {
-      const message = localText(trText, enText);
-
-      if (!localToastElement) {
-        localToastElement = document.createElement("div");
-        localToastElement.setAttribute("role", "status");
-        localToastElement.setAttribute("aria-live", "polite");
-        localToastElement.style.position = "fixed";
-        localToastElement.style.right = "28px";
-        localToastElement.style.bottom = "28px";
-        localToastElement.style.zIndex = "2147483000";
-        localToastElement.style.maxWidth = "360px";
-        localToastElement.style.padding = "13px 16px";
-        localToastElement.style.borderRadius = "14px";
-        localToastElement.style.border = "1px solid rgba(255,255,255,.14)";
-        localToastElement.style.background = "rgba(18,18,30,.96)";
-        localToastElement.style.boxShadow = "0 16px 42px rgba(0,0,0,.38)";
-        localToastElement.style.color = "#fff";
-        localToastElement.style.fontSize = "13px";
-        localToastElement.style.fontWeight = "700";
-        localToastElement.style.lineHeight = "1.45";
-        localToastElement.style.pointerEvents = "none";
-        localToastElement.style.opacity = "0";
-        localToastElement.style.transform = "translateY(8px)";
-        localToastElement.style.transition = "opacity .16s ease, transform .16s ease";
-        document.body.appendChild(localToastElement);
+    const hideLocalToast = () => {
+      if (localToastTimer) {
+        clearTimeout(localToastTimer);
+        localToastTimer = null;
       }
 
-      localToastElement.textContent = message;
-      localToastElement.style.borderColor =
-        type === "error"
-          ? "rgba(255,105,105,.42)"
-          : type === "info"
-            ? "rgba(120,190,255,.38)"
-            : "rgba(110,235,170,.38)";
+      if (!localToastElement) return;
+
+      localToastElement.style.opacity = "0";
+      localToastElement.style.transform = "translate(-50%, -4px)";
+    };
+
+    const ensureLocalToast = () => {
+      if (localToastElement) return localToastElement;
+
+      const toast = document.createElement("div");
+      toast.setAttribute("role", "status");
+      toast.setAttribute("aria-live", "polite");
+      toast.style.position = "fixed";
+      toast.style.left = "50%";
+      toast.style.right = "auto";
+      toast.style.bottom = "22px";
+      toast.style.zIndex = "99999";
+      toast.style.width = "min(420px, calc(100vw - 128px))";
+      toast.style.maxWidth = "min(420px, calc(100vw - 128px))";
+      toast.style.minHeight = "46px";
+      toast.style.padding = "5px 14px";
+      toast.style.margin = "0";
+      toast.style.borderRadius = "14px";
+      toast.style.border = "1px solid rgba(255,255,255,.22)";
+      toast.style.background = "rgba(20,20,30,.45)";
+      toast.style.backgroundImage = "none";
+      toast.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
+      toast.style.color = "rgba(255,255,255,.94)";
+      toast.style.opacity = "0";
+      toast.style.transform = "translate(-50%, -6px)";
+      toast.style.transition = "opacity .35s ease, transform .35s ease";
+      toast.style.pointerEvents = "auto";
+      toast.style.backdropFilter = "none";
+      toast.style.webkitBackdropFilter = "none";
+      toast.style.filter = "none";
+      toast.style.mixBlendMode = "normal";
+      toast.style.boxSizing = "border-box";
+
+      const icon = document.createElement("div");
+      icon.style.position = "absolute";
+      icon.style.left = "18px";
+      icon.style.top = "50%";
+      icon.style.transform = "translateY(-50%)";
+      icon.style.width = "24px";
+      icon.style.height = "24px";
+      icon.style.display = "grid";
+      icon.style.placeItems = "center";
+      icon.style.borderRadius = "999px";
+      icon.style.background = "rgba(255,255,255,.12)";
+      icon.style.border = "1px solid rgba(255,255,255,.18)";
+      icon.style.color = "#fff";
+      icon.style.fontSize = "13px";
+      icon.style.zIndex = "2";
+
+      const body = document.createElement("div");
+      body.style.position = "absolute";
+      body.style.left = "50%";
+      body.style.top = "50%";
+      body.style.transform = "translate(-50%, -50%)";
+      body.style.width = "calc(100% - 96px)";
+      body.style.maxWidth = "calc(100% - 96px)";
+      body.style.display = "flex";
+      body.style.flexDirection = "column";
+      body.style.alignItems = "center";
+      body.style.justifyContent = "center";
+      body.style.margin = "0";
+      body.style.padding = "0";
+      body.style.textAlign = "center";
+      body.style.pointerEvents = "none";
+
+      const title = document.createElement("p");
+      title.style.width = "100%";
+      title.style.margin = "0 0 4px 0";
+      title.style.textAlign = "center";
+      title.style.fontSize = "17px";
+      title.style.fontWeight = "800";
+      title.style.lineHeight = "1.08";
+      title.style.letterSpacing = ".012em";
+      title.style.color = "rgba(255,255,255,.86)";
+      title.style.textShadow = "0 1px 0 rgba(255,255,255,.04), 0 8px 22px rgba(0,0,0,.24)";
+
+      const message = document.createElement("p");
+      message.style.width = "100%";
+      message.style.margin = "0";
+      message.style.textAlign = "center";
+      message.style.fontSize = "14px";
+      message.style.fontWeight = "600";
+      message.style.lineHeight = "1.2";
+      message.style.letterSpacing = ".006em";
+      message.style.color = "rgba(255,255,255,.68)";
+      message.style.textShadow = "0 1px 0 rgba(255,255,255,.03), 0 6px 18px rgba(0,0,0,.18)";
+
+      const close = document.createElement("button");
+      close.type = "button";
+      close.textContent = "✕";
+      close.setAttribute("aria-label", localText("Bildirimi kapat", "Close notification"));
+      close.style.position = "absolute";
+      close.style.right = "18px";
+      close.style.top = "50%";
+      close.style.transform = "translateY(-50%)";
+      close.style.width = "24px";
+      close.style.height = "24px";
+      close.style.display = "grid";
+      close.style.placeItems = "center";
+      close.style.padding = "0";
+      close.style.background = "transparent";
+      close.style.border = "1px solid rgba(255,255,255,.18)";
+      close.style.borderRadius = "12px";
+      close.style.color = "rgba(255,255,255,.7)";
+      close.style.fontSize = "14px";
+      close.style.cursor = "pointer";
+      close.style.zIndex = "2";
+      close.addEventListener("click", hideLocalToast);
+
+      body.appendChild(title);
+      body.appendChild(message);
+      toast.appendChild(icon);
+      toast.appendChild(body);
+      toast.appendChild(close);
+
+      toast.__icon = icon;
+      toast.__title = title;
+      toast.__message = message;
+      toast.__close = close;
+
+      document.body.appendChild(toast);
+      localToastElement = toast;
+
+      return toast;
+    };
+
+    const showLocalToast = (type, trText, enText) => {
+      const toast = ensureLocalToast();
+      const message = localText(trText, enText);
+
+      const titles = {
+        success: localText("Başarılı", "Success"),
+        error: localText("Hata", "Error"),
+        info: localText("Bilgi", "Info"),
+        warning: localText("Uyarı", "Warning")
+      };
+
+      const icons = {
+        success: "✓",
+        error: "!",
+        info: "i",
+        warning: "⚠"
+      };
+
+      toast.__icon.textContent = icons[type] || "i";
+      toast.__title.textContent = titles[type] || titles.info;
+      toast.__message.textContent = message;
+      toast.__close.setAttribute(
+        "aria-label",
+        localText("Bildirimi kapat", "Close notification")
+      );
 
       if (localToastTimer) {
         clearTimeout(localToastTimer);
@@ -335,14 +462,12 @@
       requestAnimationFrame(() => {
         if (!localToastElement) return;
         localToastElement.style.opacity = "1";
-        localToastElement.style.transform = "translateY(0)";
+        localToastElement.style.transform = "translate(-50%, 0)";
       });
 
       localToastTimer = setTimeout(() => {
-        if (!localToastElement) return;
-        localToastElement.style.opacity = "0";
-        localToastElement.style.transform = "translateY(8px)";
-      }, 2800);
+        hideLocalToast();
+      }, 3200);
     };
 
     const resolvePanelSearchInput = () => {
