@@ -14,6 +14,86 @@
 
   const safeStr = (v) => String(v == null ? "" : v).trim();
 
+  const currentLanguage = () => {
+    try {
+      const studioLanguage = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (studioLanguage) {
+        return String(studioLanguage).toLowerCase().startsWith("en")
+          ? "en"
+          : "tr";
+      }
+    } catch {}
+
+    const language = String(
+      window.AIVO_LANG || document.documentElement.lang || "tr"
+    ).toLowerCase();
+
+    return language.startsWith("en") ? "en" : "tr";
+  };
+
+  const panelText = (key, trText, enText, parameters) => {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(
+        key,
+        "",
+        parameters
+      );
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    try {
+      const translated = window.studioT?.(key, "", parameters);
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    let output = currentLanguage() === "en" ? enText : trText;
+
+    if (parameters && typeof parameters === "object") {
+      Object.keys(parameters).forEach((name) => {
+        output = String(output).replace(
+          new RegExp(`\\{${name}\\}`, "g"),
+          String(parameters[name])
+        );
+      });
+    }
+
+    return String(output || "");
+  };
+
+  const showToast = (type, message) => {
+    try {
+      const api = window.toast;
+      if (!api || !message) return;
+
+      if (type === "success" && api.success) return api.success(message);
+      if (type === "error" && api.error) return api.error(message);
+      if (type === "info" && api.info) return api.info(message);
+      if (api.show) return api.show(message);
+    } catch {}
+  };
+
+  const getPanelHeader = () => ({
+    title: panelText(
+      "studio.photofx.panel.title",
+      "PhotoFX Kliplerim",
+      "My PhotoFX Clips"
+    ),
+    meta: panelText(
+      "studio.photofx.panel.status.ready",
+      "Hazır",
+      "Ready"
+    ),
+    searchEnabled: true,
+    searchPlaceholder: panelText(
+      "studio.photofx.panel.searchPlaceholder",
+      "PhotoFX kliplerinde ara...",
+      "Search PhotoFX clips..."
+    ),
+    resetSearch: true,
+  });
+
+  let refreshMountedPhotoFxPanel = null;
+
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -66,6 +146,7 @@
 
     return u;
   };
+
   const mapBadge = (job) => {
     const a = norm(job?.db_status);
     const b = norm(job?.status);
@@ -73,25 +154,58 @@
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
+      return {
+        text: panelText(
+          "studio.photofx.panel.status.failed",
+          "Hata",
+          "Failed"
+        ),
+        kind: "bad",
+      };
     }
+
     if (
       st.includes("READY") ||
       st.includes("DONE") ||
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: "Hazır", kind: "ok" };
+      return {
+        text: panelText(
+          "studio.photofx.panel.status.ready",
+          "Hazır",
+          "Ready"
+        ),
+        kind: "ok",
+      };
     }
+
     if (
       st.includes("RUN") ||
       st.includes("PROC") ||
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: "İşleniyor", kind: "mid" };
+      return {
+        text: panelText(
+          "studio.photofx.panel.status.processing",
+          "İşleniyor",
+          "Processing"
+        ),
+        kind: "mid",
+      };
     }
-    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
+
+    return {
+      text: st
+        ? st.slice(0, 18)
+        : panelText(
+            "studio.photofx.panel.status.processing",
+            "İşleniyor",
+            "Processing"
+          ),
+      kind: "mid",
+    };
   };
 
   function pickOutputUrl(o) {
@@ -132,52 +246,52 @@
   }
 
   function pickFinalVideoFromJob(job) {
-const meta = job?.meta || {};
-const outs = filterPhotoFxOutputs(job);
+    const meta = job?.meta || {};
+    const outs = filterPhotoFxOutputs(job);
 
-const directFinal =
-  safeStr(job?.final) ||
-  safeStr(job?.final_url) ||
-  safeStr(job?.final_video_url) ||
-  safeStr(meta?.final) ||
-  safeStr(meta?.final_url) ||
-  safeStr(meta?.final_video_url);
+    const directFinal =
+      safeStr(job?.final) ||
+      safeStr(job?.final_url) ||
+      safeStr(job?.final_video_url) ||
+      safeStr(meta?.final) ||
+      safeStr(meta?.final_url) ||
+      safeStr(meta?.final_video_url);
 
-if (directFinal) return directFinal;
+    if (directFinal) return directFinal;
 
-const directLogoOverlay =
-  safeStr(job?.logo_overlay_url) ||
-  safeStr(meta?.logo_overlay_url);
+    const directLogoOverlay =
+      safeStr(job?.logo_overlay_url) ||
+      safeStr(meta?.logo_overlay_url);
 
-if (directLogoOverlay) return directLogoOverlay;
+    if (directLogoOverlay) return directLogoOverlay;
 
-const finalized = outs.find(
-  (o) => outputVariant(o) === "finalized" || o?.meta?.is_final === true
-);
-if (finalized) {
-  const u = pickOutputUrl(finalized);
-  if (u) return u;
-}
+    const finalized = outs.find(
+      (o) => outputVariant(o) === "finalized" || o?.meta?.is_final === true
+    );
+    if (finalized) {
+      const u = pickOutputUrl(finalized);
+      if (u) return u;
+    }
 
-const overlay = outs.find((o) => outputVariant(o) === "logo_overlay");
-if (overlay) {
-  const u = pickOutputUrl(overlay);
-  if (u) return u;
-}
+    const overlay = outs.find((o) => outputVariant(o) === "logo_overlay");
+    if (overlay) {
+      const u = pickOutputUrl(overlay);
+      if (u) return u;
+    }
 
-const provider = outs.find(
-  (o) => outputVariant(o) === "provider" || outputVariant(o) === "final"
-);
-if (provider) {
-  const u = pickOutputUrl(provider);
-  if (u) return u;
-}
+    const provider = outs.find(
+      (o) => outputVariant(o) === "provider" || outputVariant(o) === "final"
+    );
+    if (provider) {
+      const u = pickOutputUrl(provider);
+      if (u) return u;
+    }
 
-const first = outs.find((o) => isVideoOutput(o)) || outs[0];
-return pickOutputUrl(first);
-}
+    const first = outs.find((o) => isVideoOutput(o)) || outs[0];
+    return pickOutputUrl(first);
+  }
 
-function pickPreviewVideoFromJob(job) {
+  function pickPreviewVideoFromJob(job) {
     const meta = job?.meta || {};
     const outs = filterPhotoFxOutputs(job);
 
@@ -383,7 +497,11 @@ function pickPreviewVideoFromJob(job) {
         job?.title ||
         job?.meta?.prompt ||
         job?.prompt ||
-        "PhotoFX Klip"
+        panelText(
+          "studio.photofx.panel.untitled",
+          "İsimsiz PhotoFX Klip",
+          "Untitled PhotoFX Clip"
+        )
       );
 
     const buildSearchHaystack = (job) => {
@@ -478,15 +596,15 @@ function pickPreviewVideoFromJob(job) {
               badgeText,
               badgeKind,
               videoUrl: previewVideoUrl,
-             posterUrl: safeStr(
-             job?.poster_url ||
-            job?.thumbnail_url ||
-            job?.thumb_url ||
-            job?.meta?.poster_url ||
-            job?.meta?.thumbnail_url ||
-            job?.meta?.thumb_url ||
-            ""
-           ),
+              posterUrl: safeStr(
+                job?.poster_url ||
+                job?.thumbnail_url ||
+                job?.thumb_url ||
+                job?.meta?.poster_url ||
+                job?.meta?.thumbnail_url ||
+                job?.meta?.thumb_url ||
+                ""
+              ),
               ratio,
               ready,
               canDownload: !!finalUrl,
@@ -516,7 +634,13 @@ function pickPreviewVideoFromJob(job) {
           <div style="position:relative;background:#000;">
             <div style="padding-top:140%;"></div>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));">
-              <div style="font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);">Hazırlanıyor…</div>
+              <div style="font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);">${esc(
+                panelText(
+                  "studio.photofx.panel.status.preparing",
+                  "Hazırlanıyor…",
+                  "Preparing…"
+                )
+              )}</div>
             </div>
           </div>
         </div>
@@ -585,7 +709,19 @@ function pickPreviewVideoFromJob(job) {
     function render(items) {
       if (!elGrid) return;
 
-      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+      setStatus(
+        hasProcessing(items)
+          ? panelText(
+              "studio.photofx.panel.status.processing",
+              "İşleniyor…",
+              "Processing…"
+            )
+          : panelText(
+              "studio.photofx.panel.status.ready",
+              "Hazır",
+              "Ready"
+            )
+      );
 
       const list = Array.isArray(items) ? items : [];
       const EMPTY_ID = "photofxEmptyState";
@@ -606,8 +742,16 @@ function pickPreviewVideoFromJob(job) {
         }
 
         emptyEl.textContent = state.query
-          ? "Aramana uygun PhotoFX klip bulunamadı."
-          : "Henüz PhotoFX üretim yok.";
+          ? panelText(
+              "studio.photofx.panel.noResults",
+              "Aramanızla eşleşen PhotoFX klibi bulunamadı.",
+              "No PhotoFX clips match your search."
+            )
+          : panelText(
+              "studio.photofx.panel.empty",
+              "Henüz PhotoFX klibi bulunmuyor.",
+              "No PhotoFX clips yet."
+            );
 
         return;
       } else if (emptyEl) {
@@ -651,9 +795,11 @@ function pickPreviewVideoFromJob(job) {
       render(buildMergedItems());
     }
 
-     async function download(url, filename = "photofx.mp4") {
+    refreshMountedPhotoFxPanel = renderCurrent;
+
+    async function download(url, filename = "photofx.mp4") {
       let cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return;
+      if (!cleanUrl) return false;
 
       cleanUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
@@ -693,9 +839,12 @@ function pickPreviewVideoFromJob(job) {
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
+
+        return true;
       } catch (err) {
         console.error("[PHOTOFX PANEL] download failed", err);
         window.open(cleanUrl, "_blank", "noopener");
+        return false;
       }
     }
 
@@ -764,8 +913,39 @@ function pickPreviewVideoFromJob(job) {
       if (act === "download") {
         e.preventDefault();
         e.stopPropagation();
-        if (!finalUrl) return;
-        download(finalUrl, `photofx-${id}.mp4`);
+
+        if (!finalUrl) {
+          showToast(
+            "error",
+            panelText(
+              "studio.photofx.panel.download.failed",
+              "PhotoFX klibi indirilemedi.",
+              "The PhotoFX clip could not be downloaded."
+            )
+          );
+          return;
+        }
+
+        const downloaded = await download(
+          finalUrl,
+          `photofx-${id}.mp4`
+        );
+
+        showToast(
+          downloaded ? "success" : "error",
+          downloaded
+            ? panelText(
+                "studio.photofx.panel.download.success",
+                "PhotoFX klibi indirildi.",
+                "The PhotoFX clip was downloaded."
+              )
+            : panelText(
+                "studio.photofx.panel.download.failed",
+                "PhotoFX klibi indirilemedi.",
+                "The PhotoFX clip could not be downloaded."
+              )
+        );
+
         return;
       }
 
@@ -795,18 +975,43 @@ function pickPreviewVideoFromJob(job) {
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[PHOTOFX PANEL] delete failed");
+            showToast(
+              "error",
+              panelText(
+                "studio.photofx.panel.delete.failed",
+                "PhotoFX klibi silinemedi.",
+                "The PhotoFX clip could not be deleted."
+              )
+            );
             return;
           }
 
           try {
             await controller?.hydrate?.(true);
           } catch {}
+
+          showToast(
+            "success",
+            panelText(
+              "studio.photofx.panel.delete.success",
+              "PhotoFX klibi silindi.",
+              "The PhotoFX clip was deleted."
+            )
+          );
         } catch (err) {
           hiddenDeletedIds.delete(id);
           try {
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[PHOTOFX PANEL] delete failed", err);
+          showToast(
+            "error",
+            panelText(
+              "studio.photofx.panel.delete.failed",
+              "PhotoFX klibi silinemedi.",
+              "The PhotoFX clip could not be deleted."
+            )
+          );
         }
 
         return;
@@ -852,54 +1057,54 @@ function pickPreviewVideoFromJob(job) {
       },
     });
 
-const onJobCreated = (e) => {
-  const d = e?.detail || {};
-  if (!d.job_id) return;
-  if (!isPhotoFxApp(d.app || d.meta?.app || "photofx")) return;
+    const onJobCreated = (e) => {
+      const d = e?.detail || {};
+      if (!d.job_id) return;
+      if (!isPhotoFxApp(d.app || d.meta?.app || "photofx")) return;
 
-  const job_id = String(d.job_id || "").trim();
-  if (!job_id) return;
-  if (hiddenDeletedIds.has(job_id)) return;
+      const job_id = String(d.job_id || "").trim();
+      if (!job_id) return;
+      if (hiddenDeletedIds.has(job_id)) return;
 
-  const existsDb = currentDbItems.some((j) => idOf(j) === job_id);
-  if (existsDb) return;
+      const existsDb = currentDbItems.some((j) => idOf(j) === job_id);
+      if (existsDb) return;
 
-  const meta = d.meta || {};
-  const createdAt = d.createdAt || Date.now();
+      const meta = d.meta || {};
+      const createdAt = d.createdAt || Date.now();
 
-  const optimisticJob = {
-    job_id,
-    app: "photofx",
-    provider: meta.provider || "PhotoFX",
-    createdAt,
-    created_at: createdAt,
-    updated_at: createdAt,
-    db_status: "processing",
-    status: "PROCESSING",
-    state: "PROCESSING",
-    _fresh: false,
-    meta: {
-      ...(meta || {}),
-      app: "photofx",
-      prompt: meta.prompt || "",
-      duration: meta.duration || "",
-      ratio: meta.ratio || meta.aspect_ratio || "9:16",
-      request_id: meta.request_id || "",
-      status_url: meta.status_url || "",
-    },
-    outputs: [],
-  };
+      const optimisticJob = {
+        job_id,
+        app: "photofx",
+        provider: meta.provider || "PhotoFX",
+        createdAt,
+        created_at: createdAt,
+        updated_at: createdAt,
+        db_status: "processing",
+        status: "PROCESSING",
+        state: "PROCESSING",
+        _fresh: false,
+        meta: {
+          ...(meta || {}),
+          app: "photofx",
+          prompt: meta.prompt || "",
+          duration: meta.duration || "",
+          ratio: meta.ratio || meta.aspect_ratio || "9:16",
+          request_id: meta.request_id || "",
+          status_url: meta.status_url || "",
+        },
+        outputs: [],
+      };
 
-  optimistic.set(job_id, optimisticJob);
+      optimistic.set(job_id, optimisticJob);
 
-  try {
-    controller.upsert(optimisticJob);
-  } catch (err) {
-    console.warn("[PHOTOFX PANEL] controller.upsert failed", err);
-  }
+      try {
+        controller.upsert(optimisticJob);
+      } catch (err) {
+        console.warn("[PHOTOFX PANEL] controller.upsert failed", err);
+      }
 
-  renderCurrent();
-};
+      renderCurrent();
+    };
 
     const onJobReady = (e) => {
       const d = e?.detail || {};
@@ -971,37 +1176,40 @@ const onJobCreated = (e) => {
     };
 
     controller.start();
-   window.addEventListener("aivo:photofx:job_created", onJobCreated);
-window.addEventListener("aivo:photofx:job_ready", onJobReady);
+    window.addEventListener("aivo:photofx:job_created", onJobCreated);
+    window.addEventListener("aivo:photofx:job_ready", onJobReady);
 
-// 🔥 FAIL / REMOVE yakala → kartı sil
-const onJobFailed = (e) => {
-  const d = e?.detail || {};
-  const job_id = String(d?.job_id || "").trim();
-  if (!job_id) return;
+    const onJobFailed = (e) => {
+      const d = e?.detail || {};
+      const job_id = String(d?.job_id || "").trim();
+      if (!job_id) return;
 
-  optimistic.delete(job_id);
-  hiddenDeletedIds.add(job_id);
-  currentDbItems = currentDbItems.filter((j) => idOf(j) !== job_id);
+      optimistic.delete(job_id);
+      hiddenDeletedIds.add(job_id);
+      currentDbItems = currentDbItems.filter((j) => idOf(j) !== job_id);
 
-  const cachedCard = cardCache.get(job_id);
-  if (cachedCard && cachedCard.isConnected) {
-    try { cachedCard.remove(); } catch {}
-  }
+      const cachedCard = cardCache.get(job_id);
+      if (cachedCard && cachedCard.isConnected) {
+        try { cachedCard.remove(); } catch {}
+      }
 
-  renderCurrent();
+      renderCurrent();
 
-  setTimeout(() => {
-    hiddenDeletedIds.delete(job_id);
-  }, 1500);
-};
+      setTimeout(() => {
+        hiddenDeletedIds.delete(job_id);
+      }, 1500);
+    };
 
-window.addEventListener("aivo:photofx:job_failed", onJobFailed);
-window.addEventListener("aivo:photofx:job_remove", onJobFailed);
+    window.addEventListener("aivo:photofx:job_failed", onJobFailed);
+    window.addEventListener("aivo:photofx:job_remove", onJobFailed);
 
     return {
       destroy() {
         destroyed = true;
+
+        if (refreshMountedPhotoFxPanel === renderCurrent) {
+          refreshMountedPhotoFxPanel = null;
+        }
 
         if (searchTimer) clearTimeout(searchTimer);
         searchTimer = null;
@@ -1021,6 +1229,12 @@ window.addEventListener("aivo:photofx:job_remove", onJobFailed);
           window.removeEventListener("aivo:photofx:job_ready", onJobReady);
         } catch {}
         try {
+          window.removeEventListener("aivo:photofx:job_failed", onJobFailed);
+        } catch {}
+        try {
+          window.removeEventListener("aivo:photofx:job_remove", onJobFailed);
+        } catch {}
+        try {
           controller?.destroy?.();
         } catch {}
         try {
@@ -1030,18 +1244,22 @@ window.addEventListener("aivo:photofx:job_remove", onJobFailed);
     };
   }
 
+  const refreshPanelLanguage = () => {
+    try {
+      if (window.RightPanel?.getCurrentKey?.() === "photofx") {
+        window.RightPanel.setHeader?.(getPanelHeader());
+      }
+
+      refreshMountedPhotoFxPanel?.();
+    } catch {}
+  };
+
   try {
     console.log("[PANEL.PHOTOFX] register run");
 
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("photofx", {
-        header: {
-          title: "PhotoFX",
-          meta: "Hazır",
-          searchEnabled: true,
-          searchPlaceholder: "PhotoFX kliplerinde ara...",
-          resetSearch: true,
-        },
+        header: getPanelHeader(),
 
         mount(host) {
           const api = createPhotoFxPanel(host);
@@ -1058,4 +1276,13 @@ window.addEventListener("aivo:photofx:job_remove", onJobFailed);
   } catch (e) {
     console.warn("[PHOTOFX PANEL] register failed", e);
   }
+
+  document.addEventListener(
+    "aivo:language-change",
+    refreshPanelLanguage
+  );
+  document.addEventListener(
+    "aivo:studio:i18n-applied",
+    refreshPanelLanguage
+  );
 })();
