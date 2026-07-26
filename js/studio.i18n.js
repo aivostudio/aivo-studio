@@ -567,11 +567,29 @@
       "studio.atmo.effects.wind":
         "🌬️ Rüzgar",
 
-      "studio.atmo.duration":
+         "studio.atmo.duration":
         "Süre",
 
       "studio.atmo.duration.seconds":
         "{count} sn",
+
+      "studio.atmo.duration.4":
+        "4 sn",
+
+      "studio.atmo.duration.6":
+        "6 sn",
+
+      "studio.atmo.duration.8":
+        "8 sn",
+
+      "studio.atmo.duration.10":
+        "10 sn",
+
+      "studio.atmo.duration.12":
+        "12 sn",
+
+      "studio.atmo.duration.15":
+        "15 sn",
 
       /* =========================
          ATMOSPHERE / PERSONALIZATION
@@ -1529,11 +1547,29 @@
       "studio.atmo.effects.wind":
         "🌬️ Wind",
 
-      "studio.atmo.duration":
+         "studio.atmo.duration":
         "Duration",
 
       "studio.atmo.duration.seconds":
         "{count} sec",
+
+      "studio.atmo.duration.4":
+        "4 sec",
+
+      "studio.atmo.duration.6":
+        "6 sec",
+
+      "studio.atmo.duration.8":
+        "8 sec",
+
+      "studio.atmo.duration.10":
+        "10 sec",
+
+      "studio.atmo.duration.12":
+        "12 sec",
+
+      "studio.atmo.duration.15":
+        "15 sec",
 
       /* =========================
          ATMOSPHERE / PERSONALIZATION
