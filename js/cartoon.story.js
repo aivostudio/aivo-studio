@@ -498,15 +498,24 @@ function showStoryCharacterLimitAlert() {
 
   function getStorySceneEditor(root) {
     const editors = qsa("[data-story-scene-editor]", document);
-    const activeEditor = editors.find((editor) => {
-      return !editor.hidden && editor.classList.contains("is-open");
-    });
+    if (!editors.length) return null;
 
-    return (
-      activeEditor ||
-      qs("[data-story-scene-editor]", root || document) ||
-      qs("[data-story-scene-editor]", document)
+    const visibleEditor = editors.find((editor) => {
+      if (!editor || editor.hidden) return false;
+      return editor.classList.contains("is-open") || editor.getAttribute("aria-hidden") !== "true";
+    });
+    if (visibleEditor) return visibleEditor;
+
+    if (root) {
+      const localEditor = qs("[data-story-scene-editor]", root);
+      if (localEditor) return localEditor;
+    }
+
+    const activeEditor = editors.find(
+      (editor) => editor.dataset.storySceneEditorActive === "true"
     );
+
+    return activeEditor || editors[editors.length - 1] || null;
   }
 
   function safeText(value) {
@@ -1598,6 +1607,38 @@ function getStoryCharacterToastLabel(slot) {
     );
   }
 
+  function beginSceneEditorDraft(sceneId) {
+    const scene = getSceneById(sceneId);
+    state.sceneEditorDraftSceneId = safeText(sceneId);
+    state.sceneEditorDraftSlots = Array.isArray(scene?.characterSlots)
+      ? scene.characterSlots.map((slot) => safeText(slot)).filter(Boolean)
+      : [];
+  }
+
+  function clearSceneEditorDraft() {
+    state.sceneEditorDraftSceneId = "";
+    state.sceneEditorDraftSlots = [];
+  }
+
+  function getSceneEditorDraftSlots(scene) {
+    const sceneId = safeText(scene?.id || state.editingSceneId);
+
+    if (safeText(state.sceneEditorDraftSceneId) !== sceneId) {
+      beginSceneEditorDraft(sceneId);
+    }
+
+    return Array.isArray(state.sceneEditorDraftSlots)
+      ? state.sceneEditorDraftSlots.map((slot) => safeText(slot)).filter(Boolean)
+      : [];
+  }
+
+  function setSceneEditorDraftSlots(slots) {
+    state.sceneEditorDraftSlots = Array.from(
+      new Set((Array.isArray(slots) ? slots : []).map((slot) => safeText(slot)).filter(Boolean))
+    );
+    return state.sceneEditorDraftSlots;
+  }
+
   function getStoryCharacterSlotMap() {
     return {
       main: safeText(state.mainCharacter),
@@ -1880,57 +1921,41 @@ function resetStoryCharacterImage(root, slot) {
     return wrap;
   }
 
-  function applySceneCharacterItemSelectionVisual(item, selected) {
-    if (!item) return;
+  function bindSceneEditorCharacterPicker(editor, root) {
+    if (!editor || editor.dataset.storyCharacterPickerCaptureBound === "true") return;
 
-    const isSelected = !!selected;
-    item.dataset.selected = isSelected ? "true" : "false";
-    item.setAttribute("aria-pressed", isSelected ? "true" : "false");
-    item.style.pointerEvents = "auto";
-    item.style.cursor = "pointer";
+    editor.dataset.storyCharacterPickerCaptureBound = "true";
 
-    const dot = qs(".story-scene-character-dot", item);
-    if (dot) {
-      dot.style.background = isSelected
-        ? "linear-gradient(135deg,#22c55e,#16a34a)"
-        : "rgba(255,255,255,.18)";
-      dot.style.boxShadow = isSelected
-        ? "0 0 12px rgba(34,197,94,.45)"
-        : "none";
-    }
+    editor.addEventListener(
+      "click",
+      (event) => {
+        const item = event.target?.closest?.(".story-scene-character-item");
+        if (!item || !editor.contains(item)) return;
 
-    item.style.border = isSelected
-      ? "1px solid rgba(201,119,255,.55)"
-      : "1px solid rgba(255,255,255,.12)";
-    item.style.background = isSelected
-      ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
-      : "rgba(255,255,255,.04)";
-    item.style.boxShadow = isSelected
-      ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
-      : "none";
-  }
+        event.preventDefault();
+        event.stopPropagation();
 
-  function bindSceneCharacterItemDirectClick(item, root) {
-    if (!item || item.dataset.storyDirectClickBound === "true") return;
+        const slot = safeText(item.dataset.sceneCharacterSlot);
+        const scene = getSceneById(state.editingSceneId);
+        if (!slot || !scene || item.hidden) return;
 
-    item.dataset.storyDirectClickBound = "true";
+        const selected = new Set(getSceneEditorDraftSlots(scene));
+        if (selected.has(slot)) selected.delete(slot);
+        else selected.add(slot);
 
-    item.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const slot = safeText(item.dataset.sceneCharacterSlot);
-      if (!slot || item.hidden) return;
-
-      const nextSelected = item.dataset.selected !== "true";
-      applySceneCharacterItemSelectionVisual(item, nextSelected);
-      resetStoryPolicyUI(root || getCartoonRoot());
-    });
+        setSceneEditorDraftSlots(Array.from(selected));
+        renderSceneCharacterPicker(root || getCartoonRoot(), scene);
+        resetStoryPolicyUI(root || getCartoonRoot());
+      },
+      true
+    );
   }
 
   function renderSceneCharacterPicker(root, scene) {
     const editor = getStorySceneEditor(root);
     if (!editor || !scene) return;
+
+    bindSceneEditorCharacterPicker(editor, root);
 
     const wrap = ensureSceneCharacterPicker(editor);
     if (!wrap) return;
@@ -1939,9 +1964,7 @@ function resetStoryCharacterImage(root, slot) {
     const emptyBox = qs("[data-scene-character-picker-empty]", wrap);
     if (!optionsBox || !emptyBox) return;
 
-    const selected = Array.isArray(scene?.characterSlots)
-      ? scene.characterSlots.map((x) => safeText(x)).filter(Boolean)
-      : [];
+    const selected = getSceneEditorDraftSlots(scene);
 
     const items = qsa(".story-scene-character-item", optionsBox);
     if (!items.length) return;
@@ -1961,8 +1984,7 @@ function resetStoryCharacterImage(root, slot) {
       if (hasCharacter) hasAnySelectedStoryCharacter = true;
 
       item.hidden = !hasCharacter;
-      bindSceneCharacterItemDirectClick(item, root);
-      applySceneCharacterItemSelectionVisual(item, isSelected);
+      item.dataset.selected = isSelected ? "true" : "false";
 
       if (labelEl) {
         labelEl.removeAttribute("data-i18n");
@@ -1976,6 +1998,25 @@ function resetStoryCharacterImage(root, slot) {
           : storyText("studio.cartoon.story.imageNotUploaded", "Görsel yüklenmedi", "No image uploaded");
       }
 
+      item.style.border = isSelected
+        ? "1px solid rgba(201,119,255,.55)"
+        : "1px solid rgba(255,255,255,.12)";
+      item.style.background = isSelected
+        ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
+        : "rgba(255,255,255,.04)";
+      item.style.boxShadow = isSelected
+        ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
+        : "none";
+
+      const dot = qs(".story-scene-character-dot", item);
+      if (dot) {
+        dot.style.background = isSelected
+          ? "linear-gradient(135deg,#22c55e,#16a34a)"
+          : "rgba(255,255,255,.18)";
+        dot.style.boxShadow = isSelected
+          ? "0 0 12px rgba(34,197,94,.45)"
+          : "none";
+      }
     });
 
     if (hasAnySelectedStoryCharacter) {
@@ -1988,6 +2029,11 @@ function resetStoryCharacterImage(root, slot) {
   }
 
   function getSceneCharacterPickerValues(root) {
+    const scene = getSceneById(state.editingSceneId);
+    if (scene) {
+      return getSceneEditorDraftSlots(scene);
+    }
+
     const editor = getStorySceneEditor(root);
     if (!editor) return [];
 
@@ -2322,13 +2368,33 @@ function fillSceneEditor(root, sceneId) {
 }
 
   function ensureStorySceneEditorPortal(root) {
-    const editor = qs("[data-story-scene-editor]", root) || qs("[data-story-scene-editor]", document);
+    const localEditor = root ? qs("[data-story-scene-editor]", root) : null;
+    const existingEditors = qsa("[data-story-scene-editor]", document);
+    const activeEditor = existingEditors.find(
+      (editor) => editor.dataset.storySceneEditorActive === "true"
+    );
+
+    const editor = localEditor || activeEditor || existingEditors[existingEditors.length - 1] || null;
     if (!editor) return null;
+
+    qsa("[data-story-scene-editor]", document).forEach((candidate) => {
+      if (candidate === editor) return;
+
+      if (
+        candidate.parentElement === document.body ||
+        candidate.dataset.storySceneEditorActive === "true"
+      ) {
+        candidate.remove();
+      }
+    });
+
+    editor.dataset.storySceneEditorActive = "true";
 
     if (editor.parentElement !== document.body) {
       document.body.appendChild(editor);
     }
 
+    bindSceneEditorCharacterPicker(editor, root);
     return editor;
   }
 
@@ -2956,6 +3022,7 @@ if (!characterSlots.length) {
     });
 
     state.editingSceneId = "";
+    clearSceneEditorDraft();
     resetStoryPolicyUI(root);
     syncCartoonStoryAssistantState({
       generationState: "idle",
@@ -3238,24 +3305,27 @@ if (role === "helper") {
         const sceneId = editSceneBtn.dataset.editScene || "";
         if (!sceneId) return;
         state.editingSceneId = sceneId;
+        beginSceneEditorDraft(sceneId);
         render(root);
         return;
       }
 
       const sceneCharacterItem = e.target.closest(".story-scene-character-item");
-      const clickedSceneEditor = sceneCharacterItem?.closest("[data-story-scene-editor]");
-      if (
-        sceneCharacterItem &&
-        clickedSceneEditor &&
-        sceneCharacterItem.dataset.storyDirectClickBound !== "true"
-      ) {
+      if (sceneCharacterItem && getStorySceneEditor(root)?.contains(sceneCharacterItem)) {
+        // Character cards are handled by the editor-local capture listener.
+        // This fallback is kept only for older editor markup that was not bound yet.
         e.preventDefault();
 
         const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
-        if (!slot) return;
+        const scene = getSceneById(state.editingSceneId);
+        if (!slot || !scene) return;
 
-        const nextSelected = sceneCharacterItem.dataset.selected !== "true";
-        applySceneCharacterItemSelectionVisual(sceneCharacterItem, nextSelected);
+        const selected = new Set(getSceneEditorDraftSlots(scene));
+        if (selected.has(slot)) selected.delete(slot);
+        else selected.add(slot);
+
+        setSceneEditorDraftSlots(Array.from(selected));
+        renderSceneCharacterPicker(root, scene);
         resetStoryPolicyUI(root);
         return;
       }
@@ -3264,6 +3334,7 @@ if (role === "helper") {
       if (cancelBtn && getStorySceneEditor(root)?.contains(cancelBtn)) {
         e.preventDefault();
         state.editingSceneId = "";
+        clearSceneEditorDraft();
         render(root);
         return;
       }
@@ -3764,6 +3835,7 @@ if (!selectedScenes.length) {
         state.scenes = createDefaultScenes(state.flowDuration);
         state.openSection = "intro";
         state.editingSceneId = "";
+        clearSceneEditorDraft();
         resetStoryPolicyUI(root);
         render(root);
         return;
