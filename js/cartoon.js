@@ -5,6 +5,89 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  const CARTOON_BASIC_TEXT = {
+    tr: {
+      "studio.cartoon.basic.presetDisabledByPhoto": "Fotoğraf yüklendiği için hazır ana karakter kapatıldı.",
+      "studio.cartoon.basic.presetUnavailableWithPhoto": "Fotoğraf aktifken hazır ana karakter seçilemez.",
+      "studio.cartoon.basic.uploadFailedShort": "Yükleme hatası",
+      "studio.cartoon.basic.characterImageNotReady": "Karakter görseli henüz hazır değil.",
+      "studio.cartoon.basic.logoNotReady": "Logo henüz hazır değil.",
+      "studio.cartoon.basic.audioNotReady": "Müzik henüz hazır değil.",
+      "studio.cartoon.basic.promptRequired": "Prompt yazmalısın.",
+      "studio.cartoon.basic.imagePolicyBlocked": "Bu görsel kullanılamaz.",
+      "studio.cartoon.basic.musicUploadFailed": "Müzik yükleme hatası.",
+      "studio.cartoon.basic.summaryMain": "{count} ana karakter",
+      "studio.cartoon.basic.summaryHelper": "{count} yardımcı",
+      "studio.cartoon.basic.summaryCredits": "{count} kredi",
+      "studio.cartoon.basic.creditDeducted": "{count} kredi düşüldü.",
+      "studio.cartoon.basic.imageAddedCredit": "Resim eklendi · +10 kredi",
+      "studio.cartoon.basic.imageRemovedCredit": "Resim kaldırıldı · -10 kredi",
+      "studio.cartoon.basic.audioAddedCredit": "Müzik eklendi · +10 kredi",
+      "studio.cartoon.basic.audioRemovedCredit": "Müzik kaldırıldı · -10 kredi",
+      "studio.cartoon.basic.logoAddedCredit": "Logo eklendi · +10 kredi",
+      "studio.cartoon.basic.logoRemovedCredit": "Logo kaldırıldı · -10 kredi"
+    },
+    en: {
+      "studio.cartoon.basic.presetDisabledByPhoto": "The preset main character was disabled because a photo was uploaded.",
+      "studio.cartoon.basic.presetUnavailableWithPhoto": "A preset main character cannot be selected while a photo is active.",
+      "studio.cartoon.basic.uploadFailedShort": "Upload failed",
+      "studio.cartoon.basic.characterImageNotReady": "The character image is not ready yet.",
+      "studio.cartoon.basic.logoNotReady": "The logo is not ready yet.",
+      "studio.cartoon.basic.audioNotReady": "The music is not ready yet.",
+      "studio.cartoon.basic.promptRequired": "Please enter a prompt.",
+      "studio.cartoon.basic.imagePolicyBlocked": "This image cannot be used.",
+      "studio.cartoon.basic.musicUploadFailed": "Music upload failed.",
+      "studio.cartoon.basic.summaryMain": "{count} main character",
+      "studio.cartoon.basic.summaryHelper": "{count} supporting character(s)",
+      "studio.cartoon.basic.summaryCredits": "{count} credits",
+      "studio.cartoon.basic.creditDeducted": "{count} credits deducted.",
+      "studio.cartoon.basic.imageAddedCredit": "Image added · +10 credits",
+      "studio.cartoon.basic.imageRemovedCredit": "Image removed · -10 credits",
+      "studio.cartoon.basic.audioAddedCredit": "Music added · +10 credits",
+      "studio.cartoon.basic.audioRemovedCredit": "Music removed · -10 credits",
+      "studio.cartoon.basic.logoAddedCredit": "Logo added · +10 credits",
+      "studio.cartoon.basic.logoRemovedCredit": "Logo removed · -10 credits"
+    }
+  };
+
+  function cartoonBasicLanguage() {
+    try {
+      const language =
+        window.AIVO_STUDIO_I18N?.getLanguage?.() ||
+        window.AIVO_LANG ||
+        document.documentElement.lang ||
+        "tr";
+      return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
+    } catch {
+      return "tr";
+    }
+  }
+
+  function cartoonBasicFormat(value, parameters = {}) {
+    let output = String(value == null ? "" : value);
+    Object.keys(parameters || {}).forEach((key) => {
+      output = output.replace(new RegExp(`\\{${key}\\}`, "g"), String(parameters[key]));
+    });
+    return output;
+  }
+
+  function cartoonBasicText(key, parameters = {}) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, "", parameters);
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    try {
+      const translated = window.studioT?.(key, "", parameters);
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    const language = cartoonBasicLanguage();
+    const pack = CARTOON_BASIC_TEXT[language] || CARTOON_BASIC_TEXT.tr;
+    const fallback = CARTOON_BASIC_TEXT.tr;
+    return cartoonBasicFormat(pack[key] || fallback[key] || key, parameters);
+  }
+
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
@@ -653,7 +736,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
 
   if (!silent) {
     try {
-      window.toast?.info?.("Fotoğraf yüklendiği için preset ana karakter kapatıldı");
+      window.toast?.info?.(cartoonBasicText("studio.cartoon.basic.presetDisabledByPhoto"));
     } catch {}
   }
 
@@ -700,7 +783,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
     syncGenerateButtonCredit(root);
 
     if (hadFile) {
-      try { window.toast?.success?.("Resim kaldırıldı · -10 kredi"); } catch {}
+      try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.imageRemovedCredit")); } catch {}
     }
   }
 
@@ -718,8 +801,8 @@ function enforceCustomCharacterOverride(root, options = {}) {
       clearBtn = document.createElement("button");
       clearBtn.type = "button";
       clearBtn.setAttribute("data-basic-upload-clear", "");
-      clearBtn.setAttribute("aria-label", "Yüklenen resmi temizle");
-      clearBtn.title = "Resmi kaldır";
+      clearBtn.setAttribute("aria-label", cartoonBasicText("studio.cartoon.common.removeImageLabel"));
+      clearBtn.title = cartoonBasicText("studio.cartoon.common.removeImage");
       clearBtn.textContent = "×";
       clearBtn.style.marginLeft = "8px";
       clearBtn.style.width = "22px";
@@ -757,30 +840,30 @@ function enforceCustomCharacterOverride(root, options = {}) {
     if (!textEl) return;
 
     if (!state.characterImage) {
-      textEl.textContent = "Dosya seçilmedi";
+      textEl.textContent = cartoonBasicText("studio.cartoon.common.noFile");
       if (generateBtn) generateBtn.disabled = !!state.isGenerating;
       return;
     }
 
     if (state.characterImageUploadStatus === "uploading") {
-      textEl.textContent = `${state.characterImageName} · Yükleniyor...`;
+      textEl.textContent = `${state.characterImageName} · ${cartoonBasicText("studio.cartoon.common.uploading")}`;
       if (generateBtn) generateBtn.disabled = true;
       return;
     }
 
     if (state.characterImageUploadStatus === "ready") {
-      textEl.textContent = `${state.characterImageName} · Hazır ✓`;
+      textEl.textContent = `${state.characterImageName} · ${cartoonBasicText("studio.cartoon.common.ready")} ✓`;
       if (generateBtn) generateBtn.disabled = !!state.isGenerating;
       return;
     }
 
     if (state.characterImageUploadStatus === "error") {
-      textEl.textContent = `${state.characterImageName} · Yükleme hatası`;
+      textEl.textContent = `${state.characterImageName} · ${cartoonBasicText("studio.cartoon.basic.uploadFailedShort")}`;
       if (generateBtn) generateBtn.disabled = true;
       return;
     }
 
-    textEl.textContent = state.characterImageName || "Dosya seçilmedi";
+    textEl.textContent = state.characterImageName || cartoonBasicText("studio.cartoon.common.noFile");
     if (generateBtn) generateBtn.disabled = !!state.isGenerating;
   }
 
@@ -811,7 +894,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
     syncGenerateButtonCredit(root);
 
     if (!silent && hadFile) {
-      try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+      try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.audioRemovedCredit")); } catch {}
     }
   }
 
@@ -838,19 +921,19 @@ function enforceCustomCharacterOverride(root, options = {}) {
     if (!textEl) return;
 
     if (!state.audioFile) {
-      textEl.textContent = "Dosya seçilmedi";
+      textEl.textContent = cartoonBasicText("studio.cartoon.common.noFile");
       if (clearBtn) clearBtn.style.display = "none";
       return;
     }
 
     if (state.audioFileUploadStatus === "uploading") {
-      textEl.textContent = `${state.audioFileName} · Yükleniyor...`;
+      textEl.textContent = `${state.audioFileName} · ${cartoonBasicText("studio.cartoon.common.uploading")}`;
       if (clearBtn) clearBtn.style.display = "none";
       return;
     }
 
     if (state.audioFileUploadStatus === "ready") {
-      textEl.textContent = `${state.audioFileName} · Hazır ✓`;
+      textEl.textContent = `${state.audioFileName} · ${cartoonBasicText("studio.cartoon.common.ready")} ✓`;
       if (clearBtn) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
@@ -867,7 +950,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
     }
 
     if (state.audioFileUploadStatus === "error") {
-      textEl.textContent = `${state.audioFileName} · Yükleme hatası`;
+      textEl.textContent = `${state.audioFileName} · ${cartoonBasicText("studio.cartoon.basic.uploadFailedShort")}`;
       if (clearBtn) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
@@ -875,7 +958,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
       return;
     }
 
-    textEl.textContent = state.audioFileName || "Dosya seçilmedi";
+    textEl.textContent = state.audioFileName || cartoonBasicText("studio.cartoon.common.noFile");
     if (clearBtn) clearBtn.style.display = "none";
   }
 
@@ -905,7 +988,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
     syncGenerateButtonCredit(root);
 
     if (hadFile) {
-      try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+      try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.logoRemovedCredit")); } catch {}
     }
   }
 
@@ -932,19 +1015,19 @@ function enforceCustomCharacterOverride(root, options = {}) {
     if (!textEl) return;
 
     if (!state.logoFile) {
-      textEl.textContent = "Dosya seçilmedi";
+      textEl.textContent = cartoonBasicText("studio.cartoon.common.noFile");
       if (clearBtn) clearBtn.style.display = "none";
       return;
     }
 
     if (state.logoFileUploadStatus === "uploading") {
-      textEl.textContent = `${state.logoFileName} · Yükleniyor...`;
+      textEl.textContent = `${state.logoFileName} · ${cartoonBasicText("studio.cartoon.common.uploading")}`;
       if (clearBtn) clearBtn.style.display = "none";
       return;
     }
 
     if (state.logoFileUploadStatus === "ready") {
-      textEl.textContent = `${state.logoFileName} · Hazır ✓`;
+      textEl.textContent = `${state.logoFileName} · ${cartoonBasicText("studio.cartoon.common.ready")} ✓`;
       if (clearBtn) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
@@ -961,7 +1044,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
     }
 
     if (state.logoFileUploadStatus === "error") {
-      textEl.textContent = `${state.logoFileName} · Yükleme hatası`;
+      textEl.textContent = `${state.logoFileName} · ${cartoonBasicText("studio.cartoon.basic.uploadFailedShort")}`;
       if (clearBtn) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
@@ -969,7 +1052,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
       return;
     }
 
-    textEl.textContent = state.logoFileName || "Dosya seçilmedi";
+    textEl.textContent = state.logoFileName || cartoonBasicText("studio.cartoon.common.noFile");
     if (clearBtn) clearBtn.style.display = "none";
   }
 
@@ -977,10 +1060,10 @@ function enforceCustomCharacterOverride(root, options = {}) {
     const el = qs("[data-cartoon-summary]", root);
     if (!el) return;
 
-    const durationText = `${state.duration} sn`;
-    const mainCountText = state.mainCharacter ? "1 ana karakter" : "0 ana karakter";
-    const helperCountText = `${state.helpers.length} yardımcı`;
-    const creditText = `${getEstimatedCredits()} kredi`;
+    const durationText = cartoonBasicText("studio.cartoon.common.seconds", { count: state.duration });
+    const mainCountText = cartoonBasicText("studio.cartoon.basic.summaryMain", { count: state.mainCharacter ? 1 : 0 });
+    const helperCountText = cartoonBasicText("studio.cartoon.basic.summaryHelper", { count: state.helpers.length });
+    const creditText = cartoonBasicText("studio.cartoon.basic.summaryCredits", { count: getEstimatedCredits() });
 
     el.textContent = `${durationText} • ${mainCountText} • ${helperCountText} • ${creditText}`;
   }
@@ -993,7 +1076,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
     btn.setAttribute("data-credit-cost", String(total));
 
     if (!state.isGenerating) {
-      btn.textContent = `🎬 Sahneyi Oluştur (${total} Kredi)`;
+      btn.textContent = cartoonBasicText("studio.cartoon.basic.generateWithCredit", { count: total });
     }
   }
 
@@ -1320,16 +1403,16 @@ function enforceCustomCharacterOverride(root, options = {}) {
                   visibleError: refundMeta.error
                 });
 
-                try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+                try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.creditRefunded")); } catch {}
               } else {
-                try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+                try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.basicFailed")); } catch {}
               }
             } else {
-              try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+              try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.basicFailed")); } catch {}
             }
           } catch (refundErr) {
             console.error("[CARTOON][BASIC] poll refund failed =", refundErr);
-            try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+            try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.basicFailed")); } catch {}
           }
 
           window.dispatchEvent(
@@ -1365,7 +1448,7 @@ function enforceCustomCharacterOverride(root, options = {}) {
           const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
           if (basicGenerateBtn) {
             basicGenerateBtn.disabled = false;
-            basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+            basicGenerateBtn.textContent = cartoonBasicText("studio.cartoon.basic.generateWithCredit", { count: getEstimatedCredits() });
             basicGenerateBtn.classList.remove("is-loading");
           }
         }
@@ -1399,12 +1482,12 @@ function enforceCustomCharacterOverride(root, options = {}) {
         const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
         if (basicGenerateBtn) {
           basicGenerateBtn.disabled = false;
-          basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          basicGenerateBtn.textContent = cartoonBasicText("studio.cartoon.basic.generateWithCredit", { count: getEstimatedCredits() });
           basicGenerateBtn.classList.remove("is-loading");
         }
       }
 
-      try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+      try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.basicFailed")); } catch {}
     } catch (err) {
       console.error("[CARTOON][BASIC] poll error =", err);
 
@@ -1435,12 +1518,12 @@ function enforceCustomCharacterOverride(root, options = {}) {
         const basicGenerateBtn = root?.querySelector("[data-cartoon-generate]");
         if (basicGenerateBtn) {
           basicGenerateBtn.disabled = false;
-          basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          basicGenerateBtn.textContent = cartoonBasicText("studio.cartoon.basic.generateWithCredit", { count: getEstimatedCredits() });
           basicGenerateBtn.classList.remove("is-loading");
         }
       }
 
-      try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+      try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.basicFailed")); } catch {}
     }
   }
 
@@ -1467,7 +1550,7 @@ if (mainBtn && root.contains(mainBtn)) {
     render(root);
 
     try {
-      window.toast?.info?.("Fotoğraf aktifken preset ana karakter seçilemez");
+      window.toast?.info?.(cartoonBasicText("studio.cartoon.basic.presetUnavailableWithPhoto"));
     } catch {}
 
     return;
@@ -1552,7 +1635,7 @@ if (mainBtn && root.contains(mainBtn)) {
             }
           });
 
-          try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+          try { window.toast?.info?.(cartoonBasicText("studio.cartoon.basic.promptRequired")); } catch {}
           const promptEl = qs("[data-cartoon-prompt-input]", root);
           if (promptEl) promptEl.focus();
           return;
@@ -1579,7 +1662,7 @@ if (mainBtn && root.contains(mainBtn)) {
               }
             });
 
-            try { window.toast?.info?.("Karakter görseli henüz hazır değil"); } catch {}
+            try { window.toast?.info?.(cartoonBasicText("studio.cartoon.basic.characterImageNotReady")); } catch {}
             return;
           }
         }
@@ -1605,7 +1688,7 @@ if (mainBtn && root.contains(mainBtn)) {
               }
             });
 
-            try { window.toast?.info?.("Logo henüz hazır değil"); } catch {}
+            try { window.toast?.info?.(cartoonBasicText("studio.cartoon.basic.logoNotReady")); } catch {}
             return;
           }
         }
@@ -1631,7 +1714,7 @@ if (mainBtn && root.contains(mainBtn)) {
               }
             });
 
-            try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
+            try { window.toast?.info?.(cartoonBasicText("studio.cartoon.basic.audioNotReady")); } catch {}
             return;
           }
         }
@@ -1733,7 +1816,7 @@ if (mainBtn && root.contains(mainBtn)) {
                 visibleError: String(extraMeta?.error || reason || "basic_generate_failed")
               });
 
-              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.creditRefunded")); } catch {}
               return true;
             }
 
@@ -1822,7 +1905,7 @@ if (mainBtn && root.contains(mainBtn)) {
 
         state.isGenerating = true;
         generateBtn.disabled = true;
-        generateBtn.textContent = "Üretiliyor...";
+        generateBtn.textContent = cartoonBasicText("studio.cartoon.common.generating");
         generateBtn.classList.add("is-loading");
 
         syncCartoonBasicAssistantState({
@@ -1837,8 +1920,8 @@ if (mainBtn && root.contains(mainBtn)) {
           visibleError: ""
         });
 
-        try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
-        try { window.toast?.success?.("Sahne üretimi başladı"); } catch {}
+        try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.creditDeducted", { count: creditCost })); } catch {}
+        try { window.toast?.success?.(cartoonBasicText("studio.cartoon.toast.basicStarted")); } catch {}
 
         try {
           const r = await fetch("/api/providers/fal/cartoon/create", {
@@ -1903,7 +1986,7 @@ if (mainBtn && root.contains(mainBtn)) {
         } catch (err) {
           state.isGenerating = false;
           generateBtn.disabled = false;
-          generateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+          generateBtn.textContent = cartoonBasicText("studio.cartoon.basic.generateWithCredit", { count: getEstimatedCredits() });
           generateBtn.classList.remove("is-loading");
 
           console.error("[CARTOON][BASIC] create error:", err);
@@ -1925,7 +2008,7 @@ if (mainBtn && root.contains(mainBtn)) {
           });
 
           if (!refunded) {
-            try { window.toast?.error?.("Sahne oluşturma hatası"); } catch {}
+            try { window.toast?.error?.(cartoonBasicText("studio.cartoon.toast.basicFailed")); } catch {}
           }
         }
 
@@ -1950,7 +2033,7 @@ if (mainBtn && root.contains(mainBtn)) {
       if (basicGenerateBtn) {
         state.isGenerating = false;
         basicGenerateBtn.disabled = false;
-        basicGenerateBtn.textContent = `🎬 Sahneyi Oluştur (${getEstimatedCredits()} Kredi)`;
+        basicGenerateBtn.textContent = cartoonBasicText("studio.cartoon.basic.generateWithCredit", { count: getEstimatedCredits() });
         basicGenerateBtn.classList.remove("is-loading");
       }
 
@@ -1959,7 +2042,7 @@ if (mainBtn && root.contains(mainBtn)) {
         render(root);
       }
 
-      try { window.toast?.success?.("Sahne hazır"); } catch {}
+      try { window.toast?.success?.(cartoonBasicText("studio.cartoon.toast.basicReady")); } catch {}
     });
 
     document.addEventListener("input", (e) => {
@@ -2081,7 +2164,7 @@ if (mainBtn && root.contains(mainBtn)) {
               }
             });
 
-            try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+            try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.logoAddedCredit")); } catch {}
             console.log("[CARTOON][BASIC_LOGO_UPLOAD_OK]", state.logoFileUrl);
             return state.logoFileUrl;
           })
@@ -2120,8 +2203,8 @@ if (mainBtn && root.contains(mainBtn)) {
             try {
               window.toast?.error?.(
                 isPolicyBlocked
-                  ? "Bu görsel kullanılamaz."
-                  : "Yükleme hatası"
+                  ? cartoonBasicText("studio.cartoon.basic.imagePolicyBlocked")
+                  : cartoonBasicText("studio.cartoon.basic.uploadFailedShort")
               );
             } catch {}
 
@@ -2177,7 +2260,7 @@ if (mainBtn && root.contains(mainBtn)) {
               }
             });
 
-            try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+            try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.audioAddedCredit")); } catch {}
             console.log("[CARTOON][BASIC_AUDIO_UPLOAD_OK]", state.audioFileUrl);
             return state.audioFileUrl;
           })
@@ -2201,7 +2284,7 @@ if (mainBtn && root.contains(mainBtn)) {
               }
             });
 
-            try { window.toast?.error?.("Müzik yükleme hatası"); } catch {}
+            try { window.toast?.error?.(cartoonBasicText("studio.cartoon.basic.musicUploadFailed")); } catch {}
             throw err;
           });
 
@@ -2258,7 +2341,7 @@ syncCartoonBasicAssistantState({
   }
 });
 
-try { window.toast?.success?.("Resim eklendi · +10 kredi"); } catch {}
+try { window.toast?.success?.(cartoonBasicText("studio.cartoon.basic.imageAddedCredit")); } catch {}
 
 return state.characterImageUrl;
           })
@@ -2297,8 +2380,8 @@ return state.characterImageUrl;
             try {
               window.toast?.error?.(
                 isPolicyBlocked
-                  ? "Bu görsel kullanılamaz."
-                  : "Yükleme hatası"
+                  ? cartoonBasicText("studio.cartoon.basic.imagePolicyBlocked")
+                  : cartoonBasicText("studio.cartoon.basic.uploadFailedShort")
               );
             } catch {}
 
@@ -2307,6 +2390,11 @@ return state.characterImageUrl;
 
         return;
       }
+    });
+
+    document.addEventListener("aivo:language-change", () => {
+      const nextRoot = getCartoonRoot();
+      if (nextRoot) render(nextRoot);
     });
   }
 
