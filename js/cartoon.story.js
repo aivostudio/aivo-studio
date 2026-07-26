@@ -5,6 +5,59 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  function normalizeStoryLanguage(value) {
+    return String(value || "").trim().toLowerCase().startsWith("en") ? "en" : "tr";
+  }
+
+  function getStoryLanguage() {
+    try {
+      const language = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (language) return normalizeStoryLanguage(language);
+    } catch (_) {}
+
+    return normalizeStoryLanguage(
+      window.AIVO_LANG ||
+      document.documentElement.lang ||
+      "tr"
+    );
+  }
+
+  function formatStoryText(value, parameters) {
+    let output = String(value == null ? "" : value);
+
+    if (!parameters || typeof parameters !== "object") return output;
+
+    Object.keys(parameters).forEach((key) => {
+      output = output.replace(
+        new RegExp(`\\{${key}\\}`, "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function storyText(key, trText, enText, parameters) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, "", parameters);
+      if (translated && translated !== key) {
+        return formatStoryText(translated, parameters);
+      }
+    } catch (_) {}
+
+    try {
+      const translated = window.studioT?.(key, "", parameters);
+      if (translated && translated !== key) {
+        return formatStoryText(translated, parameters);
+      }
+    } catch (_) {}
+
+    return formatStoryText(
+      getStoryLanguage() === "en" ? enText : trText,
+      parameters
+    );
+  }
+
   const STORY_MAX_POLLS = 240;
   const STORY_POLL_INTERVAL = 3000;
   const STORY_READY_RECHECK_LIMIT = 20;
@@ -19,42 +72,42 @@
 
   const STORY_SECTION_SCENE_BLUEPRINTS = {
     intro: [
-      { title: "Dünya Açılışı", description: "Ortam ve genel atmosfer kurulur." },
-      { title: "Ana Karakter Tanıtımı", description: "Ana karakter ilk kez görünür." },
-      { title: "Hedefin Ortaya Çıkışı", description: "Karakterin amacı netleşir." },
-      { title: "İlk Duygusal Bağ", description: "Karakterin iç dünyası görünür olur." },
-      { title: "Merak Kıvılcımı", description: "Yeni bir soru veya merak doğar." },
-      { title: "Dünyanın Kuralı", description: "Hikayenin temel düzeni iyice hissedilir." },
-      { title: "Yola Çağrı", description: "Karakter harekete geçmeye hazırlanır." }
+      { key: "worldOpening", titleTr: "Dünya Açılışı", titleEn: "World Opening", descriptionTr: "Ortam ve genel atmosfer kurulur.", descriptionEn: "The setting and overall atmosphere are established." },
+      { key: "mainIntro", titleTr: "Ana Karakter Tanıtımı", titleEn: "Main Character Introduction", descriptionTr: "Ana karakter ilk kez görünür.", descriptionEn: "The main character appears for the first time." },
+      { key: "goalAppears", titleTr: "Hedefin Ortaya Çıkışı", titleEn: "The Goal Emerges", descriptionTr: "Karakterin amacı netleşir.", descriptionEn: "The character's objective becomes clear." },
+      { key: "emotionalBond", titleTr: "İlk Duygusal Bağ", titleEn: "First Emotional Connection", descriptionTr: "Karakterin iç dünyası görünür olur.", descriptionEn: "The character's inner world becomes visible." },
+      { key: "curiosity", titleTr: "Merak Kıvılcımı", titleEn: "Spark of Curiosity", descriptionTr: "Yeni bir soru veya merak doğar.", descriptionEn: "A new question or curiosity arises." },
+      { key: "worldRule", titleTr: "Dünyanın Kuralı", titleEn: "The Rule of the World", descriptionTr: "Hikayenin temel düzeni iyice hissedilir.", descriptionEn: "The story's underlying order becomes clear." },
+      { key: "callToJourney", titleTr: "Yola Çağrı", titleEn: "Call to Adventure", descriptionTr: "Karakter harekete geçmeye hazırlanır.", descriptionEn: "The character prepares to take action." }
     ],
     setup: [
-      { title: "Yardımcı Unsur Gelir", description: "Yardımcı karakter veya unsur hikayeye dahil olur." },
-      { title: "Yolculuk Başlar", description: "Karakterler harekete geçer." },
-      { title: "İlk Engel", description: "İlk zorluk ortaya çıkar." },
-      { title: "Plan Kurulur", description: "Sorunu çözmek için ilk plan yapılır." },
-      { title: "Yeni İpucu", description: "Hedefe giden yolda yeni bir bilgi öğrenilir." },
-      { title: "Denge Bozulur", description: "Karakterlerin düzeni iyice değişir." },
-      { title: "Karar Anı", description: "Geri dönmek yerine devam etme kararı verilir." }
+      { key: "helperArrives", titleTr: "Yardımcı Unsur Gelir", titleEn: "A Supporting Element Arrives", descriptionTr: "Yardımcı karakter veya unsur hikayeye dahil olur.", descriptionEn: "A supporting character or element joins the story." },
+      { key: "journeyBegins", titleTr: "Yolculuk Başlar", titleEn: "The Journey Begins", descriptionTr: "Karakterler harekete geçer.", descriptionEn: "The characters set out." },
+      { key: "firstObstacle", titleTr: "İlk Engel", titleEn: "First Obstacle", descriptionTr: "İlk zorluk ortaya çıkar.", descriptionEn: "The first challenge appears." },
+      { key: "plan", titleTr: "Plan Kurulur", titleEn: "A Plan Is Made", descriptionTr: "Sorunu çözmek için ilk plan yapılır.", descriptionEn: "The first plan is made to solve the problem." },
+      { key: "clue", titleTr: "Yeni İpucu", titleEn: "New Clue", descriptionTr: "Hedefe giden yolda yeni bir bilgi öğrenilir.", descriptionEn: "New information is discovered on the way to the goal." },
+      { key: "balanceBreaks", titleTr: "Denge Bozulur", titleEn: "The Balance Is Disrupted", descriptionTr: "Karakterlerin düzeni iyice değişir.", descriptionEn: "The characters' normal order changes significantly." },
+      { key: "decision", titleTr: "Karar Anı", titleEn: "Moment of Decision", descriptionTr: "Geri dönmek yerine devam etme kararı verilir.", descriptionEn: "A decision is made to continue instead of turning back." }
     ],
     adventure: [
-      { title: "Macera Derinleşir", description: "Olaylar büyümeye başlar." },
-      { title: "Deneme ve Çaba", description: "Karakterler çözüm için yeni bir yol dener." },
-      { title: "Gerilim Artar", description: "Risk yükselir, baskı artar." },
-      { title: "Doruk Noktası", description: "En kritik karşılaşma yaşanır." },
-      { title: "Beklenmedik Sürpriz", description: "Plan dışı yeni bir gelişme olur." },
-      { title: "Takım Ruhu", description: "Karakterler birlikte hareket etmeyi öğrenir." },
-      { title: "Büyük Engel", description: "Daha güçlü bir zorluk kahramanların önüne çıkar." },
-      { title: "Son Hazırlık", description: "Final öncesi son hazırlıklar yapılır." },
-      { title: "Umut Yeniden Doğar", description: "Karakterler tekrar güç kazanır." },
-      { title: "Büyük Karşılaşma", description: "Hikayenin en yoğun anı yaşanır." }
+      { key: "adventureDeepens", titleTr: "Macera Derinleşir", titleEn: "The Adventure Deepens", descriptionTr: "Olaylar büyümeye başlar.", descriptionEn: "Events begin to escalate." },
+      { key: "effort", titleTr: "Deneme ve Çaba", titleEn: "Trial and Effort", descriptionTr: "Karakterler çözüm için yeni bir yol dener.", descriptionEn: "The characters try a new way to find a solution." },
+      { key: "tension", titleTr: "Gerilim Artar", titleEn: "Tension Rises", descriptionTr: "Risk yükselir, baskı artar.", descriptionEn: "The risk and pressure increase." },
+      { key: "climax", titleTr: "Doruk Noktası", titleEn: "Climax", descriptionTr: "En kritik karşılaşma yaşanır.", descriptionEn: "The most critical confrontation takes place." },
+      { key: "surprise", titleTr: "Beklenmedik Sürpriz", titleEn: "Unexpected Surprise", descriptionTr: "Plan dışı yeni bir gelişme olur.", descriptionEn: "An unexpected development occurs." },
+      { key: "teamwork", titleTr: "Takım Ruhu", titleEn: "Team Spirit", descriptionTr: "Karakterler birlikte hareket etmeyi öğrenir.", descriptionEn: "The characters learn to work together." },
+      { key: "bigObstacle", titleTr: "Büyük Engel", titleEn: "Major Obstacle", descriptionTr: "Daha güçlü bir zorluk kahramanların önüne çıkar.", descriptionEn: "A greater challenge stands in the heroes' way." },
+      { key: "lastPreparation", titleTr: "Son Hazırlık", titleEn: "Final Preparation", descriptionTr: "Final öncesi son hazırlıklar yapılır.", descriptionEn: "The final preparations are made before the finale." },
+      { key: "hopeReturns", titleTr: "Umut Yeniden Doğar", titleEn: "Hope Returns", descriptionTr: "Karakterler tekrar güç kazanır.", descriptionEn: "The characters regain their strength." },
+      { key: "bigEncounter", titleTr: "Büyük Karşılaşma", titleEn: "The Big Encounter", descriptionTr: "Hikayenin en yoğun anı yaşanır.", descriptionEn: "The story reaches its most intense moment." }
     ],
     final: [
-      { title: "Çözüm", description: "Sorun çözülür." },
-      { title: "Kapanış", description: "Hikaye sıcak bir final ile biter." },
-      { title: "Kutlama", description: "Karakterler başarıyı birlikte yaşar." },
-      { title: "Duygusal Veda", description: "Hikayenin duygusal etkisi tamamlanır." },
-      { title: "Yeni Denge", description: "Dünyada yeni bir düzen kurulmuş olur." },
-      { title: "Son Gülümseme", description: "İzleyiciye sıcak bir son an bırakılır." }
+      { key: "solution", titleTr: "Çözüm", titleEn: "Solution", descriptionTr: "Sorun çözülür.", descriptionEn: "The problem is solved." },
+      { key: "closing", titleTr: "Kapanış", titleEn: "Closing", descriptionTr: "Hikaye sıcak bir final ile biter.", descriptionEn: "The story ends with a warm finale." },
+      { key: "celebration", titleTr: "Kutlama", titleEn: "Celebration", descriptionTr: "Karakterler başarıyı birlikte yaşar.", descriptionEn: "The characters celebrate their success together." },
+      { key: "farewell", titleTr: "Duygusal Veda", titleEn: "Emotional Farewell", descriptionTr: "Hikayenin duygusal etkisi tamamlanır.", descriptionEn: "The story's emotional impact is completed." },
+      { key: "newBalance", titleTr: "Yeni Denge", titleEn: "New Balance", descriptionTr: "Dünyada yeni bir düzen kurulmuş olur.", descriptionEn: "A new order is established in the world." },
+      { key: "lastSmile", titleTr: "Son Gülümseme", titleEn: "Final Smile", descriptionTr: "İzleyiciye sıcak bir son an bırakılır.", descriptionEn: "The audience is left with a warm final moment." }
     ]
   };
 
@@ -212,7 +265,13 @@ function canAddStoryCharacter(nextCount = 1) {
 
 function showStoryCharacterLimitAlert() {
   try {
-    window.toast?.info?.("En fazla 4 karakter seçebilirsin");
+    window.toast?.info?.(
+      storyText(
+        "studio.cartoon.story.characterLimit",
+        "En fazla 4 karakter seçebilirsin",
+        "You can select up to 4 characters"
+      )
+    );
   } catch {}
 }
   function getCartoonRoot() {
@@ -467,9 +526,22 @@ function showStoryCharacterLimitAlert() {
     const total = Math.max(0, Number(totalSeconds || 0));
     const minutes = Math.floor(total / 60);
     const seconds = total % 60;
-    if (minutes > 0 && seconds > 0) return `${minutes} dk ${seconds} sn`;
-    if (minutes > 0) return `${minutes} dk`;
-    return `${seconds} sn`;
+    const minuteText = storyText(
+      "studio.cartoon.common.minutes",
+      "{count} dk",
+      "{count} min",
+      { count: minutes }
+    );
+    const secondText = storyText(
+      "studio.cartoon.common.seconds",
+      "{count} sn",
+      "{count} sec",
+      { count: seconds }
+    );
+
+    if (minutes > 0 && seconds > 0) return `${minuteText} ${secondText}`;
+    if (minutes > 0) return minuteText;
+    return secondText;
   }
 
   function toSceneDurationNumber(value) {
@@ -489,6 +561,30 @@ function showStoryCharacterLimitAlert() {
     return STORY_FLOW_PRESETS[String(flowDuration || "3")] || STORY_FLOW_PRESETS["3"];
   }
 
+  function getStoryBlueprintText(blueprint, field) {
+    if (!blueprint) return "";
+
+    const isTitle = field === "title";
+    const key = safeText(blueprint.key);
+    const suffix = isTitle ? "title" : "description";
+    const trText = isTitle ? blueprint.titleTr : blueprint.descriptionTr;
+    const enText = isTitle ? blueprint.titleEn : blueprint.descriptionEn;
+
+    if (!key) return getStoryLanguage() === "en" ? enText : trText;
+
+    return storyText(
+      `studio.cartoon.story.blueprint.${key}.${suffix}`,
+      trText,
+      enText
+    );
+  }
+
+  function findStoryBlueprint(section, blueprintKey) {
+    return (STORY_SECTION_SCENE_BLUEPRINTS[section] || []).find(
+      (item) => safeText(item?.key) === safeText(blueprintKey)
+    ) || null;
+  }
+
   function buildStoryScenesFromFlowDuration(flowDuration) {
     const preset = getStoryFlowPreset(flowDuration);
     const sectionOrder = ["intro", "setup", "adventure", "final"];
@@ -501,29 +597,72 @@ function showStoryCharacterLimitAlert() {
 
       for (let i = 0; i < count; i += 1) {
         const blueprint = blueprints[i] || {
-          title: `${sceneNumber}. Sahne`,
-          description: "Bu bölüm için yeni sahne."
+          key: "",
+          titleTr: `${sceneNumber}. Sahne`,
+          titleEn: `Scene ${sceneNumber}`,
+          descriptionTr: "Bu bölüm için yeni sahne.",
+          descriptionEn: "A new scene for this section."
         };
 
-    scenes.push({
-  id: `${section}-${i + 1}`,
-  section,
-  title: `Sahne ${sceneNumber} · ${blueprint.title}`,
-  description: blueprint.description,
-  characters: "",
-  characterSlots: [],
-  selected: false,
-  duration: "4",
-  mood: "",
-  type: "",
-  directorNote: ""
-});
+        const blueprintTitle = getStoryBlueprintText(blueprint, "title");
+        const blueprintDescription = getStoryBlueprintText(blueprint, "description");
+
+        scenes.push({
+          id: `${section}-${i + 1}`,
+          section,
+          sceneNumber,
+          blueprintKey: safeText(blueprint.key),
+          titleCustomized: false,
+          descriptionCustomized: false,
+          title: storyText(
+            "studio.cartoon.story.sceneTitle",
+            "Sahne {count} · {title}",
+            "Scene {count} · {title}",
+            { count: sceneNumber, title: blueprintTitle }
+          ),
+          description: blueprintDescription,
+          characters: "",
+          characterSlots: [],
+          selected: false,
+          duration: "4",
+          mood: "",
+          type: "",
+          directorNote: ""
+        });
 
         sceneNumber += 1;
       }
     });
 
     return scenes;
+  }
+
+  function applyStoryLanguageToDefaultScenes() {
+    if (!Array.isArray(state?.scenes)) return;
+
+    state.scenes = state.scenes.map((scene, index) => {
+      const blueprint = findStoryBlueprint(scene?.section, scene?.blueprintKey);
+      if (!blueprint) return scene;
+
+      const sceneNumber = Number(scene?.sceneNumber || index + 1);
+      const blueprintTitle = getStoryBlueprintText(blueprint, "title");
+      const blueprintDescription = getStoryBlueprintText(blueprint, "description");
+
+      return {
+        ...scene,
+        title: scene?.titleCustomized
+          ? scene.title
+          : storyText(
+              "studio.cartoon.story.sceneTitle",
+              "Sahne {count} · {title}",
+              "Scene {count} · {title}",
+              { count: sceneNumber, title: blueprintTitle }
+            ),
+        description: scene?.descriptionCustomized
+          ? scene.description
+          : blueprintDescription
+      };
+    });
   }
 
   async function presignStoryCharacterReference(file, slot) {
@@ -1049,7 +1188,18 @@ const state = (window.__CARTOON_STORY_STATE__ =
     const btn = root?.querySelector("[data-story-generate]");
     if (!btn) return;
    btn.disabled = !!loading;
-   btn.textContent = loading ? "Üretiliyor..." : `Hikayeyi Oluştur (${getStoryEstimatedCredits()} Kredi)`;
+   btn.textContent = loading
+     ? storyText(
+         "studio.cartoon.common.generating",
+         "Üretiliyor…",
+         "Generating…"
+       )
+     : storyText(
+         "studio.cartoon.story.generateWithCredit",
+         "Hikayeyi Oluştur ({count} Kredi)",
+         "Create Story ({count} Credits)",
+         { count: getStoryEstimatedCredits() }
+       );
    btn.classList.toggle("is-loading", !!loading);
   }
 
@@ -1066,7 +1216,15 @@ function completeStoryGenerateIfAllSettled() {
   setStoryGenerateButton(root, false);
 
   if (ready === total && failed === 0) {
-    try { window.toast?.success?.("Hikaye hazır"); } catch {}
+    try {
+      window.toast?.success?.(
+        storyText(
+          "studio.cartoon.toast.storyReady",
+          "Hikayeniz hazır.",
+          "Your story is ready."
+        )
+      );
+    } catch {}
   }
 
   syncCartoonStoryAssistantState({
@@ -1296,18 +1454,18 @@ function completeStoryGenerateIfAllSettled() {
             } catch (_) {}
 
             try { window.syncCreditsUI?.({ force: true }); } catch {}
-            try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+            try { window.toast?.error?.(storyText("studio.cartoon.toast.creditRefunded", "İşlem başarısız oldu, kredi iade edildi.", "The operation failed and the credits were refunded.")); } catch {}
 
             window.__CARTOON_STORY_REFUND_DONE__ = true;
           } else {
-            try { window.toast?.error?.("Hikaye oluşturma hatası"); } catch {}
+            try { window.toast?.error?.(storyText("studio.cartoon.toast.storyFailed", "Hikaye oluşturulamadı.", "The story could not be created.")); } catch {}
           }
         } else {
-          try { window.toast?.error?.("Hikaye oluşturma hatası"); } catch {}
+          try { window.toast?.error?.(storyText("studio.cartoon.toast.storyFailed", "Hikaye oluşturulamadı.", "The story could not be created.")); } catch {}
         }
       } catch (refundErr) {
         console.error("[CARTOON][STORY] poll refund failed =", refundErr);
-        try { window.toast?.error?.("Hikaye oluşturma hatası"); } catch {}
+        try { window.toast?.error?.(storyText("studio.cartoon.toast.storyFailed", "Hikaye oluşturulamadı.", "The story could not be created.")); } catch {}
       } finally {
         window.__CARTOON_STORY_REFUND_IN_FLIGHT__ = false;
       }
@@ -1406,12 +1564,23 @@ function completeStoryGenerateIfAllSettled() {
 function getStoryCharacterToastLabel(slot) {
   const key = String(slot || "").trim();
 
-  if (key === "main") return "Ana karakter";
-  if (key === "helper1") return "Yardımcı karakter 1";
-  if (key === "helper2") return "Yardımcı karakter 2";
-  if (key === "extra") return "Ek karakter";
+  if (key === "main") {
+    return storyText("studio.cartoon.story.character.main", "Ana Karakter", "Main Character");
+  }
 
-  return "Karakter";
+  if (key === "helper1") {
+    return storyText("studio.cartoon.story.character.helper1", "Yardımcı Karakter 1", "Supporting Character 1");
+  }
+
+  if (key === "helper2") {
+    return storyText("studio.cartoon.story.character.helper2", "Yardımcı Karakter 2", "Supporting Character 2");
+  }
+
+  if (key === "extra") {
+    return storyText("studio.cartoon.story.character.extra", "Ek Karakter", "Extra Character");
+  }
+
+  return storyText("studio.cartoon.common.character", "Karakter", "Character");
 }
   function getSceneById(sceneId) {
     return state.scenes.find((scene) => scene.id === sceneId) || null;
@@ -1481,7 +1650,7 @@ function getStoryCharacterToastLabel(slot) {
   updateStoryLogoUploadUI(root);
 
   if (hadFile) {
-    try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+    try { window.toast?.success?.(storyText("studio.cartoon.story.logoRemovedCredit", "Logo kaldırıldı · -10 kredi", "Logo removed · -10 credits")); } catch {}
   }
 }
 
@@ -1495,7 +1664,7 @@ function resetStoryAudioAsset(root) {
   updateStoryAudioUploadUI(root);
 
   if (hadFile) {
-    try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+    try { window.toast?.success?.(storyText("studio.cartoon.story.musicRemovedCredit", "Müzik kaldırıldı · -10 kredi", "Music removed · -10 credits")); } catch {}
   }
 }
 function resetStoryCharacterImage(root, slot) {
@@ -1527,7 +1696,7 @@ function resetStoryCharacterImage(root, slot) {
   }
 
   if (hadFile) {
-    try { window.toast?.success?.(`${getStoryCharacterToastLabel(key)} kaldırıldı · -10 kredi`); } catch {}
+    try { window.toast?.success?.(storyText("studio.cartoon.story.characterRemovedCredit", "{name} kaldırıldı · -10 kredi", "{name} removed · -10 credits", { name: getStoryCharacterToastLabel(key) })); } catch {}
   }
 }
 
@@ -1539,34 +1708,34 @@ function resetStoryCharacterImage(root, slot) {
     if (!textEl) return;
 
     if (!asset.file) {
-      textEl.textContent = "Dosya seçilmedi";
+      textEl.textContent = storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
       if (clearBtn) clearBtn.style.display = "none";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "uploading") {
-      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
+      textEl.textContent = `${getShortFileName(asset.fileName)} · ${storyText("studio.cartoon.common.uploading", "Yükleniyor…", "Uploading…")}`;
       if (clearBtn) clearBtn.style.display = "none";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "ready") {
-      textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
+      textEl.textContent = `${getShortFileName(asset.fileName)} · ${storyText("studio.cartoon.common.ready", "Hazır", "Ready")} ✓`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "error") {
-      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
+      textEl.textContent = `${getShortFileName(asset.fileName)} · ${storyText("studio.cartoon.error.uploadFailedShort", "Yükleme hatası", "Upload failed")}`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
-    textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
+    textEl.textContent = getShortFileName(asset.fileName) || storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
     if (clearBtn) clearBtn.style.display = "none";
     syncStoryGenerateButtonCredit(root);
     syncCartoonStoryAssistantState();
@@ -1580,34 +1749,34 @@ function resetStoryCharacterImage(root, slot) {
     if (!textEl) return;
 
     if (!asset.file) {
-      textEl.textContent = "Dosya seçilmedi";
+      textEl.textContent = storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
       if (clearBtn) clearBtn.style.display = "none";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "uploading") {
-      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleniyor...`;
+      textEl.textContent = `${getShortFileName(asset.fileName)} · ${storyText("studio.cartoon.common.uploading", "Yükleniyor…", "Uploading…")}`;
       if (clearBtn) clearBtn.style.display = "none";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "ready") {
-      textEl.textContent = `${getShortFileName(asset.fileName)} · Hazır ✓`;
+      textEl.textContent = `${getShortFileName(asset.fileName)} · ${storyText("studio.cartoon.common.ready", "Hazır", "Ready")} ✓`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
     if (asset.uploadStatus === "error") {
-      textEl.textContent = `${getShortFileName(asset.fileName)} · Yükleme hatası`;
+      textEl.textContent = `${getShortFileName(asset.fileName)} · ${storyText("studio.cartoon.error.uploadFailedShort", "Yükleme hatası", "Upload failed")}`;
       if (clearBtn) clearBtn.style.display = "inline-grid";
       syncStoryGenerateButtonCredit(root);
       return;
     }
 
-    textEl.textContent = getShortFileName(asset.fileName) || "Dosya seçilmedi";
+    textEl.textContent = getShortFileName(asset.fileName) || storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
     if (clearBtn) clearBtn.style.display = "none";
     syncStoryGenerateButtonCredit(root);
   }
@@ -1617,11 +1786,37 @@ function resetStoryCharacterImage(root, slot) {
     updateStoryAudioUploadUI(root);
   }
 
+  function updateSceneCharacterPickerTranslations(wrap) {
+    if (!wrap) return;
+
+    const label = qs("[data-scene-character-picker-label]", wrap);
+    const empty = qs("[data-scene-character-picker-empty]", wrap);
+
+    if (label) {
+      label.textContent = storyText(
+        "studio.cartoon.story.sceneCharacters",
+        "Sahnedeki Karakterler",
+        "Characters in the Scene"
+      );
+    }
+
+    if (empty) {
+      empty.textContent = storyText(
+        "studio.cartoon.story.sceneCharacterEmpty",
+        "Önce üst bölümden karakter seç.",
+        "Select a character from the section above first."
+      );
+    }
+  }
+
   function ensureSceneCharacterPicker(editor) {
     if (!editor) return null;
 
     let wrap = qs("[data-scene-character-picker]", editor);
-    if (wrap) return wrap;
+    if (wrap) {
+      updateSceneCharacterPickerTranslations(wrap);
+      return wrap;
+    }
 
     const hiddenField =
       qs("[data-scene-editor-characters]", editor)?.closest(".form-field") ||
@@ -1643,6 +1838,7 @@ function resetStoryCharacterImage(root, slot) {
     wrap.style.marginTop = "18px";
     wrap.innerHTML = `
       <label
+        data-scene-character-picker-label
         style="
           display:block;
           font-weight:800;
@@ -1650,9 +1846,7 @@ function resetStoryCharacterImage(root, slot) {
           line-height:1.2;
           margin-bottom:12px;
         "
-      >
-        Sahnedeki Karakterler
-      </label>
+      ></label>
 
       <div
         data-scene-character-picker-options
@@ -1672,12 +1866,11 @@ function resetStoryCharacterImage(root, slot) {
           opacity:.78;
           font-size:14px;
         "
-      >
-        Önce üst bölümden karakter seç.
-      </div>
+      ></div>
     `;
 
     descriptionField.parentElement.insertBefore(wrap, descriptionField.nextSibling);
+    updateSceneCharacterPickerTranslations(wrap);
     return wrap;
   }
 
@@ -1717,13 +1910,13 @@ function resetStoryCharacterImage(root, slot) {
       item.dataset.selected = isSelected ? "true" : "false";
 
       if (labelEl) {
-        labelEl.textContent = label || "Karakter seçilmedi";
+        labelEl.textContent = label || storyText("studio.cartoon.story.characterNotSelected", "Karakter seçilmedi", "No character selected");
       }
 
       if (fileEl) {
         fileEl.textContent = image.fileName
           ? getShortFileName(image.fileName, 24)
-          : "Görsel yüklenmedi";
+          : storyText("studio.cartoon.story.imageNotUploaded", "Görsel yüklenmedi", "No image uploaded");
       }
 
       item.style.border = isSelected
@@ -1813,7 +2006,7 @@ function resetStoryCharacterImage(root, slot) {
     selectEl.innerHTML = "";
     const empty = document.createElement("option");
     empty.value = "";
-    empty.textContent = "Seçiniz";
+    empty.textContent = storyText("studio.cartoon.common.select", "Seçiniz", "Select");
     selectEl.appendChild(empty);
 
     options.forEach((item) => {
@@ -1861,7 +2054,7 @@ function resetStoryCharacterImage(root, slot) {
     box.setAttribute("data-story-duration-summary-wrap", "");
 
     box.innerHTML = `
-      <label style="display:block;font-weight:700;margin-bottom:8px;">Toplam Süre</label>
+      <label data-story-duration-summary-label style="display:block;font-weight:700;margin-bottom:8px;"></label>
       <div
         data-story-duration-summary
         style="min-height:64px;display:flex;align-items:center;padding:0 18px;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:rgba(5,6,28,.55);font-weight:700;"
@@ -1876,14 +2069,32 @@ function resetStoryCharacterImage(root, slot) {
   function syncStoryDurationSummary(root) {
     const box = ensureStoryDurationSummary(root);
     const out = qs("[data-story-duration-summary]", root);
+    const label = qs("[data-story-duration-summary-label]", root);
     if (!box || !out) return;
+
+    if (label) {
+      label.textContent = storyText(
+        "studio.cartoon.story.totalDurationLabel",
+        "Toplam Süre",
+        "Total Duration"
+      );
+    }
 
     const selectedCount = getSelectedScenes().length;
     const totalSeconds = getSelectedTotalSeconds();
     out.textContent =
       selectedCount > 0
-        ? `${selectedCount} sahne · ${formatSecondsLabel(totalSeconds)}`
-        : "Henüz sahne seçilmedi";
+        ? `${storyText(
+            "studio.cartoon.story.sceneCount",
+            "{count} Sahne",
+            "{count} Scenes",
+            { count: selectedCount }
+          )} · ${formatSecondsLabel(totalSeconds)}`
+        : storyText(
+            "studio.cartoon.story.noSceneSelected",
+            "Henüz sahne seçilmedi",
+            "No scene selected yet"
+          );
   }
 
   function syncModeTabs(root) {
@@ -1918,7 +2129,7 @@ function resetStoryCharacterImage(root, slot) {
 
       const count = state.scenes.filter((scene) => scene.section === sectionId).length;
       const em = qs(".story-section-meta em", sectionEl);
-      if (em) em.textContent = `${count} Sahne`;
+      if (em) em.textContent = storyText("studio.cartoon.story.sceneCount", "{count} Sahne", "{count} Scenes", { count });
     });
   }
 
@@ -1952,8 +2163,8 @@ function resetStoryCharacterImage(root, slot) {
     btn.setAttribute("data-edit-scene", scene.id);
 
     const selectedBadge = scene.selected
-      ? `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(170,88,255,.18);font-size:12px;font-weight:700;">Seçili</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;">Seçili değil</span>`;
+      ? `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(170,88,255,.18);font-size:12px;font-weight:700;">${storyText("studio.cartoon.story.selected", "Seçili", "Selected")}</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;">${storyText("studio.cartoon.story.notSelected", "Seçili değil", "Not selected")}</span>`;
 
     btn.innerHTML = `
       <span class="story-scene-copy">
@@ -1967,13 +2178,13 @@ function resetStoryCharacterImage(root, slot) {
       </span>
     `;
 
-    qs("[data-scene-title]", btn).textContent = scene.title || "Sahne";
+    qs("[data-scene-title]", btn).textContent = scene.title || storyText("studio.cartoon.common.scene", "Sahne", "Scene");
     qs("[data-scene-description]", btn).textContent = scene.description || "";
-    qs("[data-scene-duration]", btn).textContent = `${normalizeStorySceneDuration(scene.duration)} sn`;
+    qs("[data-scene-duration]", btn).textContent = storyText("studio.cartoon.common.seconds", "{count} sn", "{count} sec", { count: normalizeStorySceneDuration(scene.duration) });
 
     const charEl = qs("[data-scene-characters]", btn);
     const labels = getSceneCharacterLabels(scene);
-    charEl.textContent = labels.length ? `Karakterler: ${labels.join(", ")}` : "Karakter seçilmedi";
+    charEl.textContent = labels.length ? `${storyText("studio.cartoon.story.charactersTitle", "Karakterler", "Characters")}: ${labels.join(", ")}` : storyText("studio.cartoon.story.characterNotSelected", "Karakter seçilmedi", "No character selected");
 
     return btn;
   }
@@ -2034,13 +2245,13 @@ function resetStoryCharacterImage(root, slot) {
       const durationEl = qs("[data-scene-duration]", row);
       const charsEl = qs("[data-scene-characters]", row);
 
-      if (titleEl) titleEl.textContent = scene.title || "Sahne";
+      if (titleEl) titleEl.textContent = scene.title || storyText("studio.cartoon.common.scene", "Sahne", "Scene");
       if (descEl) descEl.textContent = scene.description || "";
-      if (durationEl) durationEl.textContent = `${normalizeStorySceneDuration(scene.duration)} sn`;
+      if (durationEl) durationEl.textContent = storyText("studio.cartoon.common.seconds", "{count} sn", "{count} sec", { count: normalizeStorySceneDuration(scene.duration) });
 
       if (charsEl) {
         const labels = getSceneCharacterLabels(scene);
-        charsEl.textContent = labels.length ? `Karakterler: ${labels.join(", ")}` : "Karakter seçilmedi";
+        charsEl.textContent = labels.length ? `${storyText("studio.cartoon.story.charactersTitle", "Karakterler", "Characters")}: ${labels.join(", ")}` : storyText("studio.cartoon.story.characterNotSelected", "Karakter seçilmedi", "No character selected");
       }
     });
   }
@@ -2058,7 +2269,7 @@ function fillSceneEditor(root, sceneId) {
   const type = qs("[data-scene-editor-type]", editor);
   const note = qs("[data-scene-editor-note]", editor);
 
-  if (heading) heading.textContent = scene.title || "Sahne Düzenle";
+  if (heading) heading.textContent = scene.title || storyText("studio.cartoon.story.editorTitle", "Sahne Düzenle", "Edit Scene");
   if (title) title.value = scene.title || "";
   if (description) description.value = scene.description || "";
 
@@ -2183,12 +2394,12 @@ function syncSceneEditorCreditPreview(root) {
     btn.setAttribute("data-credit-cost", String(total));
 
     if (!state.isGenerating) {
-      btn.textContent = `Hikayeyi Oluştur (${total} Kredi)`;
+      btn.textContent = storyText("studio.cartoon.story.generateWithCredit", "Hikayeyi Oluştur ({count} Kredi)", "Create Story ({count} Credits)", { count: total });
     }
   }
 
   if (liveEl) {
-    liveEl.textContent = `Toplam harcanan: ${total} Kredi`;
+    liveEl.textContent = storyText("studio.cartoon.story.sceneCreditTotal", "Toplam harcanan: {count} Kredi", "Total spent: {count} Credits", { count: total });
   }
 }
   function syncStoryGenerateButtonCredit(root) {
@@ -2199,7 +2410,7 @@ function syncSceneEditorCreditPreview(root) {
   btn.setAttribute("data-credit-cost", String(total));
 
   if (!state.isGenerating) {
-    btn.textContent = `Hikayeyi Oluştur (${total} Kredi)`;
+    btn.textContent = storyText("studio.cartoon.story.generateWithCredit", "Hikayeyi Oluştur ({count} Kredi)", "Create Story ({count} Credits)", { count: total });
   }
   }
 
@@ -2429,7 +2640,7 @@ function syncSceneEditorCreditPreview(root) {
     );
 
     if (!scenes.length) {
-      throw new Error("Önce en az 1 sahne seçip kaydetmelisin.");
+      throw new Error(storyText("studio.cartoon.story.error.selectSceneFirst", "Önce en az 1 sahne seçip kaydetmelisin.", "Select and save at least one scene first."));
     }
 
     resetStoryPollBatch();
@@ -2665,7 +2876,7 @@ function syncSceneEditorCreditPreview(root) {
     visibleError: "missing_scene_title"
   });
 
-  try { window.toast?.info?.("Sahne başlığı yazmalısın"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.sceneTitleRequired", "Sahne başlığı yazmalısın", "Enter a scene title")); } catch {}
   const titleEl = qs("[data-scene-editor-title]", editor);
   if (titleEl) titleEl.focus();
   return;
@@ -2677,7 +2888,7 @@ if (!description) {
     visibleError: "missing_scene_description"
   });
 
-  try { window.toast?.info?.("Sahne açıklaması yazmalısın"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.sceneDescriptionRequired", "Sahne açıklaması yazmalısın", "Enter a scene description")); } catch {}
   const descriptionEl = qs("[data-scene-editor-description]", editor);
   if (descriptionEl) descriptionEl.focus();
   return;
@@ -2689,12 +2900,14 @@ if (!characterSlots.length) {
     visibleError: "missing_scene_character"
   });
 
-  try { window.toast?.info?.("Bu sahne için en az 1 karakter seçmelisin"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.sceneCharacterRequired", "Bu sahne için en az 1 karakter seçmelisin", "Select at least one character for this scene")); } catch {}
   return;
 }
     updateSceneById(state.editingSceneId, {
       title,
       description,
+      titleCustomized: true,
+      descriptionCustomized: true,
       characters: "",
       characterSlots,
       selected: true,
@@ -2738,7 +2951,14 @@ function syncStoryPresetCharacterCards(root) {
 
   if (storyView) {
     const headings = qsa("h1, h2, h3, h4", storyView);
-    const charactersHeading = headings.find((el) => safeText(el.textContent) === "Karakterler");
+    const localizedCharactersTitle = storyText(
+      "studio.cartoon.story.charactersTitle",
+      "Karakterler",
+      "Characters"
+    );
+    const charactersHeading =
+      qs('[data-i18n="studio.cartoon.story.charactersTitle"]', storyView) ||
+      headings.find((el) => safeText(el.textContent) === localizedCharactersTitle);
 
     if (charactersHeading) {
       let counter = qs('[data-story-selected-counter]', charactersHeading.parentElement || storyView);
@@ -2754,7 +2974,7 @@ function syncStoryPresetCharacterCards(root) {
         charactersHeading.insertAdjacentElement("afterend", counter);
       }
 
-      counter.textContent = `Seçili Karakter: ${orderedSelections.length} / ${STORY_MAX_TOTAL_CHARACTERS}`;
+      counter.textContent = storyText("studio.cartoon.story.selectedCharacterCount", "Seçili Karakter: {count} / {max}", "Selected Characters: {count} / {max}", { count: orderedSelections.length, max: STORY_MAX_TOTAL_CHARACTERS });
     }
   }
 
@@ -2905,7 +3125,7 @@ if (storyCharacterCard && root.contains(storyCharacterCard)) {
     }
 
   if (hasMainUpload && !isAlreadySelected) {
-  try { window.toast?.info?.("Ana karakter slotunda özel karakter var. Önce onu kaldırmalısın"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.mainSlotHasUpload", "Ana karakter slotunda özel karakter var. Önce onu kaldırmalısın", "The main character slot contains a custom character. Remove it first")); } catch {}
   return;
 }
     const willAddNewMainPreset = !isAlreadySelected && !hasMainPreset;
@@ -2935,7 +3155,7 @@ if (role === "helper") {
       return;
     }
 
-    try { window.toast?.info?.("Bu slotta özel karakter var. Önce onu kaldırmalısın"); } catch {}
+    try { window.toast?.info?.(storyText("studio.cartoon.story.error.slotHasUpload", "Bu slotta özel karakter var. Önce onu kaldırmalısın", "This slot contains a custom character. Remove it first")); } catch {}
     return;
   }
 
@@ -3088,7 +3308,7 @@ if (!safeText(state.storyIdea)) {
     }
   });
 
-  try { window.toast?.info?.("Hikaye fikri yazmalısın"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.error.storyIdeaRequired", "Lütfen hikaye fikrini yazın.", "Please enter your story idea.")); } catch {}
 
   const storyIdeaEl = qs("[data-story-idea]", root);
   if (storyIdeaEl) storyIdeaEl.focus();
@@ -3101,7 +3321,7 @@ if (!selectedScenes.length) {
     visibleError: "missing_selected_scene"
   });
 
-  try { window.toast?.info?.("Önce en az 1 sahneyi düzenleyip kaydetmelisin"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.editAndSaveScene", "Önce en az 1 sahneyi düzenleyip kaydetmelisin", "Edit and save at least one scene first")); } catch {}
   return;
 }
 
@@ -3125,7 +3345,7 @@ if (!selectedScenes.length) {
     visibleError: "character_upload_not_ready"
   });
 
-  try { window.toast?.info?.("Karakter görsellerinden biri henüz hazır değil"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.characterImagesNotReady", "Karakter görsellerinden biri henüz hazır değil", "One of the character images is not ready yet")); } catch {}
   return;
 }
         }
@@ -3146,7 +3366,7 @@ if (!selectedScenes.length) {
     visibleError: "logo_not_ready"
   });
 
-  try { window.toast?.info?.("Logo henüz hazır değil"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.logoNotReady", "Logo henüz hazır değil", "The logo is not ready yet")); } catch {}
   return;
 }
         }
@@ -3159,7 +3379,7 @@ if (!selectedScenes.length) {
     visibleError: "missing_audio"
   });
 
-  try { window.toast?.info?.("Müzik seçmelisin"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.musicRequired", "Müzik seçmelisin", "Select a music file")); } catch {}
   return;
 }
 
@@ -3177,7 +3397,7 @@ if (!selectedScenes.length) {
     visibleError: "audio_not_ready"
   });
 
-  try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
+  try { window.toast?.info?.(storyText("studio.cartoon.story.error.musicNotReady", "Müzik henüz hazır değil", "The music file is not ready yet")); } catch {}
   return;
 }
         }
@@ -3185,7 +3405,16 @@ if (!selectedScenes.length) {
    
 
         const creditCost = getStoryEstimatedCredits();
-        const summaryText = `${selectedScenes.length} sahne üretilecek.\nToplam süre: ${formatSecondsLabel(totalSeconds)}.\nToplam kredi: ${creditCost}.\nDevam edilsin mi?`;
+        const summaryText = storyText(
+          "studio.cartoon.story.confirmGeneration",
+          "{count} sahne üretilecek.\nToplam süre: {duration}.\nToplam kredi: {credits}.\nDevam edilsin mi?",
+          "{count} scenes will be generated.\nTotal duration: {duration}.\nTotal credits: {credits}.\nContinue?",
+          {
+            count: selectedScenes.length,
+            duration: formatSecondsLabel(totalSeconds),
+            credits: creditCost
+          }
+        );
             if (!window.confirm(summaryText)) {
           return;
         }
@@ -3275,7 +3504,7 @@ if (!selectedScenes.length) {
 
             if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
               await refreshCreditsUI();
-              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              try { window.toast?.error?.(storyText("studio.cartoon.toast.creditRefunded", "İşlem başarısız oldu, kredi iade edildi.", "The operation failed and the credits were refunded.")); } catch {}
               return true;
             }
           } catch (refundErr) {
@@ -3365,8 +3594,8 @@ if (!selectedScenes.length) {
           visibleError: ""
         });
 
-        try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
-        try { window.toast?.success?.("Hikaye üretimi başladı"); } catch {}
+        try { window.toast?.success?.(storyText("studio.cartoon.story.creditDeducted", "{count} kredi düşüldü", "{count} credits deducted", { count: creditCost })); } catch {}
+        try { window.toast?.success?.(storyText("studio.cartoon.toast.storyStarted", "Hikaye üretimi başlatıldı.", "Story generation started.")); } catch {}
 
         try {
           const created = await createStoryScenesFromPayload(payload);
@@ -3421,7 +3650,15 @@ if (!selectedScenes.length) {
           });
 
           if (!refunded) {
-            try { window.toast?.error?.(String(err?.message || err || "story_scene_create_failed")); } catch {}
+            try {
+              window.toast?.error?.(
+                storyText(
+                  "studio.cartoon.toast.storyFailed",
+                  "Hikaye oluşturulamadı.",
+                  "The story could not be created."
+                )
+              );
+            } catch {}
           }
         } finally {
           render(root);
@@ -3629,7 +3866,7 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
       }
     });
 
-    try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+    try { window.toast?.success?.(storyText("studio.cartoon.story.logoAddedCredit", "Logo eklendi · +10 kredi", "Logo added · +10 credits")); } catch {}
     console.log("[CARTOON][STORY_LOGO_UPLOAD_OK]", publicUrl);
     return publicUrl;
   })
@@ -3653,7 +3890,15 @@ if (sceneEditorDuration && getStorySceneEditor(root)?.contains(sceneEditorDurati
     });
 
    console.error("[CARTOON][STORY_LOGO_UPLOAD_ERROR]", err);
-try { window.toast?.error?.(String(err?.message || err || "story_logo_upload_failed")); } catch {}
+try {
+  window.toast?.error?.(
+    storyText(
+      "studio.cartoon.error.uploadFailed",
+      "Dosya yüklenemedi. Lütfen tekrar deneyin.",
+      "The file could not be uploaded. Please try again."
+    )
+  );
+} catch {}
 throw err;
   });
 
@@ -3701,7 +3946,7 @@ throw err;
       }
     });
 
-    try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+    try { window.toast?.success?.(storyText("studio.cartoon.story.musicAddedCredit", "Müzik eklendi · +10 kredi", "Music added · +10 credits")); } catch {}
     console.log("[CARTOON][STORY_AUDIO_UPLOAD_OK]", publicUrl);
     return publicUrl;
   })
@@ -3725,7 +3970,15 @@ throw err;
     });
 
    console.error("[CARTOON][STORY_AUDIO_UPLOAD_ERROR]", err);
-try { window.toast?.error?.(String(err?.message || err || "story_audio_upload_failed")); } catch {}
+try {
+  window.toast?.error?.(
+    storyText(
+      "studio.cartoon.error.uploadFailed",
+      "Dosya yüklenemedi. Lütfen tekrar deneyin.",
+      "The file could not be uploaded. Please try again."
+    )
+  );
+} catch {}
 throw err;
   });
         setStoryAudioAsset({ uploadPromise });
@@ -3811,7 +4064,7 @@ if (file && slotConfig) {
       }
     }
 
-    try { window.toast?.success?.(`${getStoryCharacterToastLabel(slot)} eklendi · +10 kredi`); } catch {}
+    try { window.toast?.success?.(storyText("studio.cartoon.story.characterAddedCredit", "{name} eklendi · +10 kredi", "{name} added · +10 credits", { name: getStoryCharacterToastLabel(slot) })); } catch {}
     console.log("[CARTOON][STORY_UPLOAD_OK]", slot, publicUrl);
     return publicUrl;
   })
@@ -3858,8 +4111,16 @@ if (file && slotConfig) {
     try {
       window.toast?.error?.(
         isPolicyBlocked
-          ? "Bu görsel kullanılamaz."
-          : "Yükleme hatası"
+          ? storyText(
+              "studio.cartoon.error.mediaPolicyBlocked",
+              "Bu görsel kullanılamaz.",
+              "This image cannot be used."
+            )
+          : storyText(
+              "studio.cartoon.error.uploadFailed",
+              "Dosya yüklenemedi. Lütfen tekrar deneyin.",
+              "The file could not be uploaded. Please try again."
+            )
       );
     } catch {}
 
@@ -3931,14 +4192,14 @@ function updateStoryCharacterUploadUI(root, slot) {
   uploadBtn.hidden = false;
 
   if (!imageState.file) {
-    nameEl.textContent = "Dosya seçilmedi";
+    nameEl.textContent = storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
     clearBtn.style.display = "none";
     syncStoryGenerateButtonCredit(root);
     return;
   }
 
   if (imageState.uploadStatus === "uploading") {
-    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Yükleniyor...`;
+    nameEl.textContent = `${getShortFileName(imageState.fileName)} · ${storyText("studio.cartoon.common.uploading", "Yükleniyor…", "Uploading…")}`;
     clearBtn.style.display = "none";
     syncStoryGenerateButtonCredit(root);
     return;
@@ -3952,13 +4213,13 @@ function updateStoryCharacterUploadUI(root, slot) {
   }
 
   if (imageState.uploadStatus === "error") {
-    nameEl.textContent = `${getShortFileName(imageState.fileName)} · Hata`;
+    nameEl.textContent = `${getShortFileName(imageState.fileName)} · ${storyText("studio.cartoon.common.failed", "Hata", "Error")}`;
     clearBtn.style.display = "inline-grid";
     syncStoryGenerateButtonCredit(root);
     return;
   }
 
-  nameEl.textContent = getShortFileName(imageState.fileName) || "Dosya seçilmedi";
+  nameEl.textContent = getShortFileName(imageState.fileName) || storyText("studio.cartoon.common.noFile", "Dosya seçilmedi", "No file selected");
   clearBtn.style.display = "none";
   syncStoryGenerateButtonCredit(root);
 }
@@ -3973,6 +4234,15 @@ function updateStoryCharacterUploadUI(root, slot) {
   bindClicks();
   bindInputs();
   bindChanges();
+
+  document.addEventListener("aivo:language-change", () => {
+    window.setTimeout(() => {
+      const root = getCartoonRoot();
+      if (!root) return;
+      applyStoryLanguageToDefaultScenes();
+      render(root);
+    }, 0);
+  });
 
   if (!tryInit()) {
     const observer = new MutationObserver(() => {
