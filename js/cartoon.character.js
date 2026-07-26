@@ -5,6 +5,45 @@
   const qs = (sel, root = document) => root.querySelector(sel);
   const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+  function cartoonCharacterText(key, trText, enText, vars = {}) {
+    let text = "";
+
+    try {
+      text = window.AIVO_STUDIO_I18N?.t?.(key) || "";
+    } catch {}
+
+    if (!text || text === key) {
+      let lang = "tr";
+
+      try {
+        lang = String(
+          window.AIVO_STUDIO_I18N?.getLanguage?.() ||
+          document.documentElement.lang ||
+          "tr"
+        ).toLowerCase();
+      } catch {}
+
+      text = lang.startsWith("en") ? enText : trText;
+    }
+
+    Object.entries(vars).forEach(([name, value]) => {
+      text = text
+        .split(`{${name}}`)
+        .join(String(value));
+    });
+
+    return text;
+  }
+
+  function characterGenerateText(total) {
+    return cartoonCharacterText(
+      "studio.cartoon.character.generateWithCredit",
+      "🧩 Karakter Oluştur ({count} Kredi)",
+      "🧩 Create Character ({count} Credits)",
+      { count: total }
+    );
+  }
+
   function getCartoonRoot() {
     return qs('.main-panel[data-module="cartoon"]');
   }
@@ -379,9 +418,8 @@
     const total = hasReferenceImage ? 30 : 20;
 
     btn.setAttribute("data-credit-cost", String(total));
-    btn.textContent = `🧩 Karakter Oluştur (${total} Kredi)`;
+    btn.textContent = characterGenerateText(total);
   }
-
   function updateCharacterDescCount(root) {
     const input = qs("[data-character-desc]", root);
     const out = qs("[data-character-desc-count]", root);
@@ -419,9 +457,23 @@
     if (!clearBtn) {
       clearBtn = document.createElement("button");
       clearBtn.type = "button";
-      clearBtn.setAttribute("data-character-create-upload-clear", "");
-      clearBtn.setAttribute("aria-label", "Referans görseli kaldır");
-      clearBtn.title = "Resmi kaldır";
+          clearBtn.setAttribute("data-character-create-upload-clear", "");
+
+      clearBtn.setAttribute(
+        "aria-label",
+        cartoonCharacterText(
+          "studio.cartoon.common.removeImageLabel",
+          "Yüklenen resmi kaldır",
+          "Remove uploaded image"
+        )
+      );
+
+      clearBtn.title = cartoonCharacterText(
+        "studio.cartoon.common.removeImage",
+        "Resmi kaldır",
+        "Remove image"
+      );
+
       clearBtn.textContent = "×";
       clearBtn.style.marginLeft = "8px";
       clearBtn.style.width = "22px";
@@ -476,7 +528,11 @@
     if (!previewEl) {
       previewEl = document.createElement("img");
       previewEl.setAttribute("data-character-create-preview", "");
-      previewEl.alt = "Referans görsel önizleme";
+           previewEl.alt = cartoonCharacterText(
+        "studio.cartoon.character.referencePreview",
+        "Referans görsel önizleme",
+        "Reference image preview"
+      );
       previewEl.style.display = "none";
       previewEl.style.width = "72px";
       previewEl.style.height = "72px";
@@ -512,27 +568,51 @@
       previewEl.style.display = "none";
     }
 
-    if (state.characterReferenceUploadStatus === "uploading") {
-      nameEl.textContent = `${file.name} · Yükleniyor...`;
+      if (state.characterReferenceUploadStatus === "uploading") {
+      nameEl.textContent =
+        `${file.name} · ` +
+        cartoonCharacterText(
+          "studio.cartoon.common.uploading",
+          "Yükleniyor…",
+          "Uploading…"
+        );
+
       if (clearBtn) clearBtn.style.display = "none";
       return;
     }
 
     if (state.characterReferenceUploadStatus === "ready") {
-      nameEl.textContent = `${file.name} · Hazır ✓`;
+      nameEl.textContent =
+        `${file.name} · ` +
+        cartoonCharacterText(
+          "studio.cartoon.common.ready",
+          "Hazır",
+          "Ready"
+        ) +
+        " ✓";
+
       if (clearBtn) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
       }
+
       return;
     }
 
     if (state.characterReferenceUploadStatus === "error") {
-      nameEl.textContent = `${file.name} · Yükleme hatası`;
+      nameEl.textContent =
+        `${file.name} · ` +
+        cartoonCharacterText(
+          "studio.cartoon.error.uploadFailed",
+          "Yükleme hatası",
+          "Upload failed"
+        );
+
       if (clearBtn) {
         clearBtn.style.display = "inline-grid";
         clearBtn.style.placeItems = "center";
       }
+
       return;
     }
 
@@ -552,8 +632,17 @@
 
     const items = Array.isArray(state.characters) ? state.characters : [];
 
-    if (!items.length) {
-      host.innerHTML = `<div class="cpEmpty">Henüz karakter yok.</div>`;
+      if (!items.length) {
+      host.innerHTML = `
+        <div class="cpEmpty">
+          ${cartoonCharacterText(
+            "studio.cartoon.character.libraryEmpty",
+            "Henüz karakter yok",
+            "No characters yet"
+          )}
+        </div>
+      `;
+
       return;
     }
 
@@ -561,7 +650,14 @@
       ${items.map((item) => {
         const itemId = String(item.id || item.job_id || "");
         const imageUrl = String(item.imageUrl || "").trim();
-        const name = String(item.name || "Karakter").trim();
+              const name = String(
+          item.name ||
+          cartoonCharacterText(
+            "studio.cartoon.character.defaultName",
+            "Karakter",
+            "Character"
+          )
+        ).trim();
         const isSelected = String(state.selectedCreatedCharacterId || "") === itemId;
 
         return `
@@ -575,7 +671,11 @@
               class="cpThumb"
               data-act="open"
               data-character-id="${itemId.replace(/"/g, "&quot;")}"
-              title="Önizle"
+                          title="${cartoonCharacterText(
+                "studio.cartoon.character.action.preview",
+                "Önizle",
+                "Preview"
+              ).replace(/"/g, "&quot;")}"
               style="aspect-ratio:1/1;width:100%;max-width:92px;position:relative;border-radius:10px;margin:0 auto;overflow:hidden;cursor:pointer;"
             >
               <img
@@ -588,7 +688,11 @@
                 class="cpBadge ok"
                 style="top:6px;left:6px;${isSelected ? "" : "display:none;"}"
               >
-                Seçili
+                              ${cartoonCharacterText(
+                  "studio.cartoon.character.selected",
+                  "Seçili",
+                  "Selected"
+                )}
               </div>
 
               <div
@@ -605,7 +709,11 @@
                     class="cpBtn"
                     data-act="download"
                     data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="İndir"
+                                     title="${cartoonCharacterText(
+                      "studio.cartoon.character.action.download",
+                      "İndir",
+                      "Download"
+                    ).replace(/"/g, "&quot;")}"
                     style="width:22px;height:22px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
                   >
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px;">
@@ -620,7 +728,11 @@
                     class="cpBtn"
                     data-act="select"
                     data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="Kullan"
+                                      title="${cartoonCharacterText(
+                      "studio.cartoon.character.action.use",
+                      "Kullan",
+                      "Use"
+                    ).replace(/"/g, "&quot;")}"
                     style="width:22px;height:22px;border-radius:999px;background:transparent;border:none;color:rgba(255,255,255,.92);display:grid;place-items:center;padding:0;"
                   >
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px;">
@@ -633,7 +745,11 @@
                     class="cpBtn danger"
                     data-act="delete"
                     data-character-id="${itemId.replace(/"/g, "&quot;")}"
-                    title="Sil"
+                                      title="${cartoonCharacterText(
+                      "studio.cartoon.character.action.delete",
+                      "Sil",
+                      "Delete"
+                    ).replace(/"/g, "&quot;")}"
                     style="width:22px;height:22px;border-radius:999px;background:transparent;border:none;color:rgba(255,120,120,.95);display:grid;place-items:center;padding:0;"
                   >
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:13px;height:13px;">
@@ -922,7 +1038,15 @@
           renderCharacterOnly(root);
         }
 
-        try { window.toast?.success?.("Karakter hazır"); } catch {}
+             try {
+          window.toast?.success?.(
+            cartoonCharacterText(
+              "studio.cartoon.toast.characterReady",
+              "Karakteriniz hazır.",
+              "Your character is ready."
+            )
+          );
+        } catch {}
 
         return;
       }
@@ -1047,7 +1171,15 @@
                   }
                 });
 
-                try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+               try {
+  window.toast?.error?.(
+    cartoonCharacterText(
+      "studio.cartoon.character.refunded",
+      "İşlem başarısız oldu, kredi iade edildi.",
+      "The operation failed and the credits were refunded."
+    )
+  );
+} catch {}
               } else {
                 try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
               }
@@ -1351,15 +1483,32 @@
           }
         });
 
-        const descInput = qs("#cartoon-character-desc", root) || qs("[data-character-desc]", root);
+              const descInput =
+          qs("#cartoon-character-desc", root) ||
+          qs("[data-character-desc]", root);
+
         if (descInput && !String(descInput.value || "").trim()) {
-          descInput.value = "Yüklediğim referans fotoğrafı temel al. Sevimli, temiz, yüksek detaylı bir çizgi film karakteri oluştur. Yüz hatlarını yumuşat, ifadeyi sıcak yap ve çocuk dostu 3D çizgi film stilinde üret.";
+          descInput.value = cartoonCharacterText(
+            "studio.cartoon.character.defaultReferencePrompt",
+            "Yüklediğim referans fotoğrafı temel al. Sevimli, temiz, yüksek detaylı bir çizgi film karakteri oluştur. Yüz hatlarını yumuşat, ifadeyi sıcak yap ve çocuk dostu 3D çizgi film stilinde üret.",
+            "Use my uploaded reference photo as the basis. Create a cute, clean and highly detailed cartoon character. Soften the facial features, keep the expression warm and render it in a child-friendly 3D cartoon style."
+          );
+
           updateCharacterDescCount(root);
         }
 
         updateCharacterCreateUploadUI(root);
         syncCharacterCreateCredit(root);
-        try { window.toast?.success?.("10 kredi eklendi"); } catch {}
+
+        try {
+          window.toast?.success?.(
+            cartoonCharacterText(
+              "studio.cartoon.character.referenceCreditAdded",
+              "Referans görsel için 10 kredi eklendi.",
+              "10 credits added for the reference image."
+            )
+          );
+        } catch {}
         console.log("[CARTOON][REFERENCE_UPLOAD_OK]", state.characterReferenceImageUrl);
       } catch (err) {
         state.characterReferenceImageUrl = "";
@@ -1388,11 +1537,19 @@
           errText.includes("gercek kisi") ||
           errText.includes("impersonation");
 
-        try {
+             try {
           window.toast?.error?.(
             isPolicyBlocked
-              ? "Bu görsel kullanılamaz."
-              : "Yükleme hatası"
+              ? cartoonCharacterText(
+                  "studio.cartoon.error.mediaPolicyBlocked",
+                  "Bu görsel kullanılamaz.",
+                  "This image cannot be used."
+                )
+              : cartoonCharacterText(
+                  "studio.cartoon.error.uploadFailed",
+                  "Görsel yüklenemedi. Lütfen tekrar deneyin.",
+                  "The image could not be uploaded. Please try again."
+                )
           );
         } catch {}
       }
@@ -1674,7 +1831,15 @@
         }
       });
 
-      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+          try {
+        window.toast?.info?.(
+          cartoonCharacterText(
+            "studio.cartoon.error.descriptionRequired",
+            "Lütfen karakter için kısa bir tanım yazın.",
+            "Please enter a short description for the character."
+          )
+        );
+      } catch {}
       const descInput = qs("#cartoon-character-desc", root);
       if (descInput) descInput.focus();
       return;
@@ -1693,7 +1858,15 @@
           }
         });
 
-        try { window.toast?.info?.("Referans görsel henüz yükleniyor"); } catch {}
+             try {
+          window.toast?.info?.(
+            cartoonCharacterText(
+              "studio.cartoon.error.uploadInProgress",
+              "Referans görselin yüklenmesini bekleyin.",
+              "Please wait for the reference image to finish uploading."
+            )
+          );
+        } catch {}
         return;
       }
 
@@ -1719,11 +1892,19 @@
           }
         });
 
-        try {
+                try {
           window.toast?.error?.(
             isPolicyBlocked
-              ? "Bu görsel kullanılamaz."
-              : "Görseli değiştir veya yeniden yükle."
+              ? cartoonCharacterText(
+                  "studio.cartoon.error.mediaPolicyBlocked",
+                  "Bu görsel kullanılamaz.",
+                  "This image cannot be used."
+                )
+              : cartoonCharacterText(
+                  "studio.cartoon.error.uploadFailed",
+                  "Görseli değiştirin veya yeniden yükleyin.",
+                  "Change the image or upload it again."
+                )
           );
         } catch {}
 
@@ -1833,7 +2014,15 @@
             }
           });
 
-          try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+        try {
+  window.toast?.error?.(
+    cartoonCharacterText(
+      "studio.cartoon.character.refunded",
+      "İşlem başarısız oldu, kredi iade edildi.",
+      "The operation failed and the credits were refunded."
+    )
+  );
+} catch {}
           return true;
         }
       } catch (refundErr) {
@@ -1928,7 +2117,12 @@
 
     state.characterCreatePending = true;
     characterCreateBtn.disabled = true;
-    characterCreateBtn.textContent = "Karakter Oluşturuluyor...";
+
+    characterCreateBtn.textContent = cartoonCharacterText(
+      "studio.cartoon.character.generating",
+      "Karakter oluşturuluyor…",
+      "Creating character…"
+    );
 
     syncCartoonCharacterAssistantState({
       policyState: "allow",
@@ -1946,8 +2140,25 @@
       }
     });
 
-    try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
-    try { window.toast?.success?.("Karakter oluşturuluyor"); } catch {}
+     try {
+      window.toast?.success?.(
+        cartoonCharacterText(
+          "studio.cartoon.character.creditDeducted",
+          `${creditCost} kredi düşüldü.`,
+          `${creditCost} credits deducted.`
+        )
+      );
+    } catch {}
+
+    try {
+      window.toast?.success?.(
+        cartoonCharacterText(
+          "studio.cartoon.toast.characterStarted",
+          "Karakter oluşturma başlatıldı.",
+          "Character creation started."
+        )
+      );
+    } catch {}
 
     try {
       const r = await fetch("/api/providers/fal/cartoon/create", {
