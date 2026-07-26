@@ -12,6 +12,162 @@
     return;
   }
 
+  const PANEL_DICTIONARY = {
+    tr: {
+      "studio.cartoon.panel.headerTitle": "AI Çocuk Çizgifilm",
+      "studio.cartoon.panel.searchPlaceholder": "Çizgifilmlerde ara...",
+      "studio.cartoon.panel.empty": "Henüz çizgifilm videosu bulunmuyor.",
+      "studio.cartoon.panel.noResults": "Aramanızla eşleşen çizgifilm videosu bulunamadı.",
+      "studio.cartoon.panel.status.ready": "Hazır",
+      "studio.cartoon.panel.status.processing": "İşleniyor",
+      "studio.cartoon.panel.status.failed": "Hata",
+      "studio.cartoon.panel.preparing": "Hazırlanıyor…",
+      "studio.cartoon.panel.action.play": "Oynat",
+      "studio.cartoon.panel.action.pause": "Duraklat",
+      "studio.cartoon.panel.action.download": "Videoyu indir",
+      "studio.cartoon.panel.action.share": "Videoyu paylaş",
+      "studio.cartoon.panel.action.fullscreen": "Tam ekran aç",
+      "studio.cartoon.panel.action.delete": "Videoyu sil",
+      "studio.cartoon.panel.action.audioOn": "Sesi aç",
+      "studio.cartoon.panel.action.audioOff": "Sesi kapat",
+      "studio.cartoon.panel.toast.ready": "Çizgifilm videonuz hazır.",
+      "studio.cartoon.panel.download.success": "Çizgifilm videosu indirildi.",
+      "studio.cartoon.panel.download.failed": "Çizgifilm videosu indirilemedi.",
+      "studio.cartoon.panel.download.opened": "Video yeni sekmede açıldı.",
+      "studio.cartoon.panel.delete.confirm": "Bu çizgifilm videosunu silmek istediğinize emin misiniz?",
+      "studio.cartoon.panel.delete.success": "Çizgifilm videosu silindi.",
+      "studio.cartoon.panel.delete.failed": "Çizgifilm videosu silinemedi.",
+      "studio.cartoon.panel.share.success": "Paylaşım penceresi açıldı.",
+      "studio.cartoon.panel.share.copied": "Çizgifilm video bağlantısı kopyalandı.",
+      "studio.cartoon.panel.share.failed": "Çizgifilm videosu paylaşılamadı."
+    },
+    en: {
+      "studio.cartoon.panel.headerTitle": "AI Kids Cartoon",
+      "studio.cartoon.panel.searchPlaceholder": "Search cartoon videos...",
+      "studio.cartoon.panel.empty": "No cartoon videos yet.",
+      "studio.cartoon.panel.noResults": "No cartoon videos matched your search.",
+      "studio.cartoon.panel.status.ready": "Ready",
+      "studio.cartoon.panel.status.processing": "Processing",
+      "studio.cartoon.panel.status.failed": "Failed",
+      "studio.cartoon.panel.preparing": "Preparing…",
+      "studio.cartoon.panel.action.play": "Play",
+      "studio.cartoon.panel.action.pause": "Pause",
+      "studio.cartoon.panel.action.download": "Download video",
+      "studio.cartoon.panel.action.share": "Share video",
+      "studio.cartoon.panel.action.fullscreen": "Open fullscreen",
+      "studio.cartoon.panel.action.delete": "Delete video",
+      "studio.cartoon.panel.action.audioOn": "Turn sound on",
+      "studio.cartoon.panel.action.audioOff": "Turn sound off",
+      "studio.cartoon.panel.toast.ready": "Your cartoon video is ready.",
+      "studio.cartoon.panel.download.success": "Cartoon video downloaded.",
+      "studio.cartoon.panel.download.failed": "Cartoon video could not be downloaded.",
+      "studio.cartoon.panel.download.opened": "The video was opened in a new tab.",
+      "studio.cartoon.panel.delete.confirm": "Are you sure you want to delete this cartoon video?",
+      "studio.cartoon.panel.delete.success": "Cartoon video deleted.",
+      "studio.cartoon.panel.delete.failed": "Cartoon video could not be deleted.",
+      "studio.cartoon.panel.share.success": "The share dialog was opened.",
+      "studio.cartoon.panel.share.copied": "Cartoon video link copied.",
+      "studio.cartoon.panel.share.failed": "Cartoon video could not be shared."
+    }
+  };
+
+  function normalizePanelLanguage(value) {
+    return String(value || "").trim().toLowerCase().startsWith("en")
+      ? "en"
+      : "tr";
+  }
+
+  function currentPanelLanguage() {
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.getLanguage === "function"
+      ) {
+        return normalizePanelLanguage(window.AIVO_STUDIO_I18N.getLanguage());
+      }
+    } catch (_) {}
+
+    return normalizePanelLanguage(
+      window.AIVO_LANG || document.documentElement.lang || "tr"
+    );
+  }
+
+  function registerPanelDictionary() {
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.registerPack === "function"
+      ) {
+        window.AIVO_STUDIO_I18N.registerPack(PANEL_DICTIONARY);
+        return;
+      }
+
+      if (window.AIVO_I18N?.tr && window.AIVO_I18N?.en) {
+        Object.assign(window.AIVO_I18N.tr, PANEL_DICTIONARY.tr);
+        Object.assign(window.AIVO_I18N.en, PANEL_DICTIONARY.en);
+      }
+    } catch (error) {
+      console.warn("[CARTOON PANEL] dictionary registration failed", error);
+    }
+  }
+
+  function panelText(key) {
+    const language = currentPanelLanguage();
+
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.t === "function"
+      ) {
+        const translated = window.AIVO_STUDIO_I18N.t(key, "");
+        if (translated && translated !== key) return translated;
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof window.t === "function") {
+        const translated = window.t(key);
+        if (translated && translated !== key) return translated;
+      }
+    } catch (_) {}
+
+    return (
+      PANEL_DICTIONARY[language]?.[key] ||
+      PANEL_DICTIONARY.tr[key] ||
+      key
+    );
+  }
+
+  function showPanelToast(type, message) {
+    try {
+      if (window.toast && typeof window.toast[type] === "function") {
+        window.toast[type](message);
+        return;
+      }
+
+      if (typeof window.toast === "function") {
+        window.toast(message, type);
+        return;
+      }
+
+      if (window.Toast && typeof window.Toast.show === "function") {
+        window.Toast.show(message, type);
+        return;
+      }
+    } catch (error) {
+      console.warn("[CARTOON PANEL] toast failed", error);
+    }
+
+    if (type === "error") console.error("[CARTOON PANEL]", message);
+    else console.log("[CARTOON PANEL]", message);
+  }
+
+  const toastSuccess = (message) => showPanelToast("success", message);
+  const toastError = (message) => showPanelToast("error", message);
+  const toastInfo = (message) => showPanelToast("info", message);
+
+  registerPanelDictionary();
+
   const norm = (s) =>
     String(s || "")
       .trim()
@@ -92,7 +248,10 @@
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
+      return {
+        text: panelText("studio.cartoon.panel.status.failed"),
+        kind: "bad"
+      };
     }
     if (
       st.includes("READY") ||
@@ -100,7 +259,10 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: "Hazır", kind: "ok" };
+      return {
+        text: panelText("studio.cartoon.panel.status.ready"),
+        kind: "ok"
+      };
     }
     if (
       st.includes("RUN") ||
@@ -108,9 +270,16 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: "İşleniyor", kind: "mid" };
+      return {
+        text: panelText("studio.cartoon.panel.status.processing"),
+        kind: "mid"
+      };
     }
-    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
+
+    return {
+      text: panelText("studio.cartoon.panel.status.processing"),
+      kind: "mid"
+    };
   };
 
   function pickOutputUrl(o) {
@@ -254,6 +423,7 @@
 
     const optimistic = new Map();
     const hiddenDeletedIds = new Set();
+    const readyToastIds = new Set();
     const cardCache =
       window.__CARTOON_CARD_CACHE__ ||
       (window.__CARTOON_CARD_CACHE__ = new Map());
@@ -515,6 +685,60 @@
       return "";
     }
 
+    function setControlLabel(element, label) {
+      if (!element) return;
+      if (element.getAttribute("title") !== label) {
+        element.setAttribute("title", label);
+      }
+      if (element.getAttribute("aria-label") !== label) {
+        element.setAttribute("aria-label", label);
+      }
+    }
+
+    function localizeCardControls(root) {
+      if (!root) return;
+
+      root.querySelectorAll('[data-svc-act="download"], [data-act="download"]').forEach((button) => {
+        const label = panelText("studio.cartoon.panel.action.download");
+        setControlLabel(button, label);
+        if (button.classList.contains("cartoonPanelBtn")) button.textContent = label;
+      });
+
+      root.querySelectorAll('[data-svc-act="share"], [data-act="share"]').forEach((button) => {
+        const label = panelText("studio.cartoon.panel.action.share");
+        setControlLabel(button, label);
+        if (button.classList.contains("cartoonPanelBtn")) button.textContent = label;
+      });
+
+      root.querySelectorAll('[data-svc-act="fullscreen"], [data-act="open"]').forEach((button) => {
+        setControlLabel(button, panelText("studio.cartoon.panel.action.fullscreen"));
+      });
+
+      root.querySelectorAll('[data-svc-act="delete"], [data-act="delete"]').forEach((button) => {
+        const label = panelText("studio.cartoon.panel.action.delete");
+        setControlLabel(button, label);
+        if (button.classList.contains("cartoonPanelBtn")) button.textContent = label;
+      });
+
+      root.querySelectorAll('[data-svc-act="play"], [data-act="play"]').forEach((button) => {
+        const card = button.closest(".svcCard, .cartoonPanelCard");
+        const video = card?.querySelector("video.svcVideo, video");
+        const key = video && !video.paused
+          ? "studio.cartoon.panel.action.pause"
+          : "studio.cartoon.panel.action.play";
+        setControlLabel(button, panelText(key));
+      });
+
+      root.querySelectorAll('[data-svc-act="sound"]').forEach((button) => {
+        const card = button.closest(".svcCard, .cartoonPanelCard");
+        const video = card?.querySelector("video.svcVideo, video");
+        const key = video && !video.muted
+          ? "studio.cartoon.panel.action.audioOff"
+          : "studio.cartoon.panel.action.audioOn";
+        setControlLabel(button, panelText(key));
+      });
+    }
+
     function ensureCardEl(job) {
       const id = idOf(job);
       if (!id) return null;
@@ -528,15 +752,15 @@
 
       el.innerHTML = `
         <div class="cartoonPanelThumb">
-          <div class="cartoonPanelPill mid">İşleniyor</div>
-          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">Hazırlanıyor…</div></div>
+          <div class="cartoonPanelPill mid">${esc(panelText("studio.cartoon.panel.status.processing"))}</div>
+          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">${esc(panelText("studio.cartoon.panel.preparing"))}</div></div>
         </div>
         <div class="cartoonPanelFooter">
           <div class="cartoonPanelMetaLine"></div>
           <div class="cartoonPanelActions">
-            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>${esc(panelText("studio.cartoon.panel.action.download"))}</button>
+            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>${esc(panelText("studio.cartoon.panel.action.share"))}</button>
+            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">${esc(panelText("studio.cartoon.panel.action.delete"))}</button>
           </div>
         </div>
       `;
@@ -557,6 +781,7 @@
       }
 
       el.setAttribute("data-job", idOf(job));
+      localizeCardControls(el);
     }
 
     function buildMergedItems() {
@@ -604,7 +829,11 @@
     function render(items) {
       if (!elGrid) return;
 
-      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+      setStatus(
+        hasProcessing(items)
+          ? panelText("studio.cartoon.panel.status.processing")
+          : panelText("studio.cartoon.panel.status.ready")
+      );
 
       const list = Array.isArray(items) ? items : [];
       const EMPTY_ID = "cartoonEmptyState";
@@ -625,8 +854,8 @@
         }
 
         emptyEl.textContent = state.query
-          ? "Aramana uygun çizgifilm üretim bulunamadı."
-          : "Henüz çizgifilm üretim yok.";
+          ? panelText("studio.cartoon.panel.noResults")
+          : panelText("studio.cartoon.panel.empty");
 
         return;
       } else if (emptyEl) {
@@ -670,9 +899,9 @@
       render(buildMergedItems());
     }
 
-       async function download(url, filename = "cartoon.mp4") {
+    async function download(url, filename = "cartoon.mp4") {
       let cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return;
+      if (!cleanUrl) return "failed";
 
       cleanUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
@@ -712,25 +941,39 @@
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
+
+        return "downloaded";
       } catch (err) {
         console.error("[CARTOON PANEL] download failed", err);
-        window.open(cleanUrl, "_blank", "noopener");
+        const opened = window.open(cleanUrl, "_blank", "noopener");
+        return opened ? "opened" : "failed";
       }
     }
 
-    function share(url) {
+    async function share(url) {
       const cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return;
+      if (!cleanUrl) return "failed";
 
       const directUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
         : cleanUrl;
 
-      if (navigator.share) {
-        navigator.share({ url: directUrl }).catch(() => {});
-      } else {
-        navigator.clipboard?.writeText(directUrl).catch(() => {});
+      try {
+        if (navigator.share) {
+          await navigator.share({ url: directUrl });
+          return "shared";
+        }
+
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(directUrl);
+          return "copied";
+        }
+      } catch (error) {
+        if (error?.name === "AbortError") return "cancelled";
+        console.error("[CARTOON PANEL] share failed", error);
       }
+
+      return "failed";
     }
 
     host.addEventListener("click", async (e) => {
@@ -783,22 +1026,60 @@
       if (act === "download") {
         e.preventDefault();
         e.stopPropagation();
-        if (!finalUrl) return;
-        download(finalUrl, `cartoon-${id}.mp4`);
+        if (!finalUrl) {
+          toastError(panelText("studio.cartoon.panel.download.failed"));
+          return;
+        }
+
+        btn.disabled = true;
+
+        try {
+          const result = await download(finalUrl, `cartoon-${id}.mp4`);
+
+          if (result === "downloaded") {
+            toastSuccess(panelText("studio.cartoon.panel.download.success"));
+          } else if (result === "opened") {
+            toastInfo(panelText("studio.cartoon.panel.download.opened"));
+          } else {
+            toastError(panelText("studio.cartoon.panel.download.failed"));
+          }
+        } finally {
+          btn.disabled = false;
+        }
+
         return;
       }
 
       if (act === "share") {
         e.preventDefault();
         e.stopPropagation();
-        if (!sharePlaybackUrl) return;
-        share(sharePlaybackUrl);
+        if (!sharePlaybackUrl) {
+          toastError(panelText("studio.cartoon.panel.share.failed"));
+          return;
+        }
+
+        const result = await share(sharePlaybackUrl);
+
+        if (result === "shared") {
+          toastSuccess(panelText("studio.cartoon.panel.share.success"));
+        } else if (result === "copied") {
+          toastSuccess(panelText("studio.cartoon.panel.share.copied"));
+        } else if (result !== "cancelled") {
+          toastError(panelText("studio.cartoon.panel.share.failed"));
+        }
+
         return;
       }
 
       if (act === "delete") {
         e.preventDefault();
         e.stopPropagation();
+
+        const confirmed = window.confirm(
+          panelText("studio.cartoon.panel.delete.confirm")
+        );
+
+        if (!confirmed) return;
 
         try {
           hiddenDeletedIds.add(id);
@@ -814,18 +1095,22 @@
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[CARTOON PANEL] delete failed");
+            toastError(panelText("studio.cartoon.panel.delete.failed"));
             return;
           }
 
           try {
             await controller?.hydrate?.(true);
           } catch {}
+
+          toastSuccess(panelText("studio.cartoon.panel.delete.success"));
         } catch (err) {
           hiddenDeletedIds.delete(id);
           try {
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
+          toastError(panelText("studio.cartoon.panel.delete.failed"));
         }
 
         return;
@@ -949,6 +1234,12 @@
         }
 
         renderCurrent();
+
+        if (!readyToastIds.has(job_id)) {
+          readyToastIds.add(job_id);
+          toastSuccess(panelText("studio.cartoon.panel.toast.ready"));
+        }
+
         return;
       }
 
@@ -990,6 +1281,12 @@
         });
 
         renderCurrent();
+
+        if (!readyToastIds.has(job_id)) {
+          readyToastIds.add(job_id);
+          toastSuccess(panelText("studio.cartoon.panel.toast.ready"));
+        }
+
         return;
       }
 
@@ -1003,6 +1300,11 @@
       });
 
       renderCurrent();
+
+      if (!readyToastIds.has(job_id)) {
+        readyToastIds.add(job_id);
+        toastSuccess(panelText("studio.cartoon.panel.toast.ready"));
+      }
     };
 
     const onJobFailed = (e) => {
@@ -1029,7 +1331,53 @@
       }, 1500);
     };
 
+    let localizeScheduled = false;
+
+    const scheduleControlLocalization = () => {
+      if (localizeScheduled || destroyed) return;
+      localizeScheduled = true;
+
+      queueMicrotask(() => {
+        localizeScheduled = false;
+        if (destroyed) return;
+        localizeCardControls(host);
+      });
+    };
+
+    const controlObserver = new MutationObserver(scheduleControlLocalization);
+    controlObserver.observe(host, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["title", "aria-label", "aria-pressed"]
+    });
+
+    const refreshPanelLanguage = () => {
+      registerPanelDictionary();
+      renderCurrent();
+      localizeCardControls(host);
+
+      const panelRoot = document.getElementById("rightPanelHost");
+      const titleElement = panelRoot?.querySelector(".rpTitle");
+      const metaElement = panelRoot?.querySelector(".rpMeta");
+      const searchElement = panelRoot?.querySelector(".rpSearch");
+
+      if (titleElement) {
+        titleElement.textContent = panelText("studio.cartoon.panel.headerTitle");
+      }
+
+      if (metaElement) {
+        metaElement.textContent = panelText("studio.cartoon.panel.status.ready");
+      }
+
+      if (searchElement) {
+        searchElement.placeholder = panelText("studio.cartoon.panel.searchPlaceholder");
+      }
+    };
+
     controller.start();
+    document.addEventListener("aivo:language-change", refreshPanelLanguage);
+    document.addEventListener("aivo:studio:i18n-applied", refreshPanelLanguage);
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
     window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
@@ -1050,6 +1398,15 @@
         } catch {}
         try {
           document.removeEventListener("search", onSearchInput, true);
+        } catch {}
+        try {
+          document.removeEventListener("aivo:language-change", refreshPanelLanguage);
+        } catch {}
+        try {
+          document.removeEventListener("aivo:studio:i18n-applied", refreshPanelLanguage);
+        } catch {}
+        try {
+          controlObserver.disconnect();
         } catch {}
         try {
           window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
@@ -1079,16 +1436,31 @@
     };
   }
 
+  function translatedPanelHeader() {
+    return {
+      title: panelText("studio.cartoon.panel.headerTitle"),
+      meta: panelText("studio.cartoon.panel.status.ready"),
+      searchEnabled: true,
+      searchPlaceholder: panelText("studio.cartoon.panel.searchPlaceholder"),
+      resetSearch: true
+    };
+  }
+
   try {
     console.log("[PANEL.CARTOON] register run");
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("cartoon", {
-        header: {
-          title: "AI Çocuk Çizgifilm",
-          meta: "Hazır",
-          searchEnabled: true,
-          searchPlaceholder: "Çizgifilmlerde ara...",
-          resetSearch: true,
+        header: translatedPanelHeader(),
+
+        getHeader() {
+          return translatedPanelHeader();
+        },
+
+        onShow(payload, context) {
+          registerPanelDictionary();
+          if (context?.setHeader) {
+            context.setHeader(translatedPanelHeader());
+          }
         },
 
         mount(host) {
