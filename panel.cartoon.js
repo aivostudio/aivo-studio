@@ -271,202 +271,6 @@
       if (elStatus) elStatus.textContent = t;
     };
 
-    const panelLanguage = () => {
-      try {
-        const language = window.AIVO_STUDIO_I18N?.getLanguage?.();
-        if (language) {
-          return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
-        }
-      } catch {}
-
-      return String(
-        window.AIVO_LANG ||
-        document.documentElement.lang ||
-        "tr"
-      ).toLowerCase().startsWith("en") ? "en" : "tr";
-    };
-
-    const localText = (trText, enText) =>
-      panelLanguage() === "en" ? enText : trText;
-
-    let localToastTimer = null;
-    let localToastElement = null;
-
-    const hideLocalToast = () => {
-      if (localToastTimer) {
-        clearTimeout(localToastTimer);
-        localToastTimer = null;
-      }
-
-      if (!localToastElement) return;
-
-      localToastElement.style.opacity = "0";
-      localToastElement.style.pointerEvents = "none";
-
-      if (localToastElement.__close) {
-        localToastElement.__close.style.pointerEvents = "none";
-      }
-    };
-
-    const ensureLocalToast = () => {
-      if (localToastElement) return localToastElement;
-
-      const toast = document.createElement("div");
-      toast.id = "cartoonPanelLocalToast";
-      toast.setAttribute("role", "status");
-      toast.setAttribute("aria-live", "polite");
-      toast.style.position = "fixed";
-      toast.style.left = "0";
-      toast.style.right = "0";
-      toast.style.bottom = "22px";
-      toast.style.zIndex = "2147483000";
-      toast.style.width = "min(420px, calc(100vw - 128px))";
-      toast.style.minHeight = "52px";
-      toast.style.margin = "0 auto";
-      toast.style.padding = "6px 14px";
-      toast.style.boxSizing = "border-box";
-      toast.style.display = "grid";
-      toast.style.gridTemplateColumns = "32px minmax(0, 1fr) 32px";
-      toast.style.alignItems = "center";
-      toast.style.columnGap = "10px";
-      toast.style.borderRadius = "14px";
-      toast.style.border = "1px solid rgba(255,255,255,.22)";
-      toast.style.background = "rgba(20,20,30,.90)";
-      toast.style.boxShadow = "0 10px 30px rgba(0,0,0,.35)";
-      toast.style.color = "rgba(255,255,255,.94)";
-      toast.style.opacity = "0";
-      toast.style.transition = "opacity .18s ease";
-      toast.style.pointerEvents = "none";
-      toast.style.backdropFilter = "none";
-      toast.style.webkitBackdropFilter = "none";
-      toast.style.filter = "none";
-      toast.style.mixBlendMode = "normal";
-      toast.style.isolation = "isolate";
-      toast.style.contain = "layout paint style";
-      toast.style.willChange = "opacity";
-      toast.style.backfaceVisibility = "hidden";
-
-      const icon = document.createElement("div");
-      icon.style.width = "24px";
-      icon.style.height = "24px";
-      icon.style.display = "grid";
-      icon.style.placeItems = "center";
-      icon.style.justifySelf = "center";
-      icon.style.borderRadius = "999px";
-      icon.style.background = "rgba(255,255,255,.12)";
-      icon.style.border = "1px solid rgba(255,255,255,.18)";
-      icon.style.color = "#fff";
-      icon.style.fontSize = "13px";
-      icon.style.lineHeight = "1";
-
-      const body = document.createElement("div");
-      body.style.minWidth = "0";
-      body.style.display = "flex";
-      body.style.flexDirection = "column";
-      body.style.alignItems = "center";
-      body.style.justifyContent = "center";
-      body.style.textAlign = "center";
-      body.style.pointerEvents = "none";
-
-      const title = document.createElement("p");
-      title.style.width = "100%";
-      title.style.margin = "0 0 3px 0";
-      title.style.fontSize = "17px";
-      title.style.fontWeight = "800";
-      title.style.lineHeight = "1.08";
-      title.style.letterSpacing = ".012em";
-      title.style.color = "rgba(255,255,255,.90)";
-
-      const message = document.createElement("p");
-      message.style.width = "100%";
-      message.style.margin = "0";
-      message.style.fontSize = "14px";
-      message.style.fontWeight = "600";
-      message.style.lineHeight = "1.2";
-      message.style.letterSpacing = ".006em";
-      message.style.color = "rgba(255,255,255,.72)";
-      message.style.whiteSpace = "nowrap";
-      message.style.overflow = "hidden";
-      message.style.textOverflow = "ellipsis";
-
-      const close = document.createElement("button");
-      close.type = "button";
-      close.textContent = "✕";
-      close.setAttribute("aria-label", localText("Bildirimi kapat", "Close notification"));
-      close.style.width = "24px";
-      close.style.height = "24px";
-      close.style.display = "grid";
-      close.style.placeItems = "center";
-      close.style.justifySelf = "center";
-      close.style.padding = "0";
-      close.style.background = "transparent";
-      close.style.border = "1px solid rgba(255,255,255,.18)";
-      close.style.borderRadius = "12px";
-      close.style.color = "rgba(255,255,255,.7)";
-      close.style.fontSize = "14px";
-      close.style.cursor = "pointer";
-      close.style.pointerEvents = "none";
-      close.addEventListener("click", hideLocalToast);
-
-      body.appendChild(title);
-      body.appendChild(message);
-      toast.appendChild(icon);
-      toast.appendChild(body);
-      toast.appendChild(close);
-
-      toast.__icon = icon;
-      toast.__title = title;
-      toast.__message = message;
-      toast.__close = close;
-
-      document.body.appendChild(toast);
-      localToastElement = toast;
-
-      return toast;
-    };
-
-    const showLocalToast = (type, trText, enText) => {
-      const toast = ensureLocalToast();
-
-      const titles = {
-        success: localText("Başarılı", "Success"),
-        error: localText("Hata", "Error"),
-        info: localText("Bilgi", "Info"),
-        warning: localText("Uyarı", "Warning")
-      };
-
-      const icons = {
-        success: "✓",
-        error: "!",
-        info: "i",
-        warning: "⚠"
-      };
-
-      toast.__icon.textContent = icons[type] || "i";
-      toast.__title.textContent = titles[type] || titles.info;
-      toast.__message.textContent = localText(trText, enText);
-      toast.__close.setAttribute(
-        "aria-label",
-        localText("Bildirimi kapat", "Close notification")
-      );
-
-      if (localToastTimer) {
-        clearTimeout(localToastTimer);
-      }
-
-      toast.style.pointerEvents = "none";
-      toast.__close.style.pointerEvents = "auto";
-      toast.style.opacity = "1";
-
-      localToastTimer = setTimeout(() => {
-        hideLocalToast();
-      }, 3200);
-    };
-
-    // Toast katmanı panel açılırken bir kez hazırlanır. Böylece indirme/silme
-    // anında yeni bir fixed katman oluşturulmaz ve ana ekran yeniden boyanmaz.
-    ensureLocalToast();
-
     const resolvePanelSearchInput = () => {
       const candidates = [
         ...document.querySelectorAll('input.rpSearch'),
@@ -868,7 +672,7 @@
 
        async function download(url, filename = "cartoon.mp4") {
       let cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return "failed";
+      if (!cleanUrl) return;
 
       cleanUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
@@ -908,12 +712,9 @@
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
-
-        return "downloaded";
       } catch (err) {
         console.error("[CARTOON PANEL] download failed", err);
-        const opened = window.open(cleanUrl, "_blank", "noopener");
-        return opened ? "opened" : "failed";
+        window.open(cleanUrl, "_blank", "noopener");
       }
     }
 
@@ -983,29 +784,7 @@
         e.preventDefault();
         e.stopPropagation();
         if (!finalUrl) return;
-
-        const result = await download(finalUrl, `cartoon-${id}.mp4`);
-
-        if (result === "downloaded") {
-          showLocalToast(
-            "success",
-            "Çizgifilm videosu indirildi.",
-            "Cartoon video downloaded."
-          );
-        } else if (result === "opened") {
-          showLocalToast(
-            "info",
-            "Video yeni sekmede açıldı.",
-            "The video was opened in a new tab."
-          );
-        } else {
-          showLocalToast(
-            "error",
-            "Çizgifilm videosu indirilemedi.",
-            "Cartoon video could not be downloaded."
-          );
-        }
-
+        download(finalUrl, `cartoon-${id}.mp4`);
         return;
       }
 
@@ -1035,34 +814,18 @@
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[CARTOON PANEL] delete failed");
-            showLocalToast(
-              "error",
-              "Çizgifilm videosu silinemedi.",
-              "Cartoon video could not be deleted."
-            );
             return;
           }
 
           try {
             await controller?.hydrate?.(true);
           } catch {}
-
-          showLocalToast(
-            "success",
-            "Çizgifilm videosu silindi.",
-            "Cartoon video deleted."
-          );
         } catch (err) {
           hiddenDeletedIds.delete(id);
           try {
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
-          showLocalToast(
-            "error",
-            "Çizgifilm videosu silinemedi.",
-            "Cartoon video could not be deleted."
-          );
         }
 
         return;
@@ -1308,12 +1071,6 @@
         } catch {}
         try {
           controller?.destroy?.();
-        } catch {}
-        try {
-          if (localToastTimer) clearTimeout(localToastTimer);
-          localToastTimer = null;
-          localToastElement?.remove?.();
-          localToastElement = null;
         } catch {}
         try {
           host.innerHTML = "";
