@@ -1,24 +1,129 @@
 (() => {
+  function getCartoonStudioLanguage() {
+    try {
+      const language =
+        window.AIVO_STUDIO_I18N?.getLanguage?.() ||
+        window.AIVO_LANG ||
+        document.documentElement.lang ||
+        'tr';
+
+      return String(language).toLowerCase().startsWith('en') ? 'en' : 'tr';
+    } catch (_) {
+      return 'tr';
+    }
+  }
+
+  function cartoonStudioText(key, trText, enText, parameters = {}) {
+    let translated = '';
+
+    try {
+      if (key) {
+        translated = window.AIVO_STUDIO_I18N?.t?.(key, trText, parameters) || '';
+      }
+    } catch (_) {}
+
+    if (!translated || translated === key) {
+      translated = getCartoonStudioLanguage() === 'en' ? enText : trText;
+    }
+
+    return String(translated).replace(/\{([^}]+)\}/g, (match, name) => {
+      return Object.prototype.hasOwnProperty.call(parameters, name)
+        ? String(parameters[name])
+        : match;
+    });
+  }
+
+  function setCartoonStudioDynamicText(element, value) {
+    if (!element) return;
+
+    element.removeAttribute('data-i18n');
+    element.removeAttribute('data-i18n-html');
+    element.textContent = String(value == null ? '' : value);
+  }
+
+  function cartoonStudioErrorText(error, kind = 'general') {
+    const raw = String(error?.message || error || '').trim();
+    const normalized = raw.toLowerCase();
+
+    if (normalized.includes('media_policy')) {
+      return cartoonStudioText(
+        'studio.cartoon.error.mediaPolicyBlocked',
+        'Bu dosya kullanılamaz.',
+        'This file cannot be used.'
+      );
+    }
+
+    if (normalized.includes('insufficient_credit')) {
+      return cartoonStudioText(
+        'studio.cartoon.error.insufficientCredit',
+        'Yetersiz kredi.',
+        'Insufficient credits.'
+      );
+    }
+
+    if (kind === 'video') {
+      return cartoonStudioText(
+        'studio.cartoon.error.uploadFailed',
+        'Video yüklenemedi. Lütfen tekrar deneyin.',
+        'The video could not be uploaded. Please try again.'
+      );
+    }
+
+    if (kind === 'voice') {
+      return cartoonStudioText(
+        'studio.cartoon.error.uploadFailed',
+        'Ses dosyası yüklenemedi. Lütfen tekrar deneyin.',
+        'The audio file could not be uploaded. Please try again.'
+      );
+    }
+
+    if (kind === 'logo') {
+      return cartoonStudioText(
+        'studio.cartoon.error.uploadFailed',
+        'Logo yüklenemedi. Lütfen tekrar deneyin.',
+        'The logo could not be uploaded. Please try again.'
+      );
+    }
+
+    if (kind === 'export' || normalized.includes('studio_export')) {
+      return cartoonStudioText(
+        'studio.cartoon.toast.studioFailed',
+        'Montaj videosu oluşturulamadı.',
+        'The montage video could not be created.'
+      );
+    }
+
+    return raw || cartoonStudioText(
+      'studio.cartoon.error.requestFailed',
+      'İşlem başlatılamadı. Lütfen tekrar deneyin.',
+      'The operation could not be started. Please try again.'
+    );
+  }
+
   function formatSceneDuration(seconds) {
     const value = Number(seconds) || 0;
-    return `${value} sn`;
+    return cartoonStudioText('', `${value} sn`, `${value} sec`);
   }
 
   function formatSummaryDuration(totalSeconds) {
     const value = Number(totalSeconds) || 0;
 
     if (value < 60) {
-      return `${value} sn`;
+      return cartoonStudioText('', `${value} sn`, `${value} sec`);
     }
 
     const minutes = Math.floor(value / 60);
     const seconds = value % 60;
 
     if (!seconds) {
-      return `${minutes} dk`;
+      return cartoonStudioText('', `${minutes} dk`, `${minutes} min`);
     }
 
-    return `${minutes} dk ${seconds} sn`;
+    return cartoonStudioText(
+      '',
+      `${minutes} dk ${seconds} sn`,
+      `${minutes} min ${seconds} sec`
+    );
   }
 
   function getCartoonAssistantState() {
@@ -368,8 +473,8 @@
              ">
           <button type="button"
                   data-studio-preview-close
-                  aria-label="Önizlemeyi kapat"
-                  title="Kapat"
+                  aria-label="${cartoonStudioText('studio.cartoon.studio.previewClose', 'Önizlemeyi kapat', 'Close preview')}"
+                  title="${cartoonStudioText('', 'Kapat', 'Close')}"
                   style="
                     position:absolute;
                     top:14px;
@@ -457,7 +562,17 @@
       if (!videoEl) return;
 
       if (titleEl) {
-        titleEl.textContent = String(title || 'Video Önizleme');
+        setCartoonStudioDynamicText(
+          titleEl,
+          String(
+            title ||
+            cartoonStudioText(
+              'studio.cartoon.studio.previewTitle',
+              'Video Önizleme',
+              'Video Preview'
+            )
+          )
+        );
       }
 
       modal.hidden = false;
@@ -473,7 +588,18 @@
 
   function openStudioPreview(studioRoot, scene) {
     if (!scene?.videoUrl) {
-      alert(`Bu sahne için henüz video yok: ${scene?.title || 'Sahne'}`);
+      alert(
+        cartoonStudioText(
+          '',
+          'Bu sahne için henüz video yok: {title}',
+          'There is no video for this scene yet: {title}',
+          {
+            title:
+              scene?.title ||
+              cartoonStudioText('', 'Sahne', 'Scene')
+          }
+        )
+      );
       return;
     }
 
@@ -482,13 +608,26 @@
 
     modal.__openStudioPreview({
       url: scene.videoUrl,
-      title: scene.title || 'Video Önizleme'
+      title:
+        scene.title ||
+        cartoonStudioText(
+          'studio.cartoon.studio.previewTitle',
+          'Video Önizleme',
+          'Video Preview'
+        )
     });
 
     const rootState = window.__CARTOON_STUDIO__ || null;
     if (rootState) {
       rootState.previewUrl = String(scene.videoUrl || '').trim();
-      rootState.previewTitle = String(scene.title || 'Video Önizleme');
+      rootState.previewTitle = String(
+        scene.title ||
+        cartoonStudioText(
+          'studio.cartoon.studio.previewTitle',
+          'Video Önizleme',
+          'Video Preview'
+        )
+      );
       syncCartoonStudioAssistantState(rootState, studioRoot, {
         studio: {
           previewReady: !!rootState.previewUrl
@@ -1002,7 +1141,15 @@ function clearStudioVoiceFile(rootState, studioRoot) {
   saveStudioState(rootState);
 
   if (hadFile) {
-    try { window.toast?.success?.('Ses kaldırıldı · -10 kredi'); } catch {}
+    try {
+      window.toast?.success?.(
+        cartoonStudioText(
+          '',
+          'Ses kaldırıldı · -10 kredi',
+          'Audio removed · -10 credits'
+        )
+      );
+    } catch {}
   }
 
   syncCartoonStudioAssistantState(rootState, studioRoot, {
@@ -1041,7 +1188,15 @@ function clearStudioLogoFile(rootState, studioRoot) {
   saveStudioState(rootState);
 
   if (hadFile) {
-    try { window.toast?.success?.('Logo kaldırıldı · -10 kredi'); } catch {}
+    try {
+      window.toast?.success?.(
+        cartoonStudioText(
+          '',
+          'Logo kaldırıldı · -10 kredi',
+          'Logo removed · -10 credits'
+        )
+      );
+    } catch {}
   }
 
   syncCartoonStudioAssistantState(rootState, studioRoot, {
@@ -1072,8 +1227,11 @@ function clearStudioLogoFile(rootState, studioRoot) {
       clearBtn = document.createElement('button');
       clearBtn.type = 'button';
       clearBtn.setAttribute('data-studio-logo-upload-clear', '');
-      clearBtn.setAttribute('aria-label', 'Yüklenen logoyu kaldır');
-      clearBtn.title = 'Logoyu kaldır';
+      clearBtn.setAttribute(
+        'aria-label',
+        cartoonStudioText('', 'Yüklenen logoyu kaldır', 'Remove uploaded logo')
+      );
+      clearBtn.title = cartoonStudioText('', 'Logoyu kaldır', 'Remove logo');
       clearBtn.textContent = '×';
       clearBtn.style.marginLeft = '8px';
       clearBtn.style.width = '22px';
@@ -1130,19 +1288,40 @@ function clearStudioLogoFile(rootState, studioRoot) {
     const fileName = String(rootState?.logoFileName || '').trim();
 
     if (!fileName) {
-      textEl.textContent = 'Dosya seçilmedi';
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          'studio.cartoon.common.noFile',
+          'Dosya seçilmedi',
+          'No file selected'
+        )
+      );
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
 
     if (status === 'uploading') {
-      textEl.textContent = `${fileName} · Yükleniyor...`;
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          '',
+          `${fileName} · Yükleniyor...`,
+          `${fileName} · Uploading...`
+        )
+      );
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
 
     if (status === 'ready') {
-      textEl.textContent = `${fileName} · Hazır ✓`;
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          '',
+          `${fileName} · Hazır ✓`,
+          `${fileName} · Ready ✓`
+        )
+      );
       if (clearBtn) {
         clearBtn.style.display = 'inline-grid';
         clearBtn.style.placeItems = 'center';
@@ -1151,7 +1330,14 @@ function clearStudioLogoFile(rootState, studioRoot) {
     }
 
     if (status === 'error') {
-      textEl.textContent = `${fileName} · Yükleme hatası`;
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          '',
+          `${fileName} · Yükleme hatası`,
+          `${fileName} · Upload failed`
+        )
+      );
       if (clearBtn) {
         clearBtn.style.display = 'inline-grid';
         clearBtn.style.placeItems = 'center';
@@ -1159,7 +1345,7 @@ function clearStudioLogoFile(rootState, studioRoot) {
       return;
     }
 
-    textEl.textContent = fileName;
+    setCartoonStudioDynamicText(textEl, fileName);
     if (clearBtn) clearBtn.style.display = 'none';
   }
 function bindStudioLogoUpload(rootState, studioRoot) {
@@ -1208,7 +1394,15 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         updateStudioSummary(rootState, studioRoot);
         saveStudioState(rootState);
 
-        try { window.toast?.success?.('Logo eklendi · +10 kredi'); } catch {}
+        try {
+          window.toast?.success?.(
+            cartoonStudioText(
+              '',
+              'Logo eklendi · +10 kredi',
+              'Logo added · +10 credits'
+            )
+          );
+        } catch {}
         console.log('[CARTOON][STUDIO_LOGO_UPLOAD_OK]', rootState.logoFileUrl);
         syncCartoonStudioAssistantState(rootState, studioRoot, {
           visibleError: '',
@@ -1234,7 +1428,7 @@ function bindStudioLogoUpload(rootState, studioRoot) {
             logoUploadState: 'error'
           }
         });
-        alert(rootState.logoFileUploadError);
+        alert(cartoonStudioErrorText(err, 'logo'));
         throw err;
       });
   });
@@ -1260,8 +1454,11 @@ function bindStudioLogoUpload(rootState, studioRoot) {
       clearBtn = document.createElement('button');
       clearBtn.type = 'button';
       clearBtn.setAttribute('data-studio-voice-upload-clear', '');
-      clearBtn.setAttribute('aria-label', 'Yüklenen sesi kaldır');
-      clearBtn.title = 'Sesi kaldır';
+      clearBtn.setAttribute(
+        'aria-label',
+        cartoonStudioText('', 'Yüklenen sesi kaldır', 'Remove uploaded audio')
+      );
+      clearBtn.title = cartoonStudioText('', 'Sesi kaldır', 'Remove audio');
       clearBtn.textContent = '×';
       clearBtn.style.marginLeft = '8px';
       clearBtn.style.width = '22px';
@@ -1318,19 +1515,40 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     const fileName = String(rootState?.voiceFileName || '').trim();
 
     if (!fileName) {
-      textEl.textContent = 'Dosya seçilmedi';
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          'studio.cartoon.common.noFile',
+          'Dosya seçilmedi',
+          'No file selected'
+        )
+      );
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
 
     if (status === 'uploading') {
-      textEl.textContent = `${fileName} · Yükleniyor...`;
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          '',
+          `${fileName} · Yükleniyor...`,
+          `${fileName} · Uploading...`
+        )
+      );
       if (clearBtn) clearBtn.style.display = 'none';
       return;
     }
 
     if (status === 'ready') {
-      textEl.textContent = `${fileName} · Hazır ✓`;
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          '',
+          `${fileName} · Hazır ✓`,
+          `${fileName} · Ready ✓`
+        )
+      );
       if (clearBtn) {
         clearBtn.style.display = 'inline-grid';
         clearBtn.style.placeItems = 'center';
@@ -1339,7 +1557,14 @@ function bindStudioLogoUpload(rootState, studioRoot) {
     }
 
     if (status === 'error') {
-      textEl.textContent = `${fileName} · Yükleme hatası`;
+      setCartoonStudioDynamicText(
+        textEl,
+        cartoonStudioText(
+          '',
+          `${fileName} · Yükleme hatası`,
+          `${fileName} · Upload failed`
+        )
+      );
       if (clearBtn) {
         clearBtn.style.display = 'inline-grid';
         clearBtn.style.placeItems = 'center';
@@ -1347,7 +1572,7 @@ function bindStudioLogoUpload(rootState, studioRoot) {
       return;
     }
 
-    textEl.textContent = fileName;
+    setCartoonStudioDynamicText(textEl, fileName);
     if (clearBtn) clearBtn.style.display = 'none';
   }
 
@@ -1393,7 +1618,15 @@ function bindStudioLogoUpload(rootState, studioRoot) {
         updateStudioVoiceUploadStatusUI(rootState, studioRoot);
         updateStudioSummary(rootState, studioRoot);
         saveStudioState(rootState);
-        try { window.toast?.success?.('Ses eklendi · +10 kredi'); } catch {}
+        try {
+          window.toast?.success?.(
+            cartoonStudioText(
+              '',
+              'Ses eklendi · +10 kredi',
+              'Audio added · +10 credits'
+            )
+          );
+        } catch {}
         console.log('[CARTOON][STUDIO_VOICE_UPLOAD_OK]', rootState.voiceFileUrl);
         syncCartoonStudioAssistantState(rootState, studioRoot, {
           visibleError: '',
@@ -1417,7 +1650,7 @@ function bindStudioLogoUpload(rootState, studioRoot) {
             voiceUploadState: 'error'
           }
         });
-        alert(rootState.voiceFileUploadError);
+        alert(cartoonStudioErrorText(err, 'voice'));
         throw err;
       });
   });
@@ -1465,9 +1698,22 @@ saveStudioState(rootState);
     });
 renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
 if (nextScenes.length === 1) {
-  try { window.toast?.success?.("1 video eklendi"); } catch {}
+  try {
+    window.toast?.success?.(
+      cartoonStudioText('', '1 video eklendi', '1 video added')
+    );
+  } catch {}
 } else if (nextScenes.length > 1) {
-  try { window.toast?.success?.(`${nextScenes.length} video eklendi`); } catch {}
+  try {
+    window.toast?.success?.(
+      cartoonStudioText(
+        'studio.cartoon.toast.videosAdded',
+        '{count} video eklendi.',
+        '{count} videos added.',
+        { count: nextScenes.length }
+      )
+    );
+  } catch {}
 }
 }
 function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) {
@@ -1483,9 +1729,20 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
     const files = Array.from(input.files || []);
 
     if (text) {
-      text.textContent = files.length > 1
-        ? `${files.length} video hazırlanıyor...`
-        : 'Video hazırlanıyor...';
+      setCartoonStudioDynamicText(
+        text,
+        files.length > 1
+          ? cartoonStudioText(
+              '',
+              `${files.length} video hazırlanıyor...`,
+              `${files.length} videos are being prepared...`
+            )
+          : cartoonStudioText(
+              '',
+              'Video hazırlanıyor...',
+              'Video is being prepared...'
+            )
+      );
     }
 
     try {
@@ -1498,18 +1755,32 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
       );
 
       if (text) {
-        text.textContent = files.length > 1
-          ? `${files.length} video hazır ✓`
-          : 'Video hazır ✓';
+        setCartoonStudioDynamicText(
+          text,
+          files.length > 1
+            ? cartoonStudioText(
+                '',
+                `${files.length} video hazır ✓`,
+                `${files.length} videos ready ✓`
+              )
+            : cartoonStudioText('', 'Video hazır ✓', 'Video ready ✓')
+        );
       }
     } catch (err) {
       console.error('[CARTOON][STUDIO_UPLOAD_ERROR]', err);
 
       if (text) {
-        text.textContent = 'Video yükleme hatası';
+        setCartoonStudioDynamicText(
+          text,
+          cartoonStudioText(
+            'studio.cartoon.error.uploadFailed',
+            'Video yükleme hatası',
+            'Video upload failed'
+          )
+        );
       }
 
-      alert(String(err?.message || err || 'studio_video_upload_failed'));
+      alert(cartoonStudioErrorText(err, 'video'));
     } finally {
       input.value = '';
     }
@@ -1612,9 +1883,33 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
       const items = summary.querySelectorAll('span');
 
       if (items.length >= 3) {
-        items[0].textContent = `Seçilen Sahne: ${selectedCount}`;
-        items[1].textContent = `Toplam Süre: ${formatSummaryDuration(totalDuration)}`;
-        items[2].textContent = `Format: ${rootState.format}`;
+        setCartoonStudioDynamicText(
+          items[0],
+          cartoonStudioText(
+            'studio.cartoon.studio.selectedScenes',
+            'Seçilen Sahne: {count}',
+            'Selected Scenes: {count}',
+            { count: selectedCount }
+          )
+        );
+        setCartoonStudioDynamicText(
+          items[1],
+          cartoonStudioText(
+            'studio.cartoon.studio.totalDuration',
+            'Toplam Süre: {duration}',
+            'Total Duration: {duration}',
+            { duration: formatSummaryDuration(totalDuration) }
+          )
+        );
+        setCartoonStudioDynamicText(
+          items[2],
+          cartoonStudioText(
+            'studio.cartoon.studio.format',
+            'Format: {format}',
+            'Format: {format}',
+            { format: rootState.format }
+          )
+        );
       }
     }
 
@@ -1642,7 +1937,15 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
     exportBtn.setAttribute('data-credit-cost', String(creditCost));
 
     if (!exportBtn.classList.contains('is-loading')) {
-      exportBtn.textContent = `Paylaşmaya Hazır Çıktı Al (${creditCost} Kredi)`;
+      setCartoonStudioDynamicText(
+        exportBtn,
+        cartoonStudioText(
+          'studio.cartoon.studio.exportWithCredit',
+          '🎬 Çıktıyı Al ({count} Kredi)',
+          '🎬 Create Final Output ({count} Credits)',
+          { count: creditCost }
+        )
+      );
     }
   }
 
@@ -1967,7 +2270,10 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
 
         if (resolvedFinalVideoUrl && logoUrl && !window.__CARTOON_STUDIO_LOGO_DONE__) {
           button.disabled = true;
-          button.textContent = 'Logo işleniyor...';
+          setCartoonStudioDynamicText(
+            button,
+            cartoonStudioText('', 'Logo işleniyor...', 'Processing logo...')
+          );
           button.classList.add('is-loading');
 
           const logoPosRaw = String(
@@ -2024,7 +2330,11 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         const studioStateReady = window.__CARTOON_STUDIO__ || null;
         if (studioStateReady) {
           studioStateReady.previewUrl = String(resolvedFinalVideoUrl || '').trim();
-          studioStateReady.previewTitle = 'Paylaşmaya Hazır Çıktı';
+          studioStateReady.previewTitle = cartoonStudioText(
+            '',
+            'Paylaşmaya Hazır Çıktı',
+            'Share-Ready Output'
+          );
           syncCartoonStudioAssistantState(studioStateReady, document.querySelector('.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'), {
             generationState: 'ready',
             creditsConsumed: true,
@@ -2064,7 +2374,15 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         button.textContent = originalText;
         button.classList.remove('is-loading');
 
-        try { window.toast?.success?.('Video hazır'); } catch {}
+        try {
+          window.toast?.success?.(
+            cartoonStudioText(
+              'studio.cartoon.toast.studioReady',
+              'Montaj videonuz hazır.',
+              'Your montage video is ready.'
+            )
+          );
+        } catch {}
         return;
       }
 
@@ -2164,16 +2482,48 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
                   lastOutputUrl: '',
                   visibleError: String(j?.error || j?.error_reason || j?.reason || 'studio_export_failed')
                 });
-                try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
+                try {
+                  window.toast?.error?.(
+                    cartoonStudioText(
+                      'studio.cartoon.toast.creditRefunded',
+                      'İşlem başarısız oldu, kredi iade edildi.',
+                      'The operation failed and the credits were refunded.'
+                    )
+                  );
+                } catch {}
               } else {
-                try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
+                try {
+                  window.toast?.error?.(
+                    cartoonStudioText(
+                      'studio.cartoon.toast.studioFailed',
+                      'Montaj çıktısı oluşturma hatası',
+                      'The montage output could not be created'
+                    )
+                  );
+                } catch {}
               }
             } else {
-              try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
+              try {
+                window.toast?.error?.(
+                  cartoonStudioText(
+                    'studio.cartoon.toast.studioFailed',
+                    'Montaj çıktısı oluşturma hatası',
+                    'The montage output could not be created'
+                  )
+                );
+              } catch {}
             }
           } catch (refundErr) {
             console.error('[CARTOON][STUDIO] poll refund failed =', refundErr);
-            try { window.toast?.error?.('Montaj çıktısı oluşturma hatası'); } catch {}
+            try {
+              window.toast?.error?.(
+                cartoonStudioText(
+                  'studio.cartoon.toast.studioFailed',
+                  'Montaj çıktısı oluşturma hatası',
+                  'The montage output could not be created'
+                )
+              );
+            } catch {}
           }
         }
 
@@ -2225,9 +2575,7 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
       button.classList.remove('is-loading');
 
       try {
-        window.toast?.error?.(
-          String(err?.message || err || 'studio_export_poll_failed')
-        );
+        window.toast?.error?.(cartoonStudioErrorText(err, 'export'));
       } catch {}
     }
   }
@@ -2251,7 +2599,15 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
     button.setAttribute('data-credit-cost', String(initialCreditCost));
 
     if (!button.disabled) {
-      button.textContent = `Paylaşmaya Hazır Çıktı Al (${initialCreditCost} Kredi)`;
+      setCartoonStudioDynamicText(
+        button,
+        cartoonStudioText(
+          'studio.cartoon.studio.exportWithCredit',
+          '🎬 Çıktıyı Al ({count} Kredi)',
+          '🎬 Create Final Output ({count} Credits)',
+          { count: initialCreditCost }
+        )
+      );
     }
 
     if (button.getAttribute('data-studio-export-bound') === 'true') {
@@ -2261,7 +2617,10 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
     button.setAttribute('data-studio-export-bound', 'true');
 
     button.addEventListener('click', async () => {
-      const originalText = String(button.textContent || 'Paylaşmaya Hazır Çıktı Al');
+      const originalText = String(
+        button.textContent ||
+        cartoonStudioText('', 'Paylaşmaya Hazır Çıktı Al', 'Create Share-Ready Output')
+      );
       let startedPolling = false;
 
       try {
@@ -2284,13 +2643,22 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
         console.log('[CARTOON][STUDIO_EXPORT_PAYLOAD]', payload);
 
         if (!payload.export.scenes.length) {
-          alert('Export için en az 1 sahne seçmelisin.');
+          alert(
+            cartoonStudioText(
+              'studio.cartoon.error.videoRequired',
+              'Export için en az 1 sahne seçmelisin.',
+              'Select at least one scene for export.'
+            )
+          );
           return;
         }
 
         if (rootState?.voiceFileUploadPromise) {
           button.disabled = true;
-          button.textContent = 'Ses yükleniyor...';
+          setCartoonStudioDynamicText(
+            button,
+            cartoonStudioText('', 'Ses yükleniyor...', 'Uploading audio...')
+          );
           button.classList.add('is-loading');
 
           try {
@@ -2304,12 +2672,21 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
           (rootState?.voiceFile || String(rootState?.voiceFileUrl || '').trim()) &&
           String(rootState?.voiceFileUploadStatus || '') !== 'ready'
         ) {
-          throw new Error('Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
+          throw new Error(
+            cartoonStudioText(
+              'studio.cartoon.error.uploadInProgress',
+              'Ses dosyası henüz hazır değil. Yükleme tamamlanınca tekrar dene.',
+              'The audio file is not ready yet. Try again when the upload is complete.'
+            )
+          );
         }
 
         if (rootState?.logoFileUploadPromise) {
           button.disabled = true;
-          button.textContent = 'Logo yükleniyor...';
+          setCartoonStudioDynamicText(
+            button,
+            cartoonStudioText('', 'Logo yükleniyor...', 'Uploading logo...')
+          );
           button.classList.add('is-loading');
 
           try {
@@ -2323,7 +2700,13 @@ function bindStudioVideoUpload(rootState, studioRoot, sceneList, sceneTemplate) 
           (rootState?.logoFile || String(rootState?.logoFileUrl || '').trim()) &&
           String(rootState?.logoFileUploadStatus || '') !== 'ready'
         ) {
-          throw new Error('Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.');
+          throw new Error(
+            cartoonStudioText(
+              'studio.cartoon.error.uploadInProgress',
+              'Logo henüz hazır değil. Yükleme tamamlanınca tekrar dene.',
+              'The logo is not ready yet. Try again when the upload is complete.'
+            )
+          );
         }
 
 const creditCost = getStudioExportCreditCost(rootState, studioRoot);
@@ -2394,7 +2777,15 @@ async function tryRefund(reason, extraMeta = {}) {
 
     if (refundRes.ok && refundData?.ok && (refundData?.refunded || refundData?.deduped || refundData?.skipped)) {
       await refreshCreditsUI();
-      try { window.toast?.error?.('İşlem başarısız oldu, kredi iade edildi.'); } catch {}
+      try {
+        window.toast?.error?.(
+          cartoonStudioText(
+            'studio.cartoon.toast.creditRefunded',
+            'İşlem başarısız oldu, kredi iade edildi.',
+            'The operation failed and the credits were refunded.'
+          )
+        );
+      } catch {}
       return true;
     }
   } catch (refundErr) {
@@ -2405,7 +2796,10 @@ async function tryRefund(reason, extraMeta = {}) {
 }
 
 button.disabled = true;
-button.textContent = 'Çıktı hazırlanıyor...';
+setCartoonStudioDynamicText(
+  button,
+  cartoonStudioText('', 'Çıktı hazırlanıyor...', 'Preparing output...')
+);
 button.classList.add('is-loading');
 
 const creditRes = await fetch('/api/credits/consume-ledger', {
@@ -2557,14 +2951,29 @@ if (data?.job_id) {
         detail: createdDetail
       })
     );
-    try { window.toast?.success?.('Video hazırlanıyor'); } catch {}
+    try {
+      window.toast?.success?.(
+        cartoonStudioText(
+          'studio.cartoon.toast.studioStarted',
+          'Montaj işlemi başlatıldı.',
+          'Montage processing started.'
+        )
+      );
+    } catch {}
   }, 3500);
 
   startedPolling = true;
   pollStudioExportJob(String(data.job_id), button, originalText, 0);
   return;
 }
-        alert(`Export işi kuyruğa alındı. Job ID: ${data.job_id || '-'}`);
+        alert(
+          cartoonStudioText(
+            '',
+            'Export işi kuyruğa alındı. Job ID: {jobId}',
+            'The export job was queued. Job ID: {jobId}',
+            { jobId: data.job_id || '-' }
+          )
+        );
       } catch (err) {
         console.error('[CARTOON][STUDIO_EXPORT_CREATE_ERROR]', err);
         syncCartoonStudioAssistantState(rootState, studioRoot, {
@@ -2579,7 +2988,7 @@ if (data?.job_id) {
           lastOutputUrl: '',
           visibleError: String(err?.message || err || 'studio_export_create_failed')
         });
-        alert(String(err?.message || err || 'studio_export_create_failed'));
+        alert(cartoonStudioErrorText(err, 'export'));
       } finally {
         if (!startedPolling) {
           button.disabled = false;
@@ -2602,7 +3011,11 @@ if (data?.job_id) {
         color:rgba(255,255,255,.78);
         font-weight:600;
       ">
-        Henüz sahne yok. Yukarıdan video yükleyerek listeyi oluştur.
+        ${cartoonStudioText(
+          '',
+          'Henüz sahne yok. Yukarıdan video yükleyerek listeyi oluştur.',
+          'There are no scenes yet. Upload videos above to create the list.'
+        )}
       </div>
     `;
   }
@@ -2644,11 +3057,17 @@ if (data?.job_id) {
       }
 
       if (titleEl) {
-        titleEl.textContent = scene.title || 'Sahne';
+        setCartoonStudioDynamicText(
+          titleEl,
+          scene.title || cartoonStudioText('', 'Sahne', 'Scene')
+        );
       }
 
       if (durationEl) {
-        durationEl.textContent = formatSceneDuration(scene.duration);
+        setCartoonStudioDynamicText(
+          durationEl,
+          formatSceneDuration(scene.duration)
+        );
       }
 
       if (previewBtn) {
@@ -2684,7 +3103,11 @@ if (data?.job_id) {
       if (editBtn) {
         editBtn.addEventListener('click', () => {
           const nextTitle = window.prompt(
-            'Yeni sahne başlığını yaz:',
+            cartoonStudioText(
+              '',
+              'Yeni sahne başlığını yaz:',
+              'Enter the new scene title:'
+            ),
             String(scene.title || '')
           );
 
@@ -2692,7 +3115,13 @@ if (data?.job_id) {
 
           const cleaned = String(nextTitle || '').trim();
           if (!cleaned) {
-            alert('Sahne başlığı boş olamaz.');
+            alert(
+              cartoonStudioText(
+                '',
+                'Sahne başlığı boş olamaz.',
+                'The scene title cannot be empty.'
+              )
+            );
             return;
           }
 
@@ -2703,13 +3132,25 @@ if (data?.job_id) {
       }
 if (removeBtn) {
   removeBtn.addEventListener('click', () => {
-    const ok = window.confirm(`"${scene.title || 'Sahne'}" listeden kaldırılsın mı?`);
+    const sceneTitle = scene.title || cartoonStudioText('', 'Sahne', 'Scene');
+    const ok = window.confirm(
+      cartoonStudioText(
+        '',
+        '"{title}" listeden kaldırılsın mı?',
+        'Remove "{title}" from the list?',
+        { title: sceneTitle }
+      )
+    );
     if (!ok) return;
 
     rootState.scenes = rootState.scenes.filter((item) => item.id !== scene.id);
     saveStudioState(rootState);
     renderStudioScenes(rootState, studioRoot, sceneList, sceneTemplate);
-    try { window.toast?.success?.('Video başarıyla silindi'); } catch {}
+    try {
+      window.toast?.success?.(
+        cartoonStudioText('', 'Video başarıyla silindi', 'Video deleted successfully')
+      );
+    } catch {}
   });
 }
 
@@ -2758,7 +3199,7 @@ studioSceneList.innerHTML = `
     color:rgba(255,255,255,.78);
     font-weight:600;
   ">
-    Yükleniyor...
+    ${cartoonStudioText('', 'Yükleniyor...', 'Loading...')}
   </div>
 `;
 
@@ -2892,7 +3333,11 @@ window.__CARTOON_STUDIO__ = studioState;
 
     if (finalUrl) {
       studioState.previewUrl = finalUrl;
-      studioState.previewTitle = 'Paylaşmaya Hazır Çıktı';
+      studioState.previewTitle = cartoonStudioText(
+        '',
+        'Paylaşmaya Hazır Çıktı',
+        'Share-Ready Output'
+      );
     }
 
     syncCartoonStudioAssistantState(studioState, studioRoot, {
@@ -2936,6 +3381,63 @@ window.__CARTOON_STUDIO__ = studioState;
         finalVideoReady: false
       }
     });
+  });
+
+  function refreshCartoonStudioLanguage() {
+    const studioRoot = document.querySelector(
+      '.main-panel[data-module="cartoon"] [data-cartoon-view="studio"]'
+    );
+    const studioState = window.__CARTOON_STUDIO__ || null;
+
+    if (!studioRoot || !studioState) return;
+
+    const sceneList = studioRoot.querySelector('[data-studio-scene-list]');
+    const sceneTemplate = studioRoot.querySelector('#studioSceneRowTemplate');
+
+    if (sceneList && sceneTemplate) {
+      renderStudioScenes(studioState, studioRoot, sceneList, sceneTemplate);
+    }
+
+    updateStudioVoiceUploadStatusUI(studioState, studioRoot);
+    updateStudioLogoUploadStatusUI(studioState, studioRoot);
+    updateStudioSummary(studioState, studioRoot);
+
+    const modal = document.querySelector('[data-studio-preview-modal]');
+    const closeBtn = modal?.querySelector('[data-studio-preview-close]');
+
+    if (closeBtn) {
+      closeBtn.setAttribute(
+        'aria-label',
+        cartoonStudioText(
+          'studio.cartoon.studio.previewClose',
+          'Önizlemeyi kapat',
+          'Close preview'
+        )
+      );
+      closeBtn.title = cartoonStudioText('', 'Kapat', 'Close');
+    }
+
+    const logoClear = studioRoot.querySelector('[data-studio-logo-upload-clear]');
+    if (logoClear) {
+      logoClear.setAttribute(
+        'aria-label',
+        cartoonStudioText('', 'Yüklenen logoyu kaldır', 'Remove uploaded logo')
+      );
+      logoClear.title = cartoonStudioText('', 'Logoyu kaldır', 'Remove logo');
+    }
+
+    const voiceClear = studioRoot.querySelector('[data-studio-voice-upload-clear]');
+    if (voiceClear) {
+      voiceClear.setAttribute(
+        'aria-label',
+        cartoonStudioText('', 'Yüklenen sesi kaldır', 'Remove uploaded audio')
+      );
+      voiceClear.title = cartoonStudioText('', 'Sesi kaldır', 'Remove audio');
+    }
+  }
+
+  document.addEventListener('aivo:language-change', () => {
+    window.setTimeout(refreshCartoonStudioLanguage, 30);
   });
 
   function bootCartoonStudio() {    if (initCartoonStudio()) return;
