@@ -1880,6 +1880,54 @@ function resetStoryCharacterImage(root, slot) {
     return wrap;
   }
 
+  function applySceneCharacterItemSelectionVisual(item, selected) {
+    if (!item) return;
+
+    const isSelected = !!selected;
+    item.dataset.selected = isSelected ? "true" : "false";
+    item.setAttribute("aria-pressed", isSelected ? "true" : "false");
+    item.style.pointerEvents = "auto";
+    item.style.cursor = "pointer";
+
+    const dot = qs(".story-scene-character-dot", item);
+    if (dot) {
+      dot.style.background = isSelected
+        ? "linear-gradient(135deg,#22c55e,#16a34a)"
+        : "rgba(255,255,255,.18)";
+      dot.style.boxShadow = isSelected
+        ? "0 0 12px rgba(34,197,94,.45)"
+        : "none";
+    }
+
+    item.style.border = isSelected
+      ? "1px solid rgba(201,119,255,.55)"
+      : "1px solid rgba(255,255,255,.12)";
+    item.style.background = isSelected
+      ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
+      : "rgba(255,255,255,.04)";
+    item.style.boxShadow = isSelected
+      ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
+      : "none";
+  }
+
+  function bindSceneCharacterItemDirectClick(item, root) {
+    if (!item || item.dataset.storyDirectClickBound === "true") return;
+
+    item.dataset.storyDirectClickBound = "true";
+
+    item.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const slot = safeText(item.dataset.sceneCharacterSlot);
+      if (!slot || item.hidden) return;
+
+      const nextSelected = item.dataset.selected !== "true";
+      applySceneCharacterItemSelectionVisual(item, nextSelected);
+      resetStoryPolicyUI(root || getCartoonRoot());
+    });
+  }
+
   function renderSceneCharacterPicker(root, scene) {
     const editor = getStorySceneEditor(root);
     if (!editor || !scene) return;
@@ -1913,7 +1961,8 @@ function resetStoryCharacterImage(root, slot) {
       if (hasCharacter) hasAnySelectedStoryCharacter = true;
 
       item.hidden = !hasCharacter;
-      item.dataset.selected = isSelected ? "true" : "false";
+      bindSceneCharacterItemDirectClick(item, root);
+      applySceneCharacterItemSelectionVisual(item, isSelected);
 
       if (labelEl) {
         labelEl.removeAttribute("data-i18n");
@@ -1927,25 +1976,6 @@ function resetStoryCharacterImage(root, slot) {
           : storyText("studio.cartoon.story.imageNotUploaded", "Görsel yüklenmedi", "No image uploaded");
       }
 
-      item.style.border = isSelected
-        ? "1px solid rgba(201,119,255,.55)"
-        : "1px solid rgba(255,255,255,.12)";
-      item.style.background = isSelected
-        ? "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))"
-        : "rgba(255,255,255,.04)";
-      item.style.boxShadow = isSelected
-        ? "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)"
-        : "none";
-
-      const dot = qs(".story-scene-character-dot", item);
-      if (dot) {
-        dot.style.background = isSelected
-          ? "linear-gradient(135deg,#22c55e,#16a34a)"
-          : "rgba(255,255,255,.18)";
-        dot.style.boxShadow = isSelected
-          ? "0 0 12px rgba(34,197,94,.45)"
-          : "none";
-      }
     });
 
     if (hasAnySelectedStoryCharacter) {
@@ -3214,33 +3244,18 @@ if (role === "helper") {
 
       const sceneCharacterItem = e.target.closest(".story-scene-character-item");
       const clickedSceneEditor = sceneCharacterItem?.closest("[data-story-scene-editor]");
-      if (sceneCharacterItem && clickedSceneEditor) {
+      if (
+        sceneCharacterItem &&
+        clickedSceneEditor &&
+        sceneCharacterItem.dataset.storyDirectClickBound !== "true"
+      ) {
         e.preventDefault();
 
         const slot = safeText(sceneCharacterItem.dataset.sceneCharacterSlot);
         if (!slot) return;
 
-        const isSelected = sceneCharacterItem.dataset.selected === "true";
-        sceneCharacterItem.dataset.selected = isSelected ? "false" : "true";
-
-        const dot = qs(".story-scene-character-dot", sceneCharacterItem);
-        if (dot) {
-          dot.style.background = isSelected
-            ? "rgba(255,255,255,.18)"
-            : "linear-gradient(135deg,#22c55e,#16a34a)";
-          dot.style.boxShadow = isSelected ? "none" : "0 0 12px rgba(34,197,94,.45)";
-        }
-
-        sceneCharacterItem.style.border = isSelected
-          ? "1px solid rgba(255,255,255,.12)"
-          : "1px solid rgba(201,119,255,.55)";
-        sceneCharacterItem.style.background = isSelected
-          ? "rgba(255,255,255,.04)"
-          : "linear-gradient(135deg, rgba(146,92,255,.22), rgba(255,98,174,.18))";
-        sceneCharacterItem.style.boxShadow = isSelected
-          ? "none"
-          : "0 0 0 1px rgba(201,119,255,.18) inset, 0 10px 30px rgba(121,65,255,.14)";
-
+        const nextSelected = sceneCharacterItem.dataset.selected !== "true";
+        applySceneCharacterItemSelectionVisual(sceneCharacterItem, nextSelected);
         resetStoryPolicyUI(root);
         return;
       }
