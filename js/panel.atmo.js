@@ -6,98 +6,6 @@
   const APP_KEY = "atmo";
   const MAX_ITEMS = 30;
 
-  const ATMO_PANEL_FALLBACK = {
-    tr: {
-      "studio.atmo.panel.title": "Atmosfer Videolarım",
-      "studio.atmo.panel.empty": "Henüz atmosfer videosu bulunmuyor.",
-      "studio.atmo.panel.noResults": "Aramanızla eşleşen atmosfer videosu bulunamadı.",
-      "studio.atmo.panel.status.ready": "Hazır",
-      "studio.atmo.panel.status.processing": "İşleniyor",
-      "studio.atmo.panel.status.failed": "Hata",
-      "studio.atmo.toast.ready": "Atmosfer videonuz hazır.",
-      "studio.atmo.download.success": "Atmosfer videosu indirildi.",
-      "studio.atmo.download.failed": "Atmosfer videosu indirilemedi.",
-      "studio.atmo.delete.success": "Atmosfer videosu silindi.",
-      "studio.atmo.delete.failed": "Atmosfer videosu silinemedi."
-    },
-    en: {
-      "studio.atmo.panel.title": "My Atmosphere Videos",
-      "studio.atmo.panel.empty": "No atmosphere videos yet.",
-      "studio.atmo.panel.noResults": "No atmosphere videos matched your search.",
-      "studio.atmo.panel.status.ready": "Ready",
-      "studio.atmo.panel.status.processing": "Processing",
-      "studio.atmo.panel.status.failed": "Failed",
-      "studio.atmo.toast.ready": "Your atmosphere video is ready.",
-      "studio.atmo.download.success": "Atmosphere video downloaded.",
-      "studio.atmo.download.failed": "Atmosphere video could not be downloaded.",
-      "studio.atmo.delete.success": "Atmosphere video deleted.",
-      "studio.atmo.delete.failed": "Atmosphere video could not be deleted."
-    }
-  };
-
-  function getAtmoPanelLanguage() {
-    try {
-      if (window.AIVO_STUDIO_I18N?.getLanguage) {
-        return String(window.AIVO_STUDIO_I18N.getLanguage() || "tr")
-          .toLowerCase()
-          .startsWith("en") ? "en" : "tr";
-      }
-    } catch {}
-
-    return String(window.AIVO_LANG || document.documentElement.lang || "tr")
-      .toLowerCase()
-      .startsWith("en") ? "en" : "tr";
-  }
-
-  function atmoPanelText(key, fallback = "") {
-    try {
-      if (window.AIVO_STUDIO_I18N?.t) {
-        const translated = window.AIVO_STUDIO_I18N.t(key, fallback);
-        if (translated && translated !== key) return translated;
-      }
-    } catch {}
-
-    try {
-      if (typeof window.studioT === "function") {
-        const translated = window.studioT(key, fallback);
-        if (translated && translated !== key) return translated;
-      }
-    } catch {}
-
-    try {
-      if (typeof window.t === "function") {
-        const translated = window.t(key);
-        if (translated && translated !== key) return translated;
-      }
-    } catch {}
-
-    const lang = getAtmoPanelLanguage();
-    return ATMO_PANEL_FALLBACK[lang]?.[key] ||
-      ATMO_PANEL_FALLBACK.tr[key] ||
-      fallback ||
-      key;
-  }
-
-  function atmoPanelToast(type, message) {
-    if (!message) return;
-
-    try {
-      if (window.toast && typeof window.toast[type] === "function") {
-        window.toast[type](message);
-        return;
-      }
-
-      if (typeof window.toast === "function") {
-        window.toast(message, type);
-        return;
-      }
-
-      if (window.Toast && typeof window.Toast.show === "function") {
-        window.Toast.show(message, type);
-      }
-    } catch {}
-  }
-
   const safeStr = (v) => String(v == null ? "" : v).trim();
   const esc = (s) =>
     safeStr(s)
@@ -366,7 +274,7 @@
     const st = String(job?.db_status || job?.status || job?.state || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: atmoPanelText("studio.atmo.panel.status.failed", "Hata"), kind: "bad" };
+      return { text: "Hata", kind: "bad" };
     }
 
     if (
@@ -375,7 +283,7 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: atmoPanelText("studio.atmo.panel.status.ready", "Hazır"), kind: "ok" };
+      return { text: "Hazır", kind: "ok" };
     }
 
     if (
@@ -384,10 +292,10 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: atmoPanelText("studio.atmo.panel.status.processing", "İşleniyor"), kind: "mid" };
+      return { text: "İşleniyor", kind: "mid" };
     }
 
-    return { text: st || atmoPanelText("studio.atmo.panel.status.ready", "Hazır"), kind: "mid" };
+    return { text: st || "Hazır", kind: "mid" };
   }
 
   function createAtmosPanel(host) {
@@ -444,14 +352,6 @@ const onSearchInput = (e) => {
 
 document.addEventListener("input", onSearchInput, true);
 document.addEventListener("search", onSearchInput, true);
-
-const onAtmoPanelLanguageChange = () => {
-  lastRenderSignature = "";
-  render();
-};
-
-document.addEventListener("aivo:language-change", onAtmoPanelLanguageChange);
-document.addEventListener("aivo:studio:i18n-applied", onAtmoPanelLanguageChange);
 
 setTimeout(syncSearchFromInput, 0);
     const setHeaderMeta = (t) => {
@@ -534,13 +434,17 @@ setTimeout(syncSearchFromInput, 0);
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
 
-       function resolvePlaybackUrl(rawUrl) {
+    function resolvePlaybackUrl(rawUrl) {
       rawUrl = safeStr(rawUrl);
       if (!rawUrl) return "";
 
-      // Atmosphere videolarını doğrudan gerçek URL üzerinden oynat.
-      // İndirme de aynı gerçek URL ile çalıştığı için proxy kullanma.
-      return rawUrl;
+      if (!/^https?:\/\//i.test(rawUrl)) return rawUrl;
+
+      if (rawUrl.includes("media.aivo.tr/outputs/atmo/")) {
+        return rawUrl;
+      }
+
+      return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
     }
 
     function upsertEphemeralProcessing(payload = {}) {
@@ -742,11 +646,7 @@ function render() {
   const items = combinedItems();
 
   const hasProcessing = items.some((j) => isProcessing(j));
-  setHeaderMeta(
-    hasProcessing
-      ? atmoPanelText("studio.atmo.panel.status.processing", "İşleniyor") + "…"
-      : atmoPanelText("studio.atmo.panel.status.ready", "Hazır")
-  );
+  setHeaderMeta(hasProcessing ? "İşleniyor…" : "Hazır");
 
   if (prevHasProcessing && !hasProcessing) {
     const readyJob = items.find((j) => isReady(j));
@@ -754,10 +654,7 @@ function render() {
 
     if (readyJobId && readyJobId !== lastReadyToastJobId) {
       lastReadyToastJobId = readyJobId;
-      atmoPanelToast(
-        "success",
-        atmoPanelText("studio.atmo.toast.ready", "Atmosfer videonuz hazır.")
-      );
+      try { window.toast?.success?.("Atmosfer video hazır"); } catch {}
     }
   }
 
@@ -765,9 +662,7 @@ function render() {
 
   if (!items.length) {
     const emptyHtml = `<div class="atmoEmpty">${
-      state.query
-        ? atmoPanelText("studio.atmo.panel.noResults", "Aramanızla eşleşen atmosfer videosu bulunamadı.")
-        : atmoPanelText("studio.atmo.panel.empty", "Henüz atmosfer videosu bulunmuyor.")
+      state.query ? "Aramana uygun atmos üretim bulunamadı." : "Henüz atmos üretim yok."
     }</div>`;
 
     if (lastRenderSignature !== emptyHtml) {
@@ -870,125 +765,32 @@ function render() {
       const finalUrl = safeStr(cardEl?.getAttribute("data-final-url"));
       const previewUrl = safeStr(cardEl?.getAttribute("data-preview-url"));
 
-         if (act === "play") {
-        const video = cardEl?.querySelector(".svcVideo, video");
-        const poster = cardEl?.querySelector(".svcPoster");
-        const playBtn = cardEl?.querySelector('[data-svc-act="play"]');
-
+      if (act === "play") {
+        const video = cardEl?.querySelector("video");
         if (!video) return;
 
-        const lazyUrl = safeStr(
-          video.dataset?.videoUrl ||
-          video.getAttribute("data-video-url") ||
-          video.getAttribute("src") ||
-          ""
-        );
-
-        if (!video.getAttribute("src") && lazyUrl) {
-          video.preload = "metadata";
-          video.playsInline = true;
-          video.muted = true;
-          video.src = lazyUrl;
-
-          try {
-            video.load();
-          } catch {}
+        if (video.paused) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
         }
-
-        video.style.display = "block";
-
-        try {
-          if (video.paused) {
-            await video.play();
-
-            if (poster) {
-              poster.style.display = "none";
-            }
-
-            if (playBtn) {
-              playBtn.textContent = "❚❚";
-              playBtn.setAttribute(
-                "title",
-                getAtmoPanelLanguage() === "en" ? "Pause" : "Duraklat"
-              );
-              playBtn.setAttribute(
-                "aria-label",
-                getAtmoPanelLanguage() === "en" ? "Pause" : "Duraklat"
-              );
-            }
-          } else {
-            video.pause();
-
-            if (playBtn) {
-              playBtn.textContent = "▶";
-              playBtn.setAttribute(
-                "title",
-                getAtmoPanelLanguage() === "en" ? "Play" : "Oynat"
-              );
-              playBtn.setAttribute(
-                "aria-label",
-                getAtmoPanelLanguage() === "en" ? "Play" : "Oynat"
-              );
-            }
-          }
-        } catch (error) {
-          console.error("[ATMO PANEL] video play failed", error);
-
-          video.style.display = "none";
-
-          if (poster) {
-            poster.style.display = "";
-          }
-        }
-
         return;
       }
 
-      if (act === "sound") {
-        const video = cardEl?.querySelector(".svcVideo, video");
-        const soundBtn = cardEl?.querySelector('[data-svc-act="sound"]');
-
+      if (act === "fs") {
+        const video = cardEl?.querySelector("video");
         if (!video) return;
-
-        video.muted = !video.muted;
-
-        if (soundBtn) {
-          soundBtn.setAttribute(
-            "aria-pressed",
-            video.muted ? "false" : "true"
-          );
-
-          soundBtn.setAttribute(
-            "title",
-            video.muted
-              ? (getAtmoPanelLanguage() === "en" ? "Turn sound on" : "Sesi aç")
-              : (getAtmoPanelLanguage() === "en" ? "Turn sound off" : "Sesi kapat")
-          );
-        }
-
-        return;
-      }
-
-      if (act === "fullscreen" || act === "fs") {
-        const target =
-          cardEl?.querySelector(".svcMedia") ||
-          cardEl?.querySelector(".svcVideo, video");
-
-        if (!target) return;
 
         try {
           if (document.fullscreenElement) {
-            await document.exitFullscreen();
+            await document.exitFullscreen().catch(() => {});
             return;
           }
 
-          if (target.requestFullscreen) {
-            await target.requestFullscreen();
+          if (video.requestFullscreen) {
+            await video.requestFullscreen().catch(() => {});
           }
-        } catch (error) {
-          console.error("[ATMO PANEL] fullscreen failed", error);
-        }
-
+        } catch {}
         return;
       }
 
@@ -1036,17 +838,8 @@ function render() {
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
-
-        atmoPanelToast(
-          "success",
-          atmoPanelText("studio.atmo.download.success", "Atmosfer videosu indirildi.")
-        );
       } catch (err) {
         console.error("[ATMO PANEL] download failed", err);
-        atmoPanelToast(
-          "error",
-          atmoPanelText("studio.atmo.download.failed", "Atmosfer videosu indirilemedi.")
-        );
         window.open(dlUrl, "_blank", "noopener");
       }
 
@@ -1086,21 +879,11 @@ if (act === "delete") {
     if (!ok) {
       deletedIds.delete(jobId);
       db.hydrate(true);
-      atmoPanelToast(
-        "error",
-        atmoPanelText("studio.atmo.delete.failed", "Atmosfer videosu silinemedi.")
-      );
     } else {
-      atmoPanelToast(
-        "success",
-        atmoPanelText("studio.atmo.delete.success", "Atmosfer videosu silindi.")
-      );
+      try { window.toast?.success?.("Video silindi"); } catch {}
     }
   } else {
-    atmoPanelToast(
-      "success",
-      atmoPanelText("studio.atmo.delete.success", "Atmosfer videosu silindi.")
-    );
+    try { window.toast?.success?.("Video silindi"); } catch {}
   }
 
   return;
@@ -1257,9 +1040,7 @@ const onJobCreated = (e) => {
 
           if (!key.includes("atmo")) return;
 
-          setHeaderMeta(
-            atmoPanelText("studio.atmo.panel.status.processing", "İşleniyor") + "…"
-          );
+          setHeaderMeta("İşleniyor…");
 
           upsertEphemeralProcessing({
             job_id: job?.job_id || job?.id,
@@ -1401,15 +1182,6 @@ function destroy() {
   } catch {}
 
   try {
-    document.removeEventListener("search", onSearchInput, true);
-  } catch {}
-
-  try {
-    document.removeEventListener("aivo:language-change", onAtmoPanelLanguageChange);
-    document.removeEventListener("aivo:studio:i18n-applied", onAtmoPanelLanguageChange);
-  } catch {}
-
-  try {
     db && db.destroy();
   } catch {}
 
@@ -1421,8 +1193,8 @@ function destroy() {
 
   window.RightPanel.register(APP_KEY, {
     header: {
-      title: atmoPanelText("studio.atmo.panel.title", "Atmosfer Videolarım"),
-      meta: atmoPanelText("studio.atmo.panel.status.ready", "Hazır"),
+      title: "Atmosfer Video",
+      meta: "Hazır",
   searchEnabled: true,
       resetSearch: true,
     },
