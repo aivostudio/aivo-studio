@@ -534,17 +534,13 @@ setTimeout(syncSearchFromInput, 0);
       return ar.includes("9:16") || ar.includes("4:5") || ar.includes("2:3");
     }
 
-    function resolvePlaybackUrl(rawUrl) {
+       function resolvePlaybackUrl(rawUrl) {
       rawUrl = safeStr(rawUrl);
       if (!rawUrl) return "";
 
-      if (!/^https?:\/\//i.test(rawUrl)) return rawUrl;
-
-      if (rawUrl.includes("media.aivo.tr/outputs/atmo/")) {
-        return rawUrl;
-      }
-
-      return "/api/media/proxy?url=" + encodeURIComponent(rawUrl);
+      // Atmosphere videolarını doğrudan gerçek URL üzerinden oynat.
+      // İndirme de aynı gerçek URL ile çalıştığı için proxy kullanma.
+      return rawUrl;
     }
 
     function upsertEphemeralProcessing(payload = {}) {
