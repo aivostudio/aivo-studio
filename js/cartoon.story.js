@@ -3209,29 +3209,30 @@ btn.appendChild(badge);
     }
   });
 }
-  function render(root) {
-    if (!root) return;
+function render(root) {
+  if (!root) return;
 
-    buildCharacterOptions(root);
-    syncModeTabs(root);
-    syncModeViews(root);
-    syncStoryFormValues(root);
-    syncStoryFlowDuration(root);
-    syncCharacterSelects(root);
-    syncStoryPresetCharacterCards(root);
-    renderSectionScenes(root);
-    syncStorySectionCounts(root);
-    syncStoryAccordion(root);
-    syncStorySettings(root);
-    syncSceneRows(root);
-    syncSceneEditor(root);
-    updateStoryIdeaCount(root);
-    syncAllStoryCharacterUploadUI(root);
-    syncStorySettingsUploadUI(root);
-    syncStoryDurationSummary(root);
-    syncStoryGenerateButtonCredit(root);
-    syncCartoonStoryAssistantState();
-  }
+  buildCharacterOptions(root);
+
+  // Mod sekmelerini ve görünür bölümü yalnızca js/cartoon.js yönetir.
+  // İki dosyanın aynı anda hidden/is-active değiştirmesi ilk açılışta flash oluşturuyordu.
+  syncStoryFormValues(root);
+  syncStoryFlowDuration(root);
+  syncCharacterSelects(root);
+  syncStoryPresetCharacterCards(root);
+  renderSectionScenes(root);
+  syncStorySectionCounts(root);
+  syncStoryAccordion(root);
+  syncStorySettings(root);
+  syncSceneRows(root);
+  syncSceneEditor(root);
+  updateStoryIdeaCount(root);
+  syncAllStoryCharacterUploadUI(root);
+  syncStorySettingsUploadUI(root);
+  syncStoryDurationSummary(root);
+  syncStoryGenerateButtonCredit(root);
+  syncCartoonStoryAssistantState();
+}
 
   function bindClicks() {
     document.addEventListener("click", async (e) => {
