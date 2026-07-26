@@ -12,6 +12,50 @@
 
   const LONG_DURATION_VALUES = new Set(["12", "14", "16", "18", "20"]);
 
+  function getPhotoFxLanguage() {
+    try {
+      const language =
+        window.AIVO_STUDIO_I18N?.getLanguage?.() ||
+        window.AIVO_LANG ||
+        document.documentElement.lang ||
+        "tr";
+
+      return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
+    } catch {
+      return "tr";
+    }
+  }
+
+  function formatPhotoFxText(value, parameters = {}) {
+    let output = String(value == null ? "" : value);
+
+    Object.keys(parameters || {}).forEach((key) => {
+      output = output.replace(
+        new RegExp(`\\{${key}\\}`, "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function photoFxText(key, trFallback, enFallback, parameters = {}) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, "", parameters);
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    try {
+      const translated = window.studioT?.(key, "", parameters);
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    return formatPhotoFxText(
+      getPhotoFxLanguage() === "en" ? enFallback : trFallback,
+      parameters
+    );
+  }
+
   function getPhotoFxAssistantState() {
     if (!window.__AIVO_PHOTOFX_ASSISTANT_STATE__) {
       window.__AIVO_PHOTOFX_ASSISTANT_STATE__ = {
@@ -709,7 +753,11 @@
     if (!file) {
       const empty = document.createElement("div");
       empty.className = "pfxUploadEmpty";
-      empty.textContent = emptyText || "Dosya seçilmedi";
+      empty.textContent = emptyText || photoFxText(
+        "studio.photofx.common.noFile",
+        "Dosya seçilmedi",
+        "No file selected"
+      );
       node.appendChild(empty);
       return;
     }
@@ -726,7 +774,14 @@
     clearBtn.type = "button";
     clearBtn.className = "pfxUploadChipClear";
     clearBtn.setAttribute("data-clear-upload", clearKey);
-    clearBtn.setAttribute("aria-label", "Seçili dosyayı kaldır");
+    clearBtn.setAttribute(
+      "aria-label",
+      photoFxText(
+        "studio.photofx.action.removeSelectedFile",
+        "Seçili dosyayı kaldır",
+        "Remove selected file"
+      )
+    );
     clearBtn.textContent = "×";
 
     chip.appendChild(name);
@@ -744,7 +799,15 @@
   if (input) input.value = "";
 
   if (hadImage) {
-    try { window.toast?.success?.("Resim silindi"); } catch {}
+    try {
+      window.toast?.success?.(
+        photoFxText(
+          "studio.photofx.toast.imageRemoved",
+          "Resim kaldırıldı.",
+          "Image removed."
+        )
+      );
+    } catch {}
   }
 }
 
@@ -761,7 +824,15 @@
       if (input) input.value = "";
 
       if (hadLogo) {
-        try { window.toast?.success?.("Logo kaldırıldı · -10 kredi"); } catch {}
+        try {
+          window.toast?.success?.(
+            photoFxText(
+              "studio.photofx.toast.logoRemoved",
+              "Logo kaldırıldı · -10 kredi",
+              "Logo removed · -10 credits"
+            )
+          );
+        } catch {}
       }
     }
     if (key === "audio") {
@@ -776,7 +847,15 @@
       if (input) input.value = "";
 
       if (hadAudio) {
-        try { window.toast?.success?.("Müzik kaldırıldı · -10 kredi"); } catch {}
+        try {
+          window.toast?.success?.(
+            photoFxText(
+              "studio.photofx.toast.audioRemoved",
+              "Müzik kaldırıldı · -10 kredi",
+              "Music removed · -10 credits"
+            )
+          );
+        } catch {}
       }
     }
 
@@ -839,7 +918,12 @@
     const totalCredits = getPhotoFxEstimatedCredits(root);
 
     createBtn.setAttribute("data-credit-cost", String(totalCredits));
-    createBtn.textContent = `🎬 Klip Oluştur (${totalCredits} Kredi)`;
+    createBtn.textContent = photoFxText(
+      "studio.photofx.generateWithCredit",
+      "🎬 Klip Oluştur ({count} Kredi)",
+      "🎬 Create Clip ({count} Credits)",
+      { count: totalCredits }
+    );
 
     syncPhotoFxAssistantState(root, {
       generationState: "idle",
@@ -885,18 +969,24 @@
       "pfxAudioMeta"
     );
 
-    renderUploadBadge(imageMeta, state.imageFile, "Dosya seçilmedi", "image");
+    const noFileText = photoFxText(
+      "studio.photofx.common.noFile",
+      "Dosya seçilmedi",
+      "No file selected"
+    );
+
+    renderUploadBadge(imageMeta, state.imageFile, noFileText, "image");
 
     renderUploadBadge(
       endImageMeta,
       state.endImageFile,
-      "Dosya seçilmedi",
+      noFileText,
       "end-image"
     );
 
-    renderUploadBadge(logoMeta, state.logoFile, "Dosya seçilmedi", "logo");
+    renderUploadBadge(logoMeta, state.logoFile, noFileText, "logo");
 
-    renderUploadBadge(audioMeta, state.audioFile, "Dosya seçilmedi", "audio");
+    renderUploadBadge(audioMeta, state.audioFile, noFileText, "audio");
   }
 
   function syncIncludeMusic(root) {
@@ -1242,7 +1332,15 @@
                 lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
                 visibleError: String(j?.error || "photofx_job_error")
               });
-              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              try {
+                window.toast?.error?.(
+                  photoFxText(
+                    "studio.photofx.toast.creditRefunded",
+                    "İşlem başarısız oldu, kredi iade edildi.",
+                    "The operation failed and the credits were refunded."
+                  )
+                );
+              } catch {}
             } else {
               syncPhotoFxAssistantState(getRoot(), {
                 generationState: "failed",
@@ -1253,11 +1351,27 @@
                 lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
                 visibleError: String(j?.error || "photofx_job_error")
               });
-              try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+              try {
+            window.toast?.error?.(
+              photoFxText(
+                "studio.photofx.toast.generationFailed",
+                "Klip oluşturma hatası.",
+                "Clip generation failed."
+              )
+            );
+          } catch {}
             }
           } catch (refundErr) {
             console.error("[photofx] poll refund error:", refundErr);
-            try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+            try {
+            window.toast?.error?.(
+              photoFxText(
+                "studio.photofx.toast.generationFailed",
+                "Klip oluşturma hatası.",
+                "Clip generation failed."
+              )
+            );
+          } catch {}
           }
         } else {
           syncPhotoFxAssistantState(getRoot(), {
@@ -1269,7 +1383,15 @@
             lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
             visibleError: String(j?.error || "photofx_job_error")
           });
-          try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+          try {
+            window.toast?.error?.(
+              photoFxText(
+                "studio.photofx.toast.generationFailed",
+                "Klip oluşturma hatası.",
+                "Clip generation failed."
+              )
+            );
+          } catch {}
         }
 
         window.dispatchEvent(
@@ -1377,7 +1499,15 @@
             lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
             visibleError: "photofx_poll_timeout"
           });
-          try { window.toast?.error?.("İşlem zaman aşımına uğradı, kredi iade edildi."); } catch {}
+          try {
+            window.toast?.error?.(
+              photoFxText(
+                "studio.photofx.toast.timeoutRefunded",
+                "İşlem zaman aşımına uğradı, kredi iade edildi.",
+                "The operation timed out and the credits were refunded."
+              )
+            );
+          } catch {}
         } else {
           syncPhotoFxAssistantState(getRoot(), {
             generationState: "failed",
@@ -1388,14 +1518,38 @@
             lastRequestId: String(window.__PHOTOFX_LAST_CONSUME_REQUEST_ID__ || ""),
             visibleError: "photofx_poll_timeout"
           });
-          try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
+          try {
+          window.toast?.error?.(
+            photoFxText(
+              "studio.photofx.toast.timeoutFailed",
+              "Klip oluşturma zaman aşımı.",
+              "Clip generation timed out."
+            )
+          );
+        } catch {}
         }
       } catch (refundErr) {
         console.error("[photofx] timeout refund error:", refundErr);
-        try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
+        try {
+          window.toast?.error?.(
+            photoFxText(
+              "studio.photofx.toast.timeoutFailed",
+              "Klip oluşturma zaman aşımı.",
+              "Clip generation timed out."
+            )
+          );
+        } catch {}
       }
     } else {
-      try { window.toast?.error?.("Klip oluşturma zaman aşımı"); } catch {}
+      try {
+          window.toast?.error?.(
+            photoFxText(
+              "studio.photofx.toast.timeoutFailed",
+              "Klip oluşturma zaman aşımı.",
+              "Clip generation timed out."
+            )
+          );
+        } catch {}
     }
 
     window.dispatchEvent(
@@ -1611,19 +1765,39 @@ const builtEffects = {
   },
 };
         if (!form.prompt) {
-      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+      try {
+        window.toast?.info?.(
+          photoFxText(
+            "studio.photofx.error.promptRequired",
+            "Prompt yazmalısın.",
+            "Enter a prompt."
+          )
+        );
+      } catch {}
       const promptEl = qs("#pfxPrompt", root);
       if (promptEl) promptEl.focus();
       return;
     }
 
     if (!form.imageFile) {
-      alert("Lütfen bir ana görsel seç.");
+      window.alert(
+        photoFxText(
+          "studio.photofx.error.imageRequired",
+          "Lütfen bir ana görsel seç.",
+          "Please select a main image."
+        )
+      );
       return;
     }
 
     if (!form.styles.length) {
-      alert("Lütfen en az 1 efekt stili seç.");
+      window.alert(
+        photoFxText(
+          "studio.photofx.error.styleRequired",
+          "Lütfen en az 1 efekt stili seç.",
+          "Please select at least one effect style."
+        )
+      );
       return;
     }
 
@@ -1765,7 +1939,15 @@ const builtEffects = {
         },
       })
     );
-    try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+    try {
+      window.toast?.success?.(
+        photoFxText(
+          "studio.photofx.toast.videoPreparing",
+          "Video hazırlanıyor.",
+          "Video is being prepared."
+        )
+      );
+    } catch {}
     console.log("[photofx] create queued ✅", {
       finalJobId,
       requestId,
@@ -1921,7 +2103,15 @@ const builtEffects = {
           e.target.value = "";
           renderUploads(root);
           syncCreateButton(root);
-          try { window.toast?.error?.("HEIC desteklenmiyor · JPG veya PNG yükle"); } catch {}
+          try {
+            window.toast?.error?.(
+              photoFxText(
+                "studio.photofx.error.heicUnsupported",
+                "HEIC desteklenmiyor · JPG veya PNG yükle.",
+                "HEIC is not supported · Upload a JPG or PNG file."
+              )
+            );
+          } catch {}
           return;
         }
 
@@ -1942,7 +2132,11 @@ const builtEffects = {
           const name = document.createElement("div");
           name.className = "pfxUploadChipName";
           name.title = file.name || "";
-          name.textContent = `${truncateName(file.name || "", 22)} · Yükleniyor...`;
+          name.textContent = `${truncateName(file.name || "", 22)} · ${photoFxText(
+            "studio.photofx.status.uploading",
+            "Yükleniyor...",
+            "Uploading..."
+          )}`;
 
           chip.appendChild(name);
           imageMeta.appendChild(chip);
@@ -1959,7 +2153,15 @@ const builtEffects = {
               visibleError: "",
               uploadState: { image: "ready" }
             });
-            try { window.toast?.success?.("Resim eklendi"); } catch {}
+            try {
+              window.toast?.success?.(
+                photoFxText(
+                  "studio.photofx.toast.imageAdded",
+                  "Resim eklendi.",
+                  "Image added."
+                )
+              );
+            } catch {}
             console.log("[photofx] image ready =", state.imageFileUrl);
           })
           .catch((err) => {
@@ -1987,8 +2189,16 @@ const builtEffects = {
                 errText.includes("impersonation");
 
               name.textContent = isPolicyBlocked
-                ? `${truncateName(file.name || "", 20)} · Bu görsel kullanılamaz`
-                : `${truncateName(file.name || "", 20)} · Yükleme hatası`;
+                ? `${truncateName(file.name || "", 20)} · ${photoFxText(
+                    "studio.photofx.status.fileUnavailable",
+                    "Bu görsel kullanılamaz",
+                    "This image cannot be used"
+                  )}`
+                : `${truncateName(file.name || "", 20)} · ${photoFxText(
+                    "studio.photofx.status.uploadFailed",
+                    "Yükleme hatası",
+                    "Upload failed"
+                  )}`;
 
               chip.appendChild(name);
               imageMeta.appendChild(chip);
@@ -1996,8 +2206,16 @@ const builtEffects = {
               try {
                 window.toast?.error?.(
                   isPolicyBlocked
-                    ? "Bu görsel kullanılamaz."
-                    : "Yükleme hatası"
+                    ? photoFxText(
+                        "studio.photofx.error.mediaPolicyBlocked",
+                        "Bu görsel kullanılamaz.",
+                        "This image cannot be used."
+                      )
+                    : photoFxText(
+                        "studio.photofx.status.uploadFailed",
+                        "Yükleme hatası",
+                        "Upload failed"
+                      )
                 );
               } catch {}
             }
@@ -2048,7 +2266,11 @@ const builtEffects = {
           const name = document.createElement("div");
           name.className = "pfxUploadChipName";
           name.title = file.name || "";
-          name.textContent = `${truncateName(file.name || "", 22)} · Yükleniyor...`;
+          name.textContent = `${truncateName(file.name || "", 22)} · ${photoFxText(
+            "studio.photofx.status.uploading",
+            "Yükleniyor...",
+            "Uploading..."
+          )}`;
 
           chip.appendChild(name);
           logoMeta.appendChild(chip);
@@ -2065,7 +2287,15 @@ const builtEffects = {
               visibleError: "",
               uploadState: { logo: "ready" }
             });
-            try { window.toast?.success?.("Logo eklendi · +10 kredi"); } catch {}
+            try {
+              window.toast?.success?.(
+                photoFxText(
+                  "studio.photofx.toast.logoAdded",
+                  "Logo eklendi · +10 kredi",
+                  "Logo added · +10 credits"
+                )
+              );
+            } catch {}
             console.log("[photofx] logo ready =", state.logoFileUrl);
           })
           .catch((err) => {
@@ -2093,8 +2323,16 @@ const builtEffects = {
                 errText.includes("impersonation");
 
               name.textContent = isPolicyBlocked
-                ? `${truncateName(file.name || "", 20)} · Bu dosya kullanılamaz`
-                : `${truncateName(file.name || "", 20)} · Yükleme hatası`;
+                ? `${truncateName(file.name || "", 20)} · ${photoFxText(
+                    "studio.photofx.status.fileUnavailable",
+                    "Bu dosya kullanılamaz",
+                    "This file cannot be used"
+                  )}`
+                : `${truncateName(file.name || "", 20)} · ${photoFxText(
+                    "studio.photofx.status.uploadFailed",
+                    "Yükleme hatası",
+                    "Upload failed"
+                  )}`;
 
               chip.appendChild(name);
               logoMeta.appendChild(chip);
@@ -2102,8 +2340,16 @@ const builtEffects = {
               try {
                 window.toast?.error?.(
                   isPolicyBlocked
-                    ? "Bu görsel kullanılamaz."
-                    : "Yükleme hatası"
+                    ? photoFxText(
+                        "studio.photofx.error.mediaPolicyBlocked",
+                        "Bu görsel kullanılamaz.",
+                        "This image cannot be used."
+                      )
+                    : photoFxText(
+                        "studio.photofx.status.uploadFailed",
+                        "Yükleme hatası",
+                        "Upload failed"
+                      )
                 );
               } catch {}
             }
@@ -2259,7 +2505,11 @@ const builtEffects = {
           name.textContent = `${truncateName(
             file.name || "",
             22
-          )} · Yükleniyor...`;
+          )} · ${photoFxText(
+            "studio.photofx.status.uploading",
+            "Yükleniyor...",
+            "Uploading..."
+          )}`;
 
           chip.appendChild(name);
           audioMeta.appendChild(chip);
@@ -2285,7 +2535,15 @@ const builtEffects = {
               visibleError: "",
               uploadState: { audio: "ready" }
             });
-            try { window.toast?.success?.("Müzik eklendi · +10 kredi"); } catch {}
+            try {
+              window.toast?.success?.(
+                photoFxText(
+                  "studio.photofx.toast.audioAdded",
+                  "Müzik eklendi · +10 kredi",
+                  "Music added · +10 credits"
+                )
+              );
+            } catch {}
             console.log("[photofx] audio ready =", state.audioFileUrl);
             return state.audioFileUrl;
           })
@@ -2318,8 +2576,16 @@ const builtEffects = {
                 errText.includes("impersonation");
 
               name.textContent = isPolicyBlocked
-                ? `${truncateName(file.name || "", 20)} · Bu dosya kullanılamaz`
-                : `${truncateName(file.name || "", 20)} · Yükleme hatası`;
+                ? `${truncateName(file.name || "", 20)} · ${photoFxText(
+                    "studio.photofx.status.fileUnavailable",
+                    "Bu dosya kullanılamaz",
+                    "This file cannot be used"
+                  )}`
+                : `${truncateName(file.name || "", 20)} · ${photoFxText(
+                    "studio.photofx.status.uploadFailed",
+                    "Yükleme hatası",
+                    "Upload failed"
+                  )}`;
 
               chip.appendChild(name);
               audioMeta.appendChild(chip);
@@ -2327,8 +2593,16 @@ const builtEffects = {
               try {
                 window.toast?.error?.(
                   isPolicyBlocked
-                    ? "Bu görsel kullanılamaz."
-                    : "Yükleme hatası"
+                    ? photoFxText(
+                        "studio.photofx.error.mediaPolicyBlocked",
+                        "Bu görsel kullanılamaz.",
+                        "This image cannot be used."
+                      )
+                    : photoFxText(
+                        "studio.photofx.status.uploadFailed",
+                        "Yükleme hatası",
+                        "Upload failed"
+                      )
                 );
               } catch {}
             }
@@ -2381,10 +2655,28 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
         if (nextState.presets.includes(preset)) {
           nextState.presets = nextState.presets.filter((x) => x !== preset);
-          try { window.toast?.success?.(`${preset} kaldırıldı · -5 kredi`); } catch {}
+          try {
+            window.toast?.success?.(
+              photoFxText(
+                "studio.photofx.toast.presetRemoved",
+                "{name} kaldırıldı · -5 kredi",
+                "{name} removed · -5 credits",
+                { name: preset }
+              )
+            );
+          } catch {}
         } else {
           nextState.presets = [...nextState.presets, preset];
-          try { window.toast?.success?.(`${preset} seçildi · +5 kredi`); } catch {}
+          try {
+            window.toast?.success?.(
+              photoFxText(
+                "studio.photofx.toast.presetSelected",
+                "{name} seçildi · +5 kredi",
+                "{name} selected · +5 credits",
+                { name: preset }
+              )
+            );
+          } catch {}
         }
 
         resetPhotoFxPolicyUI(nextRoot);
@@ -2427,8 +2719,11 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           createBtn.style.filter = "saturate(1.05)";
 
           if (policyNote) {
-            policyNote.textContent =
-              "Gerçek sanatçı veya siyasi/kamu figürü adı kullanılamaz. İsim yerine efekti, geçişi ve görsel atmosferi tarif et.";
+            policyNote.textContent = photoFxText(
+              "studio.photofx.policy.blocked",
+              "Gerçek sanatçı veya siyasi/kamu figürü adı kullanılamaz. İsim yerine efekti, geçişi ve görsel atmosferi tarif et.",
+              "Real artist names and political or public-figure names cannot be used. Describe the effect, transition and visual atmosphere instead of using a name."
+            );
             policyNote.style.display = "block";
           }
 
@@ -2444,7 +2739,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
         const form = collectForm(root);
 
         if (!String(form.prompt || "").trim()) {
-          try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+          try {
+        window.toast?.info?.(
+          photoFxText(
+            "studio.photofx.error.promptRequired",
+            "Prompt yazmalısın.",
+            "Enter a prompt."
+          )
+        );
+      } catch {}
           syncPhotoFxAssistantState(root, {
             generationState: "failed",
             visibleError: "prompt_required"
@@ -2463,7 +2766,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             imageInput.files[0] &&
             !form.imageFile
           ) {
-            try { window.toast?.info?.("Ana görsel henüz hazır değil"); } catch {}
+            try {
+              window.toast?.info?.(
+                photoFxText(
+                  "studio.photofx.error.imageNotReady",
+                  "Ana görsel henüz hazır değil.",
+                  "The main image is not ready yet."
+                )
+              );
+            } catch {}
             return;
           }
         }
@@ -2473,7 +2784,13 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             generationState: "failed",
             visibleError: "image_required"
           });
-          alert("Lütfen bir ana görsel seç.");
+          window.alert(
+        photoFxText(
+          "studio.photofx.error.imageRequired",
+          "Lütfen bir ana görsel seç.",
+          "Please select a main image."
+        )
+      );
           return;
         }
 
@@ -2482,7 +2799,13 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             generationState: "failed",
             visibleError: "style_required"
           });
-          alert("Lütfen en az 1 efekt stili seç.");
+          window.alert(
+        photoFxText(
+          "studio.photofx.error.styleRequired",
+          "Lütfen en az 1 efekt stili seç.",
+          "Please select at least one effect style."
+        )
+      );
           return;
         }
 
@@ -2504,7 +2827,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             !String(currentState?.audioFileUrl || "").trim() ||
             currentState?.audioFileUploadStatus !== "ready"
           ) {
-            try { window.toast?.info?.("Müzik henüz hazır değil"); } catch {}
+            try {
+              window.toast?.info?.(
+                photoFxText(
+                  "studio.photofx.error.audioNotReady",
+                  "Müzik henüz hazır değil.",
+                  "The music file is not ready yet."
+                )
+              );
+            } catch {}
             syncPhotoFxAssistantState(root, {
               generationState: "failed",
               visibleError: "audio_not_ready",
@@ -2591,7 +2922,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
               (refundData?.refunded || refundData?.deduped || refundData?.skipped)
             ) {
               await refreshTopCredits();
-              try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+              try {
+                window.toast?.error?.(
+                  photoFxText(
+                    "studio.photofx.toast.creditRefunded",
+                    "İşlem başarısız oldu, kredi iade edildi.",
+                    "The operation failed and the credits were refunded."
+                  )
+                );
+              } catch {}
               return true;
             }
           } catch (refundErr) {
@@ -2674,7 +3013,11 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
 
         createBtn.disabled = true;
         createBtn.classList.add("is-loading");
-        createBtn.textContent = "Üretiliyor...";
+        createBtn.textContent = photoFxText(
+          "studio.photofx.generating",
+          "Üretiliyor...",
+          "Generating..."
+        );
 
         createPhotoFx(root)
           .catch(async (err) => {
@@ -2695,7 +3038,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
             });
 
             if (!refunded) {
-              try { window.toast?.error?.("Klip oluşturma hatası"); } catch {}
+              try {
+            window.toast?.error?.(
+              photoFxText(
+                "studio.photofx.toast.generationFailed",
+                "Klip oluşturma hatası.",
+                "Clip generation failed."
+              )
+            );
+          } catch {}
             }
           })
           .finally(() => {
@@ -2739,7 +3090,15 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
           visibleError: ""
         });
 
-         try { window.toast?.success?.("Video hazır"); } catch {}
+         try {
+           window.toast?.success?.(
+             photoFxText(
+               "studio.photofx.toast.videoReady",
+               "Video hazır.",
+               "Video is ready."
+             )
+           );
+         } catch {}
       });
     }
     }
@@ -2794,6 +3153,50 @@ if (!window.__AIVO_PHOTOFX_DOC_CLICK_BOUND__) {
     window.__AIVO_PHOTOFX_DOM_OBSERVER__.observe(document.body, {
       childList: true,
       subtree: true,
+    });
+  }
+
+
+  function refreshPhotoFxDynamicLanguage() {
+    const root = getRoot();
+    if (!root) return;
+
+    syncCreateButton(root);
+
+    qsa(".pfxUploadEmpty", root).forEach((node) => {
+      node.textContent = photoFxText(
+        "studio.photofx.common.noFile",
+        "Dosya seçilmedi",
+        "No file selected"
+      );
+    });
+
+    qsa(".pfxUploadChipClear", root).forEach((button) => {
+      button.setAttribute(
+        "aria-label",
+        photoFxText(
+          "studio.photofx.action.removeSelectedFile",
+          "Seçili dosyayı kaldır",
+          "Remove selected file"
+        )
+      );
+    });
+
+    const policyNote = qs("#pfxPolicyNote", root);
+    if (policyNote && policyNote.style.display !== "none") {
+      policyNote.textContent = photoFxText(
+        "studio.photofx.policy.blocked",
+        "Gerçek sanatçı veya siyasi/kamu figürü adı kullanılamaz. İsim yerine efekti, geçişi ve görsel atmosferi tarif et.",
+        "Real artist names and political or public-figure names cannot be used. Describe the effect, transition and visual atmosphere instead of using a name."
+      );
+    }
+  }
+
+  if (!window.__AIVO_PHOTOFX_LANGUAGE_BOUND__) {
+    window.__AIVO_PHOTOFX_LANGUAGE_BOUND__ = true;
+
+    document.addEventListener("aivo:language-change", () => {
+      window.setTimeout(refreshPhotoFxDynamicLanguage, 0);
     });
   }
 
