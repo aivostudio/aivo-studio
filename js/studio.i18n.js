@@ -1369,7 +1369,258 @@
       "studio.cartoon.error.invalidVideo": "Lütfen geçerli bir video dosyası seçin.",
       "studio.cartoon.error.insufficientCredit": "Yetersiz kredi.",
       "studio.cartoon.error.requestFailed": "Üretim başlatılamadı. Lütfen tekrar deneyin.",
-      "studio.cartoon.error.mediaPolicyBlocked": "Bu dosya kullanılamaz.",
+         "studio.cartoon.error.mediaPolicyBlocked": "Bu dosya kullanılamaz.",
+
+      /* =========================
+         PHOTOFX / FORM
+         ========================= */
+
+      "studio.photofx.title": "AI Foto Efekt Video Clip",
+      "studio.photofx.subtitle": "Tek fotoğrafını kısa, hareketli ve efektli sosyal medya klibine dönüştür.",
+
+      "studio.photofx.promptHintTitle":
+        "Sahneyi tarif et ya da fotoğrafını konuştur. Videoda ne görmek istiyorsan buraya yaz.",
+
+      "studio.photofx.promptHintNote":
+        "Mekânı, atmosferi, konuşmayı veya kısa hikâyeyi anlat; AIVO bunu videoya dönüştürsün.",
+
+      "studio.photofx.promptPlaceholder":
+        "Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera yaklaşması, hafif glow, sinematik geçişler, enerjik sosyal medya klibi",
+
+      "studio.photofx.effectStyle.title": "Efekt Stili",
+      "studio.photofx.effectStyle.subtitle":
+        "İstersen ekstra efekt stili seçebilirsin. Seçim başına +5 kredi eklenir.",
+      "studio.photofx.effectStyle.credit": "Tek seçim · +5 Kredi",
+
+      /* =========================
+         PHOTOFX / PRESETS
+         ========================= */
+
+      "studio.photofx.preset.neonPulse.title": "Neon Pulse",
+      "studio.photofx.preset.neonPulse.description":
+        "Neon çizgiler, ışık akışı ve hafif parlama ile ritmik enerji verir.",
+      "studio.photofx.preset.neonPulse.use":
+        "Kullanım: Gece, stil ve havalı portreler.",
+
+      "studio.photofx.preset.shakeEdit.title": "Shake Edit",
+      "studio.photofx.preset.shakeEdit.description":
+        "Beat hissi veren mikro sarsıntı ve hızlı vurgu hareketleri üretir.",
+      "studio.photofx.preset.shakeEdit.use":
+        "Kullanım: Rap, trap ve sert edit videolar.",
+
+      "studio.photofx.preset.glitchScan.title": "Glitch Scan",
+      "studio.photofx.preset.glitchScan.description":
+        "Dijital bozulma, RGB kayma ve kısa ekran kırılması hissi verir.",
+      "studio.photofx.preset.glitchScan.use":
+        "Kullanım: Karanlık, teknoloji ve agresif hava.",
+
+      "studio.photofx.preset.splitFlash.title": "Split Flash",
+      "studio.photofx.preset.splitFlash.description":
+        "Görseli bölüp kısa flash geçişleriyle güçlü dikkat etkisi kurar.",
+      "studio.photofx.preset.splitFlash.use":
+        "Kullanım: Dikkat çekici Reels girişleri.",
+
+      "studio.photofx.preset.cinematicZoom.title": "Cinematic Zoom",
+      "studio.photofx.preset.cinematicZoom.description":
+        "Yavaş yakınlaşma, sinematik pan ve hafif derinlik hissi oluşturur.",
+      "studio.photofx.preset.cinematicZoom.use":
+        "Kullanım: Duygusal, kaliteli ve ağır akan videolar.",
+
+      "studio.photofx.preset.auraGlow.title": "Aura Glow",
+      "studio.photofx.preset.auraGlow.description":
+        "Kişinin etrafında enerji halkası ve yumuşak aura ışığı oluşturur.",
+      "studio.photofx.preset.auraGlow.use":
+        "Kullanım: Dreamy, estetik ve manevi editler.",
+
+      "studio.photofx.preset.fireEdge.title": "Fire Edge",
+      "studio.photofx.preset.fireEdge.description":
+        "Kenarlar boyunca ateş ve sıcak ışık akışıyla güçlü etki verir.",
+      "studio.photofx.preset.fireEdge.use":
+        "Kullanım: Güçlü, öfkeli ve epik görünüm.",
+
+      "studio.photofx.preset.darkTrapMotion.title": "Dark Trap Motion",
+      "studio.photofx.preset.darkTrapMotion.description":
+        "Karanlık kontrast, sert zoom ve düşük ışık edit dili uygular.",
+      "studio.photofx.preset.darkTrapMotion.use":
+        "Kullanım: Trap müzik ve sert profil videoları.",
+
+      "studio.photofx.preset.smokeFog.title": "Smoke Fog",
+      "studio.photofx.preset.smokeFog.description":
+        "Yoğun sis, duman katmanı ve atmosferik pus hissiyle sahneyi daha gizemli yapar.",
+      "studio.photofx.preset.smokeFog.use":
+        "Kullanım: Karanlık sahne, sahne ışığı, gizemli ve sinematik videolar.",
+
+      "studio.photofx.preset.festivalLaser.title": "Festival Laser",
+      "studio.photofx.preset.festivalLaser.description":
+        "Arkadan geçen büyük lazer ışıkları ve sahne enerjisiyle güçlü festival havası verir.",
+      "studio.photofx.preset.festivalLaser.use":
+        "Kullanım: Konser, DJ, sahne performansı ve enerjik sosyal medya klipleri.",
+
+      /* =========================
+         PHOTOFX / SETTINGS
+         ========================= */
+
+      "studio.photofx.settings.title": "Klip Ayarları",
+      "studio.photofx.settings.subtitle":
+        "Çıkış süresi, oran, çözünürlük, FPS ve efekt yoğunluğunu belirle.",
+      "studio.photofx.settings.maxImageSize": "Maksimum görsel boyutu: 20 MB",
+
+      "studio.photofx.field.mainImage": "Ana Görsel",
+      "studio.photofx.field.audioUpload": "Audio Yükle",
+      "studio.photofx.field.logoUpload": "Logo Yükle",
+      "studio.photofx.field.logoPosition": "Logo Yönü",
+
+      "studio.photofx.badge.free": "Ücretsiz",
+      "studio.photofx.badge.plus10Credits": "+10 Kredi",
+      "studio.photofx.badge.included": "Dahil",
+
+      "studio.photofx.action.chooseImage": "Resim Seç",
+      "studio.photofx.action.chooseAudio": "Audio Seç",
+      "studio.photofx.action.chooseLogo": "Logo Seç",
+      "studio.photofx.action.removeSelectedFile": "Seçili dosyayı kaldır",
+
+      "studio.photofx.common.noFile": "Dosya seçilmedi",
+
+      "studio.photofx.position.topLeft": "Sol Üst",
+      "studio.photofx.position.topRight": "Sağ Üst",
+      "studio.photofx.position.bottomLeft": "Sol Alt",
+      "studio.photofx.position.bottomRight": "Sağ Alt",
+
+      "studio.photofx.duration.label": "Klip Süresi",
+      "studio.photofx.duration.6": "6 saniye",
+      "studio.photofx.duration.8": "8 saniye",
+      "studio.photofx.duration.10": "10 saniye",
+      "studio.photofx.duration.12": "12 saniye",
+      "studio.photofx.duration.14": "14 saniye",
+      "studio.photofx.duration.16": "16 saniye",
+      "studio.photofx.duration.18": "18 saniye",
+      "studio.photofx.duration.20": "20 saniye",
+
+      "studio.photofx.aspectRatio.label": "En / Boy Oranı",
+      "studio.photofx.aspectRatio.auto": "Otomatik",
+      "studio.photofx.aspectRatio.vertical": "Dikey (9:16)",
+      "studio.photofx.aspectRatio.horizontal": "Yatay (16:9)",
+
+      "studio.photofx.motion.label": "Hareket Seviyesi",
+      "studio.photofx.motion.soft": "Yumuşak",
+      "studio.photofx.motion.balanced": "Dengeli",
+      "studio.photofx.motion.strong": "Güçlü",
+
+      "studio.photofx.effectPower.label": "Efekt Gücü",
+      "studio.photofx.effectPower.light": "Hafif",
+      "studio.photofx.effectPower.medium": "Orta",
+      "studio.photofx.effectPower.high": "Yüksek",
+
+      "studio.photofx.colorMood.label": "Renk Havası",
+      "studio.photofx.colorMood.original": "Orijinal",
+      "studio.photofx.colorMood.cold": "Soğuk",
+      "studio.photofx.colorMood.warm": "Sıcak",
+      "studio.photofx.colorMood.neon": "Neon",
+      "studio.photofx.colorMood.dark": "Karanlık",
+      "studio.photofx.colorMood.cinematic": "Sinematik",
+
+      "studio.photofx.transitionSpeed.label": "Geçiş Hızı",
+      "studio.photofx.transitionSpeed.slow": "Yavaş",
+      "studio.photofx.transitionSpeed.normal": "Normal",
+      "studio.photofx.transitionSpeed.fast": "Hızlı",
+
+      /* =========================
+         PHOTOFX / ENGINE
+         ========================= */
+
+      "studio.photofx.engine.title": "AIVO Foto Efekt Motoru",
+      "studio.photofx.engine.subtitle":
+        "20 saniyelik ilk videolarda üretim süresi yoğunluğa bağlı olarak 5–10 dakika sürebilir. Lütfen işlem tamamlanana kadar bekleyin.",
+
+      "studio.photofx.generate": "🎬 Klip Oluştur",
+      "studio.photofx.generateWithCredit": "🎬 Klip Oluştur ({count} Kredi)",
+      "studio.photofx.generating": "Üretiliyor...",
+
+      /* =========================
+         PHOTOFX / DYNAMIC
+         ========================= */
+
+      "studio.photofx.status.uploading": "Yükleniyor...",
+      "studio.photofx.status.uploadFailed": "Yükleme hatası",
+      "studio.photofx.status.fileUnavailable": "Bu dosya kullanılamaz",
+
+      "studio.photofx.toast.imageAdded": "Resim eklendi.",
+      "studio.photofx.toast.imageRemoved": "Resim kaldırıldı.",
+      "studio.photofx.toast.logoAdded": "Logo eklendi · +10 kredi",
+      "studio.photofx.toast.logoRemoved": "Logo kaldırıldı · -10 kredi",
+      "studio.photofx.toast.audioAdded": "Müzik eklendi · +10 kredi",
+      "studio.photofx.toast.audioRemoved": "Müzik kaldırıldı · -10 kredi",
+      "studio.photofx.toast.presetSelected": "{name} seçildi · +5 kredi",
+      "studio.photofx.toast.presetRemoved": "{name} kaldırıldı · -5 kredi",
+      "studio.photofx.toast.videoPreparing": "Video hazırlanıyor.",
+      "studio.photofx.toast.videoReady": "Video hazır.",
+      "studio.photofx.toast.creditRefunded":
+        "İşlem başarısız oldu, kredi iade edildi.",
+      "studio.photofx.toast.generationFailed": "Klip oluşturma hatası.",
+
+      /* =========================
+         PHOTOFX / ERRORS
+         ========================= */
+
+      "studio.photofx.error.promptRequired": "Prompt yazmalısın.",
+      "studio.photofx.error.imageRequired": "Lütfen bir ana görsel seç.",
+      "studio.photofx.error.styleRequired":
+        "Lütfen en az 1 efekt stili seç.",
+      "studio.photofx.error.imageNotReady":
+        "Ana görsel henüz hazır değil.",
+      "studio.photofx.error.audioNotReady":
+        "Müzik henüz hazır değil.",
+      "studio.photofx.error.heicUnsupported":
+        "HEIC desteklenmiyor · JPG veya PNG yükle.",
+      "studio.photofx.error.mediaPolicyBlocked":
+        "Bu görsel kullanılamaz.",
+      "studio.photofx.error.uploadFailed":
+        "Dosya yüklenemedi. Lütfen tekrar deneyin.",
+      "studio.photofx.error.generationFailed":
+        "Klip oluşturulamadı. Lütfen tekrar deneyin.",
+      "studio.photofx.error.insufficientCredit": "Yetersiz kredi.",
+
+      "studio.photofx.policy.blocked":
+        "Gerçek sanatçı veya siyasi/kamu figürü adı kullanılamaz. İsim yerine efekti, geçişi ve görsel atmosferi tarif et.",
+
+      /* =========================
+         PHOTOFX / RESULTS PANEL
+         ========================= */
+
+      "studio.photofx.panel.title": "PhotoFX Kliplerim",
+      "studio.photofx.panel.searchPlaceholder":
+        "PhotoFX kliplerinde ara...",
+      "studio.photofx.panel.empty":
+        "Henüz PhotoFX klibi bulunmuyor.",
+      "studio.photofx.panel.noResults":
+        "Aramanızla eşleşen PhotoFX klibi bulunamadı.",
+      "studio.photofx.panel.untitled": "İsimsiz PhotoFX Klip",
+
+      "studio.photofx.panel.status.ready": "Hazır",
+      "studio.photofx.panel.status.processing": "İşleniyor",
+      "studio.photofx.panel.status.preparing": "Hazırlanıyor…",
+      "studio.photofx.panel.status.failed": "Hata",
+
+      "studio.photofx.panel.action.play": "Oynat",
+      "studio.photofx.panel.action.pause": "Duraklat",
+      "studio.photofx.panel.action.download": "Videoyu indir",
+      "studio.photofx.panel.action.share": "Videoyu paylaş",
+      "studio.photofx.panel.action.fullscreen": "Tam ekran aç",
+      "studio.photofx.panel.action.delete": "Videoyu sil",
+      "studio.photofx.panel.action.audioOn": "Sesi aç",
+      "studio.photofx.panel.action.audioOff": "Sesi kapat",
+
+      "studio.photofx.panel.download.success":
+        "PhotoFX klibi indirildi.",
+      "studio.photofx.panel.download.failed":
+        "PhotoFX klibi indirilemedi.",
+
+      "studio.photofx.panel.delete.confirm":
+        "Bu PhotoFX klibini silmek istediğinize emin misiniz?",
+      "studio.photofx.panel.delete.success":
+        "PhotoFX klibi silindi.",
+      "studio.photofx.panel.delete.failed":
+        "PhotoFX klibi silinemedi.",
 
       /* =========================
          SUPPORT
@@ -2726,7 +2977,273 @@
       "studio.cartoon.error.invalidVideo": "Please select a valid video file.",
       "studio.cartoon.error.insufficientCredit": "Insufficient credits.",
       "studio.cartoon.error.requestFailed": "Generation could not be started. Please try again.",
-      "studio.cartoon.error.mediaPolicyBlocked": "This file cannot be used.",
+       "studio.cartoon.error.mediaPolicyBlocked": "This file cannot be used.",
+
+      /* =========================
+         PHOTOFX / FORM
+         ========================= */
+
+      "studio.photofx.title": "AI Photo Effect Video Clip",
+      "studio.photofx.subtitle":
+        "Turn a single photo into a short, animated and effect-rich social media clip.",
+
+      "studio.photofx.promptHintTitle":
+        "Describe the scene or make your photo speak. Write what you want to see in the video.",
+
+      "studio.photofx.promptHintNote":
+        "Describe the location, atmosphere, dialogue or short story, and AIVO will turn it into a video.",
+
+      "studio.photofx.promptPlaceholder":
+        "E.g. neon city at night, purple-blue tones, slow camera push-in, light glow, cinematic transitions, energetic social media clip",
+
+      "studio.photofx.effectStyle.title": "Effect Style",
+      "studio.photofx.effectStyle.subtitle":
+        "You can select additional effect styles. Each selection adds 5 credits.",
+      "studio.photofx.effectStyle.credit":
+        "Per selection · +5 Credits",
+
+      /* =========================
+         PHOTOFX / PRESETS
+         ========================= */
+
+      "studio.photofx.preset.neonPulse.title": "Neon Pulse",
+      "studio.photofx.preset.neonPulse.description":
+        "Adds rhythmic energy with neon lines, flowing light and a subtle glow.",
+      "studio.photofx.preset.neonPulse.use":
+        "Best for: Night scenes, stylish and cool portraits.",
+
+      "studio.photofx.preset.shakeEdit.title": "Shake Edit",
+      "studio.photofx.preset.shakeEdit.description":
+        "Creates beat-driven micro shakes and fast accent movements.",
+      "studio.photofx.preset.shakeEdit.use":
+        "Best for: Rap, trap and hard-hitting edits.",
+
+      "studio.photofx.preset.glitchScan.title": "Glitch Scan",
+      "studio.photofx.preset.glitchScan.description":
+        "Adds digital distortion, RGB shifting and brief screen-break effects.",
+      "studio.photofx.preset.glitchScan.use":
+        "Best for: Dark, technological and aggressive visuals.",
+
+      "studio.photofx.preset.splitFlash.title": "Split Flash",
+      "studio.photofx.preset.splitFlash.description":
+        "Splits the image and uses short flash transitions to create a strong attention effect.",
+      "studio.photofx.preset.splitFlash.use":
+        "Best for: Attention-grabbing Reels intros.",
+
+      "studio.photofx.preset.cinematicZoom.title": "Cinematic Zoom",
+      "studio.photofx.preset.cinematicZoom.description":
+        "Creates a slow push-in, cinematic pan and subtle sense of depth.",
+      "studio.photofx.preset.cinematicZoom.use":
+        "Best for: Emotional, premium and slow-paced videos.",
+
+      "studio.photofx.preset.auraGlow.title": "Aura Glow",
+      "studio.photofx.preset.auraGlow.description":
+        "Creates an energy ring and soft aura light around the person.",
+      "studio.photofx.preset.auraGlow.use":
+        "Best for: Dreamy, aesthetic and spiritual edits.",
+
+      "studio.photofx.preset.fireEdge.title": "Fire Edge",
+      "studio.photofx.preset.fireEdge.description":
+        "Adds a strong effect with fire and warm light flowing along the edges.",
+      "studio.photofx.preset.fireEdge.use":
+        "Best for: Powerful, intense and epic visuals.",
+
+      "studio.photofx.preset.darkTrapMotion.title": "Dark Trap Motion",
+      "studio.photofx.preset.darkTrapMotion.description":
+        "Applies dark contrast, hard zooms and a low-light editing style.",
+      "studio.photofx.preset.darkTrapMotion.use":
+        "Best for: Trap music and hard-profile videos.",
+
+      "studio.photofx.preset.smokeFog.title": "Smoke Fog",
+      "studio.photofx.preset.smokeFog.description":
+        "Makes the scene more mysterious with dense fog, smoke layers and atmospheric haze.",
+      "studio.photofx.preset.smokeFog.use":
+        "Best for: Dark scenes, stage lighting and mysterious cinematic videos.",
+
+      "studio.photofx.preset.festivalLaser.title": "Festival Laser",
+      "studio.photofx.preset.festivalLaser.description":
+        "Creates a powerful festival atmosphere with large background lasers and stage energy.",
+      "studio.photofx.preset.festivalLaser.use":
+        "Best for: Concerts, DJs, stage performances and energetic social media clips.",
+
+      /* =========================
+         PHOTOFX / SETTINGS
+         ========================= */
+
+      "studio.photofx.settings.title": "Clip Settings",
+      "studio.photofx.settings.subtitle":
+        "Set the output duration, aspect ratio, resolution, FPS and effect intensity.",
+      "studio.photofx.settings.maxImageSize":
+        "Maximum image size: 20 MB",
+
+      "studio.photofx.field.mainImage": "Main Image",
+      "studio.photofx.field.audioUpload": "Upload Audio",
+      "studio.photofx.field.logoUpload": "Upload Logo",
+      "studio.photofx.field.logoPosition": "Logo Position",
+
+      "studio.photofx.badge.free": "Free",
+      "studio.photofx.badge.plus10Credits": "+10 Credits",
+      "studio.photofx.badge.included": "Included",
+
+      "studio.photofx.action.chooseImage": "Select Image",
+      "studio.photofx.action.chooseAudio": "Select Audio",
+      "studio.photofx.action.chooseLogo": "Select Logo",
+      "studio.photofx.action.removeSelectedFile":
+        "Remove selected file",
+
+      "studio.photofx.common.noFile": "No file selected",
+
+      "studio.photofx.position.topLeft": "Top Left",
+      "studio.photofx.position.topRight": "Top Right",
+      "studio.photofx.position.bottomLeft": "Bottom Left",
+      "studio.photofx.position.bottomRight": "Bottom Right",
+
+      "studio.photofx.duration.label": "Clip Duration",
+      "studio.photofx.duration.6": "6 seconds",
+      "studio.photofx.duration.8": "8 seconds",
+      "studio.photofx.duration.10": "10 seconds",
+      "studio.photofx.duration.12": "12 seconds",
+      "studio.photofx.duration.14": "14 seconds",
+      "studio.photofx.duration.16": "16 seconds",
+      "studio.photofx.duration.18": "18 seconds",
+      "studio.photofx.duration.20": "20 seconds",
+
+      "studio.photofx.aspectRatio.label": "Aspect Ratio",
+      "studio.photofx.aspectRatio.auto": "Automatic",
+      "studio.photofx.aspectRatio.vertical": "Vertical (9:16)",
+      "studio.photofx.aspectRatio.horizontal": "Horizontal (16:9)",
+
+      "studio.photofx.motion.label": "Motion Level",
+      "studio.photofx.motion.soft": "Soft",
+      "studio.photofx.motion.balanced": "Balanced",
+      "studio.photofx.motion.strong": "Strong",
+
+      "studio.photofx.effectPower.label": "Effect Power",
+      "studio.photofx.effectPower.light": "Light",
+      "studio.photofx.effectPower.medium": "Medium",
+      "studio.photofx.effectPower.high": "High",
+
+      "studio.photofx.colorMood.label": "Color Mood",
+      "studio.photofx.colorMood.original": "Original",
+      "studio.photofx.colorMood.cold": "Cool",
+      "studio.photofx.colorMood.warm": "Warm",
+      "studio.photofx.colorMood.neon": "Neon",
+      "studio.photofx.colorMood.dark": "Dark",
+      "studio.photofx.colorMood.cinematic": "Cinematic",
+
+      "studio.photofx.transitionSpeed.label": "Transition Speed",
+      "studio.photofx.transitionSpeed.slow": "Slow",
+      "studio.photofx.transitionSpeed.normal": "Normal",
+      "studio.photofx.transitionSpeed.fast": "Fast",
+
+      /* =========================
+         PHOTOFX / ENGINE
+         ========================= */
+
+      "studio.photofx.engine.title": "AIVO Photo Effect Engine",
+      "studio.photofx.engine.subtitle":
+        "Initial 20-second videos may take approximately 5–10 minutes depending on demand. Please wait until processing is complete.",
+
+      "studio.photofx.generate": "🎬 Create Clip",
+      "studio.photofx.generateWithCredit":
+        "🎬 Create Clip ({count} Credits)",
+      "studio.photofx.generating": "Generating...",
+
+      /* =========================
+         PHOTOFX / DYNAMIC
+         ========================= */
+
+      "studio.photofx.status.uploading": "Uploading...",
+      "studio.photofx.status.uploadFailed": "Upload failed",
+      "studio.photofx.status.fileUnavailable":
+        "This file cannot be used",
+
+      "studio.photofx.toast.imageAdded": "Image added.",
+      "studio.photofx.toast.imageRemoved": "Image removed.",
+      "studio.photofx.toast.logoAdded":
+        "Logo added · +10 credits",
+      "studio.photofx.toast.logoRemoved":
+        "Logo removed · -10 credits",
+      "studio.photofx.toast.audioAdded":
+        "Music added · +10 credits",
+      "studio.photofx.toast.audioRemoved":
+        "Music removed · -10 credits",
+      "studio.photofx.toast.presetSelected":
+        "{name} selected · +5 credits",
+      "studio.photofx.toast.presetRemoved":
+        "{name} removed · -5 credits",
+      "studio.photofx.toast.videoPreparing":
+        "Video is being prepared.",
+      "studio.photofx.toast.videoReady": "Video is ready.",
+      "studio.photofx.toast.creditRefunded":
+        "The operation failed and the credits were refunded.",
+      "studio.photofx.toast.generationFailed":
+        "Clip generation failed.",
+
+      /* =========================
+         PHOTOFX / ERRORS
+         ========================= */
+
+      "studio.photofx.error.promptRequired": "Enter a prompt.",
+      "studio.photofx.error.imageRequired":
+        "Please select a main image.",
+      "studio.photofx.error.styleRequired":
+        "Please select at least one effect style.",
+      "studio.photofx.error.imageNotReady":
+        "The main image is not ready yet.",
+      "studio.photofx.error.audioNotReady":
+        "The music file is not ready yet.",
+      "studio.photofx.error.heicUnsupported":
+        "HEIC is not supported · Upload a JPG or PNG file.",
+      "studio.photofx.error.mediaPolicyBlocked":
+        "This image cannot be used.",
+      "studio.photofx.error.uploadFailed":
+        "The file could not be uploaded. Please try again.",
+      "studio.photofx.error.generationFailed":
+        "The clip could not be created. Please try again.",
+      "studio.photofx.error.insufficientCredit":
+        "Insufficient credits.",
+
+      "studio.photofx.policy.blocked":
+        "Real artist names and political or public-figure names cannot be used. Describe the effect, transition and visual atmosphere instead of using a name.",
+
+      /* =========================
+         PHOTOFX / RESULTS PANEL
+         ========================= */
+
+      "studio.photofx.panel.title": "My PhotoFX Clips",
+      "studio.photofx.panel.searchPlaceholder":
+        "Search PhotoFX clips...",
+      "studio.photofx.panel.empty": "No PhotoFX clips yet.",
+      "studio.photofx.panel.noResults":
+        "No PhotoFX clips match your search.",
+      "studio.photofx.panel.untitled": "Untitled PhotoFX Clip",
+
+      "studio.photofx.panel.status.ready": "Ready",
+      "studio.photofx.panel.status.processing": "Processing",
+      "studio.photofx.panel.status.preparing": "Preparing…",
+      "studio.photofx.panel.status.failed": "Failed",
+
+      "studio.photofx.panel.action.play": "Play",
+      "studio.photofx.panel.action.pause": "Pause",
+      "studio.photofx.panel.action.download": "Download video",
+      "studio.photofx.panel.action.share": "Share video",
+      "studio.photofx.panel.action.fullscreen": "Open fullscreen",
+      "studio.photofx.panel.action.delete": "Delete video",
+      "studio.photofx.panel.action.audioOn": "Turn sound on",
+      "studio.photofx.panel.action.audioOff": "Turn sound off",
+
+      "studio.photofx.panel.download.success":
+        "The PhotoFX clip was downloaded.",
+      "studio.photofx.panel.download.failed":
+        "The PhotoFX clip could not be downloaded.",
+
+      "studio.photofx.panel.delete.confirm":
+        "Are you sure you want to delete this PhotoFX clip?",
+      "studio.photofx.panel.delete.success":
+        "The PhotoFX clip was deleted.",
+      "studio.photofx.panel.delete.failed":
+        "The PhotoFX clip could not be deleted.",
 
       /* =========================
          SUPPORT
@@ -2736,6 +3253,7 @@
         "Support Center"
     }
   };
+
   function normalizeLanguage(value) {
     var language = String(value || "")
       .trim()
