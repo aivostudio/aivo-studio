@@ -351,19 +351,19 @@
     });
   }
 
-async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
+async function waitForAtmoFinalReady(jobId, timeoutMs = 900000) {
   const startedAt = Date.now();
-  let tries = 0;
 
-  while ((Date.now() - startedAt) < timeoutMs && tries < 60) {
-    tries += 1;
-
+  while ((Date.now() - startedAt) < timeoutMs) {
     try {
-      const rr = await fetch(`/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`, {
-        credentials: "include",
-        cache: "no-store",
-        headers: { "accept": "application/json" }
-      });
+      const rr = await fetch(
+        `/api/jobs/status?job_id=${encodeURIComponent(jobId)}&debug=1`,
+        {
+          credentials: "include",
+          cache: "no-store",
+          headers: { accept: "application/json" }
+        }
+      );
 
       const jj = await rr.json().catch(() => null);
       console.log("[ATM][FINAL POLL]", jj);
@@ -374,26 +374,58 @@ async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
           jj?.db_status ||
           jj?.state ||
           ""
-        ).trim().toLowerCase();
+        )
+          .trim()
+          .toLowerCase();
 
         const readyVideoUrl = String(
           jj?.video?.url ||
           jj?.video_url ||
+          jj?.meta?.final_video_url ||
           ""
         ).trim();
 
-        const hasReadyOutput =
-          Array.isArray(jj?.outputs) &&
-          jj.outputs.some((o) => {
-            const t = String(o?.type || o?.kind || o?.meta?.type || "").trim().toLowerCase();
-            const u = String(o?.url || o?.video_url || o?.image_url || "").trim();
-            return !!u && (t === "video" || t === "image");
-          });
+        const readyVideoOutput =
+          Array.isArray(jj?.outputs)
+            ? jj.outputs.find((o) => {
+                const type = String(
+                  o?.type ||
+                  o?.kind ||
+                  o?.meta?.type ||
+                  ""
+                )
+                  .trim()
+                  .toLowerCase();
 
-        if (
-          ["ready", "completed", "complete", "succeeded", "done"].includes(normalizedStatus) &&
-          (readyVideoUrl || hasReadyOutput)
-        ) {
+                const url = String(
+                  o?.url ||
+                  o?.video_url ||
+                  o?.archive_url ||
+                  ""
+                ).trim();
+
+                return type === "video" && !!url;
+              })
+            : null;
+
+        const outputVideoUrl = String(
+          readyVideoOutput?.url ||
+          readyVideoOutput?.video_url ||
+          readyVideoOutput?.archive_url ||
+          ""
+        ).trim();
+
+        const finalVideoUrl = readyVideoUrl || outputVideoUrl;
+
+        const isReady = [
+          "ready",
+          "completed",
+          "complete",
+          "succeeded",
+          "done"
+        ].includes(normalizedStatus);
+
+        if (isReady && finalVideoUrl) {
           window.__LAST_ATMO_STATUS__ = jj;
 
           window.dispatchEvent(
@@ -401,7 +433,7 @@ async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
               detail: {
                 job_id: jobId,
                 status: normalizedStatus,
-                video: readyVideoUrl ? { url: readyVideoUrl } : null,
+                video: { url: finalVideoUrl },
                 outputs: jj.outputs || [],
                 raw: jj
               }
@@ -411,7 +443,11 @@ async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
           return { ok: true, status: jj };
         }
 
-        if (["error", "failed", "cancelled", "canceled"].includes(normalizedStatus)) {
+        if (
+          ["error", "failed", "cancelled", "canceled"].includes(
+            normalizedStatus
+          )
+        ) {
           return { ok: false, error: jj };
         }
       }
@@ -422,7 +458,10 @@ async function waitForAtmoFinalReady(jobId, timeoutMs = 90000) {
     await sleep(3000);
   }
 
-  return { ok: false, error: "atmo_final_poll_timeout" };
+  return {
+    ok: false,
+    error: "atmo_final_poll_timeout"
+  };
 }
 
 async function withGenerateLoading(btn, run, root) {
@@ -458,7 +497,7 @@ async function withGenerateLoading(btn, run, root) {
     ).trim();
 
     if (createdJobId) {
-      await waitForAtmoFinalReady(createdJobId, 90000);
+    await waitForAtmoFinalReady(createdJobId, 900000);
     }
 
     const elapsed = Date.now() - startedAt;
