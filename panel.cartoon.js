@@ -21,6 +21,58 @@
 
   const safeStr = (v) => String(v == null ? "" : v).trim();
 
+  function panelLanguage() {
+    try {
+      const value = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (value) return String(value).toLowerCase().startsWith("en") ? "en" : "tr";
+    } catch {}
+
+    return String(
+      window.AIVO_LANG ||
+      document.documentElement.lang ||
+      "tr"
+    ).toLowerCase().startsWith("en") ? "en" : "tr";
+  }
+
+  function panelText(key, trText, enText) {
+    const fallback = panelLanguage() === "en" ? enText : trText;
+
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, fallback);
+      if (translated && translated !== key) return translated;
+    } catch {}
+
+    try {
+      if (typeof window.t === "function") {
+        const translated = window.t(key);
+        if (translated && translated !== key) return translated;
+      }
+    } catch {}
+
+    return fallback;
+  }
+
+  function panelToast(type, key, trText, enText) {
+    const message = panelText(key, trText, enText);
+
+    try {
+      if (window.toast && typeof window.toast[type] === "function") {
+        window.toast[type](message);
+        return;
+      }
+
+      if (typeof window.toast === "function") {
+        window.toast(message, type);
+        return;
+      }
+    } catch (error) {
+      console.warn("[CARTOON PANEL] toast failed", error);
+    }
+
+    if (type === "error") console.error("[CARTOON PANEL]", message);
+    else console.log("[CARTOON PANEL]", message);
+  }
+
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -92,7 +144,14 @@
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
+      return {
+        text: panelText(
+          "studio.cartoon.panel.status.failed",
+          "Hata",
+          "Failed"
+        ),
+        kind: "bad"
+      };
     }
     if (
       st.includes("READY") ||
@@ -100,7 +159,14 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: "Hazır", kind: "ok" };
+      return {
+        text: panelText(
+          "studio.cartoon.panel.status.ready",
+          "Hazır",
+          "Ready"
+        ),
+        kind: "ok"
+      };
     }
     if (
       st.includes("RUN") ||
@@ -108,9 +174,25 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: "İşleniyor", kind: "mid" };
+      return {
+        text: panelText(
+          "studio.cartoon.panel.status.processing",
+          "İşleniyor",
+          "Processing"
+        ),
+        kind: "mid"
+      };
     }
-    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
+    return {
+      text: st
+        ? st.slice(0, 18)
+        : panelText(
+            "studio.cartoon.panel.status.processing",
+            "İşleniyor",
+            "Processing"
+          ),
+      kind: "mid"
+    };
   };
 
   function pickOutputUrl(o) {
@@ -515,6 +597,102 @@
       return "";
     }
 
+    function setPanelControlLabel(element, label) {
+      if (!element) return;
+      element.setAttribute("title", label);
+      element.setAttribute("aria-label", label);
+    }
+
+    function localizePanelControls(root) {
+      if (!root) return;
+
+      root.querySelectorAll('[data-svc-act="download"], [data-act="download"]').forEach((button) => {
+        setPanelControlLabel(
+          button,
+          panelText(
+            "studio.cartoon.panel.action.download",
+            "Videoyu indir",
+            "Download video"
+          )
+        );
+      });
+
+      root.querySelectorAll('[data-svc-act="share"], [data-act="share"]').forEach((button) => {
+        setPanelControlLabel(
+          button,
+          panelText(
+            "studio.cartoon.panel.action.share",
+            "Videoyu paylaş",
+            "Share video"
+          )
+        );
+      });
+
+      root.querySelectorAll('[data-svc-act="fullscreen"], [data-act="open"]').forEach((button) => {
+        setPanelControlLabel(
+          button,
+          panelText(
+            "studio.cartoon.panel.action.fullscreen",
+            "Tam ekran aç",
+            "Open fullscreen"
+          )
+        );
+      });
+
+      root.querySelectorAll('[data-svc-act="delete"], [data-act="delete"]').forEach((button) => {
+        setPanelControlLabel(
+          button,
+          panelText(
+            "studio.cartoon.panel.action.delete",
+            "Videoyu sil",
+            "Delete video"
+          )
+        );
+      });
+
+      root.querySelectorAll('[data-svc-act="play"], [data-act="play"]').forEach((button) => {
+        const card = button.closest(".svcCard, .cartoonPanelCard");
+        const video = card?.querySelector("video.svcVideo, video");
+        const playing = Boolean(video && !video.paused);
+
+        setPanelControlLabel(
+          button,
+          playing
+            ? panelText(
+                "studio.cartoon.panel.action.pause",
+                "Duraklat",
+                "Pause"
+              )
+            : panelText(
+                "studio.cartoon.panel.action.play",
+                "Oynat",
+                "Play"
+              )
+        );
+      });
+
+      root.querySelectorAll('[data-svc-act="sound"]').forEach((button) => {
+        const card = button.closest(".svcCard, .cartoonPanelCard");
+        const video = card?.querySelector("video.svcVideo, video");
+        const soundOn = Boolean(video && !video.muted);
+
+        setPanelControlLabel(
+          button,
+          soundOn
+            ? panelText(
+                "studio.cartoon.panel.action.audioOff",
+                "Sesi kapat",
+                "Turn sound off"
+              )
+            : panelText(
+                "studio.cartoon.panel.action.audioOn",
+                "Sesi aç",
+                "Turn sound on"
+              )
+        );
+      });
+    }
+
     function ensureCardEl(job) {
       const id = idOf(job);
       if (!id) return null;
@@ -528,15 +706,15 @@
 
       el.innerHTML = `
         <div class="cartoonPanelThumb">
-          <div class="cartoonPanelPill mid">İşleniyor</div>
-          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">Hazırlanıyor…</div></div>
+          <div class="cartoonPanelPill mid">${esc(panelText("studio.cartoon.panel.status.processing", "İşleniyor", "Processing"))}</div>
+          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">${esc(panelText("studio.cartoon.panel.preparing", "Hazırlanıyor…", "Preparing…"))}</div></div>
         </div>
         <div class="cartoonPanelFooter">
           <div class="cartoonPanelMetaLine"></div>
           <div class="cartoonPanelActions">
-            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
-            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
-            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
+            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>${esc(panelText("studio.cartoon.panel.action.download", "Videoyu indir", "Download video"))}</button>
+            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>${esc(panelText("studio.cartoon.panel.action.share", "Videoyu paylaş", "Share video"))}</button>
+            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">${esc(panelText("studio.cartoon.panel.action.delete", "Videoyu sil", "Delete video"))}</button>
           </div>
         </div>
       `;
@@ -557,6 +735,7 @@
       }
 
       el.setAttribute("data-job", idOf(job));
+      localizePanelControls(el);
     }
 
     function buildMergedItems() {
@@ -604,7 +783,11 @@
     function render(items) {
       if (!elGrid) return;
 
-      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
+      setStatus(
+        hasProcessing(items)
+          ? panelText("studio.cartoon.panel.status.processing", "İşleniyor", "Processing")
+          : panelText("studio.cartoon.panel.status.ready", "Hazır", "Ready")
+      );
 
       const list = Array.isArray(items) ? items : [];
       const EMPTY_ID = "cartoonEmptyState";
@@ -625,8 +808,16 @@
         }
 
         emptyEl.textContent = state.query
-          ? "Aramana uygun çizgifilm üretim bulunamadı."
-          : "Henüz çizgifilm üretim yok.";
+          ? panelText(
+              "studio.cartoon.panel.noResults",
+              "Aramanızla eşleşen çizgifilm videosu bulunamadı.",
+              "No cartoon videos matched your search."
+            )
+          : panelText(
+              "studio.cartoon.panel.empty",
+              "Henüz çizgifilm videosu bulunmuyor.",
+              "No cartoon videos yet."
+            );
 
         return;
       } else if (emptyEl) {
@@ -712,9 +903,32 @@
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
+
+        panelToast(
+          "success",
+          "studio.cartoon.panel.download.success",
+          "Çizgifilm videosu indirildi.",
+          "Cartoon video downloaded."
+        );
       } catch (err) {
         console.error("[CARTOON PANEL] download failed", err);
-        window.open(cleanUrl, "_blank", "noopener");
+        const opened = window.open(cleanUrl, "_blank", "noopener");
+
+        if (opened) {
+          panelToast(
+            "info",
+            "studio.cartoon.panel.download.opened",
+            "Video yeni sekmede açıldı.",
+            "The video was opened in a new tab."
+          );
+        } else {
+          panelToast(
+            "error",
+            "studio.cartoon.panel.download.failed",
+            "Çizgifilm videosu indirilemedi.",
+            "Cartoon video could not be downloaded."
+          );
+        }
       }
     }
 
@@ -727,9 +941,42 @@
         : cleanUrl;
 
       if (navigator.share) {
-        navigator.share({ url: directUrl }).catch(() => {});
-      } else {
-        navigator.clipboard?.writeText(directUrl).catch(() => {});
+        navigator.share({ url: directUrl })
+          .then(() => {
+            panelToast(
+              "success",
+              "studio.cartoon.panel.share.success",
+              "Paylaşım penceresi açıldı.",
+              "The share dialog was opened."
+            );
+          })
+          .catch((error) => {
+            if (error?.name === "AbortError") return;
+            panelToast(
+              "error",
+              "studio.cartoon.panel.share.failed",
+              "Çizgifilm videosu paylaşılamadı.",
+              "Cartoon video could not be shared."
+            );
+          });
+      } else if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(directUrl)
+          .then(() => {
+            panelToast(
+              "success",
+              "studio.cartoon.panel.share.copied",
+              "Çizgifilm video bağlantısı kopyalandı.",
+              "Cartoon video link copied."
+            );
+          })
+          .catch(() => {
+            panelToast(
+              "error",
+              "studio.cartoon.panel.share.failed",
+              "Çizgifilm videosu paylaşılamadı.",
+              "Cartoon video could not be shared."
+            );
+          });
       }
     }
 
@@ -814,18 +1061,37 @@
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[CARTOON PANEL] delete failed");
+            panelToast(
+              "error",
+              "studio.cartoon.panel.delete.failed",
+              "Çizgifilm videosu silinemedi.",
+              "Cartoon video could not be deleted."
+            );
             return;
           }
 
           try {
             await controller?.hydrate?.(true);
           } catch {}
+
+          panelToast(
+            "success",
+            "studio.cartoon.panel.delete.success",
+            "Çizgifilm videosu silindi.",
+            "Cartoon video deleted."
+          );
         } catch (err) {
           hiddenDeletedIds.delete(id);
           try {
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
+          panelToast(
+            "error",
+            "studio.cartoon.panel.delete.failed",
+            "Çizgifilm videosu silinemedi.",
+            "Cartoon video could not be deleted."
+          );
         }
 
         return;
@@ -1029,7 +1295,54 @@
       }, 1500);
     };
 
+    const refreshPanelLanguage = () => {
+      if (destroyed) return;
+
+      renderCurrent();
+      localizePanelControls(host);
+
+      const panelRoot = document.getElementById("rightPanelHost");
+      const titleElement = panelRoot?.querySelector(".rpTitle");
+      const metaElement = panelRoot?.querySelector(".rpMeta");
+      const searchElement = panelRoot?.querySelector(".rpSearch");
+
+      if (titleElement) {
+        titleElement.textContent = panelText(
+          "studio.cartoon.panel.title",
+          "AI Çocuk Çizgifilm",
+          "AI Kids Cartoon"
+        );
+      }
+
+      if (metaElement) {
+        metaElement.textContent = panelText(
+          "studio.cartoon.panel.status.ready",
+          "Hazır",
+          "Ready"
+        );
+      }
+
+      if (searchElement) {
+        searchElement.placeholder = panelText(
+          "studio.cartoon.panel.searchPlaceholder",
+          "Çizgifilmlerde ara...",
+          "Search cartoon videos..."
+        );
+      }
+    };
+
+    const refreshActiveControlLabels = (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLVideoElement)) return;
+      if (!host.contains(target)) return;
+      queueMicrotask(() => localizePanelControls(target.closest(".svcCard, .cartoonPanelCard")));
+    };
+
     controller.start();
+    document.addEventListener("aivo:language-change", refreshPanelLanguage);
+    host.addEventListener("play", refreshActiveControlLabels, true);
+    host.addEventListener("pause", refreshActiveControlLabels, true);
+    host.addEventListener("volumechange", refreshActiveControlLabels, true);
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
     window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
@@ -1050,6 +1363,14 @@
         } catch {}
         try {
           document.removeEventListener("search", onSearchInput, true);
+        } catch {}
+        try {
+          document.removeEventListener("aivo:language-change", refreshPanelLanguage);
+        } catch {}
+        try {
+          host.removeEventListener("play", refreshActiveControlLabels, true);
+          host.removeEventListener("pause", refreshActiveControlLabels, true);
+          host.removeEventListener("volumechange", refreshActiveControlLabels, true);
         } catch {}
         try {
           window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
@@ -1084,10 +1405,22 @@
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("cartoon", {
         header: {
-          title: "AI Çocuk Çizgifilm",
-          meta: "Hazır",
+          title: panelText(
+            "studio.cartoon.panel.title",
+            "AI Çocuk Çizgifilm",
+            "AI Kids Cartoon"
+          ),
+          meta: panelText(
+            "studio.cartoon.panel.status.ready",
+            "Hazır",
+            "Ready"
+          ),
           searchEnabled: true,
-          searchPlaceholder: "Çizgifilmlerde ara...",
+          searchPlaceholder: panelText(
+            "studio.cartoon.panel.searchPlaceholder",
+            "Çizgifilmlerde ara...",
+            "Search cartoon videos..."
+          ),
           resetSearch: true,
         },
 
