@@ -429,8 +429,552 @@
       "studio.cover.generate9":
         "🖼️ Kapak Üret (9 Kredi)",
 
-      "studio.cover.generateWithCredit":
+          "studio.cover.generateWithCredit":
         "🖼️ Kapak Üret ({count} Kredi)",
+
+      /* =========================
+         ATMOSPHERE / HEADER & MODE
+         ========================= */
+
+      "studio.atmo.title":
+        "AI Atmosfer Video",
+
+      "studio.atmo.subtitle":
+        "Klip çekemeyenler için: kar yağsın, yağmur aksın, ışık titresin — 4–15 sn sinematik atmosfer videoları üret.",
+
+      "studio.atmo.modeLabel":
+        "Mod Seçimi",
+
+      "studio.atmo.mode.basic":
+        "Basit Mod",
+
+      "studio.atmo.mode.super":
+        "Süper Mod ✨",
+
+      /* =========================
+         ATMOSPHERE / BASIC SCENES
+         ========================= */
+
+      "studio.atmo.scene.title":
+        "Arka Mekan",
+
+      "studio.atmo.scene.subtitle":
+        "Hazır sahne seç veya kendi görselini yükle.",
+
+      "studio.atmo.scene.winterCafe.title":
+        "Kış Kafe",
+
+      "studio.atmo.scene.winterCafe.desc":
+        "Neon ışıklar, kar, sıcak vibe.",
+
+      "studio.atmo.scene.cozyCabin.title":
+        "Dağ Evi",
+
+      "studio.atmo.scene.cozyCabin.desc":
+        "Şömine, ahşap, cozy.",
+
+      "studio.atmo.scene.lakeCabin.title":
+        "Göl Kenarı",
+
+      "studio.atmo.scene.lakeCabin.desc":
+        "Sakin, sinematik yansıma.",
+
+      "studio.atmo.scene.cityNight.title":
+        "Şehir Gecesi",
+
+      "studio.atmo.scene.cityNight.desc":
+        "Bokeh, sokak lambaları.",
+
+      "studio.atmo.scene.rainyWindow.title":
+        "Yağmurlu Pencere Önü",
+
+      "studio.atmo.scene.rainyWindow.desc":
+        "Cam damlaları, loş ışık, duygusal hava.",
+
+      "studio.atmo.scene.cityRooftop.title":
+        "Gece Şehir Terası",
+
+      "studio.atmo.scene.cityRooftop.desc":
+        "Şehir ışıkları, hafif rüzgar, sinematik görünüm.",
+
+      "studio.atmo.scene.oldStoneStreet.title":
+        "Eski Taş Sokak",
+
+      "studio.atmo.scene.oldStoneStreet.desc":
+        "Islak zemin, sıcak lambalar, klip hissi.",
+
+      "studio.atmo.scene.atticWindow.title":
+        "Çatı Katı Pencere Önü",
+
+      "studio.atmo.scene.atticWindow.desc":
+        "İçeride sıcak ışık, dışarıda gece hissi.",
+
+      "studio.atmo.scene.seaCliffs.title":
+        "Deniz Kenarı Kayalıklar",
+
+      "studio.atmo.scene.seaCliffs.desc":
+        "Rüzgar, ufuk, özgür ve sinematik atmosfer.",
+
+      "studio.atmo.scene.pineMountainRoad.title":
+        "Çam Ağaçlı Dağ Yolu",
+
+      "studio.atmo.scene.pineMountainRoad.desc":
+        "Serin doğa, yol hissi, hafif yalnızlık.",
+
+      "studio.atmo.scene.sunsetHighway.title":
+        "Gün Batımı Otoyol Kenarı",
+
+      "studio.atmo.scene.sunsetHighway.desc":
+        "Ufuk çizgisi, yol, melankolik akış.",
+
+      "studio.atmo.scene.dimMotelCorridor.title":
+        "Loş Motel Koridoru",
+
+      "studio.atmo.scene.dimMotelCorridor.desc":
+        "Sessiz, sinematik ve güçlü yalnızlık hissi.",
+
+      /* =========================
+         ATMOSPHERE / BASIC EFFECTS
+         ========================= */
+
+      "studio.atmo.effects.title":
+        "Atmosfer",
+
+      "studio.atmo.effects.subtitle":
+        "İstediğin kadar seç. Örn: Kar + Işık",
+
+      "studio.atmo.effects.label":
+        "Atmosfer Seçimleri",
+
+      "studio.atmo.effects.snow":
+        "❄️ Kar",
+
+      "studio.atmo.effects.rain":
+        "🌧️ Yağmur",
+
+      "studio.atmo.effects.leaf":
+        "🍃 Yaprak",
+
+      "studio.atmo.effects.fog":
+        "🌫️ Sis",
+
+      "studio.atmo.effects.light":
+        "✨ Işık",
+
+      "studio.atmo.effects.fire":
+        "🔥 Ateş",
+
+      "studio.atmo.effects.wind":
+        "🌬️ Rüzgar",
+
+      "studio.atmo.duration":
+        "Süre",
+
+      "studio.atmo.duration.seconds":
+        "{count} sn",
+
+      /* =========================
+         ATMOSPHERE / PERSONALIZATION
+         ========================= */
+
+      "studio.atmo.personalization.title":
+        "Kişiselleştirme (opsiyonel)",
+
+      "studio.atmo.personalization.subtitle":
+        "Oran / logo / jingle ekleyebilirsin. Üret butonu burada.",
+
+      "studio.atmo.aspectRatio":
+        "Oran",
+
+      "studio.atmo.opacity":
+        "Opaklık",
+
+      "studio.atmo.silentCopy":
+        "Spotify Canvas için sessiz kopya üret",
+
+      "studio.atmo.logo":
+        "Logo",
+
+      "studio.atmo.audio":
+        "Müzik / Jingle",
+
+      "studio.atmo.credit.plus10":
+        "+10 Kredi",
+
+      "studio.atmo.credit.free":
+        "Ücretsiz",
+
+      "studio.atmo.file.chooseLogo":
+        "🏷️ Logo Seç",
+
+      "studio.atmo.file.chooseAudio":
+        "🎵 Audio Seç",
+
+      "studio.atmo.file.chooseImage":
+        "🏞️ Resim Seç",
+
+      "studio.atmo.file.chooseProLogo":
+        "🖼️ Logo Seç",
+
+      "studio.atmo.file.notSelected":
+        "Dosya seçilmedi",
+
+      "studio.atmo.file.removeLogoLabel":
+        "Yüklenen logoyu kaldır",
+
+      "studio.atmo.file.removeLogoTitle":
+        "Logoyu kaldır",
+
+      "studio.atmo.file.removeAudioLabel":
+        "Yüklenen audioyu kaldır",
+
+      "studio.atmo.file.removeAudioTitle":
+        "Audioyu kaldır",
+
+      "studio.atmo.file.removeImageLabel":
+        "Yüklenen resmi kaldır",
+
+      "studio.atmo.file.removeImageTitle":
+        "Resmi kaldır",
+
+      "studio.atmo.logoPosition.topLeft":
+        "Sol Üst",
+
+      "studio.atmo.logoPosition.topRight":
+        "Sağ Üst",
+
+      "studio.atmo.logoPosition.bottomLeft":
+        "Sol Alt",
+
+      "studio.atmo.logoPosition.bottomRight":
+        "Sağ Alt",
+
+      "studio.atmo.logoPosition.centerSmall":
+        "Ortada (küçük)",
+
+      "studio.atmo.logoSize.small":
+        "Küçük",
+
+      "studio.atmo.logoSize.medium":
+        "Orta",
+
+      "studio.atmo.generate.basic":
+        "🎬 Atmosfer Video Oluştur (30 Kredi)",
+
+      "studio.atmo.generate.basicWithCredit":
+        "🎬 Atmosfer Video Oluştur ({count} Kredi)",
+
+      "studio.atmo.generate.super":
+        "🎬 Süper Atmosfer Video Oluştur (45 Kredi)",
+
+      "studio.atmo.generate.superWithCredit":
+        "🎬 Süper Atmosfer Video Oluştur ({count} Kredi)",
+
+      /* =========================
+         ATMOSPHERE / SUPER PROMPT
+         ========================= */
+
+      "studio.atmo.super.description":
+        "Sahne, kamera ve atmosferi tek cümlede anlat; referanslar yalnızca yön verir, birebir kopyalanmaz.",
+
+      "studio.atmo.super.promptPlaceholder":
+        "Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera, hafif sis, sinematik...",
+
+      /* =========================
+         ATMOSPHERE / SUPER STYLE
+         ========================= */
+
+      "studio.atmo.style.title":
+        "Atmosfer Stili",
+
+      "studio.atmo.style.subtitle":
+        "Işık ve duygu tonunu seç.",
+
+      "studio.atmo.light.title":
+        "💡 Işık",
+
+      "studio.atmo.light.warm":
+        "💡 Sıcak",
+
+      "studio.atmo.light.cool":
+        "❄️ Soğuk",
+
+      "studio.atmo.light.golden":
+        "🌅 Golden Hour",
+
+      "studio.atmo.light.neon":
+        "🟣 Neon",
+
+      "studio.atmo.light.moon":
+        "🌙 Ay Işığı",
+
+      "studio.atmo.mood.title":
+        "🎭 Duygu",
+
+      "studio.atmo.mood.romantic":
+        "💜 Romantik",
+
+      "studio.atmo.mood.cinematic":
+        "🎬 Sinematik",
+
+      "studio.atmo.mood.cozy":
+        "🫶 Cozy",
+
+      "studio.atmo.mood.mysterious":
+        "🕯️ Gizemli",
+
+      "studio.atmo.mood.lofi":
+        "📼 Lo-fi",
+
+      /* =========================
+         ATMOSPHERE / EXPORT SETTINGS
+         ========================= */
+
+      "studio.atmo.export.title":
+        "Export Ayarları",
+
+      "studio.atmo.export.subtitle":
+        "Oran ve süre seçimi.",
+
+      "studio.atmo.export.preparationTime":
+        "Hazırlık süresi eklenen medya ve süreye göre artabilir. Ortalama hazırlık: 5–10 dk.",
+
+      "studio.atmo.export.aspect":
+        "📐 Oran",
+
+      "studio.atmo.export.aspectNote":
+        "Referans görsel yüklendiğinde oran kompozisyona göre etkilenebilir.",
+
+      "studio.atmo.export.duration":
+        "⏱️ Süre",
+
+      "studio.atmo.export.refImageNote":
+        "<strong>Not:</strong> Referans görsel minimum 300×300 px olmalıdır.",
+
+      /* =========================
+         ATMOSPHERE / DETAIL EFFECTS
+         ========================= */
+
+      "studio.atmo.details.title":
+        "Detay Efektler",
+
+      "studio.atmo.details.subtitle":
+        "Az ama premium (render sonrası düşük maliyet).",
+
+      "studio.atmo.details.grain":
+        "🎞️ Hafif Film Grain",
+
+      "studio.atmo.details.glow":
+        "✨ Bloom / Lens Glow",
+
+      "studio.atmo.details.vignette":
+        "🌑 Vignette",
+
+      "studio.atmo.details.sharpen":
+        "🔍 Hafif Sharpen",
+
+      "studio.atmo.details.motionBlur":
+        "🌀 Motion Blur (Az)",
+
+      "studio.atmo.details.dust":
+        "📽️ Film Dust / Scratch",
+
+      "studio.atmo.lut.title":
+        "🎨 Color Grade / LUT",
+
+      "studio.atmo.lut.off":
+        "Kapalı",
+
+      "studio.atmo.lut.warm":
+        "Sıcak",
+
+      "studio.atmo.lut.cold":
+        "Soğuk",
+
+      "studio.atmo.lut.cinematic":
+        "Sinematik",
+
+      "studio.atmo.lut.lofi":
+        "Lo-fi",
+
+      /* =========================
+         ATMOSPHERE / SUPER MEDIA
+         ========================= */
+
+      "studio.atmo.media.mainImage":
+        "Ana Görsel",
+
+      "studio.atmo.media.uploadAudio":
+        "Audio Yükle",
+
+      "studio.atmo.media.uploadLogo":
+        "Logo Yükle",
+
+      /* =========================
+         ATMOSPHERE / UPLOAD STATUS
+         ========================= */
+
+      "studio.atmo.upload.ready":
+        "Hazır ✓",
+
+      "studio.atmo.upload.uploading":
+        "Yükleniyor…",
+
+      "studio.atmo.upload.error":
+        "Hata",
+
+      "studio.atmo.upload.failed":
+        "Yükleme hatası",
+
+      "studio.atmo.upload.logoFailed":
+        "Logo yükleme hatası",
+
+      "studio.atmo.upload.imageFailed":
+        "Resim yükleme hatası",
+
+      "studio.atmo.upload.audioFailed":
+        "Audio yükleme hatası",
+
+      /* =========================
+         ATMOSPHERE / GENERATION STATUS
+         ========================= */
+
+      "studio.atmo.status.preparing":
+        "Atmosfer videosu hazırlanıyor...",
+
+      "studio.atmo.status.uploading":
+        "Dosyalar yükleniyor...",
+
+      "studio.atmo.status.sending":
+        "Üretim isteği gönderiliyor...",
+
+      "studio.atmo.status.queued":
+        "Atmosfer videosu üretim sırasına alındı.",
+
+      "studio.atmo.status.generating":
+        "Atmosfer videosu oluşturuluyor...",
+
+      "studio.atmo.status.ready":
+        "Atmosfer videosu hazır.",
+
+      "studio.atmo.status.failed":
+        "Atmosfer videosu oluşturulamadı.",
+
+      "studio.atmo.status.creditDeducted":
+        "{count} kredi kullanıldı.",
+
+      "studio.atmo.toast.started":
+        "Atmosfer video üretimi başlatıldı.",
+
+      "studio.atmo.toast.superStarted":
+        "Süper Atmosfer video üretimi başlatıldı.",
+
+      "studio.atmo.toast.ready":
+        "Atmosfer videonuz hazır.",
+
+      "studio.atmo.toast.failed":
+        "Atmosfer video üretimi başarısız oldu.",
+
+      /* =========================
+         ATMOSPHERE / VALIDATION
+         ========================= */
+
+      "studio.atmo.error.sceneRequired":
+        "Lütfen bir arka mekan seçin.",
+
+      "studio.atmo.error.effectRequired":
+        "Lütfen en az bir atmosfer efekti seçin.",
+
+      "studio.atmo.error.promptRequired":
+        "Lütfen sahne ve atmosferi açıklayan bir prompt girin.",
+
+      "studio.atmo.error.insufficientCredit":
+        "Yetersiz kredi.",
+
+      "studio.atmo.error.uploadInProgress":
+        "Dosya yükleme işleminin tamamlanmasını bekleyin.",
+
+      "studio.atmo.error.uploadFailed":
+        "Dosyalardan biri yüklenemedi. Lütfen tekrar deneyin.",
+
+      "studio.atmo.error.refImageMinimum":
+        "Referans görsel minimum 300×300 px olmalıdır.",
+
+      "studio.atmo.error.invalidImage":
+        "Lütfen geçerli bir görsel dosyası seçin.",
+
+      "studio.atmo.error.invalidLogo":
+        "Lütfen geçerli bir logo dosyası seçin.",
+
+      "studio.atmo.error.invalidAudio":
+        "Lütfen geçerli bir audio dosyası seçin.",
+
+      "studio.atmo.error.requestFailed":
+        "Atmosfer video üretimi başlatılamadı. Lütfen tekrar deneyin.",
+
+      /* =========================
+         ATMOSPHERE / RESULTS PANEL
+         ========================= */
+
+      "studio.atmo.panel.title":
+        "Atmosfer Videolarım",
+
+      "studio.atmo.panel.searchPlaceholder":
+        "Atmosfer videolarında ara...",
+
+      "studio.atmo.panel.empty":
+        "Henüz atmosfer videosu bulunmuyor.",
+
+      "studio.atmo.panel.noResults":
+        "Aramanızla eşleşen atmosfer videosu bulunamadı.",
+
+      "studio.atmo.panel.untitled":
+        "İsimsiz Atmosfer Videosu",
+
+      "studio.atmo.panel.status.ready":
+        "Hazır",
+
+      "studio.atmo.panel.status.preparing":
+        "Hazırlanıyor",
+
+      "studio.atmo.panel.status.processing":
+        "İşleniyor",
+
+      "studio.atmo.panel.status.failed":
+        "Hata",
+
+      "studio.atmo.action.open":
+        "Videoyu aç",
+
+      "studio.atmo.action.fullscreen":
+        "Tam ekran aç",
+
+      "studio.atmo.action.download":
+        "Videoyu indir",
+
+      "studio.atmo.action.delete":
+        "Videoyu sil",
+
+      "studio.atmo.action.audioOn":
+        "Sesi aç",
+
+      "studio.atmo.action.audioOff":
+        "Sesi kapat",
+
+      "studio.atmo.download.success":
+        "Atmosfer videosu indirildi.",
+
+      "studio.atmo.download.failed":
+        "Atmosfer videosu indirilemedi.",
+
+      "studio.atmo.delete.confirm":
+        "Bu atmosfer videosunu silmek istediğinize emin misiniz?",
+
+      "studio.atmo.delete.success":
+        "Atmosfer videosu silindi.",
+
+      "studio.atmo.delete.failed":
+        "Atmosfer videosu silinemedi.",
 
       /* =========================
          SUPPORT
@@ -847,15 +1391,559 @@
       "studio.cover.generate9":
         "🖼️ Generate Cover (9 Credits)",
 
-      "studio.cover.generateWithCredit":
+          "studio.cover.generateWithCredit":
         "🖼️ Generate Cover ({count} Credits)",
+
+      /* =========================
+         ATMOSPHERE / HEADER & MODE
+         ========================= */
+
+      "studio.atmo.title":
+        "AI Atmosphere Video",
+
+      "studio.atmo.subtitle":
+        "For creators who cannot shoot a clip: add falling snow, flowing rain and flickering lights — create 4–15 second cinematic atmosphere videos.",
+
+      "studio.atmo.modeLabel":
+        "Mode Selection",
+
+      "studio.atmo.mode.basic":
+        "Basic Mode",
+
+      "studio.atmo.mode.super":
+        "Super Mode ✨",
+
+      /* =========================
+         ATMOSPHERE / BASIC SCENES
+         ========================= */
+
+      "studio.atmo.scene.title":
+        "Background Scene",
+
+      "studio.atmo.scene.subtitle":
+        "Choose a ready-made scene or upload your own image.",
+
+      "studio.atmo.scene.winterCafe.title":
+        "Winter Café",
+
+      "studio.atmo.scene.winterCafe.desc":
+        "Neon lights, snow and a warm vibe.",
+
+      "studio.atmo.scene.cozyCabin.title":
+        "Mountain Cabin",
+
+      "studio.atmo.scene.cozyCabin.desc":
+        "Fireplace, wood and a cozy atmosphere.",
+
+      "studio.atmo.scene.lakeCabin.title":
+        "Lakeside",
+
+      "studio.atmo.scene.lakeCabin.desc":
+        "Calm reflections with a cinematic feel.",
+
+      "studio.atmo.scene.cityNight.title":
+        "City Night",
+
+      "studio.atmo.scene.cityNight.desc":
+        "Bokeh and streetlights.",
+
+      "studio.atmo.scene.rainyWindow.title":
+        "Rainy Window",
+
+      "studio.atmo.scene.rainyWindow.desc":
+        "Raindrops on glass, dim lighting and an emotional mood.",
+
+      "studio.atmo.scene.cityRooftop.title":
+        "City Rooftop at Night",
+
+      "studio.atmo.scene.cityRooftop.desc":
+        "City lights, a gentle breeze and a cinematic look.",
+
+      "studio.atmo.scene.oldStoneStreet.title":
+        "Old Stone Street",
+
+      "studio.atmo.scene.oldStoneStreet.desc":
+        "Wet pavement, warm lamps and a music-video feel.",
+
+      "studio.atmo.scene.atticWindow.title":
+        "Attic Window",
+
+      "studio.atmo.scene.atticWindow.desc":
+        "Warm light indoors with a nighttime atmosphere outside.",
+
+      "studio.atmo.scene.seaCliffs.title":
+        "Seaside Cliffs",
+
+      "studio.atmo.scene.seaCliffs.desc":
+        "Wind, horizon and a free cinematic atmosphere.",
+
+      "studio.atmo.scene.pineMountainRoad.title":
+        "Pine Mountain Road",
+
+      "studio.atmo.scene.pineMountainRoad.desc":
+        "Cool nature, an open-road feeling and gentle solitude.",
+
+      "studio.atmo.scene.sunsetHighway.title":
+        "Sunset Highway",
+
+      "studio.atmo.scene.sunsetHighway.desc":
+        "The horizon, the road and a melancholic flow.",
+
+      "studio.atmo.scene.dimMotelCorridor.title":
+        "Dim Motel Corridor",
+
+      "studio.atmo.scene.dimMotelCorridor.desc":
+        "A quiet, cinematic scene with a strong sense of solitude.",
+
+      /* =========================
+         ATMOSPHERE / BASIC EFFECTS
+         ========================= */
+
+      "studio.atmo.effects.title":
+        "Atmosphere Effects",
+
+      "studio.atmo.effects.subtitle":
+        "Select as many as you like. Example: Snow + Light",
+
+      "studio.atmo.effects.label":
+        "Atmosphere Selections",
+
+      "studio.atmo.effects.snow":
+        "❄️ Snow",
+
+      "studio.atmo.effects.rain":
+        "🌧️ Rain",
+
+      "studio.atmo.effects.leaf":
+        "🍃 Leaves",
+
+      "studio.atmo.effects.fog":
+        "🌫️ Fog",
+
+      "studio.atmo.effects.light":
+        "✨ Light",
+
+      "studio.atmo.effects.fire":
+        "🔥 Fire",
+
+      "studio.atmo.effects.wind":
+        "🌬️ Wind",
+
+      "studio.atmo.duration":
+        "Duration",
+
+      "studio.atmo.duration.seconds":
+        "{count} sec",
+
+      /* =========================
+         ATMOSPHERE / PERSONALIZATION
+         ========================= */
+
+      "studio.atmo.personalization.title":
+        "Personalization (optional)",
+
+      "studio.atmo.personalization.subtitle":
+        "Add an aspect ratio, logo or jingle. The generation button is located here.",
+
+      "studio.atmo.aspectRatio":
+        "Aspect Ratio",
+
+      "studio.atmo.opacity":
+        "Opacity",
+
+      "studio.atmo.silentCopy":
+        "Create a silent copy for Spotify Canvas",
+
+      "studio.atmo.logo":
+        "Logo",
+
+      "studio.atmo.audio":
+        "Music / Jingle",
+
+      "studio.atmo.credit.plus10":
+        "+10 Credits",
+
+      "studio.atmo.credit.free":
+        "Free",
+
+      "studio.atmo.file.chooseLogo":
+        "🏷️ Choose Logo",
+
+      "studio.atmo.file.chooseAudio":
+        "🎵 Choose Audio",
+
+      "studio.atmo.file.chooseImage":
+        "🏞️ Choose Image",
+
+      "studio.atmo.file.chooseProLogo":
+        "🖼️ Choose Logo",
+
+      "studio.atmo.file.notSelected":
+        "No file selected",
+
+      "studio.atmo.file.removeLogoLabel":
+        "Remove the uploaded logo",
+
+      "studio.atmo.file.removeLogoTitle":
+        "Remove logo",
+
+      "studio.atmo.file.removeAudioLabel":
+        "Remove the uploaded audio",
+
+      "studio.atmo.file.removeAudioTitle":
+        "Remove audio",
+
+      "studio.atmo.file.removeImageLabel":
+        "Remove the uploaded image",
+
+      "studio.atmo.file.removeImageTitle":
+        "Remove image",
+
+      "studio.atmo.logoPosition.topLeft":
+        "Top Left",
+
+      "studio.atmo.logoPosition.topRight":
+        "Top Right",
+
+      "studio.atmo.logoPosition.bottomLeft":
+        "Bottom Left",
+
+      "studio.atmo.logoPosition.bottomRight":
+        "Bottom Right",
+
+      "studio.atmo.logoPosition.centerSmall":
+        "Center (small)",
+
+      "studio.atmo.logoSize.small":
+        "Small",
+
+      "studio.atmo.logoSize.medium":
+        "Medium",
+
+      "studio.atmo.generate.basic":
+        "🎬 Create Atmosphere Video (30 Credits)",
+
+      "studio.atmo.generate.basicWithCredit":
+        "🎬 Create Atmosphere Video ({count} Credits)",
+
+      "studio.atmo.generate.super":
+        "🎬 Create Super Atmosphere Video (45 Credits)",
+
+      "studio.atmo.generate.superWithCredit":
+        "🎬 Create Super Atmosphere Video ({count} Credits)",
+
+      /* =========================
+         ATMOSPHERE / SUPER PROMPT
+         ========================= */
+
+      "studio.atmo.super.description":
+        "Describe the scene, camera and atmosphere in one sentence; references only provide direction and are not copied exactly.",
+
+      "studio.atmo.super.promptPlaceholder":
+        "Example: Neon city at night, purple and blue tones, slow camera movement, light fog, cinematic...",
+
+      /* =========================
+         ATMOSPHERE / SUPER STYLE
+         ========================= */
+
+      "studio.atmo.style.title":
+        "Atmosphere Style",
+
+      "studio.atmo.style.subtitle":
+        "Choose the lighting and emotional tone.",
+
+      "studio.atmo.light.title":
+        "💡 Lighting",
+
+      "studio.atmo.light.warm":
+        "💡 Warm",
+
+      "studio.atmo.light.cool":
+        "❄️ Cool",
+
+      "studio.atmo.light.golden":
+        "🌅 Golden Hour",
+
+      "studio.atmo.light.neon":
+        "🟣 Neon",
+
+      "studio.atmo.light.moon":
+        "🌙 Moonlight",
+
+      "studio.atmo.mood.title":
+        "🎭 Mood",
+
+      "studio.atmo.mood.romantic":
+        "💜 Romantic",
+
+      "studio.atmo.mood.cinematic":
+        "🎬 Cinematic",
+
+      "studio.atmo.mood.cozy":
+        "🫶 Cozy",
+
+      "studio.atmo.mood.mysterious":
+        "🕯️ Mysterious",
+
+      "studio.atmo.mood.lofi":
+        "📼 Lo-fi",
+
+      /* =========================
+         ATMOSPHERE / EXPORT SETTINGS
+         ========================= */
+
+      "studio.atmo.export.title":
+        "Export Settings",
+
+      "studio.atmo.export.subtitle":
+        "Choose the aspect ratio and duration.",
+
+      "studio.atmo.export.preparationTime":
+        "Preparation time may increase depending on the added media and duration. Average preparation time: 5–10 minutes.",
+
+      "studio.atmo.export.aspect":
+        "📐 Aspect Ratio",
+
+      "studio.atmo.export.aspectNote":
+        "When a reference image is uploaded, the aspect ratio may be affected by its composition.",
+
+      "studio.atmo.export.duration":
+        "⏱️ Duration",
+
+      "studio.atmo.export.refImageNote":
+        "<strong>Note:</strong> The reference image must be at least 300×300 px.",
+
+      /* =========================
+         ATMOSPHERE / DETAIL EFFECTS
+         ========================= */
+
+      "studio.atmo.details.title":
+        "Detail Effects",
+
+      "studio.atmo.details.subtitle":
+        "A small selection of premium, low-cost post-render effects.",
+
+      "studio.atmo.details.grain":
+        "🎞️ Light Film Grain",
+
+      "studio.atmo.details.glow":
+        "✨ Bloom / Lens Glow",
+
+      "studio.atmo.details.vignette":
+        "🌑 Vignette",
+
+      "studio.atmo.details.sharpen":
+        "🔍 Light Sharpening",
+
+      "studio.atmo.details.motionBlur":
+        "🌀 Light Motion Blur",
+
+      "studio.atmo.details.dust":
+        "📽️ Film Dust / Scratches",
+
+      "studio.atmo.lut.title":
+        "🎨 Color Grade / LUT",
+
+      "studio.atmo.lut.off":
+        "Off",
+
+      "studio.atmo.lut.warm":
+        "Warm",
+
+      "studio.atmo.lut.cold":
+        "Cool",
+
+      "studio.atmo.lut.cinematic":
+        "Cinematic",
+
+      "studio.atmo.lut.lofi":
+        "Lo-fi",
+
+      /* =========================
+         ATMOSPHERE / SUPER MEDIA
+         ========================= */
+
+      "studio.atmo.media.mainImage":
+        "Main Image",
+
+      "studio.atmo.media.uploadAudio":
+        "Upload Audio",
+
+      "studio.atmo.media.uploadLogo":
+        "Upload Logo",
+
+      /* =========================
+         ATMOSPHERE / UPLOAD STATUS
+         ========================= */
+
+      "studio.atmo.upload.ready":
+        "Ready ✓",
+
+      "studio.atmo.upload.uploading":
+        "Uploading…",
+
+      "studio.atmo.upload.error":
+        "Error",
+
+      "studio.atmo.upload.failed":
+        "Upload error",
+
+      "studio.atmo.upload.logoFailed":
+        "Logo upload failed",
+
+      "studio.atmo.upload.imageFailed":
+        "Image upload failed",
+
+      "studio.atmo.upload.audioFailed":
+        "Audio upload failed",
+
+      /* =========================
+         ATMOSPHERE / GENERATION STATUS
+         ========================= */
+
+      "studio.atmo.status.preparing":
+        "Preparing the atmosphere video...",
+
+      "studio.atmo.status.uploading":
+        "Uploading files...",
+
+      "studio.atmo.status.sending":
+        "Sending the generation request...",
+
+      "studio.atmo.status.queued":
+        "The atmosphere video has been added to the generation queue.",
+
+      "studio.atmo.status.generating":
+        "Creating the atmosphere video...",
+
+      "studio.atmo.status.ready":
+        "The atmosphere video is ready.",
+
+      "studio.atmo.status.failed":
+        "The atmosphere video could not be created.",
+
+      "studio.atmo.status.creditDeducted":
+        "{count} credits used.",
+
+      "studio.atmo.toast.started":
+        "Atmosphere video generation has started.",
+
+      "studio.atmo.toast.superStarted":
+        "Super Atmosphere video generation has started.",
+
+      "studio.atmo.toast.ready":
+        "Your atmosphere video is ready.",
+
+      "studio.atmo.toast.failed":
+        "Atmosphere video generation failed.",
+
+      /* =========================
+         ATMOSPHERE / VALIDATION
+         ========================= */
+
+      "studio.atmo.error.sceneRequired":
+        "Please select a background scene.",
+
+      "studio.atmo.error.effectRequired":
+        "Please select at least one atmosphere effect.",
+
+      "studio.atmo.error.promptRequired":
+        "Please enter a prompt describing the scene and atmosphere.",
+
+      "studio.atmo.error.insufficientCredit":
+        "Insufficient credits.",
+
+      "studio.atmo.error.uploadInProgress":
+        "Please wait for the file upload to finish.",
+
+      "studio.atmo.error.uploadFailed":
+        "One of the files could not be uploaded. Please try again.",
+
+      "studio.atmo.error.refImageMinimum":
+        "The reference image must be at least 300×300 px.",
+
+      "studio.atmo.error.invalidImage":
+        "Please select a valid image file.",
+
+      "studio.atmo.error.invalidLogo":
+        "Please select a valid logo file.",
+
+      "studio.atmo.error.invalidAudio":
+        "Please select a valid audio file.",
+
+      "studio.atmo.error.requestFailed":
+        "Atmosphere video generation could not be started. Please try again.",
+
+      /* =========================
+         ATMOSPHERE / RESULTS PANEL
+         ========================= */
+
+      "studio.atmo.panel.title":
+        "My Atmosphere Videos",
+
+      "studio.atmo.panel.searchPlaceholder":
+        "Search atmosphere videos...",
+
+      "studio.atmo.panel.empty":
+        "No atmosphere videos yet.",
+
+      "studio.atmo.panel.noResults":
+        "No atmosphere videos matched your search.",
+
+      "studio.atmo.panel.untitled":
+        "Untitled Atmosphere Video",
+
+      "studio.atmo.panel.status.ready":
+        "Ready",
+
+      "studio.atmo.panel.status.preparing":
+        "Preparing",
+
+      "studio.atmo.panel.status.processing":
+        "Processing",
+
+      "studio.atmo.panel.status.failed":
+        "Failed",
+
+      "studio.atmo.action.open":
+        "Open video",
+
+      "studio.atmo.action.fullscreen":
+        "Open fullscreen",
+
+      "studio.atmo.action.download":
+        "Download video",
+
+      "studio.atmo.action.delete":
+        "Delete video",
+
+      "studio.atmo.action.audioOn":
+        "Turn sound on",
+
+      "studio.atmo.action.audioOff":
+        "Turn sound off",
+
+      "studio.atmo.download.success":
+        "Atmosphere video downloaded.",
+
+      "studio.atmo.download.failed":
+        "Atmosphere video could not be downloaded.",
+
+      "studio.atmo.delete.confirm":
+        "Are you sure you want to delete this atmosphere video?",
+
+      "studio.atmo.delete.success":
+        "Atmosphere video deleted.",
+
+      "studio.atmo.delete.failed":
+        "Atmosphere video could not be deleted.",
 
       /* =========================
          SUPPORT
          ========================= */
 
       "studio.support":
-        "Help Center"
+        "Support Center"
     }
   };
 
