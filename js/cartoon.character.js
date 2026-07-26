@@ -1181,14 +1181,38 @@
   );
 } catch {}
               } else {
-                try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+               try {
+  window.toast?.error?.(
+    cartoonCharacterText(
+      "studio.cartoon.toast.characterFailed",
+      "Karakter oluşturulamadı.",
+      "The character could not be created."
+    )
+  );
+} catch {}
               }
             } else {
-              try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+             try {
+  window.toast?.error?.(
+    cartoonCharacterText(
+      "studio.cartoon.toast.characterFailed",
+      "Karakter oluşturulamadı.",
+      "The character could not be created."
+    )
+  );
+} catch {}
             }
           } catch (refundErr) {
             console.error("[CARTOON][CHARACTER] poll refund failed =", refundErr);
-            try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+          try {
+  window.toast?.error?.(
+    cartoonCharacterText(
+      "studio.cartoon.toast.characterFailed",
+      "Karakter oluşturulamadı.",
+      "The character could not be created."
+    )
+  );
+} catch {}
           }
         }
 
