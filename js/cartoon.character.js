@@ -2250,7 +2250,15 @@
       });
 
       if (!refunded) {
-        try { window.toast?.error?.("Karakter oluşturma hatası"); } catch {}
+       try {
+  window.toast?.error?.(
+    cartoonCharacterText(
+      "studio.cartoon.toast.characterFailed",
+      "Karakter oluşturulamadı.",
+      "The character could not be created."
+    )
+  );
+} catch {}
       }
     }
   });
