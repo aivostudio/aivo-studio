@@ -2281,4 +2281,19 @@
       subtree: true
     });
   }
+
+  const cartoonCharacterLanguageObserver = new MutationObserver(() => {
+    const root = getCartoonRoot();
+    if (!root) return;
+
+    renderCharacterOnly(root);
+  });
+
+  cartoonCharacterLanguageObserver.observe(
+    document.documentElement,
+    {
+      attributes: true,
+      attributeFilter: ["lang"]
+    }
+  );
 })();
