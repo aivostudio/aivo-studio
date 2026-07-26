@@ -21,58 +21,6 @@
 
   const safeStr = (v) => String(v == null ? "" : v).trim();
 
-  function panelLanguage() {
-    try {
-      const value = window.AIVO_STUDIO_I18N?.getLanguage?.();
-      if (value) return String(value).toLowerCase().startsWith("en") ? "en" : "tr";
-    } catch {}
-
-    return String(
-      window.AIVO_LANG ||
-      document.documentElement.lang ||
-      "tr"
-    ).toLowerCase().startsWith("en") ? "en" : "tr";
-  }
-
-  function panelText(key, trText, enText) {
-    const fallback = panelLanguage() === "en" ? enText : trText;
-
-    try {
-      const translated = window.AIVO_STUDIO_I18N?.t?.(key, fallback);
-      if (translated && translated !== key) return translated;
-    } catch {}
-
-    try {
-      if (typeof window.t === "function") {
-        const translated = window.t(key);
-        if (translated && translated !== key) return translated;
-      }
-    } catch {}
-
-    return fallback;
-  }
-
-  function panelToast(type, key, trText, enText) {
-    const message = panelText(key, trText, enText);
-
-    try {
-      if (window.toast && typeof window.toast[type] === "function") {
-        window.toast[type](message);
-        return;
-      }
-
-      if (typeof window.toast === "function") {
-        window.toast(message, type);
-        return;
-      }
-    } catch (error) {
-      console.warn("[CARTOON PANEL] toast failed", error);
-    }
-
-    if (type === "error") console.error("[CARTOON PANEL]", message);
-    else console.log("[CARTOON PANEL]", message);
-  }
-
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -144,14 +92,7 @@
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return {
-        text: panelText(
-          "studio.cartoon.panel.status.failed",
-          "Hata",
-          "Failed"
-        ),
-        kind: "bad"
-      };
+      return { text: "Hata", kind: "bad" };
     }
     if (
       st.includes("READY") ||
@@ -159,14 +100,7 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return {
-        text: panelText(
-          "studio.cartoon.panel.status.ready",
-          "Hazır",
-          "Ready"
-        ),
-        kind: "ok"
-      };
+      return { text: "Hazır", kind: "ok" };
     }
     if (
       st.includes("RUN") ||
@@ -174,25 +108,9 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return {
-        text: panelText(
-          "studio.cartoon.panel.status.processing",
-          "İşleniyor",
-          "Processing"
-        ),
-        kind: "mid"
-      };
+      return { text: "İşleniyor", kind: "mid" };
     }
-    return {
-      text: st
-        ? st.slice(0, 18)
-        : panelText(
-            "studio.cartoon.panel.status.processing",
-            "İşleniyor",
-            "Processing"
-          ),
-      kind: "mid"
-    };
+    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
   function pickOutputUrl(o) {
@@ -351,6 +269,80 @@
 
     const setStatus = (t) => {
       if (elStatus) elStatus.textContent = t;
+    };
+
+    const panelLanguage = () => {
+      try {
+        const language = window.AIVO_STUDIO_I18N?.getLanguage?.();
+        if (language) {
+          return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
+        }
+      } catch {}
+
+      return String(
+        window.AIVO_LANG ||
+        document.documentElement.lang ||
+        "tr"
+      ).toLowerCase().startsWith("en") ? "en" : "tr";
+    };
+
+    const localText = (trText, enText) =>
+      panelLanguage() === "en" ? enText : trText;
+
+    let localToastTimer = null;
+    let localToastElement = null;
+
+    const showLocalToast = (type, trText, enText) => {
+      const message = localText(trText, enText);
+
+      if (!localToastElement) {
+        localToastElement = document.createElement("div");
+        localToastElement.setAttribute("role", "status");
+        localToastElement.setAttribute("aria-live", "polite");
+        localToastElement.style.position = "fixed";
+        localToastElement.style.right = "28px";
+        localToastElement.style.bottom = "28px";
+        localToastElement.style.zIndex = "2147483000";
+        localToastElement.style.maxWidth = "360px";
+        localToastElement.style.padding = "13px 16px";
+        localToastElement.style.borderRadius = "14px";
+        localToastElement.style.border = "1px solid rgba(255,255,255,.14)";
+        localToastElement.style.background = "rgba(18,18,30,.96)";
+        localToastElement.style.boxShadow = "0 16px 42px rgba(0,0,0,.38)";
+        localToastElement.style.color = "#fff";
+        localToastElement.style.fontSize = "13px";
+        localToastElement.style.fontWeight = "700";
+        localToastElement.style.lineHeight = "1.45";
+        localToastElement.style.pointerEvents = "none";
+        localToastElement.style.opacity = "0";
+        localToastElement.style.transform = "translateY(8px)";
+        localToastElement.style.transition = "opacity .16s ease, transform .16s ease";
+        document.body.appendChild(localToastElement);
+      }
+
+      localToastElement.textContent = message;
+      localToastElement.style.borderColor =
+        type === "error"
+          ? "rgba(255,105,105,.42)"
+          : type === "info"
+            ? "rgba(120,190,255,.38)"
+            : "rgba(110,235,170,.38)";
+
+      if (localToastTimer) {
+        clearTimeout(localToastTimer);
+      }
+
+      requestAnimationFrame(() => {
+        if (!localToastElement) return;
+        localToastElement.style.opacity = "1";
+        localToastElement.style.transform = "translateY(0)";
+      });
+
+      localToastTimer = setTimeout(() => {
+        if (!localToastElement) return;
+        localToastElement.style.opacity = "0";
+        localToastElement.style.transform = "translateY(8px)";
+      }, 2800);
     };
 
     const resolvePanelSearchInput = () => {
@@ -597,102 +589,6 @@
       return "";
     }
 
-    function setPanelControlLabel(element, label) {
-      if (!element) return;
-      element.setAttribute("title", label);
-      element.setAttribute("aria-label", label);
-    }
-
-    function localizePanelControls(root) {
-      if (!root) return;
-
-      root.querySelectorAll('[data-svc-act="download"], [data-act="download"]').forEach((button) => {
-        setPanelControlLabel(
-          button,
-          panelText(
-            "studio.cartoon.panel.action.download",
-            "Videoyu indir",
-            "Download video"
-          )
-        );
-      });
-
-      root.querySelectorAll('[data-svc-act="share"], [data-act="share"]').forEach((button) => {
-        setPanelControlLabel(
-          button,
-          panelText(
-            "studio.cartoon.panel.action.share",
-            "Videoyu paylaş",
-            "Share video"
-          )
-        );
-      });
-
-      root.querySelectorAll('[data-svc-act="fullscreen"], [data-act="open"]').forEach((button) => {
-        setPanelControlLabel(
-          button,
-          panelText(
-            "studio.cartoon.panel.action.fullscreen",
-            "Tam ekran aç",
-            "Open fullscreen"
-          )
-        );
-      });
-
-      root.querySelectorAll('[data-svc-act="delete"], [data-act="delete"]').forEach((button) => {
-        setPanelControlLabel(
-          button,
-          panelText(
-            "studio.cartoon.panel.action.delete",
-            "Videoyu sil",
-            "Delete video"
-          )
-        );
-      });
-
-      root.querySelectorAll('[data-svc-act="play"], [data-act="play"]').forEach((button) => {
-        const card = button.closest(".svcCard, .cartoonPanelCard");
-        const video = card?.querySelector("video.svcVideo, video");
-        const playing = Boolean(video && !video.paused);
-
-        setPanelControlLabel(
-          button,
-          playing
-            ? panelText(
-                "studio.cartoon.panel.action.pause",
-                "Duraklat",
-                "Pause"
-              )
-            : panelText(
-                "studio.cartoon.panel.action.play",
-                "Oynat",
-                "Play"
-              )
-        );
-      });
-
-      root.querySelectorAll('[data-svc-act="sound"]').forEach((button) => {
-        const card = button.closest(".svcCard, .cartoonPanelCard");
-        const video = card?.querySelector("video.svcVideo, video");
-        const soundOn = Boolean(video && !video.muted);
-
-        setPanelControlLabel(
-          button,
-          soundOn
-            ? panelText(
-                "studio.cartoon.panel.action.audioOff",
-                "Sesi kapat",
-                "Turn sound off"
-              )
-            : panelText(
-                "studio.cartoon.panel.action.audioOn",
-                "Sesi aç",
-                "Turn sound on"
-              )
-        );
-      });
-    }
-
     function ensureCardEl(job) {
       const id = idOf(job);
       if (!id) return null;
@@ -706,15 +602,15 @@
 
       el.innerHTML = `
         <div class="cartoonPanelThumb">
-          <div class="cartoonPanelPill mid">${esc(panelText("studio.cartoon.panel.status.processing", "İşleniyor", "Processing"))}</div>
-          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">${esc(panelText("studio.cartoon.panel.preparing", "Hazırlanıyor…", "Preparing…"))}</div></div>
+          <div class="cartoonPanelPill mid">İşleniyor</div>
+          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">Hazırlanıyor…</div></div>
         </div>
         <div class="cartoonPanelFooter">
           <div class="cartoonPanelMetaLine"></div>
           <div class="cartoonPanelActions">
-            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>${esc(panelText("studio.cartoon.panel.action.download", "Videoyu indir", "Download video"))}</button>
-            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>${esc(panelText("studio.cartoon.panel.action.share", "Videoyu paylaş", "Share video"))}</button>
-            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">${esc(panelText("studio.cartoon.panel.action.delete", "Videoyu sil", "Delete video"))}</button>
+            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
           </div>
         </div>
       `;
@@ -735,7 +631,6 @@
       }
 
       el.setAttribute("data-job", idOf(job));
-      localizePanelControls(el);
     }
 
     function buildMergedItems() {
@@ -783,11 +678,7 @@
     function render(items) {
       if (!elGrid) return;
 
-      setStatus(
-        hasProcessing(items)
-          ? panelText("studio.cartoon.panel.status.processing", "İşleniyor", "Processing")
-          : panelText("studio.cartoon.panel.status.ready", "Hazır", "Ready")
-      );
+      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
 
       const list = Array.isArray(items) ? items : [];
       const EMPTY_ID = "cartoonEmptyState";
@@ -808,16 +699,8 @@
         }
 
         emptyEl.textContent = state.query
-          ? panelText(
-              "studio.cartoon.panel.noResults",
-              "Aramanızla eşleşen çizgifilm videosu bulunamadı.",
-              "No cartoon videos matched your search."
-            )
-          : panelText(
-              "studio.cartoon.panel.empty",
-              "Henüz çizgifilm videosu bulunmuyor.",
-              "No cartoon videos yet."
-            );
+          ? "Aramana uygun çizgifilm üretim bulunamadı."
+          : "Henüz çizgifilm üretim yok.";
 
         return;
       } else if (emptyEl) {
@@ -863,7 +746,7 @@
 
        async function download(url, filename = "cartoon.mp4") {
       let cleanUrl = String(url || "").trim();
-      if (!cleanUrl) return;
+      if (!cleanUrl) return "failed";
 
       cleanUrl = cleanUrl.includes("#")
         ? cleanUrl.split("#")[0]
@@ -904,31 +787,11 @@
           URL.revokeObjectURL(objectUrl);
         }, 1000);
 
-        panelToast(
-          "success",
-          "studio.cartoon.panel.download.success",
-          "Çizgifilm videosu indirildi.",
-          "Cartoon video downloaded."
-        );
+        return "downloaded";
       } catch (err) {
         console.error("[CARTOON PANEL] download failed", err);
         const opened = window.open(cleanUrl, "_blank", "noopener");
-
-        if (opened) {
-          panelToast(
-            "info",
-            "studio.cartoon.panel.download.opened",
-            "Video yeni sekmede açıldı.",
-            "The video was opened in a new tab."
-          );
-        } else {
-          panelToast(
-            "error",
-            "studio.cartoon.panel.download.failed",
-            "Çizgifilm videosu indirilemedi.",
-            "Cartoon video could not be downloaded."
-          );
-        }
+        return opened ? "opened" : "failed";
       }
     }
 
@@ -941,42 +804,9 @@
         : cleanUrl;
 
       if (navigator.share) {
-        navigator.share({ url: directUrl })
-          .then(() => {
-            panelToast(
-              "success",
-              "studio.cartoon.panel.share.success",
-              "Paylaşım penceresi açıldı.",
-              "The share dialog was opened."
-            );
-          })
-          .catch((error) => {
-            if (error?.name === "AbortError") return;
-            panelToast(
-              "error",
-              "studio.cartoon.panel.share.failed",
-              "Çizgifilm videosu paylaşılamadı.",
-              "Cartoon video could not be shared."
-            );
-          });
-      } else if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(directUrl)
-          .then(() => {
-            panelToast(
-              "success",
-              "studio.cartoon.panel.share.copied",
-              "Çizgifilm video bağlantısı kopyalandı.",
-              "Cartoon video link copied."
-            );
-          })
-          .catch(() => {
-            panelToast(
-              "error",
-              "studio.cartoon.panel.share.failed",
-              "Çizgifilm videosu paylaşılamadı.",
-              "Cartoon video could not be shared."
-            );
-          });
+        navigator.share({ url: directUrl }).catch(() => {});
+      } else {
+        navigator.clipboard?.writeText(directUrl).catch(() => {});
       }
     }
 
@@ -1031,7 +861,29 @@
         e.preventDefault();
         e.stopPropagation();
         if (!finalUrl) return;
-        download(finalUrl, `cartoon-${id}.mp4`);
+
+        const result = await download(finalUrl, `cartoon-${id}.mp4`);
+
+        if (result === "downloaded") {
+          showLocalToast(
+            "success",
+            "Çizgifilm videosu indirildi.",
+            "Cartoon video downloaded."
+          );
+        } else if (result === "opened") {
+          showLocalToast(
+            "info",
+            "Video yeni sekmede açıldı.",
+            "The video was opened in a new tab."
+          );
+        } else {
+          showLocalToast(
+            "error",
+            "Çizgifilm videosu indirilemedi.",
+            "Cartoon video could not be downloaded."
+          );
+        }
+
         return;
       }
 
@@ -1061,9 +913,8 @@
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[CARTOON PANEL] delete failed");
-            panelToast(
+            showLocalToast(
               "error",
-              "studio.cartoon.panel.delete.failed",
               "Çizgifilm videosu silinemedi.",
               "Cartoon video could not be deleted."
             );
@@ -1074,9 +925,8 @@
             await controller?.hydrate?.(true);
           } catch {}
 
-          panelToast(
+          showLocalToast(
             "success",
-            "studio.cartoon.panel.delete.success",
             "Çizgifilm videosu silindi.",
             "Cartoon video deleted."
           );
@@ -1086,9 +936,8 @@
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
-          panelToast(
+          showLocalToast(
             "error",
-            "studio.cartoon.panel.delete.failed",
             "Çizgifilm videosu silinemedi.",
             "Cartoon video could not be deleted."
           );
@@ -1295,54 +1144,7 @@
       }, 1500);
     };
 
-    const refreshPanelLanguage = () => {
-      if (destroyed) return;
-
-      renderCurrent();
-      localizePanelControls(host);
-
-      const panelRoot = document.getElementById("rightPanelHost");
-      const titleElement = panelRoot?.querySelector(".rpTitle");
-      const metaElement = panelRoot?.querySelector(".rpMeta");
-      const searchElement = panelRoot?.querySelector(".rpSearch");
-
-      if (titleElement) {
-        titleElement.textContent = panelText(
-          "studio.cartoon.panel.title",
-          "AI Çocuk Çizgifilm",
-          "AI Kids Cartoon"
-        );
-      }
-
-      if (metaElement) {
-        metaElement.textContent = panelText(
-          "studio.cartoon.panel.status.ready",
-          "Hazır",
-          "Ready"
-        );
-      }
-
-      if (searchElement) {
-        searchElement.placeholder = panelText(
-          "studio.cartoon.panel.searchPlaceholder",
-          "Çizgifilmlerde ara...",
-          "Search cartoon videos..."
-        );
-      }
-    };
-
-    const refreshActiveControlLabels = (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLVideoElement)) return;
-      if (!host.contains(target)) return;
-      queueMicrotask(() => localizePanelControls(target.closest(".svcCard, .cartoonPanelCard")));
-    };
-
     controller.start();
-    document.addEventListener("aivo:language-change", refreshPanelLanguage);
-    host.addEventListener("play", refreshActiveControlLabels, true);
-    host.addEventListener("pause", refreshActiveControlLabels, true);
-    host.addEventListener("volumechange", refreshActiveControlLabels, true);
     window.addEventListener("aivo:cartoon:job_created", onJobCreated);
     window.addEventListener("aivo:cartoon:job_ready", onJobReady);
     window.addEventListener("aivo:cartoon:story_scene_ready", onJobReady);
@@ -1363,14 +1165,6 @@
         } catch {}
         try {
           document.removeEventListener("search", onSearchInput, true);
-        } catch {}
-        try {
-          document.removeEventListener("aivo:language-change", refreshPanelLanguage);
-        } catch {}
-        try {
-          host.removeEventListener("play", refreshActiveControlLabels, true);
-          host.removeEventListener("pause", refreshActiveControlLabels, true);
-          host.removeEventListener("volumechange", refreshActiveControlLabels, true);
         } catch {}
         try {
           window.removeEventListener("aivo:cartoon:job_created", onJobCreated);
@@ -1394,6 +1188,12 @@
           controller?.destroy?.();
         } catch {}
         try {
+          if (localToastTimer) clearTimeout(localToastTimer);
+          localToastTimer = null;
+          localToastElement?.remove?.();
+          localToastElement = null;
+        } catch {}
+        try {
           host.innerHTML = "";
         } catch {}
       },
@@ -1405,22 +1205,10 @@
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("cartoon", {
         header: {
-          title: panelText(
-            "studio.cartoon.panel.title",
-            "AI Çocuk Çizgifilm",
-            "AI Kids Cartoon"
-          ),
-          meta: panelText(
-            "studio.cartoon.panel.status.ready",
-            "Hazır",
-            "Ready"
-          ),
+          title: "AI Çocuk Çizgifilm",
+          meta: "Hazır",
           searchEnabled: true,
-          searchPlaceholder: panelText(
-            "studio.cartoon.panel.searchPlaceholder",
-            "Çizgifilmlerde ara...",
-            "Search cartoon videos..."
-          ),
+          searchPlaceholder: "Çizgifilmlerde ara...",
           resetSearch: true,
         },
 
