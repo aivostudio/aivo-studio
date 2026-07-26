@@ -874,32 +874,125 @@ function render() {
       const finalUrl = safeStr(cardEl?.getAttribute("data-final-url"));
       const previewUrl = safeStr(cardEl?.getAttribute("data-preview-url"));
 
-      if (act === "play") {
-        const video = cardEl?.querySelector("video");
+         if (act === "play") {
+        const video = cardEl?.querySelector(".svcVideo, video");
+        const poster = cardEl?.querySelector(".svcPoster");
+        const playBtn = cardEl?.querySelector('[data-svc-act="play"]');
+
         if (!video) return;
 
-        if (video.paused) {
-          video.play().catch(() => {});
-        } else {
-          video.pause();
+        const lazyUrl = safeStr(
+          video.dataset?.videoUrl ||
+          video.getAttribute("data-video-url") ||
+          video.getAttribute("src") ||
+          ""
+        );
+
+        if (!video.getAttribute("src") && lazyUrl) {
+          video.preload = "metadata";
+          video.playsInline = true;
+          video.muted = true;
+          video.src = lazyUrl;
+
+          try {
+            video.load();
+          } catch {}
         }
+
+        video.style.display = "block";
+
+        try {
+          if (video.paused) {
+            await video.play();
+
+            if (poster) {
+              poster.style.display = "none";
+            }
+
+            if (playBtn) {
+              playBtn.textContent = "❚❚";
+              playBtn.setAttribute(
+                "title",
+                getAtmoPanelLanguage() === "en" ? "Pause" : "Duraklat"
+              );
+              playBtn.setAttribute(
+                "aria-label",
+                getAtmoPanelLanguage() === "en" ? "Pause" : "Duraklat"
+              );
+            }
+          } else {
+            video.pause();
+
+            if (playBtn) {
+              playBtn.textContent = "▶";
+              playBtn.setAttribute(
+                "title",
+                getAtmoPanelLanguage() === "en" ? "Play" : "Oynat"
+              );
+              playBtn.setAttribute(
+                "aria-label",
+                getAtmoPanelLanguage() === "en" ? "Play" : "Oynat"
+              );
+            }
+          }
+        } catch (error) {
+          console.error("[ATMO PANEL] video play failed", error);
+
+          video.style.display = "none";
+
+          if (poster) {
+            poster.style.display = "";
+          }
+        }
+
         return;
       }
 
-      if (act === "fs") {
-        const video = cardEl?.querySelector("video");
+      if (act === "sound") {
+        const video = cardEl?.querySelector(".svcVideo, video");
+        const soundBtn = cardEl?.querySelector('[data-svc-act="sound"]');
+
         if (!video) return;
+
+        video.muted = !video.muted;
+
+        if (soundBtn) {
+          soundBtn.setAttribute(
+            "aria-pressed",
+            video.muted ? "false" : "true"
+          );
+
+          soundBtn.setAttribute(
+            "title",
+            video.muted
+              ? (getAtmoPanelLanguage() === "en" ? "Turn sound on" : "Sesi aç")
+              : (getAtmoPanelLanguage() === "en" ? "Turn sound off" : "Sesi kapat")
+          );
+        }
+
+        return;
+      }
+
+      if (act === "fullscreen" || act === "fs") {
+        const target =
+          cardEl?.querySelector(".svcMedia") ||
+          cardEl?.querySelector(".svcVideo, video");
+
+        if (!target) return;
 
         try {
           if (document.fullscreenElement) {
-            await document.exitFullscreen().catch(() => {});
+            await document.exitFullscreen();
             return;
           }
 
-          if (video.requestFullscreen) {
-            await video.requestFullscreen().catch(() => {});
+          if (target.requestFullscreen) {
+            await target.requestFullscreen();
           }
-        } catch {}
+        } catch (error) {
+          console.error("[ATMO PANEL] fullscreen failed", error);
+        }
+
         return;
       }
 
