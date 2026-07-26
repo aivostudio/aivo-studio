@@ -21,35 +21,6 @@
 
   const safeStr = (v) => String(v == null ? "" : v).trim();
 
-  const panelLanguage = () => {
-    try {
-      const value = window.AIVO_STUDIO_I18N?.getLanguage?.();
-      if (value) return String(value).toLowerCase().startsWith("en") ? "en" : "tr";
-    } catch (_) {}
-
-    return String(
-      window.AIVO_LANG || document.documentElement.lang || "tr"
-    ).toLowerCase().startsWith("en") ? "en" : "tr";
-  };
-
-  const panelText = (trText, enText) =>
-    panelLanguage() === "en" ? enText : trText;
-
-  // Music panelindekiyle ayni ortak AIVO toast sistemi.
-  // Bu dosya toast DOM'u, portal stili veya yeni overlay olusturmaz.
-  const panelToast = (type, trMessage, enMessage) => {
-    const message = panelText(trMessage, enMessage);
-
-    try {
-      const api = window.toast;
-      if (!api) return;
-      if (type === "success" && api.success) return api.success(message);
-      if (type === "error" && api.error) return api.error(message);
-      if (type === "info" && api.info) return api.info(message);
-      if (api.show) return api.show(message);
-    } catch (_) {}
-  };
-
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -121,7 +92,7 @@
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: panelText("Hata", "Error"), kind: "bad" };
+      return { text: "Hata", kind: "bad" };
     }
     if (
       st.includes("READY") ||
@@ -129,7 +100,7 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: panelText("Hazır", "Ready"), kind: "ok" };
+      return { text: "Hazır", kind: "ok" };
     }
     if (
       st.includes("RUN") ||
@@ -137,9 +108,9 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: panelText("İşleniyor", "Processing"), kind: "mid" };
+      return { text: "İşleniyor", kind: "mid" };
     }
-    return { text: st ? st.slice(0, 18) : panelText("İşleniyor", "Processing"), kind: "mid" };
+    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
   };
 
   function pickOutputUrl(o) {
@@ -557,15 +528,15 @@
 
       el.innerHTML = `
         <div class="cartoonPanelThumb">
-          <div class="cartoonPanelPill mid">${esc(panelText("İşleniyor", "Processing"))}</div>
-          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">${esc(panelText("Hazırlanıyor…", "Preparing…"))}</div></div>
+          <div class="cartoonPanelPill mid">İşleniyor</div>
+          <div class="cartoonPanelSkel"><div class="cartoonPanelSkelLabel">Hazırlanıyor…</div></div>
         </div>
         <div class="cartoonPanelFooter">
           <div class="cartoonPanelMetaLine"></div>
           <div class="cartoonPanelActions">
-            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>${esc(panelText("İndir", "Download"))}</button>
-            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>${esc(panelText("Paylaş", "Share"))}</button>
-            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">${esc(panelText("Sil", "Delete"))}</button>
+            <button class="cartoonPanelBtn" type="button" data-act="download" data-job="${esc(id)}" disabled>İndir</button>
+            <button class="cartoonPanelBtn" type="button" data-act="share" data-job="${esc(id)}" disabled>Paylaş</button>
+            <button class="cartoonPanelBtn danger" type="button" data-act="delete" data-job="${esc(id)}">Sil</button>
           </div>
         </div>
       `;
@@ -633,7 +604,7 @@
     function render(items) {
       if (!elGrid) return;
 
-      setStatus(hasProcessing(items) ? panelText("İşleniyor…", "Processing…") : panelText("Hazır", "Ready"));
+      setStatus(hasProcessing(items) ? "İşleniyor…" : "Hazır");
 
       const list = Array.isArray(items) ? items : [];
       const EMPTY_ID = "cartoonEmptyState";
@@ -654,8 +625,8 @@
         }
 
         emptyEl.textContent = state.query
-          ? panelText("Aramana uygun çizgifilm üretim bulunamadı.", "No cartoon videos matched your search.")
-          : panelText("Henüz çizgifilm üretim yok.", "No cartoon videos yet.");
+          ? "Aramana uygun çizgifilm üretim bulunamadı."
+          : "Henüz çizgifilm üretim yok.";
 
         return;
       } else if (emptyEl) {
@@ -741,20 +712,9 @@
         setTimeout(() => {
           URL.revokeObjectURL(objectUrl);
         }, 1000);
-
-        panelToast(
-          "success",
-          "Çizgifilm videosu indirildi.",
-          "Cartoon video downloaded."
-        );
       } catch (err) {
         console.error("[CARTOON PANEL] download failed", err);
         window.open(cleanUrl, "_blank", "noopener");
-        panelToast(
-          "error",
-          "Çizgifilm videosu indirilemedi.",
-          "Cartoon video could not be downloaded."
-        );
       }
     }
 
@@ -854,34 +814,18 @@
               await controller?.hydrate?.(true);
             } catch {}
             console.error("[CARTOON PANEL] delete failed");
-            panelToast(
-              "error",
-              "Çizgifilm videosu silinemedi.",
-              "Cartoon video could not be deleted."
-            );
             return;
           }
 
           try {
             await controller?.hydrate?.(true);
           } catch {}
-
-          panelToast(
-            "success",
-            "Çizgifilm videosu silindi.",
-            "Cartoon video deleted."
-          );
         } catch (err) {
           hiddenDeletedIds.delete(id);
           try {
             await controller?.hydrate?.(true);
           } catch {}
           console.error("[CARTOON PANEL] delete failed", err);
-          panelToast(
-            "error",
-            "Çizgifilm videosu silinemedi.",
-            "Cartoon video could not be deleted."
-          );
         }
 
         return;
@@ -1140,10 +1084,10 @@
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("cartoon", {
         header: {
-          title: panelText("AI Çocuk Çizgifilm", "AI Kids Cartoon"),
-          meta: panelText("Hazır", "Ready"),
+          title: "AI Çocuk Çizgifilm",
+          meta: "Hazır",
           searchEnabled: true,
-          searchPlaceholder: panelText("Çizgifilmlerde ara...", "Search cartoon videos..."),
+          searchPlaceholder: "Çizgifilmlerde ara...",
           resetSearch: true,
         },
 
