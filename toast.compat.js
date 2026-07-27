@@ -47,7 +47,8 @@
     "/css/mod.ad-film.css?v=6",
     "/css/ad-film.preview.css?v=1",
     "/css/ad-film.basic-polish.css?v=2",
-    "/css/ad-film.basic-draft.css?v=1"
+    "/css/ad-film.basic-draft.css?v=1",
+    "/css/ad-film.project-sync.css?v=1"
   ];
 
   styles.forEach((href) => {
@@ -63,7 +64,8 @@
     "/js/ad-film.skeleton.js?v=6",
     "/js/ad-film.basic-polish.js?v=2",
     "/js/ad-film.basic-draft.js?v=2",
-    "/js/ad-film.basic-media-cache.js?v=1"
+    "/js/ad-film.basic-media-cache.js?v=1",
+    "/js/ad-film.project-sync.js?v=1"
   ];
 
   function loadSequential(index = 0) {
