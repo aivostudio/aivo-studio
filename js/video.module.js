@@ -677,6 +677,78 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     return new Promise((r) => setTimeout(r, ms));
   }
 
+  // ===============================
+  // Studio i18n helpers (TR / EN)
+  // ===============================
+  function getVideoLanguage() {
+    try {
+      const fromStudio = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (fromStudio === "en" || fromStudio === "tr") return fromStudio;
+    } catch (_) {}
+
+    const raw = String(
+      window.AIVO_LANG ||
+      document.documentElement.lang ||
+      "tr"
+    ).trim().toLowerCase();
+
+    return raw.startsWith("en") ? "en" : "tr";
+  }
+
+  function formatVideoText(value, parameters) {
+    let output = String(value == null ? "" : value);
+
+    if (!parameters || typeof parameters !== "object") {
+      return output;
+    }
+
+    Object.keys(parameters).forEach((key) => {
+      output = output.replace(
+        new RegExp("\\{" + key + "\\}", "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function videoText(key, trFallback, enFallback, parameters) {
+    const fallback = getVideoLanguage() === "en"
+      ? String(enFallback || trFallback || key)
+      : String(trFallback || enFallback || key);
+
+    try {
+      if (typeof window.studioT === "function") {
+        const translated = window.studioT(key, fallback, parameters);
+        if (translated && translated !== key) {
+          return formatVideoText(translated, parameters);
+        }
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof window.AIVO_STUDIO_I18N?.t === "function") {
+        const translated = window.AIVO_STUDIO_I18N.t(key, fallback, parameters);
+        if (translated && translated !== key) {
+          return formatVideoText(translated, parameters);
+        }
+      }
+    } catch (_) {}
+
+    return formatVideoText(fallback, parameters);
+  }
+
+  function refreshVideoDynamicText(root) {
+    const target = root || document.querySelector(ROOT_SEL);
+    if (!target) return;
+
+    syncVideoCreditUI(target);
+
+    try {
+      target.__videoRefreshDynamicI18n?.();
+    } catch (_) {}
+  }
+
   function normalizeVideoPolicyText(value) {
     return String(value || "")
       .toLowerCase()
@@ -877,20 +949,40 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
 
     if (textBtn) {
       textBtn.dataset.creditCost = String(credit);
-      textBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+      textBtn.textContent = videoText(
+        "studio.video.generateWithCredit",
+        "🎬 Video Oluştur ({count} Kredi)",
+        "🎬 Create Video ({count} Credits)",
+        { count: credit }
+      );
     }
 
     if (imageBtn) {
       imageBtn.dataset.creditCost = String(credit);
-      imageBtn.textContent = `🎬 Video Oluştur (${credit} Kredi)`;
+      imageBtn.textContent = videoText(
+        "studio.video.generateWithCredit",
+        "🎬 Video Oluştur ({count} Kredi)",
+        "🎬 Create Video ({count} Credits)",
+        { count: credit }
+      );
     }
 
     if (textBadge) {
-      textBadge.textContent = `${credit} Kredi`;
+      textBadge.textContent = videoText(
+        "studio.video.credit.withCount",
+        "{count} Kredi",
+        "{count} Credits",
+        { count: credit }
+      );
     }
 
     if (imageBadge) {
-      imageBadge.textContent = `${credit} Kredi`;
+      imageBadge.textContent = videoText(
+        "studio.video.credit.withCount",
+        "{count} Kredi",
+        "{count} Credits",
+        { count: credit }
+      );
     }
   }
 
@@ -1073,7 +1165,15 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
           lastVideoUrl: "",
           visibleError: String(meta?.error || reason || "video_refund_done")
         });
-        try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+        try {
+          window.toast?.error?.(
+            videoText(
+              "studio.video.toast.creditRefunded",
+              "İşlem başarısız oldu, kredi iade edildi.",
+              "The operation failed and the credits were refunded."
+            )
+          );
+        } catch {}
         return true;
       }
     } catch (refundErr) {
@@ -1146,7 +1246,15 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
           dbSaved: true
         });
 
-        try { window.toast?.success?.("Video hazır"); } catch {}
+        try {
+          window.toast?.success?.(
+            videoText(
+              "studio.video.toast.videoReady",
+              "Video hazır.",
+              "Video is ready."
+            )
+          );
+        } catch {}
         return;
       }
 
@@ -1330,8 +1438,11 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       }
 
       if (policyNote) {
-        policyNote.textContent =
-          "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.";
+        policyNote.textContent = videoText(
+          "studio.video.policy.blocked",
+          "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.",
+          "This request cannot be generated as written. Describe the video scene and action without using an artist or political figure's name."
+        );
         policyNote.style.display = "block";
       }
 
@@ -1354,7 +1465,15 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
     }
 
     if (!prompt) {
-      try { window.toast?.info?.("Prompt yazmalısın"); } catch {}
+      try {
+        window.toast?.info?.(
+          videoText(
+            "studio.video.error.promptRequired",
+            "Prompt yazmalısın.",
+            "Enter a prompt."
+          )
+        );
+      } catch {}
       const promptEl = qs("#videoPrompt", root);
       if (promptEl) promptEl.focus();
       return;
@@ -1399,7 +1518,16 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
       visibleError: ""
     });
 
-    try { window.toast?.success?.(`${creditCost} kredi düşüldü`); } catch {}
+    try {
+      window.toast?.success?.(
+        videoText(
+          "studio.video.toast.creditDeducted",
+          "{count} kredi düşüldü.",
+          "{count} credits deducted.",
+          { count: creditCost }
+        )
+      );
+    } catch {}
 
     try {
       const j = await postJSON("/api/providers/runway/video/create", payload);
@@ -1440,7 +1568,15 @@ console.log("[video.module] loaded ✅", new Date().toISOString());
         request_id: consumed.consumeRequestId
       });
 
-      try { window.toast?.success?.("Video hazırlanıyor"); } catch {}
+      try {
+        window.toast?.success?.(
+          videoText(
+            "studio.video.toast.videoPreparing",
+            "Video hazırlanıyor.",
+            "Video is being prepared."
+          )
+        );
+      } catch {}
 
       await pollJob(job_id, {
         mode: "text",
@@ -1525,8 +1661,11 @@ async function createImage() {
     }
 
     if (policyNote) {
-      policyNote.textContent =
-        "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.";
+      policyNote.textContent = videoText(
+        "studio.video.policy.blocked",
+        "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.",
+        "This request cannot be generated as written. Describe the video scene and action without using an artist or political figure's name."
+      );
       policyNote.style.display = "block";
     }
 
@@ -1550,7 +1689,13 @@ async function createImage() {
 
   if (!file) {
     try {
-      window.toast?.info?.("Resim seçmelisin");
+      window.toast?.info?.(
+        videoText(
+          "studio.video.error.imageRequired",
+          "Resim seçmelisin.",
+          "Select an image."
+        )
+      );
     } catch {}
     return;
   }
@@ -1566,7 +1711,13 @@ async function createImage() {
       visibleError: "image_not_ready"
     });
     try {
-      window.toast?.info?.("Görsel hâlâ yükleniyor");
+      window.toast?.info?.(
+        videoText(
+          "studio.video.error.imageUploading",
+          "Görsel hâlâ yükleniyor.",
+          "The image is still uploading."
+        )
+      );
     } catch {}
     return;
   }
@@ -1583,7 +1734,13 @@ async function createImage() {
       visibleError: "policy_blocked"
     });
     try {
-      window.toast?.error?.("Bu görsel kullanılamaz.");
+      window.toast?.error?.(
+        videoText(
+          "studio.video.error.imageUnavailable",
+          "Bu görsel kullanılamaz.",
+          "This image cannot be used."
+        )
+      );
     } catch {}
     return;
   }
@@ -1599,7 +1756,13 @@ async function createImage() {
       visibleError: uploadErrorReason || "image_upload_failed"
     });
     try {
-      window.toast?.error?.("Yükleme hatası");
+      window.toast?.error?.(
+        videoText(
+          "studio.video.error.uploadFailed",
+          "Yükleme hatası.",
+          "Upload failed."
+        )
+      );
     } catch {}
     console.warn("[video] create(image) blocked: upload not ready", {
       uploadStatus,
@@ -1651,7 +1814,14 @@ async function createImage() {
   });
 
   try {
-    window.toast?.success?.(`${creditCost} kredi düşüldü`);
+    window.toast?.success?.(
+      videoText(
+        "studio.video.toast.creditDeducted",
+        "{count} kredi düşüldü.",
+        "{count} credits deducted.",
+        { count: creditCost }
+      )
+    );
   } catch {}
 
   try {
@@ -1695,7 +1865,13 @@ async function createImage() {
     });
 
     try {
-      window.toast?.success?.("Video hazırlanıyor");
+      window.toast?.success?.(
+        videoText(
+          "studio.video.toast.videoPreparing",
+          "Video hazırlanıyor.",
+          "Video is being prepared."
+        )
+      );
     } catch {}
 
     await pollJob(job_id, {
@@ -1795,9 +1971,25 @@ async function createImage() {
         lastAudioState = nextAudioState;
 
         if (nextAudioState) {
-          try { window.toast?.success?.("Ses üretimi açıldı · +5 kredi"); } catch {}
+          try {
+            window.toast?.success?.(
+              videoText(
+                "studio.video.toast.audioEnabled",
+                "Ses üretimi açıldı · +5 kredi",
+                "Audio generation enabled · +5 credits"
+              )
+            );
+          } catch {}
         } else {
-          try { window.toast?.success?.("Ses üretimi kapatıldı · -5 kredi"); } catch {}
+          try {
+            window.toast?.success?.(
+              videoText(
+                "studio.video.toast.audioDisabled",
+                "Ses üretimi kapatıldı · -5 kredi",
+                "Audio generation disabled · -5 credits"
+              )
+            );
+          } catch {}
         }
       }
 
@@ -1830,14 +2022,24 @@ async function createImage() {
     if (!btn) return;
     btn.disabled = true;
     const prev = btn.textContent;
-    btn.textContent = "Üretiliyor...";
+    btn.textContent = videoText(
+      "studio.video.generating",
+      "Üretiliyor...",
+      "Generating..."
+    );
     btn.classList.add("is-loading");
 
     return Promise.resolve()
       .then(fn)
       .catch((err) => {
         console.error(err);
-        alert(String(err));
+        alert(
+          videoText(
+            "studio.video.error.generationFailed",
+            "Video oluşturulamadı. Lütfen tekrar deneyin.",
+            "The video could not be created. Please try again."
+          )
+        );
       })
       .finally(() => {
         btn.disabled = false;
@@ -1961,6 +2163,8 @@ function bindTabs(root) {
     input.dataset.uploadStatus = status;
     input.dataset.uploadUrl = uploadUrl;
     input.dataset.uploadErrorReason = errorReason;
+    input.dataset.uploadFileName = fileName;
+    input.dataset.uploadFileSizeText = fileSizeText;
 
     if (status === "empty") {
       input.style.pointerEvents = "auto";
@@ -1983,7 +2187,15 @@ function bindTabs(root) {
     if (status === "uploading") {
       input.style.pointerEvents = "none";
       if (name) {
-        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Yükleniyor...`;
+        name.textContent = videoText(
+          "studio.video.upload.uploading",
+          "Seçildi: {name}{size} · Yükleniyor...",
+          "Selected: {name}{size} · Uploading...",
+          {
+            name: fileName,
+            size: fileSizeText ? ` (${fileSizeText})` : ""
+          }
+        );
       }
       if (bar) bar.style.width = "35%";
       if (pct) pct.textContent = "35%";
@@ -2000,7 +2212,15 @@ function bindTabs(root) {
     if (status === "ready") {
       input.style.pointerEvents = "auto";
       if (name) {
-        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Hazır ✓`;
+        name.textContent = videoText(
+          "studio.video.upload.ready",
+          "Seçildi: {name}{size} · Hazır ✓",
+          "Selected: {name}{size} · Ready ✓",
+          {
+            name: fileName,
+            size: fileSizeText ? ` (${fileSizeText})` : ""
+          }
+        );
       }
       if (bar) bar.style.width = "100%";
       if (pct) pct.textContent = "100%";
@@ -2020,7 +2240,15 @@ function bindTabs(root) {
     if (status === "policy_blocked") {
       input.style.pointerEvents = "auto";
       if (name) {
-        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Bu görsel kullanılamaz`;
+        name.textContent = videoText(
+          "studio.video.upload.policyBlocked",
+          "Seçildi: {name}{size} · Bu görsel kullanılamaz",
+          "Selected: {name}{size} · This image cannot be used",
+          {
+            name: fileName,
+            size: fileSizeText ? ` (${fileSizeText})` : ""
+          }
+        );
       }
       if (bar) bar.style.width = "100%";
       if (pct) pct.textContent = "100%";
@@ -2042,7 +2270,15 @@ function bindTabs(root) {
     if (status === "error") {
       input.style.pointerEvents = "auto";
       if (name) {
-        name.textContent = `Seçildi: ${fileName}${fileSizeText ? ` (${fileSizeText})` : ""} · Yükleme hatası`;
+        name.textContent = videoText(
+          "studio.video.upload.failed",
+          "Seçildi: {name}{size} · Yükleme hatası",
+          "Selected: {name}{size} · Upload failed",
+          {
+            name: fileName,
+            size: fileSizeText ? ` (${fileSizeText})` : ""
+          }
+        );
       }
       if (bar) bar.style.width = "100%";
       if (pct) pct.textContent = "100%";
@@ -2224,7 +2460,17 @@ function bindTabs(root) {
 
         try {
           window.toast?.error?.(
-            isPolicyBlocked ? "Bu görsel kullanılamaz." : "Yükleme hatası"
+            isPolicyBlocked
+              ? videoText(
+                  "studio.video.error.imageUnavailable",
+                  "Bu görsel kullanılamaz.",
+                  "This image cannot be used."
+                )
+              : videoText(
+                  "studio.video.error.uploadFailed",
+                  "Yükleme hatası.",
+                  "Upload failed."
+                )
           );
         } catch {}
 
@@ -2232,6 +2478,30 @@ function bindTabs(root) {
       }
     });
   }
+
+  root.__videoRefreshDynamicI18n = function () {
+    const { input } = getImageUploadRefs();
+    if (!input) return;
+
+    const status = String(input.dataset.uploadStatus || "empty").trim();
+
+    setImageUploadState({
+      status,
+      uploadUrl: String(input.dataset.uploadUrl || "").trim(),
+      fileName: String(input.dataset.uploadFileName || "").trim(),
+      fileSizeText: String(input.dataset.uploadFileSizeText || "").trim(),
+      errorReason: String(input.dataset.uploadErrorReason || "").trim()
+    });
+
+    const policyNote = qs("#videoPolicyNote", root);
+    if (policyNote && policyNote.style.display !== "none" && policyNote.textContent.trim()) {
+      policyNote.textContent = videoText(
+        "studio.video.policy.blocked",
+        "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.",
+        "This request cannot be generated as written. Describe the video scene and action without using an artist or political figure's name."
+      );
+    }
+  };
 
   function setMode(mode) {
     const isText = mode === "text";
@@ -2290,6 +2560,17 @@ function bindTabs(root) {
       policyState: "allow"
     });
   }
+
+  document.addEventListener("aivo:language-change", () => {
+    const root = document.querySelector(ROOT_SEL);
+    if (!root) return;
+
+    try {
+      window.AIVO_STUDIO_I18N?.refresh?.(root);
+    } catch (_) {}
+
+    refreshVideoDynamicText(root);
+  });
 
   // İlk çalıştır
   tryBindAll();
