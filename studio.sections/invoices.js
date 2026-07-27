@@ -417,7 +417,9 @@
             "?email=" +
             encodeURIComponent(normalizedEmail) +
             "&id=" +
-            encodeURIComponent(inv.id)
+            encodeURIComponent(inv.id) +
+            "&lang=" +
+            encodeURIComponent(currentLanguage())
           )
         : "";
 
