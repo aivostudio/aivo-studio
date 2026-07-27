@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/studio.app.css?v=4">
   <link rel="stylesheet" href="/studio.pages.css?v=8">
   <link rel="stylesheet" href="/studio.v2.css?v=20260223_01">
-  <link rel="stylesheet" href="/css/mod.ad-film.css?v=2">
+  <link rel="stylesheet" href="/css/mod.ad-film.css?v=3">
 
   <style>
     html,body{margin:0;min-height:100%;background:#070914;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -22,7 +22,8 @@
     .adfilm-preview-topbar{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(5,7,18,.94);backdrop-filter:blur(20px)}
     .adfilm-preview-brand{display:flex;align-items:center;gap:10px;font-weight:900}.adfilm-preview-brand img{width:76px;height:auto}
     .adfilm-preview-center{display:flex;gap:34px;color:rgba(255,255,255,.82);font-size:13px;font-weight:750}
-    .adfilm-preview-actions{display:flex;align-items:center;gap:9px}.adfilm-preview-pill{padding:8px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.28);background:rgba(255,255,255,.04);font-size:11px;font-weight:850}
+    .adfilm-preview-actions{display:flex;align-items:center;gap:9px}.adfilm-preview-pill{padding:8px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.28);background:rgba(255,255,255,.04);color:#fff;font-size:11px;font-weight:850;cursor:pointer}
+    .adfilm-preview-pill.is-active{background:linear-gradient(120deg,rgba(124,58,237,.7),rgba(236,72,153,.48));border-color:rgba(216,180,254,.38)}
     .studioShell{height:calc(100vh - 68px)}
     .studioNav{top:68px;height:calc(100vh - 68px)}
     .studioMain{height:calc(100vh - 68px);overflow:hidden}
@@ -32,16 +33,16 @@
     @media(max-width:1100px){.adfilm-preview-center{display:none}}
   </style>
 </head>
-<body>
+<body class="adfilm-preview-unlocked">
   <header class="adfilm-preview-topbar">
     <div class="adfilm-preview-brand"><img src="/aivo-logo.png" alt="AIVO"></div>
     <nav class="adfilm-preview-center" aria-label="Önizleme üst menüsü">
       <span>Ürünler</span><span>Kurumsal</span><span>Eğitim İçerikleri</span><span>AIVO COIN</span><span>Fiyatlandırma</span>
     </nav>
     <div class="adfilm-preview-actions">
-      <button class="adfilm-preview-pill" type="button" data-preview-lang="tr">TR</button>
+      <button class="adfilm-preview-pill is-active" type="button" data-preview-lang="tr">TR</button>
       <button class="adfilm-preview-pill" type="button" data-preview-lang="en">EN</button>
-      <span class="adfilm-preview-pill">Tasarım Önizlemesi</span>
+      <span class="adfilm-preview-pill">Basit Mod Önizlemesi</span>
     </div>
   </header>
 
@@ -66,7 +67,7 @@
           <button class="navBtn ghost" type="button">Kredi Satın Al</button>
           <button class="navBtn ghost" type="button">Ayarlar</button>
         </div>
-        <div class="preview-note">Bu sayfa yalnızca PR #174 tasarım önizlemesidir. Giriş, kredi ve üretim API’leri devre dışıdır.</div>
+        <div class="preview-note">Bu sayfa yalnızca PR #174 arayüz önizlemesidir. Giriş, kredi ve üretim API’leri devre dışıdır.</div>
       </div>
     </aside>
 
@@ -83,7 +84,7 @@
   </div>
 
   <script src="/panel.manager.js?v=2"></script>
-  <script src="/js/ad-film.skeleton.js?v=2"></script>
+  <script src="/js/ad-film.skeleton.js?v=3"></script>
   <script>
     (function(){
       function openAdFilm(){
@@ -102,6 +103,7 @@
         if(!button)return;
         var lang=button.getAttribute('data-preview-lang')==='en'?'en':'tr';
         document.documentElement.lang=lang;
+        document.querySelectorAll('[data-preview-lang]').forEach(function(x){x.classList.toggle('is-active',x===button)});
         try{localStorage.setItem('aivo_language',lang)}catch(_){}
         window.dispatchEvent(new StorageEvent('storage',{key:'aivo_language',newValue:lang}));
       });
