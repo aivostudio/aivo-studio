@@ -1,0 +1,33 @@
+/* AIVO AI Ad Film — clean output sliders */
+.adfilm-card--output-detailed .adfilm-toggle-grid{align-items:start;gap:16px}
+.adfilm-output-control-group{min-width:0;padding:0;border:0;border-radius:0;background:transparent}
+.adfilm-output-control-group>label{margin:0!important;padding:0 0 14px!important;border:0!important;border-bottom:1px solid rgba(255,255,255,.08)!important;background:transparent!important;min-height:auto!important}
+.adfilm-output-detail{padding:18px 0 0;border:0}
+.adfilm-output-detail.is-disabled{opacity:.38;filter:saturate(.4);pointer-events:none}
+.adfilm-output-detail__title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.adfilm-output-detail__title b,.adfilm-output-range__head b{font-size:10.5px;color:#f6f2ff}
+.adfilm-output-detail>small{display:block;margin-top:12px;color:rgba(229,231,255,.5);font-size:8.5px;line-height:1.4}
+
+.adfilm-output-range__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.adfilm-output-range__head em{padding:5px 10px;border-radius:999px;font-style:normal;color:#f7e8ff;background:rgba(139,92,246,.14);border:1px solid rgba(216,180,254,.22);font-size:8px;font-weight:900}
+.adfilm-output-range{padding:0 4px}
+.adfilm-output-range input[type="range"]{--range-fill:50%;width:100%;height:5px;appearance:none;border-radius:999px;outline:none;background:linear-gradient(90deg,#8b5cf6 0%,#ec4899 var(--range-fill),rgba(255,255,255,.14) var(--range-fill),rgba(255,255,255,.14) 100%);cursor:pointer}
+.adfilm-output-range input[type="range"]::-webkit-slider-thumb{width:18px;height:18px;appearance:none;border:3px solid #fff;border-radius:50%;background:#e879f9;box-shadow:0 0 0 4px rgba(232,121,249,.12),0 4px 12px rgba(0,0,0,.35)}
+.adfilm-output-range input[type="range"]::-moz-range-thumb{width:14px;height:14px;border:3px solid #fff;border-radius:50%;background:#e879f9;box-shadow:0 0 0 4px rgba(232,121,249,.12),0 4px 12px rgba(0,0,0,.35)}
+.adfilm-output-range__marks{display:flex;justify-content:space-between;margin-top:10px;color:rgba(229,231,255,.48);font-size:8px;font-weight:800}
+
+.adfilm-mini-options{display:flex;flex-wrap:wrap;gap:8px}
+.adfilm-mini-options button{min-height:30px;padding:6px 11px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:rgba(245,245,255,.62);background:rgba(7,9,24,.42);font-size:8.5px;font-weight:850;cursor:pointer}
+.adfilm-mini-options button:hover{color:#fff;border-color:rgba(216,180,254,.28)}
+.adfilm-mini-options button.is-selected{color:#fff;border-color:rgba(238,205,255,.4);background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 50%,#ef5fb4 100%);box-shadow:0 6px 14px rgba(124,77,255,.16),inset 0 1px 0 rgba(255,255,255,.14)}
+.adfilm-mini-options--multi button.is-selected:before{content:"✓";margin-right:4px}
+.adfilm-sfx-level{margin-top:20px}
+.adfilm-voice-auto-note{display:flex;align-items:center;gap:7px;margin:16px 0 0;padding:0;color:rgba(207,250,254,.58);background:none;border:0;font-size:8px;line-height:1.35}
+.adfilm-voice-auto-note>span:first-child{color:#67e8f9}
+
+@media(max-width:1500px){
+  .adfilm-card--output-detailed .adfilm-toggle-grid{gap:12px}
+  .adfilm-output-detail{padding-top:14px}
+  .adfilm-output-range__head{margin-bottom:13px}
+  .adfilm-output-range input[type="range"]::-webkit-slider-thumb{width:16px;height:16px}
+}
