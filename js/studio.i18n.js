@@ -2292,8 +2292,231 @@
       "studio.lipsync.panel.delete.success":
         "Dudak senkron videosu silindi.",
 
-      "studio.lipsync.panel.delete.failed":
+        "studio.lipsync.panel.delete.failed":
         "Dudak senkron videosu silinemedi.",
+
+      /* =========================
+         PROFILE / PAGE
+         ========================= */
+
+      "studio.profile.title":
+        "Profil",
+
+      "studio.profile.subtitle":
+        "Hesap bilgilerin, planın ve kullanım detayların burada yer alır.",
+
+      "studio.profile.action.buyCredits":
+        "Kredi Satın Al",
+
+      "studio.profile.action.upgradePlan":
+        "Planı Yükselt",
+
+      /* =========================
+         PROFILE / INFORMATION
+         ========================= */
+
+      "studio.profile.info.title":
+        "Profil Bilgileri",
+
+      "studio.profile.info.subtitle":
+        "Kişisel hesap bilgilerin",
+
+      "studio.profile.field.name":
+        "Ad",
+
+      "studio.profile.field.namePlaceholder":
+        "Adın",
+
+      "studio.profile.field.surname":
+        "Soyad",
+
+      "studio.profile.field.surnamePlaceholder":
+        "Soyadın",
+
+      "studio.profile.field.email":
+        "E-posta",
+
+      "studio.profile.field.emailLocked":
+        "Güvenlik nedeniyle e-posta adresi değiştirilemez.",
+
+      "studio.profile.action.save":
+        "Profili Güncelle",
+
+      /* =========================
+         PROFILE / SECURITY
+         ========================= */
+
+      "studio.profile.security.title":
+        "Güvenlik",
+
+      "studio.profile.security.subtitle":
+        "Şifre ve hesap güvenliği",
+
+      "studio.profile.security.description":
+        "Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.",
+
+      "studio.profile.security.changePassword":
+        "Şifre Değiştir",
+
+      /* =========================
+         PROFILE / USAGE
+         ========================= */
+
+      "studio.profile.usage.title":
+        "Kullanım İstatistikleri",
+
+      "studio.profile.usage.subtitle":
+        "Bu ayki özet",
+
+      "studio.profile.usage.music":
+        "AI Müzik Üret",
+
+      "studio.profile.usage.cover":
+        "AI Kapak Üret",
+
+      "studio.profile.usage.atmo":
+        "AI Atmosfer Video",
+
+      "studio.profile.usage.cartoon":
+        "AI Çocuk Çizgifilm",
+
+      "studio.profile.usage.photofx":
+        "AI Foto Efekt Video Klip",
+
+      "studio.profile.usage.imageToVideo":
+        "AI Resimden Video Üret",
+
+      "studio.profile.usage.spentCredits":
+        "Harcanan kredi",
+
+      "studio.profile.usage.totalCredits":
+        "Toplam kredi",
+
+      "studio.profile.usage.goLibrary":
+        "Ürettiklerime Git",
+
+      /* =========================
+         PROFILE / DYNAMIC
+         ========================= */
+
+      "studio.profile.userFallback":
+        "Kullanıcı",
+
+      "studio.profile.planPrefix":
+        "Plan: {plan}",
+
+      "studio.profile.creditPrefix":
+        "Kredi: {credit}",
+
+      "studio.profile.error.nameRequired":
+        "Ad alanı boş olamaz.",
+
+      "studio.profile.toast.saved":
+        "Profil güncellendi.",
+
+      "studio.profile.toast.saveFailed":
+        "Profil kaydedilemedi.",
+
+      /* =========================
+         PROFILE / PASSWORD MODAL
+         ========================= */
+
+      "studio.profile.password.title":
+        "Şifre Değiştir",
+
+      "studio.profile.password.subtitle":
+        "Hesabını güvende tutmak için güçlü bir şifre kullan.",
+
+      "studio.profile.password.close":
+        "Kapat",
+
+      "studio.profile.password.current":
+        "Mevcut Şifre",
+
+      "studio.profile.password.currentPlaceholder":
+        "Mevcut şifren",
+
+      "studio.profile.password.new":
+        "Yeni Şifre",
+
+      "studio.profile.password.newPlaceholder":
+        "Yeni şifre",
+
+      "studio.profile.password.confirm":
+        "Yeni Şifre (Tekrar)",
+
+      "studio.profile.password.confirmPlaceholder":
+        "Yeni şifre tekrar",
+
+      "studio.profile.password.hint":
+        "En az 8 karakter, mümkünse harf + sayı + sembol.",
+
+      "studio.profile.password.cancel":
+        "İptal",
+
+      "studio.profile.password.update":
+        "Şifreyi Güncelle",
+
+      "studio.profile.password.error.allFields":
+        "Lütfen tüm alanları doldurun.",
+
+      "studio.profile.password.error.tooShort":
+        "Yeni şifre en az 8 karakter olmalı.",
+
+      "studio.profile.password.error.mismatch":
+        "Yeni şifreler eşleşmiyor.",
+
+      "studio.profile.password.error.currentInvalid":
+        "Mevcut şifre yanlış.",
+
+      "studio.profile.password.error.sameAsOld":
+        "Yeni şifre mevcut şifreyle aynı olamaz.",
+
+      "studio.profile.password.error.updateFailed":
+        "Şifre güncellenemedi.",
+
+      "studio.profile.password.toast.updated":
+        "Şifre başarıyla güncellendi.",
+
+      /* =========================
+         PROFILE / RIGHT PANEL
+         ========================= */
+
+      "studio.profile.panel.title":
+        "Profil",
+
+      "studio.profile.panel.subtitle":
+        "Hesap özeti",
+
+      "studio.profile.panel.account":
+        "Hesap",
+
+      "studio.profile.panel.user":
+        "Kullanıcı",
+
+      "studio.profile.panel.email":
+        "E-posta",
+
+      "studio.profile.panel.credits":
+        "Krediler",
+
+      "studio.profile.panel.total":
+        "Toplam",
+
+      "studio.profile.panel.spent":
+        "Harcanan",
+
+      "studio.profile.panel.shortcuts":
+        "Kısayollar",
+
+      "studio.profile.panel.buyCredits":
+        "Kredi Satın Al",
+
+      "studio.profile.panel.library":
+        "Ürettiklerim",
+
+      "studio.profile.panel.hint":
+        "Profil özeti ve hızlı erişim bu panelde gösterilir.",
 
       /* =========================
          SUPPORT
@@ -4588,8 +4811,231 @@
       "studio.lipsync.panel.delete.success":
         "The lip-sync video was deleted.",
 
-      "studio.lipsync.panel.delete.failed":
+         "studio.lipsync.panel.delete.failed":
         "The lip-sync video could not be deleted.",
+
+      /* =========================
+         PROFILE / PAGE
+         ========================= */
+
+      "studio.profile.title":
+        "Profile",
+
+      "studio.profile.subtitle":
+        "Your account information, plan and usage details are shown here.",
+
+      "studio.profile.action.buyCredits":
+        "Buy Credits",
+
+      "studio.profile.action.upgradePlan":
+        "Upgrade Plan",
+
+      /* =========================
+         PROFILE / INFORMATION
+         ========================= */
+
+      "studio.profile.info.title":
+        "Profile Information",
+
+      "studio.profile.info.subtitle":
+        "Your personal account information",
+
+      "studio.profile.field.name":
+        "First Name",
+
+      "studio.profile.field.namePlaceholder":
+        "Your first name",
+
+      "studio.profile.field.surname":
+        "Last Name",
+
+      "studio.profile.field.surnamePlaceholder":
+        "Your last name",
+
+      "studio.profile.field.email":
+        "Email",
+
+      "studio.profile.field.emailLocked":
+        "The email address cannot be changed for security reasons.",
+
+      "studio.profile.action.save":
+        "Update Profile",
+
+      /* =========================
+         PROFILE / SECURITY
+         ========================= */
+
+      "studio.profile.security.title":
+        "Security",
+
+      "studio.profile.security.subtitle":
+        "Password and account security",
+
+      "studio.profile.security.description":
+        "Update your password regularly to keep your account secure.",
+
+      "studio.profile.security.changePassword":
+        "Change Password",
+
+      /* =========================
+         PROFILE / USAGE
+         ========================= */
+
+      "studio.profile.usage.title":
+        "Usage Statistics",
+
+      "studio.profile.usage.subtitle":
+        "Summary for this month",
+
+      "studio.profile.usage.music":
+        "AI Music Creations",
+
+      "studio.profile.usage.cover":
+        "AI Cover Art Creations",
+
+      "studio.profile.usage.atmo":
+        "AI Atmosphere Videos",
+
+      "studio.profile.usage.cartoon":
+        "AI Kids Cartoons",
+
+      "studio.profile.usage.photofx":
+        "AI Photo Effect Video Clips",
+
+      "studio.profile.usage.imageToVideo":
+        "AI Image-to-Video Creations",
+
+      "studio.profile.usage.spentCredits":
+        "Credits spent",
+
+      "studio.profile.usage.totalCredits":
+        "Total credits",
+
+      "studio.profile.usage.goLibrary":
+        "Go to My Creations",
+
+      /* =========================
+         PROFILE / DYNAMIC
+         ========================= */
+
+      "studio.profile.userFallback":
+        "User",
+
+      "studio.profile.planPrefix":
+        "Plan: {plan}",
+
+      "studio.profile.creditPrefix":
+        "Credits: {credit}",
+
+      "studio.profile.error.nameRequired":
+        "The first name field cannot be empty.",
+
+      "studio.profile.toast.saved":
+        "Profile updated.",
+
+      "studio.profile.toast.saveFailed":
+        "The profile could not be saved.",
+
+      /* =========================
+         PROFILE / PASSWORD MODAL
+         ========================= */
+
+      "studio.profile.password.title":
+        "Change Password",
+
+      "studio.profile.password.subtitle":
+        "Use a strong password to keep your account secure.",
+
+      "studio.profile.password.close":
+        "Close",
+
+      "studio.profile.password.current":
+        "Current Password",
+
+      "studio.profile.password.currentPlaceholder":
+        "Your current password",
+
+      "studio.profile.password.new":
+        "New Password",
+
+      "studio.profile.password.newPlaceholder":
+        "New password",
+
+      "studio.profile.password.confirm":
+        "Confirm New Password",
+
+      "studio.profile.password.confirmPlaceholder":
+        "Enter the new password again",
+
+      "studio.profile.password.hint":
+        "Use at least 8 characters, preferably including letters, numbers and symbols.",
+
+      "studio.profile.password.cancel":
+        "Cancel",
+
+      "studio.profile.password.update":
+        "Update Password",
+
+      "studio.profile.password.error.allFields":
+        "Please complete all fields.",
+
+      "studio.profile.password.error.tooShort":
+        "The new password must be at least 8 characters.",
+
+      "studio.profile.password.error.mismatch":
+        "The new passwords do not match.",
+
+      "studio.profile.password.error.currentInvalid":
+        "The current password is incorrect.",
+
+      "studio.profile.password.error.sameAsOld":
+        "The new password cannot be the same as the current password.",
+
+      "studio.profile.password.error.updateFailed":
+        "The password could not be updated.",
+
+      "studio.profile.password.toast.updated":
+        "Password updated successfully.",
+
+      /* =========================
+         PROFILE / RIGHT PANEL
+         ========================= */
+
+      "studio.profile.panel.title":
+        "Profile",
+
+      "studio.profile.panel.subtitle":
+        "Account summary",
+
+      "studio.profile.panel.account":
+        "Account",
+
+      "studio.profile.panel.user":
+        "User",
+
+      "studio.profile.panel.email":
+        "Email",
+
+      "studio.profile.panel.credits":
+        "Credits",
+
+      "studio.profile.panel.total":
+        "Total",
+
+      "studio.profile.panel.spent":
+        "Spent",
+
+      "studio.profile.panel.shortcuts":
+        "Shortcuts",
+
+      "studio.profile.panel.buyCredits":
+        "Buy Credits",
+
+      "studio.profile.panel.library":
+        "My Creations",
+
+      "studio.profile.panel.hint":
+        "Your profile summary and quick access options are shown in this panel.",
 
       /* =========================
          SUPPORT
