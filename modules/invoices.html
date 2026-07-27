@@ -1,37 +1,98 @@
 <!-- MODULE: INVOICES (v2) -->
-<section class="main-panel" data-page="invoices" data-module="invoices">
-
+<section
+  class="main-panel"
+  data-page="invoices"
+  data-module="invoices"
+>
   <div class="panel-header">
+
     <div class="page-head">
       <div class="page-head__box">
-        <h1 class="page-head__title">Faturalarım</h1>
-        <p class="page-head__sub">
+
+        <h1
+          class="page-head__title"
+          data-i18n="studio.invoices.title"
+        >
+          Faturalarım
+        </h1>
+
+        <p
+          class="page-head__sub"
+          data-i18n="studio.invoices.subtitle"
+        >
           Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.
         </p>
+
       </div>
     </div>
 
-   <div class="invoices-actions" style="margin-top:12px;">
-  <button class="chip-btn is-active" type="button" data-invoices-filter="all" aria-pressed="true">Tümü</button>
-  <button class="chip-btn" type="button" data-invoices-filter="purchase" aria-pressed="false">Satın Alım</button>
-  <button class="chip-btn" type="button" data-invoices-filter="refund" aria-pressed="false">İade</button>
-</div>
-  </div>
+    <div
+      class="invoices-actions"
+      style="margin-top:12px;"
+    >
+      <button
+        class="chip-btn is-active"
+        type="button"
+        data-invoices-filter="all"
+        aria-pressed="true"
+        data-i18n="studio.invoices.filter.all"
+      >
+        Tümü
+      </button>
 
-  <section class="invoices-list invoices-list--flat" aria-label="Fatura listesi">
+      <button
+        class="chip-btn"
+        type="button"
+        data-invoices-filter="purchase"
+        aria-pressed="false"
+        data-i18n="studio.invoices.filter.purchase"
+      >
+        Satın Alım
+      </button>
 
-    <div class="invoices-empty" data-invoices-empty hidden>
-      Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
-    </div>
-
-    <div class="invoices-cards" data-invoices-cards></div>
-
-    <div class="invoices-more">
-      <button class="chip-btn" type="button" data-invoices-more hidden>
-        Daha fazla yükle
+      <button
+        class="chip-btn"
+        type="button"
+        data-invoices-filter="refund"
+        aria-pressed="false"
+        data-i18n="studio.invoices.filter.refund"
+      >
+        İade
       </button>
     </div>
 
+  </div>
+
+  <section
+    class="invoices-list invoices-list--flat"
+    aria-label="Fatura listesi"
+    data-i18n-label="studio.invoices.listLabel"
+  >
+    <div
+      class="invoices-empty"
+      data-invoices-empty
+      data-i18n="studio.invoices.empty.default"
+      hidden
+    >
+      Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.
+    </div>
+
+    <div
+      class="invoices-cards"
+      data-invoices-cards
+    ></div>
+
+    <div class="invoices-more">
+      <button
+        class="chip-btn"
+        type="button"
+        data-invoices-more
+        data-i18n="studio.invoices.more"
+        hidden
+      >
+        Daha fazla yükle
+      </button>
+    </div>
   </section>
 
 </section>
