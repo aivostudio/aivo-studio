@@ -25,112 +25,328 @@
       <h1 id="adfilmTitle" data-adfilm-i18n="title">AI Reklam Filmi Oluştur</h1>
       <p data-adfilm-i18n="subtitle">Ürün görsellerini, seslendirmeyi, müziği ve sahneleri tek akışta birleştirerek kısa reklam filmleri oluştur.</p>
     </div>
+
+    <div class="adfilm-hero__status" aria-label="Modül durumu">
+      <span class="adfilm-hero__status-dot"></span>
+      <div>
+        <b data-adfilm-i18n="engineLabel">Creative Engine</b>
+        <small data-adfilm-i18n="engineStatus">Arayüz geliştirme aşaması</small>
+      </div>
+    </div>
   </header>
 
   <div class="adfilm-modebar" role="tablist" aria-label="Reklam filmi modları">
-    <button type="button" class="adfilm-mode is-active" disabled>
+    <button type="button" class="adfilm-mode is-active" data-adfilm-mode="basic" role="tab" aria-selected="true">
       <span class="adfilm-mode__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="m13 2-8 11h6l-1 9 9-12h-6V2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       </span>
       <span data-adfilm-i18n="modeBasic">Basit Mod</span>
     </button>
-    <button type="button" class="adfilm-mode" disabled>
+    <button type="button" class="adfilm-mode" data-adfilm-mode="voice" role="tab" aria-selected="false">
       <span class="adfilm-mode__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="3" width="8" height="13" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </span>
       <span data-adfilm-i18n="modeVoice">Sesli Reklam</span>
+      <span class="adfilm-mode__soon" data-adfilm-i18n="soonMini">Yakında</span>
     </button>
-    <button type="button" class="adfilm-mode" disabled>
+    <button type="button" class="adfilm-mode" data-adfilm-mode="avatar" role="tab" aria-selected="false">
       <span class="adfilm-mode__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </span>
       <span data-adfilm-i18n="modeAvatar">Avatarlı Reklam</span>
+      <span class="adfilm-mode__soon" data-adfilm-i18n="soonMini">Yakında</span>
     </button>
-    <button type="button" class="adfilm-mode" disabled>
+    <button type="button" class="adfilm-mode" data-adfilm-mode="advanced" role="tab" aria-selected="false">
       <span class="adfilm-mode__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h8M16 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="6" r="2" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/><circle cx="14" cy="18" r="2" stroke="currentColor" stroke-width="1.8"/></svg>
       </span>
       <span data-adfilm-i18n="modeAdvanced">Gelişmiş Mod</span>
+      <span class="adfilm-mode__soon" data-adfilm-i18n="soonMini">Yakında</span>
     </button>
   </div>
 
   <div class="adfilm-layout">
-    <div class="adfilm-workspace" aria-hidden="true">
+    <form class="adfilm-workspace" data-adfilm-form autocomplete="off">
       <article class="adfilm-card adfilm-card--product">
         <div class="adfilm-card__head">
-          <span class="adfilm-card__number">01</span>
-          <div>
+          <span class="adfilm-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v12H4v-12Z" stroke="currentColor" stroke-width="1.7"/><path d="M8 7.5V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2.5M8 12h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          <div class="adfilm-card__heading">
+            <span class="adfilm-card__eyebrow">01</span>
             <h2 data-adfilm-i18n="productInfo">Ürün Bilgileri</h2>
             <p data-adfilm-i18n="productInfoSub">Marka ve kampanya briefini tanımla.</p>
           </div>
+          <span class="adfilm-card__required" data-adfilm-i18n="required">Zorunlu</span>
         </div>
-        <div class="adfilm-field-grid">
-          <span class="adfilm-field"></span><span class="adfilm-field"></span>
-          <span class="adfilm-field adfilm-field--wide"></span>
+
+        <div class="adfilm-fields adfilm-fields--product">
+          <label class="adfilm-control">
+            <span data-adfilm-i18n="productName">Ürün / Hizmet Adı</span>
+            <input type="text" maxlength="80" placeholder="Örn: AIVO Studio" data-adfilm-input="productName" data-adfilm-placeholder="productNamePlaceholder">
+          </label>
+          <label class="adfilm-control">
+            <span data-adfilm-i18n="brandName">Marka Adı</span>
+            <input type="text" maxlength="60" placeholder="Örn: AIVO" data-adfilm-input="brandName" data-adfilm-placeholder="brandNamePlaceholder">
+          </label>
+          <label class="adfilm-control adfilm-control--wide">
+            <span data-adfilm-i18n="description">Kısa Açıklama</span>
+            <textarea maxlength="420" rows="4" placeholder="Ürünün öne çıkan özelliklerini ve reklamda vurgulanmasını istediğin detayları yaz..." data-adfilm-input="description" data-adfilm-placeholder="descriptionPlaceholder"></textarea>
+            <small><b data-adfilm-count="description">0</b> / 420</small>
+          </label>
+          <label class="adfilm-control">
+            <span data-adfilm-i18n="targetAudience">Hedef Kitle</span>
+            <input type="text" maxlength="100" placeholder="Örn: 18–35 yaş, içerik üreticileri" data-adfilm-input="targetAudience" data-adfilm-placeholder="targetAudiencePlaceholder">
+          </label>
+          <label class="adfilm-control">
+            <span data-adfilm-i18n="cta">Kampanya / CTA</span>
+            <input type="text" maxlength="100" placeholder="Örn: Şimdi keşfet, %20 indirim" data-adfilm-input="cta" data-adfilm-placeholder="ctaPlaceholder">
+          </label>
         </div>
       </article>
 
       <article class="adfilm-card adfilm-card--media">
         <div class="adfilm-card__head">
-          <span class="adfilm-card__number">02</span>
-          <div>
+          <span class="adfilm-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><circle cx="8.5" cy="9" r="2" stroke="currentColor" stroke-width="1.7"/><path d="m5 18 4.5-4.5 3.2 3.2 2.1-2.1L19 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div class="adfilm-card__heading">
+            <span class="adfilm-card__eyebrow">02</span>
             <h2 data-adfilm-i18n="mediaUpload">Medya Yükle</h2>
             <p data-adfilm-i18n="mediaUploadSub">Ürün, logo ve referanslarını ekle.</p>
           </div>
+          <span class="adfilm-card__counter"><b data-adfilm-media-total>0</b> / 8</span>
         </div>
+
         <div class="adfilm-upload-grid">
-          <span class="adfilm-upload"><i>+</i></span>
-          <span class="adfilm-upload"><i>+</i></span>
-          <span class="adfilm-upload"><i>+</i></span>
+          <label class="adfilm-upload-zone adfilm-upload-zone--primary">
+            <input type="file" accept="image/png,image/jpeg,image/webp" multiple data-adfilm-file="productImages">
+            <span class="adfilm-upload-zone__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            <b data-adfilm-i18n="productImages">Ürün Görselleri</b>
+            <small data-adfilm-i18n="productImagesHint">En fazla 6 görsel</small>
+            <em data-adfilm-file-count="productImages">0</em>
+          </label>
+
+          <label class="adfilm-upload-zone">
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" data-adfilm-file="logo">
+            <span class="adfilm-upload-zone__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 8v8l8 5 8-5V8l-8-5Z" stroke="currentColor" stroke-width="1.7"/><path d="m8.5 12 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <b data-adfilm-i18n="logo">Logo</b>
+            <small data-adfilm-i18n="logoHint">PNG veya SVG</small>
+            <em data-adfilm-file-count="logo">0</em>
+          </label>
+
+          <label class="adfilm-upload-zone">
+            <input type="file" accept="image/*,video/mp4,video/quicktime" data-adfilm-file="extraMedia">
+            <span class="adfilm-upload-zone__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h11v12H4V6Z" stroke="currentColor" stroke-width="1.7"/><path d="m15 10 5-3v10l-5-3v-4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            </span>
+            <b data-adfilm-i18n="extraMedia">Ek Görsel / Video</b>
+            <small data-adfilm-i18n="extraMediaHint">İsteğe bağlı referans</small>
+            <em data-adfilm-file-count="extraMedia">0</em>
+          </label>
+        </div>
+
+        <div class="adfilm-media-note">
+          <span aria-hidden="true">✦</span>
+          <span data-adfilm-i18n="mediaNote">Ürün görselleri mümkünse temiz, net ve farklı açılardan olmalı.</span>
         </div>
       </article>
 
-      <article class="adfilm-card">
+      <article class="adfilm-card adfilm-card--voice">
         <div class="adfilm-card__head">
-          <span class="adfilm-card__number">03</span>
-          <div>
+          <span class="adfilm-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="3" width="8" height="12" rx="4" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          <div class="adfilm-card__heading">
+            <span class="adfilm-card__eyebrow">03</span>
             <h2 data-adfilm-i18n="voiceNarration">Ses &amp; Anlatım</h2>
-            <p data-adfilm-i18n="voiceNarrationSub">Dil, ses ve dublaj ayarları.</p>
+            <p data-adfilm-i18n="voiceNarrationSub">Dil, ses ve anlatım ayarları.</p>
           </div>
+          <label class="adfilm-switch">
+            <input type="checkbox" checked data-adfilm-input="voiceEnabled">
+            <span></span>
+            <b data-adfilm-i18n="voiceOn">Açık</b>
+          </label>
         </div>
-        <div class="adfilm-chip-row"><span></span><span></span><span></span></div>
+
+        <div class="adfilm-segmented" data-adfilm-choice="scriptMode">
+          <button type="button" class="is-selected" data-value="ai" data-adfilm-i18n="scriptAi">Metni AI yazsın</button>
+          <button type="button" data-value="manual" data-adfilm-i18n="scriptManual">Metni ben yazacağım</button>
+        </div>
+
+        <div class="adfilm-fields adfilm-fields--compact">
+          <label class="adfilm-control">
+            <span data-adfilm-i18n="language">Dil</span>
+            <select data-adfilm-input="language">
+              <option value="tr">Türkçe</option>
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="ar">العربية</option>
+            </select>
+          </label>
+          <label class="adfilm-control">
+            <span data-adfilm-i18n="voiceStyle">Ses Stili</span>
+            <select data-adfilm-input="voiceStyle">
+              <option value="warm" data-adfilm-i18n="voiceWarm">Sıcak ve güven veren</option>
+              <option value="energetic" data-adfilm-i18n="voiceEnergetic">Enerjik reklam sesi</option>
+              <option value="premium" data-adfilm-i18n="voicePremium">Premium ve sakin</option>
+              <option value="natural" data-adfilm-i18n="voiceNatural">Doğal konuşma</option>
+            </select>
+          </label>
+          <label class="adfilm-control adfilm-control--wide adfilm-script-control" data-adfilm-script-control hidden>
+            <span data-adfilm-i18n="narrationText">Seslendirme Metni</span>
+            <textarea maxlength="650" rows="4" placeholder="Reklamda okunacak metni yaz..." data-adfilm-input="narrationText" data-adfilm-placeholder="narrationPlaceholder"></textarea>
+            <small><b data-adfilm-count="narrationText">0</b> / 650</small>
+          </label>
+        </div>
       </article>
 
-      <article class="adfilm-card">
+      <article class="adfilm-card adfilm-card--style">
         <div class="adfilm-card__head">
-          <span class="adfilm-card__number">04</span>
-          <div>
-            <h2 data-adfilm-i18n="presenter">Karakter / Sunucu</h2>
-            <p data-adfilm-i18n="presenterSub">Sunucusuz, avatar veya özel karakter.</p>
+          <span class="adfilm-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m12 3 2.2 5.2L20 10l-4.3 3.8L17 20l-5-3-5 3 1.3-6.2L4 10l5.8-1.8L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          </span>
+          <div class="adfilm-card__heading">
+            <span class="adfilm-card__eyebrow">04</span>
+            <h2 data-adfilm-i18n="sceneStyle">Sahne Stili</h2>
+            <p data-adfilm-i18n="sceneStyleSub">Reklamın görsel dünyasını seç.</p>
           </div>
         </div>
-        <div class="adfilm-choice-row"><span class="is-selected"></span><span></span><span></span></div>
+
+        <div class="adfilm-style-grid" data-adfilm-choice="sceneStyle">
+          <button type="button" class="is-selected" data-value="premium">
+            <span class="adfilm-style-grid__visual adfilm-style-grid__visual--premium"></span>
+            <b data-adfilm-i18n="stylePremium">Premium Ürün</b>
+          </button>
+          <button type="button" data-value="minimal">
+            <span class="adfilm-style-grid__visual adfilm-style-grid__visual--minimal"></span>
+            <b data-adfilm-i18n="styleMinimal">Minimal</b>
+          </button>
+          <button type="button" data-value="luxury">
+            <span class="adfilm-style-grid__visual adfilm-style-grid__visual--luxury"></span>
+            <b data-adfilm-i18n="styleLuxury">Lüks</b>
+          </button>
+          <button type="button" data-value="social">
+            <span class="adfilm-style-grid__visual adfilm-style-grid__visual--social"></span>
+            <b data-adfilm-i18n="styleSocial">Sosyal Medya</b>
+          </button>
+          <button type="button" data-value="studio">
+            <span class="adfilm-style-grid__visual adfilm-style-grid__visual--studio"></span>
+            <b data-adfilm-i18n="styleStudio">Stüdyo</b>
+          </button>
+          <button type="button" data-value="cinematic">
+            <span class="adfilm-style-grid__visual adfilm-style-grid__visual--cinematic"></span>
+            <b data-adfilm-i18n="styleCinematic">Sinematik</b>
+          </button>
+        </div>
       </article>
 
-      <article class="adfilm-card">
+      <article class="adfilm-card adfilm-card--settings">
         <div class="adfilm-card__head">
-          <span class="adfilm-card__number">05</span>
-          <div>
+          <span class="adfilm-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h8M16 17h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="9" cy="12" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="14" cy="17" r="2" stroke="currentColor" stroke-width="1.7"/></svg>
+          </span>
+          <div class="adfilm-card__heading">
+            <span class="adfilm-card__eyebrow">05</span>
             <h2 data-adfilm-i18n="videoSettings">Video Ayarları</h2>
-            <p data-adfilm-i18n="videoSettingsSub">Süre, oran, kalite ve altyazı.</p>
+            <p data-adfilm-i18n="videoSettingsSub">Süre, oran, kalite ve ses katmanları.</p>
           </div>
         </div>
-        <div class="adfilm-format-row"><span>9:16</span><span>1:1</span><span>16:9</span><span>4:5</span><span>2K</span></div>
+
+        <div class="adfilm-setting-block">
+          <span data-adfilm-i18n="duration">Süre</span>
+          <div class="adfilm-options" data-adfilm-choice="duration">
+            <button type="button" data-value="10">10 sn</button>
+            <button type="button" class="is-selected" data-value="15">15 sn</button>
+            <button type="button" data-value="30">30 sn</button>
+          </div>
+        </div>
+
+        <div class="adfilm-setting-block">
+          <span data-adfilm-i18n="format">Format</span>
+          <div class="adfilm-options adfilm-options--ratio" data-adfilm-choice="aspectRatio">
+            <button type="button" class="is-selected" data-value="9:16"><i class="ratio ratio--portrait"></i>9:16</button>
+            <button type="button" data-value="1:1"><i class="ratio ratio--square"></i>1:1</button>
+            <button type="button" data-value="16:9"><i class="ratio ratio--wide"></i>16:9</button>
+            <button type="button" data-value="4:5"><i class="ratio ratio--post"></i>4:5</button>
+          </div>
+        </div>
+
+        <div class="adfilm-setting-block">
+          <span data-adfilm-i18n="quality">Kalite</span>
+          <div class="adfilm-options" data-adfilm-choice="quality">
+            <button type="button" class="is-selected" data-value="1080p">1080p</button>
+            <button type="button" data-value="2k">2K <em data-adfilm-i18n="premiumTag">Premium</em></button>
+          </div>
+        </div>
+
+        <div class="adfilm-toggle-grid">
+          <label><input type="checkbox" checked data-adfilm-input="subtitles"><span></span><b data-adfilm-i18n="subtitles">Altyazı</b></label>
+          <label><input type="checkbox" checked data-adfilm-input="music"><span></span><b data-adfilm-i18n="music">Arka Plan Müziği</b></label>
+          <label><input type="checkbox" data-adfilm-input="soundEffects"><span></span><b data-adfilm-i18n="soundEffects">Ses Efektleri</b></label>
+        </div>
       </article>
 
-      <article class="adfilm-card">
+      <article class="adfilm-card adfilm-card--storyboard">
         <div class="adfilm-card__head">
-          <span class="adfilm-card__number">06</span>
-          <div>
+          <span class="adfilm-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M8 4v16M16 4v16M3 9h5M16 9h5M3 15h5M16 15h5" stroke="currentColor" stroke-width="1.7"/></svg>
+          </span>
+          <div class="adfilm-card__heading">
+            <span class="adfilm-card__eyebrow">06</span>
             <h2 data-adfilm-i18n="storyboard">Sahne Akışı</h2>
-            <p data-adfilm-i18n="storyboardSub">Reklamın sahne planını ön izle.</p>
+            <p data-adfilm-i18n="storyboardSub">Reklamın otomatik sahne planını ön izle.</p>
           </div>
+          <button type="button" class="adfilm-regenerate" data-adfilm-regenerate>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.4 9A7 7 0 0 0 6.2 6.2L4 8M5.6 15A7 7 0 0 0 17.8 17.8L20 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span data-adfilm-i18n="refreshFlow">Akışı Yenile</span>
+          </button>
         </div>
-        <div class="adfilm-timeline"><span></span><span></span><span></span></div>
-      </article>
-    </div>
 
-    <div class="adfilm-construction" role="status" aria-live="polite">
+        <div class="adfilm-storyboard" data-adfilm-storyboard>
+          <article class="adfilm-scene is-active" data-scene="1">
+            <span class="adfilm-scene__index">01</span>
+            <div class="adfilm-scene__thumb adfilm-scene__thumb--intro"><span>00:00–00:03</span></div>
+            <div><b data-adfilm-i18n="sceneIntro">Güçlü Açılış</b><p data-adfilm-i18n="sceneIntroText">Ürün ve marka ilk saniyede dikkat çeker.</p></div>
+          </article>
+          <article class="adfilm-scene" data-scene="2">
+            <span class="adfilm-scene__index">02</span>
+            <div class="adfilm-scene__thumb adfilm-scene__thumb--product"><span>00:03–00:08</span></div>
+            <div><b data-adfilm-i18n="sceneProduct">Ürün Deneyimi</b><p data-adfilm-i18n="sceneProductText">Ürün farklı açılar ve hareketlerle gösterilir.</p></div>
+          </article>
+          <article class="adfilm-scene" data-scene="3">
+            <span class="adfilm-scene__index">03</span>
+            <div class="adfilm-scene__thumb adfilm-scene__thumb--benefit"><span>00:08–00:12</span></div>
+            <div><b data-adfilm-i18n="sceneBenefit">Fayda ve Mesaj</b><p data-adfilm-i18n="sceneBenefitText">En güçlü özellik kısa ve net biçimde anlatılır.</p></div>
+          </article>
+          <article class="adfilm-scene" data-scene="4">
+            <span class="adfilm-scene__index">04</span>
+            <div class="adfilm-scene__thumb adfilm-scene__thumb--cta"><span>00:12–00:15</span></div>
+            <div><b data-adfilm-i18n="sceneCta">Logo ve CTA</b><p data-adfilm-i18n="sceneCtaText">Marka, kampanya ve yönlendirme ile kapanır.</p></div>
+          </article>
+        </div>
+      </article>
+
+      <div class="adfilm-actionbar">
+        <div class="adfilm-actionbar__summary">
+          <span class="adfilm-actionbar__spark" aria-hidden="true">✦</span>
+          <div><b data-adfilm-i18n="readyTitle">Reklam projesi hazırlanacak</b><small data-adfilm-summary>15 sn · 9:16 · 1080p · Sesli</small></div>
+        </div>
+        <button type="button" class="adfilm-create" data-adfilm-build disabled>
+          <span class="adfilm-create__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 9 6-9 6V6Z" fill="currentColor"/><path d="M5 4v16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span data-adfilm-i18n="createButton">Reklam Filmini Oluştur</span>
+          <em data-adfilm-i18n="creditLater">Kredi daha sonra belirlenecek</em>
+        </button>
+      </div>
+    </form>
+
+    <div class="adfilm-construction" role="status" aria-live="polite" data-adfilm-construction>
       <div class="adfilm-construction__glass">
         <div class="adfilm-construction__mark" aria-hidden="true">
           <svg viewBox="0 0 72 72" fill="none">
