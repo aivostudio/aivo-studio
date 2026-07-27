@@ -296,6 +296,11 @@
         "Oynat",
         "Play",
       ],
+      "lipsync-play": [
+        "studio.lipsync.panel.action.play",
+        "Oynat",
+        "Play",
+      ],
       pause: [
         "studio.lipsync.panel.action.pause",
         "Duraklat",
@@ -554,6 +559,13 @@
       }
 
       grid.innerHTML = list.map(renderCard).join("");
+
+      grid
+        .querySelectorAll('[data-svc-act="play"]')
+        .forEach((button) => {
+          button.dataset.svcAct = "lipsync-play";
+        });
+
       localizeCardActions(grid);
     }
 
@@ -599,15 +611,84 @@
 
       const videoRaw = pickVideoFromJob(job);
 
-      if (act === "play") {
+      if (act === "play" || act === "lipsync-play") {
         event.preventDefault();
         event.stopPropagation();
 
-        const video = card?.querySelector("video");
+        const serviceCard = btn.closest(".svcCard") || card;
+        const video = serviceCard?.querySelector("video.svcVideo, video");
+        const poster = serviceCard?.querySelector(".svcPoster");
+
         if (!video) return;
 
-        if (video.paused) video.play().catch(() => {});
-        else video.pause();
+        const lazyUrl = String(
+          video.dataset.videoUrl ||
+          video.getAttribute("data-video-url") ||
+          toMaybeProxyUrl(videoRaw) ||
+          ""
+        ).trim();
+
+        if (!video.src && lazyUrl) {
+          video.preload = "metadata";
+          video.style.display = "block";
+          video.src = lazyUrl;
+
+          if (!video.__aivoLipsyncPosterBound) {
+            video.__aivoLipsyncPosterBound = true;
+
+            const hidePoster = () => {
+              if (poster) poster.style.display = "none";
+            };
+
+            video.addEventListener("loadeddata", hidePoster, { once: true });
+            video.addEventListener("playing", hidePoster, { once: true });
+          }
+
+          try {
+            video.load();
+          } catch {}
+        } else {
+          video.style.display = "block";
+          if (poster) poster.style.display = "none";
+        }
+
+        if (!video.__aivoLipsyncPlaySyncBound) {
+          video.__aivoLipsyncPlaySyncBound = true;
+
+          const syncPlayButton = () => {
+            btn.textContent = video.paused ? "▶" : "❚❚";
+            const label = video.paused
+              ? lipsyncPanelText(
+                  "studio.lipsync.panel.action.play",
+                  "Oynat",
+                  "Play"
+                )
+              : lipsyncPanelText(
+                  "studio.lipsync.panel.action.pause",
+                  "Duraklat",
+                  "Pause"
+                );
+
+            btn.setAttribute("title", label);
+            btn.setAttribute("aria-label", label);
+          };
+
+          video.addEventListener("play", syncPlayButton);
+          video.addEventListener("pause", syncPlayButton);
+          video.addEventListener("ended", syncPlayButton);
+          syncPlayButton();
+        }
+
+        try {
+          if (video.paused) {
+            await video.play();
+          } else {
+            video.pause();
+          }
+        } catch (error) {
+          console.error("[LIPSYNC PANEL] play failed", error);
+        }
+
         return;
       }
 
