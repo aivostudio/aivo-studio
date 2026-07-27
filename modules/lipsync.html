@@ -1,40 +1,94 @@
-<section class="main-panel module-lipsync" data-module="lipsync" data-module-root="lipsync">
+<section
+  class="main-panel module-lipsync"
+  data-module="lipsync"
+  data-module-root="lipsync"
+>
   <div class="lipsync-shell">
-<div class="lipsync-card">
-<div class="lipsync-info-card">
-  <div class="lipsync-info-title">AI Dudak Senkron Video</div>
-  <div class="lipsync-info-text">
-    Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Kredi, tahmini konuşma süresine göre hesaplanır.
-  </div>
-</div>
+    <div class="lipsync-card">
+
+      <div class="lipsync-info-card">
+        <div
+          class="lipsync-info-title"
+          data-i18n="studio.lipsync.title"
+        >
+          AI Dudak Senkron Video
+        </div>
+
+        <div
+          class="lipsync-info-text"
+          data-i18n="studio.lipsync.subtitle"
+        >
+          Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Kredi,
+          tahmini konuşma süresine göre hesaplanır.
+        </div>
+      </div>
 
       <div class="lipsync-grid">
+
+        <!-- ================= KONUŞMA ================= -->
         <section class="lipsync-block lipsync-block--speech">
+
           <div class="lipsync-block-head">
             <div>
-              <div class="lipsync-block-title">Konuşma</div>
-              <div class="lipsync-block-sub">Metin yaz veya hazır ses dosyası yükle.</div>
+              <div
+                class="lipsync-block-title"
+                data-i18n="studio.lipsync.speech.title"
+              >
+                Konuşma
+              </div>
+
+              <div
+                class="lipsync-block-sub"
+                data-i18n="studio.lipsync.speech.subtitle"
+              >
+                Metin yaz veya hazır ses dosyası yükle.
+              </div>
             </div>
 
             <div class="lipsync-icon-actions">
-            <button type="button" class="lipsync-icon-btn" data-lipsync-record-open title="Ses kaydet">
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5Z"></path>
-    <path d="M5 10.5a7 7 0 0 0 14 0"></path>
-    <path d="M12 17.5V21"></path>
-    <path d="M8.5 21h7"></path>
-  </svg>
-</button>
 
-                   <button type="button" class="lipsync-icon-btn" data-lipsync-upload-open title="Hazır ses dosyası yükle">
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 16V4"></path>
-    <path d="M7 9l5-5 5 5"></path>
-    <path d="M5 20h14"></path>
-  </svg>
-</button>
+              <button
+                type="button"
+                class="lipsync-icon-btn"
+                data-lipsync-record-open
+                title="Ses kaydet"
+                aria-label="Ses kaydet"
+                data-i18n-title="studio.lipsync.action.recordAudio"
+                data-i18n-label="studio.lipsync.action.recordAudio"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M12 14.5a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5a3.5 3.5 0 0 0 3.5 3.5Z"
+                  ></path>
+                  <path d="M5 10.5a7 7 0 0 0 14 0"></path>
+                  <path d="M12 17.5V21"></path>
+                  <path d="M8.5 21h7"></path>
+                </svg>
+              </button>
 
-<input type="file" accept="audio/*" data-lipsync-audio hidden>
+              <button
+                type="button"
+                class="lipsync-icon-btn"
+                data-lipsync-upload-open
+                title="Hazır ses dosyası yükle"
+                aria-label="Hazır ses dosyası yükle"
+                data-i18n-title="studio.lipsync.action.uploadAudio"
+                data-i18n-label="studio.lipsync.action.uploadAudio"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 16V4"></path>
+                  <path d="M7 9l5-5 5 5"></path>
+                  <path d="M5 20h14"></path>
+                </svg>
+              </button>
+
+              <input
+                type="file"
+                accept="audio/*"
+                data-lipsync-audio
+                hidden
+              >
+
             </div>
           </div>
 
@@ -43,165 +97,492 @@
             data-lipsync-script
             maxlength="1200"
             placeholder="Ne konuşturmak istiyorsun? Metni buraya yaz..."
+            data-i18n-placeholder="studio.lipsync.script.placeholder"
           ></textarea>
 
           <div class="lipsync-meta-row">
-            <div class="lipsync-file-note" data-lipsync-audio-name>
-              Ses yüklenmedi. 
+
+            <div
+              class="lipsync-file-note"
+              data-lipsync-audio-name
+              data-i18n="studio.lipsync.audio.none"
+            >
+              Ses yüklenmedi.
             </div>
 
-            <div class="lipsync-counter" data-lipsync-counter>0 / 1200</div>
+            <div
+              class="lipsync-counter"
+              data-lipsync-counter
+            >
+              0 / 1200
+            </div>
+
           </div>
 
-<div class="lipsync-voice-toolbar">
-  <div class="lipsync-voice-bar">
-    <div class="lipsync-voice-select-wrap">
-      <select class="lipsync-voice-select" data-lipsync-voice-select>
-        <option value="tranquil_tulin" data-voice-name="Tranquil Tülin" selected>Ses: Tranquil Tülin</option>
-        <option value="iker" data-voice-name="Iker">Ses: Iker</option>
-        <option value="deep_dieter" data-voice-name="Deep Dieter">Ses: Deep Dieter</option>
-        <option value="william" data-voice-name="William Prescott">Ses: William Prescott</option>
-        <option value="menon" data-voice-name="Menon">Ses: Menon</option>
-        <option value="knox" data-voice-name="Knox">Ses: Knox</option>
-        <option value="aaron" data-voice-name="Aaron">Ses: Aaron</option>
-        <option value="lily" data-voice-name="Lily">Ses: Lily</option>
-        <option value="april" data-voice-name="April">Ses: April</option>
-        <option value="tiffany" data-voice-name="Tiffany">Ses: Tiffany</option>
-        <option value="brianna" data-voice-name="Brianna">Ses: Brianna</option>
-        <option value="evelyn" data-voice-name="Evelyn Harper">Ses: Evelyn Harper</option>
-        <option value="laurel" data-voice-name="Laurel">Ses: Laurel</option>
-        <option value="seena" data-voice-name="Seena Professional">Ses: Seena Professional</option>
-           </select>
+          <!-- ================= SES SEÇİMİ ================= -->
+          <div class="lipsync-voice-toolbar">
+            <div class="lipsync-voice-bar">
+              <div class="lipsync-voice-select-wrap">
 
-      <span class="lipsync-voice-chevron" aria-hidden="true">⌄</span>
+                <select
+                  class="lipsync-voice-select"
+                  data-lipsync-voice-select
+                >
+                  <option
+                    value="tranquil_tulin"
+                    data-voice-name="Tranquil Tülin"
+                    data-i18n="studio.lipsync.voice.tranquilTulin"
+                    selected
+                  >
+                    Ses: Tranquil Tülin
+                  </option>
 
-      <button
-        type="button"
-        class="lipsync-voice-play-inline"
-        data-lipsync-preview-voice
-        title="Sesi dinle">
-        ▶
-      </button>
-    </div>
-  </div>
-</div>
+                  <option
+                    value="iker"
+                    data-voice-name="Iker"
+                    data-i18n="studio.lipsync.voice.iker"
+                  >
+                    Ses: Iker
+                  </option>
+
+                  <option
+                    value="deep_dieter"
+                    data-voice-name="Deep Dieter"
+                    data-i18n="studio.lipsync.voice.deepDieter"
+                  >
+                    Ses: Deep Dieter
+                  </option>
+
+                  <option
+                    value="william"
+                    data-voice-name="William Prescott"
+                    data-i18n="studio.lipsync.voice.william"
+                  >
+                    Ses: William Prescott
+                  </option>
+
+                  <option
+                    value="menon"
+                    data-voice-name="Menon"
+                    data-i18n="studio.lipsync.voice.menon"
+                  >
+                    Ses: Menon
+                  </option>
+
+                  <option
+                    value="knox"
+                    data-voice-name="Knox"
+                    data-i18n="studio.lipsync.voice.knox"
+                  >
+                    Ses: Knox
+                  </option>
+
+                  <option
+                    value="aaron"
+                    data-voice-name="Aaron"
+                    data-i18n="studio.lipsync.voice.aaron"
+                  >
+                    Ses: Aaron
+                  </option>
+
+                  <option
+                    value="lily"
+                    data-voice-name="Lily"
+                    data-i18n="studio.lipsync.voice.lily"
+                  >
+                    Ses: Lily
+                  </option>
+
+                  <option
+                    value="april"
+                    data-voice-name="April"
+                    data-i18n="studio.lipsync.voice.april"
+                  >
+                    Ses: April
+                  </option>
+
+                  <option
+                    value="tiffany"
+                    data-voice-name="Tiffany"
+                    data-i18n="studio.lipsync.voice.tiffany"
+                  >
+                    Ses: Tiffany
+                  </option>
+
+                  <option
+                    value="brianna"
+                    data-voice-name="Brianna"
+                    data-i18n="studio.lipsync.voice.brianna"
+                  >
+                    Ses: Brianna
+                  </option>
+
+                  <option
+                    value="evelyn"
+                    data-voice-name="Evelyn Harper"
+                    data-i18n="studio.lipsync.voice.evelyn"
+                  >
+                    Ses: Evelyn Harper
+                  </option>
+
+                  <option
+                    value="laurel"
+                    data-voice-name="Laurel"
+                    data-i18n="studio.lipsync.voice.laurel"
+                  >
+                    Ses: Laurel
+                  </option>
+
+                  <option
+                    value="seena"
+                    data-voice-name="Seena Professional"
+                    data-i18n="studio.lipsync.voice.seena"
+                  >
+                    Ses: Seena Professional
+                  </option>
+                </select>
+
+                <span
+                  class="lipsync-voice-chevron"
+                  aria-hidden="true"
+                >
+                  ⌄
+                </span>
+
+                <button
+                  type="button"
+                  class="lipsync-voice-play-inline"
+                  data-lipsync-preview-voice
+                  title="Sesi dinle"
+                  aria-label="Sesi dinle"
+                  data-i18n-title="studio.lipsync.voice.preview"
+                  data-i18n-label="studio.lipsync.voice.preview"
+                >
+                  ▶
+                </button>
+
+              </div>
+            </div>
+          </div>
+
         </section>
 
+        <!-- ================= FOTOĞRAF ================= -->
         <section class="lipsync-block lipsync-photo-zone">
+
           <label class="lipsync-photo-label">
-            <input type="file" accept="image/*" data-lipsync-photo hidden>
+
+            <input
+              type="file"
+              accept="image/*"
+              data-lipsync-photo
+              hidden
+            >
 
             <div data-lipsync-photo-empty>
+
               <div class="lipsync-photo-icon lipsync-photo-icon--svg">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="4" width="18" height="16" rx="3"></rect>
-                  <circle cx="8.5" cy="9" r="1.7"></circle>
-                  <path d="M6 17l4.2-4.2a1.4 1.4 0 0 1 2 0L15 15.6"></path>
-                  <path d="M13.8 14.4l1.4-1.4a1.4 1.4 0 0 1 2 0L21 16.8"></path>
+                  <rect
+                    x="3"
+                    y="4"
+                    width="18"
+                    height="16"
+                    rx="3"
+                  ></rect>
+
+                  <circle
+                    cx="8.5"
+                    cy="9"
+                    r="1.7"
+                  ></circle>
+
+                  <path
+                    d="M6 17l4.2-4.2a1.4 1.4 0 0 1 2 0L15 15.6"
+                  ></path>
+
+                  <path
+                    d="M13.8 14.4l1.4-1.4a1.4 1.4 0 0 1 2 0L21 16.8"
+                  ></path>
                 </svg>
               </div>
 
-              <div class="lipsync-photo-title">Fotoğraf yükle</div>
-              <div class="lipsync-photo-text">
-              Yüz net görünmeli • JPG/PNG • En az 300×300 px
+              <div
+                class="lipsync-photo-title"
+                data-i18n="studio.lipsync.photo.title"
+              >
+                Fotoğraf yükle
               </div>
+
+              <div
+                class="lipsync-photo-text"
+                data-i18n="studio.lipsync.photo.requirements"
+              >
+                Yüz net görünmeli • JPG/PNG • En az 300×300 px
+              </div>
+
             </div>
 
-            <img class="lipsync-photo-preview" data-lipsync-photo-preview alt="">
-            <button type="button" class="lipsync-photo-remove" data-lipsync-photo-remove aria-label="Fotoğrafı kaldır">
-            ×
-           </button>
-            <div class="lipsync-photo-name" data-lipsync-photo-name></div>
+            <img
+              class="lipsync-photo-preview"
+              data-lipsync-photo-preview
+              alt=""
+            >
+
+            <button
+              type="button"
+              class="lipsync-photo-remove"
+              data-lipsync-photo-remove
+              aria-label="Fotoğrafı kaldır"
+              title="Fotoğrafı kaldır"
+              data-i18n-label="studio.lipsync.photo.remove"
+              data-i18n-title="studio.lipsync.photo.remove"
+            >
+              ×
+            </button>
+
+            <div
+              class="lipsync-photo-name"
+              data-lipsync-photo-name
+            ></div>
+
           </label>
 
-<div class="lipsync-photo-controls">
-  <select class="lipsync-select" data-lipsync-resolution>
-    <option value="720p">720p</option>
-    <option value="1080p" selected>1080p</option>
-  </select>
+          <div class="lipsync-photo-controls">
 
-  <select class="lipsync-select" data-lipsync-aspect-select>
-    <option value="16:9" selected>16:9</option>
-    <option value="9:16">9:16</option>
-  </select>
+            <select
+              class="lipsync-select"
+              data-lipsync-resolution
+            >
+              <option value="720p">
+                720p
+              </option>
 
-</div>
+              <option value="1080p" selected>
+                1080p
+              </option>
+            </select>
+
+            <select
+              class="lipsync-select"
+              data-lipsync-aspect-select
+            >
+              <option value="16:9" selected>
+                16:9
+              </option>
+
+              <option value="9:16">
+                9:16
+              </option>
+            </select>
+
+          </div>
+
         </section>
       </div>
-   <section class="lipsync-voice-settings-panel lipsync-credit-info-panel">
-<div class="lipsync-voice-settings-head">
-  <div>
-    <div class="lipsync-voice-settings-title">Ses Ayarları</div>
-    <div class="lipsync-voice-settings-sub">Konuşma hızını ve ses seviyesini ayarla.</div>
-    <div class="lipsync-voice-settings-note">
-       Sadece metin üretiminde geçerlidir.
-    </div>
-  </div>
 
+      <!-- ================= SES AYARLARI ================= -->
+      <section
+        class="lipsync-voice-settings-panel lipsync-credit-info-panel"
+      >
+        <div class="lipsync-voice-settings-head">
+          <div>
 
-</div>
+            <div
+              class="lipsync-voice-settings-title"
+              data-i18n="studio.lipsync.settings.title"
+            >
+              Ses Ayarları
+            </div>
 
-  <div class="lipsync-voice-settings-grid">
-    <label class="lipsync-range-field">
-      <div class="lipsync-range-label">
-        <span>Hız</span>
-       <small data-lipsync-speed-label>Normal</small>
-      </div>
-     <input type="range" min="0.5" max="1.5" step="0.05" value="1" data-lipsync-voice-speed>
-    </label>
+            <div
+              class="lipsync-voice-settings-sub"
+              data-i18n="studio.lipsync.settings.subtitle"
+            >
+              Konuşma hızını ve ses seviyesini ayarla.
+            </div>
 
-    <label class="lipsync-range-field">
-      <div class="lipsync-range-label">
-        <span>Ses Seviyesi</span>
-       <small data-lipsync-volume-label>100%</small>
-      </div>
-      <input type="range" min="0.5" max="1.5" step="0.05" value="1" data-lipsync-voice-volume>
-    </label>
-  </div>
-</section>
+            <div
+              class="lipsync-voice-settings-note"
+              data-i18n="studio.lipsync.settings.textOnly"
+            >
+              Sadece metin üretiminde geçerlidir.
+            </div>
 
-<section class="lipsync-voice-settings-panel lipsync-credit-info-panel">
-  <div class="lipsync-voice-settings-head">
-    <div>
-      <div class="lipsync-voice-settings-title">Kredi ve Süre Bilgisi</div>
-      <div class="lipsync-voice-settings-note">
-        Kredi, konuşma süresine göre hesaplanır. Her başlayan 2 sn = 3 kredi.<br>
-        Tek videoda maksimum 60 sn üretilebilir.
-      </div>
-    </div>
-  </div>
-</section>
+          </div>
+        </div>
 
+        <div class="lipsync-voice-settings-grid">
+
+          <label class="lipsync-range-field">
+            <div class="lipsync-range-label">
+
+              <span data-i18n="studio.lipsync.settings.speed">
+                Hız
+              </span>
+
+              <small
+                data-lipsync-speed-label
+                data-i18n="studio.lipsync.settings.speed.normal"
+              >
+                Normal
+              </small>
+
+            </div>
+
+            <input
+              type="range"
+              min="0.5"
+              max="1.5"
+              step="0.05"
+              value="1"
+              data-lipsync-voice-speed
+            >
+          </label>
+
+          <label class="lipsync-range-field">
+            <div class="lipsync-range-label">
+
+              <span data-i18n="studio.lipsync.settings.volume">
+                Ses Seviyesi
+              </span>
+
+              <small data-lipsync-volume-label>
+                100%
+              </small>
+
+            </div>
+
+            <input
+              type="range"
+              min="0.5"
+              max="1.5"
+              step="0.05"
+              value="1"
+              data-lipsync-voice-volume
+            >
+          </label>
+
+        </div>
+      </section>
+
+      <!-- ================= KREDİ VE SÜRE ================= -->
+      <section
+        class="lipsync-voice-settings-panel lipsync-credit-info-panel"
+      >
+        <div class="lipsync-voice-settings-head">
+          <div>
+
+            <div
+              class="lipsync-voice-settings-title"
+              data-i18n="studio.lipsync.credit.title"
+            >
+              Kredi ve Süre Bilgisi
+            </div>
+
+            <div class="lipsync-voice-settings-note">
+              <span data-i18n="studio.lipsync.credit.rule">
+                Kredi, konuşma süresine göre hesaplanır. Her başlayan
+                2 sn = 3 kredi.
+              </span>
+
+              <br>
+
+              <span data-i18n="studio.lipsync.credit.maximum">
+                Tek videoda maksimum 60 sn üretilebilir.
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ÜRET BUTONU ================= -->
       <footer class="lipsync-footer">
-        <button type="button" class="lipsync-generate-btn" data-lipsync-generate>
+        <button
+          type="button"
+          class="lipsync-generate-btn"
+          data-lipsync-generate
+          data-i18n="studio.lipsync.generate"
+        >
           Dudak Senkron Video Üret
         </button>
       </footer>
+
     </div>
   </div>
-  <div class="lipsync-record-modal" data-lipsync-record-modal hidden>
-  <div class="lipsync-record-backdrop" data-lipsync-record-close></div>
 
-  <div class="lipsync-record-dialog">
-    <button type="button" class="lipsync-record-close" data-lipsync-record-close>×</button>
+  <!-- ================= SES KAYIT MODALI ================= -->
+  <div
+    class="lipsync-record-modal"
+    data-lipsync-record-modal
+    hidden
+  >
+    <div
+      class="lipsync-record-backdrop"
+      data-lipsync-record-close
+    ></div>
 
-    <div class="lipsync-record-title">Ses Kaydet</div>
-  <div class="lipsync-record-tabs">
-  <button type="button" class="is-active" data-lipsync-record-tab="record">Ses Kaydı</button>
-  <button type="button" data-lipsync-record-tab="upload">Ses Yükle</button>
-</div>
+    <div class="lipsync-record-dialog">
 
-    <div class="lipsync-record-box">
-      <p>Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.</p>
-    </div>
+      <button
+        type="button"
+        class="lipsync-record-close"
+        data-lipsync-record-close
+      >
+        ×
+      </button>
 
-    <button type="button" class="lipsync-record-main-btn" data-lipsync-record-toggle>
-      ●
-    </button>
+      <div
+        class="lipsync-record-title"
+        data-i18n="studio.lipsync.record.title"
+      >
+        Ses Kaydet
+      </div>
 
-    <div class="lipsync-record-device">
-      🎙 Mikrofon hazır bekleniyor...
+      <div class="lipsync-record-tabs">
+
+        <button
+          type="button"
+          class="is-active"
+          data-lipsync-record-tab="record"
+          data-i18n="studio.lipsync.record.tab.record"
+        >
+          Ses Kaydı
+        </button>
+
+        <button
+          type="button"
+          data-lipsync-record-tab="upload"
+          data-i18n="studio.lipsync.record.tab.upload"
+        >
+          Ses Yükle
+        </button>
+
+      </div>
+
+      <div class="lipsync-record-box">
+        <p data-i18n="studio.lipsync.record.description">
+          Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron
+          yapacak.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="lipsync-record-main-btn"
+        data-lipsync-record-toggle
+      >
+        ●
+      </button>
+
+      <div
+        class="lipsync-record-device"
+        data-i18n="studio.lipsync.record.microphoneWaiting"
+      >
+        🎙 Mikrofon hazır bekleniyor...
+      </div>
+
     </div>
   </div>
-</div>
 </section>
