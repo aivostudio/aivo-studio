@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIVO — AI Reklam Filmi Önizleme</title>
+  <meta name="robots" content="noindex,nofollow">
+
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="/index.css?v=1002">
+  <link rel="stylesheet" href="/products.dropdown.css?v=14">
+  <link rel="stylesheet" href="/products.dropdown.override.css?v=10">
+  <link rel="stylesheet" href="/studio.shell.css?v=5">
+  <link rel="stylesheet" href="/studio.app.css?v=4">
+  <link rel="stylesheet" href="/studio.pages.css?v=8">
+  <link rel="stylesheet" href="/studio.v2.css?v=20260223_01">
+  <link rel="stylesheet" href="/css/mod.ad-film.css?v=2">
+
+  <style>
+    html,body{margin:0;min-height:100%;background:#070914;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    body{overflow:hidden}
+    .adfilm-preview-topbar{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(5,7,18,.94);backdrop-filter:blur(20px)}
+    .adfilm-preview-brand{display:flex;align-items:center;gap:10px;font-weight:900}.adfilm-preview-brand img{width:76px;height:auto}
+    .adfilm-preview-center{display:flex;gap:34px;color:rgba(255,255,255,.82);font-size:13px;font-weight:750}
+    .adfilm-preview-actions{display:flex;align-items:center;gap:9px}.adfilm-preview-pill{padding:8px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.28);background:rgba(255,255,255,.04);font-size:11px;font-weight:850}
+    .studioShell{height:calc(100vh - 68px)}
+    .studioNav{top:68px;height:calc(100vh - 68px)}
+    .studioMain{height:calc(100vh - 68px);overflow:hidden}
+    .studioTwoPanel{height:100%;padding-bottom:18px}
+    .studioMotor,.studioOutputs{height:100%;overflow:auto}
+    .preview-note{font-size:10px;color:rgba(255,255,255,.48);padding:0 8px 12px;line-height:1.45}
+    @media(max-width:1100px){.adfilm-preview-center{display:none}}
+  </style>
+</head>
+<body>
+  <header class="adfilm-preview-topbar">
+    <div class="adfilm-preview-brand"><img src="/aivo-logo.png" alt="AIVO"></div>
+    <nav class="adfilm-preview-center" aria-label="Önizleme üst menüsü">
+      <span>Ürünler</span><span>Kurumsal</span><span>Eğitim İçerikleri</span><span>AIVO COIN</span><span>Fiyatlandırma</span>
+    </nav>
+    <div class="adfilm-preview-actions">
+      <button class="adfilm-preview-pill" type="button" data-preview-lang="tr">TR</button>
+      <button class="adfilm-preview-pill" type="button" data-preview-lang="en">EN</button>
+      <span class="adfilm-preview-pill">Tasarım Önizlemesi</span>
+    </div>
+  </header>
+
+  <div class="studioShell" id="studioRoot">
+    <aside class="studioNav" id="leftMenu">
+      <div class="navScroll">
+        <div class="navCard">
+          <div class="navTitle">AI Üret</div>
+          <button class="navBtn" type="button"><span class="navDot"></span><span>AI Müzik Üret</span></button>
+          <button class="navBtn" type="button"><span class="navDot"></span><span>AI Kapak Üret</span></button>
+          <button class="navBtn" type="button"><span class="navDot"></span><span>AI Atmosfer Video</span></button>
+          <button class="navBtn" type="button"><span class="navDot"></span><span>AI Çocuk Çizgifilm</span></button>
+          <button class="navBtn" type="button"><span class="navDot"></span><span>AI Foto Efekt Video Clip</span></button>
+          <button class="navBtn" type="button"><span class="navDot"></span><span>AI Resimden Video Üret</span></button>
+          <button class="navBtn" type="button" data-route="lipsync"><span class="navDot"></span><span>AI Dudak Senkron Video</span></button>
+        </div>
+
+        <div class="navCard">
+          <div class="navTitle">Paneller</div>
+          <button class="navBtn ghost" type="button">Profil</button>
+          <button class="navBtn ghost" type="button">Faturalarım</button>
+          <button class="navBtn ghost" type="button">Kredi Satın Al</button>
+          <button class="navBtn ghost" type="button">Ayarlar</button>
+        </div>
+        <div class="preview-note">Bu sayfa yalnızca PR #174 tasarım önizlemesidir. Giriş, kredi ve üretim API’leri devre dışıdır.</div>
+      </div>
+    </aside>
+
+    <main class="studioMain" id="mainWorkspace">
+      <div class="studioTwoPanel" id="twoPanelWrap">
+        <section id="moduleHost" class="glassCard studioMotor">
+          <div class="placeholder"><div class="ph-title">AI Reklam Filmi hazırlanıyor...</div></div>
+        </section>
+        <section class="outputsCard studioOutputs" aria-label="Reklam videoları">
+          <div id="rightPanelHost"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="/panel.manager.js?v=2"></script>
+  <script src="/js/ad-film.skeleton.js?v=2"></script>
+  <script>
+    (function(){
+      function openAdFilm(){
+        var btn=document.querySelector('[data-adfilm-open]');
+        if(btn){btn.click();return true}
+        return false;
+      }
+      var tries=0;
+      var timer=setInterval(function(){
+        tries+=1;
+        if(openAdFilm()||tries>80)clearInterval(timer);
+      },100);
+
+      document.addEventListener('click',function(event){
+        var button=event.target.closest('[data-preview-lang]');
+        if(!button)return;
+        var lang=button.getAttribute('data-preview-lang')==='en'?'en':'tr';
+        document.documentElement.lang=lang;
+        try{localStorage.setItem('aivo_language',lang)}catch(_){}
+        window.dispatchEvent(new StorageEvent('storage',{key:'aivo_language',newValue:lang}));
+      });
+    })();
+  </script>
+</body>
+</html>
