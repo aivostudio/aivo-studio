@@ -49,18 +49,41 @@
   if (window.__AIVO_AD_FILM_ASSETS__) return;
   window.__AIVO_AD_FILM_ASSETS__ = true;
 
-  const cssHref = "/css/mod.ad-film.css?v=1";
-  if (!document.querySelector('link[href^="/css/mod.ad-film.css"]')) {
+  const styles = [
+    "/css/mod.ad-film.css?v=5",
+    "/css/ad-film.preview.css?v=1",
+    "/css/ad-film.basic-polish.css?v=1"
+  ];
+
+  styles.forEach((href) => {
+    const path = href.split("?")[0];
+    if (document.querySelector(`link[href^="${path}"]`)) return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = cssHref;
+    link.href = href;
     document.head.appendChild(link);
-  }
+  });
 
-  if (!document.querySelector('script[src^="/js/ad-film.skeleton.js"]')) {
+  const scripts = [
+    "/js/ad-film.skeleton.js?v=5",
+    "/js/ad-film.basic-polish.js?v=1"
+  ];
+
+  function loadSequential(index = 0) {
+    if (index >= scripts.length) return;
+    const src = scripts[index];
+    const path = src.split("?")[0];
+    if (document.querySelector(`script[src^="${path}"]`)) {
+      loadSequential(index + 1);
+      return;
+    }
     const script = document.createElement("script");
-    script.src = "/js/ad-film.skeleton.js?v=1";
+    script.src = src;
     script.defer = true;
+    script.onload = () => loadSequential(index + 1);
+    script.onerror = () => loadSequential(index + 1);
     document.head.appendChild(script);
   }
+
+  loadSequential();
 })();
