@@ -63,7 +63,7 @@
   const scripts = [
     "/js/ad-film.skeleton.js?v=6",
     "/js/ad-film.basic-polish.js?v=2",
-    "/js/ad-film.basic-draft.js?v=1"
+    "/js/ad-film.basic-draft.js?v=2"
   ];
 
   function loadSequential(index = 0) {
