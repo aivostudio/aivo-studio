@@ -149,6 +149,12 @@
   font-size:9px;
 }
 
+/* V1 narration languages: interface remains TR/EN and voice output starts with TR/EN. */
+.adfilm-control select[data-adfilm-input="language"] option[value="de"],
+.adfilm-control select[data-adfilm-input="language"] option[value="ar"]{
+  display:none;
+}
+
 /* Compact laptop view: preserve the same hierarchy without wrapping heavily. */
 @media (max-width:1500px){
   .adfilm-card{padding:13px 14px}
