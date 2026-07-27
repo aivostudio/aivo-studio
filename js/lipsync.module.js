@@ -15,8 +15,75 @@ let lipsyncRecordedChunks = [];
 let lipsyncRecordedAudioFile = null;
 let lipsyncAudioDurationSeconds = 0;
 let lipsyncAudioCreditCost = 0;
-  const LIPSYNC_BAD_TEXT_MESSAGE =
-  "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
+
+// ===============================
+// Studio i18n helpers (TR / EN)
+// ===============================
+function getLipsyncLanguage() {
+  try {
+    const fromStudio = window.AIVO_STUDIO_I18N?.getLanguage?.();
+    if (fromStudio === "en" || fromStudio === "tr") return fromStudio;
+  } catch (_) {}
+
+  const raw = String(
+    window.AIVO_LANG ||
+    document.documentElement.lang ||
+    "tr"
+  ).trim().toLowerCase();
+
+  return raw.startsWith("en") ? "en" : "tr";
+}
+
+function formatLipsyncText(value, parameters) {
+  let output = String(value == null ? "" : value);
+
+  if (!parameters || typeof parameters !== "object") {
+    return output;
+  }
+
+  Object.keys(parameters).forEach((key) => {
+    output = output.replace(
+      new RegExp("\\{" + key + "\\}", "g"),
+      String(parameters[key])
+    );
+  });
+
+  return output;
+}
+
+function lipsyncText(key, trFallback, enFallback, parameters) {
+  const fallback = getLipsyncLanguage() === "en"
+    ? String(enFallback || trFallback || key)
+    : String(trFallback || enFallback || key);
+
+  try {
+    if (typeof window.studioT === "function") {
+      const translated = window.studioT(key, fallback, parameters);
+      if (translated && translated !== key) {
+        return formatLipsyncText(translated, parameters);
+      }
+    }
+  } catch (_) {}
+
+  try {
+    if (typeof window.AIVO_STUDIO_I18N?.t === "function") {
+      const translated = window.AIVO_STUDIO_I18N.t(key, fallback, parameters);
+      if (translated && translated !== key) {
+        return formatLipsyncText(translated, parameters);
+      }
+    }
+  } catch (_) {}
+
+  return formatLipsyncText(fallback, parameters);
+}
+
+function getLipsyncBadTextMessage() {
+  return lipsyncText(
+    "studio.lipsync.error.badLanguage",
+    "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.",
+    "Generation could not be started because this text contains inappropriate language. Enter text without profanity, insults or hate speech."
+  );
+}
 
 function normalizeLipsyncPolicyText(value) {
   return String(value || "")
@@ -163,9 +230,18 @@ function syncGenerateButton(root) {
   btn.dataset.speechSeconds = String(seconds);
 
   if (!hasInput) {
-    btn.textContent = "Dudak Senkron Video Üret";
+    btn.textContent = lipsyncText(
+      "studio.lipsync.generate",
+      "Dudak Senkron Video Üret",
+      "Generate Lip-Sync Video"
+    );
   } else {
-    btn.textContent = `Dudak Senkron Video Üret (${credit} Kredi)`;
+    btn.textContent = lipsyncText(
+      "studio.lipsync.generateWithCredit",
+      "Dudak Senkron Video Üret ({count} Kredi)",
+      "Generate Lip-Sync Video ({count} Credits)",
+      { count: credit }
+    );
   }
 
   if (isPolicyBlocked) {
@@ -195,7 +271,12 @@ function renderLipsyncAudioEstimate(root) {
   const seconds = Math.max(1, Number(lipsyncAudioDurationSeconds || 1));
   const credits = Math.max(3, Number(lipsyncAudioCreditCost || Math.ceil(seconds / 2) * 3));
 
-  infoEl.textContent = `Tahmini: ${seconds} sn • ${credits} kredi`;
+  infoEl.textContent = lipsyncText(
+    "studio.lipsync.estimate",
+    "Tahmini: {seconds} sn • {credits} kredi",
+    "Estimated: {seconds} sec • {credits} credits",
+    { seconds, credits }
+  );
   infoEl.style.color = "";
 }
 
@@ -473,7 +554,13 @@ document.addEventListener("input", (e) => {
     }, 900);
 
     try {
-      window.toast?.info?.("Maksimum konuşma süresi 60 saniye olabilir.");
+      window.toast?.info?.(
+        lipsyncText(
+          "studio.lipsync.toast.maximumDuration",
+          "Maksimum konuşma süresi 60 saniye olabilir.",
+          "The maximum speech duration is 60 seconds."
+        )
+      );
     } catch {}
   }
 
@@ -498,11 +585,15 @@ document.addEventListener("input", (e) => {
     scriptInput.parentNode.appendChild(infoEl);
   }
 
-  infoEl.textContent = `Tahmini: ${seconds} sn • ${credits} kredi`;
+  infoEl.textContent = lipsyncText(
+    "studio.lipsync.estimate",
+    "Tahmini: {seconds} sn • {credits} kredi",
+    "Estimated: {seconds} sec • {credits} credits",
+    { seconds, credits }
+  );
 
   if (hasLipsyncBadLanguage(safeText)) {
-    infoEl.textContent =
-      "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.";
+    infoEl.textContent = getLipsyncBadTextMessage();
     infoEl.style.color = "#ff4d4f";
 
   const generateBtn = qs("[data-lipsync-generate]", root);
@@ -516,7 +607,11 @@ generateBtn.style.filter = "";
 generateBtn.style.background = "linear-gradient(135deg, #7f1d1d, #ef4444)";
 generateBtn.style.color = "#ffffff";
 generateBtn.style.boxShadow = "0 0 0 1px rgba(248, 113, 113, 0.45), 0 14px 34px rgba(239, 68, 68, 0.22)";
-  generateBtn.textContent = "Üretim Engellendi";
+  generateBtn.textContent = lipsyncText(
+    "studio.lipsync.generationBlocked",
+    "Üretim Engellendi",
+    "Generation Blocked"
+  );
 }
 
 return;
@@ -576,20 +671,36 @@ console.log("[LIPSYNC][UPLOADED_AUDIO_META]", {
   if (boxEl) {
     boxEl.innerHTML = `
       <div class="lipsync-record-confirm-card">
-        <button type="button" class="lipsync-record-confirm-play" aria-label="Sesi dinle">
+        <button type="button" class="lipsync-record-confirm-play" aria-label="${lipsyncText(
+          "studio.lipsync.record.listenAudio",
+          "Sesi dinle",
+          "Listen to audio"
+        )}">
           ▶
         </button>
 
         <div class="lipsync-record-confirm-info">
           <strong>${file.name}</strong>
-          <span>Yüklenen ses hazır</span>
+          <span>${lipsyncText(
+            "studio.lipsync.record.uploadedReady",
+            "Yüklenen ses hazır",
+            "Uploaded audio is ready"
+          )}</span>
         </div>
 
         <button type="button" class="lipsync-record-confirm-use" data-lipsync-use-recorded-audio>
-          Kullan
+          ${lipsyncText(
+            "studio.lipsync.record.use",
+            "Kullan",
+            "Use"
+          )}
         </button>
 
-        <button type="button" class="lipsync-record-confirm-remove" data-lipsync-remove-recorded-audio aria-label="Sesi sil">
+        <button type="button" class="lipsync-record-confirm-remove" data-lipsync-remove-recorded-audio aria-label="${lipsyncText(
+          "studio.lipsync.record.removeAudio",
+          "Sesi sil",
+          "Delete audio"
+        )}">
           ×
         </button>
       </div>
@@ -597,10 +708,23 @@ console.log("[LIPSYNC][UPLOADED_AUDIO_META]", {
   }
 
   if (deviceEl) {
-    deviceEl.textContent = `🎧 Ses hazır: ${file.name}`;
+    deviceEl.textContent = lipsyncText(
+      "studio.lipsync.record.audioReady",
+      "🎧 Ses hazır: {name}",
+      "🎧 Audio ready: {name}",
+      { name: file.name }
+    );
   }
 
-  try { window.toast?.success?.("Ses dosyası seçildi"); } catch {}
+  try {
+    window.toast?.success?.(
+      lipsyncText(
+        "studio.lipsync.toast.audioSelected",
+        "Ses dosyası seçildi.",
+        "Audio file selected."
+      )
+    );
+  } catch {}
 
   return;
 }
@@ -638,7 +762,11 @@ console.log("[LIPSYNC][UPLOADED_AUDIO_META]", {
         }
 
         if (name) {
-        const rawName = file.name || "Fotoğraf";
+        const rawName = file.name || lipsyncText(
+          "studio.lipsync.photo.defaultName",
+          "Fotoğraf",
+          "Photo"
+        );
        const shortName =
        rawName.length > 18
     ? rawName.slice(0, 10) + "..." + rawName.split('.').pop()
@@ -683,9 +811,25 @@ if (speedRange && root.contains(speedRange)) {
   const label = root.querySelector('[data-lipsync-speed-label]');
 
   if (label) {
-    if (val < 0.9) label.textContent = "Yavaş";
-    else if (val > 1.1) label.textContent = "Hızlı";
-    else label.textContent = "Normal";
+    if (val < 0.9) {
+      label.textContent = lipsyncText(
+        "studio.lipsync.settings.speed.slow",
+        "Yavaş",
+        "Slow"
+      );
+    } else if (val > 1.1) {
+      label.textContent = lipsyncText(
+        "studio.lipsync.settings.speed.fast",
+        "Hızlı",
+        "Fast"
+      );
+    } else {
+      label.textContent = lipsyncText(
+        "studio.lipsync.settings.speed.normal",
+        "Normal",
+        "Normal"
+      );
+    }
   }
 
   return;
@@ -737,7 +881,13 @@ if (!durationSelect || !root.contains(durationSelect)) return;
 
         if (!audioUrl) {
           try {
-            window.toast?.error?.("Bu ses için ön izleme bulunamadı");
+            window.toast?.error?.(
+              lipsyncText(
+                "studio.lipsync.voice.previewUnavailable",
+                "Bu ses için ön izleme bulunamadı.",
+                "No preview is available for this voice."
+              )
+            );
           } catch {}
 
           console.warn("[LIPSYNC][VOICE_PREVIEW_MISSING]", voiceKey);
@@ -782,7 +932,13 @@ if (!durationSelect || !root.contains(durationSelect)) return;
           console.error("[LIPSYNC][VOICE_PREVIEW_R2_ERROR]", err);
 
           try {
-            window.toast?.error?.("Ses ön izlemesi çalınamadı");
+            window.toast?.error?.(
+              lipsyncText(
+                "studio.lipsync.voice.previewFailed",
+                "Ses ön izlemesi çalınamadı.",
+                "The voice preview could not be played."
+              )
+            );
           } catch {}
 
           previewVoiceBtn.textContent = "▶";
@@ -817,8 +973,16 @@ if (recordTabBtn && root.contains(recordTabBtn)) {
         <label class="lipsync-upload-dropzone">
           <input type="file" accept="audio/*" data-lipsync-upload-file hidden>
           <span class="lipsync-upload-icon">↥</span>
-          <strong>Ses dosyası yükle</strong>
-          <small>MP3, WAV veya WEBM dosyası seç</small>
+          <strong>${lipsyncText(
+            "studio.lipsync.record.uploadTitle",
+            "Ses dosyası yükle",
+            "Upload an audio file"
+          )}</strong>
+          <small>${lipsyncText(
+            "studio.lipsync.record.uploadDescription",
+            "MP3, WAV veya WEBM dosyası seç",
+            "Select an MP3, WAV or WEBM file"
+          )}</small>
         </label>
       `;
     }
@@ -828,7 +992,11 @@ if (recordTabBtn && root.contains(recordTabBtn)) {
     }
 
     if (deviceEl) {
-      deviceEl.textContent = "Hazır ses dosyası bekleniyor...";
+      deviceEl.textContent = lipsyncText(
+        "studio.lipsync.record.audioWaiting",
+        "Hazır ses dosyası bekleniyor...",
+        "Waiting for an audio file..."
+      );
     }
 
     return;
@@ -839,7 +1007,11 @@ if (recordTabBtn && root.contains(recordTabBtn)) {
   if (boxEl) {
     boxEl.classList.remove("is-recording");
     boxEl.innerHTML = `
-      <p>Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.</p>
+      <p>${lipsyncText(
+        "studio.lipsync.record.description",
+        "Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.",
+        "Create an audio recording. The character will lip-sync to this audio."
+      )}</p>
     `;
   }
 
@@ -848,7 +1020,11 @@ if (recordTabBtn && root.contains(recordTabBtn)) {
   }
 
   if (deviceEl) {
-    deviceEl.textContent = "🎙 Mikrofon hazır bekleniyor...";
+    deviceEl.textContent = lipsyncText(
+      "studio.lipsync.record.microphoneWaiting",
+      "🎙 Mikrofon hazır bekleniyor...",
+      "🎙 Waiting for the microphone..."
+    );
   }
 
   return;
@@ -911,7 +1087,11 @@ if (lipsyncRecorder && lipsyncRecorder.state === "recording") {
   }
 
   if (deviceEl) {
-    deviceEl.textContent = "⏳ Kayıt hazırlanıyor...";
+    deviceEl.textContent = lipsyncText(
+      "studio.lipsync.record.preparing",
+      "⏳ Kayıt hazırlanıyor...",
+      "⏳ Preparing recording..."
+    );
   }
 
   return;
@@ -921,7 +1101,15 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
   e.preventDefault();
 
   if (!lipsyncRecordedAudioFile) {
-    try { window.toast?.error?.("Kayıt bulunamadı"); } catch {}
+    try {
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.record.notFound",
+          "Kayıt bulunamadı.",
+          "No recording was found."
+        )
+      );
+    } catch {}
     return;
   }
 
@@ -988,7 +1176,13 @@ if (wrapper) {
   }
 
   try {
-    window.toast?.success?.("Kayıt seçildi");
+    window.toast?.success?.(
+      lipsyncText(
+        "studio.lipsync.toast.recordSelected",
+        "Kayıt seçildi.",
+        "Recording selected."
+      )
+    );
   } catch {}
 
   console.log("[LIPSYNC][RECORDED_AUDIO_SELECTED]", {
@@ -1034,25 +1228,46 @@ getLipsyncAudioMeta(lipsyncRecordedAudioFile).then((meta) => {
       stream.getTracks().forEach((track) => track.stop());
 
       if (deviceEl) {
-        deviceEl.textContent = `🎙 Kayıt hazır: ${filename}`;
+        deviceEl.textContent = lipsyncText(
+          "studio.lipsync.record.recordingReady",
+          "🎙 Kayıt hazır: {name}",
+          "🎙 Recording ready: {name}",
+          { name: filename }
+        );
       }
 
    if (boxEl) {
   boxEl.innerHTML = `
     <div class="lipsync-record-confirm-card">
-      <button type="button" class="lipsync-record-confirm-play" aria-label="Kaydı dinle">
+      <button type="button" class="lipsync-record-confirm-play" aria-label="${lipsyncText(
+        "studio.lipsync.record.listenRecording",
+        "Kaydı dinle",
+        "Listen to recording"
+      )}">
         ▶
       </button>
 
       <div class="lipsync-record-confirm-info">
         <strong>${filename}</strong>
-        <span>Kaydedilen ses hazır</span>
+        <span>${lipsyncText(
+          "studio.lipsync.record.recordedReady",
+          "Kaydedilen ses hazır",
+          "Recorded audio is ready"
+        )}</span>
       </div>
 
       <button type="button" class="lipsync-record-confirm-use" data-lipsync-use-recorded-audio>
-        Kullan
+        ${lipsyncText(
+          "studio.lipsync.record.use",
+          "Kullan",
+          "Use"
+        )}
       </button>
-      <button type="button" class="lipsync-record-confirm-remove" data-lipsync-remove-recorded-audio aria-label="Kaydı sil">
+      <button type="button" class="lipsync-record-confirm-remove" data-lipsync-remove-recorded-audio aria-label="${lipsyncText(
+        "studio.lipsync.record.removeRecording",
+        "Kaydı sil",
+        "Delete recording"
+      )}">
        ×
        </button>
     </div>
@@ -1067,24 +1282,46 @@ if (boxEl) {
   boxEl.classList.add("is-recording");
   boxEl.innerHTML = `
     <div class="lipsync-recording-state">
-      <div class="lipsync-recording-text">Kayıt alınıyor</div>
-      <div class="lipsync-recording-time">Durdurmak için tekrar bas</div>
+      <div class="lipsync-recording-text">${lipsyncText(
+        "studio.lipsync.record.recording",
+        "Kayıt alınıyor",
+        "Recording"
+      )}</div>
+      <div class="lipsync-recording-time">${lipsyncText(
+        "studio.lipsync.record.stopHint",
+        "Durdurmak için tekrar bas",
+        "Press again to stop"
+      )}</div>
     </div>
   `;
 }
 
 if (deviceEl) {
-  deviceEl.textContent = "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.";
+  deviceEl.textContent = lipsyncText(
+    "studio.lipsync.record.recordingDevice",
+    "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.",
+    "🔴 Recording... Press again to stop."
+  );
 }
   } catch (err) {
     console.error("[LIPSYNC][RECORD_ERROR]", err);
 
     if (deviceEl) {
-      deviceEl.textContent = "Mikrofon izni alınamadı.";
+      deviceEl.textContent = lipsyncText(
+        "studio.lipsync.record.microphoneDenied",
+        "Mikrofon izni alınamadı.",
+        "Microphone permission could not be obtained."
+      );
     }
 
     try {
-      window.toast?.error?.("Mikrofon izni alınamadı");
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.toast.microphoneDenied",
+          "Mikrofon izni alınamadı.",
+          "Microphone permission could not be obtained."
+        )
+      );
     } catch {}
   }
 
@@ -1155,7 +1392,15 @@ if (useRecordedAudioBtn && root.contains(useRecordedAudioBtn)) {
   e.preventDefault();
 
   if (!lipsyncRecordedAudioFile) {
-    try { window.toast?.error?.("Kayıt bulunamadı"); } catch {}
+    try {
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.record.notFound",
+          "Kayıt bulunamadı.",
+          "No recording was found."
+        )
+      );
+    } catch {}
     return;
   }
 
@@ -1227,7 +1472,13 @@ if (modal) {
   modal.hidden = true;
 }
 
-  try { window.toast?.success?.("Kayıt seçildi"); } catch {}
+  try { window.toast?.success?.(
+      lipsyncText(
+        "studio.lipsync.toast.recordSelected",
+        "Kayıt seçildi.",
+        "Recording selected."
+      )
+    ); } catch {}
 
   console.log("[LIPSYNC][RECORDED_AUDIO_SELECTED]", lipsyncRecordedAudioFile.name);
 
@@ -1268,15 +1519,31 @@ if (removeRecordedAudioBtn && root.contains(removeRecordedAudioBtn)) {
 
   if (boxEl) {
     boxEl.innerHTML = `
-      <p>Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.</p>
+      <p>${lipsyncText(
+        "studio.lipsync.record.description",
+        "Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.",
+        "Create an audio recording. The character will lip-sync to this audio."
+      )}</p>
     `;
   }
 
   if (deviceEl) {
-    deviceEl.textContent = "🎙 Mikrofon hazır bekleniyor...";
+    deviceEl.textContent = lipsyncText(
+      "studio.lipsync.record.microphoneWaiting",
+      "🎙 Mikrofon hazır bekleniyor...",
+      "🎙 Waiting for the microphone..."
+    );
   }
 
-  try { window.toast?.success?.("Kayıt silindi"); } catch {}
+  try {
+    window.toast?.success?.(
+      lipsyncText(
+        "studio.lipsync.toast.audioRemoved",
+        "Ses kaldırıldı.",
+        "Audio removed."
+      )
+    );
+  } catch {}
 
   return;
 }
@@ -1285,7 +1552,15 @@ if (recordedAudioPlayBtn && root.contains(recordedAudioPlayBtn)) {
   e.preventDefault();
 
   if (!lipsyncRecordedAudioFile) {
-    try { window.toast?.error?.("Dinlenecek kayıt bulunamadı"); } catch {}
+    try {
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.toast.audioNotFound",
+          "Dinlenecek ses bulunamadı.",
+          "No audio is available to play."
+        )
+      );
+    } catch {}
     return;
   }
 
@@ -1321,7 +1596,15 @@ if (recordedAudioPlayBtn && root.contains(recordedAudioPlayBtn)) {
     window.__AIVO_LIPSYNC_RECORD_AUDIO__ = null;
     URL.revokeObjectURL(audioUrl);
 
-    try { window.toast?.error?.("Ses çalınamadı"); } catch {}
+    try {
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.toast.audioPlayFailed",
+          "Ses çalınamadı.",
+          "The audio could not be played."
+        )
+      );
+    } catch {}
   });
 
   return;
@@ -1331,7 +1614,15 @@ if (inlineAudioPlayBtn && root.contains(inlineAudioPlayBtn)) {
   e.preventDefault();
 
   if (!lipsyncRecordedAudioFile) {
-    try { window.toast?.error?.("Dinlenecek ses bulunamadı"); } catch {}
+    try {
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.toast.audioNotFound",
+          "Dinlenecek ses bulunamadı.",
+          "No audio is available to play."
+        )
+      );
+    } catch {}
     return;
   }
 
@@ -1367,7 +1658,15 @@ if (inlineAudioPlayBtn && root.contains(inlineAudioPlayBtn)) {
     window.__AIVO_LIPSYNC_INLINE_AUDIO__ = null;
     URL.revokeObjectURL(audioUrl);
 
-    try { window.toast?.error?.("Ses çalınamadı"); } catch {}
+    try {
+      window.toast?.error?.(
+        lipsyncText(
+          "studio.lipsync.toast.audioPlayFailed",
+          "Ses çalınamadı.",
+          "The audio could not be played."
+        )
+      );
+    } catch {}
   });
 
   return;
@@ -1401,7 +1700,11 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
   if (audioInput) audioInput.value = "";
 
   if (audioName) {
-    audioName.textContent = "Ses yüklenmedi.";
+    audioName.textContent = lipsyncText(
+      "studio.lipsync.audio.none",
+      "Ses yüklenmedi.",
+      "No audio uploaded."
+    );
   }
 
   if (scriptInput) {
@@ -1409,14 +1712,26 @@ if (inlineAudioRemoveBtn && root.contains(inlineAudioRemoveBtn)) {
     scriptInput.disabled = false;
     scriptInput.value = "";
     scriptInput.classList.remove("has-lipsync-audio-card");
-    scriptInput.placeholder = "Ne konuşturmak istiyorsun? Metni buraya yaz...";
+    scriptInput.placeholder = lipsyncText(
+      "studio.lipsync.script.placeholder",
+      "Ne konuşturmak istiyorsun? Metni buraya yaz...",
+      "What do you want the character to say? Enter the text here..."
+    );
   }
 
   if (audioCard) {
     audioCard.remove();
   }
 
-  try { window.toast?.success?.("Ses kaldırıldı"); } catch {}
+  try {
+    window.toast?.success?.(
+      lipsyncText(
+        "studio.lipsync.toast.audioRemoved",
+        "Ses kaldırıldı.",
+        "Audio removed."
+      )
+    );
+  } catch {}
 
   return;
 }
@@ -1431,7 +1746,7 @@ const payload = buildPayload(root);
 
 if (payload.script && hasLipsyncBadLanguage(payload.script)) {
   try {
-    window.toast?.error?.(LIPSYNC_BAD_TEXT_MESSAGE);
+    window.toast?.error?.(getLipsyncBadTextMessage());
   } catch {}
 
   console.log("[LIPSYNC][BLOCKED]", {
@@ -1445,7 +1760,15 @@ if (payload.script && hasLipsyncBadLanguage(payload.script)) {
 }
 
 if (!payload.script && !lipsyncRecordedAudioFile) {
-  try { window.toast?.info?.("Konuşma metni yazmalısın veya ses dosyası seçmelisin"); } catch {}
+  try {
+    window.toast?.info?.(
+      lipsyncText(
+        "studio.lipsync.error.speechOrAudioRequired",
+        "Konuşma metni yazmalısın veya ses dosyası seçmelisin.",
+        "Enter speech text or select an audio file."
+      )
+    );
+  } catch {}
   const scriptInput = qs("[data-lipsync-script]", root);
   if (scriptInput) scriptInput.focus();
   console.log("[LIPSYNC][BLOCKED]", "missing_script_or_audio");
@@ -1481,8 +1804,13 @@ payload.estimated_credits = estimatedCreditCost;
        if (estimatedSpeechSeconds > maxSpeechSeconds) {
         try {
        window.toast?.error?.(
-     `Bu içerik yaklaşık ${estimatedSpeechSeconds} saniye sürer. Maksimum süre 60 saniye.`
-      );
+          lipsyncText(
+            "studio.lipsync.error.contentTooLong",
+            "Bu içerik yaklaşık {seconds} saniye sürer. Maksimum süre 60 saniye.",
+            "This content is approximately {seconds} seconds long. The maximum duration is 60 seconds.",
+            { seconds: estimatedSpeechSeconds }
+          )
+        );
        } catch {}
 
   console.log("[LIPSYNC][BLOCKED]", {
@@ -1497,7 +1825,15 @@ payload.estimated_credits = estimatedCreditCost;
       const photoFile = photoInput && photoInput.files && photoInput.files[0] ? photoInput.files[0] : null;
 
       if (!photoFile) {
-        try { window.toast?.info?.("Fotoğraf yüklemelisin"); } catch {}
+        try {
+          window.toast?.info?.(
+            lipsyncText(
+              "studio.lipsync.error.photoRequired",
+              "Fotoğraf yüklemelisin.",
+              "Upload a photo."
+            )
+          );
+        } catch {}
         const photoLabel = qs(".lipsync-photo-label", root);
         if (photoLabel) photoLabel.scrollIntoView({ behavior: "smooth", block: "center" });
         console.log("[LIPSYNC][BLOCKED]", "missing_photo");
@@ -1508,7 +1844,11 @@ payload.estimated_credits = estimatedCreditCost;
 
 try {
   generateBtn.disabled = true;
-  generateBtn.textContent = "Fotoğraf yükleniyor...";
+  generateBtn.textContent = lipsyncText(
+    "studio.lipsync.status.photoUploading",
+    "Fotoğraf yükleniyor...",
+    "Uploading photo..."
+  );
 
   imageUrl = await uploadLipsyncPhotoToR2(photoFile, payload);
 
@@ -1522,7 +1862,11 @@ try {
   console.log("[LIPSYNC][PHOTO_R2_OK]", imageUrl);
 
   if (lipsyncRecordedAudioFile) {
-    generateBtn.textContent = "Ses yükleniyor...";
+    generateBtn.textContent = lipsyncText(
+      "studio.lipsync.status.audioUploading",
+      "Ses yükleniyor...",
+      "Uploading audio..."
+    );
 
     const audioUrl = await uploadLipsyncAudioToR2(lipsyncRecordedAudioFile, payload);
 
@@ -1551,9 +1895,21 @@ try {
 
         try {
         if (isPolicyBlocked) {
-  window.toast?.info?.("Bu görsel kullanılamaz");
+  window.toast?.info?.(
+    lipsyncText(
+      "studio.lipsync.error.mediaPolicyBlocked",
+      "Bu görsel kullanılamaz.",
+      "This image cannot be used."
+    )
+  );
 } else {
-  window.toast?.error?.("Fotoğraf yüklenemedi");
+  window.toast?.error?.(
+    lipsyncText(
+      "studio.lipsync.error.photoUploadFailed",
+      "Fotoğraf yüklenemedi.",
+      "The photo could not be uploaded."
+    )
+  );
 }
         } catch {}
 
@@ -1638,7 +1994,15 @@ async function refundLipsyncCredits(reason, extraMeta = {}) {
     ) {
       refundedOnce = true;
       await refreshLipsyncCreditsUI();
-      try { window.toast?.error?.("İşlem başarısız oldu, kredi iade edildi."); } catch {}
+      try {
+        window.toast?.error?.(
+          lipsyncText(
+            "studio.lipsync.toast.creditRefunded",
+            "İşlem başarısız oldu, kredi iade edildi.",
+            "The operation failed and the credits were refunded."
+          )
+        );
+      } catch {}
       return true;
     }
   } catch (refundErr) {
@@ -1670,7 +2034,13 @@ const creditData = await creditRes.json().catch(() => null);
         console.warn("[LIPSYNC][CREDIT_BLOCKED]", creditData);
 
         try {
-          window.toast?.error?.("Yetersiz kredi");
+          window.toast?.error?.(
+            lipsyncText(
+              "studio.lipsync.error.insufficientCredit",
+              "Yetersiz kredi.",
+              "Insufficient credits."
+            )
+          );
         } catch {}
 
         return;
@@ -1700,10 +2070,21 @@ const creditData = await creditRes.json().catch(() => null);
       } catch {}
 
       try {
-        window.toast?.success?.(`${creditCost} kredi düşüldü`);
+        window.toast?.success?.(
+          lipsyncText(
+            "studio.lipsync.toast.creditDeducted",
+            "{count} kredi düşüldü.",
+            "{count} credits deducted.",
+            { count: creditCost }
+          )
+        );
       } catch {}
      generateBtn.disabled = true;
-     generateBtn.textContent = "Video hazırlanıyor...";
+     generateBtn.textContent = lipsyncText(
+       "studio.lipsync.status.videoPreparing",
+       "Video hazırlanıyor...",
+       "Preparing video..."
+     );
 
       fetch("/api/lipsync/create", {
         method: "POST",
@@ -1720,7 +2101,7 @@ const creditData = await creditRes.json().catch(() => null);
     try {
       window.toast?.error?.(
         data?.message ||
-        "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin."
+        getLipsyncBadTextMessage()
       );
     } catch {}
 
@@ -1730,7 +2111,11 @@ const creditData = await creditRes.json().catch(() => null);
   if (data?.error === "script_too_long") {
          const message = String(
       data?.message ||
-      "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç."
+      lipsyncText(
+        "studio.lipsync.error.scriptTooLong",
+        "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç.",
+        "This text is too long for the selected duration. Enter shorter text or select a longer duration."
+      )
     );
 
         try {
@@ -1746,7 +2131,13 @@ const creditData = await creditRes.json().catch(() => null);
           console.log("[LIPSYNC][CREATE_OK]", data);
 
        try {
-        window.toast?.info?.("Video hazırlanıyor...");
+        window.toast?.info?.(
+          lipsyncText(
+            "studio.lipsync.toast.videoPreparing",
+            "Video hazırlanıyor...",
+            "Video is being prepared..."
+          )
+        );
        } catch {}
 
           const jobId = String(data.job_id || "").trim();
@@ -1809,7 +2200,13 @@ const creditData = await creditRes.json().catch(() => null);
             if (status === "ready" || status === "done") {
 
   try {
-    window.toast?.success?.("Lipsync video hazır");
+    window.toast?.success?.(
+      lipsyncText(
+        "studio.lipsync.toast.videoReady",
+        "Dudak senkron videosu hazır.",
+        "The lip-sync video is ready."
+      )
+    );
   } catch {}
 
   // 🔥 FINALIZE CALL
@@ -1841,7 +2238,13 @@ const creditData = await creditRes.json().catch(() => null);
 
                 if (!refunded) {
                   try {
-                    window.toast?.error?.("Lipsync üretimi başarısız oldu");
+                    window.toast?.error?.(
+                      lipsyncText(
+                        "studio.lipsync.toast.generationFailed",
+                        "Dudak senkron üretimi başarısız oldu.",
+                        "Lip-sync generation failed."
+                      )
+                    );
                   } catch {}
                 }
 
@@ -1858,7 +2261,13 @@ const creditData = await creditRes.json().catch(() => null);
 
                 if (!refunded) {
                   try {
-                    window.toast?.error?.("Lipsync üretimi zaman aşımına uğradı");
+                    window.toast?.error?.(
+                      lipsyncText(
+                        "studio.lipsync.toast.timeout",
+                        "Dudak senkron üretimi zaman aşımına uğradı.",
+                        "Lip-sync generation timed out."
+                      )
+                    );
                   } catch {}
                 }
               }
@@ -1875,7 +2284,13 @@ const creditData = await creditRes.json().catch(() => null);
 
                 if (!refunded) {
                   try {
-                    window.toast?.error?.("Lipsync üretimi zaman aşımına uğradı");
+                    window.toast?.error?.(
+                      lipsyncText(
+                        "studio.lipsync.toast.timeout",
+                        "Dudak senkron üretimi zaman aşımına uğradı.",
+                        "Lip-sync generation timed out."
+                      )
+                    );
                   } catch {}
                 }
               }
@@ -1903,11 +2318,19 @@ const creditData = await creditRes.json().catch(() => null);
     try {
       if (isPolicyBlocked) {
         window.toast?.error?.(
-          "Bu metin uygunsuz dil içerdiği için video üretilemedi."
+          lipsyncText(
+            "studio.lipsync.error.policyGenerationFailed",
+            "Bu metin uygunsuz dil içerdiği için video üretilemedi.",
+            "The video could not be created because the text contains inappropriate language."
+          )
         );
       } else {
         window.toast?.error?.(
-          "Video oluşturulamadı. Lütfen metni veya içeriği kontrol edip tekrar deneyin."
+          lipsyncText(
+            "studio.lipsync.error.generationFailed",
+            "Video oluşturulamadı. Lütfen metni veya içeriği kontrol edip tekrar deneyin.",
+            "The video could not be created. Check the text or content and try again."
+          )
         );
       }
     } catch {}
@@ -1937,9 +2360,25 @@ const creditData = await creditRes.json().catch(() => null);
     speedRange.addEventListener("input", () => {
       const val = Number(speedRange.value || 1);
 
-      if (val < 0.9) speedLabel.textContent = "Yavaş";
-      else if (val > 1.1) speedLabel.textContent = "Hızlı";
-      else speedLabel.textContent = "Normal";
+      if (val < 0.9) {
+        speedLabel.textContent = lipsyncText(
+          "studio.lipsync.settings.speed.slow",
+          "Yavaş",
+          "Slow"
+        );
+      } else if (val > 1.1) {
+        speedLabel.textContent = lipsyncText(
+          "studio.lipsync.settings.speed.fast",
+          "Hızlı",
+          "Fast"
+        );
+      } else {
+        speedLabel.textContent = lipsyncText(
+          "studio.lipsync.settings.speed.normal",
+          "Normal",
+          "Normal"
+        );
+      }
     });
   }
 
@@ -1952,6 +2391,84 @@ const creditData = await creditRes.json().catch(() => null);
 }
     return true;
   }
+
+  function refreshLipsyncDynamicText(root) {
+    const target = root || getRoot();
+    if (!target) return;
+
+    try {
+      window.AIVO_STUDIO_I18N?.refresh?.(target);
+    } catch (_) {}
+
+    const scriptInput = qs("[data-lipsync-script]", target);
+    const infoEl = qs("[data-lipsync-estimate]", target);
+    const currentText = String(scriptInput?.value || "").trim();
+
+    if (infoEl) {
+      if (currentText && hasLipsyncBadLanguage(currentText)) {
+        infoEl.textContent = getLipsyncBadTextMessage();
+      } else {
+        let seconds = 1;
+        let credits = 3;
+
+        if (lipsyncRecordedAudioFile && lipsyncAudioDurationSeconds > 0) {
+          seconds = Math.max(1, Number(lipsyncAudioDurationSeconds || 1));
+          credits = Math.max(
+            3,
+            Number(lipsyncAudioCreditCost || Math.ceil(seconds / 2) * 3)
+          );
+        } else if (currentText) {
+          seconds = Math.max(1, Math.ceil(currentText.length / 9));
+          credits = Math.ceil(seconds / 2) * 3;
+        }
+
+        infoEl.textContent = lipsyncText(
+          "studio.lipsync.estimate",
+          "Tahmini: {seconds} sn • {credits} kredi",
+          "Estimated: {seconds} sec • {credits} credits",
+          { seconds, credits }
+        );
+      }
+    }
+
+    const speedRange = qs("[data-lipsync-voice-speed]", target);
+    const speedLabel = qs("[data-lipsync-speed-label]", target);
+    if (speedRange && speedLabel) {
+      const value = Number(speedRange.value || 1);
+      speedLabel.textContent = value < 0.9
+        ? lipsyncText("studio.lipsync.settings.speed.slow", "Yavaş", "Slow")
+        : value > 1.1
+          ? lipsyncText("studio.lipsync.settings.speed.fast", "Hızlı", "Fast")
+          : lipsyncText("studio.lipsync.settings.speed.normal", "Normal", "Normal");
+    }
+
+    const audioName = qs("[data-lipsync-audio-name]", target);
+    if (audioName && !lipsyncRecordedAudioFile) {
+      audioName.textContent = lipsyncText(
+        "studio.lipsync.audio.none",
+        "Ses yüklenmedi.",
+        "No audio uploaded."
+      );
+    }
+
+    if (
+      scriptInput &&
+      !lipsyncRecordedAudioFile &&
+      !scriptInput.classList.contains("has-lipsync-audio-card")
+    ) {
+      scriptInput.placeholder = lipsyncText(
+        "studio.lipsync.script.placeholder",
+        "Ne konuşturmak istiyorsun? Metni buraya yaz...",
+        "What do you want the character to say? Enter the text here..."
+      );
+    }
+
+    syncGenerateButton(target);
+  }
+
+  document.addEventListener("aivo:language-change", () => {
+    refreshLipsyncDynamicText(getRoot());
+  });
 
   bindEvents();
 
