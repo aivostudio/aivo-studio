@@ -1895,8 +1895,405 @@
       "studio.video.panel.delete.failed":
         "Video silinemedi.",
 
-      "studio.video.panel.share.copied":
+         "studio.video.panel.share.copied":
         "Video bağlantısı kopyalandı.",
+
+      /* =========================
+         LIPSYNC / FORM
+         ========================= */
+
+      "studio.lipsync.title":
+        "AI Dudak Senkron Video",
+
+      "studio.lipsync.subtitle":
+        "Fotoğrafını yükle, metin yaz veya ses dosyası ekle. Kredi, tahmini konuşma süresine göre hesaplanır.",
+
+      "studio.lipsync.speech.title":
+        "Konuşma",
+
+      "studio.lipsync.speech.subtitle":
+        "Metin yaz veya hazır ses dosyası yükle.",
+
+      "studio.lipsync.action.recordAudio":
+        "Ses kaydet",
+
+      "studio.lipsync.action.uploadAudio":
+        "Hazır ses dosyası yükle",
+
+      "studio.lipsync.script.placeholder":
+        "Ne konuşturmak istiyorsun? Metni buraya yaz...",
+
+      "studio.lipsync.audio.none":
+        "Ses yüklenmedi.",
+
+      /* =========================
+         LIPSYNC / VOICES
+         ========================= */
+
+      "studio.lipsync.voice.tranquilTulin":
+        "Ses: Tranquil Tülin",
+
+      "studio.lipsync.voice.iker":
+        "Ses: Iker",
+
+      "studio.lipsync.voice.deepDieter":
+        "Ses: Deep Dieter",
+
+      "studio.lipsync.voice.william":
+        "Ses: William Prescott",
+
+      "studio.lipsync.voice.menon":
+        "Ses: Menon",
+
+      "studio.lipsync.voice.knox":
+        "Ses: Knox",
+
+      "studio.lipsync.voice.aaron":
+        "Ses: Aaron",
+
+      "studio.lipsync.voice.lily":
+        "Ses: Lily",
+
+      "studio.lipsync.voice.april":
+        "Ses: April",
+
+      "studio.lipsync.voice.tiffany":
+        "Ses: Tiffany",
+
+      "studio.lipsync.voice.brianna":
+        "Ses: Brianna",
+
+      "studio.lipsync.voice.evelyn":
+        "Ses: Evelyn Harper",
+
+      "studio.lipsync.voice.laurel":
+        "Ses: Laurel",
+
+      "studio.lipsync.voice.seena":
+        "Ses: Seena Professional",
+
+      "studio.lipsync.voice.preview":
+        "Sesi dinle",
+
+      "studio.lipsync.voice.previewUnavailable":
+        "Bu ses için ön izleme bulunamadı.",
+
+      "studio.lipsync.voice.previewFailed":
+        "Ses ön izlemesi çalınamadı.",
+
+      /* =========================
+         LIPSYNC / PHOTO
+         ========================= */
+
+      "studio.lipsync.photo.title":
+        "Fotoğraf yükle",
+
+      "studio.lipsync.photo.requirements":
+        "Yüz net görünmeli • JPG/PNG • En az 300×300 px",
+
+      "studio.lipsync.photo.remove":
+        "Fotoğrafı kaldır",
+
+      "studio.lipsync.photo.defaultName":
+        "Fotoğraf",
+
+      /* =========================
+         LIPSYNC / VOICE SETTINGS
+         ========================= */
+
+      "studio.lipsync.settings.title":
+        "Ses Ayarları",
+
+      "studio.lipsync.settings.subtitle":
+        "Konuşma hızını ve ses seviyesini ayarla.",
+
+      "studio.lipsync.settings.textOnly":
+        "Sadece metin üretiminde geçerlidir.",
+
+      "studio.lipsync.settings.speed":
+        "Hız",
+
+      "studio.lipsync.settings.speed.slow":
+        "Yavaş",
+
+      "studio.lipsync.settings.speed.normal":
+        "Normal",
+
+      "studio.lipsync.settings.speed.fast":
+        "Hızlı",
+
+      "studio.lipsync.settings.volume":
+        "Ses Seviyesi",
+
+      /* =========================
+         LIPSYNC / CREDIT INFO
+         ========================= */
+
+      "studio.lipsync.credit.title":
+        "Kredi ve Süre Bilgisi",
+
+      "studio.lipsync.credit.rule":
+        "Kredi, konuşma süresine göre hesaplanır. Her başlayan 2 sn = 3 kredi.",
+
+      "studio.lipsync.credit.maximum":
+        "Tek videoda maksimum 60 sn üretilebilir.",
+
+      "studio.lipsync.estimate":
+        "Tahmini: {seconds} sn • {credits} kredi",
+
+      /* =========================
+         LIPSYNC / GENERATION
+         ========================= */
+
+      "studio.lipsync.generate":
+        "Dudak Senkron Video Üret",
+
+      "studio.lipsync.generateWithCredit":
+        "Dudak Senkron Video Üret ({count} Kredi)",
+
+      "studio.lipsync.generationBlocked":
+        "Üretim Engellendi",
+
+      "studio.lipsync.status.photoUploading":
+        "Fotoğraf yükleniyor...",
+
+      "studio.lipsync.status.audioUploading":
+        "Ses yükleniyor...",
+
+      "studio.lipsync.status.videoPreparing":
+        "Video hazırlanıyor...",
+
+      /* =========================
+         LIPSYNC / RECORD MODAL
+         ========================= */
+
+      "studio.lipsync.record.title":
+        "Ses Kaydet",
+
+      "studio.lipsync.record.tab.record":
+        "Ses Kaydı",
+
+      "studio.lipsync.record.tab.upload":
+        "Ses Yükle",
+
+      "studio.lipsync.record.description":
+        "Bir ses kaydı oluştur. Karakterin bu sese göre dudak senkron yapacak.",
+
+      "studio.lipsync.record.microphoneWaiting":
+        "🎙 Mikrofon hazır bekleniyor...",
+
+      "studio.lipsync.record.uploadTitle":
+        "Ses dosyası yükle",
+
+      "studio.lipsync.record.uploadDescription":
+        "MP3, WAV veya WEBM dosyası seç",
+
+      "studio.lipsync.record.audioWaiting":
+        "Hazır ses dosyası bekleniyor...",
+
+      "studio.lipsync.record.uploadedReady":
+        "Yüklenen ses hazır",
+
+      "studio.lipsync.record.recordedReady":
+        "Kaydedilen ses hazır",
+
+      "studio.lipsync.record.use":
+        "Kullan",
+
+      "studio.lipsync.record.listenAudio":
+        "Sesi dinle",
+
+      "studio.lipsync.record.listenRecording":
+        "Kaydı dinle",
+
+      "studio.lipsync.record.removeAudio":
+        "Sesi sil",
+
+      "studio.lipsync.record.removeRecording":
+        "Kaydı sil",
+
+      "studio.lipsync.record.preparing":
+        "⏳ Kayıt hazırlanıyor...",
+
+      "studio.lipsync.record.notFound":
+        "Kayıt bulunamadı.",
+
+      "studio.lipsync.record.selected":
+        "Kayıt seçildi.",
+
+      "studio.lipsync.record.audioReady":
+        "🎧 Ses hazır: {name}",
+
+      "studio.lipsync.record.recordingReady":
+        "🎙 Kayıt hazır: {name}",
+
+      "studio.lipsync.record.recording":
+        "Kayıt alınıyor",
+
+      "studio.lipsync.record.stopHint":
+        "Durdurmak için tekrar bas",
+
+      "studio.lipsync.record.recordingDevice":
+        "🔴 Kayıt alınıyor... Durdurmak için tekrar bas.",
+
+      "studio.lipsync.record.microphoneDenied":
+        "Mikrofon izni alınamadı.",
+
+      /* =========================
+         LIPSYNC / TOASTS
+         ========================= */
+
+      "studio.lipsync.toast.maximumDuration":
+        "Maksimum konuşma süresi 60 saniye olabilir.",
+
+      "studio.lipsync.toast.audioSelected":
+        "Ses dosyası seçildi.",
+
+      "studio.lipsync.toast.recordSelected":
+        "Kayıt seçildi.",
+
+      "studio.lipsync.toast.audioRemoved":
+        "Ses kaldırıldı.",
+
+      "studio.lipsync.toast.audioPlayFailed":
+        "Ses çalınamadı.",
+
+      "studio.lipsync.toast.audioNotFound":
+        "Dinlenecek ses bulunamadı.",
+
+      "studio.lipsync.toast.microphoneDenied":
+        "Mikrofon izni alınamadı.",
+
+      "studio.lipsync.toast.creditDeducted":
+        "{count} kredi düşüldü.",
+
+      "studio.lipsync.toast.videoPreparing":
+        "Video hazırlanıyor...",
+
+      "studio.lipsync.toast.videoReady":
+        "Dudak senkron videosu hazır.",
+
+      "studio.lipsync.toast.creditRefunded":
+        "İşlem başarısız oldu, kredi iade edildi.",
+
+      "studio.lipsync.toast.generationFailed":
+        "Dudak senkron üretimi başarısız oldu.",
+
+      "studio.lipsync.toast.timeout":
+        "Dudak senkron üretimi zaman aşımına uğradı.",
+
+      /* =========================
+         LIPSYNC / ERRORS
+         ========================= */
+
+      "studio.lipsync.error.badLanguage":
+        "Bu metin uygunsuz dil içerdiği için üretim başlatılamadı. Lütfen küfür, hakaret veya nefret söylemi içermeyen bir metin girin.",
+
+      "studio.lipsync.error.speechOrAudioRequired":
+        "Konuşma metni yazmalısın veya ses dosyası seçmelisin.",
+
+      "studio.lipsync.error.contentTooLong":
+        "Bu içerik yaklaşık {seconds} saniye sürer. Maksimum süre 60 saniye.",
+
+      "studio.lipsync.error.scriptTooLong":
+        "Bu metin seçilen süre için çok uzun. Lütfen daha kısa yaz veya daha uzun süre seç.",
+
+      "studio.lipsync.error.photoRequired":
+        "Fotoğraf yüklemelisin.",
+
+      "studio.lipsync.error.photoUploadFailed":
+        "Fotoğraf yüklenemedi.",
+
+      "studio.lipsync.error.audioUploadFailed":
+        "Ses dosyası yüklenemedi.",
+
+      "studio.lipsync.error.mediaPolicyBlocked":
+        "Bu görsel kullanılamaz.",
+
+      "studio.lipsync.error.insufficientCredit":
+        "Yetersiz kredi.",
+
+      "studio.lipsync.error.policyGenerationFailed":
+        "Bu metin uygunsuz dil içerdiği için video üretilemedi.",
+
+      "studio.lipsync.error.generationFailed":
+        "Video oluşturulamadı. Lütfen metni veya içeriği kontrol edip tekrar deneyin.",
+
+      /* =========================
+         LIPSYNC / RESULTS PANEL
+         ========================= */
+
+      "studio.lipsync.panel.title":
+        "Dudak Senkron Videolarım",
+
+      "studio.lipsync.panel.meta.preparing":
+        "Hazırlanıyor",
+
+      "studio.lipsync.panel.searchPlaceholder":
+        "Dudak senkron videolarda ara...",
+
+      "studio.lipsync.panel.empty":
+        "Henüz dudak senkron videosu yok.",
+
+      "studio.lipsync.panel.noResults":
+        "Aramanızla eşleşen dudak senkron videosu bulunamadı.",
+
+      "studio.lipsync.panel.audioTitle":
+        "Ses: {name}",
+
+      "studio.lipsync.panel.defaultTitle":
+        "Dudak Senkron Video",
+
+      "studio.lipsync.panel.status.ready":
+        "Hazır",
+
+      "studio.lipsync.panel.status.processing":
+        "İşleniyor",
+
+      "studio.lipsync.panel.status.preparing":
+        "Hazırlanıyor…",
+
+      "studio.lipsync.panel.status.failed":
+        "Hata",
+
+      "studio.lipsync.panel.action.play":
+        "Oynat",
+
+      "studio.lipsync.panel.action.pause":
+        "Duraklat",
+
+      "studio.lipsync.panel.action.download":
+        "Videoyu indir",
+
+      "studio.lipsync.panel.action.share":
+        "Videoyu paylaş",
+
+      "studio.lipsync.panel.action.fullscreen":
+        "Tam ekran aç",
+
+      "studio.lipsync.panel.action.delete":
+        "Videoyu sil",
+
+      "studio.lipsync.panel.action.audioOn":
+        "Sesi aç",
+
+      "studio.lipsync.panel.action.audioOff":
+        "Sesi kapat",
+
+      "studio.lipsync.panel.download.success":
+        "Dudak senkron videosu indirildi.",
+
+      "studio.lipsync.panel.download.failed":
+        "Dudak senkron videosu indirilemedi.",
+
+      "studio.lipsync.panel.share.copied":
+        "Dudak senkron video bağlantısı kopyalandı.",
+
+      "studio.lipsync.panel.delete.success":
+        "Dudak senkron videosu silindi.",
+
+      "studio.lipsync.panel.delete.failed":
+        "Dudak senkron videosu silinemedi.",
 
       /* =========================
          SUPPORT
@@ -3794,8 +4191,405 @@
       "studio.video.panel.delete.failed":
         "The video could not be deleted.",
 
-      "studio.video.panel.share.copied":
+         "studio.video.panel.share.copied":
         "The video link was copied.",
+
+      /* =========================
+         LIPSYNC / FORM
+         ========================= */
+
+      "studio.lipsync.title":
+        "AI Lip-Sync Video",
+
+      "studio.lipsync.subtitle":
+        "Upload a photo, enter text or add an audio file. Credits are calculated based on the estimated speech duration.",
+
+      "studio.lipsync.speech.title":
+        "Speech",
+
+      "studio.lipsync.speech.subtitle":
+        "Enter text or upload a ready-made audio file.",
+
+      "studio.lipsync.action.recordAudio":
+        "Record audio",
+
+      "studio.lipsync.action.uploadAudio":
+        "Upload an audio file",
+
+      "studio.lipsync.script.placeholder":
+        "What do you want the character to say? Enter the text here...",
+
+      "studio.lipsync.audio.none":
+        "No audio uploaded.",
+
+      /* =========================
+         LIPSYNC / VOICES
+         ========================= */
+
+      "studio.lipsync.voice.tranquilTulin":
+        "Voice: Tranquil Tülin",
+
+      "studio.lipsync.voice.iker":
+        "Voice: Iker",
+
+      "studio.lipsync.voice.deepDieter":
+        "Voice: Deep Dieter",
+
+      "studio.lipsync.voice.william":
+        "Voice: William Prescott",
+
+      "studio.lipsync.voice.menon":
+        "Voice: Menon",
+
+      "studio.lipsync.voice.knox":
+        "Voice: Knox",
+
+      "studio.lipsync.voice.aaron":
+        "Voice: Aaron",
+
+      "studio.lipsync.voice.lily":
+        "Voice: Lily",
+
+      "studio.lipsync.voice.april":
+        "Voice: April",
+
+      "studio.lipsync.voice.tiffany":
+        "Voice: Tiffany",
+
+      "studio.lipsync.voice.brianna":
+        "Voice: Brianna",
+
+      "studio.lipsync.voice.evelyn":
+        "Voice: Evelyn Harper",
+
+      "studio.lipsync.voice.laurel":
+        "Voice: Laurel",
+
+      "studio.lipsync.voice.seena":
+        "Voice: Seena Professional",
+
+      "studio.lipsync.voice.preview":
+        "Preview voice",
+
+      "studio.lipsync.voice.previewUnavailable":
+        "No preview is available for this voice.",
+
+      "studio.lipsync.voice.previewFailed":
+        "The voice preview could not be played.",
+
+      /* =========================
+         LIPSYNC / PHOTO
+         ========================= */
+
+      "studio.lipsync.photo.title":
+        "Upload Photo",
+
+      "studio.lipsync.photo.requirements":
+        "The face must be clearly visible • JPG/PNG • At least 300×300 px",
+
+      "studio.lipsync.photo.remove":
+        "Remove photo",
+
+      "studio.lipsync.photo.defaultName":
+        "Photo",
+
+      /* =========================
+         LIPSYNC / VOICE SETTINGS
+         ========================= */
+
+      "studio.lipsync.settings.title":
+        "Voice Settings",
+
+      "studio.lipsync.settings.subtitle":
+        "Adjust the speech speed and volume.",
+
+      "studio.lipsync.settings.textOnly":
+        "Only applies to text generation.",
+
+      "studio.lipsync.settings.speed":
+        "Speed",
+
+      "studio.lipsync.settings.speed.slow":
+        "Slow",
+
+      "studio.lipsync.settings.speed.normal":
+        "Normal",
+
+      "studio.lipsync.settings.speed.fast":
+        "Fast",
+
+      "studio.lipsync.settings.volume":
+        "Volume",
+
+      /* =========================
+         LIPSYNC / CREDIT INFO
+         ========================= */
+
+      "studio.lipsync.credit.title":
+        "Credit and Duration Information",
+
+      "studio.lipsync.credit.rule":
+        "Credits are calculated based on speech duration. Every started 2 seconds costs 3 credits.",
+
+      "studio.lipsync.credit.maximum":
+        "A maximum of 60 seconds can be generated in a single video.",
+
+      "studio.lipsync.estimate":
+        "Estimated: {seconds} sec • {credits} credits",
+
+      /* =========================
+         LIPSYNC / GENERATION
+         ========================= */
+
+      "studio.lipsync.generate":
+        "Generate Lip-Sync Video",
+
+      "studio.lipsync.generateWithCredit":
+        "Generate Lip-Sync Video ({count} Credits)",
+
+      "studio.lipsync.generationBlocked":
+        "Generation Blocked",
+
+      "studio.lipsync.status.photoUploading":
+        "Uploading photo...",
+
+      "studio.lipsync.status.audioUploading":
+        "Uploading audio...",
+
+      "studio.lipsync.status.videoPreparing":
+        "Preparing video...",
+
+      /* =========================
+         LIPSYNC / RECORD MODAL
+         ========================= */
+
+      "studio.lipsync.record.title":
+        "Record Audio",
+
+      "studio.lipsync.record.tab.record":
+        "Recording",
+
+      "studio.lipsync.record.tab.upload":
+        "Upload Audio",
+
+      "studio.lipsync.record.description":
+        "Create an audio recording. The character will lip-sync to this audio.",
+
+      "studio.lipsync.record.microphoneWaiting":
+        "🎙 Waiting for the microphone...",
+
+      "studio.lipsync.record.uploadTitle":
+        "Upload an audio file",
+
+      "studio.lipsync.record.uploadDescription":
+        "Select an MP3, WAV or WEBM file",
+
+      "studio.lipsync.record.audioWaiting":
+        "Waiting for an audio file...",
+
+      "studio.lipsync.record.uploadedReady":
+        "Uploaded audio is ready",
+
+      "studio.lipsync.record.recordedReady":
+        "Recorded audio is ready",
+
+      "studio.lipsync.record.use":
+        "Use",
+
+      "studio.lipsync.record.listenAudio":
+        "Listen to audio",
+
+      "studio.lipsync.record.listenRecording":
+        "Listen to recording",
+
+      "studio.lipsync.record.removeAudio":
+        "Delete audio",
+
+      "studio.lipsync.record.removeRecording":
+        "Delete recording",
+
+      "studio.lipsync.record.preparing":
+        "⏳ Preparing recording...",
+
+      "studio.lipsync.record.notFound":
+        "No recording was found.",
+
+      "studio.lipsync.record.selected":
+        "Recording selected.",
+
+      "studio.lipsync.record.audioReady":
+        "🎧 Audio ready: {name}",
+
+      "studio.lipsync.record.recordingReady":
+        "🎙 Recording ready: {name}",
+
+      "studio.lipsync.record.recording":
+        "Recording",
+
+      "studio.lipsync.record.stopHint":
+        "Press again to stop",
+
+      "studio.lipsync.record.recordingDevice":
+        "🔴 Recording... Press again to stop.",
+
+      "studio.lipsync.record.microphoneDenied":
+        "Microphone permission could not be obtained.",
+
+      /* =========================
+         LIPSYNC / TOASTS
+         ========================= */
+
+      "studio.lipsync.toast.maximumDuration":
+        "The maximum speech duration is 60 seconds.",
+
+      "studio.lipsync.toast.audioSelected":
+        "Audio file selected.",
+
+      "studio.lipsync.toast.recordSelected":
+        "Recording selected.",
+
+      "studio.lipsync.toast.audioRemoved":
+        "Audio removed.",
+
+      "studio.lipsync.toast.audioPlayFailed":
+        "The audio could not be played.",
+
+      "studio.lipsync.toast.audioNotFound":
+        "No audio is available to play.",
+
+      "studio.lipsync.toast.microphoneDenied":
+        "Microphone permission could not be obtained.",
+
+      "studio.lipsync.toast.creditDeducted":
+        "{count} credits deducted.",
+
+      "studio.lipsync.toast.videoPreparing":
+        "Video is being prepared...",
+
+      "studio.lipsync.toast.videoReady":
+        "The lip-sync video is ready.",
+
+      "studio.lipsync.toast.creditRefunded":
+        "The operation failed and the credits were refunded.",
+
+      "studio.lipsync.toast.generationFailed":
+        "Lip-sync generation failed.",
+
+      "studio.lipsync.toast.timeout":
+        "Lip-sync generation timed out.",
+
+      /* =========================
+         LIPSYNC / ERRORS
+         ========================= */
+
+      "studio.lipsync.error.badLanguage":
+        "Generation could not be started because this text contains inappropriate language. Enter text without profanity, insults or hate speech.",
+
+      "studio.lipsync.error.speechOrAudioRequired":
+        "Enter speech text or select an audio file.",
+
+      "studio.lipsync.error.contentTooLong":
+        "This content is approximately {seconds} seconds long. The maximum duration is 60 seconds.",
+
+      "studio.lipsync.error.scriptTooLong":
+        "This text is too long for the selected duration. Enter shorter text or select a longer duration.",
+
+      "studio.lipsync.error.photoRequired":
+        "Upload a photo.",
+
+      "studio.lipsync.error.photoUploadFailed":
+        "The photo could not be uploaded.",
+
+      "studio.lipsync.error.audioUploadFailed":
+        "The audio file could not be uploaded.",
+
+      "studio.lipsync.error.mediaPolicyBlocked":
+        "This image cannot be used.",
+
+      "studio.lipsync.error.insufficientCredit":
+        "Insufficient credits.",
+
+      "studio.lipsync.error.policyGenerationFailed":
+        "The video could not be created because the text contains inappropriate language.",
+
+      "studio.lipsync.error.generationFailed":
+        "The video could not be created. Check the text or content and try again.",
+
+      /* =========================
+         LIPSYNC / RESULTS PANEL
+         ========================= */
+
+      "studio.lipsync.panel.title":
+        "My Lip-Sync Videos",
+
+      "studio.lipsync.panel.meta.preparing":
+        "Preparing",
+
+      "studio.lipsync.panel.searchPlaceholder":
+        "Search lip-sync videos...",
+
+      "studio.lipsync.panel.empty":
+        "No lip-sync videos yet.",
+
+      "studio.lipsync.panel.noResults":
+        "No lip-sync videos match your search.",
+
+      "studio.lipsync.panel.audioTitle":
+        "Audio: {name}",
+
+      "studio.lipsync.panel.defaultTitle":
+        "Lip-Sync Video",
+
+      "studio.lipsync.panel.status.ready":
+        "Ready",
+
+      "studio.lipsync.panel.status.processing":
+        "Processing",
+
+      "studio.lipsync.panel.status.preparing":
+        "Preparing…",
+
+      "studio.lipsync.panel.status.failed":
+        "Failed",
+
+      "studio.lipsync.panel.action.play":
+        "Play",
+
+      "studio.lipsync.panel.action.pause":
+        "Pause",
+
+      "studio.lipsync.panel.action.download":
+        "Download video",
+
+      "studio.lipsync.panel.action.share":
+        "Share video",
+
+      "studio.lipsync.panel.action.fullscreen":
+        "Open fullscreen",
+
+      "studio.lipsync.panel.action.delete":
+        "Delete video",
+
+      "studio.lipsync.panel.action.audioOn":
+        "Turn sound on",
+
+      "studio.lipsync.panel.action.audioOff":
+        "Turn sound off",
+
+      "studio.lipsync.panel.download.success":
+        "The lip-sync video was downloaded.",
+
+      "studio.lipsync.panel.download.failed":
+        "The lip-sync video could not be downloaded.",
+
+      "studio.lipsync.panel.share.copied":
+        "The lip-sync video link was copied.",
+
+      "studio.lipsync.panel.delete.success":
+        "The lip-sync video was deleted.",
+
+      "studio.lipsync.panel.delete.failed":
+        "The lip-sync video could not be deleted.",
 
       /* =========================
          SUPPORT
