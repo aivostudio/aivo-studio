@@ -5,156 +5,198 @@
    - Safari Keychain dropdown "takılı kalmasın" fix
    ========================================================= */
 (function () {
-    
+
   "use strict";
-/* ===============================
-   HELPERS (CLEAN — NO TOAST)
-   =============================== */
 
-function qs(sel, root) {
-  return (root || document).querySelector(sel);
-}
+  /* ===============================
+     HELPERS (CLEAN — NO TOAST)
+     =============================== */
 
-function qsa(sel, root) {
-  return Array.prototype.slice.call((root || document).querySelectorAll(sel));
-}
-
-function text(el, val) {
-  if (el) el.textContent = val;
-}
-
-function value(el, val) {
-  if (el) el.value = val;
-}
-
-function safeGetLS(key) {
-  try { return localStorage.getItem(key); } catch (e) { return null; }
-}
-
-function safeSetLS(key, val) {
-  try { localStorage.setItem(key, val); return true; } catch (e) { return false; }
-}
-
-/* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
-
-/*
-function getProfilePage() {
-  return qs('.page-profile[data-page="profile"]');
-}
-
-function isProfileActive() {
-  return document.body.getAttribute("data-active-page") === "profile";
-}
-
-function readProfileData() {
-  var page = getProfilePage();
-  if (!page) return null;
-
-  var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
-
-  var name =
-    (qs("[data-profile-input-name]", page)?.value || "").trim() ||
-    (qs("[data-profile-name]", page)?.textContent || "").trim() ||
-    cachedName;
-
-  var email =
-    (qs("[data-profile-input-email]", page)?.value || "").trim() ||
-    (qs("[data-profile-email]", page)?.textContent || "").trim();
-
-  var planText = (qs("[data-profile-plan]", page)?.textContent || "").trim();
-  var creditText = (qs("[data-profile-credit]", page)?.textContent || "").trim();
-
-  var plan = "Basic";
-  var credit = "0";
-
-  if (planText) {
-    var pm = planText.match(/Plan:\s*(.+)$/i);
-    if (pm && pm[1]) plan = pm[1].trim();
+  function qs(sel, root) {
+    return (root || document).querySelector(sel);
   }
 
-  if (creditText) {
-    var cm = creditText.match(/(\d+)/);
-    if (cm && cm[1]) credit = cm[1];
+  function qsa(sel, root) {
+    return Array.prototype.slice.call((root || document).querySelectorAll(sel));
   }
 
-  return {
-    name: name || "Kullanıcı",
-    email: email || "—",
-    plan: plan,
-    credit: credit
-  };
-}
+  function text(el, val) {
+    if (el) el.textContent = val;
+  }
 
-function applyProfile() {
-  var page = getProfilePage();
-  if (!page) return;
+  function value(el, val) {
+    if (el) el.value = val;
+  }
 
-  if (!isProfileActive()) return;
+  function safeGetLS(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
 
-  var data = readProfileData();
-  if (!data) return;
+  function safeSetLS(key, val) {
+    try { localStorage.setItem(key, val); return true; } catch (e) { return false; }
+  }
 
-  var initial = (data.name || "K").charAt(0).toUpperCase();
-  text(qs("[data-profile-initial]", page), initial);
+  function profileLanguage() {
+    var lang = String(
+      window.AIVO_LANG ||
+      document.documentElement.getAttribute("lang") ||
+      "tr"
+    ).trim().toLowerCase();
 
-  text(qs("[data-profile-name]", page), data.name);
-  text(qs("[data-profile-email]", page), data.email);
+    return lang.indexOf("en") === 0 ? "en" : "tr";
+  }
 
-  var planEls = qsa("[data-profile-plan]", page);
-  for (var i = 0; i < planEls.length; i++) planEls[i].textContent = "Plan: " + data.plan;
+  function profileText(key, trFallback, enFallback, parameters) {
+    var fallback = profileLanguage() === "en" ? enFallback : trFallback;
 
-  var creditEls = qsa("[data-profile-credit]", page);
-  for (var j = 0; j < creditEls.length; j++) creditEls[j].textContent = "Kredi: " + data.credit;
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.translate === "function"
+      ) {
+        return window.AIVO_STUDIO_I18N.translate(
+          key,
+          fallback,
+          parameters
+        );
+      }
 
-  value(qs("[data-profile-input-name]", page), data.name);
-  value(qs("[data-profile-input-email]", page), data.email);
-}
+      if (typeof window.t === "function") {
+        var translated = window.t(key, parameters);
+        if (translated && translated !== key) return translated;
+      }
+    } catch (e) {}
 
-function bindSave() {
-  var page = getProfilePage();
-  if (!page) return;
+    return String(fallback == null ? "" : fallback).replace(
+      /\{([^}]+)\}/g,
+      function (_, name) {
+        if (!parameters || parameters[name] == null) return "{" + name + "}";
+        return String(parameters[name]);
+      }
+    );
+  }
 
-  var btn = qs("[data-profile-save]", page);
-  if (!btn) return;
+  /* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
 
-  if (btn.__aivoBound) return;
-  btn.__aivoBound = true;
+  /*
+  function getProfilePage() {
+    return qs('.page-profile[data-page="profile"]');
+  }
 
-  btn.addEventListener("click", function () {
-    var name = (qs("[data-profile-input-name]", page)?.value || "").trim();
-    if (!name) {
-      window.toast.error("Ad alanı boş olamaz.");
-      return;
+  function isProfileActive() {
+    return document.body.getAttribute("data-active-page") === "profile";
+  }
+
+  function readProfileData() {
+    var page = getProfilePage();
+    if (!page) return null;
+
+    var cachedName = (safeGetLS("aivo_profile_name") || "").trim();
+
+    var name =
+      (qs("[data-profile-input-name]", page)?.value || "").trim() ||
+      (qs("[data-profile-name]", page)?.textContent || "").trim() ||
+      cachedName;
+
+    var email =
+      (qs("[data-profile-input-email]", page)?.value || "").trim() ||
+      (qs("[data-profile-email]", page)?.textContent || "").trim();
+
+    var planText = (qs("[data-profile-plan]", page)?.textContent || "").trim();
+    var creditText = (qs("[data-profile-credit]", page)?.textContent || "").trim();
+
+    var plan = "Basic";
+    var credit = "0";
+
+    if (planText) {
+      var pm = planText.match(/Plan:\s*(.+)$/i);
+      if (pm && pm[1]) plan = pm[1].trim();
     }
 
-    safeSetLS("aivo_profile_name", name);
-
-    text(qs("[data-profile-name]", page), name);
-    text(qs("[data-profile-initial]", page), name.charAt(0).toUpperCase());
-
-    window.toast.success("Profil güncellendi.");
-  });
-}
-
-function observePage() {
-  if (window.__aivoProfileObserverBound) return;
-  window.__aivoProfileObserverBound = true;
-
-  var mo = new MutationObserver(function () {
-    if (isProfileActive()) {
-      applyProfile();
-      bindSave();
+    if (creditText) {
+      var cm = creditText.match(/(\d+)/);
+      if (cm && cm[1]) credit = cm[1];
     }
-  });
 
-  mo.observe(document.body, {
-    attributes: true,
-    attributeFilter: ["data-active-page"]
-  });
-}
-*/
+    return {
+      name: name || "Kullanıcı",
+      email: email || "—",
+      plan: plan,
+      credit: credit
+    };
+  }
 
-/* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
+  function applyProfile() {
+    var page = getProfilePage();
+    if (!page) return;
+
+    if (!isProfileActive()) return;
+
+    var data = readProfileData();
+    if (!data) return;
+
+    var initial = (data.name || "K").charAt(0).toUpperCase();
+    text(qs("[data-profile-initial]", page), initial);
+
+    text(qs("[data-profile-name]", page), data.name);
+    text(qs("[data-profile-email]", page), data.email);
+
+    var planEls = qsa("[data-profile-plan]", page);
+    for (var i = 0; i < planEls.length; i++) planEls[i].textContent = "Plan: " + data.plan;
+
+    var creditEls = qsa("[data-profile-credit]", page);
+    for (var j = 0; j < creditEls.length; j++) creditEls[j].textContent = "Kredi: " + data.credit;
+
+    value(qs("[data-profile-input-name]", page), data.name);
+    value(qs("[data-profile-input-email]", page), data.email);
+  }
+
+  function bindSave() {
+    var page = getProfilePage();
+    if (!page) return;
+
+    var btn = qs("[data-profile-save]", page);
+    if (!btn) return;
+
+    if (btn.__aivoBound) return;
+    btn.__aivoBound = true;
+
+    btn.addEventListener("click", function () {
+      var name = (qs("[data-profile-input-name]", page)?.value || "").trim();
+      if (!name) {
+        window.toast.error("Ad alanı boş olamaz.");
+        return;
+      }
+
+      safeSetLS("aivo_profile_name", name);
+
+      text(qs("[data-profile-name]", page), name);
+      text(qs("[data-profile-initial]", page), name.charAt(0).toUpperCase());
+
+      window.toast.success("Profil güncellendi.");
+    });
+  }
+
+  function observePage() {
+    if (window.__aivoProfileObserverBound) return;
+    window.__aivoProfileObserverBound = true;
+
+    var mo = new MutationObserver(function () {
+      if (isProfileActive()) {
+        applyProfile();
+        bindSave();
+      }
+    });
+
+    mo.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-active-page"]
+    });
+  }
+  */
+
+  /* PROFILE LOGIC MOVED TO: /studio.sections/profile.js */
+
   /* =========================================================
      PASSWORD MODAL (PROFILE) — STABLE + SAFARI FIX
      ========================================================= */
@@ -163,9 +205,136 @@ function observePage() {
     if (window.__aivoPasswordModalHandlersBound) return;
     window.__aivoPasswordModalHandlersBound = true;
 
-     function ensureModal() {
+    function applyModalLanguage(modal) {
+      if (!modal) return;
+
+      text(
+        qs("[data-pw-i18n-title]", modal),
+        profileText(
+          "studio.profile.password.title",
+          "Şifre Değiştir",
+          "Change Password"
+        )
+      );
+
+      text(
+        qs("[data-pw-i18n-subtitle]", modal),
+        profileText(
+          "studio.profile.password.subtitle",
+          "Hesabını güvende tutmak için güçlü bir şifre kullan.",
+          "Use a strong password to keep your account secure."
+        )
+      );
+
+      var closeButton = qs("[data-pw-i18n-close]", modal);
+      if (closeButton) {
+        closeButton.setAttribute(
+          "aria-label",
+          profileText(
+            "studio.profile.password.close",
+            "Kapat",
+            "Close"
+          )
+        );
+      }
+
+      text(
+        qs("[data-pw-i18n-current]", modal),
+        profileText(
+          "studio.profile.password.current",
+          "Mevcut Şifre",
+          "Current Password"
+        )
+      );
+
+      var currentInput = qs("[data-pw-current]", modal);
+      if (currentInput) {
+        currentInput.setAttribute(
+          "placeholder",
+          profileText(
+            "studio.profile.password.currentPlaceholder",
+            "Mevcut şifren",
+            "Your current password"
+          )
+        );
+      }
+
+      text(
+        qs("[data-pw-i18n-new]", modal),
+        profileText(
+          "studio.profile.password.new",
+          "Yeni Şifre",
+          "New Password"
+        )
+      );
+
+      var newInput = qs("[data-pw-new]", modal);
+      if (newInput) {
+        newInput.setAttribute(
+          "placeholder",
+          profileText(
+            "studio.profile.password.newPlaceholder",
+            "Yeni şifre",
+            "New password"
+          )
+        );
+      }
+
+      text(
+        qs("[data-pw-i18n-confirm]", modal),
+        profileText(
+          "studio.profile.password.confirm",
+          "Yeni Şifre (Tekrar)",
+          "Confirm New Password"
+        )
+      );
+
+      var confirmInput = qs("[data-pw-new2]", modal);
+      if (confirmInput) {
+        confirmInput.setAttribute(
+          "placeholder",
+          profileText(
+            "studio.profile.password.confirmPlaceholder",
+            "Yeni şifre tekrar",
+            "Enter the new password again"
+          )
+        );
+      }
+
+      text(
+        qs("[data-pw-hint]", modal),
+        profileText(
+          "studio.profile.password.hint",
+          "En az 8 karakter, mümkünse harf + sayı + sembol.",
+          "Use at least 8 characters, preferably including letters, numbers and symbols."
+        )
+      );
+
+      text(
+        qs("[data-pw-i18n-cancel]", modal),
+        profileText(
+          "studio.profile.password.cancel",
+          "İptal",
+          "Cancel"
+        )
+      );
+
+      text(
+        qs("[data-pw-submit]", modal),
+        profileText(
+          "studio.profile.password.update",
+          "Şifreyi Güncelle",
+          "Update Password"
+        )
+      );
+    }
+
+    function ensureModal() {
       var existing = qs("[data-password-modal]");
-      if (existing) return existing;
+      if (existing) {
+        applyModalLanguage(existing);
+        return existing;
+      }
 
       var wrap = document.createElement("div");
       wrap.innerHTML = ''
@@ -174,23 +343,23 @@ function observePage() {
         + '  <div class="aivo-modal__panel" role="dialog" aria-modal="true" aria-labelledby="pwModalTitle" aria-describedby="pwModalDesc" tabindex="-1">'
         + '    <div class="aivo-modal__head">'
         + '      <div>'
-        + '        <div class="aivo-modal__title" id="pwModalTitle">Şifre Değiştir</div>'
-        + '        <div class="aivo-modal__sub" id="pwModalDesc">Hesabını güvende tutmak için güçlü bir şifre kullan.</div>'
+        + '        <div class="aivo-modal__title" id="pwModalTitle" data-pw-i18n-title>Şifre Değiştir</div>'
+        + '        <div class="aivo-modal__sub" id="pwModalDesc" data-pw-i18n-subtitle>Hesabını güvende tutmak için güçlü bir şifre kullan.</div>'
         + '      </div>'
-        + '      <button class="aivo-modal__x" type="button" data-password-close aria-label="Kapat">×</button>'
+        + '      <button class="aivo-modal__x" type="button" data-password-close data-pw-i18n-close aria-label="Kapat">×</button>'
         + '    </div>'
         + '    <div class="aivo-modal__body">'
         + '      <div class="aivo-field">'
-        + '        <label class="aivo-label" for="pwCurrent">Mevcut Şifre</label>'
+        + '        <label class="aivo-label" for="pwCurrent" data-pw-i18n-current>Mevcut Şifre</label>'
         + '        <input class="aivo-input" id="pwCurrent" name="current_password_runtime" type="password" autocomplete="current-password" aria-describedby="pwHint" data-pw-current placeholder="Mevcut şifren" />'
         + '      </div>'
         + '      <div class="aivo-row2">'
         + '        <div class="aivo-field">'
-        + '          <label class="aivo-label" for="pwNew">Yeni Şifre</label>'
+        + '          <label class="aivo-label" for="pwNew" data-pw-i18n-new>Yeni Şifre</label>'
         + '          <input class="aivo-input" id="pwNew" name="new_password_runtime" type="password" autocomplete="new-password" aria-describedby="pwHint" data-pw-new placeholder="Yeni şifre" />'
         + '        </div>'
         + '        <div class="aivo-field">'
-        + '          <label class="aivo-label" for="pwNew2">Yeni Şifre (Tekrar)</label>'
+        + '          <label class="aivo-label" for="pwNew2" data-pw-i18n-confirm>Yeni Şifre (Tekrar)</label>'
         + '          <input class="aivo-input" id="pwNew2" name="new_password_confirm_runtime" type="password" autocomplete="new-password" aria-describedby="pwHint" data-pw-new2 placeholder="Yeni şifre tekrar" />'
         + '        </div>'
         + '      </div>'
@@ -199,7 +368,7 @@ function observePage() {
         + '      </div>'
         + '    </div>'
         + '    <div class="aivo-modal__foot">'
-        + '      <button class="chip-btn" type="button" data-password-close>İptal</button>'
+        + '      <button class="chip-btn" type="button" data-password-close data-pw-i18n-cancel>İptal</button>'
         + '      <button class="chip-btn chip-btn--primary" type="button" data-pw-submit>Şifreyi Güncelle</button>'
         + '    </div>'
         + '  </div>'
@@ -207,6 +376,7 @@ function observePage() {
 
       var modal = wrap.firstElementChild;
       document.body.appendChild(modal);
+      applyModalLanguage(modal);
       return modal;
     }
 
@@ -222,6 +392,7 @@ function observePage() {
       var modal = getModal() || ensureModal();
       if (!modal) return;
 
+      applyModalLanguage(modal);
       modal.setAttribute("aria-hidden", "false");
       modal.classList.add("is-open");
       document.body.classList.add("modal-open");
@@ -233,11 +404,12 @@ function observePage() {
         if (first) first.focus();
       }, 0);
     }
+
     function closeModal() {
       var modal = getModal();
       if (!modal) return;
 
-      // ✅ Safari / Keychain dropdown takılmasın: önce focus'u bırak
+      // Safari / Keychain dropdown takılmasın: önce focus'u bırak
       var active = document.activeElement;
       if (active && modal.contains(active) && typeof active.blur === "function") {
         active.blur();
@@ -252,7 +424,7 @@ function observePage() {
     }
 
     // Delegated click (tek kez)
-document.addEventListener("click", async function (e) {
+    document.addEventListener("click", async function (e) {
       var t = e.target;
 
       var openBtn = t.closest && t.closest("[data-open-password]");
@@ -269,7 +441,7 @@ document.addEventListener("click", async function (e) {
         return;
       }
 
-          var submit = t.closest && t.closest("[data-pw-submit]");
+      var submit = t.closest && t.closest("[data-pw-submit]");
       if (submit) {
         e.preventDefault();
 
@@ -286,15 +458,41 @@ document.addEventListener("click", async function (e) {
         var n2V = ((n2 && n2.value) || "").trim();
 
         if (!curV || !n1V || !n2V) {
-          if (window.toast && window.toast.error) window.toast.error("Lütfen tüm alanları doldurun.");
+          if (window.toast && window.toast.error) {
+            window.toast.error(
+              profileText(
+                "studio.profile.password.error.allFields",
+                "Lütfen tüm alanları doldurun.",
+                "Please complete all fields."
+              )
+            );
+          }
           return;
         }
+
         if (n1V.length < 8) {
-          if (window.toast && window.toast.error) window.toast.error("Yeni şifre en az 8 karakter olmalı.");
+          if (window.toast && window.toast.error) {
+            window.toast.error(
+              profileText(
+                "studio.profile.password.error.tooShort",
+                "Yeni şifre en az 8 karakter olmalı.",
+                "The new password must be at least 8 characters."
+              )
+            );
+          }
           return;
         }
+
         if (n1V !== n2V) {
-          if (window.toast && window.toast.error) window.toast.error("Yeni şifreler eşleşmiyor.");
+          if (window.toast && window.toast.error) {
+            window.toast.error(
+              profileText(
+                "studio.profile.password.error.mismatch",
+                "Yeni şifreler eşleşmiyor.",
+                "The new passwords do not match."
+              )
+            );
+          }
           return;
         }
 
@@ -320,24 +518,80 @@ document.addEventListener("click", async function (e) {
             var code = (json && (json.error || json.message)) || "password_update_failed";
 
             if (code === "current_password_invalid") {
-              if (window.toast && window.toast.error) window.toast.error("Mevcut şifre yanlış.");
+              if (window.toast && window.toast.error) {
+                window.toast.error(
+                  profileText(
+                    "studio.profile.password.error.currentInvalid",
+                    "Mevcut şifre yanlış.",
+                    "The current password is incorrect."
+                  )
+                );
+              }
             } else if (code === "password_too_short") {
-              if (window.toast && window.toast.error) window.toast.error("Yeni şifre en az 8 karakter olmalı.");
+              if (window.toast && window.toast.error) {
+                window.toast.error(
+                  profileText(
+                    "studio.profile.password.error.tooShort",
+                    "Yeni şifre en az 8 karakter olmalı.",
+                    "The new password must be at least 8 characters."
+                  )
+                );
+              }
             } else if (code === "password_mismatch") {
-              if (window.toast && window.toast.error) window.toast.error("Yeni şifreler eşleşmiyor.");
+              if (window.toast && window.toast.error) {
+                window.toast.error(
+                  profileText(
+                    "studio.profile.password.error.mismatch",
+                    "Yeni şifreler eşleşmiyor.",
+                    "The new passwords do not match."
+                  )
+                );
+              }
             } else if (code === "password_same_as_old") {
-              if (window.toast && window.toast.error) window.toast.error("Yeni şifre mevcut şifreyle aynı olamaz.");
+              if (window.toast && window.toast.error) {
+                window.toast.error(
+                  profileText(
+                    "studio.profile.password.error.sameAsOld",
+                    "Yeni şifre mevcut şifreyle aynı olamaz.",
+                    "The new password cannot be the same as the current password."
+                  )
+                );
+              }
             } else {
-              if (window.toast && window.toast.error) window.toast.error("Şifre güncellenemedi.");
+              if (window.toast && window.toast.error) {
+                window.toast.error(
+                  profileText(
+                    "studio.profile.password.error.updateFailed",
+                    "Şifre güncellenemedi.",
+                    "The password could not be updated."
+                  )
+                );
+              }
             }
             return;
           }
 
-          if (window.toast && window.toast.success) window.toast.success("Şifre başarıyla güncellendi.");
+          if (window.toast && window.toast.success) {
+            window.toast.success(
+              profileText(
+                "studio.profile.password.toast.updated",
+                "Şifre başarıyla güncellendi.",
+                "Password updated successfully."
+              )
+            );
+          }
           closeModal();
         } catch (err) {
           console.error("[AIVO_PASSWORD_UPDATE_FAIL]", err);
-          if (window.toast && window.toast.error) window.toast.error("Şifre güncellenemedi.");
+          if (window.toast && window.toast.error) {
+            window.toast.error(
+              profileText(
+                "studio.profile.password.error.updateFailed",
+                "Şifre güncellenemedi.",
+                "The password could not be updated."
+              )
+            );
+          }
         } finally {
           submit.disabled = false;
         }
@@ -350,53 +604,67 @@ document.addEventListener("click", async function (e) {
       var modal = getModal();
       if (modal && isOpen(modal)) closeModal();
     });
+
+    function refreshPasswordModalLanguage() {
+      applyModalLanguage(getModal());
+    }
+
+    document.addEventListener(
+      "aivo:language-change",
+      refreshPasswordModalLanguage
+    );
+    document.addEventListener(
+      "aivo:studio:i18n-applied",
+      refreshPasswordModalLanguage
+    );
   }
 
   /* ===============================
      INIT
      =============================== */
-document.addEventListener("DOMContentLoaded", function () {
-  bindPasswordModal();
-});
-// ================= AIVO STUDIO — AUTH UI HYDRATE (email/name/initial) =================
-(function(){
-  return;
+  document.addEventListener("DOMContentLoaded", function () {
+    bindPasswordModal();
+  });
 
-  function readAuth(){
-    try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
-    catch(e){ return {}; }
-  }
+  // ================= AIVO STUDIO — AUTH UI HYDRATE (email/name/initial) =================
+  (function () {
+    return;
 
-  function setText(sel, val){
-    var el = document.querySelector(sel);
-    if (el) el.textContent = val;
-  }
+    function readAuth() {
+      try { return JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}"); }
+      catch (e) { return {}; }
+    }
 
-  function hydrate(){
-    var a = readAuth();
-    var email = (a && a.email) ? String(a.email) : "";
-    if (!email) return;
+    function setText(sel, val) {
+      var el = document.querySelector(sel);
+      if (el) el.textContent = val;
+    }
 
-    // Studio’da kullanılan hedefler (hangisi varsa yazar)
-    setText("#umEmail", email);
-    setText("#topUserEmail", email);
-    setText("#topUserName", "Hesap");
+    function hydrate() {
+      var a = readAuth();
+      var email = (a && a.email) ? String(a.email) : "";
+      if (!email) return;
 
-    // initial (email’den)
-    var initial = email.trim().charAt(0).toUpperCase();
-    setText("#topUserInitial", initial);
-    setText("#umAvatar", initial);
-  }
+      // Studio’da kullanılan hedefler (hangisi varsa yazar)
+      setText("#umEmail", email);
+      setText("#topUserEmail", email);
+      setText("#topUserName", "Hesap");
 
-  if (document.readyState === "complete") hydrate();
-  else window.addEventListener("load", hydrate);
+      // initial (email’den)
+      var initial = email.trim().charAt(0).toUpperCase();
+      setText("#topUserInitial", initial);
+      setText("#umAvatar", initial);
+    }
 
-  // Studio’da bazı paneller sonradan render oluyorsa 1-2 sn retry
-  var i=0;
-  var t=setInterval(function(){
-    i++;
-    hydrate();
-    if (i>=30) clearInterval(t); // ~3s
-  }, 100);
+    if (document.readyState === "complete") hydrate();
+    else window.addEventListener("load", hydrate);
+
+    // Studio’da bazı paneller sonradan render oluyorsa 1-2 sn retry
+    var i = 0;
+    var t = setInterval(function () {
+      i++;
+      hydrate();
+      if (i >= 30) clearInterval(t); // ~3s
+    }, 100);
+  })();
 })();
-   })();
