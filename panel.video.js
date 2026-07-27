@@ -32,6 +32,87 @@
     return String(v == null ? "" : v).trim();
   }
 
+  function getVideoPanelLanguage() {
+    try {
+      const language = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (language) {
+        return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
+      }
+    } catch {}
+
+    const language = String(
+      window.AIVO_LANG || document.documentElement.lang || "tr"
+    ).toLowerCase();
+
+    return language.startsWith("en") ? "en" : "tr";
+  }
+
+  function formatVideoPanelText(value, parameters) {
+    let output = String(value == null ? "" : value);
+
+    if (!parameters || typeof parameters !== "object") return output;
+
+    Object.keys(parameters).forEach((key) => {
+      output = output.replace(
+        new RegExp(`\\{${key}\\}`, "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function videoPanelText(key, trText, enText, parameters) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, "", parameters);
+      if (translated && translated !== key) {
+        return formatVideoPanelText(translated, parameters);
+      }
+    } catch {}
+
+    try {
+      const translated = window.studioT?.(key, "", parameters);
+      if (translated && translated !== key) {
+        return formatVideoPanelText(translated, parameters);
+      }
+    } catch {}
+
+    return formatVideoPanelText(
+      getVideoPanelLanguage() === "en" ? enText : trText,
+      parameters
+    );
+  }
+
+  function showVideoPanelToast(type, message) {
+    try {
+      const api = window.toast;
+      if (!api || !message) return;
+
+      if (type === "success" && api.success) return api.success(message);
+      if (type === "error" && api.error) return api.error(message);
+      if (type === "info" && api.info) return api.info(message);
+      if (api.show) return api.show(message);
+    } catch {}
+  }
+
+  function getVideoPanelHeader() {
+    return {
+      title: videoPanelText(
+        "studio.video.panel.title",
+        "Videolarım",
+        "My Videos"
+      ),
+      meta: "",
+      searchPlaceholder: videoPanelText(
+        "studio.video.panel.searchPlaceholder",
+        "Videolarda ara...",
+        "Search videos..."
+      ),
+    };
+  }
+
+  let refreshMountedVideoPanel = null;
+
   function uid() {
     return "v_" + Math.random().toString(36).slice(2, 10);
   }
@@ -111,7 +192,14 @@
     const st = (a || b || c || "").toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
+      return {
+        text: videoPanelText(
+          "studio.video.panel.status.failed",
+          "Hata",
+          "Failed"
+        ),
+        kind: "bad",
+      };
     }
     if (
       st.includes("READY") ||
@@ -119,7 +207,14 @@
       st.includes("COMPLET") ||
       st.includes("SUCC")
     ) {
-      return { text: "Hazır", kind: "ok" };
+      return {
+        text: videoPanelText(
+          "studio.video.panel.status.ready",
+          "Hazır",
+          "Ready"
+        ),
+        kind: "ok",
+      };
     }
     if (
       st.includes("RUN") ||
@@ -127,10 +222,26 @@
       st.includes("PEND") ||
       st.includes("QUEUE")
     ) {
-      return { text: "İşleniyor", kind: "mid" };
+      return {
+        text: videoPanelText(
+          "studio.video.panel.status.processing",
+          "İşleniyor",
+          "Processing"
+        ),
+        kind: "mid",
+      };
     }
 
-    return { text: st ? st.slice(0, 18) : "İşleniyor", kind: "mid" };
+    return {
+      text: st
+        ? st.slice(0, 18)
+        : videoPanelText(
+            "studio.video.panel.status.processing",
+            "İşleniyor",
+            "Processing"
+          ),
+      kind: "mid",
+    };
   }
 
   function pickOutputUrl(o) {
@@ -268,9 +379,25 @@
       safeStr(job?.title);
 
     if (base) return base;
-    if (mode.includes("image")) return "Image→Video";
-    if (mode.includes("text")) return "Text→Video";
-    return "Video";
+    if (mode.includes("image")) {
+      return videoPanelText(
+        "studio.video.panel.imageToVideo",
+        "Resimden Video",
+        "Image to Video"
+      );
+    }
+    if (mode.includes("text")) {
+      return videoPanelText(
+        "studio.video.panel.textToVideo",
+        "Yazıdan Video",
+        "Text to Video"
+      );
+    }
+    return videoPanelText(
+      "studio.video.panel.untitled",
+      "İsimsiz Video",
+      "Untitled Video"
+    );
   }
 
   function ensureStyles() {
@@ -361,8 +488,25 @@
       setTimeout(() => {
         URL.revokeObjectURL(objectUrl);
       }, 1000);
+
+      showVideoPanelToast(
+        "success",
+        videoPanelText(
+          "studio.video.panel.download.success",
+          "Video indirildi.",
+          "The video was downloaded."
+        )
+      );
     } catch (err) {
       console.error("[VIDEO PANEL] download failed", err);
+      showVideoPanelToast(
+        "error",
+        videoPanelText(
+          "studio.video.panel.download.failed",
+          "Video indirilemedi.",
+          "The video could not be downloaded."
+        )
+      );
       window.open(cleanUrl, "_blank", "noopener");
     }
   }
@@ -378,7 +522,14 @@
       navigator.share({ url: directUrl }).catch(() => {});
     } else {
       navigator.clipboard?.writeText(directUrl).catch(() => {});
-      window.toast?.success?.("Link kopyalandı.");
+      showVideoPanelToast(
+        "success",
+        videoPanelText(
+          "studio.video.panel.share.copied",
+          "Video bağlantısı kopyalandı.",
+          "The video link was copied."
+        )
+      );
     }
   }
 
@@ -389,7 +540,11 @@
       console.warn("[VIDEO PANEL] DBJobs yok. panel.dbjobs.js yüklenmeli.");
       host.innerHTML = `
         <div class="videoPanelWrap">
-          <div class="vpEmpty">DBJobs bulunamadı.</div>
+          <div class="vpEmpty">${videoPanelText(
+            "studio.video.panel.dbUnavailable",
+            "Video kayıtları yüklenemedi.",
+            "Video records could not be loaded."
+          )}</div>
         </div>
       `;
       return {
@@ -635,7 +790,11 @@
           <div style="position:relative;background:#000;">
             <div style="padding-top:76%;"></div>
             <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(80% 80% at 50% 40%, rgba(175,120,255,.18), rgba(0,0,0,.70));">
-              <div style="font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);">Hazırlanıyor…</div>
+              <div style="font-size:12px;font-weight:800;padding:8px 12px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10);">${videoPanelText(
+                "studio.video.panel.status.preparing",
+                "Hazırlanıyor…",
+                "Preparing…"
+              )}</div>
             </div>
           </div>
         </div>
@@ -721,8 +880,16 @@
         }
 
         emptyEl.textContent = state.query
-          ? "Aramana uygun video bulunamadı."
-          : "Henüz video yok.";
+          ? videoPanelText(
+              "studio.video.panel.noResults",
+              "Aramana uygun video bulunamadı.",
+              "No videos match your search."
+            )
+          : videoPanelText(
+              "studio.video.panel.empty",
+              "Henüz video yok.",
+              "No videos yet."
+            );
 
         return;
       } else if (emptyEl) {
@@ -765,6 +932,8 @@
     function renderCurrent() {
       render(buildMergedItems());
     }
+
+    refreshMountedVideoPanel = renderCurrent;
 
     host.addEventListener("click", async (e) => {
       const btn = e.target.closest("[data-svc-act], [data-act]");
@@ -838,11 +1007,25 @@
             try {
               await controller?.hydrate?.(true);
             } catch {}
-            window.toast?.error?.("Silinemedi.");
+            showVideoPanelToast(
+              "error",
+              videoPanelText(
+                "studio.video.panel.delete.failed",
+                "Video silinemedi.",
+                "The video could not be deleted."
+              )
+            );
             return;
           }
 
-          window.toast?.success?.("Silindi.");
+          showVideoPanelToast(
+            "success",
+            videoPanelText(
+              "studio.video.panel.delete.success",
+              "Video silindi.",
+              "The video was deleted."
+            )
+          );
 
           try {
             await controller?.hydrate?.(true);
@@ -852,7 +1035,14 @@
           try {
             await controller?.hydrate?.(true);
           } catch {}
-          window.toast?.error?.("Silinemedi.");
+          showVideoPanelToast(
+            "error",
+            videoPanelText(
+              "studio.video.panel.delete.failed",
+              "Video silinemedi.",
+              "The video could not be deleted."
+            )
+          );
         }
 
         return;
@@ -921,7 +1111,17 @@
       const createdAt = d.createdAt || Date.now();
       const prompt = safeStr(d.prompt || meta.prompt || "");
       const mode = safeStr(d.mode || meta.mode || "");
-      const title = prompt || (mode === "image" ? "Image→Video" : "Video");
+      const title = prompt || (mode === "image"
+        ? videoPanelText(
+            "studio.video.panel.imageToVideo",
+            "Resimden Video",
+            "Image to Video"
+          )
+        : videoPanelText(
+            "studio.video.panel.untitled",
+            "İsimsiz Video",
+            "Untitled Video"
+          ));
 
       const optimisticJob = {
         id: job_id,
@@ -1088,6 +1288,9 @@
         try {
           controller?.destroy?.();
         } catch {}
+        if (refreshMountedVideoPanel === renderCurrent) {
+          refreshMountedVideoPanel = null;
+        }
         try {
           host.innerHTML = "";
         } catch {}
@@ -1095,18 +1298,22 @@
     };
   }
 
+  function refreshVideoPanelLanguage() {
+    try {
+      if (window.RightPanel?.getCurrentKey?.() === "video") {
+        window.RightPanel.setHeader?.(getVideoPanelHeader());
+      }
+
+      refreshMountedVideoPanel?.();
+    } catch {}
+  }
+
   try {
     console.log("[PANEL.VIDEO] register run");
 
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("video", {
-        getHeader() {
-          return {
-            title: "Videolarım",
-            meta: "",
-            searchPlaceholder: "Videolarda ara...",
-          };
-        },
+        getHeader: getVideoPanelHeader,
 
         mount(host) {
           const api = createVideoPanel(host);
@@ -1123,4 +1330,13 @@
   } catch (e) {
     console.warn("[VIDEO PANEL] register failed", e);
   }
+
+  document.addEventListener(
+    "aivo:language-change",
+    refreshVideoPanelLanguage
+  );
+  document.addEventListener(
+    "aivo:studio:i18n-applied",
+    refreshVideoPanelLanguage
+  );
 })();
