@@ -4,8 +4,17 @@
   <div class="panel-header">
     <div class="page-head">
       <div class="page-head__box">
-        <h1 class="page-head__title">Profil</h1>
-        <p class="page-head__sub">
+        <h1
+          class="page-head__title"
+          data-i18n="studio.profile.title"
+        >
+          Profil
+        </h1>
+
+        <p
+          class="page-head__sub"
+          data-i18n="studio.profile.subtitle"
+        >
           Hesap bilgilerin, planın ve kullanım detayların burada yer alır.
         </p>
       </div>
@@ -16,17 +25,31 @@
   <div class="card profile-ribbon">
     <div class="profile-ribbon-inner">
 
-        <div class="profile-user">
-  <div class="profile-avatar" data-profile-initial></div>
-  <div>
-    <div class="profile-name" data-profile-name></div>
-    <div class="profile-mail" data-profile-email></div>
-  </div>
-</div>
+      <div class="profile-user">
+        <div class="profile-avatar" data-profile-initial></div>
+
+        <div>
+          <div class="profile-name" data-profile-name></div>
+          <div class="profile-mail" data-profile-email></div>
+        </div>
+      </div>
 
       <div class="profile-actions">
-        <a class="chip-btn chip-btn--primary" href="/fiyatlandirma.html#packs">Kredi Satın Al</a>
-        <a class="chip-btn" href="/fiyatlandirma.html#packs">Planı Yükselt</a>
+        <a
+          class="chip-btn chip-btn--primary"
+          href="/fiyatlandirma.html#packs"
+          data-i18n="studio.profile.action.buyCredits"
+        >
+          Kredi Satın Al
+        </a>
+
+        <a
+          class="chip-btn"
+          href="/fiyatlandirma.html#packs"
+          data-i18n="studio.profile.action.upgradePlan"
+        >
+          Planı Yükselt
+        </a>
       </div>
 
     </div>
@@ -36,40 +59,85 @@
   <div class="card profile-card profile-security">
     <div class="card-header">
       <div>
-        <div class="card-title">Profil Bilgileri</div>
-        <div class="card-subtitle">Kişisel hesap bilgilerin</div>
+        <div
+          class="card-title"
+          data-i18n="studio.profile.info.title"
+        >
+          Profil Bilgileri
+        </div>
+
+        <div
+          class="card-subtitle"
+          data-i18n="studio.profile.info.subtitle"
+        >
+          Kişisel hesap bilgilerin
+        </div>
       </div>
     </div>
 
     <div class="profile-form">
-       <div class="form-row">
-        <label>Ad</label>
-        <input type="text" value="" placeholder="Adın" data-profile-input-name>
+
+      <div class="form-row">
+        <label data-i18n="studio.profile.field.name">
+          Ad
+        </label>
+
+        <input
+          type="text"
+          value=""
+          placeholder="Adın"
+          data-profile-input-name
+          data-i18n-placeholder="studio.profile.field.namePlaceholder"
+        >
       </div>
 
       <div class="form-row">
-        <label>Soyad</label>
-        <input type="text" value="" placeholder="Soyadın" data-profile-input-surname>
+        <label data-i18n="studio.profile.field.surname">
+          Soyad
+        </label>
+
+        <input
+          type="text"
+          value=""
+          placeholder="Soyadın"
+          data-profile-input-surname
+          data-i18n-placeholder="studio.profile.field.surnamePlaceholder"
+        >
       </div>
 
       <div class="form-row">
-        <label for="profile-email">E-posta</label>
-    <input
-  id="profile-email"
-  class="aivo-input is-readonly"
-  type="email"
-  value=""
-  placeholder=""
-  readonly
-  aria-readonly="true"
-  data-profile-input-email
-/>
-        <small>Güvenlik nedeniyle e-posta adresi değiştirilemez.</small>
+        <label
+          for="profile-email"
+          data-i18n="studio.profile.field.email"
+        >
+          E-posta
+        </label>
+
+        <input
+          id="profile-email"
+          class="aivo-input is-readonly"
+          type="email"
+          value=""
+          placeholder=""
+          readonly
+          aria-readonly="true"
+          data-profile-input-email
+        >
+
+        <small data-i18n="studio.profile.field.emailLocked">
+          Güvenlik nedeniyle e-posta adresi değiştirilemez.
+        </small>
       </div>
 
-      <button class="chip-btn chip-btn--primary" data-profile-save type="button">
+      <button
+        class="chip-btn chip-btn--primary"
+        data-profile-save
+        type="button"
+        data-i18n="studio.profile.action.save"
+      >
         Profili Güncelle
       </button>
+
     </div>
   </div>
 
@@ -77,19 +145,40 @@
   <div class="card profile-card">
     <div class="card-header">
       <div>
-        <div class="card-title">Güvenlik</div>
-        <div class="card-subtitle">Şifre ve hesap güvenliği</div>
+        <div
+          class="card-title"
+          data-i18n="studio.profile.security.title"
+        >
+          Güvenlik
+        </div>
+
+        <div
+          class="card-subtitle"
+          data-i18n="studio.profile.security.subtitle"
+        >
+          Şifre ve hesap güvenliği
+        </div>
       </div>
     </div>
 
     <div class="right-list">
-      <div style="font-size:13px; opacity:.8; margin-bottom:10px;">
+
+      <div
+        style="font-size:13px; opacity:.8; margin-bottom:10px;"
+        data-i18n="studio.profile.security.description"
+      >
         Hesabını güvende tutmak için şifreni düzenli aralıklarla güncelle.
       </div>
 
-      <button class="chip-btn" data-open-password type="button">
+      <button
+        class="chip-btn"
+        data-open-password
+        type="button"
+        data-i18n="studio.profile.security.changePassword"
+      >
         Şifre Değiştir
       </button>
+
     </div>
   </div>
 
@@ -97,58 +186,166 @@
   <div class="card profile-card">
     <div class="card-header">
       <div>
-        <div class="card-title">Kullanım İstatistikleri</div>
-        <div class="card-subtitle">Bu ayki özet</div>
+        <div
+          class="card-title"
+          data-i18n="studio.profile.usage.title"
+        >
+          Kullanım İstatistikleri
+        </div>
+
+        <div
+          class="card-subtitle"
+          data-i18n="studio.profile.usage.subtitle"
+        >
+          Bu ayki özet
+        </div>
       </div>
     </div>
 
     <div class="right-list usage-wrap">
 
-<div class="usage-grid">
-  <div class="usage-pill">
-    <span class="usage-label">AI Müzik Üret</span>
-    <span class="usage-value" data-stat="music">0</span>
-  </div>
+      <div class="usage-grid">
 
-  <div class="usage-pill">
-    <span class="usage-label">AI Kapak Üret</span>
-    <span class="usage-value" data-stat="cover">0</span>
-  </div>
+        <div class="usage-pill">
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.music"
+          >
+            AI Müzik Üret
+          </span>
 
-  <div class="usage-pill">
-    <span class="usage-label">AI Atmosfer Video</span>
-    <span class="usage-value" data-stat="atmo">0</span>
-  </div>
+          <span
+            class="usage-value"
+            data-stat="music"
+          >
+            0
+          </span>
+        </div>
 
-  <div class="usage-pill">
-    <span class="usage-label">AI Çocuk Çizgifilm</span>
-    <span class="usage-value" data-stat="cartoon">0</span>
-  </div>
+        <div class="usage-pill">
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.cover"
+          >
+            AI Kapak Üret
+          </span>
 
-  <div class="usage-pill">
-    <span class="usage-label">AI Foto Efekt Video Clip</span>
-    <span class="usage-value" data-stat="photofx">0</span>
-  </div>
+          <span
+            class="usage-value"
+            data-stat="cover"
+          >
+            0
+          </span>
+        </div>
 
-  <div class="usage-pill">
-    <span class="usage-label">AI Resimden Video Üret</span>
-    <span class="usage-value" data-stat="imageToVideo">0</span>
-  </div>
-</div>
+        <div class="usage-pill">
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.atmo"
+          >
+            AI Atmosfer Video
+          </span>
+
+          <span
+            class="usage-value"
+            data-stat="atmo"
+          >
+            0
+          </span>
+        </div>
+
+        <div class="usage-pill">
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.cartoon"
+          >
+            AI Çocuk Çizgifilm
+          </span>
+
+          <span
+            class="usage-value"
+            data-stat="cartoon"
+          >
+            0
+          </span>
+        </div>
+
+        <div class="usage-pill">
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.photofx"
+          >
+            AI Foto Efekt Video Klip
+          </span>
+
+          <span
+            class="usage-value"
+            data-stat="photofx"
+          >
+            0
+          </span>
+        </div>
+
+        <div class="usage-pill">
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.imageToVideo"
+          >
+            AI Resimden Video Üret
+          </span>
+
+          <span
+            class="usage-value"
+            data-stat="imageToVideo"
+          >
+            0
+          </span>
+        </div>
+
+      </div>
 
       <div class="usage-rows">
+
         <div class="usage-row">
-          <span class="usage-label">Harcanan kredi</span>
-          <span class="usage-value" data-stat="spentCredits">0</span>
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.spentCredits"
+          >
+            Harcanan kredi
+          </span>
+
+          <span
+            class="usage-value"
+            data-stat="spentCredits"
+          >
+            0
+          </span>
         </div>
 
         <div class="usage-row usage-row--muted">
-          <span class="usage-label">Toplam kredi</span>
-          <span class="usage-value" data-stat="totalCredits">0</span>
+          <span
+            class="usage-label"
+            data-i18n="studio.profile.usage.totalCredits"
+          >
+            Toplam kredi
+          </span>
+
+          <span
+            class="usage-value"
+            data-stat="totalCredits"
+          >
+            0
+          </span>
         </div>
+
       </div>
 
-      <button class="chip-btn" type="button" data-page-link="library">
+      <button
+        class="chip-btn"
+        type="button"
+        data-page-link="library"
+        data-i18n="studio.profile.usage.goLibrary"
+      >
         Ürettiklerime Git
       </button>
 
