@@ -2515,8 +2515,151 @@
       "studio.profile.panel.library":
         "Ürettiklerim",
 
-      "studio.profile.panel.hint":
+        "studio.profile.panel.hint":
         "Profil özeti ve hızlı erişim bu panelde gösterilir.",
+
+      /* =========================
+         INVOICES / PAGE
+         ========================= */
+
+      "studio.invoices.title":
+        "Faturalarım",
+
+      "studio.invoices.subtitle":
+        "Geçmiş satın alımlarına ait faturalar ve ödeme belgeleri burada listelenir.",
+
+      "studio.invoices.filter.all":
+        "Tümü",
+
+      "studio.invoices.filter.purchase":
+        "Satın Alım",
+
+      "studio.invoices.filter.refund":
+        "İade",
+
+      "studio.invoices.listLabel":
+        "Fatura listesi",
+
+      "studio.invoices.empty.default":
+        "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.",
+
+      "studio.invoices.more":
+        "Daha fazla yükle",
+
+      /* =========================
+         INVOICES / EMPTY & ERRORS
+         ========================= */
+
+      "studio.invoices.empty.filtered":
+        "Bu filtre için gösterilecek fatura bulunamadı.",
+
+      "studio.invoices.empty.sessionMissing":
+        "Faturaları göstermek için oturum bilgisi bulunamadı.",
+
+      "studio.invoices.empty.loadFailed":
+        "Faturalar şu an yüklenemedi.",
+
+      /* =========================
+         INVOICES / TYPE & STATUS
+         ========================= */
+
+      "studio.invoices.type.purchase":
+        "Satın Alım",
+
+      "studio.invoices.type.refund":
+        "İade",
+
+      "studio.invoices.status.paid":
+        "Ödendi",
+
+      "studio.invoices.status.pending":
+        "Beklemede",
+
+      "studio.invoices.status.ready":
+        "Hazır",
+
+      "studio.invoices.status.refunded":
+        "İade Edildi",
+
+      "studio.invoices.status.failed":
+        "Başarısız",
+
+      "studio.invoices.status.canceled":
+        "İptal",
+
+      /* =========================
+         INVOICES / CARD
+         ========================= */
+
+      "studio.invoices.recordTitle":
+        "AIVO FATURA KAYDI",
+
+      "studio.invoices.defaultPurchaseTitle":
+        "Satın Alım",
+
+      "studio.invoices.package.withCredits":
+        "{count} Kredilik Paket",
+
+      "studio.invoices.package.default":
+        "Kredi Paketi",
+
+      "studio.invoices.package.creditDefinition":
+        "Toplam {count} kredi tanımı",
+
+      "studio.invoices.package.purchaseDetail":
+        "Satın alım detayı",
+
+      "studio.invoices.field.date":
+        "Tarih",
+
+      "studio.invoices.field.status":
+        "Durum",
+
+      "studio.invoices.field.paymentAmount":
+        "Ödeme Tutarı",
+
+      "studio.invoices.field.refundAmount":
+        "İade Tutarı",
+
+      "studio.invoices.detail.purchase":
+        "Paket ödemesi başarıyla tamamlandı.",
+
+      "studio.invoices.detail.refund":
+        "İşlem türü iade olarak işlendi.",
+
+      "studio.invoices.action.openInvoice":
+        "Faturayı Görüntüle",
+
+      "studio.invoices.action.openRefund":
+        "İade Belgesini Aç",
+
+      "studio.invoices.action.documentUnavailable":
+        "Belge Hazır Değil",
+
+      /* =========================
+         INVOICES / RIGHT PANEL
+         ========================= */
+
+      "studio.invoices.panel.title":
+        "Faturalarım",
+
+      "studio.invoices.panel.subtitle":
+        "Faturalama özeti ve hızlı erişim",
+
+      "studio.invoices.panel.meta":
+        "Faturalama özeti",
+
+      "studio.invoices.panel.tips":
+        "İpuçları",
+
+      "studio.invoices.panel.tip.list":
+        "Fatura detayları orta panelde listelenir.",
+
+      "studio.invoices.panel.tip.records":
+        "Satın alım ve iade kayıtları orta alandaki kartlarda görüntülenir.",
+
+      "studio.invoices.panel.tip.documents":
+        "Belge açma ve inceleme işlemleri orta panel üzerinden yapılır.",
 
       /* =========================
          SUPPORT
@@ -5034,8 +5177,151 @@
       "studio.profile.panel.library":
         "My Creations",
 
-      "studio.profile.panel.hint":
+         "studio.profile.panel.hint":
         "Your profile summary and quick access options are shown in this panel.",
+
+      /* =========================
+         INVOICES / PAGE
+         ========================= */
+
+      "studio.invoices.title":
+        "My Invoices",
+
+      "studio.invoices.subtitle":
+        "Invoices and payment documents for your past purchases are listed here.",
+
+      "studio.invoices.filter.all":
+        "All",
+
+      "studio.invoices.filter.purchase":
+        "Purchases",
+
+      "studio.invoices.filter.refund":
+        "Refunds",
+
+      "studio.invoices.listLabel":
+        "Invoice list",
+
+      "studio.invoices.empty.default":
+        "You do not have any invoice records yet. They will appear here after you purchase credits.",
+
+      "studio.invoices.more":
+        "Load More",
+
+      /* =========================
+         INVOICES / EMPTY & ERRORS
+         ========================= */
+
+      "studio.invoices.empty.filtered":
+        "No invoices match this filter.",
+
+      "studio.invoices.empty.sessionMissing":
+        "Session information could not be found to display invoices.",
+
+      "studio.invoices.empty.loadFailed":
+        "Invoices could not be loaded right now.",
+
+      /* =========================
+         INVOICES / TYPE & STATUS
+         ========================= */
+
+      "studio.invoices.type.purchase":
+        "Purchase",
+
+      "studio.invoices.type.refund":
+        "Refund",
+
+      "studio.invoices.status.paid":
+        "Paid",
+
+      "studio.invoices.status.pending":
+        "Pending",
+
+      "studio.invoices.status.ready":
+        "Ready",
+
+      "studio.invoices.status.refunded":
+        "Refunded",
+
+      "studio.invoices.status.failed":
+        "Failed",
+
+      "studio.invoices.status.canceled":
+        "Canceled",
+
+      /* =========================
+         INVOICES / CARD
+         ========================= */
+
+      "studio.invoices.recordTitle":
+        "AIVO INVOICE RECORD",
+
+      "studio.invoices.defaultPurchaseTitle":
+        "Purchase",
+
+      "studio.invoices.package.withCredits":
+        "{count}-Credit Package",
+
+      "studio.invoices.package.default":
+        "Credit Package",
+
+      "studio.invoices.package.creditDefinition":
+        "A total of {count} credits",
+
+      "studio.invoices.package.purchaseDetail":
+        "Purchase details",
+
+      "studio.invoices.field.date":
+        "Date",
+
+      "studio.invoices.field.status":
+        "Status",
+
+      "studio.invoices.field.paymentAmount":
+        "Payment Amount",
+
+      "studio.invoices.field.refundAmount":
+        "Refund Amount",
+
+      "studio.invoices.detail.purchase":
+        "The package payment was completed successfully.",
+
+      "studio.invoices.detail.refund":
+        "The transaction was processed as a refund.",
+
+      "studio.invoices.action.openInvoice":
+        "View Invoice",
+
+      "studio.invoices.action.openRefund":
+        "Open Refund Document",
+
+      "studio.invoices.action.documentUnavailable":
+        "Document Not Ready",
+
+      /* =========================
+         INVOICES / RIGHT PANEL
+         ========================= */
+
+      "studio.invoices.panel.title":
+        "My Invoices",
+
+      "studio.invoices.panel.subtitle":
+        "Billing summary and quick access",
+
+      "studio.invoices.panel.meta":
+        "Billing summary",
+
+      "studio.invoices.panel.tips":
+        "Tips",
+
+      "studio.invoices.panel.tip.list":
+        "Invoice details are listed in the main panel.",
+
+      "studio.invoices.panel.tip.records":
+        "Purchase and refund records are shown on the cards in the main area.",
+
+      "studio.invoices.panel.tip.documents":
+        "Documents can be opened and reviewed from the main panel.",
 
       /* =========================
          SUPPORT
