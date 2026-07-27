@@ -26,7 +26,7 @@
       natural:"Doğal",
       emphatic:"Vurgulu",
       voiceAuto:"AIVO, seçilen video süresine göre konuşma temposunu ve metin uyumunu otomatik dengeler.",
-      advancedSub:"İsteğe bağlı: görsel stil, kalite, reklam müziği ve sahne planı."
+      advancedSub:"İsteğe bağlı: reklam müziği ve çıkış kalitesi."
     },
     en:{
       compatible:"Compatible engine",
@@ -39,7 +39,7 @@
       natural:"Natural",
       emphatic:"Emphatic",
       voiceAuto:"AIVO automatically balances narration pace and script fit for the selected video duration.",
-      advancedSub:"Optional: visual style, quality, advertising music and scene plan."
+      advancedSub:"Optional: advertising music and output quality."
     }
   };
 
@@ -204,11 +204,20 @@
 
   function moveMusicToAdvanced(scope){
     var music=scope.querySelector("[data-adfilm-music-source]");
-    var outputBody=scope.querySelector(".adfilm-card--advanced-output .adfilm-advanced-output__body");
-    if(!music||!outputBody)return false;
-    if(music.parentElement!==outputBody)outputBody.appendChild(music);
+    var styleCard=scope.querySelector(".adfilm-card--style,.adfilm-card--advanced-music");
+    if(!music||!styleCard)return false;
+
+    if(!styleCard.classList.contains("adfilm-card--advanced-music")){
+      styleCard.innerHTML="";
+      styleCard.classList.remove("adfilm-card--style");
+      styleCard.classList.add("adfilm-card--advanced-music","adfilm-card--optional");
+      styleCard.setAttribute("data-adfilm-advanced-music","");
+    }
+
+    if(music.parentElement!==styleCard)styleCard.appendChild(music);
     music.classList.remove("adfilm-music-source--voice");
     music.classList.add("adfilm-music-source--advanced");
+
     var voiceCard=scope.querySelector(".adfilm-card--voice");
     if(voiceCard)voiceCard.classList.remove("adfilm-card--voice-has-music");
     return true;
