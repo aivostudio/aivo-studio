@@ -1,6 +1,6 @@
 /* =========================================================
    AIVO — AI REKLAM FILMI / OUTPUT DETAIL CONTROLS
-   User-friendly subtitle animation and advertising SFX options.
+   Clean slider-based subtitle and advertising SFX controls.
    Technical voice processing remains automatic in Basic Mode.
    ========================================================= */
 (function AIVO_AD_FILM_OUTPUT_CONTROLS(){
@@ -13,14 +13,15 @@
     sfxTypes:"aivo_adfilm_sfx_types_v1",
     sfxIntensity:"aivo_adfilm_sfx_intensity_v1"
   };
+  var PACES=["slow","balanced","fast"];
 
   var COPY={
     tr:{
-      subtitleFlow:"Altyazı Akışı",
+      subtitleFlow:"Altyazı Hızı",
       slow:"Yavaş",
       balanced:"Dengeli",
       fast:"Hızlı",
-      subtitleHint:"Yalnız animasyon hızını değiştirir; konuşma senkronu otomatik korunur.",
+      subtitleHint:"Konuşma senkronu otomatik korunur.",
       sfxType:"Efekt Türleri",
       transition:"Geçiş",
       product:"Ürün",
@@ -29,14 +30,14 @@
       low:"Az",
       medium:"Dengeli",
       high:"Güçlü",
-      voiceAuto:"Ses temizleme, EQ, kompresör ve ses yüksekliği AIVO tarafından otomatik ayarlanır."
+      voiceAuto:"Ses temizleme, EQ ve kompresör AIVO tarafından otomatik uygulanır."
     },
     en:{
-      subtitleFlow:"Subtitle Motion",
+      subtitleFlow:"Subtitle Speed",
       slow:"Slow",
       balanced:"Balanced",
       fast:"Fast",
-      subtitleHint:"Only changes the animation pace; speech synchronization stays automatic.",
+      subtitleHint:"Speech synchronization is preserved automatically.",
       sfxType:"Effect Types",
       transition:"Transitions",
       product:"Product",
@@ -45,7 +46,7 @@
       low:"Low",
       medium:"Balanced",
       high:"Strong",
-      voiceAuto:"Voice cleanup, EQ, compression and loudness are adjusted automatically by AIVO."
+      voiceAuto:"Voice cleanup, EQ and compression are applied automatically by AIVO."
     }
   };
 
@@ -72,11 +73,17 @@
     box.className="adfilm-output-detail adfilm-output-detail--subtitle";
     box.setAttribute("data-output-detail","subtitle");
     box.innerHTML=''+
-      '<div class="adfilm-output-detail__title"><b data-output-copy="subtitleFlow">'+t("subtitleFlow")+'</b></div>'+
-      '<div class="adfilm-mini-options" data-subtitle-pace>'+
-        '<button type="button" data-value="slow" data-output-copy="slow">'+t("slow")+'</button>'+
-        '<button type="button" data-value="balanced" data-output-copy="balanced">'+t("balanced")+'</button>'+
-        '<button type="button" data-value="fast" data-output-copy="fast">'+t("fast")+'</button>'+
+      '<div class="adfilm-output-range__head">'+
+        '<b data-output-copy="subtitleFlow">'+t("subtitleFlow")+'</b>'+
+        '<em data-subtitle-pace-label>'+t("balanced")+'</em>'+
+      '</div>'+
+      '<div class="adfilm-output-range">'+
+        '<input type="range" min="0" max="2" step="1" value="1" data-subtitle-pace-range aria-label="Subtitle speed">'+
+        '<div class="adfilm-output-range__marks">'+
+          '<span data-output-copy="slow">'+t("slow")+'</span>'+
+          '<span data-output-copy="balanced">'+t("balanced")+'</span>'+
+          '<span data-output-copy="fast">'+t("fast")+'</span>'+
+        '</div>'+
       '</div>'+
       '<small data-output-copy="subtitleHint">'+t("subtitleHint")+'</small>';
     return box;
@@ -94,9 +101,11 @@
         '<button type="button" data-value="emphasis" data-output-copy="emphasis">'+t("emphasis")+'</button>'+
       '</div>'+
       '<div class="adfilm-sfx-level">'+
-        '<div class="adfilm-sfx-level__head"><b data-output-copy="intensity">'+t("intensity")+'</b><em data-sfx-level-label></em></div>'+
-        '<input type="range" min="0" max="100" step="1" value="50" data-sfx-level aria-label="Sound effect intensity">'+
-        '<div class="adfilm-sfx-level__marks"><span data-output-copy="low">'+t("low")+'</span><span data-output-copy="medium">'+t("medium")+'</span><span data-output-copy="high">'+t("high")+'</span></div>'+
+        '<div class="adfilm-output-range__head"><b data-output-copy="intensity">'+t("intensity")+'</b><em data-sfx-level-label>'+t("medium")+'</em></div>'+
+        '<div class="adfilm-output-range">'+
+          '<input type="range" min="0" max="100" step="1" value="50" data-sfx-level aria-label="Sound effect intensity">'+
+          '<div class="adfilm-output-range__marks"><span data-output-copy="low">'+t("low")+'</span><span data-output-copy="medium">'+t("medium")+'</span><span data-output-copy="high">'+t("high")+'</span></div>'+
+        '</div>'+
       '</div>'+
       '<p class="adfilm-voice-auto-note"><span>✦</span><span data-output-copy="voiceAuto">'+t("voiceAuto")+'</span></p>';
     return box;
@@ -112,6 +121,17 @@
     return value<34?t("low"):value<67?t("medium"):t("high");
   }
 
+  function paceLabel(value){
+    return t(PACES[Math.max(0,Math.min(2,Number(value)||0))]);
+  }
+
+  function paintRange(input){
+    if(!input)return;
+    var min=Number(input.min)||0,max=Number(input.max)||100,value=Number(input.value)||0;
+    var percent=max===min?0:(value-min)/(max-min)*100;
+    input.style.setProperty("--range-fill",percent+"%");
+  }
+
   function syncDisabled(scope){
     var subtitles=scope.querySelector('[data-adfilm-input="subtitles"]');
     var sfx=scope.querySelector('[data-adfilm-input="soundEffects"]');
@@ -123,14 +143,18 @@
 
   function sync(scope){
     var pace=read(KEYS.subtitlePace,"balanced");
-    scope.querySelectorAll("[data-subtitle-pace] button").forEach(function(button){button.classList.toggle("is-selected",button.dataset.value===pace)});
+    var paceIndex=Math.max(0,PACES.indexOf(pace));
+    var paceRange=scope.querySelector("[data-subtitle-pace-range]");
+    if(paceRange){paceRange.value=String(paceIndex);paintRange(paceRange)}
+    var paceValue=scope.querySelector("[data-subtitle-pace-label]");
+    if(paceValue)paceValue.textContent=paceLabel(paceIndex);
 
     var types=selectedTypes();
     scope.querySelectorAll("[data-sfx-types] button").forEach(function(button){button.classList.toggle("is-selected",types.indexOf(button.dataset.value)>=0)});
 
     var level=scope.querySelector("[data-sfx-level]");
     var saved=Number(read(KEYS.sfxIntensity,"50"));
-    if(level)level.value=String(Number.isFinite(saved)?saved:50);
+    if(level){level.value=String(Number.isFinite(saved)?saved:50);paintRange(level)}
     var label=scope.querySelector("[data-sfx-level-label]");
     if(label)label.textContent=levelLabel(saved);
     syncDisabled(scope);
@@ -138,6 +162,9 @@
 
   function translate(scope){
     scope.querySelectorAll("[data-output-copy]").forEach(function(node){node.textContent=t(node.getAttribute("data-output-copy"))});
+    var pace=scope.querySelector("[data-subtitle-pace-range]");
+    var paceValue=scope.querySelector("[data-subtitle-pace-label]");
+    if(paceValue)paceValue.textContent=paceLabel(pace?pace.value:1);
     var level=scope.querySelector("[data-sfx-level]");
     var label=scope.querySelector("[data-sfx-level-label]");
     if(label)label.textContent=levelLabel(level?level.value:50);
@@ -174,31 +201,35 @@
     sfxInput.addEventListener("change",function(){syncDisabled(scope)});
 
     scope.addEventListener("click",function(event){
-      var paceButton=event.target.closest("[data-subtitle-pace] button");
-      if(paceButton){
-        event.preventDefault();
-        write(KEYS.subtitlePace,paceButton.dataset.value);
-        sync(scope);
-        return;
-      }
-
       var typeButton=event.target.closest("[data-sfx-types] button");
-      if(typeButton){
-        event.preventDefault();
-        var types=selectedTypes();
-        var value=typeButton.dataset.value;
-        var index=types.indexOf(value);
-        if(index>=0)types.splice(index,1);else types.push(value);
-        if(!types.length)types=[value];
-        write(KEYS.sfxTypes,types.join(","));
-        sync(scope);
-      }
+      if(!typeButton)return;
+      event.preventDefault();
+      var types=selectedTypes();
+      var value=typeButton.dataset.value;
+      var index=types.indexOf(value);
+      if(index>=0)types.splice(index,1);else types.push(value);
+      if(!types.length)types=[value];
+      write(KEYS.sfxTypes,types.join(","));
+      sync(scope);
     });
+
+    var paceRange=scope.querySelector("[data-subtitle-pace-range]");
+    if(paceRange){
+      paceRange.addEventListener("input",function(){
+        var value=Math.max(0,Math.min(2,Number(paceRange.value)||0));
+        write(KEYS.subtitlePace,PACES[value]);
+        paintRange(paceRange);
+        var label=scope.querySelector("[data-subtitle-pace-label]");
+        if(label)label.textContent=paceLabel(value);
+      });
+      paceRange.addEventListener("change",function(){toast(t("subtitleFlow")+": "+paceLabel(paceRange.value))});
+    }
 
     var level=scope.querySelector("[data-sfx-level]");
     if(level){
       level.addEventListener("input",function(){
         write(KEYS.sfxIntensity,level.value);
+        paintRange(level);
         var label=scope.querySelector("[data-sfx-level-label]");
         if(label)label.textContent=levelLabel(level.value);
       });
