@@ -3,7 +3,6 @@
   const t = window.toast;
   if (!t) return;
 
-  // "kredi/yönlendirme" = warning (kırmızı değil)
   const CREDIT_FLOW_RE =
     /(kredi|yetersiz|satın al|satın\s*alma|kredi\s*al|paket|fiyatlandirma|fiyatlandırma|yönlendir|redirect)/i;
 
@@ -63,7 +62,8 @@
   const scripts = [
     "/js/ad-film.skeleton.js?v=6",
     "/js/ad-film.basic-polish.js?v=2",
-    "/js/ad-film.basic-draft.js?v=2"
+    "/js/ad-film.basic-draft.js?v=2",
+    "/js/ad-film.basic-media-cache.js?v=1"
   ];
 
   function loadSequential(index = 0) {
