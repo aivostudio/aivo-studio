@@ -22,6 +22,36 @@
     catch (_) { return fallback; }
   }
 
+  function i18nText(key, fallback, parameters) {
+    var translated = "";
+
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.t === "function"
+      ) {
+        translated = window.AIVO_STUDIO_I18N.t(key, fallback, parameters);
+        if (translated && translated !== key) return String(translated);
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof window.studioT === "function") {
+        translated = window.studioT(key, fallback, parameters);
+        if (translated && translated !== key) return String(translated);
+      }
+    } catch (_) {}
+
+    try {
+      if (typeof window.t === "function") {
+        translated = window.t(key, parameters);
+        if (translated && translated !== key) return String(translated);
+      }
+    } catch (_) {}
+
+    return String(fallback || key);
+  }
+
   function getPage() {
     return (
       qs('.page[data-page="settings"]') ||
@@ -362,7 +392,10 @@
         exported_at: nowISO(),
         export_version: "aivo-export-v1",
         format: "json",
-        note: "MVP fake export: localStorage + globals snapshot. Backend entegre olunca gerçek export ile değişecek."
+        note: i18nText(
+          "studio.settings.export.metaNote",
+          "MVP ge\u00e7ici d\u0131\u015fa aktar\u0131m: localStorage ve uygulama verilerinin anl\u0131k g\u00f6r\u00fcnt\u00fcs\u00fc. Backend entegre edildi\u011finde ger\u00e7ek d\u0131\u015fa aktar\u0131m ile de\u011fi\u015ftirilecek."
+        )
       },
       user: user,
       data: {
@@ -418,7 +451,12 @@
       return;
     } catch (_) {}
 
-    toastError("Export indirilemedi.");
+    toastError(
+      i18nText(
+        "studio.settings.toast.downloadFailed",
+        "Export indirilemedi."
+      )
+    );
   }
 
   function bind(page) {
@@ -451,7 +489,12 @@
         syncDeleteSubmit(page);
         syncRectificationSubmit(page);
         syncDataExport(page);
-        toastSuccess("Ayarlar kaydedildi");
+        toastSuccess(
+          i18nText(
+            "studio.settings.toast.saved",
+            "Ayarlar kaydedildi"
+          )
+        );
       });
     });
 
@@ -481,7 +524,12 @@
         e.preventDefault();
         syncRectificationSubmit(page);
         if (btn.disabled) return;
-        toastSuccess("Düzeltme talebi alındı");
+        toastSuccess(
+          i18nText(
+            "studio.settings.toast.rectificationReceived",
+            "D\u00fczeltme talebi al\u0131nd\u0131"
+          )
+        );
       });
     });
 
@@ -498,9 +546,19 @@
         try {
           var payload = collectExportPayload();
           downloadJSON(payload, "aivo-export.json");
-          toastSuccess("Export hazır: aivo-export.json indirildi");
+          toastSuccess(
+            i18nText(
+              "studio.settings.toast.exportReady",
+              "Export haz\u0131r: aivo-export.json indirildi"
+            )
+          );
         } catch (_) {
-          toastError("Export oluşturulamadı");
+          toastError(
+            i18nText(
+              "studio.settings.toast.exportFailed",
+              "Export olu\u015fturulamad\u0131"
+            )
+          );
         }
       });
     });
