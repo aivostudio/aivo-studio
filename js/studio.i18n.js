@@ -1619,8 +1619,284 @@
         "Bu PhotoFX klibini silmek istediğinize emin misiniz?",
       "studio.photofx.panel.delete.success":
         "PhotoFX klibi silindi.",
-      "studio.photofx.panel.delete.failed":
+         "studio.photofx.panel.delete.failed":
         "PhotoFX klibi silinemedi.",
+
+      /* =========================
+         VIDEO / FORM
+         ========================= */
+
+      "studio.video.title":
+        "AI Video Üret",
+
+      "studio.video.subtitle":
+        "Yazıdan veya görselden sinematik videolar oluştur.",
+
+      "studio.video.settings.duration":
+        "Süre",
+
+      "studio.video.settings.resolution":
+        "Çözünürlük",
+
+      "studio.video.settings.aspectRatio":
+        "En / Boy Oranı",
+
+      "studio.video.duration.5":
+        "5 Saniye",
+
+      "studio.video.duration.8":
+        "8 Saniye",
+
+      "studio.video.duration.10":
+        "10 Saniye",
+
+      "studio.video.resolution.720":
+        "720p HD",
+
+      "studio.video.resolution.1080":
+        "1080p Full HD",
+
+      "studio.video.ratio.wide":
+        "Geniş (16:9)",
+
+      "studio.video.ratio.vertical":
+        "Dikey (9:16)",
+
+      /* =========================
+         VIDEO / TABS
+         ========================= */
+
+      "studio.video.tab.text":
+        "Yazıdan Video",
+
+      "studio.video.tab.image":
+        "Resimden Video",
+
+      /* =========================
+         VIDEO / TEXT TO VIDEO
+         ========================= */
+
+      "studio.video.text.title":
+        "Video Açıklaması",
+
+      "studio.video.text.maxCharacters":
+        "Maksimum 1000 karakter",
+
+      "studio.video.text.promptTip":
+        "Örn: Gece neon şehir, mor-mavi tonlar, yavaş kamera hareketi, hafif sis, sinematik.",
+
+      "studio.video.text.promptPlaceholder":
+        "Video açıklaması (maksimum 1000 karakter)...",
+
+      /* =========================
+         VIDEO / IMAGE TO VIDEO
+         ========================= */
+
+      "studio.video.image.title":
+        "Resim Yükle",
+
+      "studio.video.image.fileFormats":
+        "PNG / JPG – Maksimum 10 MB",
+
+      "studio.video.image.uploadPrompt":
+        "Resim seç veya sürükleyip bırak",
+
+      "studio.video.image.maxSize":
+        "PNG / JPG • Maksimum 10 MB",
+
+      "studio.video.image.clearAria":
+        "Yüklenen resmi kaldır",
+
+      "studio.video.image.clearTitle":
+        "Resmi kaldır",
+
+      "studio.video.image.promptTip":
+        "Örn: Kamera yaklaşsın, hafif paralaks ve ışık geçişleri olsun.",
+
+      "studio.video.image.promptPlaceholder":
+        "Resim nasıl canlansın? (isteğe bağlı)",
+
+      /* =========================
+         VIDEO / GENERATION
+         ========================= */
+
+      "studio.video.credit.withCount":
+        "{count} Kredi",
+
+      "studio.video.generate":
+        "🎬 Video Oluştur",
+
+      "studio.video.generateWithCredit":
+        "🎬 Video Oluştur ({count} Kredi)",
+
+      "studio.video.generating":
+        "Üretiliyor...",
+
+      /* =========================
+         VIDEO / UPLOAD STATUS
+         ========================= */
+
+      "studio.video.upload.selected":
+        "Seçildi: {name}{size}",
+
+      "studio.video.upload.uploading":
+        "Seçildi: {name}{size} · Yükleniyor...",
+
+      "studio.video.upload.ready":
+        "Seçildi: {name}{size} · Hazır ✓",
+
+      "studio.video.upload.policyBlocked":
+        "Seçildi: {name}{size} · Bu görsel kullanılamaz",
+
+      "studio.video.upload.failed":
+        "Seçildi: {name}{size} · Yükleme hatası",
+
+      "studio.video.status.uploading":
+        "Yükleniyor...",
+
+      "studio.video.status.ready":
+        "Hazır",
+
+      "studio.video.status.uploadFailed":
+        "Yükleme hatası",
+
+      "studio.video.status.imageUnavailable":
+        "Bu görsel kullanılamaz",
+
+      /* =========================
+         VIDEO / TOAST
+         ========================= */
+
+      "studio.video.toast.creditDeducted":
+        "{count} kredi düşüldü.",
+
+      "studio.video.toast.videoPreparing":
+        "Video hazırlanıyor.",
+
+      "studio.video.toast.videoReady":
+        "Video hazır.",
+
+      "studio.video.toast.creditRefunded":
+        "İşlem başarısız oldu, kredi iade edildi.",
+
+      "studio.video.toast.audioEnabled":
+        "Ses üretimi açıldı · +5 kredi",
+
+      "studio.video.toast.audioDisabled":
+        "Ses üretimi kapatıldı · -5 kredi",
+
+      "studio.video.toast.linkCopied":
+        "Link kopyalandı.",
+
+      /* =========================
+         VIDEO / ERRORS
+         ========================= */
+
+      "studio.video.error.promptRequired":
+        "Prompt yazmalısın.",
+
+      "studio.video.error.imageRequired":
+        "Resim seçmelisin.",
+
+      "studio.video.error.imageUploading":
+        "Görsel hâlâ yükleniyor.",
+
+      "studio.video.error.imageUnavailable":
+        "Bu görsel kullanılamaz.",
+
+      "studio.video.error.uploadFailed":
+        "Yükleme hatası.",
+
+      "studio.video.error.generationFailed":
+        "Video oluşturulamadı. Lütfen tekrar deneyin.",
+
+      "studio.video.error.timeout":
+        "Video oluşturma işlemi zaman aşımına uğradı.",
+
+      "studio.video.error.insufficientCredit":
+        "Yetersiz kredi.",
+
+      "studio.video.policy.blocked":
+        "Bu istek bu haliyle üretilemez. Lütfen sanatçı veya siyasi kişi adı kullanmadan video sahnesini ve aksiyonu tarif et.",
+
+      /* =========================
+         VIDEO / RESULTS PANEL
+         ========================= */
+
+      "studio.video.panel.title":
+        "Videolarım",
+
+      "studio.video.panel.searchPlaceholder":
+        "Videolarda ara...",
+
+      "studio.video.panel.empty":
+        "Henüz video yok.",
+
+      "studio.video.panel.noResults":
+        "Aramana uygun video bulunamadı.",
+
+      "studio.video.panel.dbUnavailable":
+        "Video kayıtları yüklenemedi.",
+
+      "studio.video.panel.untitled":
+        "İsimsiz Video",
+
+      "studio.video.panel.imageToVideo":
+        "Resimden Video",
+
+      "studio.video.panel.textToVideo":
+        "Yazıdan Video",
+
+      "studio.video.panel.status.ready":
+        "Hazır",
+
+      "studio.video.panel.status.processing":
+        "İşleniyor",
+
+      "studio.video.panel.status.preparing":
+        "Hazırlanıyor…",
+
+      "studio.video.panel.status.failed":
+        "Hata",
+
+      "studio.video.panel.action.play":
+        "Oynat",
+
+      "studio.video.panel.action.pause":
+        "Duraklat",
+
+      "studio.video.panel.action.download":
+        "Videoyu indir",
+
+      "studio.video.panel.action.share":
+        "Videoyu paylaş",
+
+      "studio.video.panel.action.fullscreen":
+        "Tam ekran aç",
+
+      "studio.video.panel.action.delete":
+        "Videoyu sil",
+
+      "studio.video.panel.action.audioOn":
+        "Sesi aç",
+
+      "studio.video.panel.action.audioOff":
+        "Sesi kapat",
+
+      "studio.video.panel.download.success":
+        "Video indirildi.",
+
+      "studio.video.panel.download.failed":
+        "Video indirilemedi.",
+
+      "studio.video.panel.delete.success":
+        "Video silindi.",
+
+      "studio.video.panel.delete.failed":
+        "Video silinemedi.",
+
+      "studio.video.panel.share.copied":
+        "Video bağlantısı kopyalandı.",
 
       /* =========================
          SUPPORT
@@ -3242,8 +3518,284 @@
         "Are you sure you want to delete this PhotoFX clip?",
       "studio.photofx.panel.delete.success":
         "The PhotoFX clip was deleted.",
-      "studio.photofx.panel.delete.failed":
+         "studio.photofx.panel.delete.failed":
         "The PhotoFX clip could not be deleted.",
+
+      /* =========================
+         VIDEO / FORM
+         ========================= */
+
+      "studio.video.title":
+        "Create AI Video",
+
+      "studio.video.subtitle":
+        "Create cinematic videos from text or images.",
+
+      "studio.video.settings.duration":
+        "Duration",
+
+      "studio.video.settings.resolution":
+        "Resolution",
+
+      "studio.video.settings.aspectRatio":
+        "Aspect Ratio",
+
+      "studio.video.duration.5":
+        "5 Seconds",
+
+      "studio.video.duration.8":
+        "8 Seconds",
+
+      "studio.video.duration.10":
+        "10 Seconds",
+
+      "studio.video.resolution.720":
+        "720p HD",
+
+      "studio.video.resolution.1080":
+        "1080p Full HD",
+
+      "studio.video.ratio.wide":
+        "Widescreen (16:9)",
+
+      "studio.video.ratio.vertical":
+        "Vertical (9:16)",
+
+      /* =========================
+         VIDEO / TABS
+         ========================= */
+
+      "studio.video.tab.text":
+        "Text to Video",
+
+      "studio.video.tab.image":
+        "Image to Video",
+
+      /* =========================
+         VIDEO / TEXT TO VIDEO
+         ========================= */
+
+      "studio.video.text.title":
+        "Video Description",
+
+      "studio.video.text.maxCharacters":
+        "Maximum 1000 characters",
+
+      "studio.video.text.promptTip":
+        "E.g. a neon city at night, purple-blue tones, slow camera movement, light fog and a cinematic atmosphere.",
+
+      "studio.video.text.promptPlaceholder":
+        "Video description (maximum 1000 characters)...",
+
+      /* =========================
+         VIDEO / IMAGE TO VIDEO
+         ========================= */
+
+      "studio.video.image.title":
+        "Upload Image",
+
+      "studio.video.image.fileFormats":
+        "PNG / JPG – Maximum 10 MB",
+
+      "studio.video.image.uploadPrompt":
+        "Select an image or drag and drop it here",
+
+      "studio.video.image.maxSize":
+        "PNG / JPG • Maximum 10 MB",
+
+      "studio.video.image.clearAria":
+        "Remove uploaded image",
+
+      "studio.video.image.clearTitle":
+        "Remove image",
+
+      "studio.video.image.promptTip":
+        "E.g. slowly push the camera in with subtle parallax and light transitions.",
+
+      "studio.video.image.promptPlaceholder":
+        "How should the image be animated? (optional)",
+
+      /* =========================
+         VIDEO / GENERATION
+         ========================= */
+
+      "studio.video.credit.withCount":
+        "{count} Credits",
+
+      "studio.video.generate":
+        "🎬 Create Video",
+
+      "studio.video.generateWithCredit":
+        "🎬 Create Video ({count} Credits)",
+
+      "studio.video.generating":
+        "Generating...",
+
+      /* =========================
+         VIDEO / UPLOAD STATUS
+         ========================= */
+
+      "studio.video.upload.selected":
+        "Selected: {name}{size}",
+
+      "studio.video.upload.uploading":
+        "Selected: {name}{size} · Uploading...",
+
+      "studio.video.upload.ready":
+        "Selected: {name}{size} · Ready ✓",
+
+      "studio.video.upload.policyBlocked":
+        "Selected: {name}{size} · This image cannot be used",
+
+      "studio.video.upload.failed":
+        "Selected: {name}{size} · Upload failed",
+
+      "studio.video.status.uploading":
+        "Uploading...",
+
+      "studio.video.status.ready":
+        "Ready",
+
+      "studio.video.status.uploadFailed":
+        "Upload failed",
+
+      "studio.video.status.imageUnavailable":
+        "This image cannot be used",
+
+      /* =========================
+         VIDEO / TOAST
+         ========================= */
+
+      "studio.video.toast.creditDeducted":
+        "{count} credits deducted.",
+
+      "studio.video.toast.videoPreparing":
+        "Video is being prepared.",
+
+      "studio.video.toast.videoReady":
+        "Video is ready.",
+
+      "studio.video.toast.creditRefunded":
+        "The operation failed and the credits were refunded.",
+
+      "studio.video.toast.audioEnabled":
+        "Audio generation enabled · +5 credits",
+
+      "studio.video.toast.audioDisabled":
+        "Audio generation disabled · -5 credits",
+
+      "studio.video.toast.linkCopied":
+        "Link copied.",
+
+      /* =========================
+         VIDEO / ERRORS
+         ========================= */
+
+      "studio.video.error.promptRequired":
+        "Enter a prompt.",
+
+      "studio.video.error.imageRequired":
+        "Select an image.",
+
+      "studio.video.error.imageUploading":
+        "The image is still uploading.",
+
+      "studio.video.error.imageUnavailable":
+        "This image cannot be used.",
+
+      "studio.video.error.uploadFailed":
+        "Upload failed.",
+
+      "studio.video.error.generationFailed":
+        "The video could not be created. Please try again.",
+
+      "studio.video.error.timeout":
+        "Video generation timed out.",
+
+      "studio.video.error.insufficientCredit":
+        "Insufficient credits.",
+
+      "studio.video.policy.blocked":
+        "This request cannot be generated as written. Describe the video scene and action without using an artist or political figure's name.",
+
+      /* =========================
+         VIDEO / RESULTS PANEL
+         ========================= */
+
+      "studio.video.panel.title":
+        "My Videos",
+
+      "studio.video.panel.searchPlaceholder":
+        "Search videos...",
+
+      "studio.video.panel.empty":
+        "No videos yet.",
+
+      "studio.video.panel.noResults":
+        "No videos match your search.",
+
+      "studio.video.panel.dbUnavailable":
+        "Video records could not be loaded.",
+
+      "studio.video.panel.untitled":
+        "Untitled Video",
+
+      "studio.video.panel.imageToVideo":
+        "Image to Video",
+
+      "studio.video.panel.textToVideo":
+        "Text to Video",
+
+      "studio.video.panel.status.ready":
+        "Ready",
+
+      "studio.video.panel.status.processing":
+        "Processing",
+
+      "studio.video.panel.status.preparing":
+        "Preparing…",
+
+      "studio.video.panel.status.failed":
+        "Failed",
+
+      "studio.video.panel.action.play":
+        "Play",
+
+      "studio.video.panel.action.pause":
+        "Pause",
+
+      "studio.video.panel.action.download":
+        "Download video",
+
+      "studio.video.panel.action.share":
+        "Share video",
+
+      "studio.video.panel.action.fullscreen":
+        "Open fullscreen",
+
+      "studio.video.panel.action.delete":
+        "Delete video",
+
+      "studio.video.panel.action.audioOn":
+        "Turn sound on",
+
+      "studio.video.panel.action.audioOff":
+        "Turn sound off",
+
+      "studio.video.panel.download.success":
+        "The video was downloaded.",
+
+      "studio.video.panel.download.failed":
+        "The video could not be downloaded.",
+
+      "studio.video.panel.delete.success":
+        "The video was deleted.",
+
+      "studio.video.panel.delete.failed":
+        "The video could not be deleted.",
+
+      "studio.video.panel.share.copied":
+        "The video link was copied.",
 
       /* =========================
          SUPPORT
