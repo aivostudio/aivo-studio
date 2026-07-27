@@ -1,0 +1,161 @@
+/* =========================================================
+   AIVO — AI REKLAM FILMI / READABILITY LOCK
+   Improves desktop legibility without materially increasing height.
+   ========================================================= */
+
+.adfilm-page{
+  --af-muted:rgba(232,234,255,.72);
+}
+
+/* Preserve density by tightening containers slightly. */
+.adfilm-card{padding:14px 15px}
+.adfilm-card__head{min-height:40px;gap:10px}
+.adfilm-fields{margin-top:12px;gap:9px}
+.adfilm-upload-grid,.adfilm-style-grid{margin-top:12px}
+.adfilm-setting-block{margin-top:10px}
+.adfilm-toggle-grid{margin-top:11px}
+.adfilm-storyboard{margin-top:12px}
+
+/* Core hierarchy: no essential copy below a comfortable desktop size. */
+.adfilm-card h2{
+  font-size:14px;
+  line-height:1.22;
+}
+.adfilm-card p{
+  margin-top:3px;
+  color:rgba(232,234,255,.62);
+  font-size:10.5px;
+  line-height:1.42;
+}
+.adfilm-card__eyebrow{
+  font-size:9px;
+  line-height:1.15;
+}
+.adfilm-card__required,
+.adfilm-card__counter{
+  font-size:9px;
+  padding:5px 8px;
+}
+
+.adfilm-control>span,
+.adfilm-setting-block>span{
+  color:rgba(248,248,255,.82);
+  font-size:10.5px;
+  line-height:1.25;
+}
+.adfilm-control input,
+.adfilm-control textarea,
+.adfilm-control select{
+  font-size:11.5px;
+  line-height:1.45;
+}
+.adfilm-control input,
+.adfilm-control select{
+  height:39px;
+}
+.adfilm-control textarea{
+  min-height:80px;
+}
+.adfilm-control small{
+  font-size:9px;
+}
+
+/* Upload zones: title stays strong, helper remains readable. */
+.adfilm-upload-zone{
+  min-height:108px;
+  gap:5px;
+  padding:10px;
+}
+.adfilm-upload-zone b{
+  font-size:11px;
+  line-height:1.25;
+}
+.adfilm-upload-zone small{
+  color:rgba(232,234,255,.58);
+  font-size:9.5px;
+  line-height:1.3;
+}
+.adfilm-upload-zone em{
+  font-size:9px;
+}
+.adfilm-media-note{
+  font-size:9.5px;
+  color:rgba(232,234,255,.62);
+}
+
+/* Choice controls. */
+.adfilm-segmented button,
+.adfilm-options button{
+  font-size:10.5px;
+}
+.adfilm-style-grid b{
+  font-size:9.5px;
+  line-height:1.2;
+}
+.adfilm-toggle-grid b{
+  color:rgba(255,255,255,.72);
+  font-size:9.5px;
+  line-height:1.2;
+}
+.adfilm-switch b{
+  font-size:9.5px;
+}
+.adfilm-regenerate{
+  font-size:9.5px;
+}
+
+/* Storyboard descriptions were the least readable section. */
+.adfilm-scene b{
+  font-size:9.5px;
+  line-height:1.2;
+}
+.adfilm-scene p{
+  margin-top:3px;
+  color:rgba(232,234,255,.58);
+  font-size:8.5px;
+  line-height:1.35;
+}
+.adfilm-scene__index{
+  font-size:9px;
+}
+.adfilm-scene__thumb span{
+  font-size:7px;
+}
+
+.adfilm-actionbar__summary b{
+  font-size:11px;
+}
+.adfilm-actionbar__summary small{
+  font-size:9px;
+}
+.adfilm-create{
+  font-size:11px;
+}
+.adfilm-create em{
+  font-size:8px;
+}
+
+/* Higher contrast for placeholders, while keeping them visually secondary. */
+.adfilm-control input::placeholder,
+.adfilm-control textarea::placeholder{
+  color:rgba(229,231,255,.40);
+}
+
+/* Avoid tiny badges becoming illegible. */
+.adfilm-mode__soon{
+  font-size:8px;
+}
+.adfilm-nav-badge{
+  font-size:9px;
+}
+
+/* Compact laptop view: preserve the same hierarchy without wrapping heavily. */
+@media (max-width:1500px){
+  .adfilm-card{padding:13px 14px}
+  .adfilm-card h2{font-size:13.5px}
+  .adfilm-card p{font-size:10px}
+  .adfilm-control>span,.adfilm-setting-block>span{font-size:10px}
+  .adfilm-control input,.adfilm-control textarea,.adfilm-control select{font-size:11px}
+  .adfilm-upload-zone b{font-size:10.5px}
+  .adfilm-upload-zone small{font-size:9px}
+}
