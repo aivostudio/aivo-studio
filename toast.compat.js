@@ -42,3 +42,25 @@
     };
   }
 })();
+
+/* AI Reklam Filmi — geçici masaüstü iskelet varlıkları.
+   Gerçek modül router'a bağlandığında bu yükleyici kaldırılacak. */
+(() => {
+  if (window.__AIVO_AD_FILM_ASSETS__) return;
+  window.__AIVO_AD_FILM_ASSETS__ = true;
+
+  const cssHref = "/css/mod.ad-film.css?v=1";
+  if (!document.querySelector('link[href^="/css/mod.ad-film.css"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = cssHref;
+    document.head.appendChild(link);
+  }
+
+  if (!document.querySelector('script[src^="/js/ad-film.skeleton.js"]')) {
+    const script = document.createElement("script");
+    script.src = "/js/ad-film.skeleton.js?v=1";
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+})();
