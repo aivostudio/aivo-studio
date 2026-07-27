@@ -118,7 +118,7 @@
     workspace.insertBefore(auto,actionbar);
     workspace.insertBefore(details,actionbar);
 
-    details.addEventListener("toggle",function(){try{localStorage.setItem(STORAGE_KEY,details.open?"1":"0")}catch(_){}});
+    details.addEventListener("toggle",function(){try{localStorage.setItem(STORAGE_KEY,details.open?"1":"0")}catch(_){};});
   }
 
   function refreshLanguage(){
@@ -137,4 +137,66 @@
   var observer=new MutationObserver(function(){var scope=root();if(scope&&!scope.__adfilmSimpleModeBound)setTimeout(function(){setup(scope)},40)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setup(root())},{once:true});else setup(root());
+})();
+
+/* Additive product-image picker: selecting again appends instead of replacing. */
+(function AIVO_AD_FILM_APPEND_PRODUCT_IMAGES(){
+  "use strict";
+  if(window.__AIVO_AD_FILM_APPEND_PRODUCT_IMAGES__) return;
+  window.__AIVO_AD_FILM_APPEND_PRODUCT_IMAGES__=true;
+
+  var MAX=6;
+  var previousByInput=new WeakMap();
+  var redispatching=new WeakSet();
+
+  function imageInput(target){return target&&target.closest?target.closest('[data-adfilm-file="productImages"]'):null}
+  function list(input){return input?Array.from(input.files||[]):[]}
+  function id(file){return [file.name||"",file.size||0,file.type||"",file.lastModified||0].join("|")}
+  function toast(message,type){
+    try{
+      var fn=window.toast&&window.toast[type||"info"];
+      if(typeof fn==="function"){fn({message:message,duration:2600});return}
+      if(typeof window.showToast==="function"){window.showToast(message,type||"info");return}
+    }catch(_){}
+  }
+  function setFiles(input,files){
+    var dt=new DataTransfer();
+    files.forEach(function(file){dt.items.add(file)});
+    redispatching.add(input);
+    input.files=dt.files;
+    input.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  function isEnglish(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
+
+  document.addEventListener("click",function(event){
+    var input=imageInput(event.target);
+    if(input)previousByInput.set(input,list(input));
+  },true);
+
+  document.addEventListener("change",function(event){
+    var input=imageInput(event.target);
+    if(!input)return;
+    if(redispatching.has(input)){redispatching.delete(input);return}
+
+    var previous=previousByInput.get(input);
+    if(!previous)return;
+    previousByInput.delete(input);
+
+    var selected=list(input),known=new Set(previous.map(id)),added=[],duplicates=0;
+    selected.forEach(function(file){var key=id(file);if(known.has(key)){duplicates++;return}known.add(key);added.push(file)});
+
+    var room=Math.max(0,MAX-previous.length),accepted=added.slice(0,room),merged=previous.concat(accepted).slice(0,MAX);
+    event.stopImmediatePropagation();
+    setFiles(input,merged);
+
+    if(accepted.length){
+      toast(isEnglish()?(accepted.length+" new image"+(accepted.length>1?"s were":" was")+" added."):(accepted.length+" yeni görsel eklendi."),"success");
+    }
+    if(duplicates){
+      toast(isEnglish()?"Duplicate images were not added again.":"Aynı görsel tekrar eklenmedi.","info");
+    }
+    if(added.length>accepted.length||(!accepted.length&&!duplicates&&previous.length>=MAX)){
+      toast(isEnglish()?"You can add up to 6 product images.":"En fazla 6 ürün görseli ekleyebilirsin.","warning");
+    }
+  },true);
 })();
