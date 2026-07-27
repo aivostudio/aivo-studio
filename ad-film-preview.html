@@ -29,8 +29,6 @@
     .adfilm-preview-actions{display:flex;align-items:center;gap:9px}.adfilm-preview-pill{padding:8px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.28);background:rgba(255,255,255,.04);color:#fff;font-size:11px;font-weight:850;cursor:pointer}
     .adfilm-preview-pill.is-active{background:linear-gradient(120deg,rgba(124,58,237,.7),rgba(236,72,153,.48));border-color:rgba(216,180,254,.38)}
 
-    /* Preview topbar normal document flow'da. Studio'nun sabit topbar için ayırdığı
-       ikinci 72px boşluğu kaldırıp tüm çalışma alanını birlikte yukarı al. */
     #studioRoot.studioShell{
       height:calc(100vh - 68px) !important;
       padding-top:14px !important;
@@ -111,6 +109,7 @@
   <script src="/js/ad-film.basic-polish.js?v=2"></script>
   <script src="/js/ad-film.basic-draft.js?v=2"></script>
   <script src="/js/ad-film.basic-media-cache.js?v=1"></script>
+  <script src="/js/ad-film.language-lock.js?v=1"></script>
   <script>
     (function(){
       function openAdFilm(){
