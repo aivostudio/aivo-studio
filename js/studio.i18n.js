@@ -2658,8 +2658,448 @@
       "studio.invoices.panel.tip.records":
         "Satın alım ve iade kayıtları orta alandaki kartlarda görüntülenir.",
 
-      "studio.invoices.panel.tip.documents":
+          "studio.invoices.panel.tip.documents":
         "Belge açma ve inceleme işlemleri orta panel üzerinden yapılır.",
+
+      /* =========================
+         SETTINGS / PAGE
+         ========================= */
+
+      "studio.settings.title":
+        "Ayarlar",
+
+      "studio.settings.subtitle":
+        "Uygulama tercihlerini ve hesap ayarlarını yönet.",
+
+      "studio.settings.save":
+        "Ayarları Kaydet",
+
+      "studio.settings.categories.label":
+        "Ayar Kategorileri",
+
+      "studio.settings.categories.title":
+        "Ayar Kategorileri",
+
+      "studio.settings.categories.subtitle":
+        "Bir kategori seç ve ayarlarını düzenle.",
+
+      "studio.settings.tab.notifications":
+        "Bildirimler",
+
+      "studio.settings.tab.music":
+        "Müzik",
+
+      "studio.settings.tab.privacy":
+        "Gizlilik",
+
+      "studio.settings.tab.security":
+        "Hesap & Güvenlik",
+
+      "studio.settings.tab.data":
+        "Veri Hakları",
+
+      /* =========================
+         SETTINGS / NOTIFICATIONS
+         ========================= */
+
+      "studio.settings.notifications.title":
+        "Bildirim Ayarları",
+
+      "studio.settings.notifications.subtitle":
+        "Hangi bildirimleri almak istediğini seç.",
+
+      "studio.settings.notifications.email.title":
+        "E-posta Bildirimleri",
+
+      "studio.settings.notifications.email.subtitle":
+        "Önemli olaylarda e-posta al.",
+
+      "studio.settings.notifications.done.title":
+        "Müzik üretimi tamamlandığında",
+
+      "studio.settings.notifications.done.subtitle":
+        "Şarkın hazır olduğunda e-posta al.",
+
+      "studio.settings.notifications.lowCredit.title":
+        "Kredi azaldığında",
+
+      "studio.settings.notifications.lowCredit.subtitle":
+        "Krediniz belirli bir eşiğin altına düştüğünde uyarı al.",
+
+      "studio.settings.notifications.weekly.title":
+        "Haftalık rapor",
+
+      "studio.settings.notifications.weekly.subtitle":
+        "Haftalık aktivite özetini al.",
+
+      "studio.settings.notifications.promos.title":
+        "Promosyonlar ve kampanyalar",
+
+      "studio.settings.notifications.promos.subtitle":
+        "Özel tekliflerden haberdar ol.",
+
+      /* =========================
+         SETTINGS / MUSIC
+         ========================= */
+
+      "studio.settings.music.title":
+        "Müzik Ayarları",
+
+      "studio.settings.music.subtitle":
+        "Çalma ve üretim tercihlerini ayarla.",
+
+      "studio.settings.music.quality.title":
+        "Varsayılan Kalite",
+
+      "studio.settings.music.quality.subtitle":
+        "Üretim ve indirmelerde kullanılacak varsayılan ses kalitesi.",
+
+      "studio.settings.music.quality.low.title":
+        "Düşük",
+
+      "studio.settings.music.quality.low.subtitle":
+        "128 kbps – Daha hızlı üretim, daha az veri",
+
+      "studio.settings.music.quality.high.title":
+        "Yüksek",
+
+      "studio.settings.music.quality.high.subtitle":
+        "256 kbps – Dengeli kalite (önerilen)",
+
+      "studio.settings.music.quality.studio.title":
+        "Studio",
+
+      "studio.settings.music.quality.studio.subtitle":
+        "320 kbps – En yüksek kalite",
+
+      "studio.settings.music.autoplay.title":
+        "Otomatik çalma",
+
+      "studio.settings.music.autoplay.subtitle":
+        "Üretim tamamlandığında müzik otomatik olarak oynatılsın.",
+
+      "studio.settings.music.volume.title":
+        "Varsayılan Ses Seviyesi",
+
+      "studio.settings.music.volume.subtitle":
+        "Player açıldığında başlangıç ses seviyesi.",
+
+      "studio.settings.music.volume.silent":
+        "Sessiz",
+
+      "studio.settings.music.volume.maximum":
+        "Maksimum",
+
+      /* =========================
+         SETTINGS / PRIVACY
+         ========================= */
+
+      "studio.settings.privacy.title":
+        "Gizlilik Ayarları",
+
+      "studio.settings.privacy.subtitle":
+        "Verilerinin nasıl kullanıldığını kontrol et.",
+
+      "studio.settings.privacy.visibility.title":
+        "Profil Görünürlüğü",
+
+      "studio.settings.privacy.visibility.subtitle":
+        "Profilinin kimler tarafından görülebileceğini seç.",
+
+      "studio.settings.privacy.visibility.public.title":
+        "Herkese Açık",
+
+      "studio.settings.privacy.visibility.public.subtitle":
+        "Profilin herkes tarafından görülebilir.",
+
+      "studio.settings.privacy.visibility.private.title":
+        "Özel",
+
+      "studio.settings.privacy.visibility.private.subtitle":
+        "Sadece sen görebilirsin.",
+
+      "studio.settings.privacy.activity.title":
+        "Aktivite paylaşımı",
+
+      "studio.settings.privacy.activity.subtitle":
+        "Üretim aktiviten (başlık/tür) profilinde görünebilir.",
+
+      "studio.settings.privacy.analytics.title":
+        "Anonim veri toplama",
+
+      "studio.settings.privacy.analytics.subtitle":
+        "Uygulamayı geliştirmek için anonim kullanım verileri.",
+
+      /* =========================
+         SETTINGS / SECURITY
+         ========================= */
+
+      "studio.settings.security.title":
+        "Hesap & Güvenlik",
+
+      "studio.settings.security.subtitle":
+        "Oturum süresi ve güvenlik tercihlerini yönet.",
+
+      "studio.settings.security.session.title":
+        "Oturum Süresi",
+
+      "studio.settings.security.session.subtitle":
+        "Belirli bir süre işlem olmazsa otomatik çıkış.",
+
+      "studio.settings.security.timeout.title":
+        "Otomatik çıkış zamanı",
+
+      "studio.settings.security.timeout.subtitle":
+        "MVP: sadece tercih kaydedilir, backend sonra.",
+
+      "studio.settings.security.timeout.off":
+        "Kapalı (Bu cihazda beni hatırla)",
+
+      "studio.settings.security.timeout.15m":
+        "15 dakika",
+
+      "studio.settings.security.timeout.30m":
+        "30 dakika",
+
+      "studio.settings.security.timeout.1h":
+        "1 saat",
+
+      "studio.settings.security.timeout.6h":
+        "6 saat",
+
+      "studio.settings.security.timeout.24h":
+        "24 saat",
+
+      "studio.settings.security.devices.title":
+        "Aktif Cihazlar",
+
+      "studio.settings.security.devices.subtitle":
+        "Hesabının açık olduğu cihazları kontrol et.",
+
+      "studio.settings.security.devices.list.title":
+        "Cihaz listesi",
+
+      "studio.settings.security.devices.list.subtitle":
+        "MVP: Liste backend ile gelecek. Şimdilik bu bölüm bilgilendirme amaçlıdır.",
+
+      "studio.settings.security.comingSoon":
+        "Yakında",
+
+      "studio.settings.security.twoFactor.title":
+        "2 Adımlı Doğrulama (2FA)",
+
+      "studio.settings.security.twoFactor.subtitle":
+        "MVP: iskelet. Kurulum akışı sonra eklenecek.",
+
+      "studio.settings.security.twoFactor.enable.title":
+        "2FA’yı etkinleştir",
+
+      "studio.settings.security.twoFactor.enable.subtitle":
+        "Şimdilik devre dışı (yakında).",
+
+      /* =========================
+         SETTINGS / DATA RIGHTS
+         ========================= */
+
+      "studio.settings.data.title":
+        "Veri Hakları",
+
+      "studio.settings.data.subtitle":
+        "Veri indirme, düzeltme ve silme taleplerini yönet.",
+
+      "studio.settings.data.access.title":
+        "Verilerime Erişim",
+
+      "studio.settings.data.access.subtitle":
+        "Kişisel verilerinin bir kopyasını indir.",
+
+      "studio.settings.data.format.title":
+        "Format",
+
+      "studio.settings.data.format.subtitle":
+        "Şimdilik sadece JSON (ZIP sonra).",
+
+      "studio.settings.data.format.json":
+        "JSON",
+
+      "studio.settings.data.format.zipSoon":
+        "ZIP (yakında)",
+
+      "studio.settings.data.export.note":
+        "MVP: API bağlanınca aktif edilecek.",
+
+      "studio.settings.data.export.download":
+        "Verilerimi İndir",
+
+      "studio.settings.data.rectification.title":
+        "Düzeltme Talebi",
+
+      "studio.settings.data.rectification.subtitle":
+        "Yanlış/eksik verilerin için talep oluştur.",
+
+      "studio.settings.data.rectification.placeholder":
+        "Düzeltme talebini kısaca yaz…",
+
+      "studio.settings.data.rectification.note":
+        "Şimdilik talep alınır ve bilgilendirme toast’ı gösterilir.",
+
+      "studio.settings.data.rectification.submit":
+        "Düzeltme Talebi Gönder",
+
+      "studio.settings.data.delete.title":
+        "Silme Talebi (Unutulma Hakkı)",
+
+      "studio.settings.data.delete.subtitle":
+        "Hesabının ve içeriklerinin silinmesi (ileride).",
+
+      "studio.settings.data.delete.warning":
+        "Uyarı: Bu talep hesabının kapatılmasına ve içeriklerinin kalıcı olarak silinmesine neden olabilir.",
+
+      "studio.settings.data.delete.ack":
+        "“Anladım” onayı (MVP) — silme akışı sonra bağlanacak.",
+
+      "studio.settings.data.delete.submit":
+        "Silme Talebi Gönder",
+
+      /* =========================
+         SETTINGS / DYNAMIC
+         ========================= */
+
+      "studio.settings.toast.saved":
+        "Ayarlar kaydedildi",
+
+      "studio.settings.toast.rectificationReceived":
+        "Düzeltme talebi alındı",
+
+      "studio.settings.toast.exportReady":
+        "Export hazır: aivo-export.json indirildi",
+
+      "studio.settings.toast.exportFailed":
+        "Export oluşturulamadı",
+
+      "studio.settings.toast.downloadFailed":
+        "Export indirilemedi.",
+
+      "studio.settings.export.metaNote":
+        "MVP geçici dışa aktarım: localStorage ve uygulama verilerinin anlık görüntüsü. Backend entegre edildiğinde gerçek dışa aktarım ile değiştirilecek.",
+
+      /* =========================
+         SETTINGS / RIGHT PANEL
+         ========================= */
+
+      "studio.settings.panel.title":
+        "Ayarlar",
+
+      "studio.settings.panel.subtitle":
+        "Bağlamsal yardım ve kısa bilgiler",
+
+      "studio.settings.panel.activeCategory":
+        "Aktif kategori",
+
+      "studio.settings.panel.quickNotes":
+        "Kısa Notlar",
+
+      "studio.settings.panel.helperNote":
+        "Yardımcı Not",
+
+      "studio.settings.panel.panelNote":
+        "Panel Notu",
+
+      "studio.settings.panel.panelNoteText":
+        "Bu alan yalnızca aktif ayar sekmesi için özet ve yardımcı bilgi gösterir.",
+
+      "studio.settings.panel.footer":
+        "Bu sağ panel özet ve yönlendirme alanıdır. Form alanlarının sahibi orta paneldir.",
+
+      "studio.settings.panel.notifications.title":
+        "Bildirimler",
+
+      "studio.settings.panel.notifications.subtitle":
+        "Bildirim tercihleri ve bilgilendirme akışı",
+
+      "studio.settings.panel.notifications.bullet1":
+        "E-posta bildirimleri üretim, kredi ve kampanya akışını kontrol eder.",
+
+      "studio.settings.panel.notifications.bullet2":
+        "Tarayıcı bildirimi tarafı şu an MVP/stub davranışında olabilir.",
+
+      "studio.settings.panel.notifications.bullet3":
+        "Gerçek kayıt işlemi orta paneldeki Ayarları Kaydet aksiyonuyla yapılır.",
+
+      "studio.settings.panel.notifications.hint":
+        "Öncelik: hangi bildirimlerin gerçekten gerekli olduğunu sade tutmak.",
+
+      "studio.settings.panel.music.title":
+        "Müzik",
+
+      "studio.settings.panel.music.subtitle":
+        "Kalite, otomatik çalma ve ses seviyesi tercihleri",
+
+      "studio.settings.panel.music.bullet1":
+        "Varsayılan kalite üretim ve indirme deneyimini etkiler.",
+
+      "studio.settings.panel.music.bullet2":
+        "Otomatik çalma player davranışını açılış sonrası etkiler.",
+
+      "studio.settings.panel.music.bullet3":
+        "Ses seviyesi etiketi range input ile senkron çalışmalıdır.",
+
+      "studio.settings.panel.music.hint":
+        "Öncelik: kalite + autoplay + volume üçlüsünün birlikte tutarlı kalması.",
+
+      "studio.settings.panel.privacy.title":
+        "Gizlilik",
+
+      "studio.settings.panel.privacy.subtitle":
+        "Profil görünürlüğü ve veri paylaşım tercihleri",
+
+      "studio.settings.panel.privacy.bullet1":
+        "Profil görünürlüğü herkese açık veya özel olarak saklanır.",
+
+      "studio.settings.panel.privacy.bullet2":
+        "Aktivite paylaşımı profil üzerinde üretim görünürlüğünü etkiler.",
+
+      "studio.settings.panel.privacy.bullet3":
+        "Anonim veri toplama uygulama geliştirme için ayrı bir tercihtir.",
+
+      "studio.settings.panel.privacy.hint":
+        "Öncelik: görünürlük ve anonim veri tercihlerini birbirine karıştırmamak.",
+
+      "studio.settings.panel.security.title":
+        "Hesap & Güvenlik",
+
+      "studio.settings.panel.security.subtitle":
+        "Oturum süresi ve güvenlik tercihleri",
+
+      "studio.settings.panel.security.bullet1":
+        "Oturum süresi seçimi local state tarafında tutuluyor.",
+
+      "studio.settings.panel.security.bullet2":
+        "2FA alanı şu an hazırlık/stub aşamasında olabilir.",
+
+      "studio.settings.panel.security.bullet3":
+        "Security idle timeout akışı eski owner’dan taşınacak parçalardan biridir.",
+
+      "studio.settings.panel.security.hint":
+        "Öncelik: session timeout davranışını yeni owner yapısında netleştirmek.",
+
+      "studio.settings.panel.data.title":
+        "Veri Hakları",
+
+      "studio.settings.panel.data.subtitle":
+        "Veri indirme, düzeltme ve silme talepleri",
+
+      "studio.settings.panel.data.bullet1":
+        "Veri indirme alanı export formatı seçimiyle birlikte çalışır.",
+
+      "studio.settings.panel.data.bullet2":
+        "Düzeltme talebi textarea içeriği local state içinde tutulur.",
+
+      "studio.settings.panel.data.bullet3":
+        "Silme talebi onayı ayrı bir güvenlik adımı olarak ele alınır.",
+
+      "studio.settings.panel.data.hint":
+        "Öncelik: export / rectification / delete alanlarının pane sınırını bozmamak.",
 
       /* =========================
          SUPPORT
@@ -5320,8 +5760,448 @@
       "studio.invoices.panel.tip.records":
         "Purchase and refund records are shown on the cards in the main area.",
 
-      "studio.invoices.panel.tip.documents":
+         "studio.invoices.panel.tip.documents":
         "Documents can be opened and reviewed from the main panel.",
+
+      /* =========================
+         SETTINGS / PAGE
+         ========================= */
+
+      "studio.settings.title":
+        "Settings",
+
+      "studio.settings.subtitle":
+        "Manage application preferences and account settings.",
+
+      "studio.settings.save":
+        "Save Settings",
+
+      "studio.settings.categories.label":
+        "Settings Categories",
+
+      "studio.settings.categories.title":
+        "Settings Categories",
+
+      "studio.settings.categories.subtitle":
+        "Choose a category and edit its settings.",
+
+      "studio.settings.tab.notifications":
+        "Notifications",
+
+      "studio.settings.tab.music":
+        "Music",
+
+      "studio.settings.tab.privacy":
+        "Privacy",
+
+      "studio.settings.tab.security":
+        "Account & Security",
+
+      "studio.settings.tab.data":
+        "Data Rights",
+
+      /* =========================
+         SETTINGS / NOTIFICATIONS
+         ========================= */
+
+      "studio.settings.notifications.title":
+        "Notification Settings",
+
+      "studio.settings.notifications.subtitle":
+        "Choose which notifications you want to receive.",
+
+      "studio.settings.notifications.email.title":
+        "Email Notifications",
+
+      "studio.settings.notifications.email.subtitle":
+        "Receive emails about important events.",
+
+      "studio.settings.notifications.done.title":
+        "When music generation is complete",
+
+      "studio.settings.notifications.done.subtitle":
+        "Receive an email when your song is ready.",
+
+      "studio.settings.notifications.lowCredit.title":
+        "When credits are low",
+
+      "studio.settings.notifications.lowCredit.subtitle":
+        "Receive an alert when your credits fall below a certain level.",
+
+      "studio.settings.notifications.weekly.title":
+        "Weekly report",
+
+      "studio.settings.notifications.weekly.subtitle":
+        "Receive a weekly activity summary.",
+
+      "studio.settings.notifications.promos.title":
+        "Promotions and campaigns",
+
+      "studio.settings.notifications.promos.subtitle":
+        "Stay informed about special offers.",
+
+      /* =========================
+         SETTINGS / MUSIC
+         ========================= */
+
+      "studio.settings.music.title":
+        "Music Settings",
+
+      "studio.settings.music.subtitle":
+        "Configure playback and generation preferences.",
+
+      "studio.settings.music.quality.title":
+        "Default Quality",
+
+      "studio.settings.music.quality.subtitle":
+        "The default audio quality used for generation and downloads.",
+
+      "studio.settings.music.quality.low.title":
+        "Low",
+
+      "studio.settings.music.quality.low.subtitle":
+        "128 kbps – Faster generation and less data usage",
+
+      "studio.settings.music.quality.high.title":
+        "High",
+
+      "studio.settings.music.quality.high.subtitle":
+        "256 kbps – Balanced quality (recommended)",
+
+      "studio.settings.music.quality.studio.title":
+        "Studio",
+
+      "studio.settings.music.quality.studio.subtitle":
+        "320 kbps – Highest quality",
+
+      "studio.settings.music.autoplay.title":
+        "Autoplay",
+
+      "studio.settings.music.autoplay.subtitle":
+        "Automatically play music when generation is complete.",
+
+      "studio.settings.music.volume.title":
+        "Default Volume",
+
+      "studio.settings.music.volume.subtitle":
+        "The initial volume level when the player opens.",
+
+      "studio.settings.music.volume.silent":
+        "Mute",
+
+      "studio.settings.music.volume.maximum":
+        "Maximum",
+
+      /* =========================
+         SETTINGS / PRIVACY
+         ========================= */
+
+      "studio.settings.privacy.title":
+        "Privacy Settings",
+
+      "studio.settings.privacy.subtitle":
+        "Control how your data is used.",
+
+      "studio.settings.privacy.visibility.title":
+        "Profile Visibility",
+
+      "studio.settings.privacy.visibility.subtitle":
+        "Choose who can view your profile.",
+
+      "studio.settings.privacy.visibility.public.title":
+        "Public",
+
+      "studio.settings.privacy.visibility.public.subtitle":
+        "Your profile can be viewed by anyone.",
+
+      "studio.settings.privacy.visibility.private.title":
+        "Private",
+
+      "studio.settings.privacy.visibility.private.subtitle":
+        "Only you can view your profile.",
+
+      "studio.settings.privacy.activity.title":
+        "Activity sharing",
+
+      "studio.settings.privacy.activity.subtitle":
+        "Your generation activity, including titles and types, may appear on your profile.",
+
+      "studio.settings.privacy.analytics.title":
+        "Anonymous data collection",
+
+      "studio.settings.privacy.analytics.subtitle":
+        "Anonymous usage data used to improve the application.",
+
+      /* =========================
+         SETTINGS / SECURITY
+         ========================= */
+
+      "studio.settings.security.title":
+        "Account & Security",
+
+      "studio.settings.security.subtitle":
+        "Manage session duration and security preferences.",
+
+      "studio.settings.security.session.title":
+        "Session Duration",
+
+      "studio.settings.security.session.subtitle":
+        "Automatically log out after a period of inactivity.",
+
+      "studio.settings.security.timeout.title":
+        "Automatic logout time",
+
+      "studio.settings.security.timeout.subtitle":
+        "MVP: only the preference is saved; backend support will be added later.",
+
+      "studio.settings.security.timeout.off":
+        "Off (Remember me on this device)",
+
+      "studio.settings.security.timeout.15m":
+        "15 minutes",
+
+      "studio.settings.security.timeout.30m":
+        "30 minutes",
+
+      "studio.settings.security.timeout.1h":
+        "1 hour",
+
+      "studio.settings.security.timeout.6h":
+        "6 hours",
+
+      "studio.settings.security.timeout.24h":
+        "24 hours",
+
+      "studio.settings.security.devices.title":
+        "Active Devices",
+
+      "studio.settings.security.devices.subtitle":
+        "Review the devices where your account is signed in.",
+
+      "studio.settings.security.devices.list.title":
+        "Device list",
+
+      "studio.settings.security.devices.list.subtitle":
+        "MVP: the list will be provided by the backend. This section is currently for information only.",
+
+      "studio.settings.security.comingSoon":
+        "Coming Soon",
+
+      "studio.settings.security.twoFactor.title":
+        "Two-Factor Authentication (2FA)",
+
+      "studio.settings.security.twoFactor.subtitle":
+        "MVP framework. The setup flow will be added later.",
+
+      "studio.settings.security.twoFactor.enable.title":
+        "Enable 2FA",
+
+      "studio.settings.security.twoFactor.enable.subtitle":
+        "Currently disabled (coming soon).",
+
+      /* =========================
+         SETTINGS / DATA RIGHTS
+         ========================= */
+
+      "studio.settings.data.title":
+        "Data Rights",
+
+      "studio.settings.data.subtitle":
+        "Manage data download, correction and deletion requests.",
+
+      "studio.settings.data.access.title":
+        "Access My Data",
+
+      "studio.settings.data.access.subtitle":
+        "Download a copy of your personal data.",
+
+      "studio.settings.data.format.title":
+        "Format",
+
+      "studio.settings.data.format.subtitle":
+        "Only JSON is currently available; ZIP support will be added later.",
+
+      "studio.settings.data.format.json":
+        "JSON",
+
+      "studio.settings.data.format.zipSoon":
+        "ZIP (coming soon)",
+
+      "studio.settings.data.export.note":
+        "MVP: this feature will be activated when the API is connected.",
+
+      "studio.settings.data.export.download":
+        "Download My Data",
+
+      "studio.settings.data.rectification.title":
+        "Correction Request",
+
+      "studio.settings.data.rectification.subtitle":
+        "Create a request for incorrect or incomplete data.",
+
+      "studio.settings.data.rectification.placeholder":
+        "Briefly describe your correction request…",
+
+      "studio.settings.data.rectification.note":
+        "The request is currently recorded and an informational notification is displayed.",
+
+      "studio.settings.data.rectification.submit":
+        "Submit Correction Request",
+
+      "studio.settings.data.delete.title":
+        "Deletion Request (Right to Be Forgotten)",
+
+      "studio.settings.data.delete.subtitle":
+        "Request deletion of your account and content in the future.",
+
+      "studio.settings.data.delete.warning":
+        "Warning: This request may close your account and permanently delete your content.",
+
+      "studio.settings.data.delete.ack":
+        "“I understand” confirmation (MVP) — the deletion flow will be connected later.",
+
+      "studio.settings.data.delete.submit":
+        "Submit Deletion Request",
+
+      /* =========================
+         SETTINGS / DYNAMIC
+         ========================= */
+
+      "studio.settings.toast.saved":
+        "Settings saved",
+
+      "studio.settings.toast.rectificationReceived":
+        "Correction request received",
+
+      "studio.settings.toast.exportReady":
+        "Export ready: aivo-export.json downloaded",
+
+      "studio.settings.toast.exportFailed":
+        "The export could not be created",
+
+      "studio.settings.toast.downloadFailed":
+        "The export could not be downloaded.",
+
+      "studio.settings.export.metaNote":
+        "Temporary MVP export: a snapshot of localStorage and application data. This will be replaced by the real export when the backend is integrated.",
+
+      /* =========================
+         SETTINGS / RIGHT PANEL
+         ========================= */
+
+      "studio.settings.panel.title":
+        "Settings",
+
+      "studio.settings.panel.subtitle":
+        "Contextual help and quick information",
+
+      "studio.settings.panel.activeCategory":
+        "Active Category",
+
+      "studio.settings.panel.quickNotes":
+        "Quick Notes",
+
+      "studio.settings.panel.helperNote":
+        "Helpful Note",
+
+      "studio.settings.panel.panelNote":
+        "Panel Note",
+
+      "studio.settings.panel.panelNoteText":
+        "This area only shows a summary and helpful information for the active settings tab.",
+
+      "studio.settings.panel.footer":
+        "This right panel is a summary and guidance area. The form fields belong to the main panel.",
+
+      "studio.settings.panel.notifications.title":
+        "Notifications",
+
+      "studio.settings.panel.notifications.subtitle":
+        "Notification preferences and information flow",
+
+      "studio.settings.panel.notifications.bullet1":
+        "Email notifications control generation, credit and campaign updates.",
+
+      "studio.settings.panel.notifications.bullet2":
+        "Browser notifications may currently use MVP or placeholder behavior.",
+
+      "studio.settings.panel.notifications.bullet3":
+        "Settings are saved using the Save Settings action in the main panel.",
+
+      "studio.settings.panel.notifications.hint":
+        "Priority: keep only the notifications that are genuinely necessary.",
+
+      "studio.settings.panel.music.title":
+        "Music",
+
+      "studio.settings.panel.music.subtitle":
+        "Quality, autoplay and volume preferences",
+
+      "studio.settings.panel.music.bullet1":
+        "Default quality affects the generation and download experience.",
+
+      "studio.settings.panel.music.bullet2":
+        "Autoplay affects player behavior after the page opens.",
+
+      "studio.settings.panel.music.bullet3":
+        "The volume label must remain synchronized with the range input.",
+
+      "studio.settings.panel.music.hint":
+        "Priority: keep quality, autoplay and volume consistent with one another.",
+
+      "studio.settings.panel.privacy.title":
+        "Privacy",
+
+      "studio.settings.panel.privacy.subtitle":
+        "Profile visibility and data-sharing preferences",
+
+      "studio.settings.panel.privacy.bullet1":
+        "Profile visibility is stored as either public or private.",
+
+      "studio.settings.panel.privacy.bullet2":
+        "Activity sharing affects whether generation activity appears on the profile.",
+
+      "studio.settings.panel.privacy.bullet3":
+        "Anonymous data collection is a separate preference used to improve the application.",
+
+      "studio.settings.panel.privacy.hint":
+        "Priority: do not confuse profile visibility with anonymous data preferences.",
+
+      "studio.settings.panel.security.title":
+        "Account & Security",
+
+      "studio.settings.panel.security.subtitle":
+        "Session duration and security preferences",
+
+      "studio.settings.panel.security.bullet1":
+        "The selected session duration is currently stored in local state.",
+
+      "studio.settings.panel.security.bullet2":
+        "The 2FA area may currently be in a preparation or placeholder stage.",
+
+      "studio.settings.panel.security.bullet3":
+        "The security idle-timeout flow is one of the components to be moved from the previous owner structure.",
+
+      "studio.settings.panel.security.hint":
+        "Priority: clarify session-timeout behavior in the new owner structure.",
+
+      "studio.settings.panel.data.title":
+        "Data Rights",
+
+      "studio.settings.panel.data.subtitle":
+        "Data download, correction and deletion requests",
+
+      "studio.settings.panel.data.bullet1":
+        "The data download area works together with the selected export format.",
+
+      "studio.settings.panel.data.bullet2":
+        "The correction-request textarea content is stored in local state.",
+
+      "studio.settings.panel.data.bullet3":
+        "Deletion-request confirmation is handled as a separate security step.",
+
+      "studio.settings.panel.data.hint":
+        "Priority: preserve the pane boundaries for export, correction and deletion areas.",
 
       /* =========================
          SUPPORT
