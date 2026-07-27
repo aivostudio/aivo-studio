@@ -14,6 +14,10 @@ function normEmail(v) {
   return s.includes("@") ? s : "";
 }
 
+function normalizeLanguage(value) {
+  return safeStr(value).toLowerCase().startsWith("en") ? "en" : "tr";
+}
+
 function parseInvoices(raw) {
   if (Array.isArray(raw)) return raw;
 
@@ -29,10 +33,10 @@ function parseInvoices(raw) {
   return [];
 }
 
-function formatDateTR(input) {
+function formatDate(input, lang) {
   try {
     const d = input ? new Date(input) : new Date();
-    return new Intl.DateTimeFormat("tr-TR", {
+    return new Intl.DateTimeFormat(lang === "en" ? "en-US" : "tr-TR", {
       day: "2-digit",
       month: "long",
       year: "numeric",
@@ -43,9 +47,9 @@ function formatDateTR(input) {
   }
 }
 
-function formatMoneyTRY(amount) {
+function formatMoneyTRY(amount, lang) {
   const n = Number(amount || 0);
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat(lang === "en" ? "en-US" : "tr-TR", {
     style: "currency",
     currency: "TRY",
   }).format(n);
@@ -60,16 +64,152 @@ function escapeHtml(s) {
     .replaceAll("'", "&#39;");
 }
 
+function localizeCountry(value, lang) {
+  const raw = safeStr(value);
+  if (lang !== "en") return raw;
+  return /^(t\u00fcrkiye|turkiye)$/i.test(raw) ? "Turkey" : raw;
+}
+
+function localizeItemTitle(value, lang) {
+  const raw = safeStr(value);
+  if (lang !== "en") return raw;
+
+  const creditMatch = raw.match(/^(\d+)\s+Kredilik\s+Paket$/i);
+  if (creditMatch) return `${creditMatch[1]}-Credit Package`;
+  if (/^AIVO\s+Paket$/i.test(raw)) return "AIVO Package";
+  return raw;
+}
+
+const REFUND_COPY = {
+  tr: {
+    documentTitle: "İade Belgesi",
+    brandEyebrow: "Official Refund",
+    brandMeta: "Dijital ürün ve hizmet iade belgesi",
+    badge: "Refunded",
+    numberPrefix: "No:",
+    mainTitle: "İade Belgesi",
+    mainDescription(companyName) {
+      return `Bu belge, ${companyName} tarafından oluşturulmuş resmi iade / geri ödeme kaydıdır. İşlem, iade ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.`;
+    },
+    summaryTitle: "İade Özeti",
+    summaryText(refundDate) {
+      return `${refundDate} tarihinde iade edildi. Bu işlem için geri ödeme durumu tamamlandı ve belge oluşturuldu.`;
+    },
+    refundInfo: "İade Bilgileri",
+    documentNumber: "Belge Numarası",
+    transactionDate: "İşlem Tarihi",
+    refundDate: "İade Tarihi",
+    customer: "Müşteri",
+    fullName: "Ad Soyad",
+    country: "Ülke",
+    email: "E-posta",
+    seller: "Satıcı",
+    brand: "Marka",
+    web: "Web",
+    documentNote: "Belge Notu",
+    documentType: "Belge Türü",
+    documentTypeValue: "İade / geri ödeme belgesi",
+    paymentStatus: "Ödeme Durumu",
+    paymentStatusValue: "İade Edildi",
+    channel: "Kanal",
+    channelValue: "Online ödeme / Stripe iadesi",
+    refundDetail: "İade Detayı",
+    description: "Açıklama",
+    quantity: "Miktar",
+    unitPrice: "Birim Fiyat",
+    amount: "Tutar",
+    itemDescription(creditCount) {
+      return `AIVO dijital üyelik / kredi satın alımına ait iade işlem kalemi. İade edilen kredi: ${creditCount} kredi.`;
+    },
+    subtotal: "Ara Toplam",
+    total: "Toplam",
+    refundedAmount: "İade Edilen Tutar",
+    note(companyName) {
+      return `Bu belge ${companyName} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve iade özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.`;
+    },
+    page: "Sayfa 1 / 1",
+    defaultCountry: "Türkiye",
+    defaultItemTitle: "AIVO Pro",
+  },
+  en: {
+    documentTitle: "Refund Document",
+    brandEyebrow: "Official Refund",
+    brandMeta: "Digital product and service refund document",
+    badge: "Refunded",
+    numberPrefix: "No:",
+    mainTitle: "Refund Document",
+    mainDescription(companyName) {
+      return `This document is the official refund record issued by ${companyName}. Transaction, refund and customer details are presented below in a clear and verifiable format.`;
+    },
+    summaryTitle: "Refund Summary",
+    summaryText(refundDate) {
+      return `Refunded on ${refundDate}. The refund was completed and this document was generated.`;
+    },
+    refundInfo: "Refund Information",
+    documentNumber: "Document Number",
+    transactionDate: "Transaction Date",
+    refundDate: "Refund Date",
+    customer: "Customer",
+    fullName: "Full Name",
+    country: "Country",
+    email: "Email",
+    seller: "Seller",
+    brand: "Brand",
+    web: "Web",
+    documentNote: "Document Note",
+    documentType: "Document Type",
+    documentTypeValue: "Refund document",
+    paymentStatus: "Payment Status",
+    paymentStatusValue: "Refunded",
+    channel: "Channel",
+    channelValue: "Online payment / Stripe refund",
+    refundDetail: "Refund Details",
+    description: "Description",
+    quantity: "Quantity",
+    unitPrice: "Unit Price",
+    amount: "Amount",
+    itemDescription(creditCount) {
+      return `Refund item for an AIVO digital membership / credit purchase. Refunded credits: ${creditCount}.`;
+    },
+    subtotal: "Subtotal",
+    total: "Total",
+    refundedAmount: "Refunded Amount",
+    note(companyName) {
+      return `This document was generated digitally by ${companyName}. Its visual layout, customer information and refund summary are optimized for readability and professional record keeping.`;
+    },
+    page: "Page 1 / 1",
+    defaultCountry: "Turkey",
+    defaultItemTitle: "AIVO Pro",
+  },
+};
+
 function buildRefundHtml(data) {
+  const lang = normalizeLanguage(data.lang);
+  const copy = REFUND_COPY[lang];
   const companyName = safeStr(data.companyName || "AIVO");
-  const companyCountry = safeStr(data.companyCountry || "Türkiye");
+  const companyCountry = localizeCountry(
+    data.companyCountry || copy.defaultCountry,
+    lang
+  );
   const customerName = safeStr(data.customerName || "-");
-  const customerCountry = safeStr(data.customerCountry || "Türkiye");
+  const customerCountry = localizeCountry(
+    data.customerCountry || copy.defaultCountry,
+    lang
+  );
   const email = safeStr(data.email || "-");
   const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
-  const issueDate = formatDateTR(data.issueDate || new Date().toISOString());
-  const refundDate = formatDateTR(data.refundDate || data.issueDate || new Date().toISOString());
-  const itemTitle = safeStr(data.itemTitle || "AIVO Pro");
+  const issueDate = formatDate(
+    data.issueDate || new Date().toISOString(),
+    lang
+  );
+  const refundDate = formatDate(
+    data.refundDate || data.issueDate || new Date().toISOString(),
+    lang
+  );
+  const itemTitle = localizeItemTitle(
+    data.itemTitle || copy.defaultItemTitle,
+    lang
+  );
   const quantity = Number(data.quantity || 1);
 
   const creditCount = Number(
@@ -83,17 +223,17 @@ function buildRefundHtml(data) {
   );
 
   const amountValue = Number(data.amount_try || 0);
-  const unitPrice = formatMoneyTRY(amountValue);
-  const totalPrice = formatMoneyTRY(amountValue);
+  const unitPrice = formatMoneyTRY(amountValue, lang);
+  const totalPrice = formatMoneyTRY(amountValue, lang);
   const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
 
   return `
 <!doctype html>
-<html lang="tr">
+<html lang="${escapeHtml(lang)}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(companyName)} İade Belgesi</title>
+  <title>${escapeHtml(companyName)} ${escapeHtml(copy.documentTitle)}</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -526,126 +666,125 @@ function buildRefundHtml(data) {
           <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)} Logo" />
         </div>
         <div class="brand-copy">
-          <div class="brand-eyebrow">Official Refund</div>
-          <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet iade belgesi</div>
+          <div class="brand-eyebrow">${escapeHtml(copy.brandEyebrow)}</div>
+          <div class="brand-meta">${escapeHtml(ORIGIN)} • ${escapeHtml(copy.brandMeta)}</div>
         </div>
       </div>
 
       <div class="invoice-badge-wrap">
-        <div class="invoice-badge">Refunded</div>
-        <div class="invoice-code">No: ${escapeHtml(invoiceNo)}</div>
+        <div class="invoice-badge">${escapeHtml(copy.badge)}</div>
+        <div class="invoice-code">${escapeHtml(copy.numberPrefix)} ${escapeHtml(invoiceNo)}</div>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-left">
-        <h1 class="invoice-title">İade Belgesi</h1>
+        <h1 class="invoice-title">${escapeHtml(copy.mainTitle)}</h1>
         <p class="invoice-subtitle">
-          Bu belge, ${escapeHtml(companyName)} tarafından oluşturulmuş resmi iade / geri ödeme kaydıdır.
-          İşlem, iade ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.
+          ${escapeHtml(copy.mainDescription(companyName))}
         </p>
       </div>
 
       <div class="hero-panel">
-        <div class="hero-panel-label">İade Özeti</div>
+        <div class="hero-panel-label">${escapeHtml(copy.summaryTitle)}</div>
         <div class="hero-panel-amount">${escapeHtml(totalPrice)}</div>
         <p class="hero-panel-copy">
-          ${escapeHtml(refundDate)} tarihinde iade edildi. Bu işlem için geri ödeme durumu tamamlandı ve belge oluşturuldu.
+          ${escapeHtml(copy.summaryText(refundDate))}
         </p>
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
-        <h2 class="card-title">İade Bilgileri</h2>
+        <h2 class="card-title">${escapeHtml(copy.refundInfo)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Belge Numarası</div>
+            <div class="detail-label">${escapeHtml(copy.documentNumber)}</div>
             <div class="detail-value">${escapeHtml(invoiceNo)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">İşlem Tarihi</div>
+            <div class="detail-label">${escapeHtml(copy.transactionDate)}</div>
             <div class="detail-value">${escapeHtml(issueDate)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">İade Tarihi</div>
+            <div class="detail-label">${escapeHtml(copy.refundDate)}</div>
             <div class="detail-value">${escapeHtml(refundDate)}</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-title">Müşteri</h2>
+        <h2 class="card-title">${escapeHtml(copy.customer)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Ad Soyad</div>
+            <div class="detail-label">${escapeHtml(copy.fullName)}</div>
             <div class="detail-value">${escapeHtml(customerName)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Ülke</div>
+            <div class="detail-label">${escapeHtml(copy.country)}</div>
             <div class="detail-value">${escapeHtml(customerCountry)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">E-posta</div>
+            <div class="detail-label">${escapeHtml(copy.email)}</div>
             <div class="detail-value">${escapeHtml(email)}</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-title">Satıcı</h2>
+        <h2 class="card-title">${escapeHtml(copy.seller)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Marka</div>
+            <div class="detail-label">${escapeHtml(copy.brand)}</div>
             <div class="detail-value">${escapeHtml(companyName)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Ülke</div>
+            <div class="detail-label">${escapeHtml(copy.country)}</div>
             <div class="detail-value">${escapeHtml(companyCountry)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Web</div>
+            <div class="detail-label">${escapeHtml(copy.web)}</div>
             <div class="detail-value">${escapeHtml(ORIGIN)}</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-title">Belge Notu</h2>
+        <h2 class="card-title">${escapeHtml(copy.documentNote)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Belge Türü</div>
-            <div class="detail-value">İade / geri ödeme belgesi</div>
+            <div class="detail-label">${escapeHtml(copy.documentType)}</div>
+            <div class="detail-value">${escapeHtml(copy.documentTypeValue)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Ödeme Durumu</div>
-            <div class="detail-value">İade Edildi</div>
+            <div class="detail-label">${escapeHtml(copy.paymentStatus)}</div>
+            <div class="detail-value">${escapeHtml(copy.paymentStatusValue)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Kanal</div>
-            <div class="detail-value">Online ödeme / Stripe iadesi</div>
+            <div class="detail-label">${escapeHtml(copy.channel)}</div>
+            <div class="detail-value">${escapeHtml(copy.channelValue)}</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">İade Detayı</div>
+    <div class="section-title">${escapeHtml(copy.refundDetail)}</div>
 
     <div class="items-wrap">
       <table class="table">
         <thead>
           <tr>
-            <th>Açıklama</th>
-            <th class="num">Miktar</th>
-            <th class="num">Birim Fiyat</th>
-            <th class="num">Tutar</th>
+            <th>${escapeHtml(copy.description)}</th>
+            <th class="num">${escapeHtml(copy.quantity)}</th>
+            <th class="num">${escapeHtml(copy.unitPrice)}</th>
+            <th class="num">${escapeHtml(copy.amount)}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>
               <div class="item-name">${escapeHtml(itemTitle)}</div>
-              <div class="item-desc">AIVO dijital üyelik / kredi satın alımına ait iade işlem kalemi. İade edilen kredi: ${escapeHtml(String(creditCount))} kredi.</div>
+              <div class="item-desc">${escapeHtml(copy.itemDescription(creditCount))}</div>
             </td>
             <td class="num">${escapeHtml(String(creditCount))}</td>
             <td class="num">${escapeHtml(unitPrice)}</td>
@@ -659,15 +798,15 @@ function buildRefundHtml(data) {
       <div class="totals-card">
         <table class="totals">
           <tr>
-            <td>Ara Toplam</td>
+            <td>${escapeHtml(copy.subtotal)}</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
           <tr>
-            <td>Toplam</td>
+            <td>${escapeHtml(copy.total)}</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
           <tr>
-            <td>İade Edilen Tutar</td>
+            <td>${escapeHtml(copy.refundedAmount)}</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
         </table>
@@ -675,12 +814,12 @@ function buildRefundHtml(data) {
     </div>
 
     <div class="note">
-      Bu belge ${escapeHtml(companyName)} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve iade özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.
+      ${escapeHtml(copy.note(companyName))}
     </div>
 
     <div class="footer">
       <div><strong>${escapeHtml(companyName)}</strong> • ${escapeHtml(ORIGIN)}</div>
-      <div>Sayfa 1 / 1</div>
+      <div>${escapeHtml(copy.page)}</div>
     </div>
   </div>
 </body>
@@ -700,6 +839,7 @@ export default async function handler(req, res) {
 
     const email = normEmail(req.query?.email);
     const id = safeStr(req.query?.id);
+    const lang = normalizeLanguage(req.query?.lang);
 
     if (!email) {
       return res.status(400).json({ ok: false, error: "EMAIL_REQUIRED" });
@@ -786,7 +926,10 @@ export default async function handler(req, res) {
       resolvedCustomerName = safeStr(`${firstName} ${lastName}`);
     } catch (_) {}
 
+    const copy = REFUND_COPY[lang];
+
     const html = buildRefundHtml({
+      lang,
       invoiceNo:
         safeStr(invoice?.refund_no) ||
         safeStr(invoice?.refundNo) ||
@@ -819,14 +962,14 @@ export default async function handler(req, res) {
       customerCountry:
         safeStr(invoice?.customer_country) ||
         safeStr(invoice?.customerCountry) ||
-        "Türkiye",
+        copy.defaultCountry,
       companyName: "AIVO",
-      companyCountry: "Türkiye",
+      companyCountry: copy.defaultCountry,
       itemTitle:
         safeStr(invoice?.item_title) ||
         safeStr(invoice?.title) ||
         safeStr(invoice?.plan) ||
-        "AIVO Pro",
+        copy.defaultItemTitle,
       quantity: Number(invoice?.quantity || 1),
       creditCount:
         invoice?.credit_count != null ? Number(invoice.credit_count) :
