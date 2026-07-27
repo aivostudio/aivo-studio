@@ -51,7 +51,8 @@
     "/css/ad-film.project-sync.css?v=1",
     "/css/ad-film.readability.css?v=1",
     "/css/ad-film.vibrant-actions.css?v=1",
-    "/css/ad-film.storyboard.css?v=1"
+    "/css/ad-film.storyboard.css?v=1",
+    "/css/ad-film.simple-mode.css?v=1"
   ];
 
   styles.forEach((href) => {
@@ -70,6 +71,7 @@
     "/js/ad-film.basic-media-cache.js?v=1",
     "/js/ad-film.language-lock.js?v=1",
     "/js/ad-film.storyboard.js?v=1",
+    "/js/ad-film.simple-mode.js?v=1",
     "/js/ad-film.project-sync.js?v=2"
   ];
 
