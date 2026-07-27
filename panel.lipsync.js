@@ -11,6 +11,58 @@
 
   const safeStr = (v) => String(v == null ? "" : v).trim();
 
+
+  function getLipsyncPanelLanguage() {
+    try {
+      const language = window.AIVO_STUDIO_I18N?.getLanguage?.();
+      if (language) {
+        return String(language).toLowerCase().startsWith("en") ? "en" : "tr";
+      }
+    } catch {}
+
+    const language = String(
+      window.AIVO_LANG || document.documentElement.lang || "tr"
+    ).toLowerCase();
+
+    return language.startsWith("en") ? "en" : "tr";
+  }
+
+  function formatLipsyncPanelText(value, parameters) {
+    let output = String(value == null ? "" : value);
+
+    if (!parameters || typeof parameters !== "object") return output;
+
+    Object.keys(parameters).forEach((key) => {
+      output = output.replace(
+        new RegExp(`\\{${key}\\}`, "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function lipsyncPanelText(key, trText, enText, parameters) {
+    try {
+      const translated = window.AIVO_STUDIO_I18N?.t?.(key, "", parameters);
+      if (translated && translated !== key) {
+        return formatLipsyncPanelText(translated, parameters);
+      }
+    } catch {}
+
+    try {
+      const translated = window.studioT?.(key, "", parameters);
+      if (translated && translated !== key) {
+        return formatLipsyncPanelText(translated, parameters);
+      }
+    } catch {}
+
+    return formatLipsyncPanelText(
+      getLipsyncPanelLanguage() === "en" ? enText : trText,
+      parameters
+    );
+  }
+
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -59,14 +111,35 @@
     const st = norm(job?.db_status || job?.status || job?.state).toUpperCase();
 
     if (st.includes("FAIL") || st.includes("ERROR")) {
-      return { text: "Hata", kind: "bad" };
+      return {
+        text: lipsyncPanelText(
+          "studio.lipsync.panel.status.failed",
+          "Hata",
+          "Failed"
+        ),
+        kind: "bad"
+      };
     }
 
     if (st.includes("READY") || st.includes("DONE") || st.includes("COMPLET") || st.includes("SUCC")) {
-      return { text: "Hazır", kind: "ok" };
+      return {
+        text: lipsyncPanelText(
+          "studio.lipsync.panel.status.ready",
+          "Hazır",
+          "Ready"
+        ),
+        kind: "ok"
+      };
     }
 
-    return { text: "İşleniyor", kind: "mid" };
+    return {
+      text: lipsyncPanelText(
+        "studio.lipsync.panel.status.processing",
+        "İşleniyor",
+        "Processing"
+      ),
+      kind: "mid"
+    };
   }
 
   function pickOutputUrl(o) {
@@ -142,7 +215,15 @@
     );
 
     if (audioName) {
-      return shortTitle("Ses: " + audioName, 46);
+      return shortTitle(
+        lipsyncPanelText(
+          "studio.lipsync.panel.audioTitle",
+          "Ses: {name}",
+          "Audio: {name}",
+          { name: audioName }
+        ),
+        46
+      );
     }
 
     const script = safeStr(
@@ -157,7 +238,11 @@
       return shortTitle(script, 46);
     }
 
-    return "Dudak Senkron Video";
+    return lipsyncPanelText(
+      "studio.lipsync.panel.defaultTitle",
+      "Dudak Senkron Video",
+      "Lip-Sync Video"
+    );
   }
   function createLipsyncPanel(host) {
     let destroyed = false;
@@ -215,7 +300,11 @@
       return `
         <div class="lipsyncFallbackCard" data-job="${esc(jid)}">
           <strong>${esc(badge.text)}</strong>
-          <div>${esc(safeStr(job?.meta?.script || job?.prompt || "Dudak senkron video"))}</div>
+          <div>${esc(safeStr(job?.meta?.script || job?.prompt || lipsyncPanelText(
+            "studio.lipsync.panel.defaultTitle",
+            "Dudak Senkron Video",
+            "Lip-Sync Video"
+          )))}</div>
         </div>
       `;
        }
@@ -228,7 +317,11 @@
       if (!list.length) {
         grid.innerHTML = `
           <div style="opacity:.75;font-size:13px;padding:12px;">
-            Henüz lipsync video yok.
+            ${lipsyncPanelText(
+              "studio.lipsync.panel.empty",
+              "Henüz dudak senkron videosu yok.",
+              "No lip-sync videos yet."
+            )}
           </div>
         `;
         return;
@@ -525,10 +618,22 @@
     if (typeof window.RightPanel.register === "function") {
       window.RightPanel.register("lipsync", {
         header: {
-          title: "AI Dudak Senkron Video",
-          meta: "Hazırlanıyor",
+          title: lipsyncPanelText(
+            "studio.lipsync.panel.title",
+            "Dudak Senkron Videolarım",
+            "My Lip-Sync Videos"
+          ),
+          meta: lipsyncPanelText(
+            "studio.lipsync.panel.meta.preparing",
+            "Hazırlanıyor",
+            "Preparing"
+          ),
           searchEnabled: true,
-          searchPlaceholder: "Dudak senkron videolarda ara...",
+          searchPlaceholder: lipsyncPanelText(
+            "studio.lipsync.panel.searchPlaceholder",
+            "Dudak senkron videolarda ara...",
+            "Search lip-sync videos..."
+          ),
           resetSearch: true,
         },
 
