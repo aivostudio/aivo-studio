@@ -48,7 +48,8 @@
     "/css/ad-film.preview.css?v=1",
     "/css/ad-film.basic-polish.css?v=2",
     "/css/ad-film.basic-draft.css?v=1",
-    "/css/ad-film.project-sync.css?v=1"
+    "/css/ad-film.project-sync.css?v=1",
+    "/css/ad-film.readability.css?v=1"
   ];
 
   styles.forEach((href) => {
