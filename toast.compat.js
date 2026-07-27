@@ -66,6 +66,7 @@
     "/js/ad-film.basic-polish.js?v=2",
     "/js/ad-film.basic-draft.js?v=2",
     "/js/ad-film.basic-media-cache.js?v=1",
+    "/js/ad-film.language-lock.js?v=1",
     "/js/ad-film.project-sync.js?v=1"
   ];
 
