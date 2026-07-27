@@ -6,6 +6,87 @@
 
   var ACTIVE_FILTER = "all";
 
+  function currentLanguage() {
+    var raw = String(
+      window.AIVO_LANG ||
+      document.documentElement.lang ||
+      "tr"
+    ).trim().toLowerCase();
+
+    return raw.indexOf("en") === 0 ? "en" : "tr";
+  }
+
+  function formatFallback(value, parameters) {
+    var output = String(value == null ? "" : value);
+
+    if (!parameters || typeof parameters !== "object") {
+      return output;
+    }
+
+    Object.keys(parameters).forEach(function (key) {
+      output = output.replace(
+        new RegExp("\\{" + key + "\\}", "g"),
+        String(parameters[key])
+      );
+    });
+
+    return output;
+  }
+
+  function invoiceText(key, trFallback, enFallback, parameters) {
+    var fallback = currentLanguage() === "en" ? enFallback : trFallback;
+
+    try {
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.t === "function"
+      ) {
+        var studioTranslated = window.AIVO_STUDIO_I18N.t(
+          key,
+          fallback,
+          parameters
+        );
+
+        if (studioTranslated && studioTranslated !== key) {
+          return studioTranslated;
+        }
+      }
+
+      if (
+        window.AIVO_STUDIO_I18N &&
+        typeof window.AIVO_STUDIO_I18N.translate === "function"
+      ) {
+        var translated = window.AIVO_STUDIO_I18N.translate(
+          key,
+          fallback,
+          parameters
+        );
+
+        if (translated && translated !== key) {
+          return translated;
+        }
+      }
+
+      if (typeof window.studioT === "function") {
+        var studioText = window.studioT(key, fallback, parameters);
+
+        if (studioText && studioText !== key) {
+          return studioText;
+        }
+      }
+
+      if (typeof window.t === "function") {
+        var globalText = window.t(key, parameters);
+
+        if (globalText && globalText !== key) {
+          return globalText;
+        }
+      }
+    } catch (_) {}
+
+    return formatFallback(fallback, parameters);
+  }
+
   function qs(sel, root) {
     try {
       return (root || document).querySelector(sel);
@@ -114,7 +195,11 @@
     nodes.empty.style.display = "";
     text(
       nodes.empty,
-      message || "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek."
+      message || invoiceText(
+        "studio.invoices.empty.default",
+        "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.",
+        "You do not have any invoice records yet. They will appear here after you purchase credits."
+      )
     );
   }
 
@@ -143,11 +228,14 @@
     if (!t) return "-";
 
     try {
-      return new Date(t).toLocaleDateString("tr-TR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      });
+      return new Date(t).toLocaleDateString(
+        currentLanguage() === "en" ? "en-US" : "tr-TR",
+        {
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        }
+      );
     } catch (_) {
       return "-";
     }
@@ -158,11 +246,14 @@
     if (!isFinite(n)) return "";
 
     try {
-      return n.toLocaleString("tr-TR", {
-        style: "currency",
-        currency: "TRY",
-        maximumFractionDigits: 0
-      });
+      return n.toLocaleString(
+        currentLanguage() === "en" ? "en-US" : "tr-TR",
+        {
+          style: "currency",
+          currency: "TRY",
+          maximumFractionDigits: 0
+        }
+      );
     } catch (_) {
       return String(n);
     }
@@ -192,18 +283,41 @@
   }
 
   function mapTypeLabel(inv) {
-    return inferType(inv) === "refund" ? "İade" : "Satın Alım";
+    return inferType(inv) === "refund"
+      ? invoiceText("studio.invoices.type.refund", "İade", "Refund")
+      : invoiceText("studio.invoices.type.purchase", "Satın Alım", "Purchase");
   }
 
   function mapStatusLabel(status) {
     var s = String(status || "").toLowerCase().trim();
 
-    if (s === "paid" || s === "succeeded" || s === "success") return "Ödendi";
-    if (s === "pending" || s === "open" || s === "processing") return "Beklemede";
-    if (s === "ready") return "Hazır";
-    if (s === "refunded" || s === "partial_refund" || s === "partially_refunded") return "İade Edildi";
-    if (s === "failed" || s === "error") return "Başarısız";
-    if (s === "canceled" || s === "cancelled") return "İptal";
+    if (s === "paid" || s === "succeeded" || s === "success") {
+      return invoiceText("studio.invoices.status.paid", "Ödendi", "Paid");
+    }
+
+    if (s === "pending" || s === "open" || s === "processing") {
+      return invoiceText("studio.invoices.status.pending", "Beklemede", "Pending");
+    }
+
+    if (s === "ready") {
+      return invoiceText("studio.invoices.status.ready", "Hazır", "Ready");
+    }
+
+    if (
+      s === "refunded" ||
+      s === "partial_refund" ||
+      s === "partially_refunded"
+    ) {
+      return invoiceText("studio.invoices.status.refunded", "İade Edildi", "Refunded");
+    }
+
+    if (s === "failed" || s === "error") {
+      return invoiceText("studio.invoices.status.failed", "Başarısız", "Failed");
+    }
+
+    if (s === "canceled" || s === "cancelled") {
+      return invoiceText("studio.invoices.status.canceled", "İptal", "Canceled");
+    }
 
     return status ? String(status) : "-";
   }
@@ -214,10 +328,19 @@
     return {
       id: inv.id || inv.order_id || inv.orderId || "",
       type: inferType(inv),
-      title: inv.pack || inv.pack_key || inv.plan || inv.title || "Satın Alım",
+      title:
+        inv.pack ||
+        inv.pack_key ||
+        inv.plan ||
+        inv.title ||
+        invoiceText(
+          "studio.invoices.defaultPurchaseTitle",
+          "Satın Alım",
+          "Purchase"
+        ),
       statusRaw: String(inv.status || "").toLowerCase().trim(),
       status: mapStatusLabel(inv.status || ""),
-          amount:
+      amount:
         inv.amountTRY != null ? inv.amountTRY :
         inv.amount_try != null ? inv.amount_try :
         inv.price != null ? inv.price :
@@ -236,109 +359,192 @@
       pdfUrl: inv.pdf_url || inv.pdfUrl || inv.url || ""
     };
   }
-function rowHtml(rawInv, email) {
-  var inv = normalizeInvoice(rawInv);
-  var typeLabel = mapTypeLabel(inv);
-  var dateText = formatDate(inv.createdAt);
-  var amountText = inv.amount != null ? formatAmount(inv.amount) : "-";
 
-  var creditCount =
-    rawInv && rawInv.credit_count != null ? Number(rawInv.credit_count) :
-    rawInv && rawInv.credits != null ? Number(rawInv.credits) :
-    rawInv && rawInv.credit_amount != null ? Number(rawInv.credit_amount) :
-    rawInv && rawInv.quantity != null ? Number(rawInv.quantity) :
-    null;
+  function rowHtml(rawInv, email) {
+    var inv = normalizeInvoice(rawInv);
+    var typeLabel = mapTypeLabel(inv);
+    var dateText = formatDate(inv.createdAt);
+    var amountText = inv.amount != null ? formatAmount(inv.amount) : "-";
 
-  var packTitle =
-    creditCount && isFinite(creditCount) && creditCount > 0
-      ? String(creditCount) + " Kredilik Paket"
-      : (inv.title || "Kredi Paketi");
+    var creditCount =
+      rawInv && rawInv.credit_count != null ? Number(rawInv.credit_count) :
+      rawInv && rawInv.credits != null ? Number(rawInv.credits) :
+      rawInv && rawInv.credit_amount != null ? Number(rawInv.credit_amount) :
+      rawInv && rawInv.quantity != null ? Number(rawInv.quantity) :
+      null;
 
-  var packSub =
-    creditCount && isFinite(creditCount) && creditCount > 0
-      ? "Toplam " + String(creditCount) + " kredi tanımı"
-      : "Satın alım detayı";
+    var packTitle =
+      creditCount && isFinite(creditCount) && creditCount > 0
+        ? invoiceText(
+            "studio.invoices.package.withCredits",
+            "{count} Kredilik Paket",
+            "{count}-Credit Package",
+            { count: String(creditCount) }
+          )
+        : (
+            inv.title ||
+            invoiceText(
+              "studio.invoices.package.default",
+              "Kredi Paketi",
+              "Credit Package"
+            )
+          );
 
-  var normalizedEmail = normalizeEmail(email);
-  var openBase =
-    inv.type === "refund"
-      ? "/api/invoices/refund-view"
-      : "/api/invoices/view";
+    var packSub =
+      creditCount && isFinite(creditCount) && creditCount > 0
+        ? invoiceText(
+            "studio.invoices.package.creditDefinition",
+            "Toplam {count} kredi tanımı",
+            "A total of {count} credits",
+            { count: String(creditCount) }
+          )
+        : invoiceText(
+            "studio.invoices.package.purchaseDetail",
+            "Satın alım detayı",
+            "Purchase details"
+          );
 
-  var openUrl =
-    (inv.id && normalizedEmail)
-      ? (openBase + "?email=" + encodeURIComponent(normalizedEmail) + "&id=" + encodeURIComponent(inv.id))
-      : "";
+    var normalizedEmail = normalizeEmail(email);
+    var openBase =
+      inv.type === "refund"
+        ? "/api/invoices/refund-view"
+        : "/api/invoices/view";
 
-  var statusClass =
-    inv.type === "refund"
-      ? "inv-badge inv-badge--refund"
-      : (inv.statusRaw === "paid" || inv.statusRaw === "succeeded" || inv.statusRaw === "success")
-        ? "inv-badge inv-badge--ok"
-        : (inv.statusRaw === "failed" || inv.statusRaw === "error")
-          ? "inv-badge inv-badge--bad"
-          : "inv-badge inv-badge--status";
+    var openUrl =
+      (inv.id && normalizedEmail)
+        ? (
+            openBase +
+            "?email=" +
+            encodeURIComponent(normalizedEmail) +
+            "&id=" +
+            encodeURIComponent(inv.id)
+          )
+        : "";
 
-  var typeClass =
-    inv.type === "refund"
-      ? "inv-badge inv-badge--refund"
-      : "inv-badge inv-badge--provider";
+    var statusClass =
+      inv.type === "refund"
+        ? "inv-badge inv-badge--refund"
+        : (
+            inv.statusRaw === "paid" ||
+            inv.statusRaw === "succeeded" ||
+            inv.statusRaw === "success"
+          )
+          ? "inv-badge inv-badge--ok"
+          : (
+              inv.statusRaw === "failed" ||
+              inv.statusRaw === "error"
+            )
+            ? "inv-badge inv-badge--bad"
+            : "inv-badge inv-badge--status";
 
-  var actionLabel =
-    inv.type === "refund"
-      ? "İade Belgesini Aç"
-      : "Faturayı Görüntüle";
+    var typeClass =
+      inv.type === "refund"
+        ? "inv-badge inv-badge--refund"
+        : "inv-badge inv-badge--provider";
 
-  var amountLabel =
-    inv.type === "refund"
-      ? "İade Tutarı"
-      : "Ödeme Tutarı";
+    var actionLabel =
+      inv.type === "refund"
+        ? invoiceText(
+            "studio.invoices.action.openRefund",
+            "İade Belgesini Aç",
+            "Open Refund Document"
+          )
+        : invoiceText(
+            "studio.invoices.action.openInvoice",
+            "Faturayı Görüntüle",
+            "View Invoice"
+          );
 
-  var detailLine =
-    inv.type === "refund"
-      ? "İşlem türü iade olarak işlendi."
-      : "Paket ödemesi başarıyla tamamlandı.";
+    var amountLabel =
+      inv.type === "refund"
+        ? invoiceText(
+            "studio.invoices.field.refundAmount",
+            "İade Tutarı",
+            "Refund Amount"
+          )
+        : invoiceText(
+            "studio.invoices.field.paymentAmount",
+            "Ödeme Tutarı",
+            "Payment Amount"
+          );
 
-  return (
-    '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
+    var detailLine =
+      inv.type === "refund"
+        ? invoiceText(
+            "studio.invoices.detail.refund",
+            "İşlem türü iade olarak işlendi.",
+            "The transaction was processed as a refund."
+          )
+        : invoiceText(
+            "studio.invoices.detail.purchase",
+            "Paket ödemesi başarıyla tamamlandı.",
+            "The package payment was completed successfully."
+          );
 
-      '<div class="inv-head">' +
-        '<div class="inv-head__left">' +
-          '<div class="inv-title">AIVO FATURA KAYDI</div>' +
-          '<div class="inv-id">' + escapeHtml(packTitle) + '</div>' +
-          '<div class="inv-ref">' + escapeHtml(packSub) + '</div>' +
+    var recordTitle = invoiceText(
+      "studio.invoices.recordTitle",
+      "AIVO FATURA KAYDI",
+      "AIVO INVOICE RECORD"
+    );
+
+    var dateLabel = invoiceText(
+      "studio.invoices.field.date",
+      "Tarih",
+      "Date"
+    );
+
+    var statusLabel = invoiceText(
+      "studio.invoices.field.status",
+      "Durum",
+      "Status"
+    );
+
+    var documentUnavailable = invoiceText(
+      "studio.invoices.action.documentUnavailable",
+      "Belge Hazır Değil",
+      "Document Not Ready"
+    );
+
+    return (
+      '<div class="invoice-card" data-invoice-type="' + escapeHtml(inv.type) + '">' +
+
+        '<div class="inv-head">' +
+          '<div class="inv-head__left">' +
+            '<div class="inv-title">' + escapeHtml(recordTitle) + '</div>' +
+            '<div class="inv-id">' + escapeHtml(packTitle) + '</div>' +
+            '<div class="inv-ref">' + escapeHtml(packSub) + '</div>' +
+          '</div>' +
+          '<div class="inv-head__right">' +
+            '<span class="' + escapeHtml(typeClass) + '">' + escapeHtml(typeLabel) + '</span>' +
+          '</div>' +
         '</div>' +
-        '<div class="inv-head__right">' +
-          '<span class="' + escapeHtml(typeClass) + '">' + escapeHtml(typeLabel) + '</span>' +
-        '</div>' +
-      '</div>' +
 
-      '<div class="inv-grid">' +
-        '<div class="inv-item">' +
-          '<span>Tarih</span>' +
-          '<strong>' + escapeHtml(dateText) + '</strong>' +
+        '<div class="inv-grid">' +
+          '<div class="inv-item">' +
+            '<span>' + escapeHtml(dateLabel) + '</span>' +
+            '<strong>' + escapeHtml(dateText) + '</strong>' +
+          '</div>' +
+          '<div class="inv-item">' +
+            '<span>' + escapeHtml(statusLabel) + '</span>' +
+            '<strong><span class="' + escapeHtml(statusClass) + '">' + escapeHtml(inv.status || "-") + '</span></strong>' +
+          '</div>' +
+          '<div class="inv-item">' +
+            '<span>' + escapeHtml(amountLabel) + '</span>' +
+            '<strong>' + escapeHtml(amountText) + '</strong>' +
+          '</div>' +
         '</div>' +
-        '<div class="inv-item">' +
-          '<span>Durum</span>' +
-          '<strong><span class="' + escapeHtml(statusClass) + '">' + escapeHtml(inv.status || "-") + '</span></strong>' +
-        '</div>' +
-        '<div class="inv-item">' +
-          '<span>' + escapeHtml(amountLabel) + '</span>' +
-          '<strong>' + escapeHtml(amountText) + '</strong>' +
-        '</div>' +
-      '</div>' +
 
-      '<div class="inv-ref">' + escapeHtml(detailLine) + '</div>' +
+        '<div class="inv-ref">' + escapeHtml(detailLine) + '</div>' +
 
-      (
-        openUrl
-          ? '<a class="invoice-row__btn invoice-row__btn--primary" href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(actionLabel) + '</a>'
-          : '<button class="invoice-row__btn invoice-row__btn--primary" type="button" disabled>Belge Hazır Değil</button>'
-      ) +
+        (
+          openUrl
+            ? '<a class="invoice-row__btn invoice-row__btn--primary" href="' + escapeHtml(openUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(actionLabel) + '</a>'
+            : '<button class="invoice-row__btn invoice-row__btn--primary" type="button" disabled>' + escapeHtml(documentUnavailable) + '</button>'
+        ) +
 
-    '</div>'
-  );
-}
+      '</div>'
+    );
+  }
 
   function applyFilter(filterKey, root) {
     var nodes = getNodes(root);
@@ -349,13 +555,16 @@ function rowHtml(rawInv, email) {
     ACTIVE_FILTER = key;
 
     nodes.filters.forEach(function (btn) {
-  var btnKey = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
-  var on = (btnKey === key);
+      var btnKey = String(
+        btn.getAttribute("data-invoices-filter") || ""
+      ).trim().toLowerCase();
 
-  btn.classList.toggle("is-active", on);
-  btn.classList.toggle("chip-btn--primary", on);
-  btn.setAttribute("aria-pressed", on ? "true" : "false");
-});
+      var on = btnKey === key;
+
+      btn.classList.toggle("is-active", on);
+      btn.classList.toggle("chip-btn--primary", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
 
     var rows = qsa("[data-invoice-type]", nodes.page);
     if (!rows.length) return;
@@ -363,8 +572,11 @@ function rowHtml(rawInv, email) {
     var visibleCount = 0;
 
     rows.forEach(function (row) {
-      var rowType = String(row.getAttribute("data-invoice-type") || "").trim().toLowerCase();
-      var show = (key === "all") || (rowType === key);
+      var rowType = String(
+        row.getAttribute("data-invoice-type") || ""
+      ).trim().toLowerCase();
+
+      var show = key === "all" || rowType === key;
 
       row.style.display = show ? "" : "none";
       if (show) visibleCount += 1;
@@ -374,7 +586,14 @@ function rowHtml(rawInv, email) {
       if (nodes.empty) {
         nodes.empty.hidden = false;
         nodes.empty.style.display = "";
-        text(nodes.empty, "Bu filtre için gösterilecek fatura bulunamadı.");
+        text(
+          nodes.empty,
+          invoiceText(
+            "studio.invoices.empty.filtered",
+            "Bu filtre için gösterilecek fatura bulunamadı.",
+            "No invoices match this filter."
+          )
+        );
       }
     } else {
       hideEmpty(nodes.page);
@@ -383,6 +602,7 @@ function rowHtml(rawInv, email) {
 
   function bindFilters(root) {
     var nodes = getNodes(root);
+
     if (!nodes.page || nodes.page.__aivoInvoicesFiltersBound) {
       applyFilter(ACTIVE_FILTER || "all", nodes.page || root);
       return;
@@ -394,7 +614,10 @@ function rowHtml(rawInv, email) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
 
-        var key = String(btn.getAttribute("data-invoices-filter") || "").trim().toLowerCase();
+        var key = String(
+          btn.getAttribute("data-invoices-filter") || ""
+        ).trim().toLowerCase();
+
         applyFilter(key || "all", nodes.page);
       });
     });
@@ -404,7 +627,12 @@ function rowHtml(rawInv, email) {
 
   function bindExport(root) {
     var nodes = getNodes(root);
-    if (!nodes.page || !nodes.exportBtn || nodes.exportBtn.__aivoInvoicesExportBound) {
+
+    if (
+      !nodes.page ||
+      !nodes.exportBtn ||
+      nodes.exportBtn.__aivoInvoicesExportBound
+    ) {
       return;
     }
 
@@ -413,26 +641,40 @@ function rowHtml(rawInv, email) {
     nodes.exportBtn.addEventListener("click", async function (e) {
       e.preventDefault();
 
-      var activeKey = String(ACTIVE_FILTER || "all").trim().toLowerCase();
+      var activeKey = String(
+        ACTIVE_FILTER || "all"
+      ).trim().toLowerCase();
+
       var email = await resolveEmail();
+
       if (!email) {
         console.error("[AIVO_INVOICES_EXPORT_FAIL]", "email_missing");
         return;
       }
 
       try {
-        var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
-          method: "GET",
-          credentials: "same-origin",
-          cache: "no-store"
-        });
+        var res = await fetch(
+          "/api/invoices/get?email=" + encodeURIComponent(email),
+          {
+            method: "GET",
+            credentials: "same-origin",
+            cache: "no-store"
+          }
+        );
 
         var json = await res.json().catch(function () { return null; });
+
         if (!res.ok || !json || json.ok !== true) {
-          throw new Error((json && (json.error || json.message)) || "invoices_export_fetch_failed");
+          throw new Error(
+            (json && (json.error || json.message)) ||
+            "invoices_export_fetch_failed"
+          );
         }
 
-        var invoices = Array.isArray(json.invoices) ? json.invoices : [];
+        var invoices = Array.isArray(json.invoices)
+          ? json.invoices
+          : [];
+
         var filtered = invoices.filter(function (inv) {
           var type = inferType(inv);
           return activeKey === "all" || type === activeKey;
@@ -453,15 +695,19 @@ function rowHtml(rawInv, email) {
 
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
+
         a.href = url;
         a.download = "aivo-invoices-" + activeKey + ".json";
         a.rel = "noopener";
+
         document.body.appendChild(a);
         a.click();
         a.remove();
 
         setTimeout(function () {
-          try { URL.revokeObjectURL(url); } catch (_) {}
+          try {
+            URL.revokeObjectURL(url);
+          } catch (_) {}
         }, 500);
       } catch (err) {
         console.error("[AIVO_INVOICES_EXPORT_FAIL]", err);
@@ -470,15 +716,22 @@ function rowHtml(rawInv, email) {
   }
 
   async function fetchInvoices(email) {
-    var res = await fetch("/api/invoices/get?email=" + encodeURIComponent(email), {
-      method: "GET",
-      credentials: "same-origin",
-      cache: "no-store"
-    });
+    var res = await fetch(
+      "/api/invoices/get?email=" + encodeURIComponent(email),
+      {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+      }
+    );
 
     var json = await res.json().catch(function () { return null; });
+
     if (!res.ok || !json || json.ok !== true) {
-      throw new Error((json && (json.error || json.message)) || "invoices_fetch_failed");
+      throw new Error(
+        (json && (json.error || json.message)) ||
+        "invoices_fetch_failed"
+      );
     }
 
     return Array.isArray(json.invoices) ? json.invoices : [];
@@ -492,8 +745,16 @@ function rowHtml(rawInv, email) {
     bindExport(nodes.page);
 
     var email = await resolveEmail();
+
     if (!email) {
-      showEmpty("Faturaları göstermek için oturum bilgisi bulunamadı.", nodes.page);
+      showEmpty(
+        invoiceText(
+          "studio.invoices.empty.sessionMissing",
+          "Faturaları göstermek için oturum bilgisi bulunamadı.",
+          "Session information could not be found to display invoices."
+        ),
+        nodes.page
+      );
       return;
     }
 
@@ -501,7 +762,15 @@ function rowHtml(rawInv, email) {
       var invoices = await fetchInvoices(email);
 
       if (!invoices.length) {
-        showEmpty("Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.", nodes.page);
+        showEmpty(
+          invoiceText(
+            "studio.invoices.empty.default",
+            "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.",
+            "You do not have any invoice records yet. They will appear here after you purchase credits."
+          ),
+          nodes.page
+        );
+
         applyFilter(ACTIVE_FILTER || "all", nodes.page);
         return;
       }
@@ -510,19 +779,38 @@ function rowHtml(rawInv, email) {
 
       var sorted = invoices.slice().sort(function (a, b) {
         return toTime(
-          b.created_at || b.createdAt || b.created || b.date || b.ts || b.time
+          b.created_at ||
+          b.createdAt ||
+          b.created ||
+          b.date ||
+          b.ts ||
+          b.time
         ) - toTime(
-          a.created_at || a.createdAt || a.created || a.date || a.ts || a.time
+          a.created_at ||
+          a.createdAt ||
+          a.created ||
+          a.date ||
+          a.ts ||
+          a.time
         );
       });
 
-    nodes.cards.innerHTML = sorted.map(function (inv) {
-  return rowHtml(inv, email);
-}).join("");
+      nodes.cards.innerHTML = sorted.map(function (inv) {
+        return rowHtml(inv, email);
+      }).join("");
+
       applyFilter(ACTIVE_FILTER || "all", nodes.page);
     } catch (err) {
       console.error("[AIVO_INVOICES_RENDER_FAIL]", err);
-      showEmpty("Faturalar şu an yüklenemedi.", nodes.page);
+
+      showEmpty(
+        invoiceText(
+          "studio.invoices.empty.loadFailed",
+          "Faturalar şu an yüklenemedi.",
+          "Invoices could not be loaded right now."
+        ),
+        nodes.page
+      );
     }
   }
 
@@ -542,8 +830,16 @@ function rowHtml(rawInv, email) {
   function tryInit() {
     var page = getPage();
     if (!page) return false;
+
     bind(page);
     return true;
+  }
+
+  function refreshForLanguageChange() {
+    var page = getPage();
+    if (!page) return;
+
+    renderInvoices(page);
   }
 
   function boot() {
@@ -559,6 +855,21 @@ function rowHtml(rawInv, email) {
         subtree: true
       });
     } catch (_) {}
+
+    document.addEventListener(
+      "aivo:language-change",
+      refreshForLanguageChange
+    );
+
+    window.addEventListener(
+      "aivo:languagechange",
+      refreshForLanguageChange
+    );
+
+    window.addEventListener(
+      "aivo:i18n:changed",
+      refreshForLanguageChange
+    );
   }
 
   if (document.readyState === "loading") {
