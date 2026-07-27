@@ -111,6 +111,18 @@
     };
   }
 
+   function getHeader() {
+    return {
+      title: t(
+        "studio.settings.panel.title",
+        "Ayarlar"
+      ),
+      meta: "",
+      searchEnabled: false,
+      resetSearch: true
+    };
+  }
+
   function renderBody() {
     const model = getTabModel();
 
@@ -161,9 +173,24 @@
     `;
   }
 
-  function mount(host, ctx = {}) {
+  function mount(
+    host,
+    ctx = {},
+    panelApi = {}
+  ) {
     host.innerHTML = "";
     host.appendChild(el(renderBody()));
+
+    function syncHeader() {
+      if (
+        panelApi &&
+        typeof panelApi.setHeader === "function"
+      ) {
+        panelApi.setHeader(
+          getHeader()
+        );
+      }
+    }
 
     function onClick(e) {
       const btn = e.target.closest("[data-act]");
@@ -191,8 +218,11 @@
     }
 
     function onLanguageChanged() {
+      syncHeader();
       rerender();
     }
+
+    syncHeader();
 
     const root = host.firstElementChild;
     root.addEventListener("click", onClick);
@@ -228,5 +258,12 @@
     return;
   }
 
-  window.RightPanel.register(KEY, { mount, destroy });
+  window.RightPanel.register(
+    KEY,
+    {
+      mount,
+      destroy,
+      getHeader
+    }
+  );
 })();
