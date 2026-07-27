@@ -1,0 +1,38 @@
+/* AIVO — AI Reklam Filmi / cloud project sync status */
+.adfilm-page .adfilm-cloud-status{
+  position:absolute;
+  z-index:8;
+  top:24px;
+  right:26px;
+  min-height:34px;
+  max-width:230px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:8px 12px;
+  border:1px solid rgba(150,120,255,.2);
+  border-radius:13px;
+  background:rgba(6,9,25,.72);
+  box-shadow:0 14px 34px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter:blur(14px);
+  pointer-events:none;
+}
+.adfilm-page .adfilm-cloud-status span{
+  width:8px;height:8px;flex:0 0 8px;border-radius:50%;
+  background:#a78bfa;box-shadow:0 0 12px rgba(167,139,250,.72);
+}
+.adfilm-page .adfilm-cloud-status b{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:rgba(244,242,255,.84);font-size:10px;font-weight:800;letter-spacing:.02em;
+}
+.adfilm-page .adfilm-cloud-status.is-saving span,
+.adfilm-page .adfilm-cloud-status.is-uploading span,
+.adfilm-page .adfilm-cloud-status.is-connecting span{animation:adfilm-cloud-pulse 1s ease-in-out infinite}
+.adfilm-page .adfilm-cloud-status.is-saved{border-color:rgba(52,211,153,.2)}
+.adfilm-page .adfilm-cloud-status.is-saved span{background:#34d399;box-shadow:0 0 12px rgba(52,211,153,.72)}
+.adfilm-page .adfilm-cloud-status.is-error{border-color:rgba(251,113,133,.3);background:rgba(49,10,25,.72)}
+.adfilm-page .adfilm-cloud-status.is-error span{background:#fb7185;box-shadow:0 0 12px rgba(251,113,133,.7)}
+.adfilm-page .adfilm-cloud-status.is-offline{border-color:rgba(251,191,36,.25)}
+.adfilm-page .adfilm-cloud-status.is-offline span{background:#fbbf24;box-shadow:0 0 12px rgba(251,191,36,.65)}
+@keyframes adfilm-cloud-pulse{0%,100%{opacity:.45;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media(max-width:1280px){.adfilm-page .adfilm-cloud-status{top:18px;right:18px;max-width:180px}}
