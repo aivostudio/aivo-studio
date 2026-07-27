@@ -1,0 +1,162 @@
+<section class="main-panel adfilm-page" data-module-root data-module="adfilm" aria-labelledby="adfilmTitle">
+  <div class="adfilm-ambient" aria-hidden="true">
+    <span class="adfilm-orb adfilm-orb--violet"></span>
+    <span class="adfilm-orb adfilm-orb--cyan"></span>
+    <span class="adfilm-orb adfilm-orb--rose"></span>
+    <span class="adfilm-grid"></span>
+  </div>
+
+  <header class="adfilm-hero">
+    <div class="adfilm-hero__icon" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M14 25.5h36v23a6 6 0 0 1-6 6H20a6 6 0 0 1-6-6v-23Z" stroke="currentColor" stroke-width="2.8"/>
+        <path d="M13.5 25.5 18 12.8a5 5 0 0 1 6.2-3.1l26.2 8.7-4.3 7.1H13.5Z" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/>
+        <path d="m24 12 5.5 12.5M36.2 16l5.4 9.5M24 37h16M28 45h8" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>
+        <path d="m29 31 10 6-10 6V31Z" fill="currentColor" opacity=".95"/>
+      </svg>
+    </div>
+
+    <div class="adfilm-hero__copy">
+      <div class="adfilm-kicker">
+        <span class="adfilm-live-dot"></span>
+        <span data-adfilm-i18n="kicker">AIVO Creative Engine</span>
+        <span class="adfilm-badge" data-adfilm-i18n="comingSoon">YAKINDA</span>
+      </div>
+      <h1 id="adfilmTitle" data-adfilm-i18n="title">AI Reklam Filmi Oluştur</h1>
+      <p data-adfilm-i18n="subtitle">Ürün görsellerini, seslendirmeyi, müziği ve sahneleri tek akışta birleştirerek kısa reklam filmleri oluştur.</p>
+    </div>
+  </header>
+
+  <div class="adfilm-modebar" role="tablist" aria-label="Reklam filmi modları">
+    <button type="button" class="adfilm-mode is-active" disabled>
+      <span class="adfilm-mode__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="m13 2-8 11h6l-1 9 9-12h-6V2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </span>
+      <span data-adfilm-i18n="modeBasic">Basit Mod</span>
+    </button>
+    <button type="button" class="adfilm-mode" disabled>
+      <span class="adfilm-mode__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><rect x="8" y="3" width="8" height="13" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </span>
+      <span data-adfilm-i18n="modeVoice">Sesli Reklam</span>
+    </button>
+    <button type="button" class="adfilm-mode" disabled>
+      <span class="adfilm-mode__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </span>
+      <span data-adfilm-i18n="modeAvatar">Avatarlı Reklam</span>
+    </button>
+    <button type="button" class="adfilm-mode" disabled>
+      <span class="adfilm-mode__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h8M16 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="16" cy="6" r="2" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="12" r="2" stroke="currentColor" stroke-width="1.8"/><circle cx="14" cy="18" r="2" stroke="currentColor" stroke-width="1.8"/></svg>
+      </span>
+      <span data-adfilm-i18n="modeAdvanced">Gelişmiş Mod</span>
+    </button>
+  </div>
+
+  <div class="adfilm-layout">
+    <div class="adfilm-workspace" aria-hidden="true">
+      <article class="adfilm-card adfilm-card--product">
+        <div class="adfilm-card__head">
+          <span class="adfilm-card__number">01</span>
+          <div>
+            <h2 data-adfilm-i18n="productInfo">Ürün Bilgileri</h2>
+            <p data-adfilm-i18n="productInfoSub">Marka ve kampanya briefini tanımla.</p>
+          </div>
+        </div>
+        <div class="adfilm-field-grid">
+          <span class="adfilm-field"></span><span class="adfilm-field"></span>
+          <span class="adfilm-field adfilm-field--wide"></span>
+        </div>
+      </article>
+
+      <article class="adfilm-card adfilm-card--media">
+        <div class="adfilm-card__head">
+          <span class="adfilm-card__number">02</span>
+          <div>
+            <h2 data-adfilm-i18n="mediaUpload">Medya Yükle</h2>
+            <p data-adfilm-i18n="mediaUploadSub">Ürün, logo ve referanslarını ekle.</p>
+          </div>
+        </div>
+        <div class="adfilm-upload-grid">
+          <span class="adfilm-upload"><i>+</i></span>
+          <span class="adfilm-upload"><i>+</i></span>
+          <span class="adfilm-upload"><i>+</i></span>
+        </div>
+      </article>
+
+      <article class="adfilm-card">
+        <div class="adfilm-card__head">
+          <span class="adfilm-card__number">03</span>
+          <div>
+            <h2 data-adfilm-i18n="voiceNarration">Ses &amp; Anlatım</h2>
+            <p data-adfilm-i18n="voiceNarrationSub">Dil, ses ve dublaj ayarları.</p>
+          </div>
+        </div>
+        <div class="adfilm-chip-row"><span></span><span></span><span></span></div>
+      </article>
+
+      <article class="adfilm-card">
+        <div class="adfilm-card__head">
+          <span class="adfilm-card__number">04</span>
+          <div>
+            <h2 data-adfilm-i18n="presenter">Karakter / Sunucu</h2>
+            <p data-adfilm-i18n="presenterSub">Sunucusuz, avatar veya özel karakter.</p>
+          </div>
+        </div>
+        <div class="adfilm-choice-row"><span class="is-selected"></span><span></span><span></span></div>
+      </article>
+
+      <article class="adfilm-card">
+        <div class="adfilm-card__head">
+          <span class="adfilm-card__number">05</span>
+          <div>
+            <h2 data-adfilm-i18n="videoSettings">Video Ayarları</h2>
+            <p data-adfilm-i18n="videoSettingsSub">Süre, oran, kalite ve altyazı.</p>
+          </div>
+        </div>
+        <div class="adfilm-format-row"><span>9:16</span><span>1:1</span><span>16:9</span><span>4:5</span><span>2K</span></div>
+      </article>
+
+      <article class="adfilm-card">
+        <div class="adfilm-card__head">
+          <span class="adfilm-card__number">06</span>
+          <div>
+            <h2 data-adfilm-i18n="storyboard">Sahne Akışı</h2>
+            <p data-adfilm-i18n="storyboardSub">Reklamın sahne planını ön izle.</p>
+          </div>
+        </div>
+        <div class="adfilm-timeline"><span></span><span></span><span></span></div>
+      </article>
+    </div>
+
+    <div class="adfilm-construction" role="status" aria-live="polite">
+      <div class="adfilm-construction__glass">
+        <div class="adfilm-construction__mark" aria-hidden="true">
+          <svg viewBox="0 0 72 72" fill="none">
+            <path d="M14 55h44" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path d="m20 55 7-31h18l7 31" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M25 33h22M23 43h26" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            <path d="m31 24 5-9 5 9" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M36 8v7" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="adfilm-construction__eyebrow" data-adfilm-i18n="developmentLabel">EXCLUSIVE MODULE / IN DEVELOPMENT</span>
+        <h2 data-adfilm-i18n="developmentTitle">Bu bölüm yapım aşamasındadır</h2>
+        <p data-adfilm-i18n="developmentText">AIVO’nun yeni reklam filmi motorunu hazırlıyoruz. Ürün görselleri, profesyonel seslendirme, müzik, sahneler ve isteğe bağlı konuşan karakter tek bir üretim akışında buluşacak.</p>
+
+        <div class="adfilm-feature-strip">
+          <span><b>01</b><em data-adfilm-i18n="featureProduct">Ürün odaklı sahneler</em></span>
+          <span><b>02</b><em data-adfilm-i18n="featureVoice">Doğal ses &amp; dublaj</em></span>
+          <span><b>03</b><em data-adfilm-i18n="featureAvatar">Konuşan karakter</em></span>
+          <span><b>04</b><em data-adfilm-i18n="feature2k">1080p / 2K çıktı</em></span>
+        </div>
+
+        <button type="button" class="adfilm-disabled-cta" disabled>
+          <span class="adfilm-disabled-cta__pulse"></span>
+          <span data-adfilm-i18n="soonButton">Yakında Kullanıma Açılacak</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
