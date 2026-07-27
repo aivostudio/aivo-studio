@@ -337,6 +337,8 @@
               <a
                 class="rp-btn"
                 href="/fiyatlandirma.html#packs"
+                data-open-pricing="1"
+                data-act="buy-credits"
               >${profileText(
                 "studio.profile.panel.buyCredits",
                 "Kredi Satın Al",
@@ -358,6 +360,27 @@
     root.querySelector('[data-val="email"]').textContent = state.email;
     root.querySelector('[data-val="credits"]').textContent = state.credits;
     root.querySelector('[data-val="spent"]').textContent = state.spentCredits;
+
+    root.addEventListener("click", function (event) {
+      const buyCreditsLink =
+        event.target && event.target.closest
+          ? event.target.closest('[data-act="buy-credits"]')
+          : null;
+
+      if (!buyCreditsLink) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      try {
+        localStorage.setItem(
+          "aivo_return_after_pricing",
+          window.location.pathname + window.location.search + window.location.hash
+        );
+      } catch (_) {}
+
+      window.location.assign("/fiyatlandirma.html#packs");
+    });
 
     return root;
   }
@@ -455,11 +478,6 @@
       rerenderSoon(0);
     }
 
-    const bodyObserver = new MutationObserver(function () {
-      bindProfileObserver();
-      rerenderSoon(0);
-    });
-
     window.addEventListener("storage", onStorage);
     document.addEventListener("click", onDocumentClick, true);
     document.addEventListener("aivo:profile-saved", onProfileSaved);
@@ -467,13 +485,6 @@
     window.addEventListener("hashchange", onRouteOrDomChange);
     window.addEventListener("aivo:languagechange", onLanguageChange);
     window.addEventListener("aivo:i18n:changed", onLanguageChange);
-
-    bodyObserver.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ["data-active-page", "class", "style"]
-    });
 
     render(host, ctx);
     bindProfileObserver();
@@ -497,7 +508,6 @@
         profileObserver = null;
       }
 
-      bodyObserver.disconnect();
     };
 
     return function unmount() {
