@@ -151,12 +151,6 @@ export default async function handler(req, res) {
       Bucket: bucket,
       Key: key,
       ContentType: contentType,
-      CacheControl: "private, max-age=0, no-cache",
-      Metadata: {
-        projectid: projectId.slice(0, 64),
-        owner: user.ownerHash,
-        mediakind: kind,
-      },
     });
 
     const uploadUrl = await getSignedUrl(client, command, { expiresIn: 10 * 60 });
