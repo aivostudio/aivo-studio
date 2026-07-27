@@ -51,7 +51,22 @@ html[lang^="en"] .is-simplified-basic .adfilm-card--advanced-output .adfilm-card
 .adfilm-card--voice-has-music .adfilm-fields--compact{align-content:start}
 .adfilm-card--voice-has-music .adfilm-script-control textarea{min-height:112px;max-height:190px}
 .adfilm-card--voice-has-music .adfilm-music-source{margin-top:16px}
+
+.adfilm-card--voice-tuned{display:flex;flex-direction:column;min-height:100%}
+.adfilm-card--voice-tuned .adfilm-fields--compact{align-content:start}
+.adfilm-voice-tuning{display:grid;gap:10px;margin-top:14px;padding:13px;border:1px solid rgba(168,85,247,.14);border-radius:15px;background:linear-gradient(145deg,rgba(124,58,237,.055),rgba(255,255,255,.018))}
+.adfilm-voice-tuning__row{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:center;gap:10px}
+.adfilm-voice-tuning__row>b{color:rgba(245,246,255,.76);font-size:9.5px;font-weight:850}
+.adfilm-voice-tuning__options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.adfilm-voice-tuning__options button{min-height:35px;padding:6px 8px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(5,8,22,.55);color:rgba(238,240,255,.56);font-size:9px;font-weight:850;cursor:pointer;transition:.18s ease}
+.adfilm-voice-tuning__options button:hover{color:#fff;border-color:rgba(216,180,254,.28);background:rgba(124,58,237,.08)}
+.adfilm-voice-tuning__options button.is-selected{color:#fff;border-color:rgba(238,205,255,.4);background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 50%,#ef5fb4 100%);box-shadow:0 9px 20px rgba(124,77,255,.18),inset 0 1px 0 rgba(255,255,255,.16)}
+.adfilm-voice-tuning__note{display:flex;align-items:flex-start;gap:7px;margin:1px 0 0;padding-top:9px;border-top:1px solid rgba(255,255,255,.06);color:rgba(226,255,246,.54)!important;font-size:8.5px!important;line-height:1.45!important}
+.adfilm-voice-tuning__note>span:first-child{color:#67e8f9;font-size:11px}
+
 .adfilm-music-source{padding:14px;border:1px solid rgba(168,85,247,.16);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.07),rgba(236,72,153,.035))}
+.adfilm-music-source--advanced{grid-column:1/-1;margin-top:14px}
+.adfilm-card--advanced-output .adfilm-music-source--advanced{margin-bottom:0}
 .adfilm-music-source__head{display:flex;align-items:center;gap:10px}.adfilm-music-source__icon{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:11px;color:#e9d5ff;background:rgba(124,58,237,.13);border:1px solid rgba(168,85,247,.18)}.adfilm-music-source__icon svg{width:19px;height:19px}.adfilm-music-source__head b{display:block;font-size:11px}.adfilm-music-source__head small{display:block;margin-top:3px;color:rgba(229,231,255,.55);font-size:9px}
 .adfilm-music-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.adfilm-music-options button{min-height:42px;padding:8px 10px;border:1px solid rgba(255,255,255,.09);border-radius:12px;color:rgba(245,245,255,.68);background:rgba(7,9,24,.7);font-size:9.5px;font-weight:800;line-height:1.25;cursor:pointer}.adfilm-music-options button:hover{border-color:rgba(216,180,254,.28);color:#fff}.adfilm-music-options button.is-selected{color:#fff;border-color:rgba(238,205,255,.42);background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 48%,#ef5fb4 100%);box-shadow:0 10px 22px rgba(124,77,255,.2),inset 0 1px 0 rgba(255,255,255,.18)}
 .adfilm-custom-music{margin-top:12px}.adfilm-custom-music[hidden]{display:none!important}.adfilm-custom-music__picker{display:flex;align-items:center;gap:11px;min-height:62px;padding:11px 12px;border:1px dashed rgba(216,180,254,.28);border-radius:14px;background:rgba(8,10,26,.6);cursor:pointer}.adfilm-custom-music__picker:hover{border-color:rgba(239,95,180,.48);background:rgba(124,58,237,.07)}.adfilm-custom-music__picker input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.adfilm-custom-music__picker-icon,.adfilm-custom-music__file-icon{width:36px;height:36px;display:grid;place-items:center;flex:0 0 36px;border-radius:10px;color:#f5d0fe;background:rgba(124,58,237,.13);border:1px solid rgba(168,85,247,.18)}.adfilm-custom-music__picker-icon svg,.adfilm-custom-music__file-icon svg{width:19px;height:19px}.adfilm-custom-music__picker b{display:block;font-size:10px}.adfilm-custom-music__picker small{display:block;margin-top:3px;color:rgba(229,231,255,.52);font-size:8.5px}
@@ -66,6 +81,8 @@ html[lang^="en"] .is-simplified-basic .adfilm-card--advanced-output .adfilm-card
   .adfilm-music-options button{font-size:9px}
   .adfilm-card--voice-has-music .adfilm-script-control textarea{min-height:96px;max-height:150px}
   .adfilm-duration-tag{display:none}
+  .adfilm-voice-tuning__row{grid-template-columns:64px minmax(0,1fr)}
+  .adfilm-voice-tuning__options button{font-size:8.5px;padding-left:5px;padding-right:5px}
 }
 @media(max-width:1120px){
   .is-simplified-basic .adfilm-card--media,.is-simplified-basic .adfilm-card--voice{grid-column:1/-1}
