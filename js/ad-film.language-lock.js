@@ -18,9 +18,16 @@
   }
 
   function loadOutputControls(){
+    if(!document.querySelector('link[data-adfilm-output-controls-css]')){
+      var link=document.createElement("link");
+      link.rel="stylesheet";
+      link.href="/css/ad-film.output-controls.css?v=2";
+      link.setAttribute("data-adfilm-output-controls-css","");
+      document.head.appendChild(link);
+    }
     if(window.__AIVO_AD_FILM_OUTPUT_CONTROLS__||document.querySelector('script[data-adfilm-output-controls]')) return;
     var script=document.createElement("script");
-    script.src="/js/ad-film.output-controls.js?v=1";
+    script.src="/js/ad-film.output-controls.js?v=2";
     script.async=false;
     script.setAttribute("data-adfilm-output-controls","");
     document.head.appendChild(script);
