@@ -63,6 +63,18 @@
     );
   }
 
+  function showLipsyncPanelToast(type, message) {
+    try {
+      const api = window.toast;
+      if (!api || !message) return;
+
+      if (type === "success" && api.success) return api.success(message);
+      if (type === "error" && api.error) return api.error(message);
+      if (type === "info" && api.info) return api.info(message);
+      if (api.show) return api.show(message);
+    } catch {}
+  }
+
   const esc = (s) =>
     String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -414,8 +426,25 @@
           setTimeout(() => {
             URL.revokeObjectURL(objectUrl);
           }, 1000);
+
+          showLipsyncPanelToast(
+            "success",
+            lipsyncPanelText(
+              "studio.lipsync.panel.download.success",
+              "Dudak senkron videosu indirildi.",
+              "The lip-sync video was downloaded."
+            )
+          );
         } catch (err) {
           console.error("[LIPSYNC PANEL] download failed", err);
+          showLipsyncPanelToast(
+            "error",
+            lipsyncPanelText(
+              "studio.lipsync.panel.download.failed",
+              "Dudak senkron videosu indirilemedi.",
+              "The lip-sync video could not be downloaded."
+            )
+          );
           window.open(cleanUrl, "_blank", "noopener");
         }
 
@@ -427,7 +456,18 @@
         if (navigator.share) {
           navigator.share({ url: videoRaw }).catch(() => {});
         } else {
-          navigator.clipboard?.writeText(videoRaw).catch(() => {});
+          navigator.clipboard?.writeText(videoRaw)
+            .then(() => {
+              showLipsyncPanelToast(
+                "success",
+                lipsyncPanelText(
+                  "studio.lipsync.panel.share.copied",
+                  "Dudak senkron video bağlantısı kopyalandı.",
+                  "The lip-sync video link was copied."
+                )
+              );
+            })
+            .catch(() => {});
         }
         return;
       }
@@ -437,10 +477,42 @@
         currentDbItems = currentDbItems.filter((x) => idOf(x) !== id);
         render(currentDbItems);
 
-        const ok = await deleteJob(id);
-        if (!ok) {
+        try {
+          const ok = await deleteJob(id);
+
+          if (!ok) {
+            hiddenDeletedIds.delete(id);
+            controller?.hydrate?.(true);
+            showLipsyncPanelToast(
+              "error",
+              lipsyncPanelText(
+                "studio.lipsync.panel.delete.failed",
+                "Dudak senkron videosu silinemedi.",
+                "The lip-sync video could not be deleted."
+              )
+            );
+            return;
+          }
+
+          showLipsyncPanelToast(
+            "success",
+            lipsyncPanelText(
+              "studio.lipsync.panel.delete.success",
+              "Dudak senkron videosu silindi.",
+              "The lip-sync video was deleted."
+            )
+          );
+        } catch (err) {
           hiddenDeletedIds.delete(id);
           controller?.hydrate?.(true);
+          showLipsyncPanelToast(
+            "error",
+            lipsyncPanelText(
+              "studio.lipsync.panel.delete.failed",
+              "Dudak senkron videosu silinemedi.",
+              "The lip-sync video could not be deleted."
+            )
+          );
         }
 
         return;
