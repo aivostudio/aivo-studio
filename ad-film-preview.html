@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="/css/ad-film.readability.css?v=1">
   <link rel="stylesheet" href="/css/ad-film.vibrant-actions.css?v=1">
   <link rel="stylesheet" href="/css/ad-film.storyboard.css?v=1">
-  <link rel="stylesheet" href="/css/ad-film.simple-mode.css?v=1">
+  <link rel="stylesheet" href="/css/ad-film.simple-mode.css?v=2">
 
   <style>
     html,body{margin:0;min-height:100%;background:#070914;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -32,26 +32,10 @@
     .adfilm-preview-actions{display:flex;align-items:center;gap:9px}.adfilm-preview-pill{padding:8px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.28);background:rgba(255,255,255,.04);color:#fff;font-size:11px;font-weight:850;cursor:pointer}
     .adfilm-preview-pill.is-active{background:linear-gradient(120deg,rgba(124,58,237,.7),rgba(236,72,153,.48));border-color:rgba(216,180,254,.38)}
 
-    #studioRoot.studioShell{
-      height:calc(100vh - 68px) !important;
-      padding-top:14px !important;
-      padding-bottom:14px !important;
-    }
-    #leftMenu.studioNav{
-      top:82px !important;
-      height:100% !important;
-    }
-    #mainWorkspace.studioMain{
-      height:100% !important;
-      padding-top:0 !important;
-      overflow:hidden;
-    }
-    #twoPanelWrap,
-    #studioRoot .studioTwoPanel{
-      height:100% !important;
-      padding-top:0 !important;
-      padding-bottom:0 !important;
-    }
+    #studioRoot.studioShell{height:calc(100vh - 68px) !important;padding-top:14px !important;padding-bottom:14px !important}
+    #leftMenu.studioNav{top:82px !important;height:100% !important}
+    #mainWorkspace.studioMain{height:100% !important;padding-top:0 !important;overflow:hidden}
+    #twoPanelWrap,#studioRoot .studioTwoPanel{height:100% !important;padding-top:0 !important;padding-bottom:0 !important}
     .studioMotor,.studioOutputs{height:100%;overflow:auto}
     .preview-note{font-size:10px;color:rgba(255,255,255,.48);padding:0 8px 12px;line-height:1.45}
     @media(max-width:1100px){.adfilm-preview-center{display:none}}
@@ -114,23 +98,14 @@
   <script src="/js/ad-film.basic-media-cache.js?v=1"></script>
   <script src="/js/ad-film.language-lock.js?v=1"></script>
   <script src="/js/ad-film.storyboard.js?v=1"></script>
-  <script src="/js/ad-film.simple-mode.js?v=1"></script>
+  <script src="/js/ad-film.simple-mode.js?v=2"></script>
   <script>
     (function(){
-      function openAdFilm(){
-        var btn=document.querySelector('[data-adfilm-open]');
-        if(btn){btn.click();return true}
-        return false;
-      }
+      function openAdFilm(){var btn=document.querySelector('[data-adfilm-open]');if(btn){btn.click();return true}return false}
       var tries=0;
-      var timer=setInterval(function(){
-        tries+=1;
-        if(openAdFilm()||tries>80)clearInterval(timer);
-      },100);
-
+      var timer=setInterval(function(){tries+=1;if(openAdFilm()||tries>80)clearInterval(timer)},100);
       document.addEventListener('click',function(event){
-        var button=event.target.closest('[data-preview-lang]');
-        if(!button)return;
+        var button=event.target.closest('[data-preview-lang]');if(!button)return;
         var lang=button.getAttribute('data-preview-lang')==='en'?'en':'tr';
         document.documentElement.lang=lang;
         document.querySelectorAll('[data-preview-lang]').forEach(function(x){x.classList.toggle('is-active',x===button)});
