@@ -17,12 +17,25 @@
     });
   }
 
+  function loadOutputControls(){
+    if(window.__AIVO_AD_FILM_OUTPUT_CONTROLS__||document.querySelector('script[data-adfilm-output-controls]')) return;
+    var script=document.createElement("script");
+    script.src="/js/ad-film.output-controls.js?v=1";
+    script.async=false;
+    script.setAttribute("data-adfilm-output-controls","");
+    document.head.appendChild(script);
+  }
+
   document.addEventListener("aivo:module-mounted",function(event){
-    if(event&&event.detail&&event.detail.key==="adfilm") setTimeout(function(){apply(event.detail.root)},20);
+    if(event&&event.detail&&event.detail.key==="adfilm"){
+      setTimeout(function(){apply(event.detail.root)},20);
+      loadOutputControls();
+    }
   });
 
   var observer=new MutationObserver(function(){apply(document)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
+  loadOutputControls();
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){apply(document)},{once:true});
   else apply(document);
 })();
