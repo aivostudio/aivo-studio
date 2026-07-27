@@ -201,7 +201,7 @@ export function sanitizeProjectPatch(patch, user, projectId) {
       "premium"
     ),
     output: {
-      duration: enumValue(outputSource.duration, ["10", "15", "30"], "15"),
+      duration: enumValue(outputSource.duration, ["5", "10", "15", "20"], "10"),
       aspectRatio: enumValue(outputSource.aspectRatio, ["9:16", "1:1", "16:9", "4:5"], "9:16"),
       quality: enumValue(outputSource.quality, ["1080p", "2k"], "1080p"),
       subtitles: boolValue(outputSource.subtitles, true),
@@ -244,7 +244,7 @@ export function createEmptyProject(user, id = newProjectId()) {
     },
     sceneStyle: "premium",
     output: {
-      duration: "15",
+      duration: "10",
       aspectRatio: "9:16",
       quality: "1080p",
       subtitles: true,
