@@ -57,10 +57,119 @@ async function readInvoicesByEmail(email) {
   throw new Error(`Unexpected Redis type for ${key}: ${keyType}`);
 }
 
-function formatDateTR(input) {
+function normalizeLanguage(value) {
+  return safeStr(value).toLowerCase() === "en" ? "en" : "tr";
+}
+
+const INVOICE_TEXT = {
+  tr: {
+    documentTitle: "Fatura",
+    brandEyebrow: "Resmi Fatura",
+    brandMeta: "Dijital ürün ve hizmet faturalandırması",
+    paid: "Ödendi",
+    numberPrefix: "No:",
+    invoiceTitle: "Fatura",
+    invoiceSubtitle:
+      "Bu belge, {company} tarafından oluşturulmuş resmi satın alım kaydıdır. İşlem, ödeme ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.",
+    collectionSummary: "Tahsilat Özeti",
+    collectionCopy:
+      "{date} tarihinde tahsil edildi. Bu işlem için ödeme durumu tamamlandı ve belge oluşturuldu.",
+    invoiceInfo: "Fatura Bilgileri",
+    invoiceNumber: "Fatura Numarası",
+    transactionDate: "İşlem Tarihi",
+    dueCollection: "Vade / Tahsilat",
+    customer: "Müşteri",
+    fullName: "Ad Soyad",
+    country: "Ülke",
+    email: "E-posta",
+    seller: "Satıcı",
+    brand: "Marka",
+    web: "Web",
+    documentNote: "Belge Notu",
+    documentType: "Belge Türü",
+    digitalServiceInvoice: "Dijital hizmet faturası",
+    paymentStatus: "Ödeme Durumu",
+    channel: "Kanal",
+    serviceDetail: "Hizmet Detayı",
+    description: "Açıklama",
+    quantity: "Miktar",
+    unitPrice: "Birim Fiyat",
+    amount: "Tutar",
+    itemDescription:
+      "AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi. Satın alınan kredi: {count} kredi.",
+    subtotal: "Ara Toplam",
+    total: "Toplam",
+    amountPaid: "Ödenen Tutar",
+    note:
+      "Bu belge {company} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve işlem özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.",
+    page: "Sayfa 1 / 1",
+    onlinePayment: "Online ödeme",
+    garantiPayment: "Online ödeme / Garanti BBVA Sanal POS",
+    stripePayment: "Online ödeme / Stripe",
+    defaultPackage: "AIVO Paket",
+    creditsPackage: "{count} Kredilik Paket",
+    turkey: "Türkiye",
+  },
+  en: {
+    documentTitle: "Invoice",
+    brandEyebrow: "Official Invoice",
+    brandMeta: "Digital product and service billing",
+    paid: "Paid",
+    numberPrefix: "No:",
+    invoiceTitle: "Invoice",
+    invoiceSubtitle:
+      "This document is the official purchase record created by {company}. Transaction, payment and customer details are presented below in a clear and verifiable format.",
+    collectionSummary: "Payment Summary",
+    collectionCopy:
+      "Payment was collected on {date}. The payment for this transaction was completed and the document was issued.",
+    invoiceInfo: "Invoice Information",
+    invoiceNumber: "Invoice Number",
+    transactionDate: "Transaction Date",
+    dueCollection: "Due Date / Collection",
+    customer: "Customer",
+    fullName: "Full Name",
+    country: "Country",
+    email: "Email",
+    seller: "Seller",
+    brand: "Brand",
+    web: "Web",
+    documentNote: "Document Note",
+    documentType: "Document Type",
+    digitalServiceInvoice: "Digital service invoice",
+    paymentStatus: "Payment Status",
+    channel: "Channel",
+    serviceDetail: "Service Details",
+    description: "Description",
+    quantity: "Quantity",
+    unitPrice: "Unit Price",
+    amount: "Amount",
+    itemDescription:
+      "Transaction item created for an AIVO digital membership / credit purchase. Credits purchased: {count}.",
+    subtotal: "Subtotal",
+    total: "Total",
+    amountPaid: "Amount Paid",
+    note:
+      "This document was created digitally by {company}. The layout, customer information and transaction summary have been optimized for readability and professional record keeping.",
+    page: "Page 1 / 1",
+    onlinePayment: "Online payment",
+    garantiPayment: "Online payment / Garanti BBVA Virtual POS",
+    stripePayment: "Online payment / Stripe",
+    defaultPackage: "AIVO Package",
+    creditsPackage: "{count}-Credit Package",
+    turkey: "Turkey",
+  },
+};
+
+function formatText(template, values = {}) {
+  return Object.keys(values).reduce((output, key) => {
+    return output.replaceAll(`{${key}}`, String(values[key]));
+  }, String(template || ""));
+}
+
+function formatDate(input, lang) {
   try {
     const d = input ? new Date(input) : new Date();
-    return new Intl.DateTimeFormat("tr-TR", {
+    return new Intl.DateTimeFormat(lang === "en" ? "en-US" : "tr-TR", {
       day: "2-digit",
       month: "long",
       year: "numeric",
@@ -71,12 +180,21 @@ function formatDateTR(input) {
   }
 }
 
-function formatMoneyTRY(amount) {
+function formatMoneyTRY(amount, lang) {
   const n = Number(amount || 0);
-  return new Intl.NumberFormat("tr-TR", {
+  return new Intl.NumberFormat(lang === "en" ? "en-US" : "tr-TR", {
     style: "currency",
     currency: "TRY",
+    ...(lang === "en" ? { currencyDisplay: "code" } : {}),
   }).format(n);
+}
+
+function localizeCountry(value, lang) {
+  const country = safeStr(value);
+  if (lang === "en" && country.toLowerCase() === "türkiye") {
+    return "Turkey";
+  }
+  return country;
 }
 
 function escapeHtml(s) {
@@ -88,21 +206,52 @@ function escapeHtml(s) {
     .replaceAll("'", "&#39;");
 }
 
-function resolveProviderLabel(invoice) {
+function resolveProviderLabel(invoice, lang) {
+  const copy = INVOICE_TEXT[lang];
   const provider = safeStr(invoice?.provider).toLowerCase();
-  if (provider === "garanti") return "Online ödeme / Garanti BBVA Sanal POS";
-  if (provider === "stripe") return "Online ödeme / Stripe";
-  return "Online ödeme";
+  if (provider === "garanti") return copy.garantiPayment;
+  if (provider === "stripe") return copy.stripePayment;
+  return copy.onlinePayment;
 }
 
-function resolveItemTitle(invoice) {
-  return (
+function resolveItemTitle(invoice, lang) {
+  const copy = INVOICE_TEXT[lang];
+  const rawTitle =
     safeStr(invoice?.item_title) ||
     safeStr(invoice?.title) ||
-    safeStr(invoice?.plan) ||
-    (invoice?.credits ? `${invoice.credits} Kredilik Paket` : "") ||
-    "AIVO Paket"
-  );
+    safeStr(invoice?.plan);
+
+  if (rawTitle) {
+    if (lang === "en") {
+      const trCreditMatch = rawTitle.match(/^(\d+)\s+Kredilik Paket$/i);
+      if (trCreditMatch) {
+        return formatText(copy.creditsPackage, { count: trCreditMatch[1] });
+      }
+
+      if (rawTitle.toLowerCase() === "aivo paket") {
+        return copy.defaultPackage;
+      }
+    }
+
+    if (lang === "tr") {
+      const enCreditMatch = rawTitle.match(/^(\d+)-Credit Package$/i);
+      if (enCreditMatch) {
+        return formatText(copy.creditsPackage, { count: enCreditMatch[1] });
+      }
+
+      if (rawTitle.toLowerCase() === "aivo package") {
+        return copy.defaultPackage;
+      }
+    }
+
+    return rawTitle;
+  }
+
+  if (invoice?.credits) {
+    return formatText(copy.creditsPackage, { count: invoice.credits });
+  }
+
+  return copy.defaultPackage;
 }
 
 function resolveCreditCount(invoice) {
@@ -124,30 +273,35 @@ function resolveAmountTRY(invoice) {
 }
 
 function buildInvoiceHtml(data) {
+  const lang = normalizeLanguage(data.lang);
+  const copy = INVOICE_TEXT[lang];
   const companyName = safeStr(data.companyName || "AIVO");
-  const companyCountry = safeStr(data.companyCountry || "Türkiye");
+  const companyCountry = localizeCountry(data.companyCountry || copy.turkey, lang);
   const customerName = safeStr(data.customerName || "-");
-  const customerCountry = safeStr(data.customerCountry || "Türkiye");
+  const customerCountry = localizeCountry(data.customerCountry || copy.turkey, lang);
   const email = safeStr(data.email || "-");
   const invoiceNo = safeStr(data.invoiceNo || "AIVO-0001");
-  const issueDate = formatDateTR(data.issueDate || new Date().toISOString());
-  const dueDate = formatDateTR(data.dueDate || data.issueDate || new Date().toISOString());
-  const itemTitle = safeStr(data.itemTitle || "AIVO Paket");
+  const issueDate = formatDate(data.issueDate || new Date().toISOString(), lang);
+  const dueDate = formatDate(
+    data.dueDate || data.issueDate || new Date().toISOString(),
+    lang
+  );
+  const itemTitle = safeStr(data.itemTitle || copy.defaultPackage);
   const creditCount = Number(data.creditCount || 1);
   const amountValue = Number(data.amount_try || 0);
   const unitPriceValue = creditCount > 0 ? amountValue / creditCount : amountValue;
-  const unitPrice = formatMoneyTRY(unitPriceValue);
-  const totalPrice = formatMoneyTRY(amountValue);
+  const unitPrice = formatMoneyTRY(unitPriceValue, lang);
+  const totalPrice = formatMoneyTRY(amountValue, lang);
   const logoUrl = safeStr(data.logoUrl || `${ORIGIN}/aivo-logo.png`);
-  const providerLabel = safeStr(data.providerLabel || "Online ödeme");
+  const providerLabel = safeStr(data.providerLabel || copy.onlinePayment);
 
   return `
 <!doctype html>
-<html lang="tr">
+<html lang="${escapeHtml(lang)}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(companyName)} Fatura</title>
+  <title>${escapeHtml(companyName)} ${escapeHtml(copy.documentTitle)}</title>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -522,77 +676,76 @@ function buildInvoiceHtml(data) {
           <img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(companyName)} Logo" />
         </div>
         <div class="brand-copy">
-          <div class="brand-eyebrow">Official Invoice</div>
-          <div class="brand-meta">${escapeHtml(ORIGIN)} • Dijital ürün ve hizmet faturalandırması</div>
+          <div class="brand-eyebrow">${escapeHtml(copy.brandEyebrow)}</div>
+          <div class="brand-meta">${escapeHtml(ORIGIN)} • ${escapeHtml(copy.brandMeta)}</div>
         </div>
       </div>
 
       <div class="invoice-badge-wrap">
-        <div class="invoice-badge">Paid</div>
-        <div class="invoice-code">No: ${escapeHtml(invoiceNo)}</div>
+        <div class="invoice-badge">${escapeHtml(copy.paid)}</div>
+        <div class="invoice-code">${escapeHtml(copy.numberPrefix)} ${escapeHtml(invoiceNo)}</div>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-left">
-        <h1 class="invoice-title">Fatura</h1>
+        <h1 class="invoice-title">${escapeHtml(copy.invoiceTitle)}</h1>
         <p class="invoice-subtitle">
-          Bu belge, ${escapeHtml(companyName)} tarafından oluşturulmuş resmi satın alım kaydıdır.
-          İşlem, ödeme ve müşteri bilgileri aşağıda düzenli ve doğrulanabilir biçimde sunulmuştur.
+          ${escapeHtml(formatText(copy.invoiceSubtitle, { company: companyName }))}
         </p>
       </div>
 
       <div class="hero-panel">
-        <div class="hero-panel-label">Tahsilat Özeti</div>
+        <div class="hero-panel-label">${escapeHtml(copy.collectionSummary)}</div>
         <div class="hero-panel-amount">${escapeHtml(totalPrice)}</div>
         <p class="hero-panel-copy">
-          ${escapeHtml(dueDate)} tarihinde tahsil edildi. Bu işlem için ödeme durumu tamamlandı ve belge oluşturuldu.
+          ${escapeHtml(formatText(copy.collectionCopy, { date: dueDate }))}
         </p>
       </div>
     </div>
 
     <div class="grid">
       <div class="card">
-        <h2 class="card-title">Fatura Bilgileri</h2>
+        <h2 class="card-title">${escapeHtml(copy.invoiceInfo)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Fatura Numarası</div>
+            <div class="detail-label">${escapeHtml(copy.invoiceNumber)}</div>
             <div class="detail-value">${escapeHtml(invoiceNo)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">İşlem Tarihi</div>
+            <div class="detail-label">${escapeHtml(copy.transactionDate)}</div>
             <div class="detail-value">${escapeHtml(issueDate)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Vade / Tahsilat</div>
+            <div class="detail-label">${escapeHtml(copy.dueCollection)}</div>
             <div class="detail-value">${escapeHtml(dueDate)}</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-title">Müşteri</h2>
+        <h2 class="card-title">${escapeHtml(copy.customer)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Ad Soyad</div>
+            <div class="detail-label">${escapeHtml(copy.fullName)}</div>
             <div class="detail-value">${escapeHtml(customerName)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Ülke</div>
+            <div class="detail-label">${escapeHtml(copy.country)}</div>
             <div class="detail-value">${escapeHtml(customerCountry)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">E-posta</div>
+            <div class="detail-label">${escapeHtml(copy.email)}</div>
             <div class="detail-value">${escapeHtml(email)}</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-title">Satıcı</h2>
+        <h2 class="card-title">${escapeHtml(copy.seller)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Marka</div>
+            <div class="detail-label">${escapeHtml(copy.brand)}</div>
             <div class="detail-value">${escapeHtml(companyName)}</div>
           </div>
           <div class="detail-row">
@@ -600,48 +753,48 @@ function buildInvoiceHtml(data) {
             <div class="detail-value">${escapeHtml(companyCountry)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Web</div>
+            <div class="detail-label">${escapeHtml(copy.web)}</div>
             <div class="detail-value">${escapeHtml(ORIGIN)}</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-title">Belge Notu</h2>
+        <h2 class="card-title">${escapeHtml(copy.documentNote)}</h2>
         <div class="detail-list">
           <div class="detail-row">
-            <div class="detail-label">Belge Türü</div>
-            <div class="detail-value">Dijital hizmet faturası</div>
+            <div class="detail-label">${escapeHtml(copy.documentType)}</div>
+            <div class="detail-value">${escapeHtml(copy.digitalServiceInvoice)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Ödeme Durumu</div>
-            <div class="detail-value">Ödendi</div>
+            <div class="detail-label">${escapeHtml(copy.paymentStatus)}</div>
+            <div class="detail-value">${escapeHtml(copy.paid)}</div>
           </div>
           <div class="detail-row">
-            <div class="detail-label">Kanal</div>
+            <div class="detail-label">${escapeHtml(copy.channel)}</div>
             <div class="detail-value">${escapeHtml(providerLabel)}</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">Hizmet Detayı</div>
+    <div class="section-title">${escapeHtml(copy.serviceDetail)}</div>
 
     <div class="items-wrap">
       <table class="table">
         <thead>
           <tr>
-            <th>Açıklama</th>
-            <th class="num">Miktar</th>
-            <th class="num">Birim Fiyat</th>
-            <th class="num">Tutar</th>
+            <th>${escapeHtml(copy.description)}</th>
+            <th class="num">${escapeHtml(copy.quantity)}</th>
+            <th class="num">${escapeHtml(copy.unitPrice)}</th>
+            <th class="num">${escapeHtml(copy.amount)}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>
               <div class="item-name">${escapeHtml(itemTitle)}</div>
-              <div class="item-desc">AIVO dijital üyelik / kredi satın alımı kapsamında oluşturulan işlem kalemi. Satın alınan kredi: ${escapeHtml(String(creditCount))} kredi.</div>
+              <div class="item-desc">${escapeHtml(formatText(copy.itemDescription, { count: creditCount }))}</div>
             </td>
             <td class="num">${escapeHtml(String(creditCount))}</td>
             <td class="num">${escapeHtml(unitPrice)}</td>
@@ -655,15 +808,15 @@ function buildInvoiceHtml(data) {
       <div class="totals-card">
         <table class="totals">
           <tr>
-            <td>Ara Toplam</td>
+            <td>${escapeHtml(copy.subtotal)}</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
           <tr>
-            <td>Toplam</td>
+            <td>${escapeHtml(copy.total)}</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
           <tr>
-            <td>Ödenen Tutar</td>
+            <td>${escapeHtml(copy.amountPaid)}</td>
             <td>${escapeHtml(totalPrice)}</td>
           </tr>
         </table>
@@ -671,12 +824,12 @@ function buildInvoiceHtml(data) {
     </div>
 
     <div class="note">
-      Bu belge ${escapeHtml(companyName)} tarafından dijital ortamda oluşturulmuştur. Görsel düzen, müşteri bilgileri ve işlem özeti hızlı okunabilirlik ve profesyonel arşivleme amacıyla optimize edilmiştir.
+      ${escapeHtml(formatText(copy.note, { company: companyName }))}
     </div>
 
     <div class="footer">
       <div><strong>${escapeHtml(companyName)}</strong> • ${escapeHtml(ORIGIN)}</div>
-      <div>Sayfa 1 / 1</div>
+      <div>${escapeHtml(copy.page)}</div>
     </div>
   </div>
 </body>
@@ -696,6 +849,7 @@ export default async function handler(req, res) {
 
     const email = normEmail(req.query?.email);
     const id = safeStr(req.query?.id);
+    const lang = normalizeLanguage(req.query?.lang);
 
     if (!email) {
       return res.status(400).json({ ok: false, error: "EMAIL_REQUIRED" });
@@ -757,6 +911,7 @@ export default async function handler(req, res) {
     } catch (_) {}
 
     const html = buildInvoiceHtml({
+      lang,
       invoiceNo:
         safeStr(invoice?.invoice_id) ||
         safeStr(invoice?.invoice_no) ||
@@ -786,14 +941,14 @@ export default async function handler(req, res) {
       customerCountry:
         safeStr(invoice?.customer_country) ||
         safeStr(invoice?.customerCountry) ||
-        "Türkiye",
+        INVOICE_TEXT[lang].turkey,
       companyName: "AIVO",
-      companyCountry: "Türkiye",
-      itemTitle: resolveItemTitle(invoice),
+      companyCountry: INVOICE_TEXT[lang].turkey,
+      itemTitle: resolveItemTitle(invoice, lang),
       quantity: 1,
       creditCount: resolveCreditCount(invoice),
       amount_try: amountTry,
-      providerLabel: resolveProviderLabel(invoice),
+      providerLabel: resolveProviderLabel(invoice, lang),
       logoUrl: `${ORIGIN}/aivo-logo.png`,
     });
 
