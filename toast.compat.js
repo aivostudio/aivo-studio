@@ -61,7 +61,8 @@
     "/css/ad-film.creative-plan-tune.css?v=2",
     "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.role-balance.css?v=1",
-    "/css/ad-film.narration-guide.css?v=1"
+    "/css/ad-film.narration-guide.css?v=1",
+    "/css/ad-film.seedance-engine.css?v=1"
   ];
 
   const shellScripts = [
@@ -81,7 +82,8 @@
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
     "/js/ad-film.reset-fix.js?v=2",
-    "/js/ad-film.narration-guide.js?v=1"
+    "/js/ad-film.narration-guide.js?v=1",
+    "/js/ad-film.seedance-engine.js?v=1"
   ];
 
   let moduleLoadPromise = null;
