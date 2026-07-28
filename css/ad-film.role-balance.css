@@ -1,0 +1,78 @@
+/* Smart Reference Upload: larger, better-proportioned labels */
+.is-creative-plan-ready .adfilm-role-zone>b{
+  width:100%;
+  max-width:100%;
+  color:#fff;
+  font-size:17px!important;
+  font-weight:900;
+  line-height:1.2;
+  letter-spacing:-.018em;
+  text-wrap:balance;
+}
+.is-creative-plan-ready .adfilm-role-zone--hero>b,
+.is-creative-plan-ready .adfilm-role-zone--angles>b,
+.is-creative-plan-ready .adfilm-role-zone--scenes>b{
+  font-size:18px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone--logo>b{
+  font-size:16.5px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone>small{
+  max-width:96%;
+  color:rgba(246,244,255,.78)!important;
+  font-size:12px!important;
+  font-weight:700;
+  line-height:1.42;
+  text-wrap:balance;
+}
+.is-creative-plan-ready .adfilm-role-zone__badge{
+  padding:6px 10px;
+  font-size:9.5px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone>em{
+  min-width:30px;
+  height:30px;
+  font-size:10px!important;
+}
+.is-creative-plan-ready .adfilm-reference-map{
+  gap:10px;
+}
+.is-creative-plan-ready .adfilm-reference-map span{
+  min-height:54px;
+  gap:13px;
+  padding:12px 15px;
+  border-color:rgba(167,139,250,.16);
+  background:linear-gradient(145deg,rgba(31,26,58,.8),rgba(9,12,30,.9));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+}
+.is-creative-plan-ready .adfilm-reference-map i{
+  min-width:46px;
+  padding:7px 9px;
+  color:#f0d9ff;
+  font-size:11.5px!important;
+  font-weight:900;
+}
+.is-creative-plan-ready .adfilm-reference-map b{
+  color:rgba(252,250,255,.94)!important;
+  font-size:13px!important;
+  font-weight:900;
+  line-height:1.25;
+}
+@media(max-width:1500px){
+  .is-creative-plan-ready .adfilm-role-zone>b{font-size:15.5px!important}
+  .is-creative-plan-ready .adfilm-role-zone--hero>b,
+  .is-creative-plan-ready .adfilm-role-zone--angles>b,
+  .is-creative-plan-ready .adfilm-role-zone--scenes>b{font-size:17px!important}
+  .is-creative-plan-ready .adfilm-role-zone--logo>b{font-size:15.5px!important}
+  .is-creative-plan-ready .adfilm-role-zone>small{font-size:11px!important}
+  .is-creative-plan-ready .adfilm-reference-map i{font-size:10.5px!important}
+  .is-creative-plan-ready .adfilm-reference-map b{font-size:12px!important}
+}
+@media(max-width:680px){
+  .is-creative-plan-ready .adfilm-role-zone>b{font-size:15px!important}
+  .is-creative-plan-ready .adfilm-role-zone--hero>b,
+  .is-creative-plan-ready .adfilm-role-zone--angles>b,
+  .is-creative-plan-ready .adfilm-role-zone--scenes>b{font-size:16px!important}
+  .is-creative-plan-ready .adfilm-role-zone>small{font-size:10.5px!important}
+  .is-creative-plan-ready .adfilm-reference-map b{font-size:11.5px!important}
+}
