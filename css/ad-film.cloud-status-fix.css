@@ -1,0 +1,20 @@
+/* AIVO AI Reklam Filmi — keep a single project status badge in hero */
+.adfilm-page .adfilm-hero{position:relative}
+.adfilm-page .adfilm-hero>[data-adfilm-cloud-status]{
+  position:absolute;
+  top:18px;
+  right:18px;
+  z-index:4;
+  max-width:230px;
+}
+.adfilm-page .adfilm-hero:has(>[data-adfilm-cloud-status])>.adfilm-hero__status{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+@supports not selector(:has(*)){
+  .adfilm-page[data-adfilm-cloud-status] .adfilm-hero__status{opacity:0;visibility:hidden;pointer-events:none}
+}
+@media(max-width:900px){
+  .adfilm-page .adfilm-hero>[data-adfilm-cloud-status]{position:static;margin-left:auto;margin-top:8px}
+}
