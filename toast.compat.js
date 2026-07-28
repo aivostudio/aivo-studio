@@ -50,6 +50,7 @@
     "/css/ad-film.basic-polish.css?v=4",
     "/css/ad-film.basic-draft.css?v=1",
     "/css/ad-film.project-sync.css?v=2",
+    "/css/ad-film.cloud-status-fix.css?v=1",
     "/css/ad-film.readability.css?v=1",
     "/css/ad-film.vibrant-actions.css?v=1",
     "/css/ad-film.storyboard.css?v=1",
@@ -68,16 +69,16 @@
   const moduleScripts = [
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
-    "/js/ad-film.basic-media-cache.js?v=1",
+    "/js/ad-film.basic-media-cache.js?v=2",
     "/js/ad-film.language-lock.js?v=1",
     "/js/ad-film.storyboard.js?v=1",
     "/js/ad-film.simple-mode.js?v=3",
     "/js/ad-film.music-profile.js?v=6",
-    "/js/ad-film.project-sync.js?v=4",
+    "/js/ad-film.project-sync.js?v=5",
     "/js/ad-film.seedance-options.js?v=2",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=2",
-    "/js/ad-film.reset-fix.js?v=1",
+    "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1"
   ];
 
