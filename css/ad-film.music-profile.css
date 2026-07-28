@@ -1,29 +1,27 @@
-/* AIVO AI Reklam Filmi — automatic music profile controls */
-.adfilm-music-profile{display:grid;gap:13px;margin-top:14px;padding:14px;border:1px solid rgba(168,85,247,.16);border-radius:15px;background:linear-gradient(145deg,rgba(124,58,237,.065),rgba(236,72,153,.025));box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+/* AIVO AI Reklam Filmi — compact automatic music profile controls */
+.adfilm-music-profile{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px;padding:12px;border:1px solid rgba(168,85,247,.16);border-radius:14px;background:linear-gradient(145deg,rgba(124,58,237,.055),rgba(236,72,153,.02));box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
 .adfilm-music-profile[hidden]{display:none!important}
-.adfilm-music-profile__group{display:grid;gap:8px}
-.adfilm-music-profile__head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.adfilm-music-profile__head b{color:rgba(248,248,255,.9);font-size:10.5px;line-height:1.2}
-.adfilm-music-profile__resolved{overflow:hidden;max-width:58%;padding:5px 8px;border:1px solid rgba(52,211,153,.17);border-radius:999px;background:rgba(16,185,129,.075);color:#a7f3d0;font-size:7.5px;font-weight:850;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
-.adfilm-music-profile__options{display:flex;flex-wrap:wrap;gap:7px}
-.adfilm-music-profile__options button{min-height:32px;padding:6px 10px;border:1px solid rgba(255,255,255,.085);border-radius:10px;background:rgba(5,8,22,.62);color:rgba(240,241,255,.62);font-size:8.5px;font-weight:850;line-height:1.1;cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
-.adfilm-music-profile__options button:hover{color:#fff;border-color:rgba(216,180,254,.28);background:rgba(124,58,237,.08);transform:translateY(-1px)}
-.adfilm-music-profile__options button.is-selected{color:#fff;border-color:rgba(238,205,255,.42);background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 50%,#ef5fb4 100%);box-shadow:0 8px 18px rgba(124,77,255,.17),inset 0 1px 0 rgba(255,255,255,.16)}
-.adfilm-music-profile__note{display:flex;align-items:flex-start;gap:7px;margin:0;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);color:rgba(226,232,255,.55);font-size:8px;line-height:1.45}
-.adfilm-music-profile__note:before{content:"✦";flex:0 0 auto;color:#67e8f9;font-size:10px;line-height:1.2}
-.adfilm-music-profile__engine{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid rgba(14,165,233,.13);border-radius:11px;background:rgba(14,165,233,.045);color:rgba(224,242,254,.55);font-size:7.5px;line-height:1.3}
-.adfilm-music-profile__engine b{color:rgba(224,242,254,.78);font-size:7.5px}
+.adfilm-music-profile__field{display:grid;gap:6px;min-width:0}
+.adfilm-music-profile__field>b{color:rgba(248,248,255,.82);font-size:9px;line-height:1.2}
+.adfilm-music-profile__select-wrap{position:relative;min-width:0}
+.adfilm-music-profile__select-wrap:after{content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;border-right:2px solid #c4b5fd;border-bottom:2px solid #c4b5fd;transform:translateY(-68%) rotate(45deg);pointer-events:none}
+.adfilm-music-profile select{width:100%;height:42px;padding:0 38px 0 13px;border:1px solid rgba(216,180,254,.2);border-radius:11px;outline:none;appearance:none;background:linear-gradient(145deg,rgba(7,9,24,.94),rgba(17,18,43,.9));color:#fff;font:800 9.5px/1.2 inherit;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.035);transition:border-color .18s ease,box-shadow .18s ease,background .18s ease}
+.adfilm-music-profile select:hover{border-color:rgba(216,180,254,.36);background:linear-gradient(145deg,rgba(16,12,40,.96),rgba(27,21,58,.92))}
+.adfilm-music-profile select:focus{border-color:rgba(236,72,153,.55);box-shadow:0 0 0 3px rgba(168,85,247,.11),0 8px 22px rgba(124,77,255,.1)}
+.adfilm-music-profile select option{background:#171426;color:#fff}
+.adfilm-music-profile__status{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px;padding:6px 9px;border:1px solid rgba(52,211,153,.13);border-radius:9px;background:rgba(16,185,129,.045);color:rgba(209,250,229,.64);font-size:7.5px;line-height:1.25}
+.adfilm-music-profile__status span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adfilm-music-profile__status b{flex:0 0 auto;color:#a7f3d0;font-size:7.5px}
 
-.adfilm-card--advanced-music .adfilm-music-profile{margin-top:12px;padding:11px;gap:10px}
-.adfilm-card--advanced-music .adfilm-music-profile__options{gap:6px}
-.adfilm-card--advanced-music .adfilm-music-profile__options button{min-height:29px;padding:5px 8px;font-size:7.8px}
-.adfilm-card--advanced-music .adfilm-music-profile__head b{font-size:9.5px}
+/* The original format row still exists in the module. Simple Mode had hidden it;
+   restore it directly below Duration and keep all publishing ratios visible. */
+.is-simplified-basic .adfilm-card--settings .adfilm-setting-block:nth-of-type(3){display:grid!important}
+.is-simplified-basic .adfilm-card--settings .adfilm-setting-block:nth-of-type(3){margin-top:9px}
+.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio button{min-width:0;min-height:38px;padding:6px 8px;font-size:9px}
 
-@media(max-width:1450px){
-  .adfilm-music-profile__resolved{max-width:52%}
-  .adfilm-music-profile__options button{padding-left:8px;padding-right:8px}
-}
 @media(max-width:1120px){
-  .adfilm-music-profile__head{align-items:flex-start;flex-direction:column}
-  .adfilm-music-profile__resolved{max-width:100%}
+  .adfilm-music-profile{grid-template-columns:1fr}
+  .adfilm-music-profile__status{grid-column:1}
+  .is-simplified-basic .adfilm-card--settings .adfilm-options--ratio{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
