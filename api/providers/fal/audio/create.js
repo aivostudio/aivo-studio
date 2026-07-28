@@ -75,6 +75,14 @@ function isMock(req, body) {
   );
 }
 
+function allowPreviewMock(mockRequest) {
+  if (!mockRequest) return false;
+  return (
+    process.env.VERCEL_ENV === "preview" ||
+    process.env.AIVO_AD_FILM_ALLOW_MOCK === "1"
+  );
+}
+
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
@@ -82,22 +90,29 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
 
-  let auth;
-  try {
-    auth = await requireAuth(req);
-  } catch (error) {
-    return res.status(401).json({
-      ok: false,
-      error: "unauthorized",
-      message: String(error?.message || error),
-    });
+  const body = safeBody(req);
+  const mockRequest = isMock(req, body);
+  const previewMock = allowPreviewMock(mockRequest);
+
+  let auth = null;
+  if (previewMock) {
+    auth = { email: "preview-mock@aivo.local", preview: true };
+  } else {
+    try {
+      auth = await requireAuth(req);
+    } catch (error) {
+      return res.status(401).json({
+        ok: false,
+        error: "unauthorized",
+        message: String(error?.message || error),
+      });
+    }
   }
 
   if (!auth?.email) {
     return res.status(401).json({ ok: false, error: "unauthorized" });
   }
 
-  const body = safeBody(req);
   const music = buildAdFilmMusicPrompt({
     productName: body.productName,
     brandName: body.brandName,
@@ -125,7 +140,7 @@ export default async function handler(req, res) {
     voice_enabled: music.voiceEnabled,
   };
 
-  if (isMock(req, body)) {
+  if (mockRequest) {
     return res.status(200).json({
       ok: true,
       mock: true,
@@ -134,17 +149,12 @@ export default async function handler(req, res) {
       request_id: `mock_ad_music_${Date.now()}`,
       status_url: null,
       response_url: null,
-      audio_url: "https://aivo.tr/media/demo-audio.mp3",
-      outputs: [
-        {
-          type: "audio",
-          url: "https://aivo.tr/media/demo-audio.mp3",
-          meta: requestMeta,
-        },
-      ],
+      audio_url: null,
+      outputs: [],
       prompt: music.prompt,
       negative_prompt: music.negativePrompt,
       meta: requestMeta,
+      preview_auth_bypass: previewMock,
     });
   }
 
