@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.aivo.tr/</loc>
+    <loc>https://aivo.tr/</loc>
+  </url>
+  <url>
+    <loc>https://aivo.tr/fiyatlandirma.html</loc>
+  </url>
+  <url>
+    <loc>https://aivo.tr/aivo-coin.html</loc>
+  </url>
+  <url>
+    <loc>https://aivo.tr/egitim-icerikleri.html</loc>
   </url>
 </urlset>
