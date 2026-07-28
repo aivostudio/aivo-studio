@@ -89,11 +89,21 @@
     article.appendChild(image);article.appendChild(label);article.appendChild(remove);tray.appendChild(article);
   }
 
+  function syncRoleZoneState(scope,role,count){
+    if(!scope)return;
+    var zone=scope.querySelector(".adfilm-role-zone--"+role);
+    var counter=scope.querySelector('[data-role-count="'+role+'"]');
+    if(zone)zone.classList.toggle("has-file",count>0);
+    if(counter)counter.textContent=String(count);
+  }
+
   function syncLivePreview(scope){
     if(!scope||!scope.isConnected)return;
     var hero=heroFile(scope),logo=logoFile(scope);
     var heroUrl=objectPreview(heroPreview,hero),logoUrl=objectPreview(logoPreview,logo);
 
+    syncRoleZoneState(scope,"hero",hero?1:0);
+    syncRoleZoneState(scope,"logo",logo?1:0);
     ensureLogoThumb(scope,logo,logoUrl);
 
     var panel=document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');
