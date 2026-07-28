@@ -2,10 +2,8 @@
    AIVO — AI REKLAM FILMI / ROLE UPLOAD HOTFIX
    - Keeps previously selected product-angle and scene files when the
      user opens the picker again.
-   - Blocks the synthetic legacy product-image change event from
-     reaching the old cloud uploader. Role media remains safely stored
-     by the creative-plan IndexedDB layer until the dedicated Seedance
-     upload pipeline is connected.
+   - Marks synthetic legacy product-image changes so the cloud sync can
+     ignore them without blocking the live-preview listener.
    ========================================================= */
 (function AIVO_AD_FILM_ROLE_UPLOAD_FIX(){
   "use strict";
@@ -43,10 +41,7 @@
     scope.querySelectorAll("[data-adfilm-role-file]").forEach(function(field){cache.set(field,files(field))});
   }
 
-  /*
-   * Capture runs before creative-plan's direct change listener. The
-   * existing listener therefore receives the already merged FileList.
-   */
+  /* Capture runs before creative-plan's direct change listener. */
   document.addEventListener("change",function(event){
     var field=event.target&&event.target.closest&&event.target.closest("[data-adfilm-role-file]");
     if(field){
@@ -60,21 +55,21 @@
     }
 
     /*
-     * creative-plan mirrors @Image1 into the former productImages input
-     * for validation compatibility. That synthetic event used to wake
-     * the old R2 uploader and produced the misleading 500 toast even
-     * though the local image had loaded correctly.
+     * creative-plan mirrors @Image1 into the former productImages input.
+     * Do not stop propagation: the skeleton preview must receive this
+     * event so it can show or clear the right-side image. Cloud sync reads
+     * this short-lived marker and skips only the obsolete upload action.
      */
     var legacy=event.target&&event.target.closest&&event.target.closest('[data-adfilm-file="productImages"]');
     if(legacy&&legacy.closest(".adfilm-role-media")&&event.isTrusted===false){
-      event.stopImmediatePropagation();
-      event.stopPropagation();
+      legacy.dataset.adfilmSkipCloudUpload="1";
+      setTimeout(function(){if(legacy)delete legacy.dataset.adfilmSkipCloudUpload},0);
     }
   },true);
 
   document.addEventListener("click",function(event){
     if(event.target&&event.target.closest&&event.target.closest("[data-role-remove],[data-adfilm-draft-reset]")){
-      setTimeout(function(){syncCache(root())},80);
+      setTimeout(function(){syncCache(root())},100);
     }
   },true);
 
