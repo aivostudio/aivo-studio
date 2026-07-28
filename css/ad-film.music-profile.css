@@ -12,6 +12,18 @@
 .adfilm-music-profile__status{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px;padding:6px 9px;border:1px solid rgba(52,211,153,.13);border-radius:9px;background:rgba(16,185,129,.045);color:rgba(209,250,229,.64);font-size:7.5px;line-height:1.25}
 .adfilm-music-profile__status span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adfilm-music-profile__status b{flex:0 0 auto;color:#a7f3d0;font-size:7.5px}
+.adfilm-music-profile__test{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px 10px;padding-top:2px}
+.adfilm-music-profile__test[hidden]{display:none!important}
+.adfilm-music-profile__test button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:7px 12px;border:1px solid rgba(216,180,254,.24);border-radius:10px;background:linear-gradient(112deg,rgba(124,77,255,.88),rgba(239,95,180,.82));color:#fff;cursor:pointer;box-shadow:0 8px 18px rgba(124,77,255,.13);transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease}
+.adfilm-music-profile__test button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(124,77,255,.2)}
+.adfilm-music-profile__test button:disabled{cursor:wait;opacity:.58;transform:none}
+.adfilm-music-profile__test button span{font-size:10px;line-height:1}
+.adfilm-music-profile__test button b{font-size:8px;line-height:1.1}
+.adfilm-music-profile__test small{color:rgba(226,232,255,.46);font-size:7.2px;line-height:1.25}
+.adfilm-music-profile__test output{grid-column:1/-1;display:none;padding:7px 9px;border-radius:9px;font-size:7.5px;font-weight:750;line-height:1.35}
+.adfilm-music-profile__test output:not(:empty){display:block}
+.adfilm-music-profile__test output.is-success{border:1px solid rgba(52,211,153,.18);background:rgba(16,185,129,.07);color:#a7f3d0}
+.adfilm-music-profile__test output.is-error{border:1px solid rgba(251,113,133,.2);background:rgba(190,24,93,.09);color:#fda4af}
 
 /* The original format row still exists in the module. Simple Mode had hidden it;
    restore it directly below Duration and keep all publishing ratios visible. */
@@ -22,6 +34,6 @@
 
 @media(max-width:1120px){
   .adfilm-music-profile{grid-template-columns:1fr}
-  .adfilm-music-profile__status{grid-column:1}
+  .adfilm-music-profile__status,.adfilm-music-profile__test{grid-column:1}
   .is-simplified-basic .adfilm-card--settings .adfilm-options--ratio{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
