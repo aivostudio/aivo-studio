@@ -1,7 +1,7 @@
 /* =========================================================
    AIVO — AI REKLAM FILMI / MUSIC PROFILE
-   Compact direction controls for Stable Audio 3 Small Music.
-   Includes a no-cost preview mock test for the server prompt layer.
+   Compact controls for Stable Audio 3 Small Music.
+   Includes a free mock check and a guarded 5-second real preview.
    ========================================================= */
 (function AIVO_AD_FILM_MUSIC_PROFILE(){
   "use strict";
@@ -11,10 +11,11 @@
   var STYLE_KEY="aivo_adfilm_music_style_v1";
   var ENERGY_KEY="aivo_adfilm_music_energy_v1";
   var activeRoot=null;
+  var activePoll=null;
 
   var COPY={
-    tr:{musicAuto:"AIVO müziği hazırlasın",style:"Müzik Tarzı",energy:"Enerji",recommendation:"AIVO Önerisi",pop:"Pop",cinematic:"Sinematik",electronic:"Elektronik",classical:"Klasik",rnb:"R&B",latin:"Latin",calm:"Sakin",balanced:"Dengeli",strong:"Güçlü",suggested:"Öneri",engine:"Müzik motoru",engineName:"Stable Audio 3 Small",test:"Müzik motorunu test et",testing:"Ayarlar kontrol ediliyor…",testReady:"Motor ayarları doğru gönderildi",testFailed:"Motor testi başarısız",testHint:"Ücretsiz bağlantı testi — ses üretmez"},
-    en:{musicAuto:"Let AIVO create the music",style:"Music Style",energy:"Energy",recommendation:"AIVO Suggestion",pop:"Pop",cinematic:"Cinematic",electronic:"Electronic",classical:"Classical",rnb:"R&B",latin:"Latin",calm:"Calm",balanced:"Balanced",strong:"Strong",suggested:"Suggestion",engine:"Music engine",engineName:"Stable Audio 3 Small",test:"Test music engine",testing:"Checking settings…",testReady:"Engine settings were sent correctly",testFailed:"Engine test failed",testHint:"Free connection test — does not generate audio"}
+    tr:{musicAuto:"AIVO müziği hazırlasın",style:"Müzik Tarzı",energy:"Enerji",recommendation:"AIVO Önerisi",pop:"Pop",cinematic:"Sinematik",electronic:"Elektronik",classical:"Klasik",rnb:"R&B",latin:"Latin",calm:"Sakin",balanced:"Dengeli",strong:"Güçlü",suggested:"Öneri",engine:"Müzik motoru",engineName:"Stable Audio 3 Small",test:"Bağlantıyı test et",testing:"Ayarlar kontrol ediliyor…",testReady:"Motor ayarları doğru gönderildi",testFailed:"Motor testi başarısız",testHint:"Ücretsiz — ses üretmez",generate:"5 sn gerçek müzik üret",generating:"Müzik hazırlanıyor…",queued:"Üretim sırasına alındı",running:"Müzik oluşturuluyor",ready:"5 saniyelik müzik hazır",generateFailed:"Müzik üretilemedi",realHint:"Gerçek Fal üretimi — küçük ücret oluşturur",rateLimited:"Deneme sınırına ulaşıldı. Biraz sonra tekrar dene.",playLabel:"Üretilen reklam müziği"},
+    en:{musicAuto:"Let AIVO create the music",style:"Music Style",energy:"Energy",recommendation:"AIVO Suggestion",pop:"Pop",cinematic:"Cinematic",electronic:"Electronic",classical:"Classical",rnb:"R&B",latin:"Latin",calm:"Calm",balanced:"Balanced",strong:"Strong",suggested:"Suggestion",engine:"Music engine",engineName:"Stable Audio 3 Small",test:"Test connection",testing:"Checking settings…",testReady:"Engine settings were sent correctly",testFailed:"Engine test failed",testHint:"Free — does not generate audio",generate:"Generate real 5 sec music",generating:"Preparing music…",queued:"Added to generation queue",running:"Creating music",ready:"Your 5-second music is ready",generateFailed:"Music generation failed",realHint:"Real Fal generation — incurs a small charge",rateLimited:"Preview limit reached. Please try again later.",playLabel:"Generated advertising music"}
   };
 
   function language(){var html=String(document.documentElement.lang||"").toLowerCase(),stored="";try{stored=String(localStorage.getItem("aivo_language")||localStorage.getItem("aivo_lang")||"").toLowerCase()}catch(_){}return stored==="en"||html.indexOf("en")===0?"en":"tr"}
@@ -27,6 +28,7 @@
   function normalize(text){return String(text||"").toLocaleLowerCase("tr-TR").replace(/[ıİ]/g,"i").replace(/[şŞ]/g,"s").replace(/[ğĞ]/g,"g").replace(/[üÜ]/g,"u").replace(/[öÖ]/g,"o").replace(/[çÇ]/g,"c")}
   function contains(text,words){return words.some(function(word){return text.indexOf(word)>=0})}
   function toast(message,type){try{var api=window.toast||{};if(api[type]&&typeof api[type]==="function"){api[type](message);return}}catch(_){}console[type==="error"?"error":"log"]("[ADFILM MUSIC]",message)}
+  function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
 
   function automaticProfile(scope){
     var text=normalize([inputValue(scope,"productName"),inputValue(scope,"brandName"),inputValue(scope,"description"),inputValue(scope,"targetAudience"),inputValue(scope,"cta"),inputValue(scope,"voiceStyle"),selected(scope,"sceneStyle")].join(" "));
@@ -63,7 +65,15 @@
         '<option value="calm">'+t("calm")+'</option><option value="balanced">'+t("balanced")+'</option><option value="strong">'+t("strong")+'</option>'+
       '</select></span></label>'+
       '<div class="adfilm-music-profile__status"><span data-music-resolved></span><b>'+t("engineName")+'</b></div>'+
-      '<div class="adfilm-music-profile__test" data-music-test-wrap hidden><button type="button" data-music-test><span>↗</span><b>'+t("test")+'</b></button><small>'+t("testHint")+'</small><output data-music-test-result></output></div>';
+      '<div class="adfilm-music-profile__test" data-music-test-wrap hidden>'+
+        '<div class="adfilm-music-profile__actions">'+
+          '<button type="button" data-music-test class="is-secondary"><span>✓</span><b>'+t("test")+'</b></button>'+
+          '<button type="button" data-music-generate><span>▶</span><b>'+t("generate")+'</b></button>'+
+        '</div>'+
+        '<div class="adfilm-music-profile__hints"><small>'+t("testHint")+'</small><small>'+t("realHint")+'</small></div>'+
+        '<output data-music-test-result></output>'+
+        '<div class="adfilm-music-profile__audio" data-music-audio-wrap hidden><div><b>'+t("playLabel")+'</b><span data-music-audio-meta></span></div><audio controls preload="metadata" data-music-audio></audio></div>'+
+      '</div>';
     return box;
   }
 
@@ -86,56 +96,78 @@
     scope.dispatchEvent(new CustomEvent("aivo:adfilm-music-profile",{bubbles:true,detail:window.AIVOAdFilmMusicProfile}));
   }
 
-  function testPayload(scope){
+  function basePayload(scope){
     var profile=window.AIVOAdFilmMusicProfile||{};
     return {
-      mock:true,
-      productName:inputValue(scope,"productName"),
-      brandName:inputValue(scope,"brandName"),
-      description:inputValue(scope,"description"),
-      targetAudience:inputValue(scope,"targetAudience"),
-      cta:inputValue(scope,"cta"),
-      voiceStyle:inputValue(scope,"voiceStyle"),
-      visualStyle:selected(scope,"sceneStyle")||"premium",
-      duration:Number(selected(scope,"duration")||10),
-      musicStyle:profile.style||"auto",
-      musicEnergy:profile.energy||"balanced",
-      voiceEnabled:(scope.querySelector('[data-adfilm-input="voiceEnabled"]')||{}).checked!==false
+      productName:inputValue(scope,"productName"),brandName:inputValue(scope,"brandName"),description:inputValue(scope,"description"),targetAudience:inputValue(scope,"targetAudience"),cta:inputValue(scope,"cta"),voiceStyle:inputValue(scope,"voiceStyle"),visualStyle:selected(scope,"sceneStyle")||"premium",duration:Number(selected(scope,"duration")||10),musicStyle:profile.style||"auto",musicEnergy:profile.energy||"balanced",voiceEnabled:(scope.querySelector('[data-adfilm-input="voiceEnabled"]')||{}).checked!==false
     };
   }
 
-  async function runMockTest(scope,button){
-    if(!scope||!button||button.disabled)return;
-    var result=scope.querySelector("[data-music-test-result]");
-    button.disabled=true;button.classList.add("is-loading");
-    if(result){result.className="";result.textContent=t("testing")}
+  function setResult(scope,message,state){var result=scope.querySelector("[data-music-test-result]");if(!result)return;result.className=state?"is-"+state:"";result.textContent=message||""}
+  function setBusy(scope,busy){scope.querySelectorAll("[data-music-test],[data-music-generate]").forEach(function(button){button.disabled=busy;button.classList.toggle("is-loading",busy)})}
+
+  async function runMockTest(scope){
+    if(!scope)return;
+    setBusy(scope,true);setResult(scope,t("testing"),"");
     try{
-      var response=await fetch("/api/providers/fal/audio/create?mock=1",{
-        method:"POST",credentials:"same-origin",cache:"no-store",
-        headers:{"Content-Type":"application/json","X-AIVO-Mock":"1"},
-        body:JSON.stringify(testPayload(scope))
-      });
+      var payload=basePayload(scope);payload.mock=true;
+      var response=await fetch("/api/providers/fal/audio/create?mock=1",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json","X-AIVO-Mock":"1"},body:JSON.stringify(payload)});
       var data=await response.json().catch(function(){return{}});
       if(!response.ok||!data.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
-      var meta=data.meta||{};
-      var summary=t(meta.resolved_style||"cinematic")+" · "+t(meta.resolved_energy||"balanced")+" · "+String(meta.duration||10)+" sn";
-      if(result){result.className="is-success";result.textContent=t("testReady")+": "+summary}
-      toast(t("testReady"),"success");
-      try{console.info("[ADFILM MUSIC MOCK]",{payload:testPayload(scope),response:data})}catch(_){}
-    }catch(error){
-      if(result){result.className="is-error";result.textContent=t("testFailed")+": "+String(error&&error.message||error)}
-      toast(t("testFailed"),"error");
-    }finally{button.disabled=false;button.classList.remove("is-loading")}
+      var meta=data.meta||{};var summary=t(meta.resolved_style||"cinematic")+" · "+t(meta.resolved_energy||"balanced")+" · "+String(meta.duration||10)+" sn";
+      setResult(scope,t("testReady")+": "+summary,"success");toast(t("testReady"),"success");
+    }catch(error){setResult(scope,t("testFailed")+": "+String(error&&error.message||error),"error");toast(t("testFailed"),"error")}
+    finally{setBusy(scope,false)}
+  }
+
+  async function pollRealResult(scope,ticket){
+    var started=Date.now();
+    while(Date.now()-started<120000){
+      await sleep(1800);
+      var response=await fetch("/api/providers/fal/audio/status",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({preview_ticket:ticket})});
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok||!data.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
+      if(data.status==="COMPLETED"&&data.audio_url)return data;
+      if(data.status==="FAILED")throw new Error(data.error||"fal_generation_failed");
+      setResult(scope,data.status==="RUNNING"?t("running")+"…":t("queued")+"…","");
+    }
+    throw new Error("generation_timeout");
+  }
+
+  async function runRealTest(scope){
+    if(!scope||activePoll)return;
+    var audioWrap=scope.querySelector("[data-music-audio-wrap]"),audio=scope.querySelector("[data-music-audio]"),metaNode=scope.querySelector("[data-music-audio-meta]");
+    if(audio){audio.pause();audio.removeAttribute("src");audio.load()}
+    if(audioWrap)audioWrap.hidden=true;
+    setBusy(scope,true);setResult(scope,t("generating"),"");
+    activePoll=true;
+    try{
+      var payload=basePayload(scope);payload.previewRealTest=true;payload.duration=5;
+      var response=await fetch("/api/providers/fal/audio/create?preview_real_test=1",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json","X-AIVO-Preview-Real-Test":"1"},body:JSON.stringify(payload)});
+      var data=await response.json().catch(function(){return{}});
+      if(response.status===429)throw new Error(t("rateLimited"));
+      if(!response.ok||!data.ok)throw new Error(data.message||data.error||("HTTP "+response.status));
+      if(!data.preview_ticket)throw new Error("missing_preview_ticket");
+      setResult(scope,t("queued")+"…","");
+      var completed=await pollRealResult(scope,data.preview_ticket);
+      if(!completed.audio_url)throw new Error("missing_audio_url");
+      if(audio){audio.src=completed.audio_url;audio.load()}
+      if(metaNode){var profile=window.AIVOAdFilmMusicProfile||{};metaNode.textContent=t(profile.resolvedStyle||"cinematic")+" · "+t(profile.resolvedEnergy||"balanced")+" · 5 sn"}
+      if(audioWrap)audioWrap.hidden=false;
+      setResult(scope,t("ready"),"success");toast(t("ready"),"success");
+    }catch(error){setResult(scope,t("generateFailed")+": "+String(error&&error.message||error),"error");toast(t("generateFailed"),"error")}
+    finally{activePoll=false;setBusy(scope,false)}
   }
 
   function translate(scope){
     var style=scope.querySelector("[data-music-style-select]"),energy=scope.querySelector("[data-music-energy-select]");
-    scope.querySelectorAll("[data-music-copy]").forEach(function(node){node.textContent=t(node.getAttribute("data-music-copy"))});
     if(style){style.options[0].text=t("recommendation");style.options[1].text=t("pop");style.options[2].text=t("cinematic");style.options[3].text=t("electronic");style.options[4].text=t("classical");style.options[5].text=t("rnb");style.options[6].text=t("latin")}
     if(energy){energy.options[0].text=t("calm");energy.options[1].text=t("balanced");energy.options[2].text=t("strong")}
     var autoButton=scope.querySelector('[data-music-mode="auto"]');if(autoButton)autoButton.textContent=t("musicAuto");
-    var test=scope.querySelector("[data-music-test]");if(test){var b=test.querySelector("b");if(b)b.textContent=t("test")}
-    var hint=scope.querySelector("[data-music-test-wrap] small");if(hint)hint.textContent=t("testHint");
+    var test=scope.querySelector("[data-music-test] b");if(test)test.textContent=t("test");
+    var generate=scope.querySelector("[data-music-generate] b");if(generate)generate.textContent=t("generate");
+    var hints=scope.querySelectorAll("[data-music-test-wrap] small");if(hints[0])hints[0].textContent=t("testHint");if(hints[1])hints[1].textContent=t("realHint");
+    var play=scope.querySelector("[data-music-audio-wrap] b");if(play)play.textContent=t("playLabel");
     sync(scope);
   }
 
@@ -146,11 +178,8 @@
     scope.__adfilmMusicProfileBound=true;activeRoot=scope;
     var autoButton=options.querySelector('[data-music-mode="auto"]');if(autoButton){autoButton.removeAttribute("data-simple-copy");autoButton.textContent=t("musicAuto")}
     var profile=createProfile();options.insertAdjacentElement("afterend",profile);
-    profile.addEventListener("change",function(event){
-      if(event.target.matches("[data-music-style-select]")){write(STYLE_KEY,event.target.value||"auto");sync(scope)}
-      if(event.target.matches("[data-music-energy-select]")){write(ENERGY_KEY,event.target.value||"balanced");sync(scope)}
-    });
-    profile.addEventListener("click",function(event){var button=event.target.closest("[data-music-test]");if(button){event.preventDefault();runMockTest(scope,button)}});
+    profile.addEventListener("change",function(event){if(event.target.matches("[data-music-style-select]")){write(STYLE_KEY,event.target.value||"auto");sync(scope)}if(event.target.matches("[data-music-energy-select]")){write(ENERGY_KEY,event.target.value||"balanced");sync(scope)}});
+    profile.addEventListener("click",function(event){var testButton=event.target.closest("[data-music-test]");if(testButton){event.preventDefault();runMockTest(scope);return}var generateButton=event.target.closest("[data-music-generate]");if(generateButton){event.preventDefault();runRealTest(scope)}});
     section.addEventListener("click",function(event){if(event.target.closest("[data-music-mode]"))setTimeout(function(){sync(scope)},0)});
     scope.addEventListener("input",function(event){if(event.target.closest("[data-adfilm-input]"))setTimeout(function(){sync(scope)},80)},true);
     scope.addEventListener("change",function(event){if(event.target.closest("[data-adfilm-input]"))setTimeout(function(){sync(scope)},80)},true);
@@ -163,5 +192,5 @@
   window.addEventListener("storage",function(event){if(event&&(event.key==="aivo_language"||event.key==="aivo_lang")){if(activeRoot)translate(activeRoot)}});
   var observer=new MutationObserver(function(){var scope=root();if(scope&&!scope.__adfilmMusicProfileBound)schedule(scope)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())},{once:true});else schedule(root());
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())});else schedule(root());
 })();
