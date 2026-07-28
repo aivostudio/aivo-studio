@@ -1,0 +1,29 @@
+/* AIVO AI Reklam Filmi — automatic music profile controls */
+.adfilm-music-profile{display:grid;gap:13px;margin-top:14px;padding:14px;border:1px solid rgba(168,85,247,.16);border-radius:15px;background:linear-gradient(145deg,rgba(124,58,237,.065),rgba(236,72,153,.025));box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+.adfilm-music-profile[hidden]{display:none!important}
+.adfilm-music-profile__group{display:grid;gap:8px}
+.adfilm-music-profile__head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.adfilm-music-profile__head b{color:rgba(248,248,255,.9);font-size:10.5px;line-height:1.2}
+.adfilm-music-profile__resolved{overflow:hidden;max-width:58%;padding:5px 8px;border:1px solid rgba(52,211,153,.17);border-radius:999px;background:rgba(16,185,129,.075);color:#a7f3d0;font-size:7.5px;font-weight:850;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}
+.adfilm-music-profile__options{display:flex;flex-wrap:wrap;gap:7px}
+.adfilm-music-profile__options button{min-height:32px;padding:6px 10px;border:1px solid rgba(255,255,255,.085);border-radius:10px;background:rgba(5,8,22,.62);color:rgba(240,241,255,.62);font-size:8.5px;font-weight:850;line-height:1.1;cursor:pointer;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
+.adfilm-music-profile__options button:hover{color:#fff;border-color:rgba(216,180,254,.28);background:rgba(124,58,237,.08);transform:translateY(-1px)}
+.adfilm-music-profile__options button.is-selected{color:#fff;border-color:rgba(238,205,255,.42);background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 50%,#ef5fb4 100%);box-shadow:0 8px 18px rgba(124,77,255,.17),inset 0 1px 0 rgba(255,255,255,.16)}
+.adfilm-music-profile__note{display:flex;align-items:flex-start;gap:7px;margin:0;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);color:rgba(226,232,255,.55);font-size:8px;line-height:1.45}
+.adfilm-music-profile__note:before{content:"✦";flex:0 0 auto;color:#67e8f9;font-size:10px;line-height:1.2}
+.adfilm-music-profile__engine{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid rgba(14,165,233,.13);border-radius:11px;background:rgba(14,165,233,.045);color:rgba(224,242,254,.55);font-size:7.5px;line-height:1.3}
+.adfilm-music-profile__engine b{color:rgba(224,242,254,.78);font-size:7.5px}
+
+.adfilm-card--advanced-music .adfilm-music-profile{margin-top:12px;padding:11px;gap:10px}
+.adfilm-card--advanced-music .adfilm-music-profile__options{gap:6px}
+.adfilm-card--advanced-music .adfilm-music-profile__options button{min-height:29px;padding:5px 8px;font-size:7.8px}
+.adfilm-card--advanced-music .adfilm-music-profile__head b{font-size:9.5px}
+
+@media(max-width:1450px){
+  .adfilm-music-profile__resolved{max-width:52%}
+  .adfilm-music-profile__options button{padding-left:8px;padding-right:8px}
+}
+@media(max-width:1120px){
+  .adfilm-music-profile__head{align-items:flex-start;flex-direction:column}
+  .adfilm-music-profile__resolved{max-width:100%}
+}
