@@ -9,7 +9,6 @@
 
   var STYLE_KEY="aivo_adfilm_music_style_v1";
   var ENERGY_KEY="aivo_adfilm_music_energy_v1";
-  var activeRoot=null;
   var activePoll=false;
 
   var COPY={
@@ -26,9 +25,13 @@
   function selected(scope,key){var el=scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');return el?String(el.getAttribute("data-value")||""):""}
   function normalize(text){return String(text||"").toLocaleLowerCase("tr-TR").replace(/[ıİ]/g,"i").replace(/[şŞ]/g,"s").replace(/[ğĞ]/g,"g").replace(/[üÜ]/g,"u").replace(/[öÖ]/g,"o").replace(/[çÇ]/g,"c")}
   function contains(text,words){return words.some(function(word){return text.indexOf(word)>=0})}
-  function toast(message,type){try{var api=window.toast||{};if(api[type]&&typeof api[type]==="function"){api[type](message);return}}catch(_){}console[type==="error"?"error":"log"]("[ADFILM MUSIC]",message)}
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
   function duration(scope){var value=Number(selected(scope,"duration")||10);return[5,10,15,20].indexOf(value)>=0?value:10}
+  function errorMessage(data,response){return String(data&&(
+    data.message||data.error||data.detail||
+    (data.fal_response&&data.fal_response.detail)||
+    (data.fal_response&&data.fal_response.message)
+  )||("HTTP "+response.status))}
 
   function automaticProfile(scope){
     var text=normalize([inputValue(scope,"productName"),inputValue(scope,"brandName"),inputValue(scope,"description"),inputValue(scope,"targetAudience"),inputValue(scope,"cta"),inputValue(scope,"voiceStyle"),selected(scope,"sceneStyle")].join(" "));
@@ -40,8 +43,6 @@
     else if(contains(text,["teknoloji","yapay zeka","uygulama","app","telefon","kulaklik","bilgisayar","software","saas","tech"]))profile={style:"electronic",energy:"balanced"};
     else if(contains(text,["restoran","yemek","pizza","burger","mutfak","restaurant","food","menu"]))profile={style:"latin",energy:"balanced"};
     else if(contains(text,["spor","fitness","gym","ayakkabi","sneaker","kosu","sport"]))profile={style:"electronic",energy:"strong"};
-    else if(contains(text,["otel","tatil","seyahat","turizm","hotel","travel","resort"]))profile={style:"cinematic",energy:"balanced"};
-    else if(contains(text,["banka","sigorta","finans","emlak","hukuk","bank","insurance","finance","real estate"]))profile={style:"classical",energy:"balanced"};
     var scene=selected(scope,"sceneStyle");if(scene==="luxury")profile.style="classical";if(scene==="cinematic")profile.style="cinematic";if(scene==="social")profile.style="pop";if(scene==="minimal"&&profile.energy==="strong")profile.energy="balanced";
     var voice=normalize(inputValue(scope,"voiceStyle"));if(contains(voice,["enerjik","energetic"]))profile.energy="strong";if(contains(voice,["sakin","soft","calm","warm","sicak"]))profile.energy="calm";
     return profile;
@@ -72,18 +73,57 @@
   function setResult(scope,message,state){var result=scope.querySelector("[data-music-test-result]");if(result){result.className=state?"is-"+state:"";result.textContent=message||""}}
   function setBusy(scope,busy){scope.querySelectorAll("[data-music-test],[data-music-generate]").forEach(function(button){button.disabled=busy;button.classList.toggle("is-loading",busy)})}
 
-  async function runMockTest(scope){setBusy(scope,true);setResult(scope,t("testing"),"");try{var payload=basePayload(scope);payload.mock=true;var response=await fetch("/api/providers/fal/audio/create?mock=1",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json","X-AIVO-Mock":"1"},body:JSON.stringify(payload)});var data=await response.json().catch(function(){return{}});if(!response.ok||!data.ok)throw new Error(data.message||data.error||("HTTP "+response.status));var meta=data.meta||{};setResult(scope,t("testReady")+": "+t(meta.resolved_style||"cinematic")+" · "+t(meta.resolved_energy||"balanced")+" · "+String(meta.duration||10)+" sn","success");toast(t("testReady"),"success")}catch(error){setResult(scope,t("testFailed")+": "+String(error&&error.message||error),"error")}finally{setBusy(scope,false)}}
+  async function runMockTest(scope){
+    setBusy(scope,true);setResult(scope,t("testing"),"");
+    try{var payload=basePayload(scope);payload.mock=true;var response=await fetch("/api/providers/fal/audio/create?mock=1",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json","X-AIVO-Mock":"1"},body:JSON.stringify(payload)});var data=await response.json().catch(function(){return{}});if(!response.ok||!data.ok)throw new Error(errorMessage(data,response));var meta=data.meta||{};setResult(scope,t("testReady")+": "+t(meta.resolved_style||"cinematic")+" · "+t(meta.resolved_energy||"balanced")+" · "+String(meta.duration||10)+" sn","success")}
+    catch(error){setResult(scope,t("testFailed")+": "+String(error&&error.message||error),"error")}
+    finally{setBusy(scope,false)}
+  }
 
-  async function pollRealResult(scope,ticket){var started=Date.now();while(Date.now()-started<180000){await sleep(1800);var response=await fetch("/api/providers/fal/audio/status",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({preview_ticket:ticket})});var data=await response.json().catch(function(){return{}});if(!response.ok||!data.ok)throw new Error(data.message||data.error||("HTTP "+response.status));if(data.status==="COMPLETED"&&data.audio_url)return data;if(data.status==="FAILED")throw new Error(data.error||"fal_generation_failed");setResult(scope,data.status==="RUNNING"?t("running")+"…":t("queued")+"…","")}throw new Error("generation_timeout")}
+  async function pollRealResult(scope,statusUrl){
+    var started=Date.now();
+    while(Date.now()-started<180000){
+      await sleep(1800);
+      var response=await fetch("/api/providers/fal/audio/status",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({preview:true,status_url:statusUrl})});
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok||!data.ok)throw new Error(errorMessage(data,response));
+      if(data.status==="COMPLETED"&&data.audio_url)return data;
+      if(data.status==="FAILED")throw new Error(data.message||data.error||"fal_generation_failed");
+      setResult(scope,data.status==="RUNNING"?t("running")+"…":t("queued")+"…","");
+    }
+    throw new Error("generation_timeout");
+  }
 
   async function runRealTest(scope){
-    if(!scope||activePoll)return;var chosenDuration=duration(scope),audioWrap=scope.querySelector("[data-music-audio-wrap]"),audio=scope.querySelector("[data-music-audio]"),metaNode=scope.querySelector("[data-music-audio-meta]");if(audio){audio.pause();audio.removeAttribute("src");audio.load()}if(audioWrap)audioWrap.hidden=true;setBusy(scope,true);setResult(scope,t("generating"),"");activePoll=true;
-    try{var payload=basePayload(scope);payload.previewRealTest=true;var response=await fetch("/api/providers/fal/audio/create?preview_real_test=1",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json","X-AIVO-Preview-Real-Test":"1"},body:JSON.stringify(payload)});var data=await response.json().catch(function(){return{}});if(!response.ok||!data.ok)throw new Error(data.message||data.error||("HTTP "+response.status));if(!data.preview_ticket)throw new Error("missing_preview_ticket");setResult(scope,t("queued")+"…","");var completed=await pollRealResult(scope,data.preview_ticket);if(!completed.audio_url)throw new Error("missing_audio_url");if(audio){audio.src=completed.audio_url;audio.load()}if(metaNode){var profile=window.AIVOAdFilmMusicProfile||{};metaNode.textContent=t(profile.resolvedStyle||"cinematic")+" · "+t(profile.resolvedEnergy||"balanced")+" · "+chosenDuration+" sn"}if(audioWrap)audioWrap.hidden=false;setResult(scope,t("ready")+": "+chosenDuration+" sn","success");toast(t("ready"),"success")}
-    catch(error){setResult(scope,t("generateFailed")+": "+String(error&&error.message||error),"error");toast(t("generateFailed"),"error")}
+    if(!scope||activePoll)return;
+    var chosenDuration=duration(scope),audioWrap=scope.querySelector("[data-music-audio-wrap]"),audio=scope.querySelector("[data-music-audio]"),metaNode=scope.querySelector("[data-music-audio-meta]");
+    if(audio){audio.pause();audio.removeAttribute("src");audio.load()}if(audioWrap)audioWrap.hidden=true;setBusy(scope,true);setResult(scope,t("generating"),"");activePoll=true;
+    try{
+      var payload=basePayload(scope);payload.previewRealTest=true;
+      var response=await fetch("/api/providers/fal/audio/create?preview_real_test=1",{method:"POST",credentials:"same-origin",cache:"no-store",headers:{"Content-Type":"application/json","X-AIVO-Preview-Real-Test":"1"},body:JSON.stringify(payload)});
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok||!data.ok)throw new Error(errorMessage(data,response));
+      var statusUrl=data.status_url||data.response_url;if(!statusUrl)throw new Error("missing_fal_status_url");
+      setResult(scope,t("queued")+"…","");
+      var completed=await pollRealResult(scope,statusUrl);
+      if(!completed.audio_url)throw new Error("missing_audio_url");
+      if(audio){audio.src=completed.audio_url;audio.load()}
+      if(metaNode){var profile=window.AIVOAdFilmMusicProfile||{};metaNode.textContent=t(profile.resolvedStyle||"cinematic")+" · "+t(profile.resolvedEnergy||"balanced")+" · "+chosenDuration+" sn"}
+      if(audioWrap)audioWrap.hidden=false;setResult(scope,t("ready")+": "+chosenDuration+" sn","success");
+    }catch(error){setResult(scope,t("generateFailed")+": "+String(error&&error.message||error),"error")}
     finally{activePoll=false;setBusy(scope,false)}
   }
 
-  function setup(scope){if(!scope||scope.__adfilmMusicProfileBound)return;var section=scope.querySelector("[data-adfilm-music-source]"),options=section&&section.querySelector("[data-adfilm-music-options]");if(!section||!options)return;scope.__adfilmMusicProfileBound=true;activeRoot=scope;var autoButton=options.querySelector('[data-music-mode="auto"]');if(autoButton){autoButton.removeAttribute("data-simple-copy");autoButton.textContent=t("musicAuto")}var profile=createProfile();options.insertAdjacentElement("afterend",profile);profile.addEventListener("change",function(event){if(event.target.matches("[data-music-style-select]"))write(STYLE_KEY,event.target.value||"auto");if(event.target.matches("[data-music-energy-select]"))write(ENERGY_KEY,event.target.value||"balanced");sync(scope)});profile.addEventListener("click",function(event){if(event.target.closest("[data-music-test]")){event.preventDefault();runMockTest(scope);return}if(event.target.closest("[data-music-generate]")){event.preventDefault();runRealTest(scope)}});scope.addEventListener("input",function(){setTimeout(function(){sync(scope)},50)},true);scope.addEventListener("change",function(){setTimeout(function(){sync(scope)},50)},true);scope.addEventListener("click",function(event){if(event.target.closest('[data-adfilm-choice] button[data-value]'))setTimeout(function(){sync(scope)},30)},true);sync(scope)}
+  function setup(scope){
+    if(!scope||scope.__adfilmMusicProfileBound)return;
+    var section=scope.querySelector("[data-adfilm-music-source]"),options=section&&section.querySelector("[data-adfilm-music-options]");if(!section||!options)return;
+    scope.__adfilmMusicProfileBound=true;var autoButton=options.querySelector('[data-music-mode="auto"]');if(autoButton){autoButton.removeAttribute("data-simple-copy");autoButton.textContent=t("musicAuto")}
+    var profile=createProfile();options.insertAdjacentElement("afterend",profile);
+    profile.addEventListener("change",function(event){if(event.target.matches("[data-music-style-select]"))write(STYLE_KEY,event.target.value||"auto");if(event.target.matches("[data-music-energy-select]"))write(ENERGY_KEY,event.target.value||"balanced");sync(scope)});
+    profile.addEventListener("click",function(event){if(event.target.closest("[data-music-test]")){event.preventDefault();runMockTest(scope);return}if(event.target.closest("[data-music-generate]")){event.preventDefault();runRealTest(scope)}});
+    scope.addEventListener("input",function(){setTimeout(function(){sync(scope)},50)},true);scope.addEventListener("change",function(){setTimeout(function(){sync(scope)},50)},true);scope.addEventListener("click",function(event){if(event.target.closest('[data-adfilm-choice] button[data-value]'))setTimeout(function(){sync(scope)},30)},true);sync(scope);
+  }
+
   function schedule(scope){setTimeout(function(){setup(scope||root())},180)}
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root)});
   var observer=new MutationObserver(function(){var scope=root();if(scope&&!scope.__adfilmMusicProfileBound)schedule(scope)});observer.observe(document.documentElement,{childList:true,subtree:true});
