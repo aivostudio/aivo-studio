@@ -178,15 +178,120 @@
   function exposeProject(controller){
     window.AIVOAdFilmActiveProject=controller.project||null;
     window.AIVOAdFilmServerMedia=currentMedia(controller);
+    controller.root.dataset.adfilmProjectId=controller.projectId||"";
+    controller.root.dataset.adfilmRemoteProductCount=String((window.AIVOAdFilmServerMedia.productImages||[]).length);
+    document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:controller.project||null,projectId:controller.projectId||"",media:window.AIVOAdFilmServerMedia}}));
+  }
+  function applyProject(controller,project){
+    if(!project)return;
+    controller.project=project;controller.projectId=project.id||controller.projectId;exposeProject(controller);
+    if(!formIsMostlyEmpty(controller.root))return;
+    controller.applying=true;
+    var scope=controller.root,b=project.brief||{},n=project.narration||{},o=project.output||{};
+    setField(scope,"productName",b.productName);setField(scope,"brandName",b.brandName);setField(scope,"description",b.description);setField(scope,"targetAudience",b.targetAudience);setField(scope,"cta",b.cta);
+    setField(scope,"voiceEnabled",n.enabled);setField(scope,"language",n.language);setField(scope,"voiceStyle",n.voiceStyle);setField(scope,"voiceSpeed",n.speed);setField(scope,"voiceFlow",n.flow);setField(scope,"narrationText",n.text);
+    setField(scope,"subtitles",o.subtitles);setField(scope,"music",o.music);setField(scope,"soundEffects",o.soundEffects);
+    clickChoice(scope,"scriptMode",n.scriptMode);clickChoice(scope,"sceneStyle",project.sceneStyle);clickChoice(scope,"duration",o.duration);clickChoice(scope,"aspectRatio",o.aspectRatio);clickChoice(scope,"quality",o.quality);
+    setTimeout(function(){setMusicProfile(scope,project.music||{});controller.applying=false;exposeProject(controller)},160);
   }
 
-  /* Remaining module behavior is preserved by the existing runtime hooks below. */
-  document.addEventListener("aivo:module-mounted",function(event){
-    if(!event||!event.detail||event.detail.key!=="adfilm")return;
-    var scope=event.detail.root;
-    if(!scope||controllers.has(scope))return;
-    var controller={root:scope,project:null,status:"connecting",toastTimes:{}};
-    controllers.set(scope,controller);
+  function queueSave(controller,delay){if(controller.applying||controller.uploading)return;clearTimeout(controller.saveTimer);controller.saveTimer=setTimeout(function(){save(controller)},delay==null?650:delay)}
+  function save(controller){
+    if(!controller.projectId||controller.applying)return Promise.resolve(null);
+    var payload=collect(controller),shouldToast=!!controller.userDirty;
+    controller.saveChain=controller.saveChain.catch(function(){}).then(async function(){
+      setStatus(controller,"saving",t("saving"));
+      var result=await window.AIVOAdFilmProjects.updateProject(controller.projectId,payload);
+      controller.project=result.project;controller.userDirty=false;exposeProject(controller);setStatus(controller,"saved",t("saved"));
+      if(shouldToast)notify(controller,"success","savedToast",{duration:2100});
+      return result.project;
+    }).catch(function(error){console.error("[ADFILM] project save",error);var key=errorKey(error,"saveFailed");setStatus(controller,error.status===401||error.status===0?"offline":"error",t(key));notify(controller,error.status===401?"warning":"error",key,{force:true,duration:4200});return null});
+    return controller.saveChain;
+  }
+
+  function itemsForKind(controller,kind){
+    var media=currentMedia(controller);
+    if(kind==="product-image")return media.productImages;
+    if(kind==="logo")return[media.logo];
+    if(kind==="music-track")return[media.musicTrack];
+    return[media.extraMedia];
+  }
+  function findUploaded(controller,file,kind){
+    var fp=fingerprint(file);
+    return itemsForKind(controller,kind).filter(Boolean).find(function(item){return item._fingerprint===fp||(item.name===file.name&&Number(item.size)===Number(file.size)&&item.contentType===file.type)})||null;
+  }
+  function filesForKey(scope,key){return key==="musicTrack"?musicFiles(scope):standardFiles(scope,key)}
+  function kindForKey(key){return key==="productImages"?"product-image":key==="logo"?"logo":key==="musicTrack"?"music-track":"extra-media"}
+
+  async function uploadFiles(controller,key,kind){
+    if(!controller.projectId)return;
+    var selectedFiles=filesForKey(controller.root,key),next=[],newUploadCount=0,progressToast=null;
+    controller.uploading=true;
+    try{
+      if(selectedFiles.length)progressToast=notify(controller,"info","uploadProgress",{force:true,duration:0,vars:{current:1,total:selectedFiles.length}});
+      for(var index=0;index<selectedFiles.length;index++){
+        var file=selectedFiles[index],existing=findUploaded(controller,file,kind);
+        if(existing){next.push(existing);continue}
+        dismissToast(progressToast);setStatus(controller,"uploading",t("uploadProgress",{current:index+1,total:selectedFiles.length}));progressToast=notify(controller,"info","uploadProgress",{force:true,duration:0,vars:{current:index+1,total:selectedFiles.length}});
+        next.push(await window.AIVOAdFilmProjects.uploadFile(controller.projectId,file,kind));newUploadCount++;
+      }
+      var media=currentMedia(controller);
+      if(key==="productImages")media.productImages=next;
+      if(key==="logo")media.logo=next[0]||null;
+      if(key==="extraMedia")media.extraMedia=next[0]||null;
+      if(key==="musicTrack")media.musicTrack=next[0]||null;
+      controller.project=Object.assign({},controller.project,{media:media,music:Object.assign({},controller.project&&controller.project.music||{},{track:media.musicTrack})});
+      controller.uploading=false;controller.userDirty=false;await save(controller);dismissToast(progressToast);
+      if(newUploadCount>0)notify(controller,"success",newUploadCount===1?"uploadedOne":"uploadedMany",{force:true,duration:2800,vars:{count:newUploadCount}});
+    }catch(error){controller.uploading=false;dismissToast(progressToast);console.error("[ADFILM] media upload",error);var keyName=errorKey(error,"uploadFailed");setStatus(controller,error.status===401||error.status===0?"offline":"error",t(keyName));notify(controller,error.status===401||error.status===403||error.status===400?"warning":"error",keyName,{force:true,duration:4600})}
+  }
+
+  async function bootstrap(controller){
     setStatus(controller,"connecting",t("connecting"));
-  });
+    var id=getStoredProjectId(),project=null;
+    if(id){
+      var loadingToast=notify(controller,"info","loading",{force:true,duration:0});
+      try{project=(await window.AIVOAdFilmProjects.getProject(id)).project;dismissToast(loadingToast);notify(controller,"success","loaded",{force:true,duration:2300})}
+      catch(error){dismissToast(loadingToast);if(error.status!==401&&error.status!==404)console.warn("[ADFILM] project load",error);if(error.status===404){storeProjectId("");notify(controller,"warning","projectMissing",{force:true,duration:3500})}if(error.status===401){setStatus(controller,"offline",t("authRequired"));notify(controller,"warning","authRequired",{force:true,duration:4400});return}if(error.status!==404)notify(controller,error.status===0?"warning":"error",errorKey(error,"loadFailed"),{force:true,duration:4200})}
+    }
+    if(!project){
+      var creatingToast=notify(controller,"info","creating",{force:true,duration:0});
+      try{var created=await window.AIVOAdFilmProjects.createProject(collect(controller));project=created.project;id=project.id;storeProjectId(id);dismissToast(creatingToast);notify(controller,"success","created",{force:true,duration:2600})}
+      catch(error){dismissToast(creatingToast);var createKey=errorKey(error,"createFailed");setStatus(controller,error.status===401||error.status===0?"offline":"error",t(createKey));notify(controller,error.status===401||error.status===0?"warning":"error",createKey,{force:true,duration:4600});return}
+    }
+    controller.project=project;controller.projectId=project.id;applyProject(controller,project);setStatus(controller,"saved",t("connected"));if(!formIsMostlyEmpty(controller.root))queueSave(controller,100);
+  }
+
+  function bind(scope){
+    if(!scope||controllers.has(scope)||isPublicPreview())return;
+    var controller={root:scope,project:null,projectId:"",saveTimer:null,saveChain:Promise.resolve(),applying:false,uploading:false,status:"idle",userDirty:false,toastTimes:{}};
+    controllers.set(scope,controller);
+    scope.addEventListener("input",function(event){if(event.target.closest("[data-adfilm-input]")){controller.userDirty=true;queueSave(controller)}},true);
+    scope.addEventListener("change",function(event){
+      var media=event.target.closest("[data-adfilm-file]");
+      if(media){
+        var mediaKey=media.getAttribute("data-adfilm-file");
+        var smartRoleLocal=!!media.closest(".adfilm-role-media")&&(mediaKey==="productImages"||mediaKey==="logo");
+        if(media.dataset.adfilmSkipCloudUpload==="1"||smartRoleLocal){
+          controller.userDirty=true;
+          queueSave(controller,180);
+          return;
+        }
+        setTimeout(function(){uploadFiles(controller,mediaKey,kindForKey(mediaKey))},120);
+        return;
+      }
+      if(event.target.closest("[data-adfilm-music-file]")){setTimeout(function(){uploadFiles(controller,"musicTrack","music-track")},120);return}
+      if(event.target.closest("[data-music-style-select],[data-music-energy-select],[data-adfilm-input]")){controller.userDirty=true;queueSave(controller)}
+    },true);
+    scope.addEventListener("click",function(event){
+      if(event.target.closest("[data-adfilm-choice] button[data-value],[data-music-mode]")){controller.userDirty=true;queueSave(controller,120)}
+      if(event.target.closest("[data-adfilm-music-remove]"))setTimeout(function(){uploadFiles(controller,"musicTrack","music-track")},160);
+      if(event.target.closest("[data-adfilm-draft-reset]"))setTimeout(async function(){var resetToast=notify(controller,"info","resetting",{force:true,duration:0});if(controller.projectId){try{await window.AIVOAdFilmProjects.deleteProject(controller.projectId)}catch(_){}storeProjectId("");controller.project=null;controller.projectId=""}await bootstrap(controller);dismissToast(resetToast);if(controller.projectId)notify(controller,"success","resetDone",{force:true,duration:2800})},180);
+    },true);
+    bootstrap(controller);
+  }
+
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){bind(event.detail.root)},180)});
+  var observer=new MutationObserver(function(){var scope=document.querySelector('[data-module-root][data-module="adfilm"]');if(scope&&!controllers.has(scope))setTimeout(function(){bind(scope)},120)});
+  observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
