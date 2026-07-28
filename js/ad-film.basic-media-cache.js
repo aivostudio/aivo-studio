@@ -28,6 +28,7 @@
   }
   function t(key){return COPY[lang()][key]||COPY.tr[key]||key}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
+  function isResetting(scope){return !!(window.__AIVO_AD_FILM_RESETTING__||(scope&&scope.dataset&&scope.dataset.adfilmResetting==="1"))}
   function toast(message,type){
     try{
       if(window.toast&&typeof window.toast[type||"info"]==="function"){window.toast[type||"info"](message);return}
@@ -77,34 +78,27 @@
   function fileList(scope,key){var field=input(scope,key);return field?Array.from(field.files||[]):[]}
 
   function cloneFile(file){
-    return{
-      name:file.name||"media",
-      type:file.type||"application/octet-stream",
-      lastModified:file.lastModified||Date.now(),
-      blob:file.slice(0,file.size,file.type||"application/octet-stream")
-    };
+    return{name:file.name||"media",type:file.type||"application/octet-stream",lastModified:file.lastModified||Date.now(),blob:file.slice(0,file.size,file.type||"application/octet-stream")};
   }
 
   function collect(scope){
-    return{
-      id:RECORD_KEY,
-      updatedAt:new Date().toISOString(),
-      productImages:fileList(scope,"productImages").map(cloneFile),
-      logo:fileList(scope,"logo").map(cloneFile),
-      extraMedia:fileList(scope,"extraMedia").map(cloneFile)
-    };
+    return{id:RECORD_KEY,updatedAt:new Date().toISOString(),productImages:fileList(scope,"productImages").map(cloneFile),logo:fileList(scope,"logo").map(cloneFile),extraMedia:fileList(scope,"extraMedia").map(cloneFile)};
   }
 
   function hasMedia(record){return !!(record&&((record.productImages&&record.productImages.length)||(record.logo&&record.logo.length)||(record.extraMedia&&record.extraMedia.length)))}
 
   function saveNow(scope){
-    if(!scope||restoring)return Promise.resolve(false);
+    if(!scope||restoring||isResetting(scope))return Promise.resolve(false);
     var record=collect(scope);
     if(!hasMedia(record))return deleteRecord().then(function(){return true}).catch(function(){return false});
-    return tx("readwrite",function(store){store.put(record)}).then(function(){window.AIVOAdFilmMediaCacheDebug={saved:true,record:record};return true}).catch(function(error){console.error("[ADFILM] media cache save failed",error);toast(t("saveError"),"warning");return false});
+    return tx("readwrite",function(store){store.put(record)}).then(function(){window.AIVOAdFilmMediaCacheDebug={saved:true,record:record};return true}).catch(function(error){console.error("[ADFILM] media cache save failed",error);if(!isResetting(scope))toast(t("saveError"),"warning");return false});
   }
 
-  function scheduleSave(scope){clearTimeout(writeTimer);writeTimer=setTimeout(function(){saveNow(scope)},80)}
+  function scheduleSave(scope){
+    clearTimeout(writeTimer);
+    if(isResetting(scope))return;
+    writeTimer=setTimeout(function(){saveNow(scope)},80);
+  }
 
   function toFiles(items){
     return (items||[]).map(function(item){
@@ -122,33 +116,41 @@
   }
 
   function restore(scope){
-    if(!scope)return Promise.resolve(false);
+    if(!scope||isResetting(scope))return Promise.resolve(false);
     restoring=true;
     return getRecord().then(function(record){
+      if(isResetting(scope)){restoring=false;return false}
       if(!hasMedia(record)){restoring=false;return false}
       setFiles(input(scope,"productImages"),toFiles(record.productImages));
       setFiles(input(scope,"logo"),toFiles(record.logo));
       setFiles(input(scope,"extraMedia"),toFiles(record.extraMedia));
-      setTimeout(function(){restoring=false;toast(t("restored"),"info")},120);
+      setTimeout(function(){restoring=false;if(!isResetting(scope))toast(t("restored"),"info")},120);
       window.AIVOAdFilmMediaCacheDebug={restored:true,record:record};
       return true;
-    }).catch(function(error){restoring=false;console.error("[ADFILM] media cache restore failed",error);toast(t("restoreError"),"warning");return false});
+    }).catch(function(error){restoring=false;console.error("[ADFILM] media cache restore failed",error);if(!isResetting(scope))toast(t("restoreError"),"warning");return false});
+  }
+
+  function clear(scope){
+    clearTimeout(writeTimer);writeTimer=null;restoring=true;
+    return deleteRecord().catch(function(){return false}).then(function(){setTimeout(function(){if(!isResetting(scope))restoring=false},100);return true});
   }
 
   function bind(scope){
     if(!scope||scope.__adfilmMediaCacheBound)return;
     scope.__adfilmMediaCacheBound=true;mountedRoot=scope;
     setTimeout(function(){restore(scope)},220);
-    scope.addEventListener("change",function(event){if(event.target&&event.target.closest("[data-adfilm-file]"))scheduleSave(scope)},true);
+    scope.addEventListener("change",function(event){if(event.target&&event.target.closest("[data-adfilm-file]")&&!isResetting(scope))scheduleSave(scope)},true);
     scope.addEventListener("click",function(event){
-      if(event.target.closest("[data-adfilm-draft-reset]")){deleteRecord().catch(function(){});return}
+      if(event.target.closest("[data-adfilm-draft-reset]")){clear(scope);return}
       if(event.target.closest("[data-media-action],[data-clear-file]"))setTimeout(function(){scheduleSave(scope)},60);
     },true);
   }
 
-  function finalSave(){if(mountedRoot&&mountedRoot.isConnected)saveNow(mountedRoot)}
+  function finalSave(){if(mountedRoot&&mountedRoot.isConnected&&!isResetting(mountedRoot))saveNow(mountedRoot)}
 
+  window.AIVOAdFilmMediaCache={clear:function(){return clear(mountedRoot||root())},save:function(){return saveNow(mountedRoot||root())}};
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){bind(event.detail.root)},100)});
+  document.addEventListener("aivo:adfilm-reset-complete",function(){restoring=false});
   window.addEventListener("pagehide",finalSave);
   document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")finalSave()});
 
