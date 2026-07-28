@@ -32,17 +32,30 @@ function parseJson(text) {
   }
 }
 
-function ownedUrlPrefix(user, projectId) {
+function ownedPublicPrefix(user, projectId) {
   return buildPublicUrl(mediaPrefix(user, projectId));
 }
 
-function validateOwnedUrls(values, prefix, max) {
+function isOwnedSignedUrl(url, ownedKeyPrefix) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") return false;
+    const decodedPath = decodeURIComponent(parsed.pathname || "").replace(/^\/+/, "");
+    return decodedPath.includes(ownedKeyPrefix);
+  } catch (_) {
+    return false;
+  }
+}
+
+function validateOwnedUrls(values, publicPrefix, ownedKeyPrefix, max) {
   if (!Array.isArray(values)) return [];
   const next = [];
   for (const value of values) {
-    const url = clean(value, 1200);
-    if (!url || !url.startsWith(prefix)) throw new Error("unowned_media_url");
-    if (!/^https:\/\//i.test(url)) throw new Error("invalid_media_url");
+    const url = clean(value, 4000);
+    if (!url || !/^https:\/\//i.test(url)) throw new Error("invalid_media_url");
+    if (!url.startsWith(publicPrefix) && !isOwnedSignedUrl(url, ownedKeyPrefix)) {
+      throw new Error("unowned_media_url");
+    }
     if (!next.includes(url)) next.push(url);
     if (next.length >= max) break;
   }
@@ -91,15 +104,22 @@ export default async function handler(req, res) {
     const prompt = clean(req.body?.prompt);
     if (prompt.length < 20) return sendJson(res, 400, { ok: false, error: "missing_prompt" });
 
-    const prefix = ownedUrlPrefix(user, projectId);
+    const ownedKeyPrefix = mediaPrefix(user, projectId);
+    const publicPrefix = ownedPublicPrefix(user, projectId);
     let imageUrls;
     let audioUrls;
     let logoUrl = "";
     try {
-      imageUrls = validateOwnedUrls(req.body?.image_urls, prefix, 9);
-      audioUrls = validateOwnedUrls(req.body?.audio_urls, prefix, 3);
-      logoUrl = clean(req.body?.logo_url, 1200);
-      if (logoUrl && !logoUrl.startsWith(prefix)) throw new Error("unowned_media_url");
+      imageUrls = validateOwnedUrls(req.body?.image_urls, publicPrefix, ownedKeyPrefix, 9);
+      audioUrls = validateOwnedUrls(req.body?.audio_urls, publicPrefix, ownedKeyPrefix, 3);
+      logoUrl = clean(req.body?.logo_url, 4000);
+      if (
+        logoUrl &&
+        !logoUrl.startsWith(publicPrefix) &&
+        !isOwnedSignedUrl(logoUrl, ownedKeyPrefix)
+      ) {
+        throw new Error("unowned_media_url");
+      }
     } catch (error) {
       return sendJson(res, 400, { ok: false, error: String(error?.message || error) });
     }
