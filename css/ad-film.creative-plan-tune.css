@@ -33,27 +33,61 @@
 /* Reklam Planı: küçük ekran yazısı hissini kaldır, fakat kartı gereksiz şişirme. */
 .is-creative-plan-ready .adfilm-card--creative-plan{
   padding:17px 19px!important;
+  background:
+    radial-gradient(circle at 14% 0%,rgba(139,92,246,.15),transparent 38%),
+    radial-gradient(circle at 92% 4%,rgba(14,165,233,.065),transparent 34%),
+    linear-gradient(145deg,rgba(31,27,56,.88),rgba(11,15,34,.94))!important;
+  border-color:rgba(167,139,250,.2)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 18px 42px rgba(0,0,0,.16)!important;
 }
 .is-creative-plan-ready .adfilm-card--creative-plan .adfilm-card__heading h2{
+  color:#fff;
   font-size:15px;
 }
 .is-creative-plan-ready .adfilm-card--creative-plan .adfilm-card__heading p{
   margin-top:4px;
   font-size:10.5px;
   line-height:1.45;
-  color:rgba(229,231,255,.6);
+  color:rgba(245,243,255,.76);
 }
 .is-creative-plan-ready .adfilm-card--creative-plan .adfilm-card__required{
+  color:rgba(245,243,255,.76);
+  border-color:rgba(196,181,253,.22);
+  background:rgba(139,92,246,.08);
   font-size:8.5px;
 }
 .is-creative-plan-ready .adfilm-plan-mode{
   margin-top:14px;
   padding:6px;
+  border-color:rgba(167,139,250,.2);
+  background:linear-gradient(145deg,rgba(27,23,52,.78),rgba(8,11,27,.88));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
 }
 .is-creative-plan-ready .adfilm-plan-mode button{
   min-height:42px;
+  color:rgba(250,248,255,.82);
+  border:1px solid rgba(167,139,250,.14);
+  background:
+    radial-gradient(circle at 18% 0%,rgba(139,92,246,.09),transparent 52%),
+    linear-gradient(145deg,rgba(32,27,59,.78),rgba(13,16,38,.9));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
   font-size:11.5px;
+  font-weight:900;
   letter-spacing:-.01em;
+}
+.is-creative-plan-ready .adfilm-plan-mode button:hover{
+  color:#fff;
+  border-color:rgba(216,180,254,.36);
+  background:
+    radial-gradient(circle at 18% 0%,rgba(168,85,247,.16),transparent 52%),
+    linear-gradient(145deg,rgba(48,36,84,.9),rgba(17,20,45,.98));
+}
+.is-creative-plan-ready .adfilm-plan-mode button.is-selected{
+  color:#fff!important;
+  border-color:rgba(255,255,255,.34)!important;
+  background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 52%,#ef5fb4 100%)!important;
+  box-shadow:0 9px 24px rgba(124,77,255,.24),0 0 22px rgba(236,72,153,.12),inset 0 1px 0 rgba(255,255,255,.18)!important;
+  text-shadow:0 1px 1px rgba(30,8,48,.28);
 }
 .is-creative-plan-ready .adfilm-plan-layout{
   gap:13px;
@@ -62,16 +96,22 @@
 .is-creative-plan-ready .adfilm-plan-concept,
 .is-creative-plan-ready .adfilm-plan-direction{
   padding:14px;
+  border-color:rgba(167,139,250,.2);
+  background:
+    radial-gradient(circle at 16% 0%,rgba(139,92,246,.08),transparent 50%),
+    linear-gradient(145deg,rgba(31,27,57,.72),rgba(10,13,32,.86));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
 }
 .is-creative-plan-ready .adfilm-plan-concept{
   opacity:1;
 }
 .is-creative-plan-ready .adfilm-plan-concept.is-muted{
-  opacity:.72;
-  filter:saturate(.82);
+  opacity:1;
+  filter:none;
 }
 .is-creative-plan-ready .adfilm-plan-concept>b,
 .is-creative-plan-ready .adfilm-plan-direction>span>b{
+  color:#fff;
   font-size:11.5px;
   line-height:1.35;
 }
@@ -82,12 +122,33 @@
 .is-creative-plan-ready .adfilm-plan-concept__grid button{
   min-height:38px;
   padding:8px 10px;
+  color:rgba(250,248,255,.82);
+  border-color:rgba(167,139,250,.2);
+  background:
+    radial-gradient(circle at 18% 0%,rgba(139,92,246,.105),transparent 52%),
+    linear-gradient(145deg,rgba(34,29,62,.86),rgba(13,16,38,.94));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 7px 18px rgba(0,0,0,.1);
   font-size:10px;
+  font-weight:900;
   line-height:1.25;
+}
+.is-creative-plan-ready .adfilm-plan-concept__grid button:hover{
+  color:#fff;
+  border-color:rgba(216,180,254,.38);
+  background:
+    radial-gradient(circle at 18% 0%,rgba(168,85,247,.17),transparent 52%),
+    linear-gradient(145deg,rgba(49,37,86,.94),rgba(18,21,47,.98));
+}
+.is-creative-plan-ready .adfilm-plan-concept__grid button.is-selected{
+  color:#fff!important;
+  border-color:rgba(255,255,255,.34)!important;
+  background:linear-gradient(112deg,#7c4dff 0%,#b84fd7 52%,#ef5fb4 100%)!important;
+  box-shadow:0 9px 24px rgba(124,77,255,.23),0 0 20px rgba(236,72,153,.11),inset 0 1px 0 rgba(255,255,255,.18)!important;
+  text-shadow:0 1px 1px rgba(30,8,48,.28);
 }
 .is-creative-plan-ready .adfilm-plan-concept>p{
   margin-top:10px!important;
-  color:rgba(226,232,255,.62)!important;
+  color:rgba(239,241,255,.72)!important;
   font-size:9.3px!important;
   line-height:1.5!important;
 }
@@ -96,37 +157,53 @@
 }
 .is-creative-plan-ready .adfilm-plan-direction>span em{
   padding:5px 8px;
+  color:#e9d5ff;
+  border-color:rgba(192,132,252,.28);
+  background:rgba(124,58,237,.13);
   font-size:8px;
 }
 .is-creative-plan-ready .adfilm-plan-direction textarea{
   min-height:116px;
   max-height:230px;
   padding:13px 14px;
+  border-color:rgba(167,139,250,.22);
+  background:linear-gradient(145deg,rgba(14,16,38,.96),rgba(7,10,25,.98));
+  color:#fff;
   font-size:11.5px;
   line-height:1.55;
 }
+.is-creative-plan-ready .adfilm-plan-direction textarea:focus{
+  border-color:rgba(216,180,254,.5);
+  box-shadow:0 0 0 3px rgba(124,58,237,.09),0 8px 24px rgba(0,0,0,.14);
+}
 .is-creative-plan-ready .adfilm-plan-direction textarea::placeholder{
-  color:rgba(229,231,255,.4);
+  color:rgba(245,243,255,.5);
 }
 .is-creative-plan-ready .adfilm-plan-direction>small{
   gap:14px;
-  color:rgba(226,232,255,.62);
+  color:rgba(239,241,255,.72);
   font-size:9px;
   line-height:1.45;
 }
 .is-creative-plan-ready .adfilm-plan-direction>small>b{
+  color:#ddd6fe;
   font-size:8.5px;
 }
 .is-creative-plan-ready .adfilm-manual-scenes{
   margin-top:13px;
   padding:14px;
+  border-color:rgba(34,211,238,.17);
+  background:
+    radial-gradient(circle at 12% 0%,rgba(14,165,233,.065),transparent 45%),
+    linear-gradient(145deg,rgba(20,27,53,.72),rgba(10,13,31,.88));
 }
 .is-creative-plan-ready .adfilm-manual-scenes__head b{
+  color:#fff;
   font-size:11.5px;
 }
 .is-creative-plan-ready .adfilm-manual-scenes__head small{
   margin-top:4px;
-  color:rgba(226,232,255,.62);
+  color:rgba(239,241,255,.7);
   font-size:9px;
   line-height:1.4;
 }
@@ -142,17 +219,25 @@
   gap:6px;
 }
 .is-creative-plan-ready .adfilm-scene-line>span{
-  color:rgba(245,246,255,.78);
+  color:rgba(250,248,255,.88);
   font-size:9.5px;
+  font-weight:900;
   line-height:1.35;
 }
 .is-creative-plan-ready .adfilm-scene-line input{
   height:40px;
   padding:0 12px;
+  border-color:rgba(167,139,250,.2);
+  background:linear-gradient(145deg,rgba(16,18,41,.96),rgba(8,11,27,.98));
+  color:#fff;
   font-size:10.5px;
 }
+.is-creative-plan-ready .adfilm-scene-line input:focus{
+  border-color:rgba(216,180,254,.44);
+  box-shadow:0 0 0 3px rgba(124,58,237,.07);
+}
 .is-creative-plan-ready .adfilm-scene-line input::placeholder{
-  color:rgba(229,231,255,.38);
+  color:rgba(245,243,255,.48);
 }
 
 @media(max-width:1120px){
