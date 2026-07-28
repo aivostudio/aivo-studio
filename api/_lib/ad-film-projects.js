@@ -2,17 +2,30 @@
 // Shared authentication, validation and KV persistence for AI Ad Film projects.
 
 import crypto from "crypto";
-import { createRequire } from "module";
+import kvModule from "../_kv.js";
+import authModule from "./auth.js";
 
-const require = createRequire(import.meta.url);
-const kvMod = require("../_kv.js");
-const authMod = require("./auth.js");
-const { kvGetJson, kvSetJson, kvDel } = kvMod;
-const { requireAuth } = authMod;
+const kv = kvModule?.default || kvModule || {};
+const auth = authModule?.default || authModule || {};
+const { kvGetJson, kvSetJson, kvDel } = kv;
+const { requireAuth } = auth;
 
 const PROJECT_PREFIX = "adfilm:project:";
 const USER_INDEX_PREFIX = "adfilm:user:";
 const MAX_PROJECTS_PER_USER = 50;
+
+function assertDependencies() {
+  if (
+    typeof kvGetJson !== "function" ||
+    typeof kvSetJson !== "function" ||
+    typeof kvDel !== "function"
+  ) {
+    throw new Error("ad_film_kv_helpers_unavailable");
+  }
+  if (typeof requireAuth !== "function") {
+    throw new Error("ad_film_auth_helper_unavailable");
+  }
+}
 
 export function sendJson(res, status, data) {
   res.statusCode = status;
@@ -53,23 +66,24 @@ export function ownerHash(principal) {
 }
 
 export async function resolveAdFilmUser(req) {
-  let auth = null;
+  assertDependencies();
+  let authResult = null;
   try {
-    auth = await requireAuth(req);
+    authResult = await requireAuth(req);
   } catch (_) {
     return null;
   }
 
-  const userId = cleanText(auth?.user_id, 160);
-  const email = cleanText(auth?.email, 240).toLowerCase();
+  const userId = cleanText(authResult?.user_id, 160);
+  const email = cleanText(authResult?.email, 240).toLowerCase();
   const principal = userId || email;
   if (!principal) return null;
 
   return {
     userId: principal,
     email: email || null,
-    role: cleanText(auth?.role || "user", 40),
-    session: cleanText(auth?.session || "unknown", 40),
+    role: cleanText(authResult?.role || "user", 40),
+    session: cleanText(authResult?.session || "unknown", 40),
     ownerHash: ownerHash(principal),
   };
 }
@@ -307,6 +321,7 @@ function indexKey(user) {
 }
 
 export async function getProject(id) {
+  assertDependencies();
   return await kvGetJson(projectKey(id)).catch(() => null);
 }
 
@@ -317,6 +332,7 @@ export async function getOwnedProject(user, id) {
 }
 
 export async function saveProject(user, project) {
+  assertDependencies();
   if (!project?.id || project.ownerHash !== user.ownerHash) {
     throw new Error("invalid_project_owner");
   }
@@ -361,11 +377,13 @@ export async function saveProject(user, project) {
 }
 
 export async function listProjects(user) {
+  assertDependencies();
   const index = await kvGetJson(indexKey(user)).catch(() => []);
   return Array.isArray(index) ? index.slice(0, MAX_PROJECTS_PER_USER) : [];
 }
 
 export async function deleteProject(user, id) {
+  assertDependencies();
   const project = await getOwnedProject(user, id);
   if (!project) return false;
   await kvDel(projectKey(id));
