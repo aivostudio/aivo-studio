@@ -59,7 +59,7 @@
     "/css/ad-film.seedance-options.css?v=3",
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.creative-plan-tune.css?v=2",
-    "/css/ad-film.role-readability.css?v=2",
+    "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.narration-guide.css?v=1"
   ];
 
@@ -78,7 +78,7 @@
     "/js/ad-film.project-sync.js?v=5",
     "/js/ad-film.seedance-options.js?v=2",
     "/js/ad-film.creative-plan.js?v=1",
-    "/js/ad-film.role-upload-fix.js?v=2",
+    "/js/ad-film.role-upload-fix.js?v=3",
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1"
   ];
