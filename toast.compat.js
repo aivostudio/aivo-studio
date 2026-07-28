@@ -57,7 +57,8 @@
     "/css/ad-film.music-profile.css?v=5",
     "/css/ad-film.seedance-options.css?v=3",
     "/css/ad-film.creative-plan.css?v=1",
-    "/css/ad-film.creative-plan-tune.css?v=1"
+    "/css/ad-film.creative-plan-tune.css?v=1",
+    "/css/ad-film.narration-guide.css?v=1"
   ];
 
   const shellScripts = [
@@ -74,7 +75,8 @@
     "/js/ad-film.music-profile.js?v=6",
     "/js/ad-film.project-sync.js?v=4",
     "/js/ad-film.seedance-options.js?v=2",
-    "/js/ad-film.creative-plan.js?v=1"
+    "/js/ad-film.creative-plan.js?v=1",
+    "/js/ad-film.narration-guide.js?v=1"
   ];
 
   let moduleLoadPromise = null;
