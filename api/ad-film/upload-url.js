@@ -22,7 +22,12 @@ const RULES = {
   },
   logo: {
     maxBytes: 5 * 1024 * 1024,
-    allowed: new Set(["image/jpeg", "image/png", "image/webp", "image/svg+xml"]),
+    allowed: new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/svg+xml",
+    ]),
     folder: "logo",
   },
   "extra-media": {
@@ -35,6 +40,20 @@ const RULES = {
       "video/quicktime",
     ]),
     folder: "extra-media",
+  },
+  "music-track": {
+    maxBytes: 20 * 1024 * 1024,
+    allowed: new Set([
+      "audio/mpeg",
+      "audio/wav",
+      "audio/x-wav",
+      "audio/mp4",
+      "audio/aac",
+      "audio/ogg",
+      "audio/flac",
+      "audio/x-m4a",
+    ]),
+    folder: "music",
   },
 };
 
@@ -52,6 +71,8 @@ function normalizeContentType(value) {
   const type = String(value || "").trim().toLowerCase();
   if (type === "image/jpg") return "image/jpeg";
   if (type === "video/mov") return "video/quicktime";
+  if (type === "audio/mp3") return "audio/mpeg";
+  if (type === "audio/m4a") return "audio/x-m4a";
   return type;
 }
 
@@ -63,8 +84,10 @@ function createR2Client() {
       : "");
 
   if (!endpoint) throw new Error("missing_env:R2_ENDPOINT_or_R2_ACCOUNT_ID");
-  if (!process.env.R2_ACCESS_KEY_ID) throw new Error("missing_env:R2_ACCESS_KEY_ID");
-  if (!process.env.R2_SECRET_ACCESS_KEY) throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
+  if (!process.env.R2_ACCESS_KEY_ID)
+    throw new Error("missing_env:R2_ACCESS_KEY_ID");
+  if (!process.env.R2_SECRET_ACCESS_KEY)
+    throw new Error("missing_env:R2_SECRET_ACCESS_KEY");
 
   return new S3Client({
     region: "auto",
@@ -81,11 +104,15 @@ export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
-      return sendJson(res, 405, { ok: false, error: "method_not_allowed" });
+      return sendJson(res, 405, {
+        ok: false,
+        error: "method_not_allowed",
+      });
     }
 
     const user = await resolveAdFilmUser(req);
-    if (!user) return sendJson(res, 401, { ok: false, error: "unauthorized" });
+    if (!user)
+      return sendJson(res, 401, { ok: false, error: "unauthorized" });
 
     const projectId = String(req.body?.projectId || "").trim();
     const filename = cleanFilename(req.body?.filename);
@@ -95,7 +122,10 @@ export default async function handler(req, res) {
     const rule = RULES[kind];
 
     if (!projectId) {
-      return sendJson(res, 400, { ok: false, error: "missing_project_id" });
+      return sendJson(res, 400, {
+        ok: false,
+        error: "missing_project_id",
+      });
     }
     if (!rule) {
       return sendJson(res, 400, {
@@ -121,7 +151,10 @@ export default async function handler(req, res) {
 
     const project = await getOwnedProject(user, projectId);
     if (!project) {
-      return sendJson(res, 404, { ok: false, error: "project_not_found" });
+      return sendJson(res, 404, {
+        ok: false,
+        error: "project_not_found",
+      });
     }
 
     if (contentType.startsWith("image/") && contentType !== "image/svg+xml") {
@@ -153,7 +186,10 @@ export default async function handler(req, res) {
       ContentType: contentType,
     });
 
-    const uploadUrl = await getSignedUrl(client, command, { expiresIn: 10 * 60 });
+    const uploadUrl = await getSignedUrl(client, command, {
+      expiresIn: 10 * 60,
+    });
+
     return sendJson(res, 200, {
       ok: true,
       projectId,
