@@ -13,37 +13,38 @@
 .adfilm-preview-frame.style-minimal .adfilm-preview-shade{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(8,10,24,.5) 52%,rgba(8,10,24,.92))}.adfilm-preview-frame.style-luxury{box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 40px rgba(245,158,11,.08)}.adfilm-preview-frame.style-luxury .adfilm-preview-copy small{color:#fbbf24}.adfilm-preview-frame.style-social .adfilm-preview-copy button{background:linear-gradient(120deg,#fb7185,#8b5cf6,#22d3ee)}.adfilm-preview-frame.style-studio .adfilm-preview-shade{background:linear-gradient(180deg,rgba(15,23,42,.1),rgba(15,23,42,.94))}.adfilm-preview-frame.style-cinematic .adfilm-preview-shade{background:linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.95))}.adfilm-preview-frame.style-cinematic .adfilm-preview-copy small{color:#fb923c}
 .adfilm-page.is-basic-ready .adfilm-hero__status-dot{background:#34d399;box-shadow:0 0 0 5px rgba(52,211,153,.08),0 0 18px rgba(52,211,153,.5)}
 
-/* Advanced settings: equal music and quality cards */
-.adfilm-simple-advanced__body{align-items:stretch!important}
+/* Advanced settings: compact equal cards, matching Video Settings rhythm. */
+.adfilm-simple-advanced__body{align-items:stretch!important;gap:12px!important}
 .adfilm-simple-advanced__body>.adfilm-card--advanced-music,
-.adfilm-simple-advanced__body>.adfilm-card--advanced-output{min-height:272px!important;height:100%!important;align-self:stretch!important}
+.adfilm-simple-advanced__body>.adfilm-card--advanced-output{height:100%!important;min-height:190px!important;align-self:stretch!important}
 .adfilm-simple-advanced__body>.adfilm-card--advanced-music{display:flex!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
-.adfilm-card--advanced-music .adfilm-music-source--advanced{flex:1!important;min-height:272px!important;margin:0!important;padding:28px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;border-radius:22px!important;border:1px solid rgba(216,180,254,.14)!important;background:linear-gradient(145deg,rgba(255,255,255,.034),rgba(255,255,255,.014))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 24px rgba(0,0,0,.1)!important}
-.adfilm-simple-advanced__body>.adfilm-card--advanced-output{display:flex!important;flex-direction:column!important;padding:28px!important}
-.adfilm-card--advanced-output .adfilm-advanced-output__body{flex:1!important;display:flex!important;align-items:center!important;margin-top:18px!important}
-.adfilm-card--advanced-output .adfilm-advanced-output__body .adfilm-setting-block{width:100%!important;margin:0!important}
+.adfilm-card--advanced-music .adfilm-music-source--advanced{flex:1!important;min-height:190px!important;margin:0!important;padding:20px 22px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;border-radius:20px!important;border:1px solid rgba(216,180,254,.14)!important;background:linear-gradient(145deg,rgba(255,255,255,.034),rgba(255,255,255,.014))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 24px rgba(0,0,0,.1)!important}
+.adfilm-simple-advanced__body>.adfilm-card--advanced-output{display:flex!important;flex-direction:column!important;padding:20px 22px!important}
 
-/* Advanced settings: unified readable typography */
+/* Same readable heading scale on both cards. */
 .adfilm-card--advanced-music .adfilm-music-source__head,
-.adfilm-card--advanced-output .adfilm-card__head{display:flex!important;align-items:flex-start!important;gap:16px!important}
+.adfilm-card--advanced-output .adfilm-card__head{display:flex!important;align-items:flex-start!important;gap:13px!important}
 .adfilm-card--advanced-music .adfilm-music-source__icon,
-.adfilm-card--advanced-output .adfilm-card__icon{width:56px!important;height:56px!important;flex:0 0 56px!important;border-radius:16px!important}
+.adfilm-card--advanced-output .adfilm-card__icon{width:46px!important;height:46px!important;flex:0 0 46px!important;border-radius:14px!important}
 .adfilm-card--advanced-music .adfilm-music-source__icon svg,
-.adfilm-card--advanced-output .adfilm-card__icon svg{width:28px!important;height:28px!important}
-.adfilm-card--advanced-music .adfilm-music-source__head>div:before{display:block;margin:0 0 7px;color:#b9a3f5;font-size:10px;font-weight:950;line-height:1;letter-spacing:.18em;text-transform:uppercase}
+.adfilm-card--advanced-output .adfilm-card__icon svg{width:23px!important;height:23px!important}
+.adfilm-card--advanced-music .adfilm-music-source__head>div:before{display:block;margin:0 0 5px;color:#b9a3f5;font-size:8.5px;font-weight:950;line-height:1;letter-spacing:.17em;text-transform:uppercase}
 html[lang^="tr"] .adfilm-card--advanced-music .adfilm-music-source__head>div:before{content:"İSTEĞE BAĞLI"}
 html[lang^="en"] .adfilm-card--advanced-music .adfilm-music-source__head>div:before{content:"OPTIONAL"}
-.adfilm-card--advanced-music .adfilm-music-source__head b{font-size:18px!important;line-height:1.2!important;color:#fff!important;font-weight:900!important}
-.adfilm-card--advanced-music .adfilm-music-source__head small{margin-top:7px!important;font-size:12px!important;line-height:1.45!important;color:rgba(235,236,255,.66)!important}
-.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading h2:after{font-size:18px!important;line-height:1.2!important;font-weight:900!important}
-.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p:after{margin-top:7px!important;font-size:12px!important;line-height:1.45!important;color:rgba(235,236,255,.66)!important}
-.adfilm-card--advanced-music .adfilm-music-options{gap:10px!important;margin-top:22px!important}
-.adfilm-card--advanced-music .adfilm-music-options button{min-height:58px!important;padding:10px 14px!important;font-size:12.5px!important;line-height:1.25!important;border-radius:14px!important}
-.adfilm-card--advanced-output .adfilm-setting-block{grid-template-columns:112px minmax(0,1fr)!important;gap:18px!important;align-items:center!important}
-.adfilm-card--advanced-output .adfilm-setting-block>span{font-size:13.5px!important;line-height:1.2!important;color:rgba(245,246,255,.82)!important;font-weight:900!important}
-.adfilm-card--advanced-output .adfilm-options{gap:12px!important}
-.adfilm-card--advanced-output .adfilm-options button{min-height:54px!important;padding:10px 14px!important;font-size:14px!important;line-height:1.2!important;border-radius:14px!important;font-weight:900!important}
-.adfilm-card--advanced-output .adfilm-options button em{font-size:8px!important;letter-spacing:.06em!important}
+.adfilm-card--advanced-music .adfilm-music-source__head b{font-size:17px!important;line-height:1.16!important;color:#fff!important;font-weight:900!important}
+.adfilm-card--advanced-music .adfilm-music-source__head small{margin-top:5px!important;font-size:10.5px!important;line-height:1.35!important;color:rgba(235,236,255,.64)!important}
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading h2:after{font-size:17px!important;line-height:1.16!important;font-weight:900!important}
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p:after{margin-top:5px!important;font-size:10.5px!important;line-height:1.35!important;color:rgba(235,236,255,.64)!important}
+
+/* Compact horizontal controls. */
+.adfilm-card--advanced-music .adfilm-music-options{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-top:16px!important}
+.adfilm-card--advanced-music .adfilm-music-options button{min-height:42px!important;padding:7px 10px!important;font-size:10.5px!important;line-height:1.2!important;border-radius:12px!important}
+.adfilm-card--advanced-output .adfilm-advanced-output__body{flex:1!important;display:flex!important;align-items:flex-start!important;margin-top:16px!important}
+.adfilm-card--advanced-output .adfilm-advanced-output__body .adfilm-setting-block{width:100%!important;margin:0!important;display:grid!important;grid-template-columns:84px minmax(0,1fr)!important;gap:12px!important;align-items:center!important}
+.adfilm-card--advanced-output .adfilm-setting-block>span{font-size:11.5px!important;line-height:1.2!important;color:rgba(245,246,255,.8)!important;font-weight:900!important}
+.adfilm-card--advanced-output .adfilm-options{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+.adfilm-card--advanced-output .adfilm-options button{min-height:42px!important;padding:7px 10px!important;font-size:11.5px!important;line-height:1.2!important;border-radius:12px!important;font-weight:900!important}
+.adfilm-card--advanced-output .adfilm-options button em{font-size:7px!important;letter-spacing:.06em!important}
 
 @media(max-width:1450px){.adfilm-media-manager__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1150px){.adfilm-media-manager__grid{grid-template-columns:1fr}.adfilm-build-reason{position:static;margin-top:8px;grid-column:1/-1}}
