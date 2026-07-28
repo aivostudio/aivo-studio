@@ -54,7 +54,8 @@
     "/css/ad-film.vibrant-actions.css?v=1",
     "/css/ad-film.storyboard.css?v=1",
     "/css/ad-film.simple-mode.css?v=3",
-    "/css/ad-film.music-profile.css?v=5"
+    "/css/ad-film.music-profile.css?v=5",
+    "/css/ad-film.seedance-options.css?v=1"
   ];
 
   const shellScripts = [
@@ -69,7 +70,8 @@
     "/js/ad-film.storyboard.js?v=1",
     "/js/ad-film.simple-mode.js?v=3",
     "/js/ad-film.music-profile.js?v=6",
-    "/js/ad-film.project-sync.js?v=4"
+    "/js/ad-film.project-sync.js?v=4",
+    "/js/ad-film.seedance-options.js?v=1"
   ];
 
   let moduleLoadPromise = null;
@@ -125,6 +127,8 @@
   }
 
   function loadModuleEnhancements(root) {
+    ensureStyles();
+
     if (!moduleLoadPromise) {
       moduleLoadPromise = loadSequential(moduleScripts);
     }
@@ -145,8 +149,6 @@
       } catch (_) {}
     });
   }
-
-  ensureStyles();
 
   document.addEventListener(
     "aivo:module-mounted",
