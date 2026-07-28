@@ -60,6 +60,7 @@
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.creative-plan-tune.css?v=2",
     "/css/ad-film.role-readability.css?v=3",
+    "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1"
   ];
 
