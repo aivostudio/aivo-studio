@@ -26,7 +26,7 @@
   window.toastSafe   = (msg, type, opts) => emit(msg, type, opts);
   window.legacyToast = (msg, type, opts) => emit(msg, type, opts);
   window.showToast   = (msg, type, opts) => emit(msg, type, opts);
-  window.toastMsg = (msg, type, opts) => emit(msg, type, opts);
+  window.toastMsg    = (msg, type, opts) => emit(msg, type, opts);
 
   const origError = t.error?.bind(t);
   if (origError) {
@@ -37,11 +37,12 @@
   }
 })();
 
-/* AI Reklam Filmi — geçici masaüstü iskelet varlıkları.
-   Gerçek modül router'a bağlandığında bu yükleyici kaldırılacak. */
+/* AI Reklam Filmi varlık yükleyicisi.
+   Ağır geliştirme dosyaları yalnız Reklam Filmi modülü açılınca yüklenir.
+   Böylece diğer Studio modüllerinin ana iş parçacığı etkilenmez. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS__) return;
-  window.__AIVO_AD_FILM_ASSETS__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V2__) return;
+  window.__AIVO_AD_FILM_ASSETS_V2__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -56,17 +57,11 @@
     "/css/ad-film.music-profile.css?v=5"
   ];
 
-  styles.forEach((href) => {
-    const path = href.split("?")[0];
-    if (document.querySelector(`link[href^="${path}"]`)) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = href;
-    document.head.appendChild(link);
-  });
+  const shellScripts = [
+    "/js/ad-film.skeleton.js?v=7"
+  ];
 
-  const scripts = [
-    "/js/ad-film.skeleton.js?v=6",
+  const moduleScripts = [
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
     "/js/ad-film.basic-media-cache.js?v=1",
@@ -74,24 +69,94 @@
     "/js/ad-film.storyboard.js?v=1",
     "/js/ad-film.simple-mode.js?v=3",
     "/js/ad-film.music-profile.js?v=6",
-    "/js/ad-film.project-sync.js?v=3"
+    "/js/ad-film.project-sync.js?v=4"
   ];
 
-  function loadSequential(index = 0) {
-    if (index >= scripts.length) return;
-    const src = scripts[index];
-    const path = src.split("?")[0];
-    if (document.querySelector(`script[src^="${path}"]`)) {
-      loadSequential(index + 1);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = src;
-    script.defer = true;
-    script.onload = () => loadSequential(index + 1);
-    script.onerror = () => loadSequential(index + 1);
-    document.head.appendChild(script);
+  let moduleLoadPromise = null;
+
+  function ensureStyles() {
+    styles.forEach((href) => {
+      const path = href.split("?")[0];
+      if (document.querySelector(`link[href^="${path}"]`)) return;
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
+    });
   }
 
-  loadSequential();
+  function loadSequential(list, index = 0) {
+    if (index >= list.length) return Promise.resolve();
+
+    const src = list[index];
+    const path = src.split("?")[0];
+    const existing = document.querySelector(`script[src^="${path}"]`);
+
+    if (existing) {
+      if (existing.dataset.aivoLoaded === "1") {
+        return loadSequential(list, index + 1);
+      }
+
+      return new Promise((resolve) => {
+        existing.addEventListener(
+          "load",
+          () => resolve(loadSequential(list, index + 1)),
+          { once: true }
+        );
+        existing.addEventListener(
+          "error",
+          () => resolve(loadSequential(list, index + 1)),
+          { once: true }
+        );
+      });
+    }
+
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = false;
+      script.onload = () => {
+        script.dataset.aivoLoaded = "1";
+        resolve(loadSequential(list, index + 1));
+      };
+      script.onerror = () => resolve(loadSequential(list, index + 1));
+      document.head.appendChild(script);
+    });
+  }
+
+  function loadModuleEnhancements(root) {
+    if (!moduleLoadPromise) {
+      moduleLoadPromise = loadSequential(moduleScripts);
+    }
+
+    moduleLoadPromise.then(() => {
+      if (!root || !root.isConnected) return;
+      try {
+        document.dispatchEvent(
+          new CustomEvent("aivo:module-mounted", {
+            detail: {
+              key: "adfilm",
+              host: document.getElementById("moduleHost"),
+              root,
+              enhancementsReady: true
+            }
+          })
+        );
+      } catch (_) {}
+    });
+  }
+
+  ensureStyles();
+
+  document.addEventListener(
+    "aivo:module-mounted",
+    (event) => {
+      const detail = event && event.detail;
+      if (!detail || detail.key !== "adfilm" || detail.enhancementsReady) return;
+      loadModuleEnhancements(detail.root);
+    },
+    true
+  );
+
+  loadSequential(shellScripts);
 })();
