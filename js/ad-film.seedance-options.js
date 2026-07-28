@@ -14,16 +14,22 @@
 
   var COPY={
     tr:{
-      durationNote:"Seedance 2.0: 4–15 saniye arası gerçek üretim süresi.",
+      durationNote:"Seedance 2.0 · 4–15 saniye",
       ratioNote:"4:5 seçildiğinde final video güvenli kadrajla hazırlanır.",
       qualityNote:"480p hızlı ön izleme, 720p standart, 1080p kaliteli final, 4K premium.",
-      premium:"Premium"
+      outputDetailsSub:"480p–4K çıktı kalitesini seç.",
+      premium:"Premium",
+      seconds:"sn",
+      durationLabel:"Video süresi"
     },
     en:{
-      durationNote:"Seedance 2.0: real generation duration from 4 to 15 seconds.",
+      durationNote:"Seedance 2.0 · 4–15 seconds",
       ratioNote:"When 4:5 is selected, the final video is prepared with a crop-safe frame.",
       qualityNote:"480p fast preview, 720p standard, 1080p quality final, 4K premium.",
-      premium:"Premium"
+      outputDetailsSub:"Choose an output quality from 480p to 4K.",
+      premium:"Premium",
+      seconds:"sec",
+      durationLabel:"Video duration"
     }
   };
 
@@ -55,17 +61,16 @@
     return QUALITIES.indexOf(value)>=0?value:"1080p";
   }
 
-  function durationMarkup(){
-    return DURATIONS.map(function(value){
-      return '<button type="button" data-value="'+value+'"><span>'+value+'</span><small>sn</small></button>';
-    }).join("");
+  function durationSourceMarkup(){
+    return DURATIONS.map(function(value){return '<button type="button" data-value="'+value+'">'+value+'</button>'}).join("");
+  }
+
+  function durationSelectMarkup(){
+    return DURATIONS.map(function(value){return '<option value="'+value+'">'+value+' '+t("seconds")+'</option>'}).join("");
   }
 
   function ratioIcon(value){
-    if(value==="1:1")return"square";
-    if(value==="4:5")return"post";
-    if(value==="9:16"||value==="3:4")return"portrait";
-    return"wide";
+    return value.replace(":","x");
   }
 
   function ratioMarkup(){
@@ -100,16 +105,57 @@
     else if(button)button.classList.add("is-selected");
   }
 
+  function syncDurationSelect(group){
+    var block=group.closest(".adfilm-setting-block");
+    var select=block&&block.querySelector("[data-adfilm-seedance-duration-select]");
+    if(select)select.value=normalizeDuration(selected(group));
+  }
+
+  function ensureDurationSelect(group,target){
+    var block=group.closest(".adfilm-setting-block");if(!block)return;
+    var wrap=block.querySelector("[data-adfilm-seedance-duration-control]");
+    if(!wrap){
+      wrap=document.createElement("label");
+      wrap.className="adfilm-seedance-duration-control";
+      wrap.setAttribute("data-adfilm-seedance-duration-control","");
+      wrap.innerHTML='<select data-adfilm-seedance-duration-select aria-label="'+t("durationLabel")+'">'+durationSelectMarkup()+'</select><span class="adfilm-seedance-duration-chevron" aria-hidden="true"></span>';
+      block.insertBefore(wrap,group);
+      var select=wrap.querySelector("select");
+      select.addEventListener("change",function(){
+        choose(group,normalizeDuration(select.value));
+        syncTimeline(group.closest('[data-module-root][data-module="adfilm"]'));
+      });
+    }else{
+      var current=wrap.querySelector("select");
+      var value=current&&current.value;
+      wrap.innerHTML='<select data-adfilm-seedance-duration-select aria-label="'+t("durationLabel")+'">'+durationSelectMarkup()+'</select><span class="adfilm-seedance-duration-chevron" aria-hidden="true"></span>';
+      var next=wrap.querySelector("select");
+      next.value=normalizeDuration(value||target);
+      next.addEventListener("change",function(){
+        choose(group,normalizeDuration(next.value));
+        syncTimeline(group.closest('[data-module-root][data-module="adfilm"]'));
+      });
+    }
+    group.hidden=true;
+    group.setAttribute("aria-hidden","true");
+    syncDurationSelect(group);
+  }
+
   function setupDuration(scope){
     var group=scope.querySelector('[data-adfilm-choice="duration"]');if(!group)return;
     var target=normalizeDuration(selected(group));
     if(values(group)!==DURATIONS.join("|")){
-      group.innerHTML=durationMarkup();
-      group.classList.remove("adfilm-options--duration-v2");
-      group.classList.add("adfilm-options--seedance-duration");
+      group.innerHTML=durationSourceMarkup();
+      group.classList.remove("adfilm-options--duration-v2","adfilm-options--seedance-duration");
+      group.classList.add("adfilm-seedance-duration-source");
       group.setAttribute("data-seedance-options","duration");
       choose(group,target);
     }
+    if(!group.__seedanceDurationBound){
+      group.__seedanceDurationBound=true;
+      group.addEventListener("click",function(){setTimeout(function(){syncDurationSelect(group)},0)});
+    }
+    ensureDurationSelect(group,target);
     var legacy=group.closest(".adfilm-setting-block")&&group.closest(".adfilm-setting-block").querySelector("[data-adfilm-duration-note]");
     if(legacy)legacy.hidden=true;
     ensureNote(group,"duration",t("durationNote"));
@@ -120,6 +166,7 @@
     var target=normalizeRatio(selected(group));
     if(values(group)!==RATIOS.join("|")){
       group.innerHTML=ratioMarkup();
+      group.classAdd;
       group.classList.add("adfilm-options--seedance-ratio");
       group.setAttribute("data-seedance-options","ratio");
       choose(group,target);
@@ -138,20 +185,21 @@
     }else{
       var tag=group.querySelector(".adfilm-seedance-tag");if(tag)tag.textContent=t("premium");
     }
+    var outputSub=scope.querySelector(".adfilm-card--advanced-output .adfilm-card__heading p");
+    if(outputSub){outputSub.removeAttribute("data-simple-copy");outputSub.textContent=t("outputDetailsSub")}
     ensureNote(group,"quality",t("qualityNote"));
   }
 
   function ratioClass(value){
-    if(value==="1:1")return"is-square";
-    if(value==="4:5")return"is-post";
-    if(value==="16:9"||value==="4:3"||value==="21:9")return"is-wide";
-    return"is-portrait";
+    return"is-seedance-"+value.replace(":","x");
   }
 
   function syncPreview(scope){
+    if(!scope)return;
     var ratioGroup=scope.querySelector('[data-adfilm-choice="aspectRatio"]');
     var value=normalizeRatio(selected(ratioGroup));
     document.querySelectorAll("[data-panel-frame]").forEach(function(frame){
+      Array.from(frame.classList).forEach(function(name){if(name.indexOf("is-seedance-")===0)frame.classList.remove(name)});
       frame.classList.remove("is-portrait","is-square","is-wide","is-post");
       frame.classList.add(ratioClass(value));
       frame.setAttribute("data-seedance-ratio",value);
@@ -159,15 +207,10 @@
   }
 
   function syncTimeline(scope){
+    if(!scope)return;
     var group=scope.querySelector('[data-adfilm-choice="duration"]');
     var duration=Number(normalizeDuration(selected(group)))||10;
-    var cuts=[
-      0,
-      Math.max(1,Math.round(duration*.2)),
-      Math.max(2,Math.round(duration*.5)),
-      Math.max(3,Math.round(duration*.8)),
-      duration
-    ];
+    var cuts=[0,Math.max(1,Math.round(duration*.2)),Math.max(2,Math.round(duration*.5)),Math.max(3,Math.round(duration*.8)),duration];
     for(var i=1;i<cuts.length;i++)if(cuts[i]<=cuts[i-1])cuts[i]=Math.min(duration,cuts[i-1]+1);
     cuts[cuts.length-1]=duration;
     scope.querySelectorAll(".adfilm-scene__thumb span").forEach(function(el,index){
@@ -181,9 +224,9 @@
     if(scope.__adfilmSeedanceOptionsBound)return;
     scope.__adfilmSeedanceOptionsBound=true;
     scope.addEventListener("click",function(event){
-      var button=event.target.closest('[data-adfilm-choice="duration"] button[data-value],[data-adfilm-choice="aspectRatio"] button[data-value]');
+      var button=event.target.closest('[data-adfilm-choice="aspectRatio"] button[data-value]');
       if(!button)return;
-      setTimeout(function(){syncPreview(scope);syncTimeline(scope)},0);
+      setTimeout(function(){syncPreview(scope)},0);
     });
   }
 
@@ -197,17 +240,10 @@
     syncTimeline(scope);
   }
 
-  function schedule(scope){
-    [80,240,620,1100].forEach(function(delay){setTimeout(function(){setup(scope||root())},delay)});
-  }
+  function schedule(scope){[80,240,620,1100].forEach(function(delay){setTimeout(function(){setup(scope||root())},delay)})}
 
-  document.addEventListener("aivo:module-mounted",function(event){
-    if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root);
-  });
-
-  window.addEventListener("storage",function(event){
-    if(event&&(event.key==="aivo_language"||event.key==="aivo_lang"))schedule(root());
-  });
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root)});
+  window.addEventListener("storage",function(event){if(event&&(event.key==="aivo_language"||event.key==="aivo_lang"))schedule(root())});
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())},{once:true});
   else schedule(root());
