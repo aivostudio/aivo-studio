@@ -56,7 +56,8 @@
     "/css/ad-film.simple-mode.css?v=3",
     "/css/ad-film.music-profile.css?v=5",
     "/css/ad-film.seedance-options.css?v=3",
-    "/css/ad-film.creative-plan.css?v=1"
+    "/css/ad-film.creative-plan.css?v=1",
+    "/css/ad-film.creative-plan-tune.css?v=1"
   ];
 
   const shellScripts = [
