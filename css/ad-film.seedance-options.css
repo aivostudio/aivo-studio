@@ -1,0 +1,35 @@
+/* AIVO AI Reklam Filmi — compact Seedance 2.0 output options */
+.adfilm-options--seedance-duration{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important}
+.adfilm-options--seedance-duration button{min-width:0!important;min-height:36px!important;padding:6px 5px!important;gap:3px!important}
+.adfilm-options--seedance-duration button span{font-size:10px;font-weight:900;line-height:1}
+.adfilm-options--seedance-duration button small{font-size:7px;font-weight:800;line-height:1;color:rgba(238,238,255,.52)}
+.adfilm-options--seedance-duration button.is-selected small{color:rgba(255,255,255,.78)}
+
+.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:7px!important}
+.adfilm-options--seedance-ratio button{min-width:0!important;min-height:39px!important;padding:6px 5px!important;gap:5px!important;font-size:9px!important}
+.adfilm-options--seedance-ratio .ratio{flex:0 0 auto}
+
+.adfilm-options--seedance-quality{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.adfilm-options--seedance-quality button{position:relative;min-width:0!important;min-height:38px!important;padding:7px 8px!important}
+.adfilm-options--seedance-quality button span{font-size:9.5px;font-weight:900;line-height:1}
+.adfilm-seedance-tag{position:absolute;top:3px;right:4px;padding:2px 4px;border:1px solid rgba(251,191,36,.25);border-radius:999px;background:rgba(245,158,11,.1);color:#fde68a;font-size:5.5px!important;font-style:normal;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+
+.adfilm-seedance-note{display:block;margin-top:7px;color:rgba(207,250,254,.5);font-size:7.5px;line-height:1.35}
+.adfilm-duration-note[hidden]{display:none!important}
+
+@media(max-width:1500px){
+  .adfilm-options--seedance-duration{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px!important}
+  .is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:6px!important}
+  .adfilm-options--seedance-ratio button{padding:5px 3px!important;font-size:8px!important}
+}
+
+@media(max-width:1120px){
+  .adfilm-options--seedance-duration{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .adfilm-options--seedance-quality{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media(max-width:680px){
+  .adfilm-options--seedance-duration{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
