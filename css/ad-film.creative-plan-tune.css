@@ -1,0 +1,161 @@
+/* AIVO AI Reklam Filmi — creative plan readability + full-width narration */
+
+/* Ses & Anlatım artık yarım sütunda kalmaz; manuel metin alanı rahatça genişler. */
+.is-simplified-basic.is-creative-plan-ready .adfilm-card--voice{
+  grid-column:1/-1!important;
+  padding:18px 20px!important;
+}
+.is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-segmented{
+  width:100%;
+  margin-top:14px;
+}
+.is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-fields--compact{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px 14px;
+  margin-top:14px;
+}
+.is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-script-control{
+  grid-column:1/-1;
+}
+.is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-script-control textarea{
+  min-height:124px;
+  max-height:230px;
+  padding:13px 14px;
+  font-size:11.5px;
+  line-height:1.55;
+}
+.is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-voice-tuning{
+  width:100%;
+  margin-top:16px;
+  padding:15px;
+}
+
+/* Reklam Planı: küçük ekran yazısı hissini kaldır, fakat kartı gereksiz şişirme. */
+.is-creative-plan-ready .adfilm-card--creative-plan{
+  padding:17px 19px!important;
+}
+.is-creative-plan-ready .adfilm-card--creative-plan .adfilm-card__heading h2{
+  font-size:15px;
+}
+.is-creative-plan-ready .adfilm-card--creative-plan .adfilm-card__heading p{
+  margin-top:4px;
+  font-size:10.5px;
+  line-height:1.45;
+  color:rgba(229,231,255,.6);
+}
+.is-creative-plan-ready .adfilm-card--creative-plan .adfilm-card__required{
+  font-size:8.5px;
+}
+.is-creative-plan-ready .adfilm-plan-mode{
+  margin-top:14px;
+  padding:6px;
+}
+.is-creative-plan-ready .adfilm-plan-mode button{
+  min-height:42px;
+  font-size:11.5px;
+  letter-spacing:-.01em;
+}
+.is-creative-plan-ready .adfilm-plan-layout{
+  gap:13px;
+  margin-top:13px;
+}
+.is-creative-plan-ready .adfilm-plan-concept,
+.is-creative-plan-ready .adfilm-plan-direction{
+  padding:14px;
+}
+.is-creative-plan-ready .adfilm-plan-concept{
+  opacity:1;
+}
+.is-creative-plan-ready .adfilm-plan-concept.is-muted{
+  opacity:.72;
+  filter:saturate(.82);
+}
+.is-creative-plan-ready .adfilm-plan-concept>b,
+.is-creative-plan-ready .adfilm-plan-direction>span>b{
+  font-size:11.5px;
+  line-height:1.35;
+}
+.is-creative-plan-ready .adfilm-plan-concept__grid{
+  gap:8px;
+  margin-top:10px;
+}
+.is-creative-plan-ready .adfilm-plan-concept__grid button{
+  min-height:38px;
+  padding:8px 10px;
+  font-size:10px;
+  line-height:1.25;
+}
+.is-creative-plan-ready .adfilm-plan-concept>p{
+  margin-top:10px!important;
+  color:rgba(226,232,255,.62)!important;
+  font-size:9.3px!important;
+  line-height:1.5!important;
+}
+.is-creative-plan-ready .adfilm-plan-direction{
+  gap:9px;
+}
+.is-creative-plan-ready .adfilm-plan-direction>span em{
+  padding:5px 8px;
+  font-size:8px;
+}
+.is-creative-plan-ready .adfilm-plan-direction textarea{
+  min-height:116px;
+  max-height:230px;
+  padding:13px 14px;
+  font-size:11.5px;
+  line-height:1.55;
+}
+.is-creative-plan-ready .adfilm-plan-direction textarea::placeholder{
+  color:rgba(229,231,255,.4);
+}
+.is-creative-plan-ready .adfilm-plan-direction>small{
+  gap:14px;
+  color:rgba(226,232,255,.62);
+  font-size:9px;
+  line-height:1.45;
+}
+.is-creative-plan-ready .adfilm-plan-direction>small>b{
+  font-size:8.5px;
+}
+.is-creative-plan-ready .adfilm-manual-scenes{
+  margin-top:13px;
+  padding:14px;
+}
+.is-creative-plan-ready .adfilm-manual-scenes__head b{
+  font-size:11.5px;
+}
+.is-creative-plan-ready .adfilm-manual-scenes__head small{
+  margin-top:4px;
+  color:rgba(226,232,255,.62);
+  font-size:9px;
+  line-height:1.4;
+}
+.is-creative-plan-ready .adfilm-manual-scenes__head>span{
+  padding:5px 8px;
+  font-size:8px;
+}
+.is-creative-plan-ready .adfilm-scene-lines{
+  gap:9px 10px;
+  margin-top:12px;
+}
+.is-creative-plan-ready .adfilm-scene-line{
+  gap:6px;
+}
+.is-creative-plan-ready .adfilm-scene-line>span{
+  color:rgba(245,246,255,.78);
+  font-size:9.5px;
+  line-height:1.35;
+}
+.is-creative-plan-ready .adfilm-scene-line input{
+  height:40px;
+  padding:0 12px;
+  font-size:10.5px;
+}
+.is-creative-plan-ready .adfilm-scene-line input::placeholder{
+  color:rgba(229,231,255,.38);
+}
+
+@media(max-width:1120px){
+  .is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-fields--compact{grid-template-columns:1fr}
+  .is-simplified-basic.is-creative-plan-ready .adfilm-card--voice .adfilm-script-control{grid-column:auto}
+}
