@@ -81,6 +81,7 @@
     "/js/ad-film.seedance-options.js?v=2",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
+    "/js/ad-film.reference-indexes.js?v=1",
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=1"
