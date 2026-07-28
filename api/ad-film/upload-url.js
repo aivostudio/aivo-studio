@@ -1,6 +1,6 @@
 // api/ad-film/upload-url.js
 import crypto from "crypto";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createRequire } from "module";
 import {
@@ -180,15 +180,21 @@ export default async function handler(req, res) {
     const key = `${mediaPrefix(user, projectId)}${rule.folder}/${Date.now()}-${id}-${filename}`;
 
     const client = createR2Client();
-    const command = new PutObjectCommand({
+    const putCommand = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
       ContentType: contentType,
     });
-
-    const uploadUrl = await getSignedUrl(client, command, {
-      expiresIn: 10 * 60,
+    const getCommand = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ResponseContentType: contentType,
     });
+
+    const [uploadUrl, readUrl] = await Promise.all([
+      getSignedUrl(client, putCommand, { expiresIn: 10 * 60 }),
+      getSignedUrl(client, getCommand, { expiresIn: 6 * 60 * 60 }),
+    ]);
 
     return sendJson(res, 200, {
       ok: true,
@@ -196,8 +202,10 @@ export default async function handler(req, res) {
       kind,
       key,
       upload_url: uploadUrl,
+      read_url: readUrl,
       public_url: buildPublicUrl(key),
       expiresIn: 600,
+      readExpiresIn: 21600,
       required_headers: { "Content-Type": contentType },
     });
   } catch (error) {
