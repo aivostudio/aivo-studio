@@ -38,7 +38,7 @@
   function isPublicPreview(){return document.body.classList.contains("adfilm-preview-unlocked")}
   function clean(value){return String(value==null?"":value).trim()}
   function readLocal(key,fallback){try{return localStorage.getItem(key)||fallback}catch(_){return fallback}}
-  function writeLocal(key,value){try{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,String(value))}catch(_){}}
+  function writeLocal(key,value){try{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,String(value))}catch(_){} }
   function selected(scope,key,fallback){
     var button=scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');
     return button?button.getAttribute("data-value"):fallback;
@@ -68,7 +68,7 @@
     if(typeof fn!=="function")return null;
     try{return fn({message:t(key,options.vars),duration:options.duration==null?3200:options.duration})}catch(_){return null}
   }
-  function dismissToast(handle){try{if(handle&&typeof handle.dismiss==="function")handle.dismiss()}catch(_){}}
+  function dismissToast(handle){try{if(handle&&typeof handle.dismiss==="function")handle.dismiss()}catch(_){} }
   function errorKey(error,fallback){
     var code=clean(error&&error.data&&error.data.error||error&&error.message).toLowerCase();
     if(error&&error.status===401)return"authRequired";
@@ -269,7 +269,17 @@
     scope.addEventListener("input",function(event){if(event.target.closest("[data-adfilm-input]")){controller.userDirty=true;queueSave(controller)}},true);
     scope.addEventListener("change",function(event){
       var media=event.target.closest("[data-adfilm-file]");
-      if(media){var mediaKey=media.getAttribute("data-adfilm-file");setTimeout(function(){uploadFiles(controller,mediaKey,kindForKey(mediaKey))},120);return}
+      if(media){
+        var mediaKey=media.getAttribute("data-adfilm-file");
+        var smartRoleLocal=!!media.closest(".adfilm-role-media")&&(mediaKey==="productImages"||mediaKey==="logo");
+        if(media.dataset.adfilmSkipCloudUpload==="1"||smartRoleLocal){
+          controller.userDirty=true;
+          queueSave(controller,180);
+          return;
+        }
+        setTimeout(function(){uploadFiles(controller,mediaKey,kindForKey(mediaKey))},120);
+        return;
+      }
       if(event.target.closest("[data-adfilm-music-file]")){setTimeout(function(){uploadFiles(controller,"musicTrack","music-track")},120);return}
       if(event.target.closest("[data-music-style-select],[data-music-energy-select],[data-adfilm-input]")){controller.userDirty=true;queueSave(controller)}
     },true);
