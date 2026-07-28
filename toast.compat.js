@@ -3,7 +3,6 @@
   const t = window.toast;
   if (!t) return;
 
-  // "kredi/yönlendirme" = warning (kırmızı değil)
   const CREDIT_FLOW_RE =
     /(kredi|yetersiz|satın al|satın\s*alma|kredi\s*al|paket|fiyatlandirma|fiyatlandırma|yönlendir|redirect)/i;
 
@@ -24,16 +23,11 @@
     return fn?.(msg, opts);
   }
 
-  // Global forwarders (legacy isimler)
   window.toastSafe   = (msg, type, opts) => emit(msg, type, opts);
   window.legacyToast = (msg, type, opts) => emit(msg, type, opts);
   window.showToast   = (msg, type, opts) => emit(msg, type, opts);
-
-  // Eğer projede `toast(msg, type)` gibi bir wrapper varsa:
   window.toastMsg = (msg, type, opts) => emit(msg, type, opts);
 
-  // Bazı dosyalarda direkt window.toast.error(...) ile kredi mesajı basılıyorsa,
-  // bunu da “kredi metni ise warning”e çevirerek yakalayalım:
   const origError = t.error?.bind(t);
   if (origError) {
     t.error = (msg, opts) => {
@@ -41,4 +35,63 @@
       return origError(msg, opts);
     };
   }
+})();
+
+/* AI Reklam Filmi — geçici masaüstü iskelet varlıkları.
+   Gerçek modül router'a bağlandığında bu yükleyici kaldırılacak. */
+(() => {
+  if (window.__AIVO_AD_FILM_ASSETS__) return;
+  window.__AIVO_AD_FILM_ASSETS__ = true;
+
+  const styles = [
+    "/css/mod.ad-film.css?v=6",
+    "/css/ad-film.preview.css?v=1",
+    "/css/ad-film.basic-polish.css?v=4",
+    "/css/ad-film.basic-draft.css?v=1",
+    "/css/ad-film.project-sync.css?v=2",
+    "/css/ad-film.readability.css?v=1",
+    "/css/ad-film.vibrant-actions.css?v=1",
+    "/css/ad-film.storyboard.css?v=1",
+    "/css/ad-film.simple-mode.css?v=3",
+    "/css/ad-film.music-profile.css?v=5"
+  ];
+
+  styles.forEach((href) => {
+    const path = href.split("?")[0];
+    if (document.querySelector(`link[href^="${path}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  });
+
+  const scripts = [
+    "/js/ad-film.skeleton.js?v=6",
+    "/js/ad-film.basic-polish.js?v=3",
+    "/js/ad-film.basic-draft.js?v=2",
+    "/js/ad-film.basic-media-cache.js?v=1",
+    "/js/ad-film.language-lock.js?v=1",
+    "/js/ad-film.storyboard.js?v=1",
+    "/js/ad-film.simple-mode.js?v=3",
+    "/js/ad-film.music-profile.js?v=6",
+    "/js/ad-film.project-sync.js?v=3"
+  ];
+
+  function loadSequential(index = 0) {
+    if (index >= scripts.length) return;
+    const src = scripts[index];
+    const path = src.split("?")[0];
+    if (document.querySelector(`script[src^="${path}"]`)) {
+      loadSequential(index + 1);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.defer = true;
+    script.onload = () => loadSequential(index + 1);
+    script.onerror = () => loadSequential(index + 1);
+    document.head.appendChild(script);
+  }
+
+  loadSequential();
 })();

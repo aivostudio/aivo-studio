@@ -1,0 +1,82 @@
+/* =========================================================
+   AIVO — AI REKLAM FILMI / STORYBOARD STATES
+   ========================================================= */
+
+.adfilm-storyboard-status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-left:auto;
+  padding:7px 10px;
+  border:1px solid rgba(158,120,255,.18);
+  border-radius:12px;
+  background:rgba(10,13,31,.55);
+  opacity:.58;
+}
+.adfilm-storyboard-status>span{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#8b5cf6;
+  box-shadow:0 0 12px rgba(139,92,246,.55);
+}
+.adfilm-storyboard-status div{display:grid;gap:1px}
+.adfilm-storyboard-status b{
+  color:rgba(255,255,255,.86);
+  font-size:9px;
+  line-height:1.1;
+}
+.adfilm-storyboard-status small{
+  color:rgba(231,233,255,.45);
+  font-size:7.5px;
+  line-height:1.1;
+}
+.adfilm-storyboard-status.is-ready{
+  opacity:1;
+  border-color:rgba(52,211,153,.23);
+  background:rgba(10,48,42,.24);
+}
+.adfilm-storyboard-status.is-ready>span{
+  background:#34d399;
+  box-shadow:0 0 14px rgba(52,211,153,.62);
+}
+
+.adfilm-regenerate:disabled,
+.adfilm-regenerate[aria-disabled="true"]{
+  opacity:.42;
+  filter:saturate(.55);
+  cursor:not-allowed;
+  transform:none!important;
+}
+.adfilm-regenerate.is-ready:not(:disabled){opacity:1}
+.adfilm-regenerate.is-loading svg{animation:adfilm-storyboard-spin .72s linear infinite}
+
+.adfilm-scene.has-generated-plan{
+  transition:border-color .2s ease,background .2s ease,transform .2s ease;
+}
+.adfilm-scene.has-generated-plan:hover{
+  transform:translateY(-2px);
+  border-color:rgba(215,174,255,.32);
+}
+.adfilm-card--storyboard.is-refreshing .adfilm-scene{
+  animation:adfilm-storyboard-card .48s ease both;
+}
+.adfilm-card--storyboard.is-refreshing .adfilm-scene:nth-child(2){animation-delay:.05s}
+.adfilm-card--storyboard.is-refreshing .adfilm-scene:nth-child(3){animation-delay:.1s}
+.adfilm-card--storyboard.is-refreshing .adfilm-scene:nth-child(4){animation-delay:.15s}
+
+@keyframes adfilm-storyboard-spin{to{transform:rotate(360deg)}}
+@keyframes adfilm-storyboard-card{
+  0%{opacity:.45;transform:translateY(7px) scale(.985)}
+  100%{opacity:1;transform:none}
+}
+
+@media(max-width:1500px){
+  .adfilm-storyboard-status{padding:6px 8px;gap:6px}
+  .adfilm-storyboard-status b{font-size:8px}
+  .adfilm-storyboard-status small{font-size:7px}
+}
+
+@media(max-width:1180px){
+  .adfilm-storyboard-status{display:none}
+}
