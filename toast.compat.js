@@ -76,7 +76,8 @@
     "/js/ad-film.project-sync.js?v=4",
     "/js/ad-film.seedance-options.js?v=2",
     "/js/ad-film.creative-plan.js?v=1",
-    "/js/ad-film.role-upload-fix.js?v=1",
+    "/js/ad-film.role-upload-fix.js?v=2",
+    "/js/ad-film.reset-fix.js?v=1",
     "/js/ad-film.narration-guide.js?v=1"
   ];
 
