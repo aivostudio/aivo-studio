@@ -18,9 +18,25 @@
   font-size:10.5px;
 }
 
+/* Four equal upload cards: cleaner hierarchy and predictable scanning. */
+.is-creative-plan-ready .adfilm-role-primary,
+.is-creative-plan-ready .adfilm-role-secondary{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+
 .is-creative-plan-ready .adfilm-role-zone{
+  min-height:196px!important;
   gap:9px;
   padding:17px 16px;
+}
+
+.is-creative-plan-ready .adfilm-role-zone--hero,
+.is-creative-plan-ready .adfilm-role-zone--angles,
+.is-creative-plan-ready .adfilm-role-zone--scenes,
+.is-creative-plan-ready .adfilm-role-zone--logo{
+  min-height:196px!important;
 }
 
 .is-creative-plan-ready .adfilm-role-zone__icon{
@@ -73,17 +89,14 @@
   letter-spacing:.045em;
 }
 
-.is-creative-plan-ready .adfilm-role-zone--hero>b{
-  font-size:15px!important;
-}
-
+.is-creative-plan-ready .adfilm-role-zone--hero>b,
 .is-creative-plan-ready .adfilm-role-zone--angles>b,
 .is-creative-plan-ready .adfilm-role-zone--scenes>b{
   font-size:15px!important;
 }
 
 .is-creative-plan-ready .adfilm-role-zone--logo>b{
-  font-size:13.5px!important;
+  font-size:14.5px!important;
 }
 
 .is-creative-plan-ready .adfilm-reference-map{
@@ -140,12 +153,27 @@
 }
 
 @media(max-width:1500px){
+  .is-creative-plan-ready .adfilm-role-zone{min-height:176px!important}
+  .is-creative-plan-ready .adfilm-role-zone--hero,
+  .is-creative-plan-ready .adfilm-role-zone--angles,
+  .is-creative-plan-ready .adfilm-role-zone--scenes,
+  .is-creative-plan-ready .adfilm-role-zone--logo{min-height:176px!important}
   .is-creative-plan-ready .adfilm-role-zone>b{font-size:13.5px!important}
   .is-creative-plan-ready .adfilm-role-zone--hero>b,
   .is-creative-plan-ready .adfilm-role-zone--angles>b,
   .is-creative-plan-ready .adfilm-role-zone--scenes>b{font-size:14.5px!important}
   .is-creative-plan-ready .adfilm-role-zone>small{font-size:10px!important}
   .is-creative-plan-ready .adfilm-reference-map b{font-size:10.5px!important}
+}
+
+@media(max-width:1120px){
+  .is-creative-plan-ready .adfilm-role-primary,
+  .is-creative-plan-ready .adfilm-role-secondary{grid-template-columns:1fr!important}
+  .is-creative-plan-ready .adfilm-role-zone,
+  .is-creative-plan-ready .adfilm-role-zone--hero,
+  .is-creative-plan-ready .adfilm-role-zone--angles,
+  .is-creative-plan-ready .adfilm-role-zone--scenes,
+  .is-creative-plan-ready .adfilm-role-zone--logo{min-height:150px!important}
 }
 
 @media(max-width:680px){
