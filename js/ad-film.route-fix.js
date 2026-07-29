@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — compatibility bridge; core owner is StudioRouter */
 (function AIVO_AD_FILM_ROUTE_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROUTE_FIX_V4__)return;
-  window.__AIVO_AD_FILM_ROUTE_FIX_V4__=true;
+  if(window.__AIVO_AD_FILM_ROUTE_FIX_V5__)return;
+  window.__AIVO_AD_FILM_ROUTE_FIX_V5__=true;
 
   var panelGuardInstalled=false;
 
@@ -75,27 +75,10 @@
     restoreDynamicPanel(700);
   },true);
 
-  document.addEventListener("pointerdown",function(event){
-    var target=event.target&&event.target.closest&&event.target.closest(
-      '.rpPanelWrap[data-panel-key="adfilm"] .adfilm-preview-play,'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-adfilm-result-toolbar],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-adfilm-output-gallery],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-adfilm-project-history],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] video'
-    );
-    if(target)restoreDynamicPanel(0);
-  },true);
-
-  document.addEventListener("click",function(event){
-    var target=event.target&&event.target.closest&&event.target.closest(
-      '.rpPanelWrap[data-panel-key="adfilm"] .adfilm-preview-play,'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-result-action],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-output-action],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-history-action],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-output-id]'
-    );
-    if(target)restoreDynamicPanel(0);
-  },true);
+  /* Do not rebuild the dynamic panel on pointerdown/click inside player or
+     gallery controls. Replacing gallery HTML between pointerdown and click
+     destroys the button before its action event can fire. Each control owns
+     its own state restoration after completing the requested action. */
 
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-open]");
