@@ -1,6 +1,5 @@
 // api/ad-film/upload-url.js
 import crypto from "crypto";
-import { createRequire } from "module";
 import {
   buildPublicUrl,
   getOwnedProject,
@@ -8,9 +7,6 @@ import {
   resolveAdFilmUser,
   sendJson,
 } from "../_lib/ad-film-projects.js";
-
-const require = createRequire(import.meta.url);
-const { enforceMediaPolicy, mediaPolicyError } = require("../_lib/media-policy.js");
 
 const RULES = {
   "product-image": {
@@ -151,8 +147,15 @@ function createSignedR2Url({ method, endpoint, bucket, key, expiresIn }) {
 
 export default async function handler(req, res) {
   try {
+    if (req.method === "GET") {
+      return sendJson(res, 200, {
+        ok: true,
+        route: "ad-film-upload-url",
+        signer: "native-sigv4",
+      });
+    }
     if (req.method !== "POST") {
-      res.setHeader("Allow", "POST");
+      res.setHeader("Allow", "GET, POST");
       return sendJson(res, 405, { ok: false, error: "method_not_allowed" });
     }
 
@@ -191,20 +194,6 @@ export default async function handler(req, res) {
 
     const project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
-
-    if (contentType.startsWith("image/") && contentType !== "image/svg+xml") {
-      const policy = await enforceMediaPolicy({
-        app: "adfilm",
-        fileName: filename,
-        mimeType: contentType,
-        source: "adfilm_r2_presign",
-        title: project.brief?.productName || filename,
-        description: project.brief?.description || filename,
-      });
-      if (policy?.decision === "block") {
-        return sendJson(res, 403, mediaPolicyError(policy));
-      }
-    }
 
     const endpoint = assertR2Env();
     const bucket = process.env.R2_BUCKET;
