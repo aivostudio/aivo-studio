@@ -1,8 +1,8 @@
-/* AIVO AI Reklam Filmi — hard narration approval gate */
+/* AIVO AI Reklam Filmi — narration approval guidance and hard production gate */
 (function AIVO_AD_FILM_NARRATION_BUILD_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V2__)return;
-  window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V2__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V3__)return;
+  window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V3__=true;
 
   function clean(value){return String(value||"").trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
@@ -11,40 +11,62 @@
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function text(tr,en){return english()?en:tr}
-  function notify(message){try{var fn=window.toast&&window.toast.warning;if(typeof fn==="function")return fn({message:message,duration:4200});if(typeof window.showToast==="function")return window.showToast(message,"warning")}catch(_){} }
+  function notify(message){try{var fn=window.toast&&window.toast.warning;if(typeof fn==="function")return fn({message:message,duration:4600});if(typeof window.showToast==="function")return window.showToast(message,"warning")}catch(_){} }
 
   function state(scope){
     var source=project()||{};
     var enabled=!!value(scope,"voiceEnabled",true);
-    if(!enabled)return{ready:true,reason:""};
+    if(!enabled)return{ready:true,reason:"",code:"off"};
     var currentText=clean(value(scope,"narrationText",""));
     var audio=source.narration&&source.narration.audio;
     var generation=source.narrationGeneration||{};
     var input=generation.input||{};
-    if(!audio||!clean(audio.url))return{ready:false,reason:text("Önce reklam sesini oluştur, dinle ve onayla.","Generate, preview and approve the narration first.")};
-    if(audio.mastered!==true)return{ready:false,reason:text("Ses profesyonel olarak işleniyor. Tamamlanmasını bekle.","The narration is being professionally mastered. Wait for it to finish.")};
-    if(audio.approved!==true)return{ready:false,reason:text("Reklam filmini oluşturmadan önce sesi dinleyip onayla.","Preview and approve the narration before creating the advertising film.")};
+    if(!audio||!clean(audio.url))return{ready:false,code:"missing",reason:text("Önce reklam sesini oluştur, dinle ve onayla.","Generate, preview and approve the narration first.")};
+    if(audio.mastered!==true)return{ready:false,code:"mastering",reason:text("Ses profesyonel olarak işleniyor. Tamamlanmasını bekle.","The narration is being professionally mastered. Wait for it to finish.")};
+    if(audio.approved!==true)return{ready:false,code:"approval",reason:text("Reklam filmini oluşturmadan önce sesi dinleyip onayla.","Preview and approve the narration before creating the advertising film.")};
     var approvedText=clean(audio.approvedText||input.text||"");
-    if(approvedText&&approvedText!==currentText)return{ready:false,reason:text("Seslendirme metni değişti. Sesi yeniden üretip onayla.","The narration script changed. Generate and approve the voice again.")};
-    return{ready:true,reason:""};
+    if(approvedText&&approvedText!==currentText)return{ready:false,code:"changed",reason:text("Seslendirme metni değişti. Sesi yeniden üretip onayla.","The narration script changed. Generate and approve the voice again.")};
+    return{ready:true,reason:"",code:"ready"};
+  }
+
+  function setButtonGuidance(button,check){
+    if(!button)return;
+    var meta=button.querySelector("em");
+    if(meta&&!button.dataset.narrationDefaultMeta)button.dataset.narrationDefaultMeta=meta.textContent||"";
+    button.dataset.audioApprovalGuard=check.ready?"ready":"blocked";
+    button.classList.toggle("is-narration-pending",!check.ready);
+    button.title=check.ready?"":check.reason;
+    if(meta)meta.textContent=check.ready?(button.dataset.narrationDefaultMeta||meta.textContent):text("Önce sesi onayla","Approve the voice first");
+    /* Deliberately do not disable the CTA for narration approval. Required
+       field validation remains owned by Basic Mode. A ready form keeps the
+       button clickable so the user receives clear guidance on click. */
   }
 
   function sync(scope){
     scope=scope||root();if(!scope)return;
     var button=scope.querySelector('[data-adfilm-build]');if(!button)return;
     var check=state(scope);
-    button.dataset.audioApprovalGuard=check.ready?"ready":"blocked";
-    if(check.ready){
-      if(!button.classList.contains("is-generating")&&button.dataset.narrationGuard!=="blocked")button.disabled=false;
-    }else{
-      button.disabled=true;
-      button.classList.remove("is-ready");
-    }
+    setButtonGuidance(button,check);
     var hint=scope.querySelector('[data-adfilm-build-reason]');
-    if(hint){
-      var label=hint.querySelector("b");
-      if(!check.ready){hint.classList.remove("is-ready");if(label)label.textContent=check.reason}
+    if(hint&&!check.ready){
+      hint.classList.remove("is-ready");
+      hint.classList.add("is-narration-warning");
+      var label=hint.querySelector("b");if(label)label.textContent=check.reason;
+    }else if(hint){hint.classList.remove("is-narration-warning")}
+  }
+
+  function guideToNarration(scope,check){
+    var panel=scope&&scope.querySelector('[data-adfilm-narration-engine]');
+    var card=panel&&panel.closest('.adfilm-card--voice')||scope&&scope.querySelector('.adfilm-card--voice');
+    var target=check.code==="approval"?scope.querySelector('[data-narration-audio-approve]'):scope.querySelector('[data-narration-create]');
+    if(card){
+      card.classList.remove("is-approval-attention");
+      void card.offsetWidth;
+      card.classList.add("is-approval-attention");
+      try{card.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){card.scrollIntoView()}
+      setTimeout(function(){card.classList.remove("is-approval-attention")},2400);
     }
+    if(target&&!target.disabled)setTimeout(function(){try{target.focus({preventScroll:true})}catch(_){target.focus()}},500);
   }
 
   document.addEventListener("click",function(event){
@@ -54,7 +76,7 @@
     var check=state(scope);
     if(check.ready)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-    notify(check.reason);sync(scope);
+    notify(check.reason);guideToNarration(scope,check);sync(scope);
   },true);
 
   function schedule(scope){[0,50,140,360,800].forEach(function(delay){setTimeout(function(){sync(scope||root())},delay)})}
