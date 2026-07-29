@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — single stable live-player controller */
 (function AIVO_AD_FILM_RESULT_CONTROLS(){
   "use strict";
-  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V7__)return;
-  window.__AIVO_AD_FILM_RESULT_CONTROLS_V7__=true;
+  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V8__)return;
+  window.__AIVO_AD_FILM_RESULT_CONTROLS_V8__=true;
 
   var COPY={
     tr:{play:"Oynat",pause:"Duraklat",download:"İndir",downloadStarted:"İndirme başlatıldı.",fullscreen:"Tam ekran",mute:"Sesi kapat",unmute:"Sesi aç",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",downloadFailed:"Video indirilemedi."},
@@ -10,9 +10,8 @@
   };
 
   var restoreTimer=null;
-  var lastVideoUrl="";
-  var lastLogoUrl="";
   var downloadBusy=false;
+  var previewContext=null;
 
   function lang(){
     var html=String(document.documentElement.lang||"").toLowerCase(),stored="";
@@ -22,9 +21,8 @@
   function t(key){return(COPY[lang()]&&COPY[lang()][key])||COPY.tr[key]||key}
   function clean(value){return String(value||"").trim()}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
-  function isPreparing(source){source=source||project();return!!(source&&source.preparingNewVersion)}
   function outputsOf(source){
-    source=source||project()||{};
+    source=source||{};
     var outputs=Array.isArray(source.outputs)?source.outputs.filter(function(item){return item&&clean(item.videoUrl)}):[];
     if(!outputs.length&&source.generation&&clean(source.generation.videoUrl)){
       outputs=[{
@@ -39,31 +37,60 @@
   function activeOutput(source){
     source=source||project()||{};
     var outputs=outputsOf(source);
-    var id=clean(window.AIVOAdFilmActiveOutputId||source.activeOutputId||source.generation&&source.generation.outputId);
+    var id=clean(source.activeOutputId||source.generation&&source.generation.outputId||window.AIVOAdFilmActiveOutputId);
     return outputs.find(function(item){return clean(item.id)===id})||outputs[0]||null;
   }
+  function contextFromProject(source){
+    source=source||project();
+    if(!source||source.preparingNewVersion)return null;
+    var item=activeOutput(source);if(!item)return null;
+    return{
+      url:clean(item.videoUrl),
+      logo:clean(item.logoUrl||source.media&&source.media.logo&&source.media.logo.url||source.generation&&source.generation.logoUrl||""),
+      projectId:clean(source.id),
+      outputId:clean(item.id),
+      version:Number(item.version)||1,
+      source:"project"
+    };
+  }
+  function normalizeContext(url,logo,options){
+    options=options||{};
+    var source=project()||{};
+    var item=activeOutput(source);
+    return{
+      url:clean(url),
+      logo:clean(logo),
+      projectId:clean(options.projectId||source.id||window.AIVOAdFilmActiveOutputProjectId),
+      outputId:clean(options.outputId||item&&item.id||window.AIVOAdFilmActiveOutputId),
+      version:Number(options.version||item&&item.version)||1,
+      source:clean(options.source||"explicit")
+    };
+  }
+  function setContext(context){
+    if(!context||!clean(context.url))return null;
+    previewContext={
+      url:clean(context.url),
+      logo:clean(context.logo),
+      projectId:clean(context.projectId),
+      outputId:clean(context.outputId),
+      version:Number(context.version)||1,
+      source:clean(context.source||"explicit")
+    };
+    window.AIVOAdFilmGeneratedVideo=previewContext.url;
+    window.AIVOAdFilmGeneratedLogo=previewContext.logo;
+    window.AIVOAdFilmActiveOutputProjectId=previewContext.projectId;
+    window.AIVOAdFilmActiveOutputId=previewContext.outputId;
+    return previewContext;
+  }
+  function currentContext(){return previewContext||contextFromProject(project())}
   function projectId(){
+    var context=currentContext();
     var root=document.querySelector('[data-module-root][data-module="adfilm"]');
-    return clean(root&&root.dataset.adfilmProjectId||project()&&project().id||window.AIVOAdFilmActiveOutputProjectId);
+    return clean(context&&context.projectId||root&&root.dataset.adfilmProjectId||project()&&project().id||window.AIVOAdFilmActiveOutputProjectId);
   }
-  function outputId(){var item=activeOutput();return clean(item&&item.id||window.AIVOAdFilmActiveOutputId)}
-  function currentVideoUrl(){
-    var source=project();
-    if(isPreparing(source))return"";
-    var item=activeOutput(source);
-    return clean(item&&item.videoUrl||source&&source.generation&&source.generation.videoUrl||lastVideoUrl);
-  }
-  function currentLogoUrl(){
-    var source=project();
-    if(isPreparing(source))return"";
-    var item=activeOutput(source);
-    return clean(item&&item.logoUrl||source&&source.media&&source.media.logo&&source.media.logo.url||source&&source.generation&&source.generation.logoUrl||lastLogoUrl);
-  }
-  function remember(url,logo,id){
-    if(clean(url)){lastVideoUrl=clean(url);window.AIVOAdFilmGeneratedVideo=lastVideoUrl}
-    if(clean(logo)){lastLogoUrl=clean(logo);window.AIVOAdFilmGeneratedLogo=lastLogoUrl}
-    if(clean(id))window.AIVOAdFilmActiveOutputId=clean(id);
-  }
+  function outputId(){var context=currentContext();return clean(context&&context.outputId||window.AIVOAdFilmActiveOutputId)}
+  function currentVideoUrl(){var context=currentContext();return clean(context&&context.url)}
+  function currentLogoUrl(){var context=currentContext();return clean(context&&context.logo)}
   function toast(message,type){
     try{
       if(window.toast&&typeof window.toast[type||"info"]==="function")return window.toast[type||"info"](message);
@@ -102,27 +129,30 @@
     old.style.backgroundImage='url("'+String(url).replace(/"/g,"%22")+'")';
   }
 
-  function clearPlayer(forget){
+  function clearDom(){
     clearTimeout(restoreTimer);
     var target=frame();
-    if(target){
-      target.querySelectorAll("video[data-adfilm-result-video]").forEach(function(video){try{video.pause()}catch(_){}video.remove()});
-      target.querySelectorAll("[data-adfilm-result-toolbar],.adfilm-result-toolbar,[data-adfilm-result-actions-row]").forEach(function(node){node.remove()});
-      var logo=target.querySelector("[data-adfilm-result-logo]");if(logo)logo.remove();
-      var media=target.querySelector("[data-panel-media]");if(media)media.classList.remove("has-result-video");
-      target.classList.remove("has-result-video");
-    }
+    if(!target)return;
+    target.querySelectorAll("video[data-adfilm-result-video]").forEach(function(video){try{video.pause()}catch(_){}video.remove()});
+    target.querySelectorAll("[data-adfilm-result-toolbar],.adfilm-result-toolbar,[data-adfilm-result-actions-row]").forEach(function(node){node.remove()});
+    var logo=target.querySelector("[data-adfilm-result-logo]");if(logo)logo.remove();
+    var media=target.querySelector("[data-panel-media]");if(media)media.classList.remove("has-result-video");
+    target.classList.remove("has-result-video");
+  }
+  function clearPlayer(forget){
+    clearDom();
     if(forget!==false){
-      lastVideoUrl="";lastLogoUrl="";
+      previewContext=null;
       window.AIVOAdFilmGeneratedVideo="";
       window.AIVOAdFilmGeneratedLogo="";
+      window.AIVOAdFilmActiveOutputProjectId="";
       window.AIVOAdFilmActiveOutputId="";
     }
   }
 
-  function downloadOutput(id,version){
+  function downloadOutput(id,version,requestedProjectId){
     if(downloadBusy)return;
-    var pid=projectId();
+    var pid=clean(requestedProjectId||projectId());
     if(!pid){toast(t("downloadFailed"),"error");return}
     downloadBusy=true;
     try{
@@ -143,25 +173,29 @@
       toast(t("downloadFailed"),"error");
     }
   }
-  function downloadVideo(){var item=activeOutput();downloadOutput(item&&item.id,item&&item.version)}
+  function downloadVideo(){var context=currentContext();downloadOutput(context&&context.outputId,context&&context.version,context&&context.projectId)}
 
   async function removeVideo(){
-    if(!window.confirm(t("removeConfirm")))return;
-    var source=project(),item=activeOutput(source),pid=projectId(),oid=clean(item&&item.id||outputId());
+    var context=currentContext();
+    if(!context||!window.confirm(t("removeConfirm")))return;
+    var pid=clean(context.projectId||projectId()),oid=clean(context.outputId||outputId());
     try{
       if(!pid)throw new Error("missing_project_id");
       var url="/api/ad-film/seedance/result?projectId="+encodeURIComponent(pid);if(oid)url+="&outputId="+encodeURIComponent(oid);
       var response=await fetch(url,{method:"DELETE",credentials:"include",cache:"no-store"});
       var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"remove_failed");
-      var next=data.project||source||{};
-      window.AIVOAdFilmActiveProject=next;
-      var nextItem=activeOutput(next);
-      if(nextItem){
-        remember(nextItem.videoUrl,nextItem.logoUrl||next.media&&next.media.logo&&next.media.logo.url||"",nextItem.id);
-        mount(nextItem.videoUrl,nextItem.logoUrl||"",{});
-      }else clearPlayer(true);
-      document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
-      if(window.AIVOAdFilmOutputGallery&&typeof window.AIVOAdFilmOutputGallery.render==="function")window.AIVOAdFilmOutputGallery.render(next);
+      var activeProject=project();
+      if(activeProject&&clean(activeProject.id)===pid){
+        var next=data.project||activeProject;
+        window.AIVOAdFilmActiveProject=next;
+        previewContext=null;
+        var nextContext=contextFromProject(next);
+        if(nextContext){setContext(nextContext);renderContext(nextContext,false)}else clearPlayer(true);
+        document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
+      }else{
+        clearPlayer(true);
+        document.dispatchEvent(new CustomEvent("aivo:adfilm-history-refresh"));
+      }
     }catch(error){console.error("[ADFILM] remove generated video",error);toast(t("removeFailed"),"error")}
   }
 
@@ -201,7 +235,7 @@
     else if(action==="remove")removeVideo();
   }
 
-  function enhance(video){
+  function enhance(video,context){
     if(!video)return;
     video.controls=false;
     video.playsInline=true;
@@ -211,7 +245,7 @@
     video.removeAttribute("autoplay");
     var target=video.closest("[data-panel-frame]")||video.parentElement;if(!target)return;
     target.classList.add("has-result-video");
-    ensureLogo(target,currentLogoUrl());
+    ensureLogo(target,context&&context.logo||"");
     target.querySelectorAll("[data-adfilm-result-actions-row]").forEach(function(node){node.remove()});
     var toolbar=target.querySelector("[data-adfilm-result-toolbar]");
     if(!toolbar){
@@ -240,12 +274,8 @@
     syncPlay(video,toolbar);syncMute(video,toolbar);
   }
 
-  function mount(url,logo,options){
-    if(isPreparing()){clearPlayer(false);return null}
-    url=clean(url||currentVideoUrl());logo=clean(logo||currentLogoUrl());
-    if(!url){clearPlayer(false);return null}
-    var item=activeOutput();
-    remember(url,logo,item&&item.id);
+  function renderContext(context,play){
+    if(!context||!clean(context.url)){clearDom();return null}
     var target=frame();if(!target)return null;
     var media=target.querySelector("[data-panel-media]");if(!media)return null;
     var video=media.querySelector("video[data-adfilm-result-video]");
@@ -254,43 +284,58 @@
       video.setAttribute("data-adfilm-result-video","");
       media.appendChild(video);
     }
-    if(!sameUrl(video.currentSrc||video.src,url)){
+    if(!sameUrl(video.currentSrc||video.src,context.url)){
       try{video.pause()}catch(_){}
-      video.src=url;
+      video.src=context.url;
       try{video.load()}catch(_){}
     }
     media.classList.add("has-media","has-result-video");
     target.classList.add("has-result-video");
-    ensureLogo(target,logo);
-    enhance(video);
-    if(options&&options.play)video.play().catch(function(){});
+    enhance(video,context);
+    if(play)video.play().catch(function(){});
     return video;
+  }
+
+  function mount(url,logo,options){
+    options=options||{};
+    var context=null;
+    if(clean(url))context=setContext(normalizeContext(url,logo,options));
+    else context=currentContext();
+    if(!context){clearDom();return null}
+    return renderContext(context,!!options.play);
   }
 
   function syncFromProject(source){
     source=source||project();
     if(source)window.AIVOAdFilmActiveProject=source;
-    if(!source||isPreparing(source)){clearPlayer(false);return}
-    var item=activeOutput(source);
-    if(!item){clearPlayer(false);return}
-    var logo=clean(item.logoUrl||source.media&&source.media.logo&&source.media.logo.url||source.generation&&source.generation.logoUrl||"");
-    remember(item.videoUrl,logo,item.id);
-    mount(item.videoUrl,logo,{});
+    var next=contextFromProject(source);
+    if(next){
+      previewContext=setContext(next);
+      renderContext(previewContext,false);
+      return;
+    }
+    if(previewContext&&clean(previewContext.url)){
+      renderContext(previewContext,false);
+      return;
+    }
+    clearDom();
   }
   function restore(delay){
     clearTimeout(restoreTimer);
     restoreTimer=setTimeout(function(){
       var panel=document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');
       if(!panel||!panel.isConnected)return;
-      syncFromProject(project());
+      var context=currentContext();
+      if(context)renderContext(context,false);else clearDom();
     },delay==null?80:delay);
   }
 
   document.addEventListener("click",function(event){
     var play=event.target&&event.target.closest&&event.target.closest('.rpPanelWrap[data-panel-key="adfilm"] .adfilm-preview-play');
-    if(!play||!currentVideoUrl())return;
+    if(!play)return;
+    var context=currentContext();if(!context)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-    mount(currentVideoUrl(),currentLogoUrl(),{play:true});
+    renderContext(context,true);
   },true);
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")restore(240)});
   document.addEventListener("aivo:adfilm-project-sync",function(event){syncFromProject(event&&event.detail&&event.detail.project||project())});
@@ -305,7 +350,8 @@
     fullscreen:enterFullscreen,
     videoUrl:currentVideoUrl,
     logoUrl:currentLogoUrl,
-    activeOutput:activeOutput
+    activeOutput:activeOutput,
+    context:currentContext
   };
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){restore(120)},{once:true});else restore(120);
 })();
