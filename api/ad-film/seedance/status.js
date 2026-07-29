@@ -8,6 +8,9 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
+const MODEL = "bytedance/seedance-2.0/reference-to-video";
+const QUEUE_URL = `https://queue.fal.run/${MODEL}`;
+
 function clean(value, max = 1600) {
   return String(value ?? "").trim().slice(0, max);
 }
@@ -116,6 +119,74 @@ async function falFetch(url, key) {
   return { response, data: parseJson(text) };
 }
 
+function isSensitiveAudioFailure(payload, status) {
+  if (Number(status) !== 422) return false;
+  let text = "";
+  try {
+    text = JSON.stringify(payload || {}).toLowerCase();
+  } catch (_) {
+    text = String(payload || "").toLowerCase();
+  }
+  return (
+    text.includes("output audio has sensitive content") ||
+    (text.includes("content_policy_violation") && text.includes("audio")) ||
+    (text.includes("partner_validation_failed") && text.includes("audio"))
+  );
+}
+
+function visualOnlyPrompt(prompt) {
+  const source = clean(prompt, 12000)
+    .replace(/Generate synchronized native audio\.[\s\S]*?seconds\./gi, "")
+    .replace(/Generate synchronized commercial ambience and sound effects, but no spoken dialogue\./gi, "")
+    .replace(/Generate synchronized ambience and sound effects without speech\./gi, "")
+    .trim();
+  return `${source} Create the visual video only. Do not generate audio, music, speech, dialogue or sound effects. AIVO will add the selected music, ambience and narration during final post-production.`;
+}
+
+async function queueAudioSafetyFallback(generation, key, ownerHash) {
+  const retry = generation?.retryInput;
+  if (!retry || !Array.isArray(retry.imageUrls) || !retry.imageUrls.length) return null;
+
+  const input = {
+    prompt: visualOnlyPrompt(retry.prompt),
+    image_urls: retry.imageUrls,
+    resolution: retry.resolution,
+    duration: retry.duration,
+    aspect_ratio: retry.aspectRatio,
+    generate_audio: false,
+    bitrate_mode: retry.bitrateMode || "standard",
+    end_user_id: ownerHash,
+  };
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  try {
+    const response = await fetch(QUEUE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Key ${key}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(input),
+      signal: controller.signal,
+    });
+    const text = await response.text().catch(() => "");
+    const data = parseJson(text);
+    if (!response.ok) return { ok: false, status: response.status, data };
+
+    const requestId = clean(data?.request_id || data?.requestId || data?.id, 240);
+    const statusUrl = clean(data?.status_url || data?.statusUrl || data?.urls?.status, 1200);
+    const responseUrl = clean(data?.response_url || data?.responseUrl || data?.urls?.response, 1200);
+    if (!requestId) return { ok: false, status: 502, data };
+    return { ok: true, requestId, statusUrl, responseUrl };
+  } catch (error) {
+    return { ok: false, status: 504, data: { message: String(error?.message || error) } };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET" && req.method !== "POST") {
@@ -205,6 +276,51 @@ export default async function handler(req, res) {
         videoUrl = videoUrlFrom(result.data);
         seed = seedFrom(result.data) ?? seed;
       } else if (result.response.status !== 202) {
+        if (isSensitiveAudioFailure(result.data, result.response.status) && Number(generation.audioSafetyRetry || 0) < 1) {
+          const fallback = await queueAudioSafetyFallback(generation, key, user.ownerHash);
+          if (fallback?.ok) {
+            const now = new Date().toISOString();
+            const retried = await saveProject(user, {
+              ...project,
+              status: "processing",
+              outputs: savedOutputs,
+              generation: {
+                ...generation,
+                previousRequestId: generation.requestId,
+                requestId: fallback.requestId,
+                outputId: fallback.requestId,
+                statusUrl: fallback.statusUrl || null,
+                responseUrl: fallback.responseUrl || null,
+                status: "queued",
+                startedAt: now,
+                updatedAt: now,
+                completedAt: null,
+                videoUrl: null,
+                seed: null,
+                error: null,
+                audioSafetyRetry: 1,
+                audioFallback: true,
+                input: {
+                  ...(generation.input || {}),
+                  generateAudio: false,
+                  audioCount: 0,
+                },
+              },
+            });
+            return sendJson(res, 200, {
+              ok: true,
+              provider: "fal",
+              projectId,
+              status: "IN_QUEUE",
+              video_url: null,
+              audio_fallback: true,
+              generation: retried.generation,
+              outputs: retried.outputs || [],
+              activeOutputId: retried.activeOutputId || null,
+            });
+          }
+        }
+
         return sendJson(res, 502, {
           ok: false,
           error: "fal_result_error",
