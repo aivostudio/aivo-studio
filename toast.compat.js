@@ -69,7 +69,8 @@
   ];
 
   const shellScripts = [
-    "/js/ad-film.skeleton.js?v=8"
+    "/js/ad-film.skeleton.js?v=8",
+    "/js/ad-film.reopen-fix.js?v=1"
   ];
 
   const moduleScripts = [
@@ -89,7 +90,7 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=4",
-    "/js/ad-film.result-controls.js?v=3",
+    "/js/ad-film.result-controls.js?v=4",
     "/js/ad-film.output-workflow.js?v=2",
     "/js/ad-film.output-gallery.js?v=2",
     "/js/ad-film.output-main-delete.js?v=1",
