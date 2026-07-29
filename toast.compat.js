@@ -69,7 +69,7 @@
   ];
 
   const shellScripts = [
-    "/js/ad-film.route-fix.js?v=1",
+    "/js/ad-film.route-fix.js?v=2",
     "/js/ad-film.skeleton.js?v=8",
     "/js/ad-film.reopen-fix.js?v=1"
   ];
