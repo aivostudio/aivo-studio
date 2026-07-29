@@ -65,7 +65,8 @@
     "/css/ad-film.seedance-engine.css?v=5",
     "/css/ad-film.result-controls.css?v=7",
     "/css/ad-film.output-workflow.css?v=1",
-    "/css/ad-film.output-gallery.css?v=3"
+    "/css/ad-film.output-gallery.css?v=3",
+    "/css/ad-film.premium-production.css?v=1"
   ];
 
   const shellScripts = [
