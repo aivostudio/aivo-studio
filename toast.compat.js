@@ -46,7 +46,7 @@
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
-    "/css/ad-film.preview.css?v=1",
+    "/css/ad-film.preview.css?v=2",
     "/css/ad-film.basic-polish.css?v=4",
     "/css/ad-film.basic-draft.css?v=1",
     "/css/ad-film.project-sync.css?v=2",
@@ -56,14 +56,14 @@
     "/css/ad-film.storyboard.css?v=1",
     "/css/ad-film.simple-mode.css?v=3",
     "/css/ad-film.music-profile.css?v=5",
-    "/css/ad-film.seedance-options.css?v=3",
+    "/css/ad-film.seedance-options.css?v=4",
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.creative-plan-tune.css?v=2",
     "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
-    "/css/ad-film.seedance-engine.css?v=3",
-    "/css/ad-film.result-controls.css?v=6",
+    "/css/ad-film.seedance-engine.css?v=4",
+    "/css/ad-film.result-controls.css?v=7",
     "/css/ad-film.output-workflow.css?v=1",
     "/css/ad-film.output-gallery.css?v=2"
   ];
@@ -92,7 +92,7 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=4",
-    "/js/ad-film.logo-finalize.js?v=1",
+    "/js/ad-film.logo-finalize.js?v=2",
     "/js/ad-film.result-controls.js?v=8",
     "/js/ad-film.live-preview-state.js?v=1",
     "/js/ad-film.output-workflow.js?v=2",
