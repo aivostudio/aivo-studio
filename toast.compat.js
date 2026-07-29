@@ -66,7 +66,7 @@
     "/css/ad-film.result-controls.css?v=7",
     "/css/ad-film.output-workflow.css?v=1",
     "/css/ad-film.output-gallery.css?v=3",
-    "/css/ad-film.premium-production.css?v=1"
+    "/css/ad-film.premium-engine.css?v=1"
   ];
 
   const shellScripts = [
@@ -91,6 +91,7 @@
     "/js/ad-film.role-upload-fix.js?v=3",
     "/js/ad-film.reference-indexes.js?v=1",
     "/js/ad-film.reset-fix.js?v=2",
+    "/js/ad-film.reset-safety.js?v=1",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=4",
     "/js/ad-film.progress-stability.js?v=1",
