@@ -44,10 +44,12 @@ function runFfmpeg(args) {
   });
 }
 
-async function download(url, destination) {
+async function download(url, destination, maxBytes = 180 * 1024 * 1024) {
   const response = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
   if (!response.ok) throw new Error(`download_failed:${response.status}`);
-  fs.writeFileSync(destination, Buffer.from(await response.arrayBuffer()));
+  const body = Buffer.from(await response.arrayBuffer());
+  if (!body.length || body.length > maxBytes) throw new Error("invalid_download_size");
+  fs.writeFileSync(destination, body);
 }
 
 function outputsOf(project) {
@@ -60,6 +62,7 @@ function outputsOf(project) {
       requestId: project.generation.requestId || null,
       version: project.generation.version || 1,
       videoUrl: project.generation.videoUrl,
+      sourceVideoUrl: project.generation.sourceVideoUrl || null,
       logoUrl: project.generation.logoUrl || project?.media?.logo?.url || null,
       completedAt: project.generation.completedAt || project.updatedAt,
       duration: project.generation.input?.duration || project?.output?.duration || "15",
@@ -135,8 +138,7 @@ async function prepareTransparentLogo(inputPath, outputPath) {
   }
 
   for (let index = 0; index < visited.length; index += 1) {
-    if (!visited[index]) continue;
-    data[index * channels + 3] = 0;
+    if (visited[index]) data[index * channels + 3] = 0;
   }
 
   await sharp(data, { raw: info })
@@ -175,27 +177,30 @@ export default async function handler(req, res) {
       target?.sourceVideoUrl || target?.videoUrl || project?.generation?.sourceVideoUrl || project?.generation?.videoUrl,
       4000
     );
-    const logoUrl = clean(
-      project?.media?.logo?.url || target?.logoUrl || project?.generation?.logoUrl,
-      4000
-    );
+    const logoUrl = clean(project?.media?.logo?.url || target?.logoUrl || project?.generation?.logoUrl, 4000);
+    const narrationEnabled = project?.narration?.enabled !== false;
+    const narrationAudio = project?.narration?.audio;
+    const narrationUrl = narrationEnabled && narrationAudio?.approved === true
+      ? clean(narrationAudio.url, 4000)
+      : "";
 
     if (!sourceVideoUrl) {
-      return sendJson(res, 200, { ok: false, fallback: true, error: "missing_source_video", video_url: null, logo_applied: false });
+      return sendJson(res, 409, { ok: false, error: "missing_source_video" });
+    }
+    if (narrationEnabled && !narrationUrl) {
+      return sendJson(res, 409, { ok: false, error: "narration_audio_approval_required" });
     }
 
-    if (target?.logoApplied && target?.videoUrl) {
-      return sendJson(res, 200, { ok: true, projectId, outputId: target.id, video_url: target.videoUrl, logo_applied: true, project });
-    }
-
-    if (!logoUrl) {
+    const logoSatisfied = !logoUrl || target?.logoApplied === true;
+    const narrationSatisfied = !narrationEnabled || target?.narrationApplied === true;
+    if (target?.videoUrl && logoSatisfied && narrationSatisfied) {
       return sendJson(res, 200, {
         ok: true,
         projectId,
-        outputId: target?.id || project?.generation?.outputId || null,
-        video_url: sourceVideoUrl,
-        logo_applied: false,
-        skipped: "missing_logo",
+        outputId: target.id,
+        video_url: target.videoUrl,
+        logo_applied: !!logoUrl,
+        narration_applied: !!narrationUrl,
         project,
       });
     }
@@ -206,42 +211,63 @@ export default async function handler(req, res) {
     const outputId = clean(target?.id || project?.generation?.outputId || project?.generation?.requestId, 240);
     const version = Number.parseInt(target?.version || project?.generation?.version, 10) || 1;
 
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-adfilm-logo-"));
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-adfilm-final-"));
     const inputVideo = path.join(tmpDir, "source.mp4");
     const originalLogo = path.join(tmpDir, "logo-original");
     const transparentLogo = path.join(tmpDir, "logo-transparent.png");
+    const narrationFile = path.join(tmpDir, "narration-audio");
     const outputVideo = path.join(tmpDir, "final.mp4");
-    cleanup.push(outputVideo, transparentLogo, originalLogo, inputVideo, tmpDir);
+    cleanup.push(outputVideo, narrationFile, transparentLogo, originalLogo, inputVideo, tmpDir);
 
     await download(sourceVideoUrl, inputVideo);
-    await download(logoUrl, originalLogo);
-    await prepareTransparentLogo(originalLogo, transparentLogo);
+    if (logoUrl) {
+      await download(logoUrl, originalLogo, 20 * 1024 * 1024);
+      await prepareTransparentLogo(originalLogo, transparentLogo);
+    }
+    if (narrationUrl) await download(narrationUrl, narrationFile, 30 * 1024 * 1024);
 
-    const filter = [
-      `[1:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`,
-      `[0:v][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:shortest=1[video]`,
-    ].join(";");
+    const args = ["-y", "-i", inputVideo];
+    let logoIndex = -1;
+    let narrationIndex = -1;
+    if (logoUrl) {
+      logoIndex = 1;
+      args.push("-loop", "1", "-i", transparentLogo);
+    }
+    if (narrationUrl) {
+      narrationIndex = logoUrl ? 2 : 1;
+      args.push("-i", narrationFile);
+    }
 
-    await runFfmpeg([
-      "-y",
-      "-i", inputVideo,
-      "-loop", "1",
-      "-i", transparentLogo,
-      "-filter_complex", filter,
-      "-map", "[video]",
-      "-map", "0:a:0?",
+    const filters = [];
+    if (logoUrl) {
+      filters.push(`[${logoIndex}:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`);
+      filters.push(`[0:v][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:shortest=1[vout]`);
+    }
+    if (narrationUrl) {
+      filters.push(`[${narrationIndex}:a]highpass=f=70,lowpass=f=16000,acompressor=threshold=-20dB:ratio=2.5:attack=12:release=140:makeup=1.5,loudnorm=I=-16:TP=-1.5:LRA=7,alimiter=limit=0.94,apad=pad_dur=60[aout]`);
+    }
+    if (filters.length) args.push("-filter_complex", filters.join(";"));
+
+    args.push("-map", logoUrl ? "[vout]" : "0:v:0");
+    if (narrationUrl) args.push("-map", "[aout]");
+    else args.push("-map", "0:a:0?");
+    args.push(
       "-c:v", "libx264",
       "-preset", "ultrafast",
       "-crf", "18",
       "-pix_fmt", "yuv420p",
       "-c:a", "aac",
       "-b:a", "192k",
+      "-ar", "48000",
+      "-ac", "2",
       "-shortest",
       "-movflags", "+faststart",
-      outputVideo,
-    ]);
+      outputVideo
+    );
 
-    const key = `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId, "video")}-v${version}-logo-${Date.now()}.mp4`;
+    await runFfmpeg(args);
+
+    const key = `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId, "video")}-v${version}-final-${Date.now()}.mp4`;
     const finalUrl = await putObject({
       key,
       body: fs.readFileSync(outputVideo),
@@ -257,10 +283,14 @@ export default async function handler(req, res) {
       version,
       sourceVideoUrl,
       videoUrl: finalUrl,
-      logoUrl,
-      logoApplied: true,
-      logoPosition: "bottom-right",
-      logoOpacity: 0.96,
+      logoUrl: logoUrl || null,
+      logoApplied: !!logoUrl,
+      logoPosition: logoUrl ? "bottom-right" : null,
+      logoOpacity: logoUrl ? 0.96 : null,
+      narrationUrl: narrationUrl || null,
+      narrationApplied: !!narrationUrl,
+      narrationMastered: narrationAudio?.mastered === true,
+      narrationApprovedAt: narrationAudio?.approvedAt || null,
       finalizedAt: now,
     };
     const nextOutputs = [
@@ -279,8 +309,11 @@ export default async function handler(req, res) {
         outputId: finalOutput.id,
         sourceVideoUrl,
         videoUrl: finalUrl,
-        logoUrl,
-        logoApplied: true,
+        logoUrl: logoUrl || null,
+        logoApplied: !!logoUrl,
+        narrationUrl: narrationUrl || null,
+        narrationApplied: !!narrationUrl,
+        narrationMastered: narrationAudio?.mastered === true,
         finalizedAt: now,
         completedAt: project?.generation?.completedAt || now,
         error: null,
@@ -293,21 +326,22 @@ export default async function handler(req, res) {
       outputId: finalOutput.id,
       video_url: finalUrl,
       source_video_url: sourceVideoUrl,
-      logo_url: logoUrl,
-      logo_applied: true,
+      logo_url: logoUrl || null,
+      logo_applied: !!logoUrl,
+      narration_url: narrationUrl || null,
+      narration_applied: !!narrationUrl,
+      narration_mastered: narrationAudio?.mastered === true,
       project: nextProject,
       outputs: nextProject.outputs || [],
       activeOutputId: nextProject.activeOutputId || finalOutput.id,
     });
   } catch (error) {
     console.error("[ad-film/seedance/finalize]", error);
-    return sendJson(res, 200, {
+    return sendJson(res, 500, {
       ok: false,
-      fallback: true,
-      error: "logo_finalize_failed",
+      error: "adfilm_finalize_failed",
       message: String(error?.message || error).slice(0, 1200),
       video_url: sourceVideoUrl || null,
-      logo_applied: false,
     });
   } finally {
     for (const entry of cleanup.reverse()) {
