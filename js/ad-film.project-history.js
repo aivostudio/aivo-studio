@@ -1,16 +1,23 @@
 /* AIVO AI Reklam Filmi — hazır videoları projeler arasında görünür tutar */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V3__)return;
-  window.__AIVO_AD_FILM_PROJECT_HISTORY_V3__=true;
+  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V4__)return;
+  window.__AIVO_AD_FILM_PROJECT_HISTORY_V4__=true;
 
   var items=[];
   var busy=false;
+  var deleting=false;
 
   function clean(v){return String(v||"").trim()}
   function lang(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0?"en":"tr"}
   function text(tr,en){return lang()==="en"?en:tr}
   function panel(){return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]')}
+  function toast(message,type){
+    try{
+      if(window.toast&&typeof window.toast[type||"info"]==="function")return window.toast[type||"info"](message);
+      if(typeof window.showToast==="function")return window.showToast(message,type||"info");
+    }catch(_){}
+  }
 
   function projectOutputs(project,summary){
     if(!project)return[];
@@ -54,12 +61,24 @@
   var PAUSE='<path d="M8 6h3v12H8zM13 6h3v12h-3z" fill="currentColor"/>';
   var DOWN='<path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
   var FULL='<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+  var TRASH='<path d="M5 7h14M9 7V4h6v3M8 10v8m4-8v8m4-8v8M7 7l1 14h8l1-14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
 
   function syncCardPlay(card,video){
     var button=card&&card.querySelector('[data-history-action="play"]');if(!button||!video)return;
     button.innerHTML=icon(video.paused?PLAY:PAUSE);
     button.title=video.paused?text("Oynat","Play"):text("Duraklat","Pause");
     button.setAttribute("aria-label",button.title);
+  }
+
+  function tool(action,title,svg,danger){
+    var button=document.createElement("button");
+    button.type="button";
+    button.dataset.historyAction=action;
+    button.title=title;
+    button.setAttribute("aria-label",title);
+    if(danger)button.className="is-danger";
+    button.innerHTML=icon(svg);
+    return button;
   }
 
   function render(){
@@ -74,6 +93,7 @@
       card.className="adfilm-output-card";
       card.dataset.historyProjectId=item.projectId;
       card.dataset.historyOutputId=item.id;
+
       var media=document.createElement("div");media.className="adfilm-output-card__media";
       var video=document.createElement("video");
       video.src=item.videoUrl;
@@ -86,13 +106,17 @@
       video.addEventListener("pause",function(){syncCardPlay(card,video)});
       video.addEventListener("ended",function(){syncCardPlay(card,video)});
       media.appendChild(video);
+
       var badge=document.createElement("span");badge.textContent="V"+(item.version||1);media.appendChild(badge);
       var play=document.createElement("button");
       play.type="button";play.className="adfilm-output-card__play";play.dataset.historyAction="play";play.title=text("Oynat","Play");play.setAttribute("aria-label",play.title);play.innerHTML=icon(PLAY);media.appendChild(play);
+
       var tools=document.createElement("div");tools.className="adfilm-output-card__tools";
-      var dl=document.createElement("button");dl.type="button";dl.dataset.historyAction="download";dl.title=text("İndir","Download");dl.innerHTML=icon(DOWN);
-      var fs=document.createElement("button");fs.type="button";fs.dataset.historyAction="fullscreen";fs.title=text("Tam ekran","Fullscreen");fs.innerHTML=icon(FULL);
-      tools.appendChild(dl);tools.appendChild(fs);media.appendChild(tools);
+      tools.appendChild(tool("download",text("İndir","Download"),DOWN,false));
+      tools.appendChild(tool("fullscreen",text("Tam ekran","Fullscreen"),FULL,false));
+      tools.appendChild(tool("delete",text("Sil","Delete"),TRASH,true));
+      media.appendChild(tools);
+
       var meta=document.createElement("div");meta.className="adfilm-output-card__meta";
       meta.innerHTML='<b>'+item.projectTitle+'</b><small>'+["V"+(item.version||1),item.duration?item.duration+" sn":"",item.aspectRatio||"",item.resolution||""].filter(Boolean).join(" · ")+'</small>';
       card.appendChild(media);card.appendChild(meta);rail.appendChild(card);
@@ -123,15 +147,25 @@
     return items.find(function(x){return x.projectId===pid&&String(x.id)===String(oid)})||null;
   }
 
-  function openInMain(item,play){
-    if(!item||!window.AIVOAdFilmResultControls)return;
-    window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{
-      play:!!play,
-      projectId:item.projectId,
-      outputId:item.id,
-      version:item.version||1,
-      source:"history"
-    });
+  async function deleteItem(item,card){
+    if(!item||deleting)return;
+    if(!window.confirm(text("Bu hazır videoyu silmek istiyor musun? Bu işlem geri alınamaz.","Delete this ready video? This cannot be undone.")))return;
+    deleting=true;
+    if(card)card.classList.add("is-deleting");
+    try{
+      var url="/api/ad-film/seedance/result?projectId="+encodeURIComponent(item.projectId)+"&outputId="+encodeURIComponent(item.id);
+      var response=await fetch(url,{method:"DELETE",credentials:"include",cache:"no-store"});
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok)throw new Error(data.error||"delete_failed");
+      items=items.filter(function(x){return !(x.projectId===item.projectId&&String(x.id)===String(item.id))});
+      render();
+      toast(text("Hazır video silindi.","Ready video deleted."),"success");
+      document.dispatchEvent(new CustomEvent("aivo:adfilm-history-refresh"));
+    }catch(error){
+      console.error("[ADFILM] history delete",error);
+      if(card)card.classList.remove("is-deleting");
+      toast(text("Video silinemedi.","The video could not be deleted."),"error");
+    }finally{deleting=false}
   }
 
   document.addEventListener("click",function(event){
@@ -153,15 +187,7 @@
     }else if(action==="fullscreen"){
       var v=card.querySelector("video");
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.fullscreen==="function")window.AIVOAdFilmResultControls.fullscreen(v);
-    }
-  },true);
-
-  document.addEventListener("click",function(event){
-    var card=event.target&&event.target.closest&&event.target.closest("[data-adfilm-project-history] [data-history-project-id]");
-    if(!card||event.target.closest("[data-history-action]"))return;
-    var item=findItem(card);if(!item)return;
-    event.preventDefault();event.stopPropagation();
-    openInMain(item,false);
+    }else if(action==="delete")deleteItem(item,card);
   },true);
 
   document.addEventListener("aivo:module-mounted",function(e){if(e&&e.detail&&e.detail.key==="adfilm")setTimeout(load,500)});
