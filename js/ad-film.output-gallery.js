@@ -5,8 +5,8 @@
   window.__AIVO_AD_FILM_OUTPUT_GALLERY__=true;
 
   var COPY={
-    tr:{title:"Diğer Sürümler",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi."},
-    en:{title:"Other Versions",video:"videos",version:"Version",play:"Open in main player",download:"Download",fullscreen:"Fullscreen",remove:"Delete",removeConfirm:"Delete this advertising version?",removeFailed:"The advertising version could not be deleted.",selectFailed:"The video could not be selected."}
+    tr:{title:"Diğer Sürümler",readyTitle:"Hazır Videolar",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi."},
+    en:{title:"Other Versions",readyTitle:"Ready Videos",video:"videos",version:"Version",play:"Open in main player",download:"Download",fullscreen:"Fullscreen",remove:"Delete",removeConfirm:"Delete this advertising version?",removeFailed:"The advertising version could not be deleted.",selectFailed:"The video could not be selected."}
   };
 
   function lang(){
@@ -93,12 +93,13 @@
     source=source||project();
     var host=ensureHost();if(!host)return;
     var outputs=outputsFromProject(source);
-    if(outputs.length<2){host.hidden=true;host.innerHTML="";return}
+    var preparing=!!(source&&source.preparingNewVersion&&!source.generation);
+    if(!outputs.length||outputs.length<2&&!preparing){host.hidden=true;host.innerHTML="";return}
     host.hidden=false;
-    var selected=activeId(source,outputs);
+    var selected=preparing?"":activeId(source,outputs);
     host.innerHTML="";
     var head=document.createElement("div");head.className="adfilm-output-gallery__head";
-    var heading=document.createElement("h3");heading.textContent=t("title");
+    var heading=document.createElement("h3");heading.textContent=preparing?t("readyTitle"):t("title");
     var count=document.createElement("span");count.textContent=outputs.length+" "+t("video");
     head.appendChild(heading);head.appendChild(count);
     var rail=document.createElement("div");rail.className="adfilm-output-gallery__rail";
@@ -128,6 +129,7 @@
       var remaining=outputsFromProject(data.project||{}),active=remaining.find(function(output){return output.id===(data.activeOutputId||data.project&&data.project.activeOutputId)})||remaining[0];
       window.AIVOAdFilmGeneratedVideo=active&&active.videoUrl||"";window.AIVOAdFilmGeneratedLogo=active&&active.logoUrl||"";window.AIVOAdFilmActiveOutputId=active&&active.id||"";
       if(active&&window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(active.videoUrl,active.logoUrl||"");
+      else if(window.AIVOAdFilmResultControls&&window.AIVOAdFilmResultControls.clear)window.AIVOAdFilmResultControls.clear();
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:data.project}}));render(data.project);
     }catch(error){console.error("[ADFILM] remove output",error);toast(t("removeFailed"),"error")}
   }
