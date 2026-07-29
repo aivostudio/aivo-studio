@@ -200,6 +200,16 @@ export default async function handler(req, res) {
 
     const now = new Date().toISOString();
     const version = nextVersion(project);
+    const retryInput = {
+      prompt,
+      imageUrls,
+      audioUrls,
+      resolution,
+      duration,
+      aspectRatio,
+      bitrateMode,
+      generateAudio: input.generate_audio,
+    };
     const nextProject = await saveProject(user, {
       ...project,
       status: "processing",
@@ -220,6 +230,8 @@ export default async function handler(req, res) {
         videoUrl: null,
         seed: null,
         logoUrl: logoUrl || null,
+        audioSafetyRetry: 0,
+        retryInput,
         input: {
           duration,
           resolution,
