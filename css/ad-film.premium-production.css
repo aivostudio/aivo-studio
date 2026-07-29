@@ -1,0 +1,145 @@
+/* AIVO AI Reklam Filmi — premium production and quality polish */
+
+/* Basit modda gereksiz açıklama kartını kaldır; işlev taşımıyor. */
+.is-simplified-basic .adfilm-simple-auto{display:none!important}
+
+/* Üretim alanı: basit yanıp sönme yerine sürekli, yumuşak premium ışık hareketi. */
+.adfilm-engine-status.is-busy{
+  isolation:isolate;
+  overflow:hidden;
+  border-color:rgba(191,132,255,.38);
+  background:
+    radial-gradient(circle at 50% -35%,rgba(168,85,247,.22),transparent 58%),
+    linear-gradient(145deg,rgba(29,25,65,.97),rgba(8,12,34,.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 0 42px rgba(124,77,255,.055),
+    0 18px 42px rgba(5,6,22,.28),
+    0 0 30px rgba(124,77,255,.07);
+}
+.adfilm-engine-status.is-busy:before{
+  position:absolute;
+  z-index:-1;
+  top:-70%;
+  bottom:-70%;
+  left:-38%;
+  width:32%;
+  content:"";
+  transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.075),rgba(216,180,254,.15),rgba(255,255,255,.055),transparent);
+  filter:blur(2px);
+  animation:adfilmPremiumSweep 3.8s cubic-bezier(.4,0,.2,1) infinite;
+  pointer-events:none;
+}
+.adfilm-engine-status.is-busy>span{
+  width:22px;
+  height:22px;
+  border-width:4px;
+  border-color:rgba(196,181,253,.18);
+  border-top-color:#e9d5ff;
+  border-right-color:#a78bfa;
+  box-shadow:0 0 18px rgba(168,85,247,.38),inset 0 0 8px rgba(255,255,255,.08);
+}
+.adfilm-engine-status.is-busy b{
+  color:#fff;
+  background:linear-gradient(90deg,#c4b5fd 0%,#f5d0fe 28%,#fff 48%,#d8b4fe 68%,#a5b4fc 100%);
+  background-size:240% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:none;
+  animation:adfilmPremiumText 3.1s ease-in-out infinite;
+}
+.adfilm-engine-status.is-busy small{
+  color:#fff;
+  font-weight:900;
+  letter-spacing:.005em;
+  text-shadow:0 2px 12px rgba(0,0,0,.36);
+}
+.adfilm-engine-status.is-busy:after{
+  color:rgba(255,255,255,.94)!important;
+  font-size:13px!important;
+  font-weight:850!important;
+  letter-spacing:.002em;
+}
+
+/* Çıkış kalitesi: daha büyük, okunaklı ve iç içe premium katmanlar. */
+.adfilm-options--seedance-quality{
+  gap:10px!important;
+}
+.adfilm-options--seedance-quality button{
+  min-height:54px!important;
+  padding:10px 12px!important;
+  border-radius:14px!important;
+  overflow:hidden;
+}
+.adfilm-options--seedance-quality button:before{
+  position:absolute;
+  inset:3px;
+  content:"";
+  border:1px solid rgba(255,255,255,.035);
+  border-radius:11px;
+  pointer-events:none;
+}
+.adfilm-options--seedance-quality button span{
+  position:relative;
+  z-index:2;
+  font-size:13px!important;
+  font-weight:950!important;
+  letter-spacing:.01em;
+  text-shadow:0 1px 7px rgba(0,0,0,.34);
+}
+.adfilm-page .adfilm-options--seedance-quality button:not(.is-selected){
+  background:
+    radial-gradient(circle at 22% 0%,rgba(139,92,246,.15),transparent 52%),
+    linear-gradient(145deg,rgba(36,29,68,.94),rgba(11,14,35,.98))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.065),inset 0 -10px 20px rgba(0,0,0,.08),0 8px 20px rgba(0,0,0,.16)!important;
+}
+.adfilm-page .adfilm-options--seedance-quality button.is-selected{
+  background:
+    radial-gradient(circle at 22% 0%,rgba(255,255,255,.25),transparent 46%),
+    linear-gradient(112deg,#7448ff 0%,#a94edc 44%,#ef5fb4 100%)!important;
+  box-shadow:
+    0 10px 24px rgba(124,77,255,.3),
+    0 0 24px rgba(236,72,153,.16),
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -12px 24px rgba(83,30,128,.12)!important;
+}
+.adfilm-seedance-tag{
+  top:5px!important;
+  right:6px!important;
+  padding:3px 7px!important;
+  font-size:7px!important;
+  background:rgba(255,255,255,.16)!important;
+  backdrop-filter:blur(8px);
+}
+.adfilm-seedance-note{
+  grid-column:1/-1!important;
+  width:100%;
+  margin:12px 0 0!important;
+  padding:10px 12px 0;
+  border-top:1px solid rgba(255,255,255,.065);
+  color:rgba(235,246,255,.82)!important;
+  font-size:10.5px!important;
+  font-weight:720;
+  line-height:1.55!important;
+  text-align:center;
+  box-sizing:border-box;
+}
+
+@keyframes adfilmPremiumSweep{
+  0%{left:-38%;opacity:0}
+  14%{opacity:1}
+  58%{opacity:.7}
+  78%,100%{left:112%;opacity:0}
+}
+@keyframes adfilmPremiumText{
+  0%,100%{background-position:100% 50%;filter:drop-shadow(0 0 5px rgba(168,85,247,.12))}
+  50%{background-position:0 50%;filter:drop-shadow(0 0 12px rgba(216,180,254,.26))}
+}
+
+@media(max-width:700px){
+  .adfilm-options--seedance-quality button{min-height:49px!important}
+  .adfilm-options--seedance-quality button span{font-size:11.5px!important}
+  .adfilm-engine-status.is-busy:after{font-size:10.5px!important}
+}
