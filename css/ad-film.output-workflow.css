@@ -1,0 +1,116 @@
+/* AIVO AI Reklam Filmi — ready output workflow */
+.adfilm-output-workflow{
+  margin-top:14px;
+  padding:15px;
+  display:grid;
+  gap:13px;
+  border:1px solid rgba(167,139,250,.18);
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(124,77,255,.18),transparent 42%),
+    linear-gradient(145deg,rgba(27,23,51,.94),rgba(8,11,27,.97));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 16px 36px rgba(4,5,18,.18);
+}
+.adfilm-output-workflow[hidden]{display:none!important}
+.adfilm-output-workflow__copy{min-width:0}
+.adfilm-output-workflow__copy h3{
+  margin:0 0 5px;
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:-.015em;
+}
+.adfilm-output-workflow__copy p{
+  margin:0;
+  color:rgba(232,230,248,.72);
+  font-size:10px;
+  font-weight:680;
+  line-height:1.5;
+}
+.adfilm-output-workflow__badge{
+  min-height:26px;
+  margin-top:10px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 10px;
+  border:1px solid rgba(45,212,191,.25);
+  border-radius:999px;
+  color:#8ff8d5;
+  background:rgba(13,94,83,.16);
+  font-size:9px;
+  font-weight:850;
+}
+.adfilm-output-workflow__actions{
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:9px;
+}
+.adfilm-output-workflow__actions button{
+  min-height:46px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:0 12px;
+  border:1px solid rgba(167,139,250,.24);
+  border-radius:14px;
+  color:#eeeaff;
+  background:linear-gradient(145deg,rgba(38,31,69,.92),rgba(13,16,35,.96));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+  font-size:11px;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,filter .16s ease;
+}
+.adfilm-output-workflow__actions button:hover{
+  transform:translateY(-1px);
+  border-color:rgba(216,180,254,.5);
+  filter:brightness(1.08);
+}
+.adfilm-output-workflow__actions button.is-primary{
+  border-color:rgba(236,72,153,.52);
+  color:#fff;
+  background:linear-gradient(105deg,#7c4dff 0%,#bd4ed4 52%,#ef5fb4 100%);
+  box-shadow:0 10px 26px rgba(151,67,218,.25),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.adfilm-output-workflow__actions svg{
+  width:19px;
+  height:19px;
+  flex:0 0 auto;
+}
+.adfilm-output-workflow.is-preparing{
+  border-color:rgba(45,212,191,.22);
+  background:
+    radial-gradient(circle at 10% 0%,rgba(16,185,129,.13),transparent 42%),
+    linear-gradient(145deg,rgba(23,29,49,.96),rgba(7,13,27,.98));
+}
+.adfilm-output-workflow.is-preparing .adfilm-output-workflow__actions{
+  grid-template-columns:1fr;
+}
+.rpPanelWrap[data-panel-key="adfilm"]:has(.adfilm-output-workflow.is-preparing) [data-panel-frame]:not(.has-result-video)::after{
+  content:"Yeni sürüm için ayarlarını düzenle ve üretimi başlat";
+  position:absolute;
+  z-index:5;
+  left:50%;
+  bottom:28px;
+  width:calc(100% - 34px);
+  transform:translateX(-50%);
+  padding:10px 12px;
+  border:1px solid rgba(167,139,250,.22);
+  border-radius:12px;
+  color:rgba(244,241,255,.9);
+  background:rgba(7,10,25,.72);
+  backdrop-filter:blur(12px);
+  text-align:center;
+  font-size:9px;
+  font-weight:800;
+  line-height:1.4;
+}
+@media(max-width:1350px){
+  .adfilm-output-workflow{padding:13px;border-radius:17px}
+  .adfilm-output-workflow__actions button{min-height:42px;font-size:10px}
+  .adfilm-output-workflow__actions svg{width:17px;height:17px}
+}
+@media(max-width:760px){
+  .adfilm-output-workflow__actions{grid-template-columns:1fr}
+}
