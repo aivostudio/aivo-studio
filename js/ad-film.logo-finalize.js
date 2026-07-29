@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — completed video transparent logo finalizer */
 (function AIVO_AD_FILM_LOGO_FINALIZE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_LOGO_FINALIZE_V2__)return;
-  window.__AIVO_AD_FILM_LOGO_FINALIZE_V2__=true;
+  if(window.__AIVO_AD_FILM_LOGO_FINALIZE_V3__)return;
+  window.__AIVO_AD_FILM_LOGO_FINALIZE_V3__=true;
 
   var busy=false;
   var timer=null;
@@ -28,7 +28,34 @@
   }
   function logoUrl(source,item){return clean(source&&source.media&&source.media.logo&&source.media.logo.url||item&&item.logoUrl||source&&source.generation&&source.generation.logoUrl)}
   function videoUrl(source,item){return clean(item&&item.sourceVideoUrl||item&&item.videoUrl||source&&source.generation&&source.generation.sourceVideoUrl||source&&source.generation&&source.generation.videoUrl||window.AIVOAdFilmGeneratedVideo)}
+  function isApplied(source,item){return!!(item&&item.logoApplied||source&&source.generation&&source.generation.logoApplied)}
+  function isCompleted(source){
+    var projectStatus=clean(source&&source.status).toLowerCase();
+    var generationStatus=clean(source&&source.generation&&source.generation.status).toLowerCase();
+    return projectStatus==="completed"||generationStatus==="completed";
+  }
+  function generationRunning(){
+    var scope=root();
+    var button=scope&&scope.querySelector("[data-adfilm-build]");
+    return!!(window.AIVOAdFilmSeedanceEngineActive||button&&button.classList.contains("is-generating"));
+  }
   function stageKey(source,item,video,logo){return[source&&source.id,item&&item.id||source&&source.generation&&source.generation.outputId,video,logo].join("|")}
+  function stateKey(source){
+    var item=outputOf(source);
+    return[
+      source&&source.id,
+      source&&source.activeOutputId,
+      Array.isArray(source&&source.outputs)?source.outputs.length:0,
+      item&&item.id,
+      item&&item.videoUrl,
+      item&&item.sourceVideoUrl,
+      item&&item.logoApplied?"1":"0",
+      source&&source.generation&&source.generation.status,
+      source&&source.generation&&source.generation.outputId,
+      source&&source.generation&&source.generation.videoUrl,
+      source&&source.generation&&source.generation.logoApplied?"1":"0"
+    ].join("|");
+  }
   function setStage(mode,title,detail){
     var node=statusNode();if(!node)return;
     node.className="adfilm-engine-status is-visible is-"+mode;
@@ -43,10 +70,17 @@
     window.AIVOAdFilmActiveProject=source;
     document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:source,projectId:source.id||"",media:source.media||{}}}));
   }
-  function mount(url,logo){
+  function dispatchIfChanged(source){
+    if(!source)return;
+    if(stateKey(source)===stateKey(project()))return;
+    dispatch(source);
+  }
+  function mount(url,logo,applied){
     window.AIVOAdFilmGeneratedVideo=url||"";
     window.AIVOAdFilmGeneratedLogo=logo||"";
-    if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(url,logo||"",{});
+    if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function"){
+      window.AIVOAdFilmResultControls.mount(url,applied?"":logo||"",{logoApplied:!!applied});
+    }
   }
   async function fetchProject(id){
     var response=await fetch("/api/ad-film/project?id="+encodeURIComponent(id),{credentials:"include",cache:"no-store"});
@@ -54,16 +88,16 @@
     return response.ok&&data.project?data.project:null;
   }
   function retryDelay(count){return Math.min(90000,8000*Math.pow(2,Math.max(0,count-1)))}
+  function schedule(delay){clearTimeout(timer);timer=setTimeout(check,delay==null?3500:delay)}
 
   async function finalize(source){
     if(busy||!source||!source.id)return;
     var item=outputOf(source),logo=logoUrl(source,item),video=videoUrl(source,item);
-    var completed=clean(source.status).toLowerCase()==="completed"||clean(source.generation&&source.generation.status).toLowerCase()==="completed";
-    if(!completed||!video||!logo||item&&item.logoApplied||source.generation&&source.generation.logoApplied)return;
+    if(!isCompleted(source)||!video||!logo||isApplied(source,item))return;
 
     var key=stageKey(source,item,video,logo);
     var retryAt=Number(nextRetryAt.get(key)||0);
-    if(Date.now()<retryAt)return;
+    if(Date.now()<retryAt){schedule(Math.max(1200,retryAt-Date.now()));return}
 
     busy=true;
     setStage("busy",t("working"),t("detail"));
@@ -79,38 +113,47 @@
       if(data.ok&&data.video_url&&data.logo_applied){
         attempts.delete(key);nextRetryAt.delete(key);
         var next=data.project||await fetchProject(source.id)||source;
-        dispatch(next);mount(data.video_url,logo);setStage("success",t("done"),"");
+        dispatchIfChanged(next);
+        mount(data.video_url,logo,true);
+        setStage("success",t("done"),"");
       }else{
         var count=Number(attempts.get(key)||0)+1;
         attempts.set(key,count);
-        nextRetryAt.set(key,Date.now()+retryDelay(count));
-        mount(data.video_url||video,logo);
+        var delay=retryDelay(count);
+        nextRetryAt.set(key,Date.now()+delay);
         setStage("busy",t("failed"),count<4?t("detail"):"");
+        schedule(delay);
       }
     }catch(error){
       var count=Number(attempts.get(key)||0)+1;
       attempts.set(key,count);
-      nextRetryAt.set(key,Date.now()+retryDelay(count));
+      var delay=retryDelay(count);
+      nextRetryAt.set(key,Date.now()+delay);
       console.warn("[ADFILM] logo finalization",error);
-      mount(video,logo);setStage("busy",t("failed"),count<4?t("detail"):"");
+      setStage("busy",t("failed"),count<4?t("detail"):"");
+      schedule(delay);
     }finally{busy=false}
   }
 
   async function check(){
+    clearTimeout(timer);
     var scope=root();if(!scope)return;
-    var source=project();if(!source||!source.id)return;
+    var source=project();if(!source||!source.id){schedule(5000);return}
+    if(generationRunning()){schedule(2500);return}
+
     var fresh=await fetchProject(source.id).catch(function(){return null});
-    if(fresh){source=fresh;dispatch(fresh)}
-    var item=outputOf(source),video=videoUrl(source,item);
-    var generationStatus=clean(source.generation&&source.generation.status).toLowerCase();
-    var projectStatus=clean(source.status).toLowerCase();
-    if((generationStatus==="completed"||projectStatus==="completed")&&video)finalize(source);
+    if(fresh){dispatchIfChanged(fresh);source=fresh}
+
+    var item=outputOf(source),video=videoUrl(source,item),logo=logoUrl(source,item);
+    if(!isCompleted(source)||!video){schedule(3500);return}
+    if(!logo||isApplied(source,item))return;
+    finalize(source);
   }
 
-  function start(){clearInterval(timer);check();timer=setInterval(check,3500)}
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(start,1000)});
-  document.addEventListener("aivo:adfilm-project-sync",function(event){setTimeout(function(){finalize(event&&event.detail&&event.detail.project||project())},350)});
-  window.addEventListener("pagehide",function(){clearInterval(timer)});
-  window.addEventListener("pageshow",function(){setTimeout(start,900)});
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(start,900)},{once:true});else setTimeout(start,900);
+  function start(delay){schedule(delay==null?700:delay)}
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")start(900)});
+  document.addEventListener("aivo:adfilm-project-sync",function(){if(!busy)start(650)});
+  window.addEventListener("pagehide",function(){clearTimeout(timer)});
+  window.addEventListener("pageshow",function(){start(900)});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){start(900)},{once:true});else start(900);
 })();
