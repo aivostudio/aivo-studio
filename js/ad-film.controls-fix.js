@@ -1,8 +1,6 @@
-/* AIVO AI Reklam Filmi — compatibility shim.
-   Eski üst araç çubuğu dinleyicileri kaldırıldı.
-   Güncel işlemler js/ad-film.result-controls.js tarafından yönetilir. */
-(function AIVO_AD_FILM_CONTROLS_COMPAT(){
+/* AIVO AI Reklam Filmi — legacy control bridge intentionally disabled.
+   js/ad-film.result-controls.js is the single owner of live and gallery controls. */
+(function AIVO_AD_FILM_CONTROLS_FIX_DISABLED(){
   "use strict";
-  if(window.__AIVO_AD_FILM_CONTROLS_COMPAT__)return;
-  window.__AIVO_AD_FILM_CONTROLS_COMPAT__=true;
+  window.__AIVO_AD_FILM_CONTROLS_FIX__=true;
 })();
