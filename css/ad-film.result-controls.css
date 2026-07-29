@@ -1,0 +1,87 @@
+/* AIVO AI Reklam Filmi — generated result player */
+.adfilm-preview-frame.has-result-video{
+  overflow:visible;
+  background:#050712;
+}
+.adfilm-preview-frame.has-result-video .adfilm-preview-shade,
+.adfilm-preview-frame.has-result-video .adfilm-preview-brandline,
+.adfilm-preview-frame.has-result-video .adfilm-preview-copy,
+.adfilm-preview-frame.has-result-video .adfilm-preview-logo,
+.adfilm-preview-frame.has-result-video .adfilm-preview-timeline,
+.adfilm-preview-frame.has-result-video .adfilm-preview-play{
+  display:none!important;
+}
+.adfilm-preview-frame.has-result-video [data-panel-media]{
+  filter:none!important;
+  background-image:none!important;
+}
+.adfilm-preview-frame video[data-adfilm-result-video]{
+  position:absolute;
+  inset:0;
+  z-index:10;
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:contain;
+  border:0;
+  border-radius:inherit;
+  background:#02040b;
+  pointer-events:auto;
+}
+.adfilm-result-toolbar{
+  position:absolute;
+  z-index:20;
+  left:50%;
+  top:14px;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  width:max-content;
+  max-width:calc(100% - 20px);
+  padding:7px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  background:rgba(5,8,20,.76);
+  box-shadow:0 14px 35px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(16px);
+}
+.adfilm-result-control{
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  flex:0 0 40px;
+  padding:0;
+  border:1px solid rgba(216,180,254,.2);
+  border-radius:12px;
+  color:#d8b4fe;
+  background:linear-gradient(145deg,rgba(124,58,237,.19),rgba(15,18,42,.92));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  cursor:pointer;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease,color .16s ease;
+}
+.adfilm-result-control:hover{
+  transform:translateY(-1px);
+  color:#fff;
+  border-color:rgba(216,180,254,.46);
+  background:linear-gradient(112deg,rgba(124,77,255,.88),rgba(239,95,180,.76));
+}
+.adfilm-result-control.is-danger{
+  color:#fb7185;
+  border-color:rgba(251,113,133,.28);
+  background:rgba(78,19,38,.54);
+}
+.adfilm-result-control.is-danger:hover{
+  color:#fff;
+  background:linear-gradient(135deg,#be123c,#fb7185);
+}
+.adfilm-result-control svg{width:22px;height:22px;pointer-events:none}
+.adfilm-result-control span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.adfilm-live-card .adfilm-result-actions{display:none!important}
+@media(max-width:1300px){
+  .adfilm-result-toolbar{top:9px;gap:5px;padding:5px;border-radius:13px}
+  .adfilm-result-control{width:34px;height:34px;flex-basis:34px;border-radius:10px}
+  .adfilm-result-control svg{width:19px;height:19px}
+}
