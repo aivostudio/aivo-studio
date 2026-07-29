@@ -63,7 +63,7 @@
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
     "/css/ad-film.seedance-engine.css?v=2",
-    "/css/ad-film.result-controls.css?v=1"
+    "/css/ad-film.result-controls.css?v=2"
   ];
 
   const shellScripts = [
@@ -87,7 +87,7 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=3",
-    "/js/ad-film.result-controls.js?v=1"
+    "/js/ad-film.result-controls.js?v=2"
   ];
 
   let moduleLoadPromise = null;
