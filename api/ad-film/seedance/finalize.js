@@ -1,12 +1,13 @@
 // api/ad-film/seedance/finalize.js
 export const config = { runtime: "nodejs" };
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 import fs from "fs";
 import os from "os";
 import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
+import sharp from "sharp";
 import { putObject } from "../../_lib/r2.js";
 import {
   getOwnedProject,
@@ -29,13 +30,11 @@ function safePart(value, fallback = "output") {
 
 function runFfmpeg(args) {
   return new Promise((resolve, reject) => {
-    const child = spawn(ffmpegPath, args, {
-      stdio: ["ignore", "ignore", "pipe"],
-    });
+    const child = spawn(ffmpegPath, args, { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
     child.stderr.on("data", (chunk) => {
       stderr += chunk.toString();
-      if (stderr.length > 16000) stderr = stderr.slice(-16000);
+      if (stderr.length > 24000) stderr = stderr.slice(-24000);
     });
     child.on("error", reject);
     child.on("close", (code) => {
@@ -46,14 +45,9 @@ function runFfmpeg(args) {
 }
 
 async function download(url, destination) {
-  const response = await fetch(url, {
-    method: "GET",
-    cache: "no-store",
-    redirect: "follow",
-  });
+  const response = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
   if (!response.ok) throw new Error(`download_failed:${response.status}`);
-  const buffer = Buffer.from(await response.arrayBuffer());
-  fs.writeFileSync(destination, buffer);
+  fs.writeFileSync(destination, Buffer.from(await response.arrayBuffer()));
 }
 
 function outputsOf(project) {
@@ -79,18 +73,76 @@ function outputsOf(project) {
 
 function logoWidth(resolution) {
   const value = clean(resolution, 20).toLowerCase();
-  if (value === "4k") return 320;
-  if (value === "720p") return 135;
-  if (value === "480p") return 96;
-  return 190;
+  if (value === "4k") return 300;
+  if (value === "720p") return 128;
+  if (value === "480p") return 90;
+  return 178;
 }
 
 function logoMargin(resolution) {
   const value = clean(resolution, 20).toLowerCase();
-  if (value === "4k") return 64;
-  if (value === "720p") return 26;
-  if (value === "480p") return 18;
-  return 36;
+  if (value === "4k") return 72;
+  if (value === "720p") return 28;
+  if (value === "480p") return 20;
+  return 40;
+}
+
+function isNearBlack(r, g, b) {
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  return max <= 42 && max - min <= 20;
+}
+
+async function prepareTransparentLogo(inputPath, outputPath) {
+  const { data, info } = await sharp(inputPath)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const { width, height, channels } = info;
+  const visited = new Uint8Array(width * height);
+  const queue = new Int32Array(width * height);
+  let head = 0;
+  let tail = 0;
+
+  function enqueue(x, y) {
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    const index = y * width + x;
+    if (visited[index]) return;
+    const offset = index * channels;
+    if (!isNearBlack(data[offset], data[offset + 1], data[offset + 2])) return;
+    visited[index] = 1;
+    queue[tail++] = index;
+  }
+
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x, 0);
+    enqueue(x, height - 1);
+  }
+  for (let y = 0; y < height; y += 1) {
+    enqueue(0, y);
+    enqueue(width - 1, y);
+  }
+
+  while (head < tail) {
+    const index = queue[head++];
+    const x = index % width;
+    const y = Math.floor(index / width);
+    enqueue(x - 1, y);
+    enqueue(x + 1, y);
+    enqueue(x, y - 1);
+    enqueue(x, y + 1);
+  }
+
+  for (let index = 0; index < visited.length; index += 1) {
+    if (!visited[index]) continue;
+    data[index * channels + 3] = 0;
+  }
+
+  await sharp(data, { raw: info })
+    .trim({ background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .png()
+    .toFile(outputPath);
 }
 
 export default async function handler(req, res) {
@@ -120,38 +172,20 @@ export default async function handler(req, res) {
       || null;
 
     sourceVideoUrl = clean(
-      target?.sourceVideoUrl ||
-      target?.videoUrl ||
-      project?.generation?.sourceVideoUrl ||
-      project?.generation?.videoUrl,
+      target?.sourceVideoUrl || target?.videoUrl || project?.generation?.sourceVideoUrl || project?.generation?.videoUrl,
       4000
     );
     const logoUrl = clean(
-      project?.media?.logo?.url ||
-      target?.logoUrl ||
-      project?.generation?.logoUrl,
+      project?.media?.logo?.url || target?.logoUrl || project?.generation?.logoUrl,
       4000
     );
 
     if (!sourceVideoUrl) {
-      return sendJson(res, 200, {
-        ok: false,
-        fallback: true,
-        error: "missing_source_video",
-        video_url: null,
-        logo_applied: false,
-      });
+      return sendJson(res, 200, { ok: false, fallback: true, error: "missing_source_video", video_url: null, logo_applied: false });
     }
 
     if (target?.logoApplied && target?.videoUrl) {
-      return sendJson(res, 200, {
-        ok: true,
-        projectId,
-        outputId: target.id,
-        video_url: target.videoUrl,
-        logo_applied: true,
-        project,
-      });
+      return sendJson(res, 200, { ok: true, projectId, outputId: target.id, video_url: target.videoUrl, logo_applied: true, project });
     }
 
     if (!logoUrl) {
@@ -174,15 +208,17 @@ export default async function handler(req, res) {
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-adfilm-logo-"));
     const inputVideo = path.join(tmpDir, "source.mp4");
-    const inputLogo = path.join(tmpDir, "logo.png");
+    const originalLogo = path.join(tmpDir, "logo-original");
+    const transparentLogo = path.join(tmpDir, "logo-transparent.png");
     const outputVideo = path.join(tmpDir, "final.mp4");
-    cleanup.push(outputVideo, inputLogo, inputVideo, tmpDir);
+    cleanup.push(outputVideo, transparentLogo, originalLogo, inputVideo, tmpDir);
 
     await download(sourceVideoUrl, inputVideo);
-    await download(logoUrl, inputLogo);
+    await download(logoUrl, originalLogo);
+    await prepareTransparentLogo(originalLogo, transparentLogo);
 
     const filter = [
-      `[1:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.92[logo]`,
+      `[1:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`,
       `[0:v][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:shortest=1[video]`,
     ].join(";");
 
@@ -190,12 +226,12 @@ export default async function handler(req, res) {
       "-y",
       "-i", inputVideo,
       "-loop", "1",
-      "-i", inputLogo,
+      "-i", transparentLogo,
       "-filter_complex", filter,
       "-map", "[video]",
       "-map", "0:a:0?",
       "-c:v", "libx264",
-      "-preset", "veryfast",
+      "-preset", "ultrafast",
       "-crf", "18",
       "-pix_fmt", "yuv420p",
       "-c:a", "aac",
@@ -205,7 +241,7 @@ export default async function handler(req, res) {
       outputVideo,
     ]);
 
-    const key = `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId, "video")}-v${version}-logo.mp4`;
+    const key = `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId, "video")}-v${version}-logo-${Date.now()}.mp4`;
     const finalUrl = await putObject({
       key,
       body: fs.readFileSync(outputVideo),
@@ -224,7 +260,7 @@ export default async function handler(req, res) {
       logoUrl,
       logoApplied: true,
       logoPosition: "bottom-right",
-      logoOpacity: 0.92,
+      logoOpacity: 0.96,
       finalizedAt: now,
     };
     const nextOutputs = [
