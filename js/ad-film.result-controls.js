@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — single stable live-player controller */
 (function AIVO_AD_FILM_RESULT_CONTROLS(){
   "use strict";
-  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V8__)return;
-  window.__AIVO_AD_FILM_RESULT_CONTROLS_V8__=true;
+  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V9__)return;
+  window.__AIVO_AD_FILM_RESULT_CONTROLS_V9__=true;
 
   var COPY={
     tr:{play:"Oynat",pause:"Duraklat",download:"İndir",downloadStarted:"İndirme başlatıldı.",fullscreen:"Tam ekran",mute:"Sesi kapat",unmute:"Sesi aç",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",downloadFailed:"Video indirilemedi."},
@@ -29,7 +29,9 @@
         id:source.generation.outputId||source.generation.requestId||"legacy-output",
         version:source.generation.version||1,
         videoUrl:source.generation.videoUrl,
-        logoUrl:source.generation.logoUrl||source.media&&source.media.logo&&source.media.logo.url||""
+        sourceVideoUrl:source.generation.sourceVideoUrl||"",
+        logoUrl:source.generation.logoUrl||source.media&&source.media.logo&&source.media.logo.url||"",
+        logoApplied:!!source.generation.logoApplied
       }];
     }
     return outputs;
@@ -47,6 +49,7 @@
     return{
       url:clean(item.videoUrl),
       logo:clean(item.logoUrl||source.media&&source.media.logo&&source.media.logo.url||source.generation&&source.generation.logoUrl||""),
+      logoApplied:!!(item.logoApplied||source.generation&&source.generation.logoApplied),
       projectId:clean(source.id),
       outputId:clean(item.id),
       version:Number(item.version)||1,
@@ -60,6 +63,7 @@
     return{
       url:clean(url),
       logo:clean(logo),
+      logoApplied:options.logoApplied===true||!!(item&&item.logoApplied)||!!(source.generation&&source.generation.logoApplied),
       projectId:clean(options.projectId||source.id||window.AIVOAdFilmActiveOutputProjectId),
       outputId:clean(options.outputId||item&&item.id||window.AIVOAdFilmActiveOutputId),
       version:Number(options.version||item&&item.version)||1,
@@ -71,6 +75,7 @@
     previewContext={
       url:clean(context.url),
       logo:clean(context.logo),
+      logoApplied:context.logoApplied===true,
       projectId:clean(context.projectId),
       outputId:clean(context.outputId),
       version:Number(context.version)||1,
@@ -245,7 +250,7 @@
     video.removeAttribute("autoplay");
     var target=video.closest("[data-panel-frame]")||video.parentElement;if(!target)return;
     target.classList.add("has-result-video");
-    ensureLogo(target,context&&context.logo||"");
+    ensureLogo(target,context&&context.logoApplied?"":context&&context.logo||"");
     target.querySelectorAll("[data-adfilm-result-actions-row]").forEach(function(node){node.remove()});
     var toolbar=target.querySelector("[data-adfilm-result-toolbar]");
     if(!toolbar){
