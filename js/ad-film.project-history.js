@@ -1,12 +1,16 @@
 /* AIVO AI Reklam Filmi — hazır videoları projeler arasında görünür tutar */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V5__)return;
-  window.__AIVO_AD_FILM_PROJECT_HISTORY_V5__=true;
+  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V6__)return;
+  window.__AIVO_AD_FILM_PROJECT_HISTORY_V6__=true;
 
+  var PROJECT_STORAGE_KEY="aivo_adfilm_active_project_id_v2";
+  var LEGACY_PROJECT_STORAGE_KEY="aivo_adfilm_active_project_id_v1";
+  var REOPEN_KEY="aivo_adfilm_reopen_module_v1";
   var items=[];
   var busy=false;
   var deleting=false;
+  var opening=false;
 
   function clean(v){return String(v||"").trim()}
   function lang(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0?"en":"tr"}
@@ -18,6 +22,13 @@
       if(typeof window.showToast==="function")return window.showToast(message,type||"info");
     }catch(_){}
   }
+  function storeProjectId(id){
+    try{
+      if(id)localStorage.setItem(PROJECT_STORAGE_KEY,String(id));else localStorage.removeItem(PROJECT_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_PROJECT_STORAGE_KEY);
+    }catch(_){}
+  }
+  function markForReopen(){try{sessionStorage.setItem(REOPEN_KEY,"1")}catch(_){} }
 
   function projectOutputs(project,summary){
     if(!project)return[];
@@ -103,6 +114,7 @@
       card.className="adfilm-output-card";
       card.dataset.historyProjectId=item.projectId;
       card.dataset.historyOutputId=item.id;
+      card.title=text("Projeyi ve belgelerini açmak için karta tıkla","Click the card to open the project and its files");
 
       var media=document.createElement("div");media.className="adfilm-output-card__media";
       var video=document.createElement("video");
@@ -161,6 +173,41 @@
     return items.find(function(x){return x.projectId===pid&&String(x.id)===String(oid)})||null;
   }
 
+  async function openProject(item,card){
+    if(!item||opening)return;
+    var current=window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null;
+    var sameProject=clean(current&&current.id)===clean(item.projectId);
+    var message=sameProject
+      ?text("Bu sürümün proje belgeleri yeniden açılsın mı?","Reopen this version's project files?")
+      :text("Bu hazır videonun projesi açılsın mı? Şu anki taslağın bulutta korunacak.","Open this ready video's project? Your current draft will remain saved in the cloud.");
+    if(!window.confirm(message))return;
+    opening=true;
+    if(card)card.classList.add("is-opening");
+    var handle=toast(text("Proje ve belgeler açılıyor...","Opening project and files..."),"info");
+    try{
+      var response=await fetch("/api/ad-film/seedance/result",{
+        method:"POST",
+        credentials:"include",
+        cache:"no-store",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({projectId:item.projectId,outputId:item.id})
+      });
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok||!data.project)throw new Error(data.error||"project_open_failed");
+      storeProjectId(item.projectId);
+      markForReopen();
+      if(handle&&typeof handle.dismiss==="function")handle.dismiss();
+      location.hash="#adfilm";
+      location.reload();
+    }catch(error){
+      if(handle&&typeof handle.dismiss==="function")handle.dismiss();
+      if(card)card.classList.remove("is-opening");
+      opening=false;
+      console.error("[ADFILM] open history project",error);
+      toast(text("Proje açılamadı.","The project could not be opened."),"error");
+    }
+  }
+
   async function deleteItem(item,card){
     if(!item||deleting)return;
     if(!window.confirm(text("Bu hazır videoyu silmek istiyor musun? Bu işlem geri alınamaz.","Delete this ready video? This cannot be undone.")))return;
@@ -207,6 +254,14 @@
       var v=card.querySelector("video");
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.fullscreen==="function")window.AIVOAdFilmResultControls.fullscreen(v);
     }else if(action==="delete")deleteItem(item,card);
+  },true);
+
+  document.addEventListener("click",function(event){
+    var card=event.target&&event.target.closest&&event.target.closest("[data-adfilm-project-history] [data-history-project-id]");
+    if(!card||event.target.closest("[data-history-action]"))return;
+    var item=findItem(card);if(!item)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    openProject(item,card);
   },true);
 
   document.addEventListener("aivo:module-mounted",function(e){if(e&&e.detail&&e.detail.key==="adfilm")setTimeout(load,500)});
