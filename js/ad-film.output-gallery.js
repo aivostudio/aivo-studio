@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable versioned output gallery */
 (function AIVO_AD_FILM_OUTPUT_GALLERY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V2__)return;
-  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V2__=true;
+  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V3__)return;
+  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V3__=true;
 
   var COPY={
     tr:{title:"Diğer Sürümler",readyTitle:"Hazır Videolar",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi.",downloadFailed:"Video indirilemedi."},
@@ -41,6 +41,18 @@
     return outputs.slice().sort(function(a,b){return String(b.completedAt||b.createdAt||"").localeCompare(String(a.completedAt||a.createdAt||""))});
   }
   function activeId(source,outputs){return clean(source&&source.activeOutputId)||clean(outputs[0]&&outputs[0].id)}
+  function gallerySignature(source,outputs,selected,preparing){
+    return [
+      lang(),
+      preparing?"ready":"versions",
+      clean(selected),
+      outputs.map(function(item){return[
+        clean(item.id),item.version||1,clean(item.videoUrl),clean(item.logoUrl),
+        item.duration||"",item.aspectRatio||"",item.resolution||"",
+        item.completedAt||item.createdAt||""
+      ].join("|")}).join(";")
+    ].join("::");
+  }
   function formatDate(value){
     if(!value)return"";
     try{return new Intl.DateTimeFormat(lang()==="en"?"en-US":"tr-TR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}).format(new Date(value))}catch(_){return""}
@@ -98,14 +110,19 @@
     if(!host){host=document.createElement("section");host.className="adfilm-output-gallery";host.setAttribute("data-adfilm-output-gallery","");live.insertAdjacentElement("afterend",host)}
     return host;
   }
-  function render(source){
+  function render(source,force){
     source=source||project();
     var host=ensureHost();if(!host)return;
     var outputs=outputsFromProject(source);
-    if(!outputs.length){host.hidden=true;host.innerHTML="";return}
+    if(!outputs.length){host.hidden=true;host.innerHTML="";host.dataset.gallerySignature="";return}
     host.hidden=false;
     var preparing=!!(source&&source.preparingNewVersion);
     var selected=preparing?"":activeId(source,outputs);
+    var signature=gallerySignature(source,outputs,selected,preparing);
+    if(!force&&host.dataset.gallerySignature===signature)return;
+
+    var oldRail=host.querySelector(".adfilm-output-gallery__rail");
+    var oldScroll=oldRail?oldRail.scrollLeft:0;
     host.innerHTML="";
     var head=document.createElement("div");head.className="adfilm-output-gallery__head";
     var heading=document.createElement("h3");heading.textContent=preparing?t("readyTitle"):t("title");
@@ -114,6 +131,8 @@
     var rail=document.createElement("div");rail.className="adfilm-output-gallery__rail";
     outputs.forEach(function(item){rail.appendChild(card(item,clean(item.id)===selected))});
     host.appendChild(head);host.appendChild(rail);
+    host.dataset.gallerySignature=signature;
+    if(oldScroll)requestAnimationFrame(function(){rail.scrollLeft=oldScroll});
   }
 
   async function selectOutput(item,play){
@@ -127,7 +146,7 @@
       window.AIVOAdFilmGeneratedLogo=item.logoUrl||"";
       window.AIVOAdFilmActiveOutputId=item.id;
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{play:!!play});
-      render(next);
+      render(next,true);
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
     }catch(error){console.error("[ADFILM] select output",error);toast(t("selectFailed"),"error")}
   }
@@ -168,7 +187,7 @@
       window.AIVOAdFilmActiveOutputId=active&&active.id||"";
       if(active&&window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(active.videoUrl,active.logoUrl||"");
       else if(window.AIVOAdFilmResultControls&&window.AIVOAdFilmResultControls.clear)window.AIVOAdFilmResultControls.clear();
-      render(next);
+      render(next,true);
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
     }catch(error){console.error("[ADFILM] remove output",error);toast(t("removeFailed"),"error")}
   }
@@ -190,10 +209,10 @@
     var item=itemById(cardNode.dataset.outputId);if(item)selectOutput(item,false);
   },true);
 
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){render(project())},320)});
-  document.addEventListener("aivo:adfilm-project-sync",function(event){render(event&&event.detail&&event.detail.project||project())});
-  window.addEventListener("pageshow",function(){render(project())});
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){render(project(),true)},320)});
+  document.addEventListener("aivo:adfilm-project-sync",function(event){render(event&&event.detail&&event.detail.project||project(),false)});
+  window.addEventListener("pageshow",function(){render(project(),false)});
 
-  window.AIVOAdFilmOutputGallery={render:render,outputs:outputsFromProject};
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){render(project())},{once:true});else render(project());
+  window.AIVOAdFilmOutputGallery={render:function(source){render(source,true)},outputs:outputsFromProject};
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){render(project(),true)},{once:true});else render(project(),true);
 })();
