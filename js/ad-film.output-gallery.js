@@ -1,12 +1,12 @@
 /* AIVO AI Reklam Filmi — stable versioned output gallery */
 (function AIVO_AD_FILM_OUTPUT_GALLERY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V3__)return;
-  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V3__=true;
+  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V4__)return;
+  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V4__=true;
 
   var COPY={
-    tr:{title:"Diğer Sürümler",readyTitle:"Hazır Videolar",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi.",downloadFailed:"Video indirilemedi."},
-    en:{title:"Other Versions",readyTitle:"Ready Videos",video:"videos",version:"Version",play:"Open in main player",download:"Download",fullscreen:"Fullscreen",remove:"Delete",removeConfirm:"Delete this advertising version?",removeFailed:"The advertising version could not be deleted.",selectFailed:"The video could not be selected.",downloadFailed:"The video could not be downloaded."}
+    tr:{title:"Diğer Sürümler",readyTitle:"Hazır Videolar",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",mute:"Sesi aç",unmute:"Sesi kapat",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi.",downloadFailed:"Video indirilemedi."},
+    en:{title:"Other Versions",readyTitle:"Ready Videos",video:"videos",version:"Version",play:"Open in main player",download:"Download",fullscreen:"Fullscreen",mute:"Unmute",unmute:"Mute",remove:"Delete",removeConfirm:"Delete this advertising version?",removeFailed:"The advertising version could not be deleted.",selectFailed:"The video could not be selected.",downloadFailed:"The video could not be downloaded."}
   };
 
   function lang(){
@@ -18,7 +18,7 @@
   function clean(value){return String(value||"").trim()}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
   function panel(){return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]')}
-  function toast(message,type){try{if(window.toast&&typeof window.toast[type||"info"]==="function")return window.toast[type||"info"](message);if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
+  function toast(message,type){try{if(window.toast&&typeof window.toast[type||"info"]==="function")return window.toast[type||"info"]({message:message,duration:3200});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
 
   function outputsFromProject(source){
     source=source||project()||{};
@@ -60,25 +60,35 @@
   function icon(name){
     var paths={
       play:'<path d="m9 6 9 6-9 6V6Z" fill="currentColor"/>',
+      volume:'<path d="M5 10v4h3l4 3V7l-4 3H5Zm10-1.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+      muted:'<path d="M5 10v4h3l4 3V7l-4 3H5Zm10-1 5 5m0-5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
       download:'<path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
       fullscreen:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
       trash:'<path d="M5 7h14M9 7V4h6v3M8 10v8m4-8v8m4-8v8M7 7l1 14h8l1-14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'
     };
-    return '<svg viewBox="0 0 24 24" aria-hidden="true">'+paths[name]+'</svg>';
+    return '<svg viewBox="0 0 24 24" aria-hidden="true">'+(paths[name]||paths.play)+'</svg>';
   }
-  function action(name,label){
+  function action(name,label,iconName){
     var button=document.createElement("button");
     button.type="button";
     button.dataset.outputAction=name;
     button.title=label;
     button.setAttribute("aria-label",label);
-    button.innerHTML=icon(name==="open"?"play":name);
+    button.innerHTML=icon(iconName||name==="open"?"play":name);
     return button;
+  }
+  function syncMuteButton(button,video){
+    if(!button||!video)return;
+    var muted=!!video.muted;
+    button.title=muted?t("mute"):t("unmute");
+    button.setAttribute("aria-label",button.title);
+    button.innerHTML=icon(muted?"muted":"volume");
   }
   function card(item,isActive){
     var article=document.createElement("article");
     article.className="adfilm-output-card"+(isActive?" is-active":"");
     article.dataset.outputId=clean(item.id);
+    article.dataset.outputVersion=String(item.version||1);
 
     var media=document.createElement("div");media.className="adfilm-output-card__media";
     var video=document.createElement("video");
@@ -91,8 +101,13 @@
     video.setAttribute("aria-label",t("version")+" "+(item.version||""));
     media.appendChild(video);
     var badge=document.createElement("span");badge.textContent="V"+(item.version||1);media.appendChild(badge);
-    var center=action("open",t("play"));center.className="adfilm-output-card__play";media.appendChild(center);
-    var tools=document.createElement("div");tools.className="adfilm-output-card__tools";tools.appendChild(action("download",t("download")));tools.appendChild(action("fullscreen",t("fullscreen")));tools.appendChild(action("trash",t("remove")));media.appendChild(tools);
+    var center=action("open",t("play"),"play");center.className="adfilm-output-card__play";media.appendChild(center);
+    var tools=document.createElement("div");tools.className="adfilm-output-card__tools";
+    var muteButton=action("mute",t("mute"),"muted");syncMuteButton(muteButton,video);tools.appendChild(muteButton);
+    tools.appendChild(action("download",t("download"),"download"));
+    tools.appendChild(action("fullscreen",t("fullscreen"),"fullscreen"));
+    tools.appendChild(action("trash",t("remove"),"trash"));
+    media.appendChild(tools);
 
     var meta=document.createElement("div");meta.className="adfilm-output-card__meta";
     var title=document.createElement("b");title.textContent=t("version")+" "+(item.version||1);
@@ -138,26 +153,21 @@
   async function selectOutput(item,play){
     var source=project();if(!source||!item)return;
     try{
-      var response=await fetch("/api/ad-film/seedance/result",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:source.id,outputId:item.id})});
+      var response=await fetch("/api/ad-film/seedance/result",{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:source.id,outputId:item.id})});
       var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"select_failed");
       var next=data.project||source;
       window.AIVOAdFilmActiveProject=next;
       window.AIVOAdFilmGeneratedVideo=item.videoUrl;
       window.AIVOAdFilmGeneratedLogo=item.logoUrl||"";
       window.AIVOAdFilmActiveOutputId=item.id;
-      if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{play:!!play});
+      if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{projectId:source.id,outputId:item.id,version:item.version||1,play:!!play});
       render(next,true);
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
     }catch(error){console.error("[ADFILM] select output",error);toast(t("selectFailed"),"error")}
   }
   function downloadOutput(item){
-    if(!item)return;
-    if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.downloadOutput==="function"){
-      window.AIVOAdFilmResultControls.downloadOutput(item.id,item.version);
-      return;
-    }
     var source=project();
-    if(!source||!source.id){toast(t("downloadFailed"),"error");return}
+    if(!item||!source||!source.id){toast(t("downloadFailed"),"error");return}
     var anchor=document.createElement("a");
     anchor.href="/api/ad-film/seedance/download?projectId="+encodeURIComponent(source.id)+"&outputId="+encodeURIComponent(item.id);
     anchor.download="aivo-reklam-v"+(item.version||1)+".mp4";
@@ -172,12 +182,12 @@
       if(video.requestFullscreen){var promise=video.requestFullscreen();if(promise&&promise.catch)promise.catch(function(){})}
       else if(video.webkitEnterFullscreen)video.webkitEnterFullscreen();
       else if(video.webkitRequestFullscreen)video.webkitRequestFullscreen();
-    }catch(_){}
+    }catch(error){console.warn("[ADFILM] fullscreen",error)}
   }
   async function removeOutput(item){
     var source=project();if(!source||!item||!window.confirm(t("removeConfirm")))return;
     try{
-      var response=await fetch("/api/ad-film/seedance/result?projectId="+encodeURIComponent(source.id)+"&outputId="+encodeURIComponent(item.id),{method:"DELETE",credentials:"include"});
+      var response=await fetch("/api/ad-film/seedance/result?projectId="+encodeURIComponent(source.id)+"&outputId="+encodeURIComponent(item.id),{method:"DELETE",credentials:"include",cache:"no-store"});
       var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"remove_failed");
       var next=data.project||source;
       window.AIVOAdFilmActiveProject=next;
@@ -185,7 +195,7 @@
       window.AIVOAdFilmGeneratedVideo=active&&active.videoUrl||"";
       window.AIVOAdFilmGeneratedLogo=active&&active.logoUrl||"";
       window.AIVOAdFilmActiveOutputId=active&&active.id||"";
-      if(active&&window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(active.videoUrl,active.logoUrl||"");
+      if(active&&window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(active.videoUrl,active.logoUrl||"",{projectId:next.id,outputId:active.id,version:active.version||1});
       else if(window.AIVOAdFilmResultControls&&window.AIVOAdFilmResultControls.clear)window.AIVOAdFilmResultControls.clear();
       render(next,true);
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
@@ -202,6 +212,10 @@
     else if(actionName==="download")downloadOutput(item);
     else if(actionName==="fullscreen")fullscreenCard(cardNode);
     else if(actionName==="trash")removeOutput(item);
+    else if(actionName==="mute"){
+      var video=cardNode.querySelector("video");
+      if(video){video.muted=!video.muted;syncMuteButton(button,video);if(!video.paused)video.play().catch(function(){})}
+    }
   },true);
   document.addEventListener("click",function(event){
     var cardNode=event.target&&event.target.closest&&event.target.closest("[data-adfilm-output-gallery] [data-output-id]");if(!cardNode||event.target.closest("[data-output-action]"))return;
