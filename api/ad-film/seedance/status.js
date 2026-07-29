@@ -68,6 +68,45 @@ function seedFrom(payload) {
   return Number.isFinite(number) ? number : null;
 }
 
+function normalizeOutputs(project) {
+  const list = Array.isArray(project?.outputs) ? project.outputs.filter(Boolean) : [];
+  if (!list.length && project?.generation?.videoUrl) {
+    const generation = project.generation;
+    list.push({
+      id: generation.outputId || generation.requestId || `legacy-${Date.now()}`,
+      requestId: generation.requestId || null,
+      version: generation.version || 1,
+      videoUrl: generation.videoUrl,
+      logoUrl: generation.logoUrl || project?.media?.logo?.url || null,
+      createdAt: generation.completedAt || generation.startedAt || project.updatedAt,
+      completedAt: generation.completedAt || project.updatedAt,
+      seed: generation.seed ?? null,
+      duration: generation.input?.duration || project?.output?.duration || "15",
+      aspectRatio: generation.input?.aspectRatio || project?.output?.aspectRatio || "9:16",
+      resolution: generation.input?.resolution || project?.output?.quality || "1080p",
+      generateAudio: generation.input?.generateAudio !== false,
+    });
+  }
+  return list.slice(0, 30);
+}
+
+function outputFromGeneration(project, generation, videoUrl, seed, completedAt) {
+  return {
+    id: generation.outputId || generation.requestId,
+    requestId: generation.requestId || null,
+    version: Number.parseInt(generation.version, 10) || normalizeOutputs(project).length + 1,
+    videoUrl,
+    logoUrl: generation.logoUrl || project?.media?.logo?.url || null,
+    createdAt: generation.startedAt || completedAt,
+    completedAt,
+    seed: seed ?? null,
+    duration: generation.input?.duration || project?.output?.duration || "15",
+    aspectRatio: generation.input?.aspectRatio || project?.output?.aspectRatio || "9:16",
+    resolution: generation.input?.resolution || project?.output?.quality || "1080p",
+    generateAudio: generation.input?.generateAudio !== false,
+  };
+}
+
 async function falFetch(url, key) {
   const response = await fetch(url, {
     method: "GET",
@@ -95,8 +134,17 @@ export default async function handler(req, res) {
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
 
     const generation = project.generation || {};
+    const savedOutputs = normalizeOutputs(project);
     if (!generation.requestId) {
-      return sendJson(res, 400, { ok: false, error: "missing_generation_request" });
+      return sendJson(res, 200, {
+        ok: true,
+        projectId,
+        status: savedOutputs.length ? "COMPLETED" : "IDLE",
+        video_url: savedOutputs.find((item) => item.id === project.activeOutputId)?.videoUrl || savedOutputs[0]?.videoUrl || null,
+        generation,
+        outputs: savedOutputs,
+        activeOutputId: project.activeOutputId || savedOutputs[0]?.id || null,
+      });
     }
 
     if (["completed", "failed"].includes(String(generation.status))) {
@@ -107,6 +155,8 @@ export default async function handler(req, res) {
         video_url: generation.videoUrl || null,
         seed: generation.seed ?? null,
         generation,
+        outputs: savedOutputs,
+        activeOutputId: project.activeOutputId || savedOutputs[0]?.id || null,
       });
     }
 
@@ -118,15 +168,14 @@ export default async function handler(req, res) {
     if (!statusUrl) {
       statusUrl = `https://queue.fal.run/bytedance/seedance-2.0/requests/${encodeURIComponent(generation.requestId)}/status`;
     }
-    if (!responseUrl) {
-      responseUrl = statusUrl.replace(/\/status\/?$/i, "");
-    }
+    if (!responseUrl) responseUrl = statusUrl.replace(/\/status\/?$/i, "");
 
     const statusResult = await falFetch(statusUrl, key);
     if (statusResult.response.status === 404) {
       const failed = await saveProject(user, {
         ...project,
         status: "failed",
+        outputs: savedOutputs,
         generation: {
           ...generation,
           status: "failed",
@@ -134,7 +183,7 @@ export default async function handler(req, res) {
           error: "fal_status_not_found",
         },
       });
-      return sendJson(res, 200, { ok: true, projectId, status: "FAILED", video_url: null, generation: failed.generation });
+      return sendJson(res, 200, { ok: true, projectId, status: "FAILED", video_url: null, generation: failed.generation, outputs: failed.outputs || [], activeOutputId: failed.activeOutputId || null });
     }
     if (!statusResult.response.ok) {
       return sendJson(res, 502, {
@@ -168,9 +217,20 @@ export default async function handler(req, res) {
     const normalized = normalizeStatus(rawStatus, videoUrl);
     const now = new Date().toISOString();
     const nextStatus = normalized === "COMPLETED" ? "completed" : normalized === "FAILED" ? "failed" : "processing";
+    let outputs = savedOutputs;
+    let activeOutputId = project.activeOutputId || savedOutputs[0]?.id || null;
+
+    if (videoUrl && normalized === "COMPLETED") {
+      const completedOutput = outputFromGeneration(project, generation, videoUrl, seed, now);
+      outputs = [completedOutput, ...savedOutputs.filter((item) => item.id !== completedOutput.id && item.videoUrl !== completedOutput.videoUrl)].slice(0, 30);
+      activeOutputId = completedOutput.id;
+    }
+
     const nextProject = await saveProject(user, {
       ...project,
       status: nextStatus,
+      outputs,
+      activeOutputId,
       generation: {
         ...generation,
         status: nextStatus,
@@ -190,6 +250,8 @@ export default async function handler(req, res) {
       video_url: videoUrl || null,
       seed,
       generation: nextProject.generation,
+      outputs: nextProject.outputs || [],
+      activeOutputId: nextProject.activeOutputId || null,
     });
   } catch (error) {
     console.error("[ad-film/seedance/status]", error);
