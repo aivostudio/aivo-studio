@@ -63,7 +63,7 @@
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
     "/css/ad-film.seedance-engine.css?v=2",
-    "/css/ad-film.result-controls.css?v=3",
+    "/css/ad-film.result-controls.css?v=5",
     "/css/ad-film.output-workflow.css?v=1",
     "/css/ad-film.output-gallery.css?v=2"
   ];
@@ -75,7 +75,7 @@
   ];
 
   const moduleScripts = [
-    "/js/ad-film.controls-fix.js?v=1",
+    "/js/ad-film.controls-fix.js?v=2",
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
     "/js/ad-film.basic-media-cache.js?v=2",
@@ -92,10 +92,10 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=4",
-    "/js/ad-film.result-controls.js?v=4",
+    "/js/ad-film.result-controls.js?v=5",
     "/js/ad-film.output-workflow.js?v=2",
     "/js/ad-film.output-gallery.js?v=2",
-    "/js/ad-film.project-history.js?v=1",
+    "/js/ad-film.project-history.js?v=2",
     "/js/ad-film.output-main-delete.js?v=1",
     "/js/ad-film.output-sync.js?v=1"
   ];
