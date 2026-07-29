@@ -90,6 +90,7 @@
     "/js/ad-film.seedance-engine.js?v=4",
     "/js/ad-film.result-controls.js?v=2",
     "/js/ad-film.output-gallery.js?v=1",
+    "/js/ad-film.output-main-delete.js?v=1",
     "/js/ad-film.output-sync.js?v=1"
   ];
 
