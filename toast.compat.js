@@ -92,11 +92,11 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.seedance-engine.js?v=4",
-    "/js/ad-film.result-controls.js?v=6",
+    "/js/ad-film.result-controls.js?v=7",
     "/js/ad-film.output-workflow.js?v=2",
-    "/js/ad-film.output-gallery.js?v=2",
+    "/js/ad-film.output-gallery.js?v=3",
     "/js/ad-film.project-history.js?v=2",
-    "/js/ad-film.output-main-delete.js?v=1",
+    "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=1"
   ];
 
