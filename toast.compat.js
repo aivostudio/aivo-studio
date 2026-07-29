@@ -39,7 +39,7 @@
 
 /* AI Reklam Filmi varlık yükleyicisi.
    Menü kabuğu Studio açılır açılmaz yüklenir; ağır modül dosyaları
-   yalnız Reklam Filmi bölümü açıldığında yüklenir. */
+   Reklam Filmi bölümü açıldığında arka planda yüklenir. */
 (() => {
   if (window.__AIVO_AD_FILM_ASSETS_V2__) return;
   window.__AIVO_AD_FILM_ASSETS_V2__ = true;
@@ -160,7 +160,7 @@
     return shellLoadPromise;
   }
 
-  function ensureAdFilmAssets() {
+  function startAdFilmAssets() {
     ensureStyles();
     if (!moduleLoadPromise) {
       moduleLoadPromise = ensureAdFilmShell().then(() => loadSequential(moduleScripts));
@@ -168,8 +168,16 @@
     return moduleLoadPromise;
   }
 
+  /* Router bu fonksiyonu await ediyor. Ekranı ağır yardımcı dosyalara
+     kilitlememek için yüklemeyi başlatıp hemen çözüyoruz. */
+  function ensureAdFilmAssets() {
+    startAdFilmAssets();
+    return Promise.resolve();
+  }
+
   window.AIVOEnsureAdFilmShell = ensureAdFilmShell;
   window.AIVOEnsureAdFilmAssets = ensureAdFilmAssets;
+  window.AIVOAwaitAdFilmAssets = startAdFilmAssets;
 
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-adfilm-open]")) ensureAdFilmAssets();
