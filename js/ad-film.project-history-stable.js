@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable cross-project ready video history */
 (function AIVO_AD_FILM_PROJECT_HISTORY_STABLE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_STABLE_V1__)return;
-  window.__AIVO_AD_FILM_PROJECT_HISTORY_STABLE_V1__=true;
+  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_STABLE_V2__)return;
+  window.__AIVO_AD_FILM_PROJECT_HISTORY_STABLE_V2__=true;
 
   var PROJECT_KEY="aivo_adfilm_active_project_id_v2";
   var REOPEN_KEY="aivo_adfilm_reopen_module_v1";
@@ -117,4 +117,10 @@
   document.addEventListener("aivo:adfilm-project-sync",function(event){var signature=activeSignature(event&&event.detail&&event.detail.project);if(signature&&signature!==lastActiveSignature){var previous=lastActiveSignature;lastActiveSignature=signature;if(previous)setTimeout(function(){load(false)},180)}});
   document.addEventListener("aivo:adfilm-history-refresh",function(){lastRenderSignature="";setTimeout(function(){load(true)},80)});
   window.addEventListener("pageshow",function(){setTimeout(function(){load(false)},260)});
+
+  window.AIVOAdFilmProjectHistoryStable={
+    render:function(force){render(!!force)},
+    load:function(force){return load(!!force)},
+    items:function(){return items.slice()}
+  };
 })();
