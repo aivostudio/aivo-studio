@@ -38,8 +38,8 @@
 })();
 
 /* AI Reklam Filmi varlık yükleyicisi.
-   Ağır geliştirme dosyaları yalnız Reklam Filmi modülü açılınca yüklenir.
-   Böylece diğer Studio modüllerinin ana iş parçacığı etkilenmez. */
+   Menü kabuğu Studio açılır açılmaz yüklenir; ağır modül dosyaları
+   yalnız Reklam Filmi bölümü açıldığında yüklenir. */
 (() => {
   if (window.__AIVO_AD_FILM_ASSETS_V2__) return;
   window.__AIVO_AD_FILM_ASSETS_V2__ = true;
@@ -68,7 +68,7 @@
   ];
 
   const shellScripts = [
-    "/js/ad-film.skeleton.js?v=7"
+    "/js/ad-film.skeleton.js?v=8"
   ];
 
   const moduleScripts = [
@@ -94,6 +94,7 @@
     "/js/ad-film.output-sync.js?v=1"
   ];
 
+  let shellLoadPromise = null;
   let moduleLoadPromise = null;
 
   function ensureStyles() {
@@ -120,16 +121,10 @@
       }
 
       return new Promise((resolve) => {
-        existing.addEventListener(
-          "load",
-          () => resolve(loadSequential(list, index + 1)),
-          { once: true }
-        );
-        existing.addEventListener(
-          "error",
-          () => resolve(loadSequential(list, index + 1)),
-          { once: true }
-        );
+        const finish = () => resolve(loadSequential(list, index + 1));
+        existing.addEventListener("load", finish, { once: true });
+        existing.addEventListener("error", finish, { once: true });
+        if (existing.readyState === "complete" || existing.readyState === "loaded") finish();
       });
     }
 
@@ -146,14 +141,21 @@
     });
   }
 
+  function ensureAdFilmShell() {
+    ensureStyles();
+    if (!shellLoadPromise) shellLoadPromise = loadSequential(shellScripts);
+    return shellLoadPromise;
+  }
+
   function ensureAdFilmAssets() {
     ensureStyles();
     if (!moduleLoadPromise) {
-      moduleLoadPromise = loadSequential(shellScripts).then(() => loadSequential(moduleScripts));
+      moduleLoadPromise = ensureAdFilmShell().then(() => loadSequential(moduleScripts));
     }
     return moduleLoadPromise;
   }
 
+  window.AIVOEnsureAdFilmShell = ensureAdFilmShell;
   window.AIVOEnsureAdFilmAssets = ensureAdFilmAssets;
 
   document.addEventListener("click", (event) => {
@@ -163,4 +165,10 @@
   document.addEventListener("aivo:module-mounted", (event) => {
     if (event?.detail?.key === "adfilm") ensureAdFilmAssets();
   });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ensureAdFilmShell, { once: true });
+  } else {
+    ensureAdFilmShell();
+  }
 })();
