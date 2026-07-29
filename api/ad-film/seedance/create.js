@@ -82,6 +82,26 @@ function nextVersion(project) {
   return Math.max(0, ...versions) + 1;
 }
 
+function visualOnlyPrompt(value) {
+  const source = clean(value)
+    .replace(/Generate synchronized native audio\.[\s\S]*?seconds\./gi, "")
+    .replace(/Generate synchronized commercial ambience and sound effects, but no spoken dialogue\./gi, "")
+    .replace(/Generate synchronized ambience and sound effects without speech\./gi, "")
+    .replace(/Include exactly this spoken voice-over[\s\S]*?seconds\./gi, "")
+    .trim();
+  return `${source} Create the visual commercial only. Do not generate speech, dialogue, narration, music, ambience or sound effects. Keep the video completely silent. AIVO will add the user's approved narration and selected music during protected final post-production.`;
+}
+
+function approvedNarration(project) {
+  const narration = project?.narration || {};
+  if (narration.enabled === false) return { required: false, audio: null };
+  const audio = narration.audio;
+  return {
+    required: true,
+    audio: audio && audio.approved === true && /^https:\/\//i.test(String(audio.url || "")) ? audio : null,
+  };
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -105,20 +125,27 @@ export default async function handler(req, res) {
       });
     }
 
+    const narration = approvedNarration(project);
+    if (narration.required && !narration.audio) {
+      return sendJson(res, 409, {
+        ok: false,
+        error: "narration_audio_approval_required",
+        message: "Generate, preview and approve the narration before creating the advertising film.",
+      });
+    }
+
     const key = falKey();
     if (!key) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
 
-    const prompt = clean(req.body?.prompt);
+    const prompt = visualOnlyPrompt(req.body?.prompt);
     if (prompt.length < 20) return sendJson(res, 400, { ok: false, error: "missing_prompt" });
 
     const ownedKeyPrefix = mediaPrefix(user, projectId);
     const publicPrefix = ownedPublicPrefix(user, projectId);
     let imageUrls;
-    let audioUrls;
     let logoUrl = "";
     try {
       imageUrls = validateOwnedUrls(req.body?.image_urls, publicPrefix, ownedKeyPrefix, 9);
-      audioUrls = validateOwnedUrls(req.body?.audio_urls, publicPrefix, ownedKeyPrefix, 3);
       logoUrl = clean(req.body?.logo_url, 4000);
       if (
         logoUrl &&
@@ -147,11 +174,10 @@ export default async function handler(req, res) {
     const input = {
       prompt,
       image_urls: imageUrls,
-      ...(audioUrls.length ? { audio_urls: audioUrls } : {}),
       resolution,
       duration,
       aspect_ratio: aspectRatio,
-      generate_audio: req.body?.generate_audio !== false,
+      generate_audio: false,
       bitrate_mode: bitrateMode,
       end_user_id: user.ownerHash,
     };
@@ -203,12 +229,12 @@ export default async function handler(req, res) {
     const retryInput = {
       prompt,
       imageUrls,
-      audioUrls,
+      audioUrls: [],
       resolution,
       duration,
       aspectRatio,
       bitrateMode,
-      generateAudio: input.generate_audio,
+      generateAudio: false,
     };
     const nextProject = await saveProject(user, {
       ...project,
@@ -228,18 +254,22 @@ export default async function handler(req, res) {
         updatedAt: now,
         completedAt: null,
         videoUrl: null,
+        sourceVideoUrl: null,
         seed: null,
         logoUrl: logoUrl || null,
-        audioSafetyRetry: 0,
+        audioSafetyRetry: 1,
         retryInput,
+        narrationAudioUrl: narration.audio?.url || null,
+        narrationApprovedAt: narration.audio?.approvedAt || null,
         input: {
           duration,
           resolution,
           aspectRatio,
           bitrateMode,
-          generateAudio: input.generate_audio,
+          generateAudio: false,
           imageCount: imageUrls.length,
-          audioCount: audioUrls.length,
+          audioCount: 0,
+          approvedNarration: !!narration.audio,
         },
         referenceMap: req.body?.reference_map && typeof req.body.reference_map === "object"
           ? req.body.reference_map
