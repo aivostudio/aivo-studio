@@ -28,6 +28,24 @@
   background:#02040b;
   pointer-events:auto;
 }
+.adfilm-result-logo{
+  position:absolute;
+  z-index:18;
+  right:16px;
+  bottom:18px;
+  width:52px;
+  height:52px;
+  padding:6px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:14px;
+  background-color:rgba(4,7,18,.72);
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:contain;
+  box-shadow:0 12px 26px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(10px);
+  pointer-events:none;
+}
 .adfilm-result-toolbar{
   position:absolute;
   z-index:20;
@@ -84,4 +102,5 @@
   .adfilm-result-toolbar{top:9px;gap:5px;padding:5px;border-radius:13px}
   .adfilm-result-control{width:34px;height:34px;flex-basis:34px;border-radius:10px}
   .adfilm-result-control svg{width:19px;height:19px}
+  .adfilm-result-logo{right:10px;bottom:12px;width:42px;height:42px;border-radius:11px}
 }
