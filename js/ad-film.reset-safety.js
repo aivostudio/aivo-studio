@@ -2,6 +2,7 @@
    AIVO — AI REKLAM FILMI / RESET + POLL SAFETY
    - Draft reset creates a fresh project without deleting history.
    - Terminal provider errors are converted to FAILED once so polling stops.
+   - Orphaned finalized outputs are recovered from R2.
    ========================================================= */
 (function AIVO_AD_FILM_RESET_POLL_SAFETY(){
   "use strict";
@@ -10,6 +11,7 @@
 
   var PROJECT_KEY="aivo_adfilm_active_project_id_v2";
   var LEGACY_KEY="aivo_adfilm_active_project_id_v1";
+  var RECOVERY_SESSION_KEY="aivo_adfilm_orphan_recovery_v1";
   var nativeFetch=window.fetch.bind(window);
   var resetting=false;
 
@@ -129,4 +131,28 @@
       headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}
     });
   };
+
+  async function recoverOrphans(){
+    try{
+      if(sessionStorage.getItem(RECOVERY_SESSION_KEY)==="1")return;
+      sessionStorage.setItem(RECOVERY_SESSION_KEY,"1");
+    }catch(_){}
+    try{
+      var data=await json("/api/ad-film/recover-orphaned-outputs",{method:"POST",body:"{}"});
+      if(Number(data&&data.recovered_outputs||0)>0){
+        notify(message(
+          data.recovered_outputs+" kayıp video yeniden Hazır Videolar bölümüne eklendi.",
+          data.recovered_outputs+" missing videos were restored to Ready Videos."
+        ),"success");
+        document.dispatchEvent(new CustomEvent("aivo:adfilm-history-refresh"));
+      }
+    }catch(error){
+      console.warn("[ADFILM] orphan output recovery",error);
+    }
+  }
+
+  document.addEventListener("aivo:module-mounted",function(event){
+    if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(recoverOrphans,900);
+  });
+  if(document.readyState!=="loading")setTimeout(recoverOrphans,1400);
 })();
