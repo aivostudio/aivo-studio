@@ -1,38 +1,49 @@
 /* AIVO AI Reklam Filmi — completed output workflow */
 (function AIVO_AD_FILM_OUTPUT_WORKFLOW(){
   "use strict";
-  if(window.__AIVO_AD_FILM_OUTPUT_WORKFLOW__)return;
-  window.__AIVO_AD_FILM_OUTPUT_WORKFLOW__=true;
+  if(window.__AIVO_AD_FILM_OUTPUT_WORKFLOW_V2__)return;
+  window.__AIVO_AD_FILM_OUTPUT_WORKFLOW_V2__=true;
 
   var STORAGE_KEY="aivo_adfilm_active_project_id_v2";
+  var LEGACY_STORAGE_KEY="aivo_adfilm_active_project_id_v1";
+  var REOPEN_KEY="aivo_adfilm_reopen_module_v1";
+  var INTENTIONAL_PROJECT_KEY="aivo_adfilm_intentional_new_project_id_v1";
+  var RECOVERY_TRIED_KEY="aivo_adfilm_recovery_tried_v1";
+  var RECOVERED_NOTICE_KEY="aivo_adfilm_recovered_notice_v1";
+  var recoveryBusy=false;
+
   var COPY={
     tr:{
       title:"Reklamın hazır",
       description:"Videonu inceleyebilir veya aynı ürün bilgileriyle yeni bir sürüm hazırlayabilirsin.",
       newVersion:"Yeni Sürüm Oluştur",
       newProject:"Yeni Proje Oluştur",
+      versionConfirm:"Yeni sürüm alanı açılsın mı? Hazır videon silinmeyecek; aşağıdaki Hazır Videolar bölümünde korunacak.",
       preparingTitle:"Yeni sürüm hazırlanabilir",
       preparingText:"Ürün bilgilerin, görsellerin, logo ve reklam planın korunuyor. Ayarlarını değiştirip yeniden üret.",
       preparingBadge:"Hazır videolar aşağıda korunuyor",
       prepareFailed:"Yeni sürüm alanı hazırlanamadı.",
-      projectConfirm:"Yeni proje oluşturulsun mu? Mevcut proje ve hazır videoların geçmişte korunacak; çalışma alanı temiz bir projeyle açılacak.",
+      projectConfirm:"Yeni ve boş bir reklam projesi oluşturulsun mu? Mevcut proje ve hazır videoların geçmişte korunacak.",
       projectCreating:"Yeni proje hazırlanıyor...",
       projectFailed:"Yeni proje oluşturulamadı.",
-      viewReady:"Hazır videoyu aç"
+      viewReady:"Hazır videoyu aç",
+      recovered:"Önceki reklam projen ve hazır videon geri getirildi."
     },
     en:{
       title:"Your advertising film is ready",
       description:"Review your video or prepare another version using the same product information.",
       newVersion:"Create New Version",
       newProject:"Create New Project",
+      versionConfirm:"Prepare a new version workspace? Your ready video will not be deleted; it will remain in Ready Videos below.",
       preparingTitle:"Ready for a new version",
       preparingText:"Your product information, references, logo and advertising plan are preserved. Change any settings and generate again.",
       preparingBadge:"Ready videos are preserved below",
       prepareFailed:"The new version workspace could not be prepared.",
-      projectConfirm:"Create a new project? The current project and its ready videos will remain in history, while a clean workspace is opened.",
+      projectConfirm:"Create a new blank advertising project? The current project and its ready videos will remain in history.",
       projectCreating:"Creating a new project...",
       projectFailed:"The new project could not be created.",
-      viewReady:"Open ready video"
+      viewReady:"Open ready video",
+      recovered:"Your previous advertising project and ready video were restored."
     }
   };
 
@@ -58,6 +69,17 @@
     window.AIVOAdFilmActiveProject=source;
     document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:source,projectId:source.id||"",media:source.media||{}}}));
   }
+  function storeProjectId(id){
+    try{
+      if(id)localStorage.setItem(STORAGE_KEY,String(id));else localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }catch(_){}
+  }
+  function sessionGet(key){try{return sessionStorage.getItem(key)||""}catch(_){return""}}
+  function sessionSet(key,value){try{if(value==null)sessionStorage.removeItem(key);else sessionStorage.setItem(key,String(value))}catch(_){} }
+  function localGet(key){try{return localStorage.getItem(key)||""}catch(_){return""}}
+  function localSet(key,value){try{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,String(value))}catch(_){} }
+
   function icon(name){
     var paths={
       version:'<path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.7M4 4v4.7h4.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.8 1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
@@ -79,6 +101,20 @@
     return host;
   }
 
+  function actionButton(action,label,iconName,handler,primary){
+    var button=document.createElement("button");
+    button.type="button";
+    button.dataset.adfilmWorkflowAction=action;
+    if(primary)button.className="is-primary";
+    button.innerHTML=icon(iconName)+"<span>"+label+"</span>";
+    button.addEventListener("click",function(event){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      handler();
+    });
+    return button;
+  }
+
   function render(source){
     source=source||project();
     var host=ensureHost();if(!host)return;
@@ -97,20 +133,21 @@
     var actions=document.createElement("div");actions.className="adfilm-output-workflow__actions";
     if(preparing){
       var badge=document.createElement("span");badge.className="adfilm-output-workflow__badge";badge.textContent=t("preparingBadge");copy.appendChild(badge);
-      var open=document.createElement("button");open.type="button";open.dataset.adfilmWorkflow="view";open.innerHTML=icon("play")+"<span>"+t("viewReady")+"</span>";actions.appendChild(open);
+      actions.appendChild(actionButton("view",t("viewReady"),"play",openReadyVideo,false));
     }else{
-      var version=document.createElement("button");version.type="button";version.className="is-primary";version.dataset.adfilmWorkflow="version";version.innerHTML=icon("version")+"<span>"+t("newVersion")+"</span>";
-      var projectButton=document.createElement("button");projectButton.type="button";projectButton.dataset.adfilmWorkflow="project";projectButton.innerHTML=icon("project")+"<span>"+t("newProject")+"</span>";
-      actions.appendChild(version);actions.appendChild(projectButton);
+      actions.appendChild(actionButton("version",t("newVersion"),"version",prepareNewVersion,true));
+      actions.appendChild(actionButton("project",t("newProject"),"project",createNewProject,false));
     }
     host.appendChild(copy);host.appendChild(actions);
   }
 
   async function prepareNewVersion(){
     var source=project();if(!source||!source.id)return;
+    if(!window.confirm(t("versionConfirm")))return;
     try{
       var response=await fetch("/api/ad-film/seedance/result",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:source.id,action:"prepare-new-version"})});
-      var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"prepare_failed");
+      var data=await response.json().catch(function(){return{}});if(!response.ok||!data.project)throw new Error(data.error||"prepare_failed");
+      storeProjectId(source.id);
       window.AIVOAdFilmGeneratedVideo="";window.AIVOAdFilmGeneratedLogo="";window.AIVOAdFilmActiveOutputId="";
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.clear==="function")window.AIVOAdFilmResultControls.clear();
       dispatch(data.project);
@@ -126,7 +163,9 @@
     try{
       var response=await fetch("/api/ad-film/project",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({project:{mode:"basic"}})});
       var data=await response.json().catch(function(){return{}});if(!response.ok||!data.project)throw new Error(data.error||"create_failed");
-      try{localStorage.setItem(STORAGE_KEY,data.project.id);localStorage.removeItem("aivo_adfilm_active_project_id_v1")}catch(_){}
+      storeProjectId(data.project.id);
+      localSet(INTENTIONAL_PROJECT_KEY,data.project.id);
+      sessionSet(REOPEN_KEY,"1");
       if(handle&&typeof handle.dismiss==="function")handle.dismiss();
       location.reload();
     }catch(error){
@@ -138,7 +177,8 @@
   function openReadyVideo(){
     var source=project(),list=outputs(source);if(!list.length)return;
     var item=list[0];
-    var card=panel()&&panel().querySelector('[data-adfilm-output-gallery] [data-output-id="'+CSS.escape(String(item.id||""))+'"] [data-output-action="open"]');
+    var escaped=window.CSS&&typeof CSS.escape==="function"?CSS.escape(String(item.id||"")):String(item.id||"").replace(/"/g,"\\\"");
+    var card=panel()&&panel().querySelector('[data-adfilm-output-gallery] [data-output-id="'+escaped+'"] [data-output-action="open"]');
     if(card){card.click();return}
     fetch("/api/ad-film/seedance/result",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:source.id,outputId:item.id})}).then(function(response){return response.json()}).then(function(data){
       if(data.project)dispatch(data.project);
@@ -147,21 +187,70 @@
     }).catch(function(){});
   }
 
-  document.addEventListener("click",function(event){
-    var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-output-workflow] [data-adfilm-workflow]");if(!button)return;
-    event.preventDefault();event.stopPropagation();
-    var action=button.dataset.adfilmWorkflow;
-    if(action==="version")prepareNewVersion();
-    else if(action==="project")createNewProject();
-    else if(action==="view")openReadyVideo();
-  },true);
+  function hasReadyOutput(source){return outputs(source).length>0}
+  function recentlyCreated(source){
+    var value=Date.parse(source&&source.createdAt||"");
+    return Number.isFinite(value)&&Date.now()-value<48*60*60*1000;
+  }
+  async function fetchProject(id){
+    var response=await fetch("/api/ad-film/project?id="+encodeURIComponent(id),{method:"GET",credentials:"include"});
+    var data=await response.json().catch(function(){return{}});
+    if(!response.ok||!data.project)throw new Error(data.error||"project_load_failed");
+    return data.project;
+  }
 
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){render(project())},420)});
-  document.addEventListener("aivo:adfilm-project-sync",function(event){setTimeout(function(){render(event&&event.detail&&event.detail.project||project())},100)});
+  async function recoverAccidentalEmptyProject(source){
+    if(recoveryBusy||!source||!source.id||hasReadyOutput(source)||source.preparingNewVersion)return;
+    if(localGet(INTENTIONAL_PROJECT_KEY)===source.id)return;
+    if(!recentlyCreated(source))return;
+    if(sessionGet(RECOVERY_TRIED_KEY)===source.id)return;
+    sessionSet(RECOVERY_TRIED_KEY,source.id);
+    recoveryBusy=true;
+    try{
+      var response=await fetch("/api/ad-film/projects",{method:"GET",credentials:"include"});
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok||!Array.isArray(data.projects))return;
+      var candidates=data.projects.filter(function(item){return item&&item.id&&item.id!==source.id}).slice(0,8);
+      for(var index=0;index<candidates.length;index++){
+        try{
+          var candidate=await fetchProject(candidates[index].id);
+          if(!hasReadyOutput(candidate))continue;
+          storeProjectId(candidate.id);
+          sessionSet(REOPEN_KEY,"1");
+          sessionSet(RECOVERED_NOTICE_KEY,"1");
+          location.reload();
+          return;
+        }catch(_){}
+      }
+    }catch(error){console.warn("[ADFILM] project recovery",error)}
+    finally{recoveryBusy=false}
+  }
+
+  function showRecoveredNotice(){
+    if(sessionGet(RECOVERED_NOTICE_KEY)!=="1")return;
+    sessionSet(RECOVERED_NOTICE_KEY,null);
+    setTimeout(function(){toast(t("recovered"),"success")},500);
+  }
+
+  document.addEventListener("aivo:module-mounted",function(event){
+    if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){
+      var source=project();
+      render(source);
+      showRecoveredNotice();
+      recoverAccidentalEmptyProject(source);
+    },420);
+  });
+  document.addEventListener("aivo:adfilm-project-sync",function(event){
+    setTimeout(function(){
+      var source=event&&event.detail&&event.detail.project||project();
+      render(source);
+      recoverAccidentalEmptyProject(source);
+    },100);
+  });
   window.addEventListener("pageshow",function(){render(project())});
   var observer=new MutationObserver(function(){if(panel()&&!panel().querySelector("[data-adfilm-output-workflow]"))setTimeout(function(){render(project())},80)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
-  window.AIVOAdFilmOutputWorkflow={render:render,prepareNewVersion:prepareNewVersion,createNewProject:createNewProject};
+  window.AIVOAdFilmOutputWorkflow={render:render,prepareNewVersion:prepareNewVersion,createNewProject:createNewProject,recover:recoverAccidentalEmptyProject};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){render(project())},{once:true});else render(project());
 })();
