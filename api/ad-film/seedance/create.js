@@ -75,6 +75,13 @@ function activeGeneration(project) {
   return Number.isFinite(startedAt) && Date.now() - startedAt < 30 * 60 * 1000;
 }
 
+function nextVersion(project) {
+  const versions = Array.isArray(project?.outputs)
+    ? project.outputs.map((item) => Number.parseInt(item?.version, 10)).filter(Number.isFinite)
+    : [];
+  return Math.max(0, ...versions) + 1;
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -192,13 +199,18 @@ export default async function handler(req, res) {
     }
 
     const now = new Date().toISOString();
+    const version = nextVersion(project);
     const nextProject = await saveProject(user, {
       ...project,
       status: "processing",
+      outputs: Array.isArray(project.outputs) ? project.outputs.slice(0, 30) : [],
+      activeOutputId: project.activeOutputId || null,
       generation: {
         provider: "fal",
         model: MODEL,
         requestId,
+        outputId: requestId,
+        version,
         statusUrl: statusUrl || null,
         responseUrl: responseUrl || null,
         status: "queued",
@@ -229,10 +241,14 @@ export default async function handler(req, res) {
       model: MODEL,
       projectId,
       request_id: requestId,
+      output_id: requestId,
+      version,
       status_url: statusUrl || null,
       response_url: responseUrl || null,
       status: "IN_QUEUE",
       generation: nextProject.generation,
+      outputs: nextProject.outputs || [],
+      activeOutputId: nextProject.activeOutputId || null,
     });
   } catch (error) {
     console.error("[ad-film/seedance/create]", error);
