@@ -28,6 +28,46 @@ function outputIdFromKey(key, fallback) {
   return clean(match?.[1] || name.replace(/\.mp4$/i, "") || fallback, 240);
 }
 
+function outputIdentity(item) {
+  return `${clean(item?.id, 240)}:${Number.parseInt(item?.version, 10) || 1}`;
+}
+
+function itemFromObject(item, index, total) {
+  const key = clean(item?.Key, 1200);
+  const id = outputIdFromKey(key, `recovered-${index + 1}`);
+  const version = versionFromKey(key, Math.max(1, total - index));
+  const createdAt = item?.LastModified
+    ? new Date(item.LastModified).toISOString()
+    : new Date().toISOString();
+  const logoApplied = /-logo-/i.test(key);
+
+  return {
+    id,
+    requestId: null,
+    version,
+    videoUrl: buildPublicUrl(key),
+    sourceVideoUrl: null,
+    logoApplied,
+    recovered: true,
+    recoveredKey: key,
+    createdAt,
+    completedAt: createdAt,
+    duration: "15",
+    aspectRatio: "16:9",
+    resolution: "1080p",
+    generateAudio: true,
+  };
+}
+
+function preferOutput(current, candidate) {
+  if (!current) return candidate;
+  if (candidate.logoApplied && !current.logoApplied) return candidate;
+  if (current.logoApplied && !candidate.logoApplied) return current;
+  return String(candidate.completedAt || "").localeCompare(String(current.completedAt || "")) > 0
+    ? candidate
+    : current;
+}
+
 async function listAll(Bucket, Prefix) {
   const items = [];
   let token;
@@ -76,51 +116,51 @@ export default async function handler(req, res) {
 
     const recovered = [];
     for (const [projectId, group] of groups.entries()) {
-      if (await getOwnedProject(user, projectId)) continue;
-
-      const finalized = group.filter((item) => /-logo-/i.test(clean(item?.Key, 1200)));
-      const selected = (finalized.length ? finalized : group)
+      const existing = await getOwnedProject(user, projectId);
+      const sortedObjects = group
+        .slice()
         .sort((a, b) => new Date(b?.LastModified || 0) - new Date(a?.LastModified || 0));
 
-      const seen = new Set();
-      const outputs = [];
-      selected.forEach((item, index) => {
-        const key = clean(item?.Key, 1200);
-        const id = outputIdFromKey(key, `recovered-${index + 1}`);
-        const version = versionFromKey(key, selected.length - index);
-        const dedupe = `${id}:${version}`;
-        if (seen.has(dedupe)) return;
-        seen.add(dedupe);
-        const createdAt = item?.LastModified ? new Date(item.LastModified).toISOString() : new Date().toISOString();
-        outputs.push({
-          id,
-          requestId: null,
-          version,
-          videoUrl: buildPublicUrl(key),
-          sourceVideoUrl: null,
-          logoApplied: /-logo-/i.test(key),
-          recovered: true,
-          createdAt,
-          completedAt: createdAt,
-          duration: "15",
-          aspectRatio: "16:9",
-          resolution: "1080p",
-          generateAudio: true,
-        });
+      const byIdentity = new Map();
+      sortedObjects.forEach((object, index) => {
+        const candidate = itemFromObject(object, index, sortedObjects.length);
+        const identity = outputIdentity(candidate);
+        byIdentity.set(identity, preferOutput(byIdentity.get(identity), candidate));
       });
 
+      const existingOutputs = Array.isArray(existing?.outputs)
+        ? existing.outputs.filter((item) => item && clean(item.videoUrl, 4000))
+        : [];
+      existingOutputs.forEach((item) => {
+        const identity = outputIdentity(item);
+        byIdentity.set(identity, preferOutput(byIdentity.get(identity), item));
+      });
+
+      const outputs = Array.from(byIdentity.values())
+        .filter((item) => item && clean(item.videoUrl, 4000))
+        .sort((a, b) => {
+          const versionDiff = Number(b.version || 0) - Number(a.version || 0);
+          return versionDiff || String(b.completedAt || "").localeCompare(String(a.completedAt || ""));
+        })
+        .slice(0, 30);
+
       if (!outputs.length) continue;
-      outputs.sort((a, b) => Number(b.version || 0) - Number(a.version || 0));
+
+      const previousCount = existingOutputs.length;
+      const addedCount = Math.max(0, outputs.length - previousCount);
+      if (existing && addedCount === 0) continue;
+
       const now = new Date().toISOString();
-      const project = createEmptyProject(user, projectId);
+      const project = existing || createEmptyProject(user, projectId);
       project.status = "completed";
-      project.brief.productName = "Kurtarılan Reklam Projesi";
-      project.output.duration = outputs[0].duration;
-      project.output.aspectRatio = outputs[0].aspectRatio;
-      project.output.quality = outputs[0].resolution;
-      project.outputs = outputs.slice(0, 30);
+      if (!clean(project.brief?.productName)) project.brief.productName = "Kurtarılan Reklam Projesi";
+      project.output.duration = outputs[0].duration || project.output.duration || "15";
+      project.output.aspectRatio = outputs[0].aspectRatio || project.output.aspectRatio || "16:9";
+      project.output.quality = outputs[0].resolution || project.output.quality || "1080p";
+      project.outputs = outputs;
       project.activeOutputId = outputs[0].id;
       project.generation = {
+        ...(project.generation || {}),
         provider: "recovered-r2",
         status: "completed",
         outputId: outputs[0].id,
@@ -128,22 +168,31 @@ export default async function handler(req, res) {
         videoUrl: outputs[0].videoUrl,
         completedAt: outputs[0].completedAt || now,
         updatedAt: now,
+        error: null,
         input: {
+          ...((project.generation && project.generation.input) || {}),
           duration: outputs[0].duration,
           aspectRatio: outputs[0].aspectRatio,
           resolution: outputs[0].resolution,
-          generateAudio: true,
+          generateAudio: outputs[0].generateAudio !== false,
         },
       };
       await saveProject(user, project);
-      recovered.push({ projectId, outputCount: outputs.length });
+      recovered.push({
+        projectId,
+        previousCount,
+        outputCount: outputs.length,
+        addedCount: existing ? addedCount : outputs.length,
+        scannedObjects: sortedObjects.length,
+      });
     }
 
     return sendJson(res, 200, {
       ok: true,
       recovered,
+      scanned_objects: candidates.length,
       recovered_projects: recovered.length,
-      recovered_outputs: recovered.reduce((sum, item) => sum + item.outputCount, 0),
+      recovered_outputs: recovered.reduce((sum, item) => sum + Number(item.addedCount || 0), 0),
     });
   } catch (error) {
     console.error("[ad-film/recover-orphaned-outputs]", error);
