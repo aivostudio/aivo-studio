@@ -3,6 +3,78 @@
 /* Basit modda gereksiz açıklama kartını kaldır; işlev taşımıyor. */
 .is-simplified-basic .adfilm-simple-auto{display:none!important}
 
+/* Akıllı referans yükleme: daha kompakt, temiz ve tekrarsız görünüm. */
+.is-creative-plan-ready .adfilm-role-media{
+  gap:8px!important;
+  margin-top:10px!important;
+}
+.is-creative-plan-ready .adfilm-role-primary,
+.is-creative-plan-ready .adfilm-role-secondary{
+  gap:8px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone{
+  min-height:88px!important;
+  gap:3px!important;
+  padding:9px 11px!important;
+  border-radius:14px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone--hero{
+  min-height:98px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone--scenes,
+.is-creative-plan-ready .adfilm-role-zone--logo{
+  min-height:90px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone__icon{
+  width:31px!important;
+  height:31px!important;
+  border-radius:10px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone__icon svg{
+  width:17px!important;
+  height:17px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone--hero .adfilm-role-zone__icon{
+  width:35px!important;
+  height:35px!important;
+  border-radius:11px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone--hero .adfilm-role-zone__icon svg{
+  width:19px!important;
+  height:19px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone>b,
+.is-creative-plan-ready .adfilm-role-zone--hero>b,
+.is-creative-plan-ready .adfilm-role-zone--angles>b,
+.is-creative-plan-ready .adfilm-role-zone--scenes>b,
+.is-creative-plan-ready .adfilm-role-zone--logo>b{
+  font-size:15px!important;
+  line-height:1.18!important;
+}
+.is-creative-plan-ready .adfilm-role-zone>small{
+  max-width:94%!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+}
+.is-creative-plan-ready .adfilm-role-zone__badge{
+  top:7px!important;
+  left:7px!important;
+  padding:4px 7px!important;
+  font-size:8px!important;
+}
+.is-creative-plan-ready .adfilm-role-zone>em{
+  right:7px!important;
+  bottom:7px!important;
+  min-width:24px!important;
+  height:24px!important;
+  font-size:8px!important;
+}
+/* Üst kartlarda zaten aynı sıralama yazdığı için alt tekrar satırlarını kaldır. */
+.is-creative-plan-ready .adfilm-reference-map,
+.is-creative-plan-ready .adfilm-media-note{
+  display:none!important;
+}
+
 /* Üretim alanı: basit yanıp sönme yerine sürekli, yumuşak premium ışık hareketi. */
 .adfilm-engine-status.is-busy{
   isolation:isolate;
@@ -61,6 +133,11 @@
   font-size:13px!important;
   font-weight:850!important;
   letter-spacing:.002em;
+}
+
+/* Tamamlanmış eski projede yeşil durum kutusu çalışma alanını kaplamasın. */
+.adfilm-engine-status[data-adfilm-idle-hidden="1"]{
+  display:none!important;
 }
 
 /* Çıkış kalitesi: daha büyük, okunaklı ve iç içe premium katmanlar. */
@@ -139,6 +216,10 @@
 }
 
 @media(max-width:700px){
+  .is-creative-plan-ready .adfilm-role-zone,
+  .is-creative-plan-ready .adfilm-role-zone--hero,
+  .is-creative-plan-ready .adfilm-role-zone--scenes,
+  .is-creative-plan-ready .adfilm-role-zone--logo{min-height:92px!important}
   .adfilm-options--seedance-quality button{min-height:49px!important}
   .adfilm-options--seedance-quality button span{font-size:11.5px!important}
   .adfilm-engine-status.is-busy:after{font-size:10.5px!important}
