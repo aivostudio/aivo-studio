@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — hazır videoları projeler arasında görünür tutar */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V4__)return;
-  window.__AIVO_AD_FILM_PROJECT_HISTORY_V4__=true;
+  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V5__)return;
+  window.__AIVO_AD_FILM_PROJECT_HISTORY_V5__=true;
 
   var items=[];
   var busy=false;
@@ -60,6 +60,8 @@
   var PLAY='<path d="m9 6 9 6-9 6V6Z" fill="currentColor"/>';
   var PAUSE='<path d="M8 6h3v12H8zM13 6h3v12h-3z" fill="currentColor"/>';
   var DOWN='<path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+  var VOLUME='<path d="M5 10v4h3l4 3V7l-4 3H5Zm10-1.5a5 5 0 0 1 0 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
+  var MUTED='<path d="M5 10v4h3l4 3V7l-4 3H5Zm10-1 5 5m0-5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
   var FULL='<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
   var TRASH='<path d="M5 7h14M9 7V4h6v3M8 10v8m4-8v8m4-8v8M7 7l1 14h8l1-14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>';
 
@@ -68,6 +70,14 @@
     button.innerHTML=icon(video.paused?PLAY:PAUSE);
     button.title=video.paused?text("Oynat","Play"):text("Duraklat","Pause");
     button.setAttribute("aria-label",button.title);
+  }
+
+  function syncCardSound(card,video){
+    var button=card&&card.querySelector('[data-history-action="sound"]');if(!button||!video)return;
+    button.innerHTML=icon(video.muted?MUTED:VOLUME);
+    button.title=video.muted?text("Sesi aç","Unmute"):text("Sesi kapat","Mute");
+    button.setAttribute("aria-label",button.title);
+    button.classList.toggle("is-active",!video.muted);
   }
 
   function tool(action,title,svg,danger){
@@ -99,12 +109,14 @@
       video.src=item.videoUrl;
       video.preload="metadata";
       video.muted=true;
+      video.volume=1;
       video.playsInline=true;
       video.setAttribute("playsinline","");
       video.setAttribute("webkit-playsinline","");
       video.addEventListener("play",function(){syncCardPlay(card,video)});
       video.addEventListener("pause",function(){syncCardPlay(card,video)});
       video.addEventListener("ended",function(){syncCardPlay(card,video)});
+      video.addEventListener("volumechange",function(){syncCardSound(card,video)});
       media.appendChild(video);
 
       var badge=document.createElement("span");badge.textContent="V"+(item.version||1);media.appendChild(badge);
@@ -113,6 +125,7 @@
 
       var tools=document.createElement("div");tools.className="adfilm-output-card__tools";
       tools.appendChild(tool("download",text("İndir","Download"),DOWN,false));
+      tools.appendChild(tool("sound",text("Sesi aç","Unmute"),MUTED,false));
       tools.appendChild(tool("fullscreen",text("Tam ekran","Fullscreen"),FULL,false));
       tools.appendChild(tool("delete",text("Sil","Delete"),TRASH,true));
       media.appendChild(tools);
@@ -120,6 +133,7 @@
       var meta=document.createElement("div");meta.className="adfilm-output-card__meta";
       meta.innerHTML='<b>'+item.projectTitle+'</b><small>'+["V"+(item.version||1),item.duration?item.duration+" sn":"",item.aspectRatio||"",item.resolution||""].filter(Boolean).join(" · ")+'</small>';
       card.appendChild(media);card.appendChild(meta);rail.appendChild(card);
+      syncCardSound(card,video);
     });
     host.appendChild(head);host.appendChild(rail);
   }
@@ -184,6 +198,11 @@
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.downloadOutput==="function"){
         window.AIVOAdFilmResultControls.downloadOutput(item.id,item.version||1,item.projectId);
       }
+    }else if(action==="sound"){
+      var soundVideo=card.querySelector("video");if(!soundVideo)return;
+      soundVideo.muted=!soundVideo.muted;
+      if(!soundVideo.muted&&soundVideo.volume===0)soundVideo.volume=1;
+      syncCardSound(card,soundVideo);
     }else if(action==="fullscreen"){
       var v=card.querySelector("video");
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.fullscreen==="function")window.AIVOAdFilmResultControls.fullscreen(v);
