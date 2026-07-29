@@ -41,8 +41,8 @@
    Temel kontroller modül ekrana basılmadan önce hazırlanır;
    ağır yardımcı motorlar modül açıldıktan sonra arka planda yüklenir. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V3__) return;
-  window.__AIVO_AD_FILM_ASSETS_V3__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V4__) return;
+  window.__AIVO_AD_FILM_ASSETS_V4__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -70,13 +70,12 @@
   ];
 
   const shellScripts = [
-    "/js/ad-film.route-fix.js?v=3",
+    "/js/ad-film.route-fix.js?v=4",
     "/js/ad-film.skeleton.js?v=8",
     "/js/ad-film.reopen-fix.js?v=1"
   ];
 
   const moduleScripts = [
-    "/js/ad-film.project-event-stability.js?v=1",
     "/js/ad-film.controls-fix.js?v=3",
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
@@ -94,7 +93,7 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.reset-safety.js?v=1",
     "/js/ad-film.narration-guide.js?v=1",
-    "/js/ad-film.voice-toggle-fix.js?v=1",
+    "/js/ad-film.voice-toggle-fix.js?v=2",
     "/js/ad-film.seedance-engine.js?v=4",
     "/js/ad-film.progress-stability.js?v=1",
     "/js/ad-film.logo-finalize.js?v=3",
@@ -102,7 +101,7 @@
     "/js/ad-film.live-preview-state.js?v=1",
     "/js/ad-film.output-workflow.js?v=2",
     "/js/ad-film.output-gallery.js?v=4",
-    "/js/ad-film.project-history-stable.js?v=1",
+    "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=1",
     "/js/ad-film.idle-ui-cleanup.js?v=1"
@@ -175,8 +174,6 @@
     return moduleLoadPromise;
   }
 
-  /* Router bu fonksiyonu await eder. Yalnız temel buton ve rota dosyaları
-     beklenir; böylece ekrana gelen form ilk anda tamamen çalışır. */
   function ensureAdFilmAssets() {
     return ensureAdFilmShell().then(() => {
       startAdFilmAssets();
