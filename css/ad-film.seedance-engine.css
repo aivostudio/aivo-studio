@@ -1,14 +1,15 @@
 /* AIVO AI Reklam Filmi — Seedance engine status */
-.adfilm-engine-status{display:none;align-items:center;gap:14px;width:100%;margin:0;padding:16px 18px;border:1px solid rgba(139,92,246,.28);border-radius:16px;background:linear-gradient(145deg,rgba(31,26,63,.94),rgba(10,13,34,.96));color:rgba(245,243,255,.82);font-size:12px;line-height:1.45;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 28px rgba(6,7,20,.2)}
-.adfilm-engine-status.is-visible{display:flex;grid-column:1/-1;grid-row:2}
-.adfilm-engine-status>span{flex:0 0 auto;width:15px;height:15px;border:3px solid rgba(216,180,254,.25);border-top-color:#d8b4fe;border-radius:999px}
+.adfilm-engine-status{display:none;align-items:center;justify-content:center;gap:18px;width:100%;max-width:none;box-sizing:border-box;margin:0;padding:24px 28px;border:1px solid rgba(139,92,246,.28);border-radius:16px;background:linear-gradient(145deg,rgba(31,26,63,.94),rgba(10,13,34,.96));color:rgba(245,243,255,.82);font-size:12px;line-height:1.45;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 28px rgba(6,7,20,.2)}
+.adfilm-engine-status.is-visible{display:flex;grid-column:1/-1;grid-row:2;align-self:stretch}
+.adfilm-engine-status>span{flex:0 0 auto;width:18px;height:18px;border:4px solid rgba(216,180,254,.25);border-top-color:#d8b4fe;border-radius:999px}
+.adfilm-engine-status>div{display:flex;min-width:0;flex:1 1 auto;max-width:920px;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .adfilm-engine-status.is-busy>span{animation:adfilmEngineSpin .8s linear infinite}
 .adfilm-engine-status.is-success{border-color:rgba(52,211,153,.3);background:linear-gradient(145deg,rgba(8,54,46,.78),rgba(8,17,31,.96));color:#d1fae5}
 .adfilm-engine-status.is-success>span{border:0;background:#34d399;box-shadow:0 0 14px rgba(52,211,153,.45)}
 .adfilm-engine-status.is-error{border-color:rgba(251,113,133,.34);background:linear-gradient(145deg,rgba(64,20,38,.78),rgba(15,12,27,.96));color:#ffe4e6}
 .adfilm-engine-status.is-error>span{border:0;background:#fb7185;box-shadow:0 0 14px rgba(251,113,133,.35)}
-.adfilm-engine-status b{display:block;color:#fff;font-size:14px;font-weight:950;letter-spacing:-.01em}
-.adfilm-engine-status small{display:block;margin-top:3px;color:rgba(245,243,255,.72);font-size:11px;font-weight:750}
+.adfilm-engine-status b{display:block;width:100%;color:#fff;font-size:18px;font-weight:950;letter-spacing:-.01em;text-align:center}
+.adfilm-engine-status small{display:block;width:100%;margin-top:5px;color:rgba(245,243,255,.72);font-size:14px;font-weight:750;text-align:center;white-space:normal}
 .adfilm-actionbar.is-engine-active .adfilm-actionbar__summary>div>b{color:#fff}
 .adfilm-actionbar.is-engine-active .adfilm-create{grid-row:3}
 .adfilm-create.is-generating{pointer-events:none;opacity:.82}
@@ -19,4 +20,4 @@
 .adfilm-result-actions a{display:inline-flex;align-items:center;justify-content:center;min-height:32px;padding:0 12px;border:1px solid rgba(216,180,254,.28);border-radius:10px;background:rgba(124,58,237,.12);color:#f5f3ff;font-size:8.5px;font-weight:900;text-decoration:none}
 @keyframes adfilmEngineSpin{to{transform:rotate(360deg)}}
 @keyframes adfilmEnginePulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.08);opacity:1}}
-@media(max-width:700px){.adfilm-engine-status{padding:13px 14px}.adfilm-engine-status b{font-size:12px}.adfilm-engine-status small{font-size:10px}}
+@media(max-width:700px){.adfilm-engine-status{padding:18px 16px;gap:12px}.adfilm-engine-status b{font-size:14px}.adfilm-engine-status small{font-size:11px}}
