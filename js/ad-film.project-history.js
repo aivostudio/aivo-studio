@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — hazır videoları projeler arasında görünür tutar */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROJECT_HISTORY__)return;
-  window.__AIVO_AD_FILM_PROJECT_HISTORY__=true;
+  if(window.__AIVO_AD_FILM_PROJECT_HISTORY_V2__)return;
+  window.__AIVO_AD_FILM_PROJECT_HISTORY_V2__=true;
 
   var items=[];
   var busy=false;
@@ -11,7 +11,6 @@
   function lang(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0?"en":"tr"}
   function text(tr,en){return lang()==="en"?en:tr}
   function panel(){return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]')}
-  function current(){return window.AIVOAdFilmActiveProject||null}
 
   function projectOutputs(project,summary){
     if(!project)return[];
@@ -28,7 +27,12 @@
         createdAt:project.generation.completedAt||project.updatedAt
       }];
     }
-    return list.map(function(x){return Object.assign({},x,{projectId:project.id,projectTitle:clean(project.brief&&project.brief.productName||summary&&summary.title||text("Reklam Projesi","Ad Project"))})});
+    return list.map(function(x){
+      return Object.assign({},x,{
+        projectId:project.id,
+        projectTitle:clean(project.brief&&project.brief.productName||summary&&summary.title||text("Reklam Projesi","Ad Project"))
+      });
+    });
   }
 
   function ensureHost(){
@@ -58,14 +62,23 @@
     head.innerHTML='<h3>'+text("Hazır Videolar","Ready Videos")+'</h3><span>'+items.length+' '+text("video","videos")+'</span>';
     var rail=document.createElement("div");rail.className="adfilm-output-gallery__rail";
     items.forEach(function(item){
-      var card=document.createElement("article");card.className="adfilm-output-card";card.dataset.historyProjectId=item.projectId;card.dataset.historyOutputId=item.id;
+      var card=document.createElement("article");
+      card.className="adfilm-output-card";
+      card.dataset.historyProjectId=item.projectId;
+      card.dataset.historyOutputId=item.id;
       var media=document.createElement("div");media.className="adfilm-output-card__media";
-      var video=document.createElement("video");video.src=item.videoUrl;video.preload="metadata";video.muted=true;video.playsInline=true;media.appendChild(video);
+      var video=document.createElement("video");
+      video.src=item.videoUrl;
+      video.preload="metadata";
+      video.muted=true;
+      video.playsInline=true;
+      media.appendChild(video);
       var badge=document.createElement("span");badge.textContent="V"+(item.version||1);media.appendChild(badge);
-      var play=document.createElement("button");play.type="button";play.className="adfilm-output-card__play";play.dataset.historyAction="open";play.innerHTML=icon(PLAY);media.appendChild(play);
+      var play=document.createElement("button");
+      play.type="button";play.className="adfilm-output-card__play";play.dataset.historyAction="open";play.innerHTML=icon(PLAY);media.appendChild(play);
       var tools=document.createElement("div");tools.className="adfilm-output-card__tools";
-      var dl=document.createElement("button");dl.type="button";dl.dataset.historyAction="download";dl.innerHTML=icon(DOWN);
-      var fs=document.createElement("button");fs.type="button";fs.dataset.historyAction="fullscreen";fs.innerHTML=icon(FULL);
+      var dl=document.createElement("button");dl.type="button";dl.dataset.historyAction="download";dl.title=text("İndir","Download");dl.innerHTML=icon(DOWN);
+      var fs=document.createElement("button");fs.type="button";fs.dataset.historyAction="fullscreen";fs.title=text("Tam ekran","Fullscreen");fs.innerHTML=icon(FULL);
       tools.appendChild(dl);tools.appendChild(fs);media.appendChild(tools);
       var meta=document.createElement("div");meta.className="adfilm-output-card__meta";
       meta.innerHTML='<b>'+item.projectTitle+'</b><small>'+["V"+(item.version||1),item.duration?item.duration+" sn":"",item.aspectRatio||"",item.resolution||""].filter(Boolean).join(" · ")+'</small>';
@@ -85,7 +98,8 @@
         var pd=await pr.json().catch(function(){return{}});
         return pr.ok&&pd.project?projectOutputs(pd.project,summary):[];
       }));
-      items=[];settled.forEach(function(x){if(x.status==="fulfilled")items=items.concat(x.value)});
+      items=[];
+      settled.forEach(function(x){if(x.status==="fulfilled")items=items.concat(x.value)});
       items.sort(function(a,b){return String(b.createdAt||"").localeCompare(String(a.createdAt||""))});
       render();
     }catch(e){console.warn("[ADFILM] project history",e)}finally{busy=false}
@@ -97,21 +111,32 @@
   }
 
   document.addEventListener("click",function(event){
-    var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-project-history] [data-history-action]");if(!button)return;
+    var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-project-history] [data-history-action]");
+    if(!button)return;
     var card=button.closest("[data-history-project-id]"),item=findItem(card);if(!item)return;
-    event.preventDefault();event.stopImmediatePropagation();
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     var action=button.dataset.historyAction;
     if(action==="open"){
-      window.AIVOAdFilmGeneratedVideo=item.videoUrl;window.AIVOAdFilmGeneratedLogo=item.logoUrl||"";
-      if(window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{play:true});
+      window.AIVOAdFilmGeneratedVideo=item.videoUrl;
+      window.AIVOAdFilmGeneratedLogo=item.logoUrl||"";
+      window.AIVOAdFilmActiveOutputProjectId=item.projectId;
+      window.AIVOAdFilmActiveOutputId=item.id;
+      if(window.AIVOAdFilmResultControls){
+        window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{play:true});
+      }
     }else if(action==="download"){
-      var a=document.createElement("a");a.href=item.videoUrl;a.download="aivo-reklam-v"+(item.version||1)+".mp4";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();
+      if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.download==="function"){
+        window.AIVOAdFilmResultControls.download(item.projectId,item.id,item.projectTitle+"-v"+(item.version||1));
+      }
     }else if(action==="fullscreen"){
-      var v=card.querySelector("video");if(v&&v.requestFullscreen)v.requestFullscreen();else if(v&&v.webkitEnterFullscreen)v.webkitEnterFullscreen();
+      var v=card.querySelector("video");
+      if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.fullscreen==="function"){
+        window.AIVOAdFilmResultControls.fullscreen(v);
+      }
     }
   },true);
 
   document.addEventListener("aivo:module-mounted",function(e){if(e&&e.detail&&e.detail.key==="adfilm")setTimeout(load,500)});
-  document.addEventListener("aivo:adfilm-project-sync",function(){setTimeout(load,200)});
-  window.addEventListener("pageshow",function(){setTimeout(load,300)});
+  document.addEventListener("aivo:adfilm-project-sync",function(){setTimeout(load,220)});
+  window.addEventListener("pageshow",function(){setTimeout(load,320)});
 })();
