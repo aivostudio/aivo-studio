@@ -69,11 +69,13 @@
   ];
 
   const shellScripts = [
+    "/js/ad-film.route-fix.js?v=1",
     "/js/ad-film.skeleton.js?v=8",
     "/js/ad-film.reopen-fix.js?v=1"
   ];
 
   const moduleScripts = [
+    "/js/ad-film.controls-fix.js?v=1",
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
     "/js/ad-film.basic-media-cache.js?v=2",
