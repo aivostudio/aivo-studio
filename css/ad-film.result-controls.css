@@ -1,6 +1,6 @@
-/* AIVO AI Reklam Filmi — generated result player */
+/* AIVO AI Reklam Filmi — native generated result player */
 .adfilm-preview-frame.has-result-video{
-  overflow:visible;
+  overflow:hidden;
   background:#050712;
 }
 .adfilm-preview-frame.has-result-video .adfilm-preview-shade,
@@ -31,13 +31,13 @@
 .adfilm-result-logo{
   position:absolute;
   z-index:18;
-  right:16px;
-  bottom:18px;
-  width:52px;
-  height:52px;
+  right:14px;
+  top:14px;
+  width:46px;
+  height:46px;
   padding:6px;
   border:1px solid rgba(255,255,255,.2);
-  border-radius:14px;
+  border-radius:13px;
   background-color:rgba(4,7,18,.72);
   background-position:center;
   background-repeat:no-repeat;
@@ -46,61 +46,56 @@
   backdrop-filter:blur(10px);
   pointer-events:none;
 }
-.adfilm-result-toolbar{
-  position:absolute;
-  z-index:20;
-  left:50%;
-  top:14px;
-  transform:translateX(-50%);
+.adfilm-result-toolbar,
+[data-adfilm-result-toolbar]{
+  display:none!important;
+}
+.adfilm-result-actions-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+  margin-top:12px;
+}
+.adfilm-result-action{
+  min-height:42px;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:7px;
-  width:max-content;
-  max-width:calc(100% - 20px);
-  padding:7px;
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:16px;
-  background:rgba(5,8,20,.76);
-  box-shadow:0 14px 35px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);
-  backdrop-filter:blur(16px);
-}
-.adfilm-result-control{
-  width:40px;
-  height:40px;
-  display:grid;
-  place-items:center;
-  flex:0 0 40px;
-  padding:0;
-  border:1px solid rgba(216,180,254,.2);
-  border-radius:12px;
-  color:#d8b4fe;
-  background:linear-gradient(145deg,rgba(124,58,237,.19),rgba(15,18,42,.92));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  gap:9px;
+  padding:0 14px;
+  border:1px solid rgba(216,180,254,.22);
+  border-radius:13px;
+  color:#f3e8ff;
+  background:linear-gradient(145deg,rgba(124,58,237,.18),rgba(15,18,42,.92));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
   cursor:pointer;
-  transition:transform .16s ease,background .16s ease,border-color .16s ease,color .16s ease;
+  font:inherit;
+  font-size:12px;
+  font-weight:800;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease;
 }
-.adfilm-result-control:hover{
+.adfilm-result-action:hover{
   transform:translateY(-1px);
-  color:#fff;
-  border-color:rgba(216,180,254,.46);
-  background:linear-gradient(112deg,rgba(124,77,255,.88),rgba(239,95,180,.76));
+  border-color:rgba(216,180,254,.48);
+  background:linear-gradient(112deg,rgba(124,77,255,.72),rgba(239,95,180,.55));
 }
-.adfilm-result-control.is-danger{
-  color:#fb7185;
+.adfilm-result-action.is-danger{
+  color:#fecdd3;
   border-color:rgba(251,113,133,.28);
   background:rgba(78,19,38,.54);
 }
-.adfilm-result-control.is-danger:hover{
+.adfilm-result-action.is-danger:hover{
   color:#fff;
-  background:linear-gradient(135deg,#be123c,#fb7185);
+  background:linear-gradient(135deg,#9f1239,#e11d48);
 }
-.adfilm-result-control svg{width:22px;height:22px;pointer-events:none}
-.adfilm-result-control span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.adfilm-result-action svg{
+  width:19px;
+  height:19px;
+  flex:0 0 19px;
+}
 .adfilm-live-card .adfilm-result-actions{display:none!important}
 @media(max-width:1300px){
-  .adfilm-result-toolbar{top:9px;gap:5px;padding:5px;border-radius:13px}
-  .adfilm-result-control{width:34px;height:34px;flex-basis:34px;border-radius:10px}
-  .adfilm-result-control svg{width:19px;height:19px}
-  .adfilm-result-logo{right:10px;bottom:12px;width:42px;height:42px;border-radius:11px}
+  .adfilm-result-logo{right:10px;top:10px;width:40px;height:40px;border-radius:11px}
+  .adfilm-result-actions-row{gap:8px;margin-top:10px}
+  .adfilm-result-action{min-height:38px;padding:0 10px;font-size:11px}
 }
