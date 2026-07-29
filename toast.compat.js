@@ -66,7 +66,7 @@
     "/css/ad-film.result-controls.css?v=7",
     "/css/ad-film.output-workflow.css?v=1",
     "/css/ad-film.output-gallery.css?v=3",
-    "/css/ad-film.premium-production.css?v=2"
+    "/css/ad-film.premium-production.css?v=3"
   ];
 
   const shellScripts = [
