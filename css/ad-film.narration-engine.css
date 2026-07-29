@@ -1,0 +1,20 @@
+.adfilm-narration-voice-control{min-width:0}
+.adfilm-narration-engine{margin-top:18px;padding:16px;border:1px solid rgba(132,112,255,.24);border-radius:18px;background:linear-gradient(145deg,rgba(16,18,42,.92),rgba(13,16,34,.84));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.adfilm-narration-engine__head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.adfilm-narration-engine__head>div{display:flex;gap:10px;min-width:0}
+.adfilm-narration-engine__spark{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:10px;color:#75f4e8;background:rgba(22,217,248,.1);border:1px solid rgba(22,217,248,.22)}
+.adfilm-narration-engine__head b{display:block;color:#fff;font-size:14px;line-height:1.3}
+.adfilm-narration-engine__head p{margin:4px 0 0;color:rgba(230,233,255,.68);font-size:12px;line-height:1.45}
+.adfilm-narration-engine__head em{flex:0 0 auto;max-width:42%;padding:6px 9px;border-radius:999px;color:#cfd4ff;background:rgba(255,255,255,.055);font-size:11px;font-style:normal;text-align:center}
+.adfilm-narration-engine[data-state="queued"] .adfilm-narration-engine__head em,.adfilm-narration-engine[data-state="running"] .adfilm-narration-engine__head em,.adfilm-narration-engine[data-state="creating"] .adfilm-narration-engine__head em{color:#7ef4e7;background:rgba(27,224,199,.1)}
+.adfilm-narration-engine[data-state="ready"] .adfilm-narration-engine__head em,.adfilm-narration-engine[data-state="approved"] .adfilm-narration-engine__head em{color:#9dffc4;background:rgba(52,211,153,.11)}
+.adfilm-narration-engine[data-state="failed"] .adfilm-narration-engine__head em{color:#ffb4c0;background:rgba(244,63,94,.11)}
+.adfilm-narration-engine__player{margin-top:14px;padding:8px;border-radius:14px;background:rgba(4,7,20,.55);border:1px solid rgba(255,255,255,.07)}
+.adfilm-narration-engine__player audio{display:block;width:100%;height:38px}
+.adfilm-narration-engine__actions{display:flex;gap:10px;margin-top:14px}
+.adfilm-narration-engine__actions button{min-height:40px;padding:0 15px;border:1px solid rgba(139,124,255,.34);border-radius:12px;color:#fff;background:linear-gradient(135deg,rgba(100,77,255,.82),rgba(173,68,255,.72));font-weight:700;cursor:pointer}
+.adfilm-narration-engine__actions button+button{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.12);color:#dfe4ff}
+.adfilm-narration-engine__actions button.is-approved{color:#8fffb9;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.09)}
+.adfilm-narration-engine__actions button:disabled{cursor:not-allowed;opacity:.48;filter:saturate(.55)}
+.adfilm-card--voice.is-voice-off .adfilm-narration-engine{opacity:.46;pointer-events:none}
+@media(max-width:720px){.adfilm-narration-engine__head{flex-direction:column}.adfilm-narration-engine__head em{max-width:none}.adfilm-narration-engine__actions{flex-direction:column}.adfilm-narration-engine__actions button{width:100%}}
