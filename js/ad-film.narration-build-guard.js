@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — hard narration approval gate */
 (function AIVO_AD_FILM_NARRATION_BUILD_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V1__)return;
-  window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V1__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V2__)return;
+  window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V2__=true;
 
   function clean(value){return String(value||"").trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
@@ -24,7 +24,8 @@
     if(!audio||!clean(audio.url))return{ready:false,reason:text("Önce reklam sesini oluştur, dinle ve onayla.","Generate, preview and approve the narration first.")};
     if(audio.mastered!==true)return{ready:false,reason:text("Ses profesyonel olarak işleniyor. Tamamlanmasını bekle.","The narration is being professionally mastered. Wait for it to finish.")};
     if(audio.approved!==true)return{ready:false,reason:text("Reklam filmini oluşturmadan önce sesi dinleyip onayla.","Preview and approve the narration before creating the advertising film.")};
-    if(clean(input.text)&&clean(input.text)!==currentText)return{ready:false,reason:text("Seslendirme metni değişti. Sesi yeniden üretip onayla.","The narration script changed. Generate and approve the voice again.")};
+    var approvedText=clean(audio.approvedText||input.text||"");
+    if(approvedText&&approvedText!==currentText)return{ready:false,reason:text("Seslendirme metni değişti. Sesi yeniden üretip onayla.","The narration script changed. Generate and approve the voice again.")};
     return{ready:true,reason:""};
   }
 
@@ -33,9 +34,17 @@
     var button=scope.querySelector('[data-adfilm-build]');if(!button)return;
     var check=state(scope);
     button.dataset.audioApprovalGuard=check.ready?"ready":"blocked";
-    if(!check.ready){button.disabled=true;button.classList.remove("is-ready")}
+    if(check.ready){
+      if(!button.classList.contains("is-generating")&&button.dataset.narrationGuard!=="blocked")button.disabled=false;
+    }else{
+      button.disabled=true;
+      button.classList.remove("is-ready");
+    }
     var hint=scope.querySelector('[data-adfilm-build-reason]');
-    if(hint&&!check.ready){hint.classList.remove("is-ready");var label=hint.querySelector("b");if(label)label.textContent=check.reason}
+    if(hint){
+      var label=hint.querySelector("b");
+      if(!check.ready){hint.classList.remove("is-ready");if(label)label.textContent=check.reason}
+    }
   }
 
   document.addEventListener("click",function(event){
@@ -48,7 +57,7 @@
     notify(check.reason);sync(scope);
   },true);
 
-  function schedule(scope){[0,80,260,700].forEach(function(delay){setTimeout(function(){sync(scope||root())},delay)})}
+  function schedule(scope){[0,50,140,360,800].forEach(function(delay){setTimeout(function(){sync(scope||root())},delay)})}
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root)});
   document.addEventListener("aivo:adfilm-project-sync",function(){schedule(root())});
   document.addEventListener("input",function(event){if(event.target&&event.target.closest&&event.target.closest('[data-module="adfilm"] [data-adfilm-input="narrationText"]'))schedule(root())},true);
