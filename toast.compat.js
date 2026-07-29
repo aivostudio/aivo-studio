@@ -63,7 +63,8 @@
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
     "/css/ad-film.seedance-engine.css?v=2",
-    "/css/ad-film.result-controls.css?v=2"
+    "/css/ad-film.result-controls.css?v=2",
+    "/css/ad-film.output-gallery.css?v=1"
   ];
 
   const shellScripts = [
@@ -86,8 +87,10 @@
     "/js/ad-film.reference-indexes.js?v=1",
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.narration-guide.js?v=1",
-    "/js/ad-film.seedance-engine.js?v=3",
-    "/js/ad-film.result-controls.js?v=2"
+    "/js/ad-film.seedance-engine.js?v=4",
+    "/js/ad-film.result-controls.js?v=2",
+    "/js/ad-film.output-gallery.js?v=1",
+    "/js/ad-film.output-sync.js?v=1"
   ];
 
   let moduleLoadPromise = null;
@@ -142,39 +145,21 @@
     });
   }
 
-  function loadModuleEnhancements(root) {
+  function ensureAdFilmAssets() {
     ensureStyles();
-
     if (!moduleLoadPromise) {
-      moduleLoadPromise = loadSequential(moduleScripts);
+      moduleLoadPromise = loadSequential(shellScripts).then(() => loadSequential(moduleScripts));
     }
-
-    moduleLoadPromise.then(() => {
-      if (!root || !root.isConnected) return;
-      try {
-        document.dispatchEvent(
-          new CustomEvent("aivo:module-mounted", {
-            detail: {
-              key: "adfilm",
-              host: document.getElementById("moduleHost"),
-              root,
-              enhancementsReady: true
-            }
-          })
-        );
-      } catch (_) {}
-    });
+    return moduleLoadPromise;
   }
 
-  document.addEventListener(
-    "aivo:module-mounted",
-    (event) => {
-      const detail = event && event.detail;
-      if (!detail || detail.key !== "adfilm" || detail.enhancementsReady) return;
-      loadModuleEnhancements(detail.root);
-    },
-    true
-  );
+  window.AIVOEnsureAdFilmAssets = ensureAdFilmAssets;
 
-  loadSequential(shellScripts);
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-adfilm-open]")) ensureAdFilmAssets();
+  }, true);
+
+  document.addEventListener("aivo:module-mounted", (event) => {
+    if (event?.detail?.key === "adfilm") ensureAdFilmAssets();
+  });
 })();
