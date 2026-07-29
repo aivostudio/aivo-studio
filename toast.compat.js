@@ -38,11 +38,11 @@
 })();
 
 /* AI Reklam Filmi varlık yükleyicisi.
-   Menü kabuğu Studio açılır açılmaz yüklenir; ağır modül dosyaları
-   Reklam Filmi bölümü açıldığında arka planda yüklenir. */
+   Temel kontroller modül ekrana basılmadan önce hazırlanır;
+   ağır yardımcı motorlar modül açıldıktan sonra arka planda yüklenir. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V2__) return;
-  window.__AIVO_AD_FILM_ASSETS_V2__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V3__) return;
+  window.__AIVO_AD_FILM_ASSETS_V3__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -76,6 +76,7 @@
   ];
 
   const moduleScripts = [
+    "/js/ad-film.project-event-stability.js?v=1",
     "/js/ad-film.controls-fix.js?v=3",
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
@@ -134,7 +135,13 @@
       }
 
       return new Promise((resolve) => {
-        const finish = () => resolve(loadSequential(list, index + 1));
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          existing.dataset.aivoLoaded = "1";
+          resolve(loadSequential(list, index + 1));
+        };
         existing.addEventListener("load", finish, { once: true });
         existing.addEventListener("error", finish, { once: true });
         if (existing.readyState === "complete" || existing.readyState === "loaded") finish();
@@ -168,11 +175,12 @@
     return moduleLoadPromise;
   }
 
-  /* Router bu fonksiyonu await ediyor. Ekranı ağır yardımcı dosyalara
-     kilitlememek için yüklemeyi başlatıp hemen çözüyoruz. */
+  /* Router bu fonksiyonu await eder. Yalnız temel buton ve rota dosyaları
+     beklenir; böylece ekrana gelen form ilk anda tamamen çalışır. */
   function ensureAdFilmAssets() {
-    startAdFilmAssets();
-    return Promise.resolve();
+    return ensureAdFilmShell().then(() => {
+      startAdFilmAssets();
+    });
   }
 
   window.AIVOEnsureAdFilmShell = ensureAdFilmShell;
@@ -184,7 +192,7 @@
   }, true);
 
   document.addEventListener("aivo:module-mounted", (event) => {
-    if (event?.detail?.key === "adfilm") ensureAdFilmAssets();
+    if (event?.detail?.key === "adfilm") startAdFilmAssets();
   });
 
   if (document.readyState === "loading") {
