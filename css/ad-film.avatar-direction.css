@@ -1,0 +1,94 @@
+/* AIVO AI Reklam Filmi — avatar direction prompts */
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction {
+  grid-column: 1 / -1;
+  padding: 18px;
+  border: 1px solid rgba(143,96,236,.34);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 85% 0,rgba(59,211,255,.08),transparent 34%),
+    linear-gradient(145deg,rgba(22,18,52,.88),rgba(8,12,29,.82));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__head {
+  margin-bottom: 14px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__head > div {
+  display: grid;
+  gap: 4px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__head span {
+  color: #c6a3ff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__head h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: -.02em;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__head p {
+  margin: 0;
+  color: rgba(223,224,242,.66);
+  font-size: 12px;
+  line-height: 1.5;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__grid {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 14px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-prompt {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-prompt__label {
+  color: rgba(247,247,255,.88);
+  font-size: 13px;
+  font-weight: 850;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  padding: 15px 16px 29px;
+  border: 1px solid rgba(157,117,235,.28);
+  border-radius: 16px;
+  outline: none;
+  color: #fff;
+  background: rgba(5,9,23,.78);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  transition: border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea::placeholder {
+  color: rgba(210,211,230,.4);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea:focus {
+  border-color: rgba(224,79,181,.72);
+  background: rgba(7,10,28,.9);
+  box-shadow: 0 0 0 3px rgba(124,67,239,.12),0 12px 30px rgba(73,39,148,.13);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-prompt > small {
+  position: absolute;
+  right: 13px;
+  bottom: 10px;
+  color: rgba(214,205,239,.54);
+  font-size: 10px;
+  pointer-events: none;
+}
+@media (max-width:800px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-direction {
+    padding: 14px;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-direction__grid {
+    grid-template-columns:1fr;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea {
+    min-height:116px;
+  }
+}
