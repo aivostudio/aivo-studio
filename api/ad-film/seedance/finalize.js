@@ -86,6 +86,7 @@ export default async function handler(req,res){
     }else if(musicUrl){
       filters.push(`[${musicIndex}:a]aresample=48000:filter_size=64:phase_shift=10:cutoff=0.98,volume=0.92,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=60,alimiter=limit=0.985:attack=5:release=80:level=0[aout]`);
     }
+    if(!avatarUrl&&!logoUrl&&filters.length){filters.push("[0:v]null[vsource]");videoLabel="vsource"}
 
     if(filters.length)args.push("-filter_complex",filters.join(";"));args.push("-map",filters.length?`[${videoLabel}]`:"0:v:0");if(narrationUrl||musicUrl)args.push("-map","[aout]");else args.push("-map","0:a:0?");args.push("-t",String(duration),"-c:v","libx264","-preset","ultrafast","-crf","18","-pix_fmt","yuv420p","-c:a","aac","-aac_coder","twoloop","-b:a","320k","-cutoff","20000","-ar","48000","-ac","2","-shortest","-movflags","+faststart",outputVideo);await runFfmpeg(args);
     const key=`${mediaPrefix(user,projectId)}outputs/seedance/${safePart(outputId,"video")}-v${version}-final-${Date.now()}.mp4`;const finalUrl=await putObject({key,body:fs.readFileSync(outputVideo),contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});const now=new Date().toISOString();
