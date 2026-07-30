@@ -1,25 +1,54 @@
 /* AIVO AI Ad Film — supported narration languages */
 (function AIVO_AD_FILM_LANGUAGE_OPTIONS(){
   "use strict";
-  if(window.__AIVO_AD_FILM_LANGUAGE_OPTIONS_V2__)return;
-  window.__AIVO_AD_FILM_LANGUAGE_OPTIONS_V2__=true;
+  if(window.__AIVO_AD_FILM_LANGUAGE_OPTIONS_V3__)return;
+  window.__AIVO_AD_FILM_LANGUAGE_OPTIONS_V3__=true;
 
   var LANGUAGES=[
-    ["tr","Türkçe"],["en","English"],["de","Deutsch"],["fr","Français"],
-    ["es","Español"],["it","Italiano"],["pt","Português"],["ar","العربية"],
-    ["ru","Русский"],["nl","Nederlands"],["pl","Polski"],["uk","Українська"],
-    ["hi","हिन्दी"],["id","Bahasa Indonesia"],["ms","Bahasa Melayu"],
-    ["ja","日本語"],["ko","한국어"],["zh","中文"],["vi","Tiếng Việt"],["th","ไทย"]
+    ["tr","Türkçe"],
+    ["en","English"],
+    ["de","Deutsch"],
+    ["fr","Français"],
+    ["es","Español"],
+    ["it","Italiano"],
+    ["pt","Português"],
+    ["ar","العربية"],
+    ["ru","Русский"],
+    ["nl","Nederlands"],
+    ["pl","Polski"],
+    ["uk","Українська"],
+    ["hi","हिन्दी"],
+    ["id","Bahasa Indonesia"],
+    ["ms","Bahasa Melayu"],
+    ["ja","日本語"],
+    ["ko","한국어"],
+    ["zh","中文"],
+    ["vi","Tiếng Việt"],
+    ["th","ไทย"]
   ];
 
+  var applying=false;
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
+  function optionHtml(){return LANGUAGES.map(function(item){return '<option value="'+item[0]+'">'+item[1]+'</option>'}).join("")}
+  function hasCompleteList(select){
+    if(!select)return false;
+    return LANGUAGES.every(function(item){return !!select.querySelector('option[value="'+item[0]+'"]')});
+  }
   function apply(scope,preferred){
+    if(applying)return;
     scope=scope&&scope.querySelectorAll?scope:root();if(!scope)return;
-    scope.querySelectorAll('select[data-adfilm-input="language"]').forEach(function(select){
-      var current=String(preferred||select.value||"tr").toLowerCase();
-      select.innerHTML=LANGUAGES.map(function(item){return '<option value="'+item[0]+'">'+item[1]+'</option>'}).join("");
-      select.value=LANGUAGES.some(function(item){return item[0]===current})?current:"tr";
-    });
+    applying=true;
+    try{
+      scope.querySelectorAll('select[data-adfilm-input="language"]').forEach(function(select){
+        var current=String(preferred||select.value||"tr").toLowerCase();
+        if(!hasCompleteList(select))select.innerHTML=optionHtml();
+        if(!LANGUAGES.some(function(item){return item[0]===current}))current="tr";
+        if(select.value!==current)select.value=current;
+      });
+    }finally{applying=false}
+  }
+  function schedule(scope,preferred){
+    [0,40,160,500].forEach(function(delay){setTimeout(function(){apply(scope||root(),preferred)},delay)});
   }
 
   function loadOutputControls(){
@@ -30,8 +59,24 @@
     var script=document.createElement("script");script.src="/js/ad-film.output-controls.js?v=2";script.async=false;script.setAttribute("data-adfilm-output-controls","");document.head.appendChild(script);
   }
 
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm"){setTimeout(function(){apply(event.detail.root)},20);loadOutputControls()}});
-  document.addEventListener("aivo:adfilm-project-sync",function(event){var project=event&&event.detail&&event.detail.project;setTimeout(function(){apply(root(),project&&project.narration&&project.narration.language)},20)});
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm"){schedule(event.detail.root);loadOutputControls()}});
+  document.addEventListener("aivo:adfilm-project-sync",function(event){var project=event&&event.detail&&event.detail.project;schedule(root(),project&&project.narration&&project.narration.language)});
+  document.addEventListener("aivo:language-change",function(){schedule(root())});
+  document.addEventListener("aivo:adfilm-language-change",function(){schedule(root())});
+
+  var observer=new MutationObserver(function(mutations){
+    var scope=root();if(!scope||applying)return;
+    var needsApply=mutations.some(function(mutation){
+      if(mutation.type==="childList"){
+        if(mutation.target&&mutation.target.matches&&mutation.target.matches('select[data-adfilm-input="language"]'))return true;
+        return Array.from(mutation.addedNodes||[]).some(function(node){return node.nodeType===1&&(node.matches&&node.matches('select[data-adfilm-input="language"]')||node.querySelector&&node.querySelector('select[data-adfilm-input="language"]'))});
+      }
+      return false;
+    });
+    if(needsApply)schedule(scope);
+  });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+
   loadOutputControls();
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){apply(root())},{once:true});else apply(root());
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())},{once:true});else schedule(root());
 })();
