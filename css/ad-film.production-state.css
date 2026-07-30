@@ -1,0 +1,20 @@
+/* AIVO AI Reklam Filmi — unambiguous active production CTA label */
+.adfilm-actionbar.is-engine-active .adfilm-create.is-generating span[data-adfilm-i18n="createButton"]{
+  font-size:0!important;
+  line-height:1!important;
+}
+.adfilm-actionbar.is-engine-active .adfilm-create.is-generating span[data-adfilm-i18n="createButton"]::after{
+  content:"Reklam Filmi Oluşturuluyor…";
+  display:inline-block;
+  font-size:15px;
+  line-height:1.2;
+  font-weight:950;
+  letter-spacing:-.01em;
+  white-space:nowrap;
+}
+html[lang^="en"] .adfilm-actionbar.is-engine-active .adfilm-create.is-generating span[data-adfilm-i18n="createButton"]::after{
+  content:"Creating Advertising Film…";
+}
+@media(max-width:1500px){
+  .adfilm-actionbar.is-engine-active .adfilm-create.is-generating span[data-adfilm-i18n="createButton"]::after{font-size:13px}
+}
