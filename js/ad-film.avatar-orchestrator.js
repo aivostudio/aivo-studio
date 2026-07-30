@@ -1,11 +1,12 @@
 /* AIVO AI Reklam Filmi — one-click avatar motion orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V1__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V1__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V2__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V2__=true;
 
   var running=false,pollTimer=null;
   var POLL_MS=3500,MAX_POLLS=700;
+  var nativeFetch=window.fetch.bind(window);
 
   function clean(value){return String(value==null?"":value).trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
@@ -16,6 +17,7 @@
   function choice(scope,key,fallback){var button=scope&&scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');return button?button.dataset.value:fallback}
   function avatarEnabled(scope){var toggle=scope&&scope.querySelector('[data-avatar-enabled]');return toggle?!!toggle.checked:project()&&project().avatar&&project().avatar.enabled===true}
   function avatarImage(){return project()&&project().avatar&&project().avatar.image&&project().avatar.image.url}
+  function avatarPipeline(){return project()&&project().avatar&&project().avatar.pipeline}
   function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:4200});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
   async function jsonRequest(url,options){var response=await fetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"}},options||{}));var data=await response.json().catch(function(){return{}});if(!response.ok){var error=new Error(data.message||data.error||"request_failed");error.status=response.status;error.data=data;throw error}return data}
   function setStage(scope,title,detail){
@@ -30,6 +32,26 @@
     if(stage==='lipsync')return{text:text('Avatar konuşmaya uyarlanıyor','Synchronizing avatar speech'),detail:text('Dudak, yüz ve konuşma zamanlaması hazırlanıyor.','Preparing lip, face and speech timing.')};
     return{text:text('Sinematik avatar performansı hazırlanıyor','Preparing cinematic avatar performance'),detail:text('Beden hareketi, yürüyüş ve kamera koreografisi oluşturuluyor.','Generating body motion, walking and camera choreography.')};
   }
+
+  window.fetch=async function(input,init){
+    var response=await nativeFetch(input,init);
+    try{
+      var url=typeof input==='string'?input:input&&input.url||'';
+      if(url.indexOf('/api/ad-film/seedance/status')<0||!response.ok)return response;
+      var current=project(),avatar=current&&current.avatar,pipeline=avatar&&avatar.pipeline;
+      if(!avatar||avatar.enabled!==true||!pipeline)return response;
+      var data=await response.clone().json().catch(function(){return null});if(!data)return response;
+      if(pipeline.status==='failed'){
+        data.status='FAILED';
+        data.video_url=null;
+        data.generation=Object.assign({},data.generation||{},{error:pipeline.error||'avatar_pipeline_failed'});
+      }else if(pipeline.status!=='completed'||!pipeline.videoUrl){
+        data.status='RUNNING';
+      }
+      return new Response(JSON.stringify(data),{status:response.status,statusText:response.statusText,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
+    }catch(_){return response}
+  };
+
   async function poll(scope,id,count){
     clearTimeout(pollTimer);
     if(count>=MAX_POLLS){running=false;return}
