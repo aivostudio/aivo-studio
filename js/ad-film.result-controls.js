@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — single stable live-player controller */
 (function AIVO_AD_FILM_RESULT_CONTROLS(){
   "use strict";
-  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V10__)return;
-  window.__AIVO_AD_FILM_RESULT_CONTROLS_V10__=true;
+  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V11__)return;
+  window.__AIVO_AD_FILM_RESULT_CONTROLS_V11__=true;
 
   var COPY={
     tr:{play:"Oynat",pause:"Duraklat",download:"İndir",downloadStarted:"İndirme başlatıldı.",fullscreen:"Tam ekran",mute:"Sesi kapat",unmute:"Sesi aç",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",downloadFailed:"Video indirilemedi."},
@@ -13,6 +13,8 @@
   var downloadBusy=false;
   var previewContext=null;
   var renderedSignature="";
+  var playbackAuthorizedUntil=0;
+  var lastKnownTime=0;
 
   function lang(){
     var html=String(document.documentElement.lang||"").toLowerCase(),stored="";
@@ -121,6 +123,8 @@
   }
   function frame(){return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"] [data-panel-frame]')}
   function currentVideo(){var target=frame();return target&&target.querySelector("video[data-adfilm-result-video]")}
+  function authorizePlayback(){playbackAuthorizedUntil=Date.now()+5000}
+  function playbackIsAuthorized(){return Date.now()<=playbackAuthorizedUntil}
 
   function icon(name){
     var paths={
@@ -162,6 +166,7 @@
     var media=target.querySelector("[data-panel-media]");if(media)media.classList.remove("has-result-video");
     target.classList.remove("has-result-video");
     renderedSignature="";
+    lastKnownTime=0;
   }
   function clearPlayer(forget){
     clearDom();
@@ -205,7 +210,7 @@
     var pid=clean(context.projectId||projectId()),oid=clean(context.outputId||outputId());
     try{
       if(!pid)throw new Error("missing_project_id");
-      var url="/api/ad-film/seedance/result?projectId="+encodeURIComponent(pid);if(oid)url+="&outputId="+encodeURIComponent(oid);
+      var url="/api/ad-film/seedance/result?projectId="+encodeURIComponent(pid);if(oid)url+="&outputId="+encodeURIComponent(oid));
       var response=await fetch(url,{method:"DELETE",credentials:"include",cache:"no-store"});
       var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"remove_failed");
       var activeProject=project();
@@ -247,13 +252,18 @@
     }catch(_){}
   }
   function videoForControl(node){var target=node&&node.closest("[data-panel-frame]");return target&&target.querySelector("video[data-adfilm-result-video]")}
+  function requestPlay(video){
+    if(!video)return;
+    authorizePlayback();
+    video.play().catch(function(){});
+  }
   function handleToolbarAction(event){
     var node=event.target&&event.target.closest&&event.target.closest("[data-result-action]");
     if(!node)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     var video=videoForControl(node);if(!video)return;
     var action=node.dataset.resultAction;
-    if(action==="play"){if(video.paused)video.play().catch(function(){});else video.pause()}
+    if(action==="play"){if(video.paused)requestPlay(video);else video.pause()}
     else if(action==="download")downloadVideo();
     else if(action==="mute")video.muted=!video.muted;
     else if(action==="fullscreen")enterFullscreen(video);
@@ -267,6 +277,7 @@
     video.setAttribute("playsinline","");
     video.setAttribute("webkit-playsinline","");
     video.preload="metadata";
+    video.autoplay=false;
     video.removeAttribute("autoplay");
     var target=video.closest("[data-panel-frame]")||video.parentElement;if(!target)return;
     target.classList.add("has-result-video");
@@ -287,13 +298,28 @@
     }
     if(video.dataset.resultEventsReady!=="1"){
       video.dataset.resultEventsReady="1";
-      video.addEventListener("play",function(){syncPlay(video,toolbar)});
-      video.addEventListener("pause",function(){syncPlay(video,toolbar)});
-      video.addEventListener("ended",function(){syncPlay(video,toolbar)});
+      video.addEventListener("play",function(){
+        if(!playbackIsAuthorized()){
+          var restoreTime=lastKnownTime;
+          try{video.pause()}catch(_){}
+          if(Number.isFinite(restoreTime)&&Math.abs((video.currentTime||0)-restoreTime)>0.08){
+            try{video.currentTime=restoreTime}catch(_){}
+          }
+        }
+        syncPlay(video,toolbar);
+      });
+      video.addEventListener("pause",function(){
+        if(Number.isFinite(video.currentTime))lastKnownTime=video.currentTime;
+        syncPlay(video,toolbar);
+      });
+      video.addEventListener("timeupdate",function(){
+        if(!video.paused&&playbackIsAuthorized()&&Number.isFinite(video.currentTime))lastKnownTime=video.currentTime;
+      });
+      video.addEventListener("ended",function(){lastKnownTime=0;syncPlay(video,toolbar)});
       video.addEventListener("volumechange",function(){syncMute(video,toolbar)});
       video.addEventListener("click",function(event){
         event.preventDefault();event.stopPropagation();
-        if(video.paused)video.play().catch(function(){});else video.pause();
+        if(video.paused)requestPlay(video);else video.pause();
       });
     }
     syncPlay(video,toolbar);syncMute(video,toolbar);
@@ -304,32 +330,40 @@
     var target=frame();if(!target)return null;
     var media=target.querySelector("[data-panel-media]");if(!media)return null;
     var signature=contextSignature(context);
-    var existing=media.querySelector("video[data-adfilm-result-video]");
+    var video=media.querySelector("video[data-adfilm-result-video]");
+    var desiredMediaKey=stableMediaKey(context.url);
+    var currentMediaKey=video?stableMediaKey(video.currentSrc||video.src):"";
 
-    /* Ordinary form saves dispatch the full project repeatedly. If the active
-       output and underlying media path are unchanged, leave the existing video
-       element completely untouched so the live preview cannot blink. */
-    if(!force&&existing&&existing.isConnected&&renderedSignature===signature){
-      if(play)existing.play().catch(function(){});
-      return existing;
+    if(!force&&video&&video.isConnected&&renderedSignature===signature){
+      if(play)requestPlay(video);
+      return video;
     }
 
-    var video=existing;
     if(!video){
       video=document.createElement("video");
       video.setAttribute("data-adfilm-result-video","");
       media.appendChild(video);
+      currentMediaKey="";
     }
-    if(renderedSignature!==signature||!stableMediaKey(video.currentSrc||video.src)||stableMediaKey(video.currentSrc||video.src)!==stableMediaKey(context.url)){
+
+    /* Metadata, quality and form saves can alter the project signature without
+       changing the actual finished video file. Never touch src/load unless the
+       underlying media path really changed. This preserves pause state and time. */
+    var mediaChanged=!currentMediaKey||currentMediaKey!==desiredMediaKey;
+    if(mediaChanged){
       try{video.pause()}catch(_){}
+      lastKnownTime=0;
+      video.autoplay=false;
+      video.removeAttribute("autoplay");
       video.src=context.url;
       try{video.load()}catch(_){}
     }
+
     media.classList.add("has-media","has-result-video");
     target.classList.add("has-result-video");
     enhance(video,context);
     renderedSignature=signature;
-    if(play)video.play().catch(function(){});
+    if(play)requestPlay(video);
     return video;
   }
 
@@ -378,6 +412,7 @@
     if(!play)return;
     var context=currentContext();if(!context)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    authorizePlayback();
     renderContext(context,true,false);
   },true);
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")restore(240)});
