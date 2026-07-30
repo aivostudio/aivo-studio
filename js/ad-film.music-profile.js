@@ -4,8 +4,8 @@
    ========================================================= */
 (function AIVO_AD_FILM_MUSIC_PROFILE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_MUSIC_PROFILE_V7__)return;
-  window.__AIVO_AD_FILM_MUSIC_PROFILE_V7__=true;
+  if(window.__AIVO_AD_FILM_MUSIC_PROFILE_V8__)return;
+  window.__AIVO_AD_FILM_MUSIC_PROFILE_V8__=true;
 
   var STYLE_KEY="aivo_adfilm_music_style_v1";
   var ENERGY_KEY="aivo_adfilm_music_energy_v1";
@@ -50,28 +50,33 @@
   function createProfile(){
     var box=document.createElement("div");box.className="adfilm-music-profile";box.setAttribute("data-adfilm-music-profile","");
     box.innerHTML=''+
-      '<label class="adfilm-music-profile__field"><b data-music-copy="style">'+t("style")+'</b><span class="adfilm-music-profile__select-wrap"><select data-music-style-select>'+styleOptions()+'</select></span></label>'+
-      '<label class="adfilm-music-profile__field"><b data-music-copy="energy">'+t("energy")+'</b><span class="adfilm-music-profile__select-wrap"><select data-music-energy-select>'+energyOptions()+'</select></span></label>'+
-      '<div class="adfilm-music-profile__status"><span data-music-resolved></span><b>'+t("engineName")+'</b></div>'+
+      '<label class="adfilm-music-profile__field"><b data-music-copy="style">'+t("style")+'</b><span class="adfilm-music-profile__select-wrap"><select data-music-style-select>'+styleOptions()+'</select></span></label>'+ 
+      '<label class="adfilm-music-profile__field"><b data-music-copy="energy">'+t("energy")+'</b><span class="adfilm-music-profile__select-wrap"><select data-music-energy-select>'+energyOptions()+'</select></span></label>'+ 
+      '<div class="adfilm-music-profile__status"><span data-music-resolved></span><b>'+t("engineName")+'</b></div>'+ 
       '<div class="adfilm-music-profile__test" data-music-test-wrap hidden><div class="adfilm-music-profile__actions"><button type="button" data-music-test class="is-secondary"><span>✓</span><b data-music-copy="test">'+t("test")+'</b></button><button type="button" data-music-generate><span>▶</span><b data-music-generate-label></b></button></div><div class="adfilm-music-profile__hints"><small data-music-copy="testHint">'+t("testHint")+'</small><small data-music-copy="realHint">'+t("realHint")+'</small></div><output data-music-test-result></output><div class="adfilm-music-profile__audio" data-music-audio-wrap hidden><div><b data-music-copy="playLabel">'+t("playLabel")+'</b><span data-music-audio-meta></span></div><audio controls preload="metadata" data-music-audio></audio></div></div>';
+    box.dataset.musicLanguage=language();
     return box;
   }
 
   function musicMode(scope){return scope&&scope.dataset.adfilmMusicMode||read("aivo_adfilm_music_mode_v1","auto")}
-  function refreshLabels(scope){
+  function refreshLabels(scope,force){
     if(!scope)return;
     var box=scope.querySelector("[data-adfilm-music-profile]");if(!box)return;
-    var styleSelect=box.querySelector("[data-music-style-select]"),energySelect=box.querySelector("[data-music-energy-select]");
-    var styleValue=styleSelect?styleSelect.value:read(STYLE_KEY,"auto"),energyValue=energySelect?energySelect.value:read(ENERGY_KEY,"balanced");
-    if(styleSelect){styleSelect.innerHTML=styleOptions();styleSelect.value=styleValue}
-    if(energySelect){energySelect.innerHTML=energyOptions();energySelect.value=energyValue}
+    var nextLanguage=language();
+    if(force||box.dataset.musicLanguage!==nextLanguage){
+      var styleSelect=box.querySelector("[data-music-style-select]"),energySelect=box.querySelector("[data-music-energy-select]");
+      var styleValue=styleSelect?styleSelect.value:read(STYLE_KEY,"auto"),energyValue=energySelect?energySelect.value:read(ENERGY_KEY,"balanced");
+      if(styleSelect){styleSelect.innerHTML=styleOptions();styleSelect.value=styleValue}
+      if(energySelect){energySelect.innerHTML=energyOptions();energySelect.value=energyValue}
+      box.dataset.musicLanguage=nextLanguage;
+    }
     box.querySelectorAll("[data-music-copy]").forEach(function(node){node.textContent=t(node.getAttribute("data-music-copy"))});
     var autoButton=scope.querySelector('[data-music-mode="auto"]');if(autoButton)autoButton.textContent=t("musicAuto");
   }
   function sync(scope){
     if(!scope)return;var box=scope.querySelector("[data-adfilm-music-profile]");if(!box)return;box.hidden=musicMode(scope)!=="auto";
     var style=read(STYLE_KEY,"auto"),energy=read(ENERGY_KEY,"balanced"),auto=automaticProfile(scope),resolvedStyle=style==="auto"?auto.style:style,resolvedEnergy=style==="auto"&&energy==="balanced"?auto.energy:energy;
-    var styleSelect=scope.querySelector("[data-music-style-select]"),energySelect=scope.querySelector("[data-music-energy-select]");if(styleSelect)styleSelect.value=style;if(energySelect)energySelect.value=energy;
+    var styleSelect=scope.querySelector("[data-music-style-select]"),energySelect=scope.querySelector("[data-music-energy-select]");if(styleSelect&&styleSelect.value!==style)styleSelect.value=style;if(energySelect&&energySelect.value!==energy)energySelect.value=energy;
     var resolved=scope.querySelector("[data-music-resolved]");if(resolved)resolved.textContent=t("suggested")+": "+t(resolvedStyle)+" · "+t(resolvedEnergy);
     var label=scope.querySelector("[data-music-generate-label]");if(label)label.textContent=duration(scope)+" "+t("seconds")+" "+t("generate");
     var wrap=scope.querySelector("[data-music-test-wrap]");if(wrap)wrap.hidden=!document.body.classList.contains("adfilm-preview-unlocked");
@@ -113,16 +118,18 @@
       var profile=createProfile();options.insertAdjacentElement("afterend",profile);
       profile.addEventListener("change",function(event){if(event.target.matches("[data-music-style-select]"))write(STYLE_KEY,event.target.value||"auto");if(event.target.matches("[data-music-energy-select]"))write(ENERGY_KEY,event.target.value||"balanced");sync(scope)});
       profile.addEventListener("click",function(event){if(event.target.closest("[data-music-test]")){event.preventDefault();runMockTest(scope);return}if(event.target.closest("[data-music-generate]")){event.preventDefault();runRealTest(scope)}});
-      scope.addEventListener("input",function(){setTimeout(function(){sync(scope)},50)},true);scope.addEventListener("change",function(){setTimeout(function(){sync(scope)},50)},true);scope.addEventListener("click",function(event){if(event.target.closest('[data-adfilm-choice] button[data-value]'))setTimeout(function(){sync(scope)},30)},true);
+      scope.addEventListener("input",function(){setTimeout(function(){sync(scope)},50)},true);
+      scope.addEventListener("change",function(event){if(event.target&&event.target.closest&&event.target.closest("[data-adfilm-music-profile]"))return;setTimeout(function(){sync(scope)},50)},true);
+      scope.addEventListener("click",function(event){if(event.target.closest('[data-adfilm-choice] button[data-value]'))setTimeout(function(){sync(scope)},30)},true);
     }
-    refreshLabels(scope);sync(scope);
+    refreshLabels(scope,false);sync(scope);
   }
 
-  function schedule(scope){[0,60,180].forEach(function(delay){setTimeout(function(){setup(scope||root())},delay)})}
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root)});
-  document.addEventListener("aivo:language-change",function(){schedule(root())});
-  document.addEventListener("aivo:adfilm-language-change",function(){schedule(root())});
-  document.addEventListener("aivo:studio:i18n-applied",function(){schedule(root())});
-  var observer=new MutationObserver(function(){var scope=root();if(scope)schedule(scope)});observer.observe(document.documentElement,{childList:true,subtree:true});
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())});else schedule(root());
+  function schedule(scope,forceLabels){[0,60,180].forEach(function(delay){setTimeout(function(){var current=scope||root();if(!current)return;setup(current);if(forceLabels){refreshLabels(current,true);sync(current)}},delay)})}
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root,false)});
+  document.addEventListener("aivo:language-change",function(){schedule(root(),true)});
+  document.addEventListener("aivo:adfilm-language-change",function(){schedule(root(),true)});
+  document.addEventListener("aivo:studio:i18n-applied",function(){var scope=root();if(scope)refreshLabels(scope,false)});
+  var observer=new MutationObserver(function(){var scope=root();if(scope&&!scope.__adfilmMusicProfileBound)schedule(scope,false)});observer.observe(document.documentElement,{childList:true,subtree:true});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root(),false)});else schedule(root(),false);
 })();
