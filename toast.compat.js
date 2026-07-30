@@ -40,8 +40,8 @@
    Temel kontroller modül ekrana basılmadan önce hazırlanır;
    ağır yardımcı motorlar modül açıldıktan sonra arka planda yüklenir. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V18__) return;
-  window.__AIVO_AD_FILM_ASSETS_V18__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V19__) return;
+  window.__AIVO_AD_FILM_ASSETS_V19__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -86,10 +86,10 @@
     "/js/ad-film.basic-polish.js?v=3",
     "/js/ad-film.basic-draft.js?v=2",
     "/js/ad-film.basic-media-cache.js?v=2",
-    "/js/ad-film.language-lock.js?v=2",
+    "/js/ad-film.language-lock.js?v=3",
     "/js/ad-film.storyboard.js?v=1",
     "/js/ad-film.simple-mode.js?v=3",
-    "/js/ad-film.music-profile.js?v=6",
+    "/js/ad-film.music-profile.js?v=7",
     "/js/ad-film.project-sync.js?v=6",
     "/js/ad-film.seedance-upload-fix.js?v=1",
     "/js/ad-film.seedance-options.js?v=2",
