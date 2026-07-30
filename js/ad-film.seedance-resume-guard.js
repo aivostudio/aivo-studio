@@ -1,90 +1,55 @@
-/* AIVO AI Ad Film — prevent the legacy Seedance resume listener from
-   replacing/restarting the mounted live preview on ordinary project saves. */
+/* AIVO AI Ad Film — block automatic finalization/resume of completed projects.
+   The Seedance engine may resume only jobs that are genuinely queued/processing.
+   A completed source video must never trigger finalization merely because the
+   module mounted, the page was restored, or a project-sync event fired. */
 (function AIVO_AD_FILM_SEEDANCE_RESUME_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V1__)return;
-  window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V1__=true;
+  if(window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V2__)return;
+  window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V2__=true;
 
-  function clean(value){return String(value||"").trim()}
-  function stableUrl(value){
-    value=clean(value);if(!value)return"";
-    try{var parsed=new URL(value,location.href);return parsed.origin+parsed.pathname}
-    catch(_){return value.split("?")[0].split("#")[0]}
+  function clean(value){return String(value==null?"":value).trim().toLowerCase()}
+  function projectFromEvent(event){
+    return event&&event.detail&&event.detail.project||window.AIVOAdFilmActiveProject||null;
   }
-  function outputOf(source){
-    source=source||{};
-    var outputs=Array.isArray(source.outputs)?source.outputs.filter(function(item){return item&&clean(item.videoUrl)}):[];
-    var id=clean(source.activeOutputId||source.generation&&source.generation.outputId||window.AIVOAdFilmActiveOutputId);
-    return outputs.find(function(item){return clean(item.id)===id})||outputs[0]||null;
+  function generationStatus(project){return clean(project&&project.generation&&project.generation.status)}
+  function finalizationStatus(project){return clean(project&&project.finalization&&project.finalization.status)}
+  function avatarStatus(project){return clean(project&&project.avatar&&project.avatar.pipeline&&project.avatar.pipeline.status)}
+  function resumable(project){
+    var generation=generationStatus(project);
+    var finalization=finalizationStatus(project);
+    var avatar=avatarStatus(project);
+    if(generation==="queued"||generation==="processing")return true;
+    if(finalization==="processing"||finalization.indexOf("waiting_")===0)return true;
+    if(avatar&&avatar!=="completed"&&avatar!=="failed"&&avatar!=="idle")return true;
+    return false;
   }
-  function projectVideo(source){
-    var item=outputOf(source);
-    return clean(item&&item.videoUrl||source&&source.generation&&source.generation.videoUrl);
-  }
-  function currentVideo(){
-    return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"] [data-panel-frame] video[data-adfilm-result-video]');
-  }
-  function sameMountedVideo(source){
-    var video=currentVideo(),next=projectVideo(source);
-    if(!video||!next)return false;
-    return stableUrl(video.currentSrc||video.src)===stableUrl(next);
-  }
-  function finalized(source){
-    var item=outputOf(source),generation=source&&source.generation||{};
-    return Number(item&&item.mixVersion||generation.mixVersion||0)>=4&&!!projectVideo(source);
-  }
-  function normalizeVideo(video){
-    if(!video||!video.matches||!video.matches('video[data-adfilm-result-video]'))return;
-    video.autoplay=false;
-    video.removeAttribute("autoplay");
-    video.controls=false;
-    video.removeAttribute("controls");
-    if(!video.dataset.aivoSeedanceGuardReady){
-      video.dataset.aivoSeedanceGuardReady="1";
-      try{video.pause()}catch(_){}
-      requestAnimationFrame(function(){
-        var source=window.AIVOAdFilmActiveProject||{};
-        var item=outputOf(source);
-        if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function"&&item&&clean(item.videoUrl)){
-          window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{
-            projectId:source.id||"",
-            outputId:item.id||"",
-            version:item.version||1,
-            logoApplied:item.logoApplied===true,
-            play:false
-          });
-        }
-      });
-    }
+  function looksLikeSeedanceResume(listener){
+    if(typeof listener!=="function")return false;
+    var source="";
+    try{source=Function.prototype.toString.call(listener)}catch(_){}
+    return source.indexOf("resume(")>=0&&source.indexOf("adfilm")>=0;
   }
 
   var nativeAdd=document.addEventListener.bind(document);
   document.addEventListener=function(type,listener,options){
-    if(type==="aivo:adfilm-project-sync"&&typeof listener==="function"){
-      var source="";
-      try{source=Function.prototype.toString.call(listener)}catch(_){}
-      if(source.indexOf("resume(scope")>=0&&source.indexOf("bind(scope)")>=0){
-        var original=listener;
-        listener=function(event){
-          var next=event&&event.detail&&event.detail.project||window.AIVOAdFilmActiveProject;
-          if(finalized(next)&&sameMountedVideo(next))return;
+    if(looksLikeSeedanceResume(listener)&&(type==="aivo:module-mounted"||type==="aivo:adfilm-project-sync")){
+      var original=listener;
+      listener=function(event){
+        if(type==="aivo:module-mounted"&&!(event&&event.detail&&event.detail.key==="adfilm")){
           return original.apply(this,arguments);
-        };
-      }
+        }
+        var project=projectFromEvent(event);
+        if(project&&!resumable(project))return;
+        return original.apply(this,arguments);
+      };
     }
     return nativeAdd(type,listener,options);
   };
 
-  var observer=new MutationObserver(function(mutations){
-    mutations.forEach(function(mutation){
-      Array.from(mutation.addedNodes||[]).forEach(function(node){
-        if(!node||node.nodeType!==1)return;
-        if(node.matches&&node.matches('video[data-adfilm-result-video]'))normalizeVideo(node);
-        if(node.querySelectorAll)node.querySelectorAll('video[data-adfilm-result-video]').forEach(normalizeVideo);
-      });
-    });
-  });
-  observer.observe(document.documentElement,{childList:true,subtree:true});
-
-  var existing=currentVideo();if(existing)normalizeVideo(existing);
+  window.AIVOAdFilmResumeGuard={
+    resumable:resumable,
+    generationStatus:generationStatus,
+    finalizationStatus:finalizationStatus,
+    avatarStatus:avatarStatus
+  };
 })();
