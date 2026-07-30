@@ -84,14 +84,18 @@ function buildPrompt(project, duration) {
   const expression = avatar.expression === "energetic" ? "energetic and charismatic" : avatar.expression === "calm" ? "calm and composed" : avatar.expression === "confident" ? "confident and trustworthy" : "friendly and confident";
   const creative = clean(project?.plan?.creativeDirection || project?.creativeDirection || project?.brief?.description || "", 900);
   const product = clean(project?.brief?.productName || project?.product?.name || "the advertised product", 180);
+  const directorNote = clean(avatar.directorNote, 700);
+  const sceneDescription = clean(avatar.sceneDescription, 700);
   return [
     `Create a ${duration}-second premium cinematic commercial performance featuring exactly the same ${countryLabel(avatar.country)} adult person from the reference image.`,
     `Preserve facial identity, body proportions, hairstyle, clothing, skin tone and all distinctive details consistently. Use a ${framing} composition while keeping the face large and unobstructed enough for professional lip sync.`,
     `The performer is ${expression}, looks naturally toward camera, breathes, blinks and uses controlled realistic body language. Begin with a strong fashion-commercial entrance, take one or two deliberate steps toward camera, then settle into a confident presenter stance with subtle hand gestures.`,
     `Use sophisticated Matrix-inspired advertising cinematography without copying any protected character: elegant low-angle tracking, slow push-in, restrained orbit, premium contrast, realistic fabric and hair motion, polished studio lighting, shallow depth of field and smooth continuous movement.`,
+    sceneDescription ? `Requested scene: ${sceneDescription}.` : "",
+    directorNote ? `Director instructions: ${directorNote}. Follow these instructions closely while preserving physical realism and identity.` : "",
     `No speech, no generated audio, no text, no subtitles, no logos, no extra people, no face distortion, no duplicate limbs, no exaggerated dance and no abrupt camera shake. Leave visual room for ${product}.`,
     creative ? `Director context: ${creative}.` : "",
-  ].filter(Boolean).join(" ").slice(0, 2400);
+  ].filter(Boolean).join(" ").slice(0, 3600);
 }
 async function prepareStageImage({ sourceUrl, ratio, user, projectId }) {
   const source = await downloadBuffer(sourceUrl, 25 * 1024 * 1024);
