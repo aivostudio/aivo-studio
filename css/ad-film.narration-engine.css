@@ -15,10 +15,10 @@
 .adfilm-narration-engine__actions button{min-height:40px;padding:0 15px;border:1px solid rgba(139,124,255,.34);border-radius:12px;color:#fff;background:linear-gradient(135deg,rgba(100,77,255,.82),rgba(173,68,255,.72));font-weight:700;cursor:pointer}
 .adfilm-narration-engine__actions button+button{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.12);color:#dfe4ff}
 .adfilm-narration-engine__actions button.is-approved{color:#8fffb9;border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.09)}
-.adfilm-narration-engine__actions button.is-approving{display:inline-flex;align-items:center;justify-content:center;gap:9px;opacity:1;color:#fff;border-color:rgba(160,130,255,.46);background:linear-gradient(135deg,rgba(91,68,224,.66),rgba(183,67,216,.56));box-shadow:0 0 0 1px rgba(255,255,255,.03) inset}
+.adfilm-narration-engine__actions button.is-approving,.adfilm-narration-engine__actions button.is-processing{display:inline-flex;align-items:center;justify-content:center;gap:9px;opacity:1;color:#fff;border-color:rgba(160,130,255,.46);background:linear-gradient(135deg,rgba(91,68,224,.66),rgba(183,67,216,.56));box-shadow:0 0 0 1px rgba(255,255,255,.03) inset;cursor:progress}
 .adfilm-approve-spinner{width:17px;height:17px;flex:0 0 17px;border:3px solid rgba(255,255,255,.24);border-top-color:#fff;border-radius:50%;animation:adfilmApproveSpin .72s linear infinite}
 @keyframes adfilmApproveSpin{to{transform:rotate(360deg)}}
 .adfilm-narration-engine__actions button:disabled{cursor:not-allowed;opacity:.48;filter:saturate(.55)}
-.adfilm-narration-engine__actions button.is-approving:disabled{opacity:1;filter:none}
+.adfilm-narration-engine__actions button.is-approving:disabled,.adfilm-narration-engine__actions button.is-processing{opacity:1;filter:none}
 .adfilm-card--voice.is-voice-off .adfilm-narration-engine{opacity:.46;pointer-events:none}
 @media(max-width:720px){.adfilm-narration-engine__head{flex-direction:column}.adfilm-narration-engine__head em{max-width:none}.adfilm-narration-engine__actions{flex-direction:column}.adfilm-narration-engine__actions button{width:100%}}
