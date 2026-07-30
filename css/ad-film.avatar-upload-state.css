@@ -1,0 +1,86 @@
+/* AIVO AI Reklam Filmi — avatar upload progress */
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity .18s ease, transform .18s ease;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-upload-state {
+  position: absolute;
+  inset: 12px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 16px;
+  padding: 26px;
+  border: 1px solid rgba(183,132,255,.36);
+  border-radius: 19px;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(151,75,244,.24),transparent 42%),
+    linear-gradient(145deg,rgba(20,16,50,.96),rgba(7,12,29,.96));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06),0 18px 48px rgba(0,0,0,.24);
+  text-align: center;
+  pointer-events: none;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-upload-state[hidden] {
+  display: none !important;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-upload-state > span:last-child {
+  display: grid;
+  gap: 7px;
+  justify-items: center;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-upload-state b {
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: -.015em;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-upload-state small {
+  color: rgba(228,229,246,.68);
+  font-size: 12px;
+  line-height: 1.45;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-upload-spinner {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 5px solid rgba(255,255,255,.13);
+  border-top-color: #b88cff;
+  border-right-color: #ef5ab6;
+  box-shadow: 0 0 26px rgba(173,91,255,.2);
+  animation: aivoAvatarUploadSpin .78s linear infinite;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-drop {
+  cursor: wait;
+  border-style: solid;
+  border-color: rgba(184,132,255,.62);
+  transform: none;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-drop__content {
+  opacity: 0;
+  transform: scale(.98);
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-body {
+  opacity: 1;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-modes,
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-country,
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-rules {
+  opacity: .58;
+}
+@keyframes aivoAvatarUploadSpin {
+  to { transform: rotate(360deg); }
+}
+@media (max-width:800px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-upload-state {
+    inset: 8px;
+    padding: 20px 14px;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-upload-spinner {
+    width: 44px;
+    height: 44px;
+  }
+}
