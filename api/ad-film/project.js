@@ -30,6 +30,7 @@ const AVATAR_HAIR_STYLES = new Set(["short", "medium", "long", "straight", "wavy
 const AVATAR_FRAMINGS = new Set(["shoulders", "chest", "waist", "full"]);
 const AVATAR_EXPRESSIONS = new Set(["friendly", "confident", "calm", "energetic"]);
 const AVATAR_OUTFITS = new Set(["casual", "business", "premium", "sport", "elegant"]);
+const AVATAR_PROMPT_MAX = 1000;
 
 function readProjectId(req) {
   return String(req.query?.id || req.body?.id || "").trim();
@@ -43,7 +44,7 @@ function clean(value, max = 160) {
     .slice(0, max);
 }
 
-function cleanMultiline(value, max = 700) {
+function cleanMultiline(value, max = AVATAR_PROMPT_MAX) {
   return String(value ?? "")
     .replace(/\r\n?/g, "\n")
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ")
@@ -105,8 +106,8 @@ function extendAvatarPatch(rawProject, sanitizedPatch, user, projectId) {
     framing: enumValue(source.framing, AVATAR_FRAMINGS, "chest"),
     expression: enumValue(source.expression, AVATAR_EXPRESSIONS, "friendly"),
     outfit: enumValue(source.outfit, AVATAR_OUTFITS, "business"),
-    directorNote: cleanMultiline(source.directorNote, 700),
-    sceneDescription: cleanMultiline(source.sceneDescription, 700),
+    directorNote: cleanMultiline(source.directorNote, AVATAR_PROMPT_MAX),
+    sceneDescription: cleanMultiline(source.sceneDescription, AVATAR_PROMPT_MAX),
     image: source.image === null ? null : sanitizeAvatarMedia(source.image, user, projectId),
   };
   return { ...sanitizedPatch, avatar };
