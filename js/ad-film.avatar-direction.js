@@ -1,10 +1,10 @@
 /* AIVO AI Reklam Filmi — avatar direction fields */
 (function AIVO_AD_FILM_AVATAR_DIRECTION(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_DIRECTION_V1__)return;
-  window.__AIVO_AD_FILM_AVATAR_DIRECTION_V1__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_DIRECTION_V2__)return;
+  window.__AIVO_AD_FILM_AVATAR_DIRECTION_V2__=true;
 
-  var MAX=700;
+  var MAX=700,saveTimer=null;
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function text(tr,en){return english()?en:tr}
   function clean(value){return String(value||"").trim()}
@@ -41,6 +41,14 @@
     });
   }
 
+  function requestSave(area){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(function(){
+      if(!area||!area.isConnected)return;
+      area.dispatchEvent(new Event('change',{bubbles:true}));
+    },650);
+  }
+
   function mount(){
     var card=document.querySelector('[data-module-root][data-module="adfilm"] [data-adfilm-avatar-card]');
     if(!card||card.querySelector('[data-avatar-direction]'))return;
@@ -72,6 +80,7 @@
     if(!area)return;
     var card=area.closest('[data-adfilm-avatar-card]');
     syncCounters(card);
+    requestSave(area);
   },true);
 
   document.addEventListener('aivo:module-mounted',function(event){
