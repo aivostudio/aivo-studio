@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable versioned output gallery */
 (function AIVO_AD_FILM_OUTPUT_GALLERY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V4__)return;
-  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V4__=true;
+  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V5__)return;
+  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V5__=true;
 
   var COPY={
     tr:{title:"Diğer Sürümler",readyTitle:"Hazır Videolar",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",mute:"Sesi aç",unmute:"Sesi kapat",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi.",downloadFailed:"Video indirilemedi."},
@@ -74,7 +74,7 @@
     button.dataset.outputAction=name;
     button.title=label;
     button.setAttribute("aria-label",label);
-    button.innerHTML=icon(iconName||name==="open"?"play":name);
+    button.innerHTML=icon(iconName||(name==="open"?"play":name));
     return button;
   }
   function syncMuteButton(button,video){
