@@ -14,6 +14,7 @@ const KLING_STANDARD_I2V = "fal-ai/kling-video/v3/standard/image-to-video";
 const KLING_MOTION = "fal-ai/kling-video/v3/pro/motion-control";
 const WAN_MOTION = "fal-ai/wan-motion";
 const LIPSYNC = "fal-ai/sync-lipsync/v3";
+const FRESH_JOB_404_GRACE_MS = 90 * 1000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
 function falKey() { return process.env.FAL_KEY || process.env.FAL_API_KEY || ""; }
@@ -28,6 +29,35 @@ function pick(object, paths) {
     if (valid && current != null) return current;
   }
   return null;
+}
+function providerError(payload, fallback = "fal_generation_failed") {
+  const value = pick(payload, [
+    "error",
+    "message",
+    "detail",
+    "data.error",
+    "data.message",
+    "data.detail",
+    "result.error",
+    "result.message",
+  ]);
+  if (typeof value === "string" && value.trim()) return clean(value, 1200);
+  if (Array.isArray(value)) {
+    const messages = value.map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") return item.msg || item.message || item.error || JSON.stringify(item);
+      return "";
+    }).filter(Boolean).join(" | ");
+    if (messages) return clean(messages, 1200);
+  }
+  if (value && typeof value === "object") {
+    try { return clean(JSON.stringify(value), 1200) || fallback; } catch (_) {}
+  }
+  try {
+    const serialized = JSON.stringify(payload || {});
+    if (serialized && serialized !== "{}") return clean(serialized, 1200);
+  } catch (_) {}
+  return fallback;
 }
 function videoUrlFrom(payload) {
   const value = pick(payload, ["video.url","data.video.url","result.video.url","output.video.url","response.video.url","video_url"]);
@@ -46,12 +76,21 @@ async function falFetch(url) {
   const response = await fetch(url, { method:"GET", headers:{ Authorization:`Key ${falKey()}`, Accept:"application/json" } });
   return { response, data:parseJson(await response.text().catch(() => "")) };
 }
+function freshJob(job) {
+  const submittedAt = Date.parse(job?.submittedAt || "");
+  return Number.isFinite(submittedAt) && Date.now() - submittedAt < FRESH_JOB_404_GRACE_MS;
+}
 async function readJob(job) {
   const statusUrl = clean(job?.statusUrl, 1600) || `https://queue.fal.run/${job.model}/requests/${encodeURIComponent(job.requestId)}/status`;
   const responseUrl = clean(job?.responseUrl, 1600) || `https://queue.fal.run/${job.model}/requests/${encodeURIComponent(job.requestId)}`;
   const statusResponse = await falFetch(statusUrl);
   if (!statusResponse.response.ok) {
-    if (statusResponse.response.status === 404) return { status:"FAILED", error:"fal_status_not_found", statusUrl, responseUrl };
+    if (statusResponse.response.status === 404 && freshJob(job)) {
+      return { status:"IN_QUEUE", error:null, statusUrl, responseUrl, transient:true };
+    }
+    if (statusResponse.response.status === 404) {
+      return { status:"FAILED", error:"fal_status_not_found", statusUrl, responseUrl };
+    }
     const error = new Error("fal_status_error"); error.status = statusResponse.response.status; error.data = statusResponse.data; throw error;
   }
   const raw = pick(statusResponse.data, ["status","state","data.status","result.status"]);
@@ -60,10 +99,20 @@ async function readJob(job) {
   if (!videoUrl && status === "COMPLETED") {
     const resultResponse = await falFetch(responseUrl);
     if (resultResponse.response.ok) videoUrl = videoUrlFrom(resultResponse.data);
-    else if (resultResponse.response.status !== 202) return { status:"FAILED", error:clean(pick(resultResponse.data,["error","message","detail"]),1200)||"fal_result_error", statusUrl, responseUrl };
+    else if (resultResponse.response.status === 202 || (resultResponse.response.status === 404 && freshJob(job))) {
+      return { status:"RUNNING", videoUrl:null, statusUrl, responseUrl, error:null, transient:true };
+    } else {
+      return { status:"FAILED", error:providerError(resultResponse.data, "fal_result_error"), statusUrl, responseUrl };
+    }
     status = normalizeStatus(raw, videoUrl);
   }
-  return { status, videoUrl, statusUrl, responseUrl, error:status === "FAILED" ? clean(pick(statusResponse.data,["error","message","detail"]),1200)||"fal_generation_failed" : null };
+  return {
+    status,
+    videoUrl,
+    statusUrl,
+    responseUrl,
+    error:status === "FAILED" ? providerError(statusResponse.data) : null,
+  };
 }
 async function submitQueue(model, input) {
   const controller = new AbortController();
