@@ -1,15 +1,24 @@
 // api/ad-film/narration/approve.js
 export const config = { runtime: "nodejs" };
 
+import kvModule from "../../_kv.js";
 import {
   getOwnedProject,
   resolveAdFilmUser,
-  saveProject,
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
+const kv = kvModule?.default || kvModule || {};
+const { kvSetJson } = kv;
+const PROJECT_PREFIX = "adfilm:project:";
+
 function clean(value, max = 1200) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
+}
+
+function safeInteger(value, fallback = 0) {
+  const number = Number.parseInt(value, 10);
+  return Number.isFinite(number) ? Math.max(0, number) : fallback;
 }
 
 export default async function handler(req, res) {
@@ -39,8 +48,13 @@ export default async function handler(req, res) {
     }
 
     const now = new Date().toISOString();
-    const saved = await saveProject(user, {
+    const saved = {
       ...project,
+      version: 2,
+      revision: safeInteger(project.revision, 0) + 1,
+      ownerHash: user.ownerHash,
+      userId: user.userId,
+      updatedAt: now,
       narration: {
         ...(project.narration || {}),
         audio: {
@@ -50,7 +64,14 @@ export default async function handler(req, res) {
           approvedText: generatedText || currentText,
         },
       },
-    });
+    };
+
+    /* Approval changes no project-list metadata. Write only the owned project
+       record instead of reading and rewriting the user's entire project index. */
+    if (typeof kvSetJson !== "function") {
+      throw new Error("ad_film_kv_helpers_unavailable");
+    }
+    await kvSetJson(`${PROJECT_PREFIX}${projectId}`, saved);
 
     return sendJson(res, 200, {
       ok: true,
