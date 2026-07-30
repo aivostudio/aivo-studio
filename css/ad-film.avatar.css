@@ -2,6 +2,8 @@
 [data-module-root][data-module="adfilm"] .adfilm-card--avatar {
   position: relative;
   overflow: hidden;
+  grid-column: 1 / -1;
+  width: 100%;
 }
 [data-module-root][data-module="adfilm"] .adfilm-card--avatar::after {
   content: "";
@@ -15,7 +17,9 @@
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 18px;
+  grid-template-columns: minmax(250px,.72fr) minmax(0,1.8fr);
+  align-items: start;
+  gap: 18px 22px;
   transition: opacity .2s ease, filter .2s ease;
 }
 [data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-disabled .adfilm-avatar-body {
@@ -29,21 +33,29 @@
   z-index: 4;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-modes {
+  grid-column: 1 / -1;
+  width: 100%;
   margin: 0;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-country {
-  max-width: 540px;
+  grid-column: 1;
+  width: 100%;
+  max-width: none;
+  align-self: start;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-pane {
+  grid-column: 2;
+  grid-row: 2;
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-pane[hidden] {
   display: none !important;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-drop {
-  min-height: 190px;
-  padding: 28px;
+  min-height: 210px;
+  padding: 28px 36px;
   border: 1px dashed rgba(164,113,255,.48);
   border-radius: 22px;
   background:
@@ -71,9 +83,9 @@
   pointer-events: none;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-drop__icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 17px;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
   display: grid;
   place-items: center;
   color: #f6eaff;
@@ -81,11 +93,11 @@
   box-shadow: 0 12px 30px rgba(130,70,230,.28);
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-drop__icon svg {
-  width: 27px;
-  height: 27px;
+  width: 29px;
+  height: 29px;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-drop b {
-  font-size: 18px;
+  font-size: 19px;
   color: #fff;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-drop small,
@@ -113,11 +125,12 @@
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-generate {
-  min-height: 58px;
+  min-height: 60px;
+  width: 100%;
   border: 1px solid rgba(201,126,255,.55);
   border-radius: 17px;
   display: flex;
@@ -138,7 +151,12 @@
   color: #8df7ff;
   font-size: 18px;
 }
+[data-module-root][data-module="adfilm"] .adfilm-avatar-tip {
+  margin: 0;
+  padding: 0 2px;
+}
 [data-module-root][data-module="adfilm"] .adfilm-avatar-preview {
+  grid-column: 1 / -1;
   min-height: 118px;
   padding: 12px;
   border: 1px solid rgba(139,90,235,.35);
@@ -187,9 +205,31 @@
 [data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-body {
   opacity: .7;
 }
+@media (max-width: 1100px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-body {
+    grid-template-columns: minmax(220px,.8fr) minmax(0,1.5fr);
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
 @media (max-width: 800px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-body {
+    grid-template-columns: 1fr;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-modes,
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-country,
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-pane,
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-preview {
+    grid-column: 1;
+    grid-row: auto;
+  }
   [data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
     grid-template-columns: 1fr;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-drop {
+    min-height: 180px;
+    padding: 24px 18px;
   }
   [data-module-root][data-module="adfilm"] .adfilm-avatar-preview {
     grid-template-columns: 76px minmax(0,1fr) 38px;
