@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — one-click avatar motion orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V2__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V2__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V3__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V3__=true;
 
   var running=false,pollTimer=null;
   var POLL_MS=3500,MAX_POLLS=700;
@@ -17,7 +17,6 @@
   function choice(scope,key,fallback){var button=scope&&scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');return button?button.dataset.value:fallback}
   function avatarEnabled(scope){var toggle=scope&&scope.querySelector('[data-avatar-enabled]');return toggle?!!toggle.checked:project()&&project().avatar&&project().avatar.enabled===true}
   function avatarImage(){return project()&&project().avatar&&project().avatar.image&&project().avatar.image.url}
-  function avatarPipeline(){return project()&&project().avatar&&project().avatar.pipeline}
   function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:4200});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
   async function jsonRequest(url,options){var response=await fetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"}},options||{}));var data=await response.json().catch(function(){return{}});if(!response.ok){var error=new Error(data.message||data.error||"request_failed");error.status=response.status;error.data=data;throw error}return data}
   function setStage(scope,title,detail){
@@ -31,6 +30,15 @@
   function stageText(stage){
     if(stage==='lipsync')return{text:text('Avatar konuşmaya uyarlanıyor','Synchronizing avatar speech'),detail:text('Dudak, yüz ve konuşma zamanlaması hazırlanıyor.','Preparing lip, face and speech timing.')};
     return{text:text('Sinematik avatar performansı hazırlanıyor','Preparing cinematic avatar performance'),detail:text('Beden hareketi, yürüyüş ve kamera koreografisi oluşturuluyor.','Generating body motion, walking and camera choreography.')};
+  }
+  function holdGeneration(next){
+    var avatar=next&&next.avatar,pipeline=avatar&&avatar.pipeline,generation=next&&next.generation;
+    if(!avatar||avatar.enabled!==true||!pipeline||pipeline.status==='completed'||pipeline.status==='failed'||!generation)return next;
+    if(String(generation.status)==='completed'&&generation.videoUrl){
+      next.generation=Object.assign({},generation,{status:'processing',avatarWaiting:true});
+      next.status='processing';
+    }
+    return next;
   }
 
   window.fetch=async function(input,init){
@@ -57,7 +65,7 @@
     if(count>=MAX_POLLS){running=false;return}
     try{
       var data=await jsonRequest('/api/ad-film/avatar/pipeline/status?projectId='+encodeURIComponent(id),{method:'GET'});
-      if(data.project){window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
+      if(data.project){data.project=holdGeneration(data.project);window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
       if(data.status==='COMPLETED'){running=false;document.dispatchEvent(new CustomEvent('aivo:adfilm-avatar-ready',{detail:data}));return}
       if(data.status==='FAILED'){
         running=false;
@@ -76,7 +84,7 @@
     if(!avatarImage())throw new Error('avatar_image_required');
     var duration=choice(scope,'duration','10'),ratio=choice(scope,'aspectRatio','16:9');
     var data=await jsonRequest('/api/ad-film/avatar/pipeline/create',{method:'POST',body:JSON.stringify({projectId:id,duration:duration,aspect_ratio:ratio==='4:5'?'3:4':ratio})});
-    if(data.project){window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
+    if(data.project){data.project=holdGeneration(data.project);window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
     running=true;poll(scope,id,0);return data;
   }
   function invokeSeedance(){
@@ -111,11 +119,13 @@
   },true);
 
   function resume(scope,next){
+    next=holdGeneration(next);
+    if(next)window.AIVOAdFilmActiveProject=next;
     var pipeline=next&&next.avatar&&next.avatar.pipeline;
     if(!pipeline||pipeline.status==='completed'||pipeline.status==='failed'||!next.id)return;
     if(running)return;running=true;var copy=stageText(pipeline.stage);setStage(scope,copy.text,copy.detail);poll(scope,next.id,0);
   }
-  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')setTimeout(function(){resume(event.detail.root||root(),project())},900)});
-  document.addEventListener('aivo:adfilm-project-sync',function(event){var scope=root(),next=event&&event.detail&&event.detail.project;if(scope&&next)resume(scope,next)});
+  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')setTimeout(function(){var next=holdGeneration(project());if(next)window.AIVOAdFilmActiveProject=next;resume(event.detail.root||root(),next)},700)});
+  document.addEventListener('aivo:adfilm-project-sync',function(event){var scope=root(),next=event&&event.detail&&event.detail.project;if(scope&&next){next=holdGeneration(next);event.detail.project=next;window.AIVOAdFilmActiveProject=next;resume(scope,next)}});
   window.addEventListener('pagehide',function(){clearTimeout(pollTimer)});
 })();
