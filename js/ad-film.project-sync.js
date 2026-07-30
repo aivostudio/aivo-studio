@@ -4,8 +4,8 @@
    ========================================================= */
 (function AIVO_AD_FILM_PROJECT_SYNC(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROJECT_SYNC_V2__)return;
-  window.__AIVO_AD_FILM_PROJECT_SYNC_V2__=true;
+  if(window.__AIVO_AD_FILM_PROJECT_SYNC_V3__)return;
+  window.__AIVO_AD_FILM_PROJECT_SYNC_V3__=true;
 
   var PROJECT_STORAGE_KEY="aivo_adfilm_active_project_id_v2";
   var LEGACY_PROJECT_STORAGE_KEY="aivo_adfilm_active_project_id_v1";
@@ -271,7 +271,7 @@
       var media=event.target.closest("[data-adfilm-file]");
       if(media){
         var mediaKey=media.getAttribute("data-adfilm-file");
-        var smartRoleLocal=!!media.closest(".adfilm-role-media")&&(mediaKey==="productImages"||mediaKey==="logo");
+        var smartRoleLocal=!!media.closest(".adfilm-role-media")&&mediaKey==="productImages";
         if(media.dataset.adfilmSkipCloudUpload==="1"||smartRoleLocal){
           controller.userDirty=true;
           queueSave(controller,180);
