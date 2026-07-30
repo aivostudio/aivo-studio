@@ -17,7 +17,7 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 5;
+const MIX_VERSION = 6;
 
 function clean(value,max=1600){return String(value??"").trim().slice(0,max)}
 function safePart(value,fallback="output"){const next=clean(value,180).replace(/[^a-z0-9._-]+/gi,"-").replace(/^-+|-+$/g,"");return next||fallback}
@@ -60,19 +60,22 @@ export default async function handler(req,res){
 
     if(narrationUrl&&musicUrl){
       filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.02,adelay=${voiceDelay}|${voiceDelay},apad=pad_dur=60,asplit=2[voice_sc][voice_mix]`);
-      filters.push(`[${musicIndex}:a]aresample=48000,highpass=f=38,lowpass=f=17500,equalizer=f=240:t=q:w=0.9:g=-1.0,equalizer=f=2600:t=q:w=1.0:g=-1.4,loudnorm=I=-20:TP=-2:LRA=8,volume=0.92,afade=t=in:st=0:d=0.22,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=60[music]`);
-      filters.push(`[music][voice_sc]sidechaincompress=threshold=0.11:ratio=2.2:attack=18:release=260:makeup=1.08[ducked]`);
+      /* Keep Fal's original tonal balance and transients. Only resample, set a
+         transparent bed level and add short edge fades. */
+      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.78,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=60[music]`);
+      /* Duck one additional step under speech while leaving the intro intact. */
+      filters.push(`[music][voice_sc]sidechaincompress=threshold=0.045:ratio=3.0:attack=15:release=310:makeup=1[ducked]`);
       filters.push(`[ducked][voice_mix]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.96[aout]`);
     }else if(narrationUrl){
       filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.02,apad=pad_dur=60,alimiter=limit=0.96[aout]`);
     }else if(musicUrl){
-      filters.push(`[${musicIndex}:a]aresample=48000,highpass=f=38,lowpass=f=17500,loudnorm=I=-18:TP=-2:LRA=8,afade=t=in:st=0:d=0.22,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=60,alimiter=limit=0.96[aout]`);
+      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.92,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=60,alimiter=limit=0.96[aout]`);
     }
 
     if(filters.length)args.push("-filter_complex",filters.join(";"));args.push("-map",logoUrl?"[vout]":"0:v:0");if(narrationUrl||musicUrl)args.push("-map","[aout]");else args.push("-map","0:a:0?");args.push("-c:v","libx264","-preset","ultrafast","-crf","18","-pix_fmt","yuv420p","-c:a","aac","-b:a","256k","-ar","48000","-ac","2","-shortest","-movflags","+faststart",outputVideo);await runFfmpeg(args);
     const key=`${mediaPrefix(user,projectId)}outputs/seedance/${safePart(outputId,"video")}-v${version}-final-${Date.now()}.mp4`;const finalUrl=await putObject({key,body:fs.readFileSync(outputVideo),contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});const now=new Date().toISOString();
-    const finalOutput={...(target||{}),id:outputId||target?.id||project?.generation?.requestId,version,sourceVideoUrl,videoUrl:finalUrl,logoUrl:logoUrl||null,logoApplied:!!logoUrl,logoPosition:logoUrl?"bottom-right":null,logoOpacity:logoUrl?0.96:null,narrationUrl:narrationUrl||null,narrationApplied:!!narrationUrl,narrationMastered:narrationAudio?.mastered===true,narrationApprovedAt:narrationAudio?.approvedAt||null,narrationDelayMs:voiceDelay,musicUrl:musicUrl||null,musicApplied:!!musicUrl,musicMode:project?.music?.mode||"auto",musicBedVolume:narrationUrl&&musicUrl?0.92:1,mixVersion:MIX_VERSION,finalizedAt:now};
-    const nextOutputs=[finalOutput,...outputs.filter(item=>clean(item.id)!==clean(finalOutput.id))].slice(0,30);const nextProject=await saveProject(user,{...project,status:"completed",outputs:nextOutputs,activeOutputId:finalOutput.id,generation:{...(project.generation||{}),status:"completed",outputId:finalOutput.id,sourceVideoUrl,videoUrl:finalUrl,logoUrl:logoUrl||null,logoApplied:!!logoUrl,narrationUrl:narrationUrl||null,narrationApplied:!!narrationUrl,narrationDelayMs:voiceDelay,musicUrl:musicUrl||null,musicApplied:!!musicUrl,musicBedVolume:narrationUrl&&musicUrl?0.92:1,mixVersion:MIX_VERSION,finalizedAt:now,completedAt:project?.generation?.completedAt||now,error:null}});
-    return sendJson(res,200,{ok:true,projectId,outputId:finalOutput.id,video_url:finalUrl,source_video_url:sourceVideoUrl,logo_url:logoUrl||null,logo_applied:!!logoUrl,narration_url:narrationUrl||null,narration_applied:!!narrationUrl,narration_delay_ms:voiceDelay,music_url:musicUrl||null,music_applied:!!musicUrl,music_bed_volume:narrationUrl&&musicUrl?0.92:1,mix_version:MIX_VERSION,project:nextProject,outputs:nextProject.outputs||[],activeOutputId:nextProject.activeOutputId||finalOutput.id});
+    const finalOutput={...(target||{}),id:outputId||target?.id||project?.generation?.requestId,version,sourceVideoUrl,videoUrl:finalUrl,logoUrl:logoUrl||null,logoApplied:!!logoUrl,logoPosition:logoUrl?"bottom-right":null,logoOpacity:logoUrl?0.96:null,narrationUrl:narrationUrl||null,narrationApplied:!!narrationUrl,narrationMastered:narrationAudio?.mastered===true,narrationApprovedAt:narrationAudio?.approvedAt||null,narrationDelayMs:voiceDelay,musicUrl:musicUrl||null,musicApplied:!!musicUrl,musicMode:project?.music?.mode||"auto",musicBedVolume:narrationUrl&&musicUrl?0.78:0.92,mixVersion:MIX_VERSION,finalizedAt:now};
+    const nextOutputs=[finalOutput,...outputs.filter(item=>clean(item.id)!==clean(finalOutput.id))].slice(0,30);const nextProject=await saveProject(user,{...project,status:"completed",outputs:nextOutputs,activeOutputId:finalOutput.id,generation:{...(project.generation||{}),status:"completed",outputId:finalOutput.id,sourceVideoUrl,videoUrl:finalUrl,logoUrl:logoUrl||null,logoApplied:!!logoUrl,narrationUrl:narrationUrl||null,narrationApplied:!!narrationUrl,narrationDelayMs:voiceDelay,musicUrl:musicUrl||null,musicApplied:!!musicUrl,musicBedVolume:narrationUrl&&musicUrl?0.78:0.92,mixVersion:MIX_VERSION,finalizedAt:now,completedAt:project?.generation?.completedAt||now,error:null}});
+    return sendJson(res,200,{ok:true,projectId,outputId:finalOutput.id,video_url:finalUrl,source_video_url:sourceVideoUrl,logo_url:logoUrl||null,logo_applied:!!logoUrl,narration_url:narrationUrl||null,narration_applied:!!narrationUrl,narration_delay_ms:voiceDelay,music_url:musicUrl||null,music_applied:!!musicUrl,music_bed_volume:narrationUrl&&musicUrl?0.78:0.92,mix_version:MIX_VERSION,project:nextProject,outputs:nextProject.outputs||[],activeOutputId:nextProject.activeOutputId||finalOutput.id});
   }catch(error){console.error("[ad-film/seedance/finalize]",error);return sendJson(res,500,{ok:false,error:"adfilm_finalize_failed",message:String(error?.message||error).slice(0,1200),video_url:sourceVideoUrl||null})}finally{for(const entry of cleanup.reverse()){try{if(!entry||!fs.existsSync(entry))continue;if(fs.statSync(entry).isDirectory())fs.rmSync(entry,{recursive:true,force:true});else fs.unlinkSync(entry)}catch(_){}}}
 }
