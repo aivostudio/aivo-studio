@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — atomic narration approval UI sync */
 (function AIVO_AD_FILM_NARRATION_APPROVAL_SYNC(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V4__)return;
-  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V4__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V5__)return;
+  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V5__=true;
 
   var approvalTask=null;
 
@@ -25,12 +25,22 @@
     button.classList.toggle("is-processing",mode==="processing");
     button.classList.toggle("is-approving",mode==="approving");
     button.classList.toggle("is-approved",mode==="approved");
-    button.disabled=mode==="approving"||mode==="approved";
+    button.disabled=mode==="processing"||mode==="approving"||mode==="approved";
     button.setAttribute("aria-busy",mode==="processing"||mode==="approving"?"true":"false");
-    button.setAttribute("aria-disabled",mode==="processing"?"true":"false");
+    button.setAttribute("aria-disabled",button.disabled?"true":"false");
     if(mode==="processing")button.innerHTML='<span class="adfilm-approve-spinner" aria-hidden="true"></span><span>'+processingLabel()+'</span>';
     else if(mode==="approving")button.innerHTML='<span class="adfilm-approve-spinner" aria-hidden="true"></span><span>'+pendingLabel()+'</span>';
     else button.textContent=mode==="approved"?approvedLabel():normalLabel();
+  }
+
+  function setPendingUi(scope,button,mode){
+    setButton(button,mode);
+    var panel=scope&&scope.querySelector('[data-adfilm-narration-engine]');
+    var state=panel&&panel.querySelector('[data-narration-engine-state]');
+    if(panel)panel.dataset.state="running";
+    if(state)state.textContent=mode==="processing"
+      ?text("Ses profesyonel olarak işleniyor. Kısa süre bekle.","The voice is being professionally processed. Please wait briefly.")
+      :text("Ses onaylanıyor. Kısa süre bekle.","The voice is being approved. Please wait briefly.");
   }
 
   function audioMode(project){
@@ -89,7 +99,7 @@
   async function approveWhenReady(scope,button,id){
     try{
       await waitForMastered(button);
-      setButton(button,"approving");
+      setPendingUi(scope,button,"approving");
       var controller=new AbortController();
       var timeout=setTimeout(function(){controller.abort()},90000);
       try{
@@ -120,7 +130,12 @@
     var id=projectId(scope);if(!id){notify(text("Bulut proje bağlantısı hazır değil.","The cloud project connection is not ready."),"warning");return}
     var current=window.AIVOAdFilmActiveProject||{};
     var audio=current.narration&&current.narration.audio||{};
-    if(!(audio.mastered===true&&Number(audio.masteringVersion)>=2))notify(processingMessage(),"info");
+    var needsMastering=!(audio.mastered===true&&Number(audio.masteringVersion)>=2);
+
+    /* Give immediate visual feedback before any async work or toast. The user
+       must see the button enter its busy state in the same click frame. */
+    setPendingUi(scope,button,needsMastering?"processing":"approving");
+    if(needsMastering)notify(processingMessage(),"info");
     approvalTask=approveWhenReady(scope,button,id);
   },true);
 
