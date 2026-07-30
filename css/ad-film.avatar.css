@@ -1,0 +1,201 @@
+/* AIVO AI Reklam Filmi — avatar card */
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar {
+  position: relative;
+  overflow: hidden;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar::after {
+  content: "";
+  position: absolute;
+  inset: auto -18% -42% 28%;
+  height: 68%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(63,211,255,.12), transparent 66%);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 18px;
+  transition: opacity .2s ease, filter .2s ease;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-disabled .adfilm-avatar-body {
+  opacity: .48;
+  filter: saturate(.72);
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-disabled .adfilm-avatar-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-modes {
+  margin: 0;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-country {
+  max-width: 540px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-pane {
+  display: grid;
+  gap: 16px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-pane[hidden] {
+  display: none !important;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop {
+  min-height: 190px;
+  padding: 28px;
+  border: 1px dashed rgba(164,113,255,.48);
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, rgba(96,52,180,.16), rgba(9,14,31,.72)),
+    rgba(10,13,29,.78);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop:hover {
+  transform: translateY(-2px);
+  border-color: rgba(234,81,184,.75);
+  box-shadow: 0 18px 45px rgba(78,43,160,.18);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop__icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 17px;
+  display: grid;
+  place-items: center;
+  color: #f6eaff;
+  background: linear-gradient(145deg, rgba(126,64,240,.78), rgba(224,68,174,.78));
+  box-shadow: 0 12px 30px rgba(130,70,230,.28);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop__icon svg {
+  width: 27px;
+  height: 27px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop b {
+  font-size: 18px;
+  color: #fff;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-drop small,
+[data-module-root][data-module="adfilm"] .adfilm-avatar-tip {
+  color: rgba(221,221,240,.68);
+  font-size: 13px;
+  line-height: 1.55;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-rules {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 15px;
+  border: 1px solid rgba(42,211,190,.2);
+  border-radius: 14px;
+  color: rgba(210,241,237,.76);
+  background: rgba(12,47,48,.24);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-rules span {
+  color: #4fe8ff;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-rules p {
+  margin: 0;
+  font-size: 13px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-generate {
+  min-height: 58px;
+  border: 1px solid rgba(201,126,255,.55);
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  background: linear-gradient(95deg, #7443f0, #e54cae);
+  box-shadow: 0 12px 32px rgba(127,64,231,.26);
+  cursor: pointer;
+  font: inherit;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-generate:disabled {
+  opacity: .7;
+  cursor: wait;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-generate span {
+  color: #8df7ff;
+  font-size: 18px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview {
+  min-height: 118px;
+  padding: 12px;
+  border: 1px solid rgba(139,90,235,.35);
+  border-radius: 19px;
+  background: rgba(9,13,30,.7);
+  display: grid;
+  grid-template-columns: 92px minmax(0,1fr) 42px;
+  align-items: center;
+  gap: 15px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview[hidden] {
+  display: none !important;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview img {
+  width: 92px;
+  height: 92px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 15px;
+  border: 1px solid rgba(204,166,255,.35);
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview div {
+  display: grid;
+  gap: 5px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview b {
+  color: #fff;
+  font-size: 16px;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview small {
+  color: #79e8c5;
+}
+[data-module-root][data-module="adfilm"] .adfilm-avatar-preview button {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,78,110,.5);
+  background: rgba(78,14,32,.62);
+  color: #ff7892;
+  font-size: 24px;
+  cursor: pointer;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy {
+  cursor: wait;
+}
+[data-module-root][data-module="adfilm"] .adfilm-card--avatar.is-avatar-busy .adfilm-avatar-body {
+  opacity: .7;
+}
+@media (max-width: 800px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
+    grid-template-columns: 1fr;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-preview {
+    grid-template-columns: 76px minmax(0,1fr) 38px;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-preview img {
+    width: 76px;
+    height: 76px;
+  }
+}
