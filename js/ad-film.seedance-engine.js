@@ -5,8 +5,8 @@
    ========================================================= */
 (function AIVO_AD_FILM_SEEDANCE_ENGINE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_SEEDANCE_ENGINE__)return;
-  window.__AIVO_AD_FILM_SEEDANCE_ENGINE__=true;
+  if(window.__AIVO_AD_FILM_SEEDANCE_ENGINE_V2__)return;
+  window.__AIVO_AD_FILM_SEEDANCE_ENGINE_V2__=true;
 
   var POLL_MS=3000;
   var POLL_MAX=600;
@@ -24,8 +24,11 @@
       prompt:"Reklam planı Seedance için hazırlanıyor",
       queued:"Seedance kuyruğuna gönderildi",
       processing:"Reklam filmi hazırlanıyor",
+      finalizing:"Konuşma, fon müziği ve logo final videoya hazırlanıyor",
+      finalizingDetail:"Video henüz hazır değil. Profesyonel ses miksi tamamlanıyor.",
       completed:"Reklam filmi hazır",
       failed:"Video üretimi tamamlanamadı",
+      finalFailed:"Final ses ve müzik işlemi tamamlanamadı. Sayfayı yenileyerek tekrar deneyebilirsin.",
       timeout:"Üretim hâlâ devam ediyor. Daha sonra bu projeye döndüğünde durum yeniden kontrol edilecek.",
       missingHero:"Önce Ana Ürün / Ana Karakter görselini yükle.",
       missingBrief:"Ürün adı ve kısa açıklamayı tamamla.",
@@ -51,8 +54,11 @@
       prompt:"Preparing the advertising plan for Seedance",
       queued:"Submitted to the Seedance queue",
       processing:"Your advertising film is being generated",
+      finalizing:"Preparing narration, background music and logo for the final video",
+      finalizingDetail:"The video is not ready yet. Professional audio mixing is still in progress.",
       completed:"Your advertising film is ready",
       failed:"Video generation could not be completed",
+      finalFailed:"Final narration and music processing failed. Reload the page to retry.",
       timeout:"Generation is still running. Its status will be checked again when you return to this project.",
       missingHero:"Upload a Hero Product / Main Character image first.",
       missingBrief:"Complete the product name and short description.",
@@ -102,7 +108,7 @@
     if(!Number.isFinite(started)||started<=0)return"";
     var total=Math.max(0,Math.floor((Date.now()-started)/1000));
     var minutes=Math.floor(total/60),seconds=total%60;
-    return minutes+" "+t("minute")+" "+String(seconds).padStart(2,"0")+" "+t("second");
+    return minutes+" "+t("minute")+" "+String(seconds).padStart(2,"0")+t("second");
   }
 
   function progressDetail(scope,data){
@@ -243,7 +249,7 @@
 
   async function jsonRequest(url,options){
     var response=await fetch(url,Object.assign({credentials:"include",headers:{"Content-Type":"application/json"}},options||{}));
-    var data=await response.json().catch(function(){return{}});if(!response.ok){var error=new Error(data.error||"request_failed");error.status=response.status;error.data=data;throw error}return data;
+    var data=await response.json().catch(function(){return{}});if(!response.ok){var error=new Error(data.message||data.error||"request_failed");error.status=response.status;error.data=data;throw error}return data;
   }
 
   function showResult(scope,url){
@@ -251,9 +257,38 @@
     var panel=document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');if(!panel)return;
     var media=panel.querySelector("[data-panel-media]");if(!media)return;
     var old=media.querySelector("video[data-adfilm-result-video]");if(old)old.remove();
-    var video=document.createElement("video");video.setAttribute("data-adfilm-result-video","");video.src=url;video.controls=true;video.playsInline=true;video.preload="metadata";video.autoplay=true;video.muted=true;
+    var video=document.createElement("video");video.setAttribute("data-adfilm-result-video","");video.src=url;video.controls=true;video.playsInline=true;video.preload="metadata";video.autoplay=true;video.muted=false;
     media.appendChild(video);media.classList.add("has-media","has-result-video");
     var live=panel.querySelector(".adfilm-live-card");if(live){var actions=live.querySelector(".adfilm-result-actions");if(actions)actions.remove();actions=document.createElement("div");actions.className="adfilm-result-actions";var link=document.createElement("a");link.href=url;link.target="_blank";link.rel="noopener";link.textContent=t("download");actions.appendChild(link);live.appendChild(actions)}
+  }
+
+  function outputIdFrom(data){return clean(data&&data.activeOutputId||data&&data.generation&&data.generation.outputId||data&&data.generation&&data.generation.requestId)}
+  function finalReady(generation){return Number(generation&&generation.mixVersion||0)>=4&&generation&&generation.videoUrl}
+
+  async function finalizeResult(scope,project,data){
+    if(window.AIVOAdFilmSeedanceFinalizing)return;
+    window.AIVOAdFilmSeedanceFinalizing=true;
+    window.AIVOAdFilmFinalizationPending={projectId:project,outputId:outputIdFrom(data),videoUrl:data&&data.video_url||""};
+    document.dispatchEvent(new CustomEvent("aivo:adfilm-finalization-pending",{detail:window.AIVOAdFilmFinalizationPending}));
+    setStatus(scope,"busy",t("finalizing"),t("finalizingDetail"));
+    try{
+      var finalized=await jsonRequest("/api/ad-film/seedance/finalize",{method:"POST",body:JSON.stringify({projectId:project,outputId:outputIdFrom(data)})});
+      if(!finalized||!finalized.video_url||!finalized.project)throw new Error("final_video_missing");
+      window.AIVOAdFilmActiveProject=finalized.project;
+      window.AIVOAdFilmGeneratedVideo=finalized.video_url;
+      window.AIVOAdFilmFinalizationPending=null;
+      document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:finalized.project,projectId:finalized.project.id||project,media:finalized.project.media||{}}}));
+      setBusy(scope,false);
+      setStatus(scope,"success",t("completed"),progressDetail(scope,{status:"COMPLETED",generation:finalized.project.generation||{}}));
+      showResult(scope,finalized.video_url);
+    }catch(error){
+      console.error("[ADFILM] final output",error);
+      setBusy(scope,false);
+      setStatus(scope,"error",t("finalFailed"),clean(error&&error.message));
+      notify(t("finalFailed"),"warning");
+    }finally{
+      window.AIVOAdFilmSeedanceFinalizing=false;
+    }
   }
 
   async function poll(scope,project,count){
@@ -262,7 +297,7 @@
     try{
       var data=await jsonRequest("/api/ad-film/seedance/status?projectId="+encodeURIComponent(project),{method:"GET"});
       if(data.generation&&data.generation.startedAt)generationStartedAt=Date.parse(data.generation.startedAt)||generationStartedAt;
-      if(data.status==="COMPLETED"&&data.video_url){setBusy(scope,false);setStatus(scope,"success",t("completed"),progressDetail(scope,data));showResult(scope,data.video_url);window.AIVOAdFilmGeneratedVideo=data.video_url;return}
+      if(data.status==="COMPLETED"&&data.video_url){await finalizeResult(scope,project,data);return}
       if(data.status==="FAILED"){setBusy(scope,false);setStatus(scope,"error",t("failed"),clean(data.generation&&data.generation.error));return}
       setStatus(scope,"busy",t("processing"),progressDetail(scope,data));
       pollTimer=setTimeout(function(){poll(scope,project,count+1)},POLL_MS);
@@ -303,7 +338,7 @@
         resolution:normalizeResolution(selected(scope,"quality","1080p")),
         duration:selected(scope,"duration","10"),
         aspect_ratio:normalizeAspect(ratio),
-        generate_audio:true,
+        generate_audio:false,
         bitrate_mode:selected(scope,"quality","1080p")==="4k"?"high":"standard",
         reference_map:references.map
       };
@@ -322,7 +357,17 @@
   function resume(scope,project){
     var generation=project&&project.generation;if(!generation)return;
     if(generation.startedAt)generationStartedAt=Date.parse(generation.startedAt)||generationStartedAt;
-    if(generation.videoUrl){showResult(scope,generation.videoUrl);setStatus(scope,"success",t("completed"),progressDetail(scope,{status:"COMPLETED",generation:generation}));return}
+    if(finalReady(generation)){
+      window.AIVOAdFilmGeneratedVideo=generation.videoUrl;
+      showResult(scope,generation.videoUrl);
+      setStatus(scope,"success",t("completed"),progressDetail(scope,{status:"COMPLETED",generation:generation}));
+      return;
+    }
+    if(generation.videoUrl&&String(generation.status)==="completed"&&!window.AIVOAdFilmSeedanceFinalizing){
+      setBusy(scope,true);
+      finalizeResult(scope,project.id,{video_url:generation.videoUrl,generation:generation,activeOutputId:project.activeOutputId});
+      return;
+    }
     if(["queued","processing"].indexOf(String(generation.status))>=0&&!active){setBusy(scope,true);setStatus(scope,"busy",t("processing"),progressDetail(scope,{status:generation.status==="queued"?"IN_QUEUE":"RUNNING",generation:generation}));poll(scope,project.id,0)}
   }
 
