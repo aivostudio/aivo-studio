@@ -210,7 +210,7 @@
     var pid=clean(context.projectId||projectId()),oid=clean(context.outputId||outputId());
     try{
       if(!pid)throw new Error("missing_project_id");
-      var url="/api/ad-film/seedance/result?projectId="+encodeURIComponent(pid);if(oid)url+="&outputId="+encodeURIComponent(oid));
+      var url="/api/ad-film/seedance/result?projectId="+encodeURIComponent(pid);if(oid)url+="&outputId="+encodeURIComponent(oid);
       var response=await fetch(url,{method:"DELETE",credentials:"include",cache:"no-store"});
       var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"remove_failed");
       var activeProject=project();
@@ -346,9 +346,6 @@
       currentMediaKey="";
     }
 
-    /* Metadata, quality and form saves can alter the project signature without
-       changing the actual finished video file. Never touch src/load unless the
-       underlying media path really changed. This preserves pause state and time. */
     var mediaChanged=!currentMediaKey||currentMediaKey!==desiredMediaKey;
     if(mediaChanged){
       try{video.pause()}catch(_){}
