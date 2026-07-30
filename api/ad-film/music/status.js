@@ -30,7 +30,7 @@ export default async function handler(req,res){
     const user=await resolveAdFilmUser(req);if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});
     const projectId=clean(req.query?.projectId,120);if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
     const project=await getOwnedProject(user,projectId);if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
-    if(project.music?.audio?.url)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.music.audio,project});
+    if(project.music?.audio?.url&&project.music.audio.qualityVersion>=2)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.music.audio,project});
     const g=project.musicGeneration||{};
     if(g.status==="failed")return sendJson(res,200,{ok:true,status:"FAILED",error:g.error||"music_generation_failed",project});
     if(!g.requestId)return sendJson(res,200,{ok:true,status:"IDLE",project});
@@ -66,11 +66,11 @@ export default async function handler(req,res){
       return sendJson(res,200,{ok:true,status:status==="IN_QUEUE"?"IN_QUEUE":"RUNNING",project:nextProject});
     }
     const response=await fetch(file.url,{cache:"no-store",redirect:"follow"});if(!response.ok)return sendJson(res,502,{ok:false,error:"music_download_failed",message:`Music download HTTP ${response.status}`});
-    const body=Buffer.from(await response.arrayBuffer());if(!body.length||body.length>40*1024*1024)return sendJson(res,413,{ok:false,error:"invalid_music_size"});
+    const body=Buffer.from(await response.arrayBuffer());if(!body.length||body.length>80*1024*1024)return sendJson(res,413,{ok:false,error:"invalid_music_size"});
     const format=extension({...file,contentType:file.contentType||response.headers.get("content-type")});
-    const now=new Date().toISOString();const keyPath=`${mediaPrefix(user,projectId)}music/generated-${Date.now()}.${format.ext}`;
+    const now=new Date().toISOString();const keyPath=`${mediaPrefix(user,projectId)}music/generated-v2-${Date.now()}.${format.ext}`;
     const stored=await putObject({key:keyPath,body,contentType:format.type,cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});
-    const audio={url:stored,contentType:format.type,generated:true,createdAt:now,engine:g.model,style:g.meta?.resolvedStyle||project.music?.style||"auto",energy:g.meta?.resolvedEnergy||project.music?.energy||"balanced"};
+    const audio={url:stored,contentType:format.type,generated:true,createdAt:now,engine:g.model,qualityVersion:g.qualityVersion||2,lossless:format.ext==="wav"||format.ext==="flac",style:g.meta?.resolvedStyle||project.music?.style||"auto",energy:g.meta?.resolvedEnergy||project.music?.energy||"balanced"};
     const saved=await saveProject(user,{...project,music:{...(project.music||{}),audio},musicGeneration:{...g,status:"completed",updatedAt:now,completedAt:now,error:null}});
     return sendJson(res,200,{ok:true,status:"COMPLETED",audio,project:saved});
   }catch(error){console.error("[ad-film/music/status]",error);return sendJson(res,500,{ok:false,error:"server_error",message:clean(error?.message||error,900)})}
