@@ -24,7 +24,7 @@
     return '<div class="adfilm-premium-audio" data-premium-audio>'+ 
       '<button type="button" class="adfilm-premium-audio__button is-primary" data-pa-action="play"></button>'+ 
       '<div class="adfilm-premium-audio__timeline"><input type="range" min="0" max="100" step=".1" value="0" data-pa-progress><div><span data-pa-current>0:00</span><i>/</i><span data-pa-duration>0:00</span></div></div>'+ 
-      '<div class="adfilm-premium-audio__tools>'+ 
+      '<div class="adfilm-premium-audio__tools">'+ 
         '<button type="button" class="adfilm-premium-audio__button" data-pa-action="mute"></button>'+ 
         '<button type="button" class="adfilm-premium-audio__button" data-pa-action="download"></button>'+ 
         '<button type="button" class="adfilm-premium-audio__button is-danger" data-pa-action="delete"></button>'+ 
