@@ -1,10 +1,10 @@
 /* AIVO AI Reklam Filmi — upgrade completed outputs to the latest audio mix */
 (function AIVO_AD_FILM_MIX_UPGRADE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_MIX_UPGRADE_V1__)return;
-  window.__AIVO_AD_FILM_MIX_UPGRADE_V1__=true;
+  if(window.__AIVO_AD_FILM_MIX_UPGRADE_V2__)return;
+  window.__AIVO_AD_FILM_MIX_UPGRADE_V2__=true;
 
-  var TARGET_MIX_VERSION=6;
+  var TARGET_MIX_VERSION=7;
   var busy=false;
   var attempted=new Set();
   var timer=null;
