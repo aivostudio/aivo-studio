@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — atomic narration approval UI sync */
 (function AIVO_AD_FILM_NARRATION_APPROVAL_SYNC(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V5__)return;
-  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V5__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V6__)return;
+  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V6__=true;
 
   var approvalTask=null;
 
@@ -13,12 +13,14 @@
   function projectId(scope){return clean(scope&&scope.dataset.adfilmProjectId||window.AIVOAdFilmActiveProject&&window.AIVOAdFilmActiveProject.id)}
   function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:3800});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
+  function paint(){return new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve)})})}
 
   function normalLabel(){return text("Sesi onayla","Approve voice")}
   function processingLabel(){return text("Ses işleniyor…","Processing voice…")}
   function pendingLabel(){return text("Onaylanıyor…","Approving…")}
   function approvedLabel(){return text("Onaylandı","Approved")}
   function processingMessage(){return text("Ses profesyonel olarak işleniyor. Hazır olduğunda otomatik onaylanacak.","The voice is being professionally processed. It will be approved automatically when ready.")}
+  function approvingMessage(){return text("Ses onaylanıyor. Kısa süre bekle.","The voice is being approved. Please wait briefly.")}
 
   function setButton(button,mode){
     if(!button)return;
@@ -40,7 +42,7 @@
     if(panel)panel.dataset.state="running";
     if(state)state.textContent=mode==="processing"
       ?text("Ses profesyonel olarak işleniyor. Kısa süre bekle.","The voice is being professionally processed. Please wait briefly.")
-      :text("Ses onaylanıyor. Kısa süre bekle.","The voice is being approved. Please wait briefly.");
+      :approvingMessage();
   }
 
   function audioMode(project){
@@ -100,6 +102,7 @@
     try{
       await waitForMastered(button);
       setPendingUi(scope,button,"approving");
+      await paint();
       var controller=new AbortController();
       var timeout=setTimeout(function(){controller.abort()},90000);
       try{
@@ -131,12 +134,17 @@
     var current=window.AIVOAdFilmActiveProject||{};
     var audio=current.narration&&current.narration.audio||{};
     var needsMastering=!(audio.mastered===true&&Number(audio.masteringVersion)>=2);
+    var mode=needsMastering?"processing":"approving";
 
-    /* Give immediate visual feedback before any async work or toast. The user
-       must see the button enter its busy state in the same click frame. */
-    setPendingUi(scope,button,needsMastering?"processing":"approving");
-    if(needsMastering)notify(processingMessage(),"info");
-    approvalTask=approveWhenReady(scope,button,id);
+    /* Paint the busy state and toast before any mastering or approval request.
+       Two animation frames guarantee the spinner is visible immediately. */
+    setPendingUi(scope,button,mode);
+    notify(needsMastering?processingMessage():approvingMessage(),"info");
+    approvalTask=(async function(){
+      await paint();
+      await sleep(0);
+      return approveWhenReady(scope,button,id);
+    })();
   },true);
 
   document.addEventListener("aivo:adfilm-narration-mastering",function(event){
