@@ -1,8 +1,8 @@
-/* AIVO AI Reklam Filmi — compatibility bridge; core owner is StudioRouter */
+/* AIVO AI Reklam Filmi — compatibility bridge; keep mounted video DOM stable */
 (function AIVO_AD_FILM_ROUTE_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROUTE_FIX_V5__)return;
-  window.__AIVO_AD_FILM_ROUTE_FIX_V5__=true;
+  if(window.__AIVO_AD_FILM_ROUTE_FIX_V6__)return;
+  window.__AIVO_AD_FILM_ROUTE_FIX_V6__=true;
 
   var panelGuardInstalled=false;
 
@@ -14,20 +14,36 @@
     return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null;
   }
 
-  function restoreDynamicPanel(delay){
+  function panel(){
+    return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');
+  }
+
+  function repairMissingDynamicParts(delay){
     setTimeout(function(){
       try{
-        var project=currentProject();
-        if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.restore==="function")window.AIVOAdFilmResultControls.restore(0);
-        if(window.AIVOAdFilmOutputWorkflow&&typeof window.AIVOAdFilmOutputWorkflow.render==="function")window.AIVOAdFilmOutputWorkflow.render(project);
-        if(window.AIVOAdFilmOutputGallery&&typeof window.AIVOAdFilmOutputGallery.render==="function")window.AIVOAdFilmOutputGallery.render(project);
-        if(window.AIVOAdFilmProjectHistoryStable){
+        var wrap=panel();
+        if(!wrap||!wrap.isConnected)return;
+        var source=currentProject();
+
+        /* Only repair something that is actually missing. Never repaint an
+           existing player/gallery during ordinary form saves; replacing their
+           DOM makes all video thumbnails and the live preview flash. */
+        if(!wrap.querySelector("video[data-adfilm-result-video]")&&window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.restore==="function"){
+          window.AIVOAdFilmResultControls.restore(0);
+        }
+        if(!wrap.querySelector("[data-adfilm-output-workflow]")&&window.AIVOAdFilmOutputWorkflow&&typeof window.AIVOAdFilmOutputWorkflow.render==="function"){
+          window.AIVOAdFilmOutputWorkflow.render(source);
+        }
+        if(!wrap.querySelector("[data-adfilm-output-gallery]")&&window.AIVOAdFilmOutputGallery&&typeof window.AIVOAdFilmOutputGallery.render==="function"){
+          window.AIVOAdFilmOutputGallery.render(source);
+        }
+        if(window.AIVOAdFilmProjectHistoryStable&&!wrap.querySelector("[data-adfilm-project-history]")){
           if(typeof window.AIVOAdFilmProjectHistoryStable.render==="function")window.AIVOAdFilmProjectHistoryStable.render(false);
           else if(typeof window.AIVOAdFilmProjectHistoryStable.load==="function")window.AIVOAdFilmProjectHistoryStable.load(false);
         }
-        if(window.AIVOAdFilmLivePreviewState&&typeof window.AIVOAdFilmLivePreviewState.sync==="function")window.AIVOAdFilmLivePreviewState.sync(project);
+        if(window.AIVOAdFilmLivePreviewState&&typeof window.AIVOAdFilmLivePreviewState.sync==="function")window.AIVOAdFilmLivePreviewState.sync(source);
       }catch(error){
-        console.warn("[ADFILM] dynamic panel restore",error);
+        console.warn("[ADFILM] dynamic panel repair",error);
       }
     },Number(delay)||0);
   }
@@ -41,16 +57,14 @@
     window.RightPanel.force=function(key,payload){
       if(String(key)==="adfilm"){
         var current=typeof window.RightPanel.getCurrentKey==="function"?window.RightPanel.getCurrentKey():"";
-        var wrap=document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');
+        var wrap=panel();
         var hasMountedPanel=!!(wrap&&wrap.isConnected&&wrap.querySelector(".adfilm-side-preview"));
         var hardRemount=!!(payload&&payload.__aivoHardRemount===true);
 
-        /* The ad-film panel contains live video nodes and dynamically injected
-           galleries. Re-running onShow replaces wrap.innerHTML and destroys all
-           of them. Once mounted, ordinary form changes must never remount it. */
         if(current==="adfilm"&&hasMountedPanel&&!hardRemount){
-          restoreDynamicPanel(0);
-          restoreDynamicPanel(160);
+          /* RightPanel.force is called after virtually every saved form change.
+             The mounted ad-film panel already reflects those changes through
+             targeted project-sync listeners. Do not remount or restore it. */
           return;
         }
       }
@@ -67,19 +81,6 @@
     if(location.hash!=="#adfilm")location.hash="adfilm";
   }
 
-  document.addEventListener("change",function(event){
-    var toggle=event.target&&event.target.closest&&event.target.closest('[data-module="adfilm"] [data-adfilm-input="voiceEnabled"]');
-    if(!toggle)return;
-    restoreDynamicPanel(0);
-    restoreDynamicPanel(180);
-    restoreDynamicPanel(700);
-  },true);
-
-  /* Do not rebuild the dynamic panel on pointerdown/click inside player or
-     gallery controls. Replacing gallery HTML between pointerdown and click
-     destroys the button before its action event can fire. Each control owns
-     its own state restoration after completing the requested action. */
-
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-open]");
     if(!button)return;
@@ -88,8 +89,12 @@
     openAdFilm();
   },true);
 
+  document.addEventListener("aivo:module-mounted",function(event){
+    if(event&&event.detail&&event.detail.key==="adfilm")repairMissingDynamicParts(420);
+  });
+
   window.AIVOOpenAdFilm=openAdFilm;
-  window.AIVOAdFilmRestorePanel=restoreDynamicPanel;
+  window.AIVOAdFilmRestorePanel=repairMissingDynamicParts;
 
   if(!installPanelGuard()){
     var guardTries=0,guardTimer=setInterval(function(){guardTries++;if(installPanelGuard()||guardTries>80)clearInterval(guardTimer)},100);
