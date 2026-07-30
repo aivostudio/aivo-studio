@@ -14,6 +14,11 @@ const RULES = {
     allowed: new Set(["image/jpeg", "image/png", "image/webp"]),
     folder: "product-images",
   },
+  "avatar-image": {
+    maxBytes: 12 * 1024 * 1024,
+    allowed: new Set(["image/jpeg", "image/png", "image/webp"]),
+    folder: "avatar",
+  },
   logo: {
     maxBytes: 5 * 1024 * 1024,
     allowed: new Set(["image/jpeg", "image/png", "image/webp", "image/svg+xml"]),
