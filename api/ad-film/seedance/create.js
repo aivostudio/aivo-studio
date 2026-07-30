@@ -15,6 +15,7 @@ const QUEUE_URL = `https://queue.fal.run/${MODEL}`;
 const RESOLUTIONS = new Set(["480p", "720p", "1080p", "4k"]);
 const ASPECT_RATIOS = new Set(["auto", "21:9", "16:9", "4:3", "1:1", "3:4", "9:16"]);
 const BITRATES = new Set(["standard", "high"]);
+const MAX_PROMPT_CHARS = 2480;
 
 function clean(value, max = 12000) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -82,6 +83,22 @@ function nextVersion(project) {
   return Math.max(0, ...versions) + 1;
 }
 
+function trimPromptBody(value, budget) {
+  const source = clean(value, 12000);
+  if (source.length <= budget) return source;
+  let clipped = source.slice(0, budget).trim();
+  const boundaries = [
+    clipped.lastIndexOf(". "),
+    clipped.lastIndexOf("! "),
+    clipped.lastIndexOf("? "),
+    clipped.lastIndexOf("; "),
+    clipped.lastIndexOf(", "),
+  ];
+  const boundary = Math.max(...boundaries);
+  if (boundary >= Math.floor(budget * 0.72)) clipped = clipped.slice(0, boundary + 1).trim();
+  return clipped;
+}
+
 function visualOnlyPrompt(value) {
   const source = clean(value)
     .replace(/Generate synchronized native audio\.[\s\S]*?seconds\./gi, "")
@@ -89,7 +106,10 @@ function visualOnlyPrompt(value) {
     .replace(/Generate synchronized ambience and sound effects without speech\./gi, "")
     .replace(/Include exactly this spoken voice-over[\s\S]*?seconds\./gi, "")
     .trim();
-  return `${source} Create the visual commercial only. Do not generate speech, dialogue, narration, music, ambience or sound effects. Keep the video completely silent. AIVO will add the user's approved narration and selected music during protected final post-production.`;
+  const suffix = "Create the visual commercial only. Do not generate speech, dialogue, narration, music, ambience or sound effects. Keep the video completely silent. AIVO will add the user's approved narration and selected music during protected final post-production.";
+  const bodyBudget = Math.max(200, MAX_PROMPT_CHARS - suffix.length - 1);
+  const body = trimPromptBody(source, bodyBudget);
+  return `${body} ${suffix}`.trim().slice(0, MAX_PROMPT_CHARS);
 }
 
 function approvedNarration(project) {
@@ -270,6 +290,7 @@ export default async function handler(req, res) {
           imageCount: imageUrls.length,
           audioCount: 0,
           approvedNarration: !!narration.audio,
+          promptLength: prompt.length,
         },
         referenceMap: req.body?.reference_map && typeof req.body.reference_map === "object"
           ? req.body.reference_map
