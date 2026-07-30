@@ -62,7 +62,7 @@ function promptFor(settings) {
     shoulders: "shoulders-up portrait",
     chest: "chest-up portrait",
     waist: "waist-up portrait",
-    full: "full-body portrait with the face still large and clearly visible",
+    full: "head-to-toe full-body portrait, camera pulled back far enough to show the entire person from the top of the hair to the soles of both shoes",
   }[settings.framing];
   const outfit = {
     casual: "modern casual clothing",
@@ -77,15 +77,19 @@ function promptFor(settings) {
     calm: "calm reassuring expression",
     energetic: "energetic positive expression",
   }[settings.expression];
+  const fullBodyRule = settings.framing === "full"
+    ? "Mandatory full-body composition: both arms and both legs are fully visible, both feet and both shoes are completely inside the image, with comfortable empty margin above the head and below the shoes. Do not crop the head, hands, knees, ankles, feet or shoes. Do not use a close-up, medium shot, three-quarter crop or seated pose."
+    : "";
 
   return [
     `Photorealistic ${COUNTRIES[settings.country]} ${settings.gender} advertising presenter, age ${settings.age}.`,
     `${settings.hairColor} ${settings.hairStyle} hair, ${outfit}, ${expression}.`,
     `${framing}, facing directly toward the camera, natural eye contact, mouth fully visible, lips unobstructed.`,
+    fullBodyRule,
     "Single adult person only, centered composition, clean studio lighting, realistic skin texture, sharp facial details, natural human proportions.",
     "Neutral premium studio background, no text, no logos, no watermark, no microphone, no hands covering the face, no sunglasses, no mask, no extreme side profile.",
     "Optimized source portrait for a professional talking-avatar and lip-sync advertising video.",
-  ].join(" ");
+  ].filter(Boolean).join(" ");
 }
 
 export default async function handler(req, res) {
