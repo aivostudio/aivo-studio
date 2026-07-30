@@ -8,13 +8,15 @@
    ========================================================= */
 (function AIVO_AD_FILM_ROLE_UPLOAD_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX_V2__)return;
-  window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX_V2__=true;
+  if(window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX_V4__)return;
+  window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX_V4__=true;
 
   var cache=new WeakMap();
   var LIMITS={hero:1,angles:3,scenes:5};
   var heroPreview={key:"",url:""};
   var logoPreview={key:"",url:""};
+  var remoteRefreshTimer=null;
+  var lastRemoteProjectId="";
 
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function files(field){return field?Array.from(field.files||[]):[]}
@@ -26,7 +28,15 @@
   }
   function text(tr,en){return language()==="en"?en:tr}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
-  function remoteLogo(){var source=project(),media=window.AIVOAdFilmServerMedia||source&&source.media||{};return media&&media.logo||null}
+  function remoteLogo(){
+    var source=project()||{};
+    var server=window.AIVOAdFilmServerMedia&&typeof window.AIVOAdFilmServerMedia==="object"?window.AIVOAdFilmServerMedia:{};
+    return server.logo||source.media&&source.media.logo||null;
+  }
+  function projectId(scope){
+    var source=project();
+    return String(source&&source.id||scope&&scope.dataset&&scope.dataset.adfilmProjectId||"").trim();
+  }
 
   function assign(field,next){
     if(!field)return;
@@ -141,6 +151,24 @@
     [0,60,180,520].forEach(function(delay){setTimeout(function(){syncLivePreview(scope||root())},delay)});
   }
 
+  function refreshRemoteProject(scope,force){
+    clearTimeout(remoteRefreshTimer);
+    remoteRefreshTimer=setTimeout(async function(){
+      var id=projectId(scope);
+      if(!id||!window.AIVOAdFilmProjects||typeof window.AIVOAdFilmProjects.getProject!=="function")return;
+      if(!force&&id===lastRemoteProjectId&&remoteLogo())return;
+      try{
+        var data=await window.AIVOAdFilmProjects.getProject(id);
+        if(!data||!data.project)return;
+        lastRemoteProjectId=id;
+        var current=project();
+        if(!current||String(current.id||"")===id)window.AIVOAdFilmActiveProject=data.project;
+        window.AIVOAdFilmServerMedia=Object.assign({},window.AIVOAdFilmServerMedia||{},data.project.media||{});
+        scheduleVisualSync(scope||root());
+      }catch(error){console.warn("[ADFILM] saved logo restore",error)}
+    },force?40:240);
+  }
+
   function clearLogo(scope){
     var field=scope&&scope.querySelector('[data-adfilm-file="logo"]');if(!field)return;
     assign(field,[]);
@@ -148,10 +176,8 @@
     scheduleVisualSync(scope);
   }
 
-  /* Project sync treats media inside .adfilm-role-media as local-only. Product
-     role files have their own upload path, but the logo does not. Temporarily
-     remove that marker before the event reaches the scoped project-sync
-     listener so the existing authenticated R2 upload path handles the logo. */
+  /* Logo is cloud media even though its input lives inside smart-role layout.
+     Remove the local-only marker during the change event so project-sync uploads it. */
   document.addEventListener("change",function(event){
     var logo=event.target&&event.target.closest&&event.target.closest('[data-adfilm-file="logo"]');
     var holder=logo&&logo.closest(".adfilm-role-media");
@@ -160,7 +186,6 @@
     setTimeout(function(){if(holder&&holder.isConnected)holder.classList.add("adfilm-role-media")},0);
   },true);
 
-  /* Capture runs before creative-plan's direct change listener. */
   document.addEventListener("change",function(event){
     var field=event.target&&event.target.closest&&event.target.closest("[data-adfilm-role-file]");
     if(field){
@@ -183,7 +208,11 @@
     }
 
     var logo=event.target&&event.target.closest&&event.target.closest('[data-adfilm-file="logo"]');
-    if(logo)scheduleVisualSync(logo.closest('[data-module-root][data-module="adfilm"]')||root());
+    if(logo){
+      var scope=logo.closest('[data-module-root][data-module="adfilm"]')||root();
+      scheduleVisualSync(scope);
+      setTimeout(function(){refreshRemoteProject(scope,true)},1600);
+    }
   },true);
 
   document.addEventListener("input",function(event){
@@ -204,16 +233,25 @@
 
   document.addEventListener("aivo:adfilm-project-sync",function(event){
     var scope=root();
-    if(scope){window.AIVOAdFilmServerMedia=event&&event.detail&&event.detail.media||window.AIVOAdFilmServerMedia;scheduleVisualSync(scope)}
+    if(!scope)return;
+    var incoming=event&&event.detail&&event.detail.project;
+    var incomingMedia=event&&event.detail&&event.detail.media||incoming&&incoming.media||{};
+    var active=project();
+    var activeLogo=active&&active.media&&active.media.logo||null;
+    window.AIVOAdFilmServerMedia=Object.assign({},window.AIVOAdFilmServerMedia||{},incomingMedia||{});
+    if(!window.AIVOAdFilmServerMedia.logo&&activeLogo)window.AIVOAdFilmServerMedia.logo=activeLogo;
+    scheduleVisualSync(scope);
+    if(!remoteLogo())refreshRemoteProject(scope,false);
   });
 
   document.addEventListener("aivo:module-mounted",function(event){
     if(!event||!event.detail||event.detail.key!=="adfilm")return;
     [120,520,1100,1800].forEach(function(delay){setTimeout(function(){syncCache(event.detail.root||root());syncLivePreview(event.detail.root||root())},delay)});
+    refreshRemoteProject(event.detail.root||root(),true);
   });
 
   window.addEventListener("pagehide",function(){clearObjectPreview(heroPreview);clearObjectPreview(logoPreview)});
 
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){[300,900,1600].forEach(function(delay){setTimeout(function(){syncCache(root());syncLivePreview(root())},delay)})},{once:true});
-  else [120,600,1400].forEach(function(delay){setTimeout(function(){syncCache(root());syncLivePreview(root())},delay)});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){[300,900,1600].forEach(function(delay){setTimeout(function(){syncCache(root());syncLivePreview(root())},delay)});refreshRemoteProject(root(),true)},{once:true});
+  else{[120,600,1400].forEach(function(delay){setTimeout(function(){syncCache(root());syncLivePreview(root())},delay)});refreshRemoteProject(root(),true)}
 })();
