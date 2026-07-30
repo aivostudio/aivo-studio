@@ -40,8 +40,8 @@
    Temel kontroller modül ekrana basılmadan önce hazırlanır;
    ağır yardımcı motorlar modül açıldıktan sonra arka planda yüklenir. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V10__) return;
-  window.__AIVO_AD_FILM_ASSETS_V10__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V11__) return;
+  window.__AIVO_AD_FILM_ASSETS_V11__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -62,11 +62,12 @@
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
     "/css/ad-film.narration-engine.css?v=1",
-    "/css/ad-film.narration-player.css?v=1",
+    "/css/ad-film.narration-player.css?v=2",
     "/css/ad-film.seedance-engine.css?v=5",
     "/css/ad-film.result-controls.css?v=7",
     "/css/ad-film.output-workflow.css?v=1",
     "/css/ad-film.output-gallery.css?v=3",
+    "/css/ad-film.video-modal.css?v=1",
     "/css/ad-film.premium-production.css?v=3"
   ];
 
@@ -96,7 +97,8 @@
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.narration-engine.js?v=2",
     "/js/ad-film.narration-approval-sync.js?v=1",
-    "/js/ad-film.narration-player.js?v=1",
+    "/js/ad-film.narration-player-host-fix.js?v=1",
+    "/js/ad-film.narration-player.js?v=2",
     "/js/ad-film.narration-master.js?v=2",
     "/js/ad-film.narration-build-guard.js?v=3",
     "/js/ad-film.voice-toggle-fix.js?v=2",
@@ -108,7 +110,8 @@
     "/js/ad-film.result-controls.js?v=9",
     "/js/ad-film.live-preview-state.js?v=1",
     "/js/ad-film.output-workflow.js?v=2",
-    "/js/ad-film.output-gallery.js?v=8",
+    "/js/ad-film.video-modal.js?v=1",
+    "/js/ad-film.output-gallery.js?v=9",
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=1",
