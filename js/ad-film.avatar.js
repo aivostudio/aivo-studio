@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — avatar source, safety and project persistence */
 (function AIVO_AD_FILM_AVATAR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_V1__)return;
-  window.__AIVO_AD_FILM_AVATAR_V1__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_V2__)return;
+  window.__AIVO_AD_FILM_AVATAR_V2__=true;
 
   var busy=false,saveTimer=null;
   var COUNTRIES=[
@@ -139,7 +139,7 @@
   function fileBase64(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onerror=function(){reject(new Error('file_read_failed'))};reader.onload=function(){resolve(String(reader.result||'').split(',').pop()||'')};reader.readAsDataURL(file)})}
   async function screenImage(file){
     var imageBase64=await fileBase64(file);
-    var response=await fetch('/api/media-policy/vision-aws.js',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({app:'ad-film-avatar',fileName:file.name,mimeType:file.type,imageBase64:imageBase64})});
+    var response=await fetch('/api/media-policy/vision-aws',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({app:'ad-film-avatar',fileName:file.name,mimeType:file.type,imageBase64:imageBase64})});
     var data=await response.json().catch(function(){return{}});if(!response.ok||!data.ok)throw new Error(data.detail||data.error||'vision_check_failed');
     if(!data.hasFace)throw new Error('avatar_face_missing');
     if(Number(data.faceCount)!==1)throw new Error('avatar_single_face_required');
