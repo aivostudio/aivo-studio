@@ -1,9 +1,10 @@
 /* AIVO AI Reklam Filmi — final output narration/music/logo post-production */
 (function AIVO_AD_FILM_FINALIZE_OUTPUT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V3__)return;
-  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V3__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V4__)return;
+  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V4__=true;
 
+  var REQUIRED_MIX_VERSION=4;
   var busy=false,timer=null,attempted=new Set(),failed=new Set();
   function clean(value){return String(value||"").trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
@@ -18,17 +19,17 @@
     var generation=source.generation||{},status=clean(generation.status||source.status).toLowerCase();if(status!=="completed")return false;
     var narrationEnabled=source.narration&&source.narration.enabled!==false,audio=source.narration&&source.narration.audio;if(narrationEnabled&&(!audio||audio.approved!==true||!clean(audio.url)))return false;
     var logo=clean(source.media&&source.media.logo&&source.media.logo.url||item.logoUrl||generation.logoUrl),musicMode=source.music&&source.music.mode||"auto",music=musicUrl(source);if(musicMode!=="off"&&!music)return false;
-    var logoDone=!logo||item.logoApplied===true,narrationDone=!narrationEnabled||item.narrationApplied===true,musicDone=musicMode==="off"||item.musicApplied===true;
-    return !(logoDone&&narrationDone&&musicDone);
+    var logoDone=!logo||item.logoApplied===true,narrationDone=!narrationEnabled||item.narrationApplied===true,musicDone=musicMode==="off"||item.musicApplied===true,mixDone=Number(item.mixVersion||0)>=REQUIRED_MIX_VERSION;
+    return !(logoDone&&narrationDone&&musicDone&&mixDone);
   }
-  function keyOf(source,item){return[source&&source.id,item&&item.id,item&&item.videoUrl,source&&source.narration&&source.narration.audio&&source.narration.audio.url,musicUrl(source)].join("|")}
+  function keyOf(source,item){return[source&&source.id,item&&item.id,item&&item.videoUrl,source&&source.narration&&source.narration.audio&&source.narration.audio.url,musicUrl(source),REQUIRED_MIX_VERSION].join("|")}
   function schedule(delay){clearTimeout(timer);timer=setTimeout(check,delay==null?900:delay)}
   async function finalize(source,item){
     if(busy)return;
     var key=keyOf(source,item);
     if(attempted.has(key)||failed.has(key))return;
     busy=true;attempted.add(key);
-    var handle=toast(text("Ses ve reklam müziği videoya miksleniyor...","Mixing narration and advertising music into the video..."),"info");
+    var handle=toast(text("Ses ve reklam müziği profesyonel olarak dengeleniyor...","Balancing narration and advertising music..."),"info");
     try{
       var response=await fetch("/api/ad-film/seedance/finalize",{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify({projectId:source.id,outputId:item.id||source.generation&&source.generation.outputId||""})});
       var data=await response.json().catch(function(){return{}});
@@ -37,12 +38,12 @@
       failed.delete(key);window.AIVOAdFilmActiveProject=data.project;
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:data.project,projectId:data.project.id||"",media:data.project.media||{}}}));
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(data.video_url,data.logo_applied?"":data.logo_url||"",{projectId:data.projectId,outputId:data.outputId,logoApplied:!!data.logo_applied,play:false});
-      toast(text("Ses ve müzik profesyonel olarak videoya eklendi.","Narration and music were professionally added to the video."),"success");
+      toast(text("Müzik girişi ve konuşma dengesi videoya uygulandı.","The music intro and narration balance were applied."),"success");
     }catch(error){
       if(handle&&typeof handle.dismiss==="function")handle.dismiss();
       failed.add(key);
       console.warn("[ADFILM] final output",error,error&&error.data||"");
-      toast(text("Ses ve müzik videoya eklenemedi. Sayfayı yenilediğinde bu video için tekrar denenecek.","Narration and music could not be added. This video will be retried after a page refresh."),"warning");
+      toast(text("Yeni ses dengesi uygulanamadı. Sayfayı yenilediğinde tekrar denenecek.","The new audio balance could not be applied. It will retry after a refresh."),"warning");
     }finally{busy=false}
   }
   async function check(){clearTimeout(timer);var source=project(),item=outputOf(source);if(!ready(source,item))return;finalize(source,item)}
