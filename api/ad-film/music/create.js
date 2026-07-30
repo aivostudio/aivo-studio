@@ -9,8 +9,9 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
-const QUEUE_URL = `https://queue.fal.run/${MODEL}`;
+const PRIMARY_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
+const FALLBACK_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
+const QUALITY_VERSION = 2;
 
 function clean(value, max = 1600) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -24,14 +25,18 @@ function errorMessage(data,status){
   if(detail&&typeof detail==="object")return clean(JSON.stringify(detail),900);
   return `Fal HTTP ${status}`;
 }
-async function submit(key,payload){
+function queueUrl(model){return `https://queue.fal.run/${model}`}
+async function submit(key,model,payload){
   const controller=new AbortController();
   const timeout=setTimeout(()=>controller.abort(),30000);
   try{
-    const response=await fetch(QUEUE_URL,{method:"POST",headers:{Authorization:`Key ${key}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload),signal:controller.signal});
+    const response=await fetch(queueUrl(model),{method:"POST",headers:{Authorization:`Key ${key}`,"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify(payload),signal:controller.signal});
     const data=parse(await response.text().catch(()=>""));
-    return{response,data};
+    return{response,data,model};
   }finally{clearTimeout(timeout)}
+}
+function reusableAudio(audio){
+  return !!(audio?.url&&audio?.qualityVersion>=QUALITY_VERSION&&audio?.engine===PRIMARY_MODEL);
 }
 
 export default async function handler(req,res){
@@ -43,9 +48,9 @@ export default async function handler(req,res){
     const music=project.music||{};
     if(music.mode==="off")return sendJson(res,200,{ok:true,status:"DISABLED",project});
     if(music.mode==="upload"&&project.media?.musicTrack?.url)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.media.musicTrack,project});
-    if(music.audio?.url)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:music.audio,project});
+    if(reusableAudio(music.audio))return sendJson(res,200,{ok:true,status:"COMPLETED",audio:music.audio,project});
     const active=project.musicGeneration;
-    if(active&&["queued","processing"].includes(String(active.status)))return sendJson(res,200,{ok:true,status:active.status==="queued"?"IN_QUEUE":"RUNNING",generation:active,project});
+    if(active&&["queued","processing"].includes(String(active.status))&&active.qualityVersion>=QUALITY_VERSION)return sendJson(res,200,{ok:true,status:active.status==="queued"?"IN_QUEUE":"RUNNING",generation:active,project});
     const key=falKey();if(!key)return sendJson(res,500,{ok:false,error:"missing_fal_key",message:"FAL_KEY is not available."});
 
     const prompt=buildAdFilmMusicPrompt({
@@ -53,22 +58,30 @@ export default async function handler(req,res){
       voiceStyle:project.narration?.voiceStyle,visualStyle:project.sceneStyle,duration:project.output?.duration||15,musicStyle:music.style||"auto",musicEnergy:music.energy||"balanced",voiceEnabled:project.narration?.enabled!==false
     });
 
-    const richPayload={prompt:prompt.prompt,negative_prompt:prompt.negativePrompt,duration:Number(prompt.duration),num_inference_steps:8,guidance_scale:1,enable_prompt_expansion:true,enable_safety_checker:true,sync_mode:false,output_format:"mp3",bitrate:"192k"};
-    let attempt=await submit(key,richPayload);
-    let retryUsed=false;
+    const payload={
+      prompt:prompt.prompt,
+      negative_prompt:prompt.negativePrompt,
+      duration:Number(prompt.duration),
+      num_inference_steps:8,
+      guidance_scale:1,
+      enable_prompt_expansion:true,
+      enable_safety_checker:true,
+      sync_mode:false,
+      output_format:"wav"
+    };
 
-    /* Some provider revisions can reject optional fields even though they are
-       documented. Retry once with the official minimal schema before failing. */
+    let attempt=await submit(key,PRIMARY_MODEL,payload);
+    let fallbackUsed=false;
     if(!attempt.response.ok){
-      retryUsed=true;
-      attempt=await submit(key,{prompt:prompt.prompt,duration:Number(prompt.duration),num_inference_steps:8,guidance_scale:1,enable_safety_checker:true,output_format:"mp3",bitrate:"192k"});
+      fallbackUsed=true;
+      attempt=await submit(key,FALLBACK_MODEL,payload);
     }
 
     const data=attempt.data;
     if(!attempt.response.ok){
       const message=errorMessage(data,attempt.response.status);
       const now=new Date().toISOString();
-      const failed=await saveProject(user,{...project,musicGeneration:{provider:"fal",model:MODEL,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,retryUsed,meta:prompt}});
+      const failed=await saveProject(user,{...project,musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,meta:prompt}});
       return sendJson(res,attempt.response.status,{ok:false,error:"fal_error",message,fal_status:attempt.response.status,fal_response:data,project:failed});
     }
 
@@ -80,7 +93,11 @@ export default async function handler(req,res){
       return sendJson(res,502,{ok:false,error:"fal_missing_request_id",message,fal_response:data});
     }
     const now=new Date().toISOString();
-    const saved=await saveProject(user,{...project,musicGeneration:{provider:"fal",model:MODEL,requestId,statusUrl:statusUrl||null,responseUrl:responseUrl||null,status:"queued",startedAt:now,updatedAt:now,error:null,retryUsed,prompt:prompt.prompt,meta:prompt}});
-    return sendJson(res,200,{ok:true,status:"IN_QUEUE",generation:saved.musicGeneration,project:saved});
+    const saved=await saveProject(user,{
+      ...project,
+      music:{...(project.music||{}),audio:null},
+      musicGeneration:{provider:"fal",model:attempt.model,requestId,statusUrl:statusUrl||null,responseUrl:responseUrl||null,status:"queued",startedAt:now,updatedAt:now,error:null,fallbackUsed,qualityVersion:QUALITY_VERSION,prompt:prompt.prompt,meta:prompt}
+    });
+    return sendJson(res,200,{ok:true,status:"IN_QUEUE",generation:saved.musicGeneration,project:saved,fallback_used:fallbackUsed});
   }catch(error){console.error("[ad-film/music/create]",error);return sendJson(res,500,{ok:false,error:"server_error",message:clean(error?.message||error,900)})}
 }
