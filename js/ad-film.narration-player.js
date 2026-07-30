@@ -1,10 +1,11 @@
 /* AIVO AI Ad Film — premium narration player */
 (function AIVO_AD_FILM_NARRATION_PLAYER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_PLAYER_V1__)return;
-  window.__AIVO_AD_FILM_NARRATION_PLAYER_V1__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_PLAYER_V2__)return;
+  window.__AIVO_AD_FILM_NARRATION_PLAYER_V2__=true;
 
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
+  function playerHost(scope){return scope&&scope.querySelector('[data-narration-engine-player],[data-adfilm-narration-engine-player]')}
   function projectId(scope){return String(scope&&scope.dataset.adfilmProjectId||window.AIVOAdFilmActiveProject&&window.AIVOAdFilmActiveProject.id||"").trim()}
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function text(tr,en){return english()?en:tr}
@@ -17,13 +18,13 @@
     return '<svg viewBox="0 0 24 24"><path class="stroke" d="M5 7h14M9 7V4h6v3M8 10v8m4-8v8m4-8v8M7 7l1 14h8l1-14"/></svg>';
   }
   function format(value){var seconds=Number(value);if(!isFinite(seconds)||seconds<0)seconds=0;var whole=Math.floor(seconds);return Math.floor(whole/60)+":"+String(whole%60).padStart(2,"0")}
-  function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")fn({message:message,duration:3000})}catch(_){}}
+  function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")fn({message:message,duration:3000})}catch(_){} }
 
   function markup(){
     return '<div class="adfilm-premium-audio" data-premium-audio>'+ 
       '<button type="button" class="adfilm-premium-audio__button is-primary" data-pa-action="play"></button>'+ 
       '<div class="adfilm-premium-audio__timeline"><input type="range" min="0" max="100" step=".1" value="0" data-pa-progress><div><span data-pa-current>0:00</span><i>/</i><span data-pa-duration>0:00</span></div></div>'+ 
-      '<div class="adfilm-premium-audio__tools">'+ 
+      '<div class="adfilm-premium-audio__tools>'+ 
         '<button type="button" class="adfilm-premium-audio__button" data-pa-action="mute"></button>'+ 
         '<button type="button" class="adfilm-premium-audio__button" data-pa-action="download"></button>'+ 
         '<button type="button" class="adfilm-premium-audio__button is-danger" data-pa-action="delete"></button>'+ 
@@ -32,7 +33,7 @@
   }
 
   function sync(scope){
-    var host=scope&&scope.querySelector('[data-adfilm-narration-engine-player]'),audio=host&&host.querySelector('[data-narration-audio]'),ui=host&&host.querySelector('[data-premium-audio]');
+    var host=playerHost(scope),audio=host&&host.querySelector('[data-narration-audio]'),ui=host&&host.querySelector('[data-premium-audio]');
     if(!audio||!ui)return;
     var total=isFinite(audio.duration)?audio.duration:0,percent=total?Math.min(100,Math.max(0,audio.currentTime/total*100)):0;
     var progress=ui.querySelector('[data-pa-progress]');if(progress){progress.value=String(percent);progress.style.setProperty('--audio-progress',percent+'%')}
@@ -45,8 +46,9 @@
 
   function mount(scope){
     scope=scope||root();if(!scope)return;
-    var host=scope.querySelector('[data-adfilm-narration-engine-player]'),audio=host&&host.querySelector('[data-narration-audio]');if(!host||!audio)return;
-    audio.controls=false;audio.classList.add('adfilm-native-audio-hidden');
+    var host=playerHost(scope),audio=host&&host.querySelector('[data-narration-audio]');if(!host||!audio)return;
+    host.setAttribute('data-adfilm-narration-engine-player','');
+    audio.controls=false;audio.removeAttribute('controls');audio.classList.add('adfilm-native-audio-hidden');
     if(!host.querySelector('[data-premium-audio]'))host.insertAdjacentHTML('beforeend',markup());
     if(host.dataset.premiumAudioBound==="1"){sync(scope);return}
     host.dataset.premiumAudioBound="1";
@@ -82,11 +84,11 @@
     });
     ['loadedmetadata','durationchange','timeupdate','play','pause','ended','volumechange'].forEach(function(name){audio.addEventListener(name,function(){sync(scope)})});
     if(progress)progress.addEventListener('input',function(){var total=isFinite(audio.duration)?audio.duration:0;if(total)audio.currentTime=Number(progress.value)/100*total;sync(scope)});
-    new MutationObserver(function(){audio.controls=false;sync(scope)}).observe(audio,{attributes:true,attributeFilter:['src','controls']});
+    new MutationObserver(function(){audio.controls=false;audio.removeAttribute('controls');sync(scope)}).observe(audio,{attributes:true,attributeFilter:['src','controls']});
     sync(scope);
   }
 
-  function schedule(scope){[0,120,400].forEach(function(delay){setTimeout(function(){mount(scope||root())},delay)})}
+  function schedule(scope){[0,60,120,400,900].forEach(function(delay){setTimeout(function(){mount(scope||root())},delay)})}
   document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')schedule(event.detail.root)});
   document.addEventListener('aivo:adfilm-project-sync',function(){schedule(root())});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){schedule(root())},{once:true});else schedule(root());
