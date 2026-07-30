@@ -43,6 +43,16 @@ function clean(value, max = 160) {
     .slice(0, max);
 }
 
+function cleanMultiline(value, max = 700) {
+  return String(value ?? "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, max);
+}
+
 function enumValue(value, allowed, fallback) {
   const normalized = String(value || "").trim().toLowerCase();
   return allowed.has(normalized) ? normalized : fallback;
@@ -95,6 +105,8 @@ function extendAvatarPatch(rawProject, sanitizedPatch, user, projectId) {
     framing: enumValue(source.framing, AVATAR_FRAMINGS, "chest"),
     expression: enumValue(source.expression, AVATAR_EXPRESSIONS, "friendly"),
     outfit: enumValue(source.outfit, AVATAR_OUTFITS, "business"),
+    directorNote: cleanMultiline(source.directorNote, 700),
+    sceneDescription: cleanMultiline(source.sceneDescription, 700),
     image: source.image === null ? null : sanitizeAvatarMedia(source.image, user, projectId),
   };
   return { ...sanitizedPatch, avatar };
@@ -122,6 +134,8 @@ function mergeWithAvatar(current, patch) {
       framing: "chest",
       expression: "friendly",
       outfit: "business",
+      directorNote: "",
+      sceneDescription: "",
       image: null,
       ...(current.avatar || {}),
       ...patch.avatar,
