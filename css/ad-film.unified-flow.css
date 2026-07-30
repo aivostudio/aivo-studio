@@ -1,0 +1,45 @@
+/* AIVO AI Reklam Filmi — unified single-flow header */
+
+/* The studio is now one configurable advertising workflow. Voice, music,
+   avatar and future capabilities are controlled inside their own sections,
+   so the old top-level mode selector is intentionally removed. */
+[data-module-root][data-module="adfilm"] .adfilm-modebar{
+  display:none !important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-layout{
+  margin-top:18px;
+}
+
+/* Keep the module icon on the left and cloud state on the right, while the
+   title group is geometrically centered inside the full hero card. */
+@media (min-width:1180px){
+  [data-module-root][data-module="adfilm"] .adfilm-hero{
+    grid-template-columns:minmax(210px,1fr) minmax(0,760px) minmax(210px,1fr);
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero__icon{
+    grid-column:1;
+    justify-self:start;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero__copy{
+    grid-column:2;
+    width:100%;
+    justify-self:center;
+    text-align:center;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-kicker{
+    justify-content:center;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero p{
+    margin:9px auto 0;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero__status{
+    grid-column:3;
+    justify-self:end;
+  }
+}
