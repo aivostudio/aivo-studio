@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — single stable live-player controller */
 (function AIVO_AD_FILM_RESULT_CONTROLS(){
   "use strict";
-  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V9__)return;
-  window.__AIVO_AD_FILM_RESULT_CONTROLS_V9__=true;
+  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V10__)return;
+  window.__AIVO_AD_FILM_RESULT_CONTROLS_V10__=true;
 
   var COPY={
     tr:{play:"Oynat",pause:"Duraklat",download:"İndir",downloadStarted:"İndirme başlatıldı.",fullscreen:"Tam ekran",mute:"Sesi kapat",unmute:"Sesi aç",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",downloadFailed:"Video indirilemedi."},
@@ -12,6 +12,7 @@
   var restoreTimer=null;
   var downloadBusy=false;
   var previewContext=null;
+  var renderedSignature="";
 
   function lang(){
     var html=String(document.documentElement.lang||"").toLowerCase(),stored="";
@@ -70,6 +71,22 @@
       source:clean(options.source||"explicit")
     };
   }
+  function stableMediaKey(url){
+    var value=clean(url);if(!value)return"";
+    try{
+      var parsed=new URL(value,location.href);
+      return parsed.origin+parsed.pathname;
+    }catch(_){return value.split("?")[0].split("#")[0]}
+  }
+  function contextSignature(context){
+    if(!context)return"";
+    return[
+      clean(context.projectId),
+      clean(context.outputId),
+      stableMediaKey(context.url),
+      context.logoApplied===true?"applied":stableMediaKey(context.logo)
+    ].join("|");
+  }
   function setContext(context){
     if(!context||!clean(context.url))return null;
     previewContext={
@@ -103,7 +120,7 @@
     }catch(_){}
   }
   function frame(){return document.querySelector('.rpPanelWrap[data-panel-key="adfilm"] [data-panel-frame]')}
-  function sameUrl(a,b){try{return new URL(a,location.href).href===new URL(b,location.href).href}catch(_){return clean(a)===clean(b)}}
+  function currentVideo(){var target=frame();return target&&target.querySelector("video[data-adfilm-result-video]")}
 
   function icon(name){
     var paths={
@@ -131,7 +148,8 @@
     var old=target.querySelector("[data-adfilm-result-logo]");
     if(!url){if(old)old.remove();return}
     if(!old){old=document.createElement("div");old.className="adfilm-result-logo";old.setAttribute("data-adfilm-result-logo","");target.appendChild(old)}
-    old.style.backgroundImage='url("'+String(url).replace(/"/g,"%22")+'")';
+    var next='url("'+String(url).replace(/"/g,"%22")+'")';
+    if(old.style.backgroundImage!==next)old.style.backgroundImage=next;
   }
 
   function clearDom(){
@@ -143,6 +161,7 @@
     var logo=target.querySelector("[data-adfilm-result-logo]");if(logo)logo.remove();
     var media=target.querySelector("[data-panel-media]");if(media)media.classList.remove("has-result-video");
     target.classList.remove("has-result-video");
+    renderedSignature="";
   }
   function clearPlayer(forget){
     clearDom();
@@ -194,8 +213,9 @@
         var next=data.project||activeProject;
         window.AIVOAdFilmActiveProject=next;
         previewContext=null;
+        renderedSignature="";
         var nextContext=contextFromProject(next);
-        if(nextContext){setContext(nextContext);renderContext(nextContext,false)}else clearPlayer(true);
+        if(nextContext){setContext(nextContext);renderContext(nextContext,false,true)}else clearPlayer(true);
         document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
       }else{
         clearPlayer(true);
@@ -279,17 +299,28 @@
     syncPlay(video,toolbar);syncMute(video,toolbar);
   }
 
-  function renderContext(context,play){
+  function renderContext(context,play,force){
     if(!context||!clean(context.url)){clearDom();return null}
     var target=frame();if(!target)return null;
     var media=target.querySelector("[data-panel-media]");if(!media)return null;
-    var video=media.querySelector("video[data-adfilm-result-video]");
+    var signature=contextSignature(context);
+    var existing=media.querySelector("video[data-adfilm-result-video]");
+
+    /* Ordinary form saves dispatch the full project repeatedly. If the active
+       output and underlying media path are unchanged, leave the existing video
+       element completely untouched so the live preview cannot blink. */
+    if(!force&&existing&&existing.isConnected&&renderedSignature===signature){
+      if(play)existing.play().catch(function(){});
+      return existing;
+    }
+
+    var video=existing;
     if(!video){
       video=document.createElement("video");
       video.setAttribute("data-adfilm-result-video","");
       media.appendChild(video);
     }
-    if(!sameUrl(video.currentSrc||video.src,context.url)){
+    if(renderedSignature!==signature||!stableMediaKey(video.currentSrc||video.src)||stableMediaKey(video.currentSrc||video.src)!==stableMediaKey(context.url)){
       try{video.pause()}catch(_){}
       video.src=context.url;
       try{video.load()}catch(_){}
@@ -297,6 +328,7 @@
     media.classList.add("has-media","has-result-video");
     target.classList.add("has-result-video");
     enhance(video,context);
+    renderedSignature=signature;
     if(play)video.play().catch(function(){});
     return video;
   }
@@ -307,7 +339,7 @@
     if(clean(url))context=setContext(normalizeContext(url,logo,options));
     else context=currentContext();
     if(!context){clearDom();return null}
-    return renderContext(context,!!options.play);
+    return renderContext(context,!!options.play,options.force===true);
   }
 
   function syncFromProject(source){
@@ -315,12 +347,15 @@
     if(source)window.AIVOAdFilmActiveProject=source;
     var next=contextFromProject(source);
     if(next){
+      var signature=contextSignature(next);
       previewContext=setContext(next);
-      renderContext(previewContext,false);
+      if(renderedSignature===signature&&currentVideo())return;
+      renderContext(previewContext,false,false);
       return;
     }
     if(previewContext&&clean(previewContext.url)){
-      renderContext(previewContext,false);
+      if(renderedSignature===contextSignature(previewContext)&&currentVideo())return;
+      renderContext(previewContext,false,false);
       return;
     }
     clearDom();
@@ -331,7 +366,10 @@
       var panel=document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');
       if(!panel||!panel.isConnected)return;
       var context=currentContext();
-      if(context)renderContext(context,false);else clearDom();
+      if(context){
+        if(renderedSignature===contextSignature(context)&&currentVideo())return;
+        renderContext(context,false,false);
+      }else clearDom();
     },delay==null?80:delay);
   }
 
@@ -340,7 +378,7 @@
     if(!play)return;
     var context=currentContext();if(!context)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-    renderContext(context,true);
+    renderContext(context,true,false);
   },true);
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")restore(240)});
   document.addEventListener("aivo:adfilm-project-sync",function(event){syncFromProject(event&&event.detail&&event.detail.project||project())});
