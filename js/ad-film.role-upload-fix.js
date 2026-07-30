@@ -4,12 +4,12 @@
      user opens the picker again.
    - Bridges smart-role media to the legacy live preview after the
      original file inputs were rebuilt by the creative-plan layout.
-   - Shows the uploaded logo in the thumbnail tray as an overlay asset.
+   - Persists logo to project-owned R2 and restores its remote preview.
    ========================================================= */
 (function AIVO_AD_FILM_ROLE_UPLOAD_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX__)return;
-  window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX__=true;
+  if(window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX_V2__)return;
+  window.__AIVO_AD_FILM_ROLE_UPLOAD_FIX_V2__=true;
 
   var cache=new WeakMap();
   var LIMITS={hero:1,angles:3,scenes:5};
@@ -25,6 +25,8 @@
     return stored==="en"||html.indexOf("en")===0?"en":"tr";
   }
   function text(tr,en){return language()==="en"?en:tr}
+  function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
+  function remoteLogo(){var source=project(),media=window.AIVOAdFilmServerMedia||source&&source.media||{};return media&&media.logo||null}
 
   function assign(field,next){
     if(!field)return;
@@ -74,15 +76,15 @@
     return files(field)[0]||null;
   }
 
-  function ensureLogoThumb(scope,file,url){
+  function ensureLogoThumb(scope,asset,url){
     var tray=scope&&scope.querySelector("[data-role-preview]");if(!tray)return;
     var old=tray.querySelector(".adfilm-role-thumb--logo");if(old)old.remove();
-    if(!file||!url)return;
+    if(!asset||!url)return;
     tray.hidden=false;
     var article=document.createElement("article");
     article.className="adfilm-role-thumb adfilm-role-thumb--logo";
     var image=document.createElement("div");
-    image.style.backgroundImage='url("'+url.replace(/"/g,"%22")+'")';
+    image.style.backgroundImage='url("'+String(url).replace(/"/g,"%22")+'")';
     var badge=document.createElement("span");badge.textContent="Overlay";image.appendChild(badge);
     var label=document.createElement("b");label.textContent="LOGO";
     var remove=document.createElement("button");remove.type="button";remove.setAttribute("data-smart-logo-remove","");remove.title=text("Logoyu kaldır","Remove logo");remove.textContent="×";
@@ -99,12 +101,14 @@
 
   function syncLivePreview(scope){
     if(!scope||!scope.isConnected)return;
-    var hero=heroFile(scope),logo=logoFile(scope);
-    var heroUrl=objectPreview(heroPreview,hero),logoUrl=objectPreview(logoPreview,logo);
+    var hero=heroFile(scope),localLogo=logoFile(scope),savedLogo=remoteLogo();
+    var heroUrl=objectPreview(heroPreview,hero);
+    var logoUrl=localLogo?objectPreview(logoPreview,localLogo):String(savedLogo&&savedLogo.url||"");
+    var logoAsset=localLogo||savedLogo;
 
     syncRoleZoneState(scope,"hero",hero?1:0);
-    syncRoleZoneState(scope,"logo",logo?1:0);
-    ensureLogoThumb(scope,logo,logoUrl);
+    syncRoleZoneState(scope,"logo",logoAsset?1:0);
+    ensureLogoThumb(scope,logoAsset,logoUrl);
 
     var panel=document.querySelector('.rpPanelWrap[data-panel-key="adfilm"]');
     if(!panel)return;
@@ -144,6 +148,18 @@
     scheduleVisualSync(scope);
   }
 
+  /* Project sync treats media inside .adfilm-role-media as local-only. Product
+     role files have their own upload path, but the logo does not. Temporarily
+     remove that marker before the event reaches the scoped project-sync
+     listener so the existing authenticated R2 upload path handles the logo. */
+  document.addEventListener("change",function(event){
+    var logo=event.target&&event.target.closest&&event.target.closest('[data-adfilm-file="logo"]');
+    var holder=logo&&logo.closest(".adfilm-role-media");
+    if(!logo||!holder)return;
+    holder.classList.remove("adfilm-role-media");
+    setTimeout(function(){if(holder&&holder.isConnected)holder.classList.add("adfilm-role-media")},0);
+  },true);
+
   /* Capture runs before creative-plan's direct change listener. */
   document.addEventListener("change",function(event){
     var field=event.target&&event.target.closest&&event.target.closest("[data-adfilm-role-file]");
@@ -167,7 +183,7 @@
     }
 
     var logo=event.target&&event.target.closest&&event.target.closest('[data-adfilm-file="logo"]');
-    if(logo&&logo.closest(".adfilm-role-media"))scheduleVisualSync(logo.closest('[data-module-root][data-module="adfilm"]')||root());
+    if(logo)scheduleVisualSync(logo.closest('[data-module-root][data-module="adfilm"]')||root());
   },true);
 
   document.addEventListener("input",function(event){
@@ -185,6 +201,11 @@
       setTimeout(function(){syncCache(root());scheduleVisualSync(root())},100);
     }
   },true);
+
+  document.addEventListener("aivo:adfilm-project-sync",function(event){
+    var scope=root();
+    if(scope){window.AIVOAdFilmServerMedia=event&&event.detail&&event.detail.media||window.AIVOAdFilmServerMedia;scheduleVisualSync(scope)}
+  });
 
   document.addEventListener("aivo:module-mounted",function(event){
     if(!event||!event.detail||event.detail.key!=="adfilm")return;
