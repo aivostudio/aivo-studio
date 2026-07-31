@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — treat avatar finalization 425 as a waiting state */
 (function AIVO_AD_FILM_FINALIZE_WAIT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_WAIT_V1__)return;
-  window.__AIVO_AD_FILM_FINALIZE_WAIT_V1__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_WAIT_V2__)return;
+  window.__AIVO_AD_FILM_FINALIZE_WAIT_V2__=true;
 
   var previousFetch=window.fetch.bind(window);
   var flights=new Map();
@@ -28,15 +28,27 @@
     });
   }
 
+  function stageKind(stage){
+    stage=clean(stage).toLowerCase();
+    if(stage.indexOf("matting")>=0)return"matting";
+    if(stage.indexOf("lipsync")>=0)return"lipsync";
+    return"motion";
+  }
+
   function setWaitingStage(stage){
     var scope=document.querySelector('[data-module-root][data-module="adfilm"]');
     var status=scope&&scope.querySelector('[data-adfilm-engine-status]');
-    var title=stage==="lipsync"
-      ?text("Avatar konuşmaya uyarlanıyor","Synchronizing avatar speech")
-      :text("Sinematik avatar performansı hazırlanıyor","Preparing cinematic avatar performance");
-    var detail=stage==="lipsync"
-      ?text("Dudak, yüz ve konuşma zamanlaması tamamlanıyor. Üretim ekranını kapatma.","Lip, face and speech timing is being completed. Keep the production screen open.")
-      :text("Beden hareketi, yürüyüş ve kamera koreografisi hazırlanıyor. Final işlem otomatik devam edecek.","Body motion, walking and camera choreography are being prepared. Finalization will continue automatically.");
+    var kind=stageKind(stage);
+    var title=kind==="matting"
+      ?text("Avatar transparanlaştırılıyor","Removing avatar background")
+      :kind==="lipsync"
+        ?text("Avatar konuşmaya uyarlanıyor","Synchronizing avatar speech")
+        :text("Sinematik avatar performansı hazırlanıyor","Preparing cinematic avatar performance");
+    var detail=kind==="matting"
+      ?text("Saç, kıyafet ve beden kenarları işleniyor. Final montaj transparan video hazır olunca başlayacak.","Hair, clothing and body edges are being refined. Final compositing will start when the transparent video is ready.")
+      :kind==="lipsync"
+        ?text("Dudak, yüz ve konuşma zamanlaması tamamlanıyor. Üretim ekranını kapatma.","Lip, face and speech timing is being completed. Keep the production screen open.")
+        :text("Beden hareketi, yürüyüş ve kamera koreografisi hazırlanıyor. Final işlem otomatik devam edecek.","Body motion, walking and camera choreography are being prepared. Finalization will continue automatically.");
 
     if(status){
       status.className="adfilm-engine-status is-visible is-busy";
@@ -70,8 +82,7 @@
   }
 
   async function waitForAvatar(input,init,projectId,firstPayload){
-    var stage=clean(firstPayload&&firstPayload.avatar_status)||"motion";
-    setWaitingStage(stage.indexOf("lipsync")>=0?"lipsync":"motion");
+    setWaitingStage(clean(firstPayload&&firstPayload.avatar_status)||"motion");
 
     for(var count=0;count<MAX_POLLS;count++){
       var state;
@@ -86,7 +97,7 @@
       var publicStatus=clean(data.status).toUpperCase();
       var pipelineStatus=clean(pipeline.status).toLowerCase();
       var currentStage=clean(data.stage||pipeline.stage||pipelineStatus);
-      setWaitingStage(currentStage.indexOf("lipsync")>=0?"lipsync":"motion");
+      setWaitingStage(currentStage);
 
       if(publicStatus==="FAILED"||pipelineStatus==="failed"){
         return jsonResponse({
@@ -96,7 +107,8 @@
         },409);
       }
 
-      if(publicStatus==="COMPLETED"||(pipelineStatus==="completed"&&clean(pipeline.videoUrl))){
+      var transparentUrl=clean(pipeline.transparentVideoUrl||data.video_url);
+      if(publicStatus==="COMPLETED"&&pipelineStatus==="completed"&&transparentUrl){
         await sleep(250);
         var finalized=await previousFetch(input,init);
         if(finalized.status!==425)return finalized;
