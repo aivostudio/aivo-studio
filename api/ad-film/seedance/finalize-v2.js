@@ -19,7 +19,7 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 10;
+const MIX_VERSION = 11;
 const DOWNLOAD_TIMEOUT_MS = 70000;
 const FFMPEG_TIMEOUT_MS = 215000;
 const UPLOAD_TIMEOUT_MS = 65000;
@@ -147,14 +147,20 @@ function generationTarget(project) {
 function targetOf(project, requestedOutputId) {
   const outputs = outputsOf(project);
   const generated = generationTarget(project);
-  if (generated && clean(generated.id) === clean(requestedOutputId)) return { target: generated, outputs };
-  const target =
-    outputs.find((item) => clean(item.id) === clean(requestedOutputId)) ||
-    outputs.find((item) => clean(item.id) === clean(project?.activeOutputId)) ||
-    generated ||
-    outputs[0] ||
-    null;
-  return { target, outputs };
+  const requested = clean(requestedOutputId, 240);
+
+  if (requested) {
+    if (generated && clean(generated.id) === requested) return { target: generated, outputs };
+    const matched = outputs.find((item) => clean(item.id) === requested);
+    if (matched) return { target: matched, outputs };
+  }
+
+  if (generated) return { target: generated, outputs };
+  const active = clean(project?.activeOutputId, 240);
+  return {
+    target: outputs.find((item) => clean(item.id) === active) || outputs[0] || null,
+    outputs,
+  };
 }
 
 function logoWidth(resolution) {
@@ -270,6 +276,16 @@ function isRecentProcessing(finalization, outputId) {
   return Number.isFinite(started) && Date.now() - started < PROCESSING_TTL_MS;
 }
 
+function sameMediaUrl(a, b) {
+  try {
+    const left = new URL(clean(a, 4000));
+    const right = new URL(clean(b, 4000));
+    return left.origin === right.origin && left.pathname === right.pathname;
+  } catch (_) {
+    return clean(a, 4000) === clean(b, 4000);
+  }
+}
+
 export default async function handler(req, res) {
   const cleanup = [];
   let sourceVideoUrl = "";
@@ -323,6 +339,9 @@ export default async function handler(req, res) {
     if (musicRequired && !musicUrl) return sendJson(res, 409, { ok: false, error: "music_audio_required" });
     if (avatarRequested && (!avatarUrl || avatarPipeline?.status !== "completed")) {
       return sendJson(res, 425, { ok: false, error: "avatar_video_processing", avatar_status: avatarPipeline?.status || "processing" });
+    }
+    if (avatarUrl && sameMediaUrl(sourceVideoUrl, avatarUrl)) {
+      return sendJson(res, 409, { ok: false, error: "invalid_source_video_avatar_collision" });
     }
 
     const logoSatisfied = !logoUrl || target?.logoApplied === true;
@@ -395,7 +414,7 @@ export default async function handler(req, res) {
 
     if (avatarUrl) {
       avatarIndex = nextIndex++;
-      args.push("-i", avatarVideo);
+      args.push("-c:v", "libvpx-vp9", "-i", avatarVideo);
     }
     if (logoUrl) {
       logoIndex = nextIndex++;
@@ -415,7 +434,7 @@ export default async function handler(req, res) {
     let videoLabel = "base";
 
     if (avatarUrl) {
-      filters.push(`[${avatarIndex}:v]format=rgba,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:color=black@0,format=rgba,setsar=1,fps=30,setpts=PTS-STARTPTS[avatar]`);
+      filters.push(`[${avatarIndex}:v]format=yuva420p,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:color=black@0,format=rgba,setsar=1,fps=30,setpts=PTS-STARTPTS[avatar]`);
       filters.push(`[base][avatar]overlay=0:0:format=auto:enable='${avatarEnableExpression(duration)}':eof_action=pass:shortest=0[hybrid]`);
       videoLabel = "hybrid";
     }
@@ -503,6 +522,7 @@ export default async function handler(req, res) {
       avatarUrl: avatarUrl || null,
       avatarApplied: Boolean(avatarUrl),
       avatarTransparent: Boolean(avatarUrl),
+      avatarAlphaDecoder: avatarUrl ? "libvpx-vp9" : null,
       avatarMattingModel: avatarUrl ? clean(avatarPipeline?.matting?.model, 200) || null : null,
       avatarWindows: avatarUrl ? avatarWindows(duration) : [],
       avatarPipelineVersion: avatarUrl ? Number(avatarPipeline?.version || 1) : null,
@@ -536,6 +556,7 @@ export default async function handler(req, res) {
         avatarUrl: avatarUrl || null,
         avatarApplied: Boolean(avatarUrl),
         avatarTransparent: Boolean(avatarUrl),
+        avatarAlphaDecoder: avatarUrl ? "libvpx-vp9" : null,
         avatarMattingModel: avatarUrl ? clean(avatarPipeline?.matting?.model, 200) || null : null,
         avatarWindows: avatarUrl ? avatarWindows(duration) : [],
         audioCodec: "aac",
@@ -564,6 +585,7 @@ export default async function handler(req, res) {
       avatar_url: avatarUrl || null,
       avatar_applied: Boolean(avatarUrl),
       avatar_transparent: Boolean(avatarUrl),
+      avatar_alpha_decoder: avatarUrl ? "libvpx-vp9" : null,
       avatar_matting_model: avatarUrl ? clean(avatarPipeline?.matting?.model, 200) || null : null,
       avatar_windows: avatarUrl ? avatarWindows(duration) : [],
       audio_codec: "aac",
