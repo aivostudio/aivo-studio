@@ -19,7 +19,7 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 9;
+const MIX_VERSION = 10;
 const DOWNLOAD_TIMEOUT_MS = 70000;
 const FFMPEG_TIMEOUT_MS = 215000;
 const UPLOAD_TIMEOUT_MS = 65000;
@@ -315,18 +315,20 @@ export default async function handler(req, res) {
     const avatarEnabled = project?.avatar?.enabled === true;
     const avatarPipeline = project?.avatar?.pipeline || null;
     const avatarRequested = avatarEnabled && Boolean(avatarPipeline);
-    const avatarUrl = avatarRequested ? clean(avatarPipeline?.videoUrl || project?.avatar?.videoUrl, 4000) : "";
+    const avatarUrl = avatarRequested
+      ? clean(avatarPipeline?.transparentVideoUrl || (Number(avatarPipeline?.version || 0) >= 4 ? avatarPipeline?.videoUrl : ""), 4000)
+      : "";
 
     if (narrationEnabled && !narrationUrl) return sendJson(res, 409, { ok: false, error: "narration_audio_approval_required" });
     if (musicRequired && !musicUrl) return sendJson(res, 409, { ok: false, error: "music_audio_required" });
-    if (avatarRequested && !avatarUrl) {
+    if (avatarRequested && (!avatarUrl || avatarPipeline?.status !== "completed")) {
       return sendJson(res, 425, { ok: false, error: "avatar_video_processing", avatar_status: avatarPipeline?.status || "processing" });
     }
 
     const logoSatisfied = !logoUrl || target?.logoApplied === true;
     const narrationSatisfied = !narrationEnabled || target?.narrationApplied === true;
     const musicSatisfied = !musicRequired || target?.musicApplied === true;
-    const avatarSatisfied = !avatarRequested || target?.avatarApplied === true;
+    const avatarSatisfied = !avatarRequested || (target?.avatarApplied === true && target?.avatarTransparent === true);
     const mixSatisfied = Number(target?.mixVersion || 0) >= MIX_VERSION;
     if (target?.videoUrl && logoSatisfied && narrationSatisfied && musicSatisfied && avatarSatisfied && mixSatisfied) {
       return sendJson(res, 200, {
@@ -338,6 +340,7 @@ export default async function handler(req, res) {
         narration_applied: Boolean(narrationUrl),
         music_applied: Boolean(musicUrl),
         avatar_applied: Boolean(avatarUrl),
+        avatar_transparent: Boolean(avatarUrl),
         mix_version: target.mixVersion,
         project,
       });
@@ -367,7 +370,7 @@ export default async function handler(req, res) {
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-adfilm-final-v2-"));
     const inputVideo = path.join(tmpDir, "source.mp4");
-    const avatarVideo = path.join(tmpDir, "avatar.mp4");
+    const avatarVideo = path.join(tmpDir, "avatar.webm");
     const originalLogo = path.join(tmpDir, "logo-original");
     const transparentLogo = path.join(tmpDir, "logo-transparent.png");
     const narrationFile = path.join(tmpDir, "narration-audio");
@@ -412,8 +415,8 @@ export default async function handler(req, res) {
     let videoLabel = "base";
 
     if (avatarUrl) {
-      filters.push(`[${avatarIndex}:v]scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=fast_bilinear,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,setpts=PTS-STARTPTS[avatar]`);
-      filters.push(`[base][avatar]overlay=0:0:enable='${avatarEnableExpression(duration)}':eof_action=pass:shortest=0[hybrid]`);
+      filters.push(`[${avatarIndex}:v]format=rgba,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:color=black@0,format=rgba,setsar=1,fps=30,setpts=PTS-STARTPTS[avatar]`);
+      filters.push(`[base][avatar]overlay=0:0:format=auto:enable='${avatarEnableExpression(duration)}':eof_action=pass:shortest=0[hybrid]`);
       videoLabel = "hybrid";
     }
 
@@ -499,6 +502,8 @@ export default async function handler(req, res) {
       musicBedVolume: narrationUrl && musicUrl ? 0.34 : 0.72,
       avatarUrl: avatarUrl || null,
       avatarApplied: Boolean(avatarUrl),
+      avatarTransparent: Boolean(avatarUrl),
+      avatarMattingModel: avatarUrl ? clean(avatarPipeline?.matting?.model, 200) || null : null,
       avatarWindows: avatarUrl ? avatarWindows(duration) : [],
       avatarPipelineVersion: avatarUrl ? Number(avatarPipeline?.version || 1) : null,
       audioCodec: "aac",
@@ -530,6 +535,8 @@ export default async function handler(req, res) {
         musicBedVolume: narrationUrl && musicUrl ? 0.34 : 0.72,
         avatarUrl: avatarUrl || null,
         avatarApplied: Boolean(avatarUrl),
+        avatarTransparent: Boolean(avatarUrl),
+        avatarMattingModel: avatarUrl ? clean(avatarPipeline?.matting?.model, 200) || null : null,
         avatarWindows: avatarUrl ? avatarWindows(duration) : [],
         audioCodec: "aac",
         audioBitrate: "192k",
@@ -556,6 +563,8 @@ export default async function handler(req, res) {
       music_applied: Boolean(musicUrl),
       avatar_url: avatarUrl || null,
       avatar_applied: Boolean(avatarUrl),
+      avatar_transparent: Boolean(avatarUrl),
+      avatar_matting_model: avatarUrl ? clean(avatarPipeline?.matting?.model, 200) || null : null,
       avatar_windows: avatarUrl ? avatarWindows(duration) : [],
       audio_codec: "aac",
       audio_bitrate: "192k",
