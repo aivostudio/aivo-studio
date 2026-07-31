@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — native-scene avatar orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V5__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V5__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V6__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V6__=true;
 
   var running=false,pollTimer=null;
   var POLL_MS=3500,MAX_POLLS=700;
@@ -79,7 +79,7 @@
     var id=projectId(scope);if(!id)throw new Error('project_not_ready');
     if(!avatarImage())throw new Error('avatar_image_required');
     var duration=choice(scope,'duration','10'),ratio=choice(scope,'aspectRatio','16:9'),quality=choice(scope,'quality','1080p');
-    var data=await jsonRequest('/api/ad-film/avatar/pipeline/create-native',{method:'POST',body:JSON.stringify({projectId:id,duration:duration,aspect_ratio:ratio==='4:5'?'3:4':ratio,quality:quality})});
+    var data=await jsonRequest('/api/ad-film/avatar/pipeline/create-native-fixed',{method:'POST',body:JSON.stringify({projectId:id,duration:duration,aspect_ratio:ratio==='4:5'?'3:4':ratio,quality:quality})});
     if(data.project){data.project=holdGeneration(data.project);window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
     running=true;poll(scope,id,0);return data;
   }
@@ -92,6 +92,7 @@
     var code=clean(error&&error.message);
     if(code==='avatar_image_required')return text('Avatar açıkken önce bir avatar seç veya yükle.','Select or upload an avatar while the avatar feature is enabled.');
     if(code==='narration_audio_approval_required')return text('Konuşan oyuncu için sesi oluşturup onayla.','Generate and approve the voice for the talking presenter.');
+    if(code==='product_reference_required')return text('Ana ürün referansı bulunamadı. Ürün görsellerini yeniden seçip tekrar dene.','The hero product reference is missing. Select the product images again and retry.');
     if(code==='background_removal_failed'||code==='background_removal_missing_output')return text('Oyuncu veya ürün görseli hazırlanamadı. Üretim başlatılmadı.','The presenter or product image could not be prepared. Production was not started.');
     if(code==='project_not_ready')return text('Proje bulut bağlantısı henüz hazır değil.','The project cloud connection is not ready yet.');
     return text('Oyunculu reklam motorları başlatılamadı. Tekrar dene.','Presenter ad engines could not be started. Try again.');
