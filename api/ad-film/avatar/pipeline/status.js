@@ -1,6 +1,6 @@
 // api/ad-film/avatar/pipeline/status.js
 export const config = { runtime: "nodejs" };
-export const maxDuration = 120;
+export const maxDuration = 180;
 
 import {
   getOwnedProject,
@@ -14,6 +14,7 @@ const KLING_STANDARD_I2V = "fal-ai/kling-video/v3/standard/image-to-video";
 const KLING_MOTION = "fal-ai/kling-video/v3/pro/motion-control";
 const WAN_MOTION = "fal-ai/wan-motion";
 const LIPSYNC = "fal-ai/sync-lipsync/v3";
+const VIDEO_MATTING = "veed/video-background-removal";
 const FRESH_JOB_404_GRACE_MS = 90 * 1000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
@@ -60,8 +61,22 @@ function providerError(payload, fallback = "fal_generation_failed") {
   return fallback;
 }
 function videoUrlFrom(payload) {
-  const value = pick(payload, ["video.url","data.video.url","result.video.url","output.video.url","response.video.url","video_url"]);
-  return typeof value === "string" && /^https:\/\//i.test(value) ? value : null;
+  const direct = pick(payload, [
+    "video.url",
+    "data.video.url",
+    "result.video.url",
+    "output.video.url",
+    "response.video.url",
+    "video_url",
+  ]);
+  if (typeof direct === "string" && /^https:\/\//i.test(direct)) return direct;
+
+  const list = pick(payload, ["video", "data.video", "result.video", "output.video", "response.video"]);
+  if (Array.isArray(list)) {
+    const item = list.find((entry) => entry && typeof entry.url === "string" && /^https:\/\//i.test(entry.url));
+    if (item) return item.url;
+  }
+  return null;
 }
 function normalizeStatus(value, videoUrl) {
   if (videoUrl) return "COMPLETED";
@@ -81,6 +96,7 @@ function freshJob(job) {
   return Number.isFinite(submittedAt) && Date.now() - submittedAt < FRESH_JOB_404_GRACE_MS;
 }
 async function readJob(job) {
+  if (!job?.model || !job?.requestId) return { status:"FAILED", error:"fal_job_missing" };
   const statusUrl = clean(job?.statusUrl, 1600) || `https://queue.fal.run/${job.model}/requests/${encodeURIComponent(job.requestId)}/status`;
   const responseUrl = clean(job?.responseUrl, 1600) || `https://queue.fal.run/${job.model}/requests/${encodeURIComponent(job.requestId)}`;
   const statusResponse = await falFetch(statusUrl);
@@ -145,7 +161,8 @@ function i2vInput(pipeline) {
     prompt:pipeline.prompt,
     duration:String(pipeline.duration),
     generate_audio:false,
-    negative_prompt:"identity drift, distorted face, extra people, duplicate limbs, warped hands, text, logo, watermark, abrupt camera shake, low quality",
+    cfg_scale:Number(pipeline.cfgScale || 0.7),
+    negative_prompt:"identity drift, distorted face, extra people, duplicate limbs, warped hands, text, logo, watermark, abrupt camera shake, low quality, generated scenery, complex background, moving background",
   };
 }
 async function queueMotionFallback(pipeline) {
@@ -180,6 +197,27 @@ async function startLipsync(pipeline, motionVideoUrl) {
   });
   return { ...job, provider:"fal", syncMode:"silence", videoUrl:null, error:null };
 }
+async function startMatting(sourceVideoUrl) {
+  const job = await submitQueue(VIDEO_MATTING, {
+    video_url:sourceVideoUrl,
+    output_codec:"vp9",
+    refine_foreground_edges:true,
+    subject_is_person:true,
+  });
+  return {
+    ...job,
+    provider:"fal",
+    outputCodec:"vp9",
+    refineForegroundEdges:true,
+    subjectIsPerson:true,
+    sourceVideoUrl,
+    videoUrl:null,
+    error:null,
+  };
+}
+function queuedStatus(result, queued, processing) {
+  return result.status === "IN_QUEUE" ? queued : processing;
+}
 
 export default async function handler(req,res) {
   try {
@@ -195,7 +233,9 @@ export default async function handler(req,res) {
     let pipeline = avatar.pipeline;
     if (avatar.enabled !== true) return sendJson(res,200,{ok:true,skipped:true,status:"DISABLED",project});
     if (!pipeline) return sendJson(res,200,{ok:true,status:"IDLE",project});
-    if (pipeline.status === "completed" && pipeline.videoUrl) return sendJson(res,200,{ok:true,status:"COMPLETED",video_url:pipeline.videoUrl,pipeline,project});
+    if (pipeline.status === "completed" && pipeline.transparentVideoUrl) {
+      return sendJson(res,200,{ok:true,status:"COMPLETED",video_url:pipeline.transparentVideoUrl,pipeline,project});
+    }
     if (pipeline.status === "failed") return sendJson(res,200,{ok:true,status:"FAILED",pipeline,project});
     if (!falKey()) return sendJson(res,500,{ok:false,error:"missing_fal_key"});
 
@@ -211,28 +251,66 @@ export default async function handler(req,res) {
         }
       } else if (result.status === "COMPLETED" && result.videoUrl) {
         if (!pipeline.lipsyncAudioUrl) {
-          pipeline = { ...pipeline,status:"completed",stage:"completed",updatedAt:now,completedAt:now,videoUrl:result.videoUrl,motion:{...pipeline.motion,videoUrl:result.videoUrl,error:null} };
+          const matting = await startMatting(result.videoUrl);
+          pipeline = {
+            ...pipeline,
+            status:"matting_queued",
+            stage:"matting",
+            updatedAt:now,
+            opaqueVideoUrl:result.videoUrl,
+            motion:{...pipeline.motion,videoUrl:result.videoUrl,error:null},
+            matting,
+          };
         } else {
           const lipsync = await startLipsync(pipeline,result.videoUrl);
           pipeline = { ...pipeline,status:"lipsync_queued",stage:"lipsync",updatedAt:now,motion:{...pipeline.motion,videoUrl:result.videoUrl,error:null},lipsync };
         }
       } else {
-        pipeline = { ...pipeline,status:result.status === "IN_QUEUE" ? "motion_queued" : "motion_processing",updatedAt:now,motion:{...pipeline.motion,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
+        pipeline = { ...pipeline,status:queuedStatus(result,"motion_queued","motion_processing"),updatedAt:now,motion:{...pipeline.motion,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
       }
     } else if (pipeline.stage === "lipsync") {
       const result = await readJob(pipeline.lipsync);
       if (result.status === "FAILED") {
         pipeline = { ...pipeline,status:"failed",updatedAt:now,error:result.error||"avatar_lipsync_failed",lipsync:{...pipeline.lipsync,error:result.error||"avatar_lipsync_failed"} };
       } else if (result.status === "COMPLETED" && result.videoUrl) {
-        pipeline = { ...pipeline,status:"completed",stage:"completed",updatedAt:now,completedAt:now,videoUrl:result.videoUrl,lipsync:{...pipeline.lipsync,videoUrl:result.videoUrl,error:null} };
+        const matting = await startMatting(result.videoUrl);
+        pipeline = {
+          ...pipeline,
+          status:"matting_queued",
+          stage:"matting",
+          updatedAt:now,
+          opaqueVideoUrl:result.videoUrl,
+          lipsync:{...pipeline.lipsync,videoUrl:result.videoUrl,error:null},
+          matting,
+        };
       } else {
-        pipeline = { ...pipeline,status:result.status === "IN_QUEUE" ? "lipsync_queued" : "lipsync_processing",updatedAt:now,lipsync:{...pipeline.lipsync,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
+        pipeline = { ...pipeline,status:queuedStatus(result,"lipsync_queued","lipsync_processing"),updatedAt:now,lipsync:{...pipeline.lipsync,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
+      }
+    } else if (pipeline.stage === "matting") {
+      const result = await readJob(pipeline.matting);
+      if (result.status === "FAILED") {
+        pipeline = { ...pipeline,status:"failed",updatedAt:now,error:result.error||"avatar_background_removal_failed",matting:{...pipeline.matting,error:result.error||"avatar_background_removal_failed"} };
+      } else if (result.status === "COMPLETED" && result.videoUrl) {
+        pipeline = {
+          ...pipeline,
+          status:"completed",
+          stage:"completed",
+          updatedAt:now,
+          completedAt:now,
+          transparentVideoUrl:result.videoUrl,
+          videoUrl:result.videoUrl,
+          matting:{...pipeline.matting,videoUrl:result.videoUrl,error:null},
+          error:null,
+        };
+      } else {
+        pipeline = { ...pipeline,status:queuedStatus(result,"matting_queued","matting_processing"),updatedAt:now,matting:{...pipeline.matting,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
       }
     }
 
-    const nextProject = await saveProject(user,{...project,avatar:{...avatar,pipeline,videoUrl:pipeline.videoUrl||avatar.videoUrl||null}});
+    const safeAvatarVideo = pipeline.status === "completed" ? clean(pipeline.transparentVideoUrl,4000) : "";
+    const nextProject = await saveProject(user,{...project,avatar:{...avatar,pipeline,videoUrl:safeAvatarVideo||null}});
     const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status === "failed" ? "FAILED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
-    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:pipeline.videoUrl||null,pipeline,project:nextProject});
+    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeAvatarVideo||null,pipeline,project:nextProject});
   } catch(error) {
     console.error("[ad-film/avatar/pipeline/status]",error);
     return sendJson(res,Number(error?.status)||500,{ok:false,error:clean(error?.message||error,300),fal_response:error?.data||null});
