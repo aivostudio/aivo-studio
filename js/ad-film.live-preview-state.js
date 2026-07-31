@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — keep live preview reserved for finalized project outputs */
 (function AIVO_AD_FILM_LIVE_PREVIEW_STATE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_LIVE_PREVIEW_STATE_V3__)return;
-  window.__AIVO_AD_FILM_LIVE_PREVIEW_STATE_V3__=true;
+  if(window.__AIVO_AD_FILM_LIVE_PREVIEW_STATE_V4__)return;
+  window.__AIVO_AD_FILM_LIVE_PREVIEW_STATE_V4__=true;
 
   var stableByProject=Object.create(null);
 
@@ -32,7 +32,7 @@
       source.preparingNewVersion||
       ["queued","processing","completed","finalizing"].indexOf(generationStatus)>=0||
       ["processing","finalizing"].indexOf(projectStatus)>=0||
-      ["motion_queued","motion_processing","lipsync_queued","lipsync_processing"].indexOf(avatarStatus)>=0
+      ["motion_queued","motion_processing","lipsync_queued","lipsync_processing","matting_queued","matting_processing"].indexOf(avatarStatus)>=0
     );
   }
   function remember(source,outputs){
