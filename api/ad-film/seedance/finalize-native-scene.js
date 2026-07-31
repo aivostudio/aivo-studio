@@ -1,0 +1,216 @@
+// api/ad-film/seedance/finalize-native-scene.js
+export const config = { runtime: "nodejs" };
+export const maxDuration = 300;
+
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { spawn } from "child_process";
+import ffmpegPath from "ffmpeg-static";
+import sharp from "sharp";
+import { putObject } from "../../_lib/r2.js";
+import {
+  getOwnedProject,
+  mediaPrefix,
+  resolveAdFilmUser,
+  saveProject,
+  sendJson,
+} from "../../_lib/ad-film-projects.js";
+
+const MIX_VERSION = 12;
+const FFMPEG_TIMEOUT_MS = 240000;
+
+function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
+function safePart(value, fallback = "output") {
+  const next = clean(value, 180).replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "");
+  return next || fallback;
+}
+function even(value) {
+  const number = Math.max(2, Math.round(Number(value) || 2));
+  return number % 2 === 0 ? number : number - 1;
+}
+function dimensions(resolution, ratio) {
+  const value = clean(resolution, 20).toLowerCase();
+  const height = value === "4k" ? 2160 : value === "1080p" ? 1080 : value === "720p" ? 720 : 480;
+  const aspect = clean(ratio, 20) || "16:9";
+  if (aspect === "9:16") return { width:even(height * 9 / 16), height };
+  if (aspect === "1:1") return { width:height, height };
+  if (aspect === "4:5") return { width:even(height * 4 / 5), height };
+  if (aspect === "3:4") return { width:even(height * 3 / 4), height };
+  return { width:even(height * 16 / 9), height };
+}
+function logoWidth(resolution) {
+  const value = clean(resolution, 20).toLowerCase();
+  if (value === "4k") return 300;
+  if (value === "1080p") return 178;
+  if (value === "720p") return 128;
+  return 90;
+}
+function logoMargin(resolution) {
+  const value = clean(resolution, 20).toLowerCase();
+  if (value === "4k") return 72;
+  if (value === "1080p") return 40;
+  if (value === "720p") return 28;
+  return 20;
+}
+function runFfmpeg(args) {
+  return new Promise((resolve,reject) => {
+    const child = spawn(ffmpegPath,args,{stdio:["ignore","ignore","pipe"]});
+    let stderr="",settled=false;
+    const timer=setTimeout(()=>{if(settled)return;settled=true;child.kill("SIGKILL");reject(new Error("ffmpeg_timeout"));},FFMPEG_TIMEOUT_MS);
+    child.stderr.on("data",chunk=>{stderr+=chunk.toString();if(stderr.length>24000)stderr=stderr.slice(-24000)});
+    child.on("error",error=>{if(settled)return;settled=true;clearTimeout(timer);reject(error)});
+    child.on("close",code=>{if(settled)return;settled=true;clearTimeout(timer);code===0?resolve():reject(new Error(stderr||`ffmpeg_failed:${code}`))});
+  });
+}
+async function download(url,destination,maxBytes=220*1024*1024) {
+  const response=await fetch(url,{method:"GET",cache:"no-store",redirect:"follow"});
+  if(!response.ok)throw new Error(`download_failed:${response.status}`);
+  const body=Buffer.from(await response.arrayBuffer());
+  if(!body.length||body.length>maxBytes)throw new Error("invalid_download_size");
+  fs.writeFileSync(destination,body);
+}
+async function prepareLogo(inputPath,outputPath) {
+  await sharp(inputPath).ensureAlpha().trim().png().toFile(outputPath);
+}
+function musicUrlOf(project) {
+  const mode=project?.music?.mode||"auto";
+  if(mode==="off")return"";
+  if(mode==="upload")return clean(project?.media?.musicTrack?.url,4000);
+  return clean(project?.music?.audio?.url,4000);
+}
+function durationSeconds(project,pipeline) {
+  const value=Number.parseFloat(pipeline?.duration||project?.generation?.input?.duration||project?.output?.duration||15);
+  return Number.isFinite(value)?Math.max(4,Math.min(20,value)):15;
+}
+function introDelayMs(duration) {
+  if(duration>=12)return 1400;
+  if(duration>=8)return 1000;
+  return 650;
+}
+
+export default async function handler(req,res) {
+  const cleanup=[];
+  let user=null,project=null,projectId="",sourceVideoUrl="";
+  try {
+    if(req.method!=="POST"){res.setHeader("Allow","POST");return sendJson(res,405,{ok:false,error:"method_not_allowed"})}
+    user=await resolveAdFilmUser(req);
+    if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});
+    projectId=clean(req.body?.projectId,120);
+    if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
+    project=await getOwnedProject(user,projectId);
+    if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
+
+    const avatarPipeline=project?.avatar?.pipeline||{};
+    if(avatarPipeline?.compositeMode!=="native-scene"||avatarPipeline?.status!=="completed")return sendJson(res,425,{ok:false,error:"native_avatar_video_processing"});
+    sourceVideoUrl=clean(avatarPipeline.videoUrl,4000);
+    if(!sourceVideoUrl)return sendJson(res,409,{ok:false,error:"missing_native_scene_video"});
+
+    const narrationEnabled=project?.narration?.enabled!==false;
+    const narrationAudio=project?.narration?.audio;
+    const narrationUrl=narrationEnabled&&narrationAudio?.approved===true?clean(narrationAudio.url,4000):"";
+    const musicUrl=musicUrlOf(project);
+    const musicRequired=(project?.music?.mode||"auto")!=="off";
+    const logoUrl=clean(project?.media?.logo?.url,4000);
+    if(narrationEnabled&&!narrationUrl)return sendJson(res,409,{ok:false,error:"narration_audio_approval_required"});
+    if(musicRequired&&!musicUrl)return sendJson(res,409,{ok:false,error:"music_audio_required"});
+
+    const resolution=clean(avatarPipeline.quality||project?.generation?.input?.resolution||project?.output?.quality||"1080p",20).toLowerCase();
+    const ratio=clean(avatarPipeline.aspectRatio||project?.generation?.input?.aspectRatio||project?.output?.aspectRatio||"16:9",20);
+    const size=dimensions(resolution,ratio);
+    const duration=durationSeconds(project,avatarPipeline);
+    const outputId=clean(project?.generation?.outputId||project?.generation?.requestId||avatarPipeline?.motion?.requestId||`native-${Date.now()}`,240);
+    const tmpDir=fs.mkdtempSync(path.join(os.tmpdir(),"aivo-native-final-"));
+    const inputVideo=path.join(tmpDir,"native-scene.mp4");
+    const originalLogo=path.join(tmpDir,"logo-original");
+    const transparentLogo=path.join(tmpDir,"logo.png");
+    const narrationFile=path.join(tmpDir,"narration");
+    const musicFile=path.join(tmpDir,"music");
+    const outputVideo=path.join(tmpDir,"final.mp4");
+    cleanup.push(outputVideo,musicFile,narrationFile,transparentLogo,originalLogo,inputVideo,tmpDir);
+
+    const jobs=[download(sourceVideoUrl,inputVideo)];
+    if(logoUrl)jobs.push(download(logoUrl,originalLogo,20*1024*1024));
+    if(narrationUrl)jobs.push(download(narrationUrl,narrationFile,30*1024*1024));
+    if(musicUrl)jobs.push(download(musicUrl,musicFile,80*1024*1024));
+    await Promise.all(jobs);
+    if(logoUrl)await prepareLogo(originalLogo,transparentLogo);
+
+    const args=["-y","-hide_banner","-loglevel","error","-i",inputVideo];
+    let nextIndex=1,logoIndex=-1,narrationIndex=-1,musicIndex=-1;
+    if(logoUrl){logoIndex=nextIndex++;args.push("-loop","1","-framerate","30","-i",transparentLogo)}
+    if(narrationUrl){narrationIndex=nextIndex++;args.push("-i",narrationFile)}
+    if(musicUrl){musicIndex=nextIndex++;args.push("-stream_loop","-1","-i",musicFile)}
+
+    const filters=[];
+    filters.push(`[0:v]scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,setpts=PTS-STARTPTS[base]`);
+    let videoLabel="base";
+    if(logoUrl){
+      const width=logoWidth(resolution),margin=logoMargin(resolution);
+      filters.push(`[${logoIndex}:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`);
+      filters.push(`[${videoLabel}][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:eof_action=pass:shortest=0[vout]`);
+      videoLabel="vout";
+    }
+    const voiceDelay=narrationUrl&&musicUrl?introDelayMs(duration):0;
+    const fadeOutStart=Math.max(0.5,duration-0.8).toFixed(2);
+    if(narrationUrl&&musicUrl){
+      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,adelay=${voiceDelay}|${voiceDelay},apad=pad_dur=${duration+1}[voice]`);
+      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.34,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1}[music]`);
+      filters.push("[music][voice]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.985[aout]");
+    }else if(narrationUrl){
+      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},alimiter=limit=0.985[aout]`);
+    }else if(musicUrl){
+      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.72,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},alimiter=limit=0.985[aout]`);
+    }
+    args.push("-filter_complex",filters.join(";"),"-map",`[${videoLabel}]`);
+    if(narrationUrl||musicUrl)args.push("-map","[aout]");else args.push("-map","0:a:0?");
+    args.push("-t",String(duration),"-r","30","-c:v","libx264","-preset",resolution==="4k"?"veryfast":"faster","-crf",resolution==="4k"?"20":"18","-pix_fmt","yuv420p","-c:a","aac","-b:a","192k","-ar","48000","-ac","2","-movflags","+faststart",outputVideo);
+    await runFfmpeg(args);
+
+    const key=`${mediaPrefix(user,projectId)}outputs/native-scene/${safePart(outputId,"video")}-final-v${MIX_VERSION}-${Date.now()}.mp4`;
+    const stat=fs.statSync(outputVideo);
+    const finalUrl=await putObject({key,body:fs.createReadStream(outputVideo),contentLength:stat.size,contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});
+    const now=new Date().toISOString();
+    const finalOutput={
+      id:outputId,
+      version:Number.parseInt(project?.generation?.version,10)||1,
+      sourceVideoUrl,
+      videoUrl:finalUrl,
+      duration:String(duration),
+      aspectRatio:ratio,
+      resolution,
+      nativeScene:true,
+      avatarApplied:true,
+      avatarIntegrated:true,
+      avatarCompositeMode:"native-scene",
+      logoUrl:logoUrl||null,
+      logoApplied:Boolean(logoUrl),
+      narrationUrl:narrationUrl||null,
+      narrationApplied:Boolean(narrationUrl),
+      musicUrl:musicUrl||null,
+      musicApplied:Boolean(musicUrl),
+      audioCodec:"aac",
+      audioBitrate:"192k",
+      mixVersion:MIX_VERSION,
+      finalizedAt:now,
+      completedAt:now,
+    };
+    const previous=Array.isArray(project.outputs)?project.outputs:[];
+    const nextOutputs=[finalOutput,...previous.filter(item=>clean(item?.id)!==outputId)].slice(0,30);
+    const nextProject=await saveProject(user,{
+      ...project,
+      status:"completed",
+      outputs:nextOutputs,
+      activeOutputId:outputId,
+      generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"native-scene",mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,completedAt:now,error:null}},
+    });
+    return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:sourceVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"native-scene",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),mix_version:MIX_VERSION,project:nextProject,outputs:nextOutputs,activeOutputId:outputId});
+  }catch(error){
+    console.error("[ad-film/seedance/finalize-native-scene]",error);
+    return sendJson(res,clean(error?.message)==="ffmpeg_timeout"?504:500,{ok:false,error:"native_scene_finalize_failed",message:clean(error?.message||error,1200),retryable:false,video_url:sourceVideoUrl||null});
+  }finally{
+    for(const entry of cleanup.reverse()){
+      try{if(!entry||!fs.existsSync(entry))continue;if(fs.statSync(entry).isDirectory())fs.rmSync(entry,{recursive:true,force:true});else fs.unlinkSync(entry)}catch(_){}
+    }
+  }
+}
