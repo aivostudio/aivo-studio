@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — one-click avatar motion orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V3__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V3__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V4__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V4__=true;
 
   var running=false,pollTimer=null;
   var POLL_MS=3500,MAX_POLLS=700;
@@ -29,6 +29,7 @@
   }
   function stageText(stage){
     if(stage==='lipsync')return{text:text('Avatar konuşmaya uyarlanıyor','Synchronizing avatar speech'),detail:text('Dudak, yüz ve konuşma zamanlaması hazırlanıyor.','Preparing lip, face and speech timing.')};
+    if(stage==='matting')return{text:text('Avatar transparanlaştırılıyor','Removing avatar background'),detail:text('Saç, kıyafet ve beden kenarları reklam sahnesine yerleştirilmek üzere işleniyor.','Refining hair, clothing and body edges for compositing into the ad scene.')};
     return{text:text('Sinematik avatar performansı hazırlanıyor','Preparing cinematic avatar performance'),detail:text('Beden hareketi, yürüyüş ve kamera koreografisi oluşturuluyor.','Generating body motion, walking and camera choreography.')};
   }
   function holdGeneration(next){
@@ -53,7 +54,7 @@
         data.status='FAILED';
         data.video_url=null;
         data.generation=Object.assign({},data.generation||{},{error:pipeline.error||'avatar_pipeline_failed'});
-      }else if(pipeline.status!=='completed'||!pipeline.videoUrl){
+      }else if(pipeline.status!=='completed'||!pipeline.transparentVideoUrl){
         data.status='RUNNING';
       }
       return new Response(JSON.stringify(data),{status:response.status,statusText:response.statusText,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
@@ -97,6 +98,7 @@
     var code=clean(error&&error.message);
     if(code==='avatar_image_required')return text('Avatar açıkken önce bir avatar seç veya yükle.','Select or upload an avatar while the avatar feature is enabled.');
     if(code==='narration_audio_approval_required')return text('Konuşan avatar için sesi oluşturup onayla.','Generate and approve the voice for the talking avatar.');
+    if(code==='avatar_image_background_removal_failed'||code==='avatar_image_background_removal_missing_output')return text('Avatar görselinin arka planı kaldırılamadı. Üretim başlatılmadı.','The avatar image background could not be removed. Production was not started.');
     if(code==='project_not_ready')return text('Proje bulut bağlantısı henüz hazır değil.','The project cloud connection is not ready yet.');
     return text('Avatar motorları başlatılamadı. Tekrar dene.','Avatar engines could not be started. Try again.');
   }
@@ -108,7 +110,7 @@
     if(!avatarEnabled(scope))return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     if(running||button.disabled)return;
-    if(!window.confirm(text('Bu üretim ürün videosu, sinematik avatar hareketi ve dudak senkronu motorlarını çalıştırır. Fal.ai bakiyesinden ücret düşebilir. Devam edilsin mi?','This production runs product video, cinematic avatar motion and lip-sync engines and may use Fal.ai balance. Continue?')))return;
+    if(!window.confirm(text('Bu üretim ürün videosu, sinematik avatar hareketi, dudak senkronu ve transparanlaştırma motorlarını çalıştırır. Fal.ai bakiyesinden ücret düşebilir. Devam edilsin mi?','This production runs product video, cinematic avatar motion, lip-sync and background-removal engines and may use Fal.ai balance. Continue?')))return;
     (async function(){
       try{
         setStage(scope,text('Avatar motorları başlatılıyor','Starting avatar engines'),text('AIVO tüm üretim zincirini tek akışta hazırlıyor.','AIVO is preparing the complete production chain.'));
