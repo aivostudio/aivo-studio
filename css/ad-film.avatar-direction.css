@@ -1,7 +1,7 @@
-/* AIVO AI Reklam Filmi — avatar direction prompts */
+/* AIVO AI Reklam Filmi — avatar direction prompt */
 [data-module-root][data-module="adfilm"] .adfilm-avatar-direction {
   grid-column: 1 / -1;
-  padding: 18px;
+  padding: 16px 18px;
   border: 1px solid rgba(143,96,236,.34);
   border-radius: 20px;
   background:
@@ -14,7 +14,7 @@
   align-items:flex-end;
   justify-content:space-between;
   gap:16px;
-  margin-bottom:14px;
+  margin-bottom:12px;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-direction__head > div:first-child {
   display:grid;
@@ -36,14 +36,14 @@
   margin:0;
   color:rgba(223,224,242,.66);
   font-size:12px;
-  line-height:1.5;
+  line-height:1.45;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-direction__budget {
   flex:0 0 auto;
   display:grid;
   justify-items:end;
   gap:3px;
-  padding:9px 12px;
+  padding:8px 11px;
   border:1px solid rgba(143,96,236,.24);
   border-radius:12px;
   background:rgba(5,9,23,.46);
@@ -53,28 +53,17 @@
   font-size:10px;
   font-weight:800;
 }
-[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__budget small {
-  font-size:10px;
-}
-[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__budget.is-near-limit {
-  border-color:rgba(255,180,52,.55);
-  color:#ffd18a;
-}
-[data-module-root][data-module="adfilm"] .adfilm-avatar-direction__budget.is-at-limit {
-  border-color:rgba(255,91,126,.68);
-  color:#ff9fb4;
-}
 [data-module-root][data-module="adfilm"] .adfilm-avatar-direction__grid {
   display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:14px;
+  grid-template-columns:1fr;
+  gap:0;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt {
   position:relative;
   display:grid;
-  gap:8px;
+  gap:7px;
   min-width:0;
-  padding-bottom:20px;
+  padding-bottom:18px;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt__label {
   color:rgba(247,247,255,.88);
@@ -83,9 +72,10 @@
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea {
   width:100%;
-  min-height:160px;
+  min-height:112px;
+  max-height:220px;
   resize:vertical;
-  padding:15px 16px 30px;
+  padding:14px 16px 29px;
   border:1px solid rgba(157,117,235,.28);
   border-radius:16px;
   outline:none;
@@ -93,7 +83,7 @@
   background:rgba(5,9,23,.78);
   font:inherit;
   font-size:13px;
-  line-height:1.55;
+  line-height:1.5;
   transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
 }
 [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea::placeholder {
@@ -115,7 +105,7 @@
 [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt__count {
   position:absolute;
   right:13px;
-  bottom:31px;
+  bottom:29px;
   color:rgba(214,205,239,.62);
   font-size:10px;
   pointer-events:none;
@@ -152,10 +142,7 @@
     width:100%;
     justify-items:start;
   }
-  [data-module-root][data-module="adfilm"] .adfilm-avatar-direction__grid {
-    grid-template-columns:1fr;
-  }
   [data-module-root][data-module="adfilm"] .adfilm-avatar-prompt textarea {
-    min-height:140px;
+    min-height:110px;
   }
 }
