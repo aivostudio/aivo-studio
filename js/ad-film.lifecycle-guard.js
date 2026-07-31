@@ -1,11 +1,11 @@
 /* AIVO AI Reklam Filmi — safe resume guard; never cancels a newly started job. */
 (function AIVO_AD_FILM_LIFECYCLE_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_LIFECYCLE_GUARD_V2__)return;
-  window.__AIVO_AD_FILM_LIFECYCLE_GUARD_V2__=true;
+  if(window.__AIVO_AD_FILM_LIFECYCLE_GUARD_V3__)return;
+  window.__AIVO_AD_FILM_LIFECYCLE_GUARD_V3__=true;
 
   var nativeAdd=document.addEventListener.bind(document);
-  var ACTIVE_PIPELINE=["motion_queued","motion_processing","lipsync_queued","lipsync_processing"];
+  var ACTIVE_PIPELINE=["motion_queued","motion_processing","lipsync_queued","lipsync_processing","matting_queued","matting_processing"];
   var MAX_PIPELINE_AGE=45*60*1000;
 
   function clean(value){return String(value==null?"":value).trim()}
@@ -27,7 +27,7 @@
   function sameMountedVideo(source){var video=currentVideo(),next=projectVideo(source);return!!(video&&next&&stableUrl(video.currentSrc||video.src)===stableUrl(next))}
   function finalized(source){var item=outputOf(source),generation=source&&source.generation||{};return Number(item&&item.mixVersion||generation.mixVersion||0)>=4&&!!projectVideo(source)}
   function generationState(source){return lower(source&&source.generation&&source.generation.status||source&&source.status)}
-  function generationActive(source){return["queued","processing"].indexOf(generationState(source))>=0}
+  function generationActive(source){return["queued","processing","finalizing"].indexOf(generationState(source))>=0}
 
   function pipelineState(source){
     var avatar=source&&source.avatar;
@@ -35,7 +35,7 @@
     if(!avatar||avatar.enabled!==true||!pipeline)return"none";
     var status=lower(pipeline.status);
     if(status==="failed")return"failed";
-    if(status==="completed")return clean(pipeline.videoUrl||avatar.videoUrl)?"completed":"failed";
+    if(status==="completed")return clean(pipeline.transparentVideoUrl||pipeline.videoUrl||avatar.videoUrl)?"completed":"failed";
     if(ACTIVE_PIPELINE.indexOf(status)>=0){
       var started=Date.parse(pipeline.startedAt||pipeline.submittedAt||pipeline.updatedAt||"");
       if(!Number.isFinite(started)||Date.now()-started>MAX_PIPELINE_AGE)return"stale";
