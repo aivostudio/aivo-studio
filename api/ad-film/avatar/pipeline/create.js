@@ -21,16 +21,13 @@ const KLING_PRO_I2V = "fal-ai/kling-video/v3/pro/image-to-video";
 const KLING_MOTION = "fal-ai/kling-video/v3/pro/motion-control";
 const MAX_PROMPT_CHARS = 2480;
 const MAX_USER_FIELD_CHARS = 1000;
+const KLING_CFG_SCALE = 0.7;
 
 function clean(value, max = 4000) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
 }
 function falKey() { return process.env.FAL_KEY || process.env.FAL_API_KEY || ""; }
 function parseJson(text) { try { return text ? JSON.parse(text) : {}; } catch (_) { return { raw:text || "" }; } }
-function safePart(value, fallback = "avatar") {
-  const next = clean(value, 180).replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "");
-  return next || fallback;
-}
 function clipText(value, max) {
   const source = clean(value, Math.max(max, 1));
   if (source.length <= max) return source;
@@ -44,29 +41,6 @@ function clipText(value, max) {
   );
   if (boundary >= Math.floor(max * 0.72)) clipped = clipped.slice(0, boundary + 1).trim();
   return clipped;
-}
-function allocateUserBudget(scene, director, budget) {
-  const sceneLength = scene.length;
-  const directorLength = director.length;
-  const total = sceneLength + directorLength;
-  if (total <= budget) return { scene, director };
-  if (!total || budget <= 0) return { scene:"", director:"" };
-  let sceneBudget = Math.floor(budget * (sceneLength / total));
-  let directorBudget = budget - sceneBudget;
-  if (sceneLength && directorLength) {
-    const minimum = Math.min(240, Math.floor(budget / 2));
-    sceneBudget = Math.max(minimum, sceneBudget);
-    directorBudget = Math.max(minimum, directorBudget);
-    if (sceneBudget + directorBudget > budget) {
-      const overflow = sceneBudget + directorBudget - budget;
-      if (sceneBudget >= directorBudget) sceneBudget -= overflow;
-      else directorBudget -= overflow;
-    }
-  }
-  return {
-    scene:clipText(scene, Math.max(0, sceneBudget)),
-    director:clipText(director, Math.max(0, directorBudget)),
-  };
 }
 function runFfmpeg(args) {
   return new Promise((resolve, reject) => {
@@ -121,18 +95,15 @@ function buildPrompt(project, duration) {
   const avatar = project?.avatar || {};
   const framing = avatar.framing === "full" ? "full-body" : avatar.framing === "waist" ? "waist-up" : avatar.framing === "shoulders" ? "shoulders-up" : "chest-up";
   const expression = avatar.expression === "energetic" ? "energetic and charismatic" : avatar.expression === "calm" ? "calm and composed" : avatar.expression === "confident" ? "confident and trustworthy" : "friendly and confident";
-  const product = clean(project?.brief?.productName || project?.product?.name || "the advertised product", 140);
-  const sceneRaw = clean(avatar.sceneDescription, MAX_USER_FIELD_CHARS);
   const directorRaw = clean(avatar.directorNote, MAX_USER_FIELD_CHARS);
 
-  const prefix = `Create a ${duration}s premium commercial with exactly the same ${countryLabel(avatar.country)} adult from the reference. Preserve face, body, hair, clothing, skin and identity. Use ${framing} framing and keep the face clear for lip sync. The performer is ${expression}, enters naturally, uses subtle gestures and looks toward camera. Use smooth cinematic camera movement, premium lighting and realistic motion.`;
-  const suffix = `Product: ${product}. No speech or generated audio. No text, subtitles, logos, extra people, identity drift, distorted face, duplicate limbs, exaggerated dance or abrupt camera shake.`;
-  const labelsLength = " Scene: . Director instructions: . ".length;
-  const userBudget = Math.max(0, MAX_PROMPT_CHARS - prefix.length - suffix.length - labelsLength - 4);
-  const allocated = allocateUserBudget(sceneRaw, directorRaw, userBudget);
+  const prefix = `Animate exactly the same ${countryLabel(avatar.country)} adult from the reference for a ${duration}s premium advertising performance. Preserve face, body, hair, clothing, skin and identity. Use ${framing} framing and keep the face and mouth clear for later lip sync. The performer is ${expression}, uses controlled natural gestures and looks toward camera. Keep movement realistic, smooth and commercially polished.`;
+  const suffix = "Isolated presenter performance only. Do not create or redesign the advertising environment, product set or background story. No speech or generated audio. No text, subtitles, logos, extra people, identity drift, distorted face, duplicate limbs, exaggerated dance or abrupt camera shake.";
+  const labelLength = " Director instructions: . ".length;
+  const userBudget = Math.max(0, MAX_PROMPT_CHARS - prefix.length - suffix.length - labelLength - 4);
+  const director = clipText(directorRaw, userBudget);
   const parts = [prefix];
-  if (allocated.scene) parts.push(`Scene: ${allocated.scene}.`);
-  if (allocated.director) parts.push(`Director instructions: ${allocated.director}.`);
+  if (director) parts.push(`Director instructions: ${director}.`);
   parts.push(suffix);
   return parts.join(" ").slice(0, MAX_PROMPT_CHARS);
 }
@@ -232,13 +203,14 @@ export default async function handler(req,res) {
     const lipsyncAudioUrl = narration?.url ? await prepareTimedNarration({ sourceUrl:narration.url, duration, delayMs, user, projectId }) : "";
     const prompt = buildPrompt(project,duration);
     const driverVideoUrl = clean(avatar.motionTemplateUrl || process.env.AIVO_AVATAR_MOTION_TEMPLATE_URL,4000);
+    const negativePrompt = "identity drift, deformed face, extra people, duplicate limbs, warped hands, text, logo, watermark, abrupt motion, low quality, generated scenery, product set, background redesign";
     const motionInput = driverVideoUrl
       ? { image_url:stageImageUrl, video_url:driverVideoUrl, character_orientation:"video", keep_original_sound:false, prompt }
-      : { start_image_url:stageImageUrl, prompt, duration:String(duration), generate_audio:false, negative_prompt:"identity drift, deformed face, extra people, duplicate limbs, warped hands, text, logo, watermark, abrupt motion, low quality" };
+      : { start_image_url:stageImageUrl, prompt, duration:String(duration), generate_audio:false, cfg_scale:KLING_CFG_SCALE, negative_prompt:negativePrompt };
     const motionJob = await submitQueue(driverVideoUrl ? KLING_MOTION : KLING_PRO_I2V,motionInput);
     const now = new Date().toISOString();
     const pipeline = {
-      version:2,
+      version:3,
       status:"motion_queued",
       stage:"motion",
       startedAt:now,
@@ -250,6 +222,9 @@ export default async function handler(req,res) {
       lipsyncAudioUrl,
       prompt,
       promptLength:prompt.length,
+      cfgScale:driverVideoUrl ? null : KLING_CFG_SCALE,
+      generateAudio:false,
+      directorNoteOnly:true,
       driverVideoUrl:driverVideoUrl || null,
       motion:{ ...motionJob, provider:"fal", inputMode:driverVideoUrl ? "motion-control" : "image-to-video", fallbackLevel:0, videoUrl:null, error:null },
       lipsync:null,
