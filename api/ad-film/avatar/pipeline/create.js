@@ -17,11 +17,20 @@ import {
   sendJson,
 } from "../../../_lib/ad-film-projects.js";
 
+const IMAGE_REMBG = "fal-ai/imageutils/rembg";
 const KLING_PRO_I2V = "fal-ai/kling-video/v3/pro/image-to-video";
 const KLING_MOTION = "fal-ai/kling-video/v3/pro/motion-control";
 const MAX_PROMPT_CHARS = 2480;
 const MAX_USER_FIELD_CHARS = 1000;
 const KLING_CFG_SCALE = 0.7;
+const ACTIVE_PIPELINE = [
+  "motion_queued",
+  "motion_processing",
+  "lipsync_queued",
+  "lipsync_processing",
+  "matting_queued",
+  "matting_processing",
+];
 
 function clean(value, max = 4000) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -83,7 +92,7 @@ function introDelayMs(duration, hasMusic) {
 }
 function activePipeline(project) {
   const pipeline = project?.avatar?.pipeline;
-  if (!pipeline || !["motion_queued","motion_processing","lipsync_queued","lipsync_processing"].includes(String(pipeline.status))) return false;
+  if (!pipeline || !ACTIVE_PIPELINE.includes(String(pipeline.status))) return false;
   const started = Date.parse(pipeline.startedAt || "");
   return Number.isFinite(started) && Date.now() - started < 45 * 60 * 1000;
 }
@@ -98,7 +107,7 @@ function buildPrompt(project, duration) {
   const directorRaw = clean(avatar.directorNote, MAX_USER_FIELD_CHARS);
 
   const prefix = `Animate exactly the same ${countryLabel(avatar.country)} adult from the reference for a ${duration}s premium advertising performance. Preserve face, body, hair, clothing, skin and identity. Use ${framing} framing and keep the face and mouth clear for later lip sync. The performer is ${expression}, uses controlled natural gestures and looks toward camera. Keep movement realistic, smooth and commercially polished.`;
-  const suffix = "Isolated presenter performance only. Do not create or redesign the advertising environment, product set or background story. No speech or generated audio. No text, subtitles, logos, extra people, identity drift, distorted face, duplicate limbs, exaggerated dance or abrupt camera shake.";
+  const suffix = "Isolated presenter performance only. Keep one static, evenly lit, seamless neutral gray background with no scenery, products, stands or environmental changes. Do not create or redesign the advertising environment or background story. No speech or generated audio. No text, subtitles, logos, extra people, identity drift, distorted face, duplicate limbs, exaggerated dance or abrupt camera shake.";
   const labelLength = " Director instructions: . ".length;
   const userBudget = Math.max(0, MAX_PROMPT_CHARS - prefix.length - suffix.length - labelLength - 4);
   const director = clipText(directorRaw, userBudget);
@@ -107,18 +116,36 @@ function buildPrompt(project, duration) {
   parts.push(suffix);
   return parts.join(" ").slice(0, MAX_PROMPT_CHARS);
 }
+async function removeImageBackground(sourceUrl) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000);
+  try {
+    const response = await fetch(`https://fal.run/${IMAGE_REMBG}`, {
+      method:"POST",
+      headers:{ Authorization:`Key ${falKey()}`, "Content-Type":"application/json", Accept:"application/json" },
+      body:JSON.stringify({ image_url:sourceUrl, sync_mode:false, crop_to_bbox:false }),
+      signal:controller.signal,
+    });
+    const data = parseJson(await response.text().catch(() => ""));
+    if (!response.ok) {
+      const error = new Error("avatar_image_background_removal_failed");
+      error.status = response.status;
+      error.data = data;
+      throw error;
+    }
+    const url = clean(data?.image?.url || data?.data?.image?.url || data?.result?.image?.url, 4000);
+    if (!/^https:\/\//i.test(url)) throw new Error("avatar_image_background_removal_missing_output");
+    return url;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 async function prepareStageImage({ sourceUrl, ratio, user, projectId }) {
   const source = await downloadBuffer(sourceUrl, 25 * 1024 * 1024);
   const { width, height } = dimensions(ratio);
-  const background = await sharp(source)
-    .rotate()
-    .resize(width, height, { fit:"cover", position:"attention" })
-    .blur(28)
-    .modulate({ brightness:0.48, saturation:0.82 })
-    .jpeg({ quality:88 })
-    .toBuffer();
   const foreground = await sharp(source)
     .rotate()
+    .ensureAlpha()
     .resize(Math.round(width * 0.78), Math.round(height * 0.94), {
       fit:"contain",
       position:"center",
@@ -126,12 +153,14 @@ async function prepareStageImage({ sourceUrl, ratio, user, projectId }) {
     })
     .png()
     .toBuffer();
+  const background = Buffer.from(
+    `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`+
+    `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7a7a7"/><stop offset="1" stop-color="#767676"/></linearGradient></defs>`+
+    `<rect width="100%" height="100%" fill="url(#g)"/></svg>`
+  );
   const stage = await sharp(background)
-    .composite([
-      { input:Buffer.from(`<svg width="${width}" height="${height}"><defs><radialGradient id="g"><stop offset="0" stop-color="#34205d" stop-opacity="0.45"/><stop offset="1" stop-color="#050817" stop-opacity="0.06"/></radialGradient></defs><rect width="100%" height="100%" fill="url(#g)"/></svg>`) },
-      { input:foreground, gravity:"center" },
-    ])
-    .jpeg({ quality:94, chromaSubsampling:"4:4:4" })
+    .composite([{ input:foreground, gravity:"center" }])
+    .jpeg({ quality:95, chromaSubsampling:"4:4:4" })
     .toBuffer();
   const key = `${mediaPrefix(user, projectId)}avatar/pipeline/stage-${Date.now()}.jpg`;
   return putObject({ key, body:stage, contentType:"image/jpeg", cacheControl:"public, max-age=31536000, immutable", contentDisposition:"inline" });
@@ -199,18 +228,19 @@ export default async function handler(req,res) {
     const ratio = normalizeRatio(req.body?.aspect_ratio || project?.output?.aspectRatio || project?.generation?.input?.aspectRatio);
     const hasMusic = (project?.music?.mode || "auto") !== "off";
     const delayMs = introDelayMs(duration, hasMusic && project?.narration?.enabled !== false);
-    const stageImageUrl = await prepareStageImage({ sourceUrl:avatar.image.url, ratio, user, projectId });
+    const transparentImageUrl = await removeImageBackground(avatar.image.url);
+    const stageImageUrl = await prepareStageImage({ sourceUrl:transparentImageUrl, ratio, user, projectId });
     const lipsyncAudioUrl = narration?.url ? await prepareTimedNarration({ sourceUrl:narration.url, duration, delayMs, user, projectId }) : "";
     const prompt = buildPrompt(project,duration);
     const driverVideoUrl = clean(avatar.motionTemplateUrl || process.env.AIVO_AVATAR_MOTION_TEMPLATE_URL,4000);
-    const negativePrompt = "identity drift, deformed face, extra people, duplicate limbs, warped hands, text, logo, watermark, abrupt motion, low quality, generated scenery, product set, background redesign";
+    const negativePrompt = "identity drift, deformed face, extra people, duplicate limbs, warped hands, text, logo, watermark, abrupt motion, low quality, generated scenery, product set, background redesign, complex background, moving background";
     const motionInput = driverVideoUrl
       ? { image_url:stageImageUrl, video_url:driverVideoUrl, character_orientation:"video", keep_original_sound:false, prompt }
       : { start_image_url:stageImageUrl, prompt, duration:String(duration), generate_audio:false, cfg_scale:KLING_CFG_SCALE, negative_prompt:negativePrompt };
     const motionJob = await submitQueue(driverVideoUrl ? KLING_MOTION : KLING_PRO_I2V,motionInput);
     const now = new Date().toISOString();
     const pipeline = {
-      version:3,
+      version:4,
       status:"motion_queued",
       stage:"motion",
       startedAt:now,
@@ -218,7 +248,11 @@ export default async function handler(req,res) {
       duration,
       aspectRatio:ratio,
       introDelayMs:delayMs,
+      sourceAvatarImageUrl:avatar.image.url,
+      transparentImageUrl,
+      imageMatting:{ model:IMAGE_REMBG, completed:true, outputUrl:transparentImageUrl },
       stageImageUrl,
+      stageBackground:"neutral-gray",
       lipsyncAudioUrl,
       prompt,
       promptLength:prompt.length,
@@ -228,6 +262,9 @@ export default async function handler(req,res) {
       driverVideoUrl:driverVideoUrl || null,
       motion:{ ...motionJob, provider:"fal", inputMode:driverVideoUrl ? "motion-control" : "image-to-video", fallbackLevel:0, videoUrl:null, error:null },
       lipsync:null,
+      matting:null,
+      opaqueVideoUrl:null,
+      transparentVideoUrl:null,
       videoUrl:null,
       error:null,
     };
