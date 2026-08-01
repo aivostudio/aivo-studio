@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — gender-aware appearance, outfit color and face accessory controls */
 (function AIVO_AD_FILM_AVATAR_APPEARANCE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V2__)return;
-  window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V2__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V3__)return;
+  window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V3__=true;
 
   var observer=null,initializedCard=null,localDirtyUntil=0;
 
