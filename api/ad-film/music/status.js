@@ -30,8 +30,14 @@ export default async function handler(req,res){
     const user=await resolveAdFilmUser(req);if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});
     const projectId=clean(req.query?.projectId,120);if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
     const project=await getOwnedProject(user,projectId);if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
-    if(project.music?.audio?.url&&project.music.audio.qualityVersion>=2)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.music.audio,project});
     const g=project.musicGeneration||{};
+    if(
+      project.music?.audio?.url&&
+      Number(project.music.audio.qualityVersion)>=2&&
+      Number(project.music.audio.profileVersion)>=1&&
+      clean(project.music.audio.signature,80)&&
+      clean(project.music.audio.signature,80)===clean(g.signature,80)
+    )return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.music.audio,project});
     if(g.status==="failed")return sendJson(res,200,{ok:true,status:"FAILED",error:g.error||"music_generation_failed",project});
     if(!g.requestId)return sendJson(res,200,{ok:true,status:"IDLE",project});
     const key=falKey();if(!key)return sendJson(res,500,{ok:false,error:"missing_fal_key",message:"FAL_KEY is not available."});
@@ -70,7 +76,7 @@ export default async function handler(req,res){
     const format=extension({...file,contentType:file.contentType||response.headers.get("content-type")});
     const now=new Date().toISOString();const keyPath=`${mediaPrefix(user,projectId)}music/generated-v2-${Date.now()}.${format.ext}`;
     const stored=await putObject({key:keyPath,body,contentType:format.type,cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});
-    const audio={url:stored,contentType:format.type,generated:true,createdAt:now,engine:g.model,qualityVersion:g.qualityVersion||2,lossless:format.ext==="wav"||format.ext==="flac",style:g.meta?.resolvedStyle||project.music?.style||"auto",energy:g.meta?.resolvedEnergy||project.music?.energy||"balanced"};
+    const audio={url:stored,contentType:format.type,generated:true,createdAt:now,engine:g.model,qualityVersion:g.qualityVersion||2,profileVersion:g.profileVersion||1,signature:g.signature||null,lossless:format.ext==="wav"||format.ext==="flac",style:g.meta?.resolvedStyle||project.music?.style||"auto",energy:g.meta?.resolvedEnergy||project.music?.energy||"balanced",duration:g.meta?.duration||project.output?.duration||10};
     const saved=await saveProject(user,{...project,music:{...(project.music||{}),audio},musicGeneration:{...g,status:"completed",updatedAt:now,completedAt:now,error:null}});
     return sendJson(res,200,{ok:true,status:"COMPLETED",audio,project:saved});
   }catch(error){console.error("[ad-film/music/status]",error);return sendJson(res,500,{ok:false,error:"server_error",message:clean(error?.message||error,900)})}
