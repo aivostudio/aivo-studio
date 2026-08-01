@@ -73,7 +73,7 @@ function seedFrom(payload) {
 
 function normalizeOutputs(project) {
   const list = Array.isArray(project?.outputs) ? project.outputs.filter(Boolean) : [];
-  if (!list.length && project?.generation?.videoUrl) {
+  if (!list.length && project?.generation?.videoUrl && project?.avatar?.enabled !== true) {
     const generation = project.generation;
     list.push({
       id: generation.outputId || generation.requestId || `legacy-${Date.now()}`,
@@ -206,6 +206,7 @@ export default async function handler(req, res) {
 
     const generation = project.generation || {};
     const savedOutputs = normalizeOutputs(project);
+    const avatarFinalRequired = project?.avatar?.enabled === true;
     if (!generation.requestId) {
       return sendJson(res, 200, {
         ok: true,
@@ -223,7 +224,8 @@ export default async function handler(req, res) {
         ok: true,
         projectId,
         status: String(generation.status).toUpperCase(),
-        video_url: generation.videoUrl || null,
+        video_url: avatarFinalRequired ? null : generation.videoUrl || null,
+        source_video_url: generation.sourceVideoUrl || null,
         seed: generation.seed ?? null,
         generation,
         outputs: savedOutputs,
@@ -236,9 +238,7 @@ export default async function handler(req, res) {
 
     let statusUrl = clean(generation.statusUrl, 1600);
     let responseUrl = clean(generation.responseUrl, 1600);
-    if (!statusUrl) {
-      statusUrl = `https://queue.fal.run/bytedance/seedance-2.0/requests/${encodeURIComponent(generation.requestId)}/status`;
-    }
+    if (!statusUrl) statusUrl = `https://queue.fal.run/bytedance/seedance-2.0/requests/${encodeURIComponent(generation.requestId)}/status`;
     if (!responseUrl) responseUrl = statusUrl.replace(/\/status\/?$/i, "");
 
     const statusResult = await falFetch(statusUrl, key);
@@ -257,12 +257,7 @@ export default async function handler(req, res) {
       return sendJson(res, 200, { ok: true, projectId, status: "FAILED", video_url: null, generation: failed.generation, outputs: failed.outputs || [], activeOutputId: failed.activeOutputId || null });
     }
     if (!statusResult.response.ok) {
-      return sendJson(res, 502, {
-        ok: false,
-        error: "fal_status_error",
-        fal_status: statusResult.response.status,
-        fal_response: statusResult.data,
-      });
+      return sendJson(res, 502, { ok: false, error: "fal_status_error", fal_status: statusResult.response.status, fal_response: statusResult.data });
     }
 
     const rawStatus = pick(statusResult.data, ["status", "state", "data.status", "result.status"]);
@@ -296,74 +291,74 @@ export default async function handler(req, res) {
                 updatedAt: now,
                 completedAt: null,
                 videoUrl: null,
+                sourceVideoUrl: null,
                 seed: null,
                 error: null,
                 audioSafetyRetry: 1,
                 audioFallback: true,
-                input: {
-                  ...(generation.input || {}),
-                  generateAudio: false,
-                  audioCount: 0,
-                },
+                input: { ...(generation.input || {}), generateAudio: false, audioCount: 0 },
               },
             });
-            return sendJson(res, 200, {
-              ok: true,
-              provider: "fal",
-              projectId,
-              status: "IN_QUEUE",
-              video_url: null,
-              audio_fallback: true,
-              generation: retried.generation,
-              outputs: retried.outputs || [],
-              activeOutputId: retried.activeOutputId || null,
-            });
+            return sendJson(res, 200, { ok: true, provider: "fal", projectId, status: "IN_QUEUE", video_url: null, audio_fallback: true, generation: retried.generation, outputs: retried.outputs || [], activeOutputId: retried.activeOutputId || null });
           }
         }
-
-        return sendJson(res, 502, {
-          ok: false,
-          error: "fal_result_error",
-          fal_status: result.response.status,
-          fal_response: result.data,
-        });
+        return sendJson(res, 502, { ok: false, error: "fal_result_error", fal_status: result.response.status, fal_response: result.data });
       }
     }
 
     const normalized = normalizeStatus(rawStatus, videoUrl);
     const now = new Date().toISOString();
-    const nextStatus = normalized === "COMPLETED" ? "completed" : normalized === "FAILED" ? "failed" : "processing";
+    const sourceReadyForAvatar = avatarFinalRequired && normalized === "COMPLETED" && Boolean(videoUrl);
+    const nextStatus = normalized === "FAILED" ? "failed" : sourceReadyForAvatar ? "processing" : normalized === "COMPLETED" ? "completed" : "processing";
     let outputs = savedOutputs;
     let activeOutputId = project.activeOutputId || savedOutputs[0]?.id || null;
 
-    if (videoUrl && normalized === "COMPLETED") {
+    if (videoUrl && normalized === "COMPLETED" && !avatarFinalRequired) {
       const completedOutput = outputFromGeneration(project, generation, videoUrl, seed, now);
       outputs = [completedOutput, ...savedOutputs.filter((item) => item.id !== completedOutput.id && item.videoUrl !== completedOutput.videoUrl)].slice(0, 30);
       activeOutputId = completedOutput.id;
     }
+
+    const nextGeneration = {
+      ...generation,
+      status: nextStatus,
+      statusUrl,
+      responseUrl,
+      updatedAt: now,
+      ...(videoUrl && avatarFinalRequired ? {
+        sourceVideoUrl: videoUrl,
+        videoUrl: null,
+        seed,
+        sourceCompletedAt: now,
+        sourceOnly: true,
+        awaitingFinalComposite: true,
+        error: null,
+      } : videoUrl ? {
+        videoUrl,
+        sourceVideoUrl: generation.sourceVideoUrl || null,
+        seed,
+        completedAt: now,
+        error: null,
+      } : {}),
+      ...(normalized === "FAILED" ? { error: clean(pick(statusResult.data, ["error", "message", "detail"]), 1200) || "fal_generation_failed" } : {}),
+    };
 
     const nextProject = await saveProject(user, {
       ...project,
       status: nextStatus,
       outputs,
       activeOutputId,
-      generation: {
-        ...generation,
-        status: nextStatus,
-        statusUrl,
-        responseUrl,
-        updatedAt: now,
-        ...(videoUrl ? { videoUrl, seed, completedAt: now, error: null } : {}),
-        ...(normalized === "FAILED" ? { error: clean(pick(statusResult.data, ["error", "message", "detail"]), 1200) || "fal_generation_failed" } : {}),
-      },
+      generation: nextGeneration,
     });
 
     return sendJson(res, 200, {
       ok: true,
       provider: "fal",
       projectId,
-      status: normalized,
-      video_url: videoUrl || null,
+      status: sourceReadyForAvatar ? "RUNNING" : normalized,
+      video_url: avatarFinalRequired ? null : videoUrl || null,
+      source_video_url: avatarFinalRequired ? videoUrl || null : nextGeneration.sourceVideoUrl || null,
+      source_ready: sourceReadyForAvatar,
       seed,
       generation: nextProject.generation,
       outputs: nextProject.outputs || [],
@@ -371,10 +366,6 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("[ad-film/seedance/status]", error);
-    return sendJson(res, 500, {
-      ok: false,
-      error: "server_error",
-      message: String(error?.message || error),
-    });
+    return sendJson(res, 500, { ok: false, error: "server_error", message: String(error?.message || error) });
   }
 }
