@@ -1,4 +1,4 @@
-const TIMELINE_VERSION = 1;
+const TIMELINE_VERSION = 2;
 const EPSILON = 0.01;
 
 function number(value, fallback = 0) {
@@ -20,7 +20,22 @@ function defaultDurations(duration) {
   return [1, 2, 1, round(duration - 4)];
 }
 
+function fiveSecondPresenterSegments() {
+  return [{
+    id: "presenter_short",
+    order: 1,
+    role: "presenter_short",
+    source: "avatar",
+    start: 0,
+    end: 5,
+    duration: 5,
+    sourceStart: 0,
+    sourceEnd: 5,
+  }];
+}
+
 function fallbackSegments(duration, avatarEnabled) {
+  if (avatarEnabled && duration <= 5 + EPSILON) return fiveSecondPresenterSegments();
   const durations = defaultDurations(duration);
   const sources = avatarEnabled
     ? ["seedance", "avatar", "seedance", "seedance"]
@@ -45,6 +60,7 @@ function fallbackSegments(duration, avatarEnabled) {
 }
 
 function normalizeSegments(shots, duration, avatarEnabled) {
+  if (avatarEnabled && duration <= 5 + EPSILON) return fiveSecondPresenterSegments();
   if (!Array.isArray(shots) || !shots.length) return fallbackSegments(duration, avatarEnabled);
   const ordered = shots
     .map((shot, index) => ({ ...shot, _index:index }))
@@ -104,7 +120,8 @@ function buildAdFilmTimeline(input = {}) {
   const avatarEnabled = input.avatarEnabled === true;
   const segments = normalizeSegments(input.shots, duration, avatarEnabled);
   const avatarSegment = segments.find((segment) => segment.source === "avatar") || null;
-  const speechInset = avatarSegment ? Math.min(0.2, avatarSegment.duration * 0.04) : 0;
+  const shortPresenter = avatarEnabled && duration <= 5 + EPSILON;
+  const speechInset = avatarSegment && !shortPresenter ? Math.min(0.2, avatarSegment.duration * 0.04) : 0;
   const speech = avatarSegment ? {
     start:round(avatarSegment.start + speechInset),
     end:round(avatarSegment.end - speechInset),
@@ -114,6 +131,7 @@ function buildAdFilmTimeline(input = {}) {
   } : null;
   const timeline = {
     version:TIMELINE_VERSION,
+    mode:shortPresenter ? "presenter-short" : "hybrid",
     duration,
     avatarEnabled,
     segments,
