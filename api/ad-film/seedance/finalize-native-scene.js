@@ -8,6 +8,7 @@ import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
+import { timelineFromProject, validateAdFilmTimeline } from "../../_lib/ad-film-timeline.js";
 import { putObject } from "../../_lib/r2.js";
 import {
   getOwnedProject,
@@ -17,7 +18,7 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 12;
+const MIX_VERSION = 13;
 const FFMPEG_TIMEOUT_MS = 240000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
@@ -33,10 +34,12 @@ function dimensions(resolution, ratio) {
   const value = clean(resolution, 20).toLowerCase();
   const height = value === "4k" ? 2160 : value === "1080p" ? 1080 : value === "720p" ? 720 : 480;
   const aspect = clean(ratio, 20) || "16:9";
+  if (aspect === "21:9") return { width:even(height * 21 / 9), height };
   if (aspect === "9:16") return { width:even(height * 9 / 16), height };
   if (aspect === "1:1") return { width:height, height };
   if (aspect === "4:5") return { width:even(height * 4 / 5), height };
   if (aspect === "3:4") return { width:even(height * 3 / 4), height };
+  if (aspect === "4:3") return { width:even(height * 4 / 3), height };
   return { width:even(height * 16 / 9), height };
 }
 function logoWidth(resolution) {
@@ -79,19 +82,19 @@ function musicUrlOf(project) {
   if(mode==="upload")return clean(project?.media?.musicTrack?.url,4000);
   return clean(project?.music?.audio?.url,4000);
 }
-function durationSeconds(project,pipeline) {
-  const value=Number.parseFloat(pipeline?.duration||project?.generation?.input?.duration||project?.output?.duration||15);
-  return Number.isFinite(value)?Math.max(4,Math.min(20,value)):15;
+function sourceUrl(project) {
+  return clean(project?.generation?.sourceVideoUrl || project?.generation?.videoUrl || project?.outputs?.[0]?.sourceVideoUrl || project?.outputs?.[0]?.videoUrl,4000);
 }
-function introDelayMs(duration) {
-  if(duration>=12)return 1400;
-  if(duration>=8)return 1000;
-  return 650;
+function avatarUrl(project) {
+  return clean(project?.avatar?.pipeline?.videoUrl || project?.avatar?.videoUrl,4000);
+}
+function normalizedVideoFilter(inputIndex,size,start,duration,label) {
+  return `[${inputIndex}:v]trim=start=${start}:duration=${duration},setpts=PTS-STARTPTS,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,format=yuv420p[${label}]`;
 }
 
 export default async function handler(req,res) {
   const cleanup=[];
-  let user=null,project=null,projectId="",sourceVideoUrl="";
+  let user=null,project=null,projectId="",seedanceVideoUrl="",avatarVideoUrl="";
   try {
     if(req.method!=="POST"){res.setHeader("Allow","POST");return sendJson(res,405,{ok:false,error:"method_not_allowed"})}
     user=await resolveAdFilmUser(req);
@@ -102,9 +105,17 @@ export default async function handler(req,res) {
     if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
 
     const avatarPipeline=project?.avatar?.pipeline||{};
-    if(avatarPipeline?.compositeMode!=="native-scene"||avatarPipeline?.status!=="completed")return sendJson(res,425,{ok:false,error:"native_avatar_video_processing"});
-    sourceVideoUrl=clean(avatarPipeline.videoUrl,4000);
-    if(!sourceVideoUrl)return sendJson(res,409,{ok:false,error:"missing_native_scene_video"});
+    if(!["hybrid-timeline","native-scene"].includes(avatarPipeline?.compositeMode)||avatarPipeline?.status!=="completed"){
+      return sendJson(res,425,{ok:false,error:"native_avatar_video_processing",avatar_status:avatarPipeline?.stage||avatarPipeline?.status||"motion"});
+    }
+    seedanceVideoUrl=sourceUrl(project);
+    avatarVideoUrl=avatarUrl(project);
+    if(!seedanceVideoUrl)return sendJson(res,425,{ok:false,error:"seedance_video_processing"});
+    if(!avatarVideoUrl)return sendJson(res,425,{ok:false,error:"native_avatar_video_processing"});
+
+    const timeline=avatarPipeline.timeline||project?.productionPlan?.timeline||timelineFromProject(project);
+    const validation=validateAdFilmTimeline(timeline);
+    if(!validation.ok)return sendJson(res,409,{ok:false,error:validation.error});
 
     const narrationEnabled=project?.narration?.enabled!==false;
     const narrationAudio=project?.narration?.audio;
@@ -118,71 +129,83 @@ export default async function handler(req,res) {
     const resolution=clean(avatarPipeline.quality||project?.generation?.input?.resolution||project?.output?.quality||"1080p",20).toLowerCase();
     const ratio=clean(avatarPipeline.aspectRatio||project?.generation?.input?.aspectRatio||project?.output?.aspectRatio||"16:9",20);
     const size=dimensions(resolution,ratio);
-    const duration=durationSeconds(project,avatarPipeline);
-    const outputId=clean(project?.generation?.outputId||project?.generation?.requestId||avatarPipeline?.motion?.requestId||`native-${Date.now()}`,240);
-    const tmpDir=fs.mkdtempSync(path.join(os.tmpdir(),"aivo-native-final-"));
-    const inputVideo=path.join(tmpDir,"native-scene.mp4");
+    const duration=Number(timeline.duration)||15;
+    const outputId=clean(project?.generation?.outputId||project?.generation?.requestId||avatarPipeline?.motion?.requestId||`hybrid-${Date.now()}`,240);
+    const tmpDir=fs.mkdtempSync(path.join(os.tmpdir(),"aivo-hybrid-final-"));
+    const seedanceFile=path.join(tmpDir,"seedance.mp4");
+    const avatarFile=path.join(tmpDir,"avatar.mp4");
     const originalLogo=path.join(tmpDir,"logo-original");
     const transparentLogo=path.join(tmpDir,"logo.png");
     const narrationFile=path.join(tmpDir,"narration");
     const musicFile=path.join(tmpDir,"music");
     const outputVideo=path.join(tmpDir,"final.mp4");
-    cleanup.push(outputVideo,musicFile,narrationFile,transparentLogo,originalLogo,inputVideo,tmpDir);
+    cleanup.push(outputVideo,musicFile,narrationFile,transparentLogo,originalLogo,avatarFile,seedanceFile,tmpDir);
 
-    const jobs=[download(sourceVideoUrl,inputVideo)];
+    const jobs=[download(seedanceVideoUrl,seedanceFile),download(avatarVideoUrl,avatarFile)];
     if(logoUrl)jobs.push(download(logoUrl,originalLogo,20*1024*1024));
     if(narrationUrl)jobs.push(download(narrationUrl,narrationFile,30*1024*1024));
     if(musicUrl)jobs.push(download(musicUrl,musicFile,80*1024*1024));
     await Promise.all(jobs);
     if(logoUrl)await prepareLogo(originalLogo,transparentLogo);
 
-    const args=["-y","-hide_banner","-loglevel","error","-i",inputVideo];
-    let nextIndex=1,logoIndex=-1,narrationIndex=-1,musicIndex=-1;
+    const args=["-y","-hide_banner","-loglevel","error","-i",seedanceFile,"-i",avatarFile];
+    let nextIndex=2,logoIndex=-1,narrationIndex=-1,musicIndex=-1;
     if(logoUrl){logoIndex=nextIndex++;args.push("-loop","1","-framerate","30","-i",transparentLogo)}
     if(narrationUrl){narrationIndex=nextIndex++;args.push("-i",narrationFile)}
     if(musicUrl){musicIndex=nextIndex++;args.push("-stream_loop","-1","-i",musicFile)}
 
     const filters=[];
-    filters.push(`[0:v]scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,setpts=PTS-STARTPTS[base]`);
-    let videoLabel="base";
+    const segmentLabels=[];
+    timeline.segments.forEach((segment,index)=>{
+      const inputIndex=segment.source==="avatar"?1:0;
+      const start=segment.source==="avatar"?Number(segment.sourceStart||0):Number(segment.start||0);
+      const label=`seg${index}`;
+      filters.push(normalizedVideoFilter(inputIndex,size,start,Number(segment.duration),label));
+      segmentLabels.push(`[${label}]`);
+    });
+    filters.push(`${segmentLabels.join("")}concat=n=${segmentLabels.length}:v=1:a=0[cut]`);
+    let videoLabel="cut";
     if(logoUrl){
       const width=logoWidth(resolution),margin=logoMargin(resolution);
       filters.push(`[${logoIndex}:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`);
       filters.push(`[${videoLabel}][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:eof_action=pass:shortest=0[vout]`);
       videoLabel="vout";
     }
-    const voiceDelay=narrationUrl&&musicUrl?introDelayMs(duration):0;
+
     const fadeOutStart=Math.max(0.5,duration-0.8).toFixed(2);
     if(narrationUrl&&musicUrl){
-      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,adelay=${voiceDelay}|${voiceDelay},apad=pad_dur=${duration+1}[voice]`);
-      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.34,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1}[music]`);
+      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},atrim=0:${duration}[voice]`);
+      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.34,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},atrim=0:${duration}[music]`);
       filters.push("[music][voice]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.985[aout]");
     }else if(narrationUrl){
-      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},alimiter=limit=0.985[aout]`);
+      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},atrim=0:${duration},alimiter=limit=0.985[aout]`);
     }else if(musicUrl){
-      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.72,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},alimiter=limit=0.985[aout]`);
+      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.72,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},atrim=0:${duration},alimiter=limit=0.985[aout]`);
     }
+
     args.push("-filter_complex",filters.join(";"),"-map",`[${videoLabel}]`);
-    if(narrationUrl||musicUrl)args.push("-map","[aout]");else args.push("-map","0:a:0?");
+    if(narrationUrl||musicUrl)args.push("-map","[aout]");
     args.push("-t",String(duration),"-r","30","-c:v","libx264","-preset",resolution==="4k"?"veryfast":"faster","-crf",resolution==="4k"?"20":"18","-pix_fmt","yuv420p","-c:a","aac","-b:a","192k","-ar","48000","-ac","2","-movflags","+faststart",outputVideo);
     await runFfmpeg(args);
 
-    const key=`${mediaPrefix(user,projectId)}outputs/native-scene/${safePart(outputId,"video")}-final-v${MIX_VERSION}-${Date.now()}.mp4`;
+    const key=`${mediaPrefix(user,projectId)}outputs/hybrid/${safePart(outputId,"video")}-final-v${MIX_VERSION}-${Date.now()}.mp4`;
     const stat=fs.statSync(outputVideo);
     const finalUrl=await putObject({key,body:fs.createReadStream(outputVideo),contentLength:stat.size,contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});
     const now=new Date().toISOString();
     const finalOutput={
       id:outputId,
       version:Number.parseInt(project?.generation?.version,10)||1,
-      sourceVideoUrl,
+      sourceVideoUrl:seedanceVideoUrl,
+      avatarVideoUrl,
       videoUrl:finalUrl,
       duration:String(duration),
       aspectRatio:ratio,
       resolution,
-      nativeScene:true,
+      hybridTimeline:true,
+      timeline,
       avatarApplied:true,
       avatarIntegrated:true,
-      avatarCompositeMode:"native-scene",
+      avatarCompositeMode:"hybrid-timeline",
       logoUrl:logoUrl||null,
       logoApplied:Boolean(logoUrl),
       narrationUrl:narrationUrl||null,
@@ -202,12 +225,13 @@ export default async function handler(req,res) {
       status:"completed",
       outputs:nextOutputs,
       activeOutputId:outputId,
-      generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"native-scene",mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,completedAt:now,error:null}},
+      productionJobs:{...(project.productionJobs||{}),finalization:{status:"completed",outputId,updatedAt:now}},
+      generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl:seedanceVideoUrl,avatarVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"hybrid-timeline",timeline,mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,completedAt:now,error:null}},
     });
-    return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:sourceVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"native-scene",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),mix_version:MIX_VERSION,project:nextProject,outputs:nextOutputs,activeOutputId:outputId});
+    return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:seedanceVideoUrl,avatar_video_url:avatarVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"hybrid-timeline",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),mix_version:MIX_VERSION,timeline,project:nextProject,outputs:nextOutputs,activeOutputId:outputId});
   }catch(error){
     console.error("[ad-film/seedance/finalize-native-scene]",error);
-    return sendJson(res,clean(error?.message)==="ffmpeg_timeout"?504:500,{ok:false,error:"native_scene_finalize_failed",message:clean(error?.message||error,1200),retryable:false,video_url:sourceVideoUrl||null});
+    return sendJson(res,clean(error?.message)==="ffmpeg_timeout"?504:500,{ok:false,error:"hybrid_scene_finalize_failed",message:clean(error?.message||error,1200),retryable:false,video_url:seedanceVideoUrl||null});
   }finally{
     for(const entry of cleanup.reverse()){
       try{if(!entry||!fs.existsSync(entry))continue;if(fs.statSync(entry).isDirectory())fs.rmSync(entry,{recursive:true,force:true});else fs.unlinkSync(entry)}catch(_){}
