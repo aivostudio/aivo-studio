@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — single owner for hybrid Seedance + avatar startup */
 (function AIVO_AD_FILM_HYBRID_CONTROLLER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V1__)return;
-  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V1__=true;
+  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V2__)return;
+  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V2__=true;
 
   var starting=false;
   function clean(v){return String(v==null?"":v).trim()}
@@ -20,7 +20,7 @@
   function setStage(scope,title,detail){var status=scope&&scope.querySelector('[data-adfilm-engine-status]');if(!status){var action=scope&&scope.querySelector('.adfilm-actionbar'),button=action&&action.querySelector('[data-adfilm-build]');if(action){status=document.createElement('div');status.className='adfilm-engine-status is-visible is-busy';status.setAttribute('data-adfilm-engine-status','');status.innerHTML='<span></span><div><b></b><small></small></div>';if(button)action.insertBefore(status,button);else action.appendChild(status)}}if(status){status.className='adfilm-engine-status is-visible is-busy';var b=status.querySelector('b'),s=status.querySelector('small');if(b)b.textContent=title||'';if(s)s.textContent=detail||''}}
   function startSeedance(){if(!window.AIVOAdFilmSeedanceEngine||typeof window.AIVOAdFilmSeedanceEngine.generate!=="function")throw new Error('seedance_engine_not_ready');window.AIVOAdFilmSeedancePayload=null;var original=window.confirm;window.confirm=function(){return true};try{window.AIVOAdFilmSeedanceEngine.generate()}finally{window.confirm=original}}
   async function waitForNewSeedance(id,previous){for(var i=0;i<120;i++){await sleep(i<12?500:1000);var data=await request('/api/ad-film/seedance/status?projectId='+encodeURIComponent(id),{method:'GET'});var next=clean(data&&data.generation&&data.generation.requestId);if(next&&next!==previous)return data;if(data.status==='FAILED')throw new Error(clean(data.generation&&data.generation.error)||'seedance_failed')}throw new Error('seedance_start_timeout')}
-  async function startAvatar(scope,id){var ratio=choice(scope,'aspectRatio','16:9');return request('/api/ad-film/avatar/pipeline/create-native-fixed',{method:'POST',body:JSON.stringify({projectId:id,duration:choice(scope,'duration','10')==='15'?'15':'10',aspect_ratio:ratio==='4:5'?'3:4':ratio,quality:choice(scope,'quality','1080p')})})}
+  async function startAvatar(scope,id){var ratio=choice(scope,'aspectRatio','16:9');return request('/api/ad-film/avatar/pipeline/create-native',{method:'POST',body:JSON.stringify({projectId:id,duration:choice(scope,'duration','10')==='15'?'15':'10',aspect_ratio:ratio==='4:5'?'3:4':ratio,quality:choice(scope,'quality','1080p')})})}
 
   document.addEventListener('click',function(event){
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
