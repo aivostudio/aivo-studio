@@ -83,6 +83,21 @@ function approvedNarration(project) {
     audio: audio && audio.approved === true && /^https:\/\//i.test(String(audio.url || "")) ? audio : null,
   };
 }
+function resetActiveProductionState(project) {
+  const jobs = { ...(project?.productionJobs || {}) };
+  delete jobs.avatar;
+  delete jobs.finalization;
+  return {
+    ...project,
+    error: null,
+    lastError: null,
+    finalization: null,
+    productionJobs: jobs,
+    avatar: project?.avatar
+      ? { ...project.avatar, pipeline: null, videoUrl: null }
+      : project?.avatar,
+  };
+}
 
 function categoryFromText(value) {
   const source = clean(value, 1000).toLocaleLowerCase("tr-TR");
@@ -284,13 +299,14 @@ export default async function handler(req, res) {
       identityResolution: identity,
       productionId,
     };
+    const productionProject = resetActiveProductionState(effectiveProject);
     const nextProject = await saveProject(user, {
-      ...effectiveProject,
+      ...productionProject,
       status: "processing",
       identityResolution: identity,
       productionPlan: { ...directorPlan, productionId, identityResolution: identity },
-      outputs: Array.isArray(effectiveProject.outputs) ? effectiveProject.outputs.slice(0, 30) : [],
-      activeOutputId: effectiveProject.activeOutputId || null,
+      outputs: Array.isArray(productionProject.outputs) ? productionProject.outputs.slice(0, 30) : [],
+      activeOutputId: productionProject.activeOutputId || null,
       generation: {
         provider: "fal",
         model: MODEL,
