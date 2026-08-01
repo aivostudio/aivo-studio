@@ -2,7 +2,7 @@
 export const config = { runtime: "nodejs" };
 export const maxDuration = 180;
 
-import nativeHandler from "./create-native.js";
+import integratedHandler from "./create-integrated.js";
 import {
   getOwnedProject,
   resolveAdFilmUser,
@@ -37,11 +37,7 @@ export default async function handler(req, res) {
       160,
     );
 
-    if (
-      !requestedProductionId ||
-      !acceptedProductionId ||
-      requestedProductionId !== acceptedProductionId
-    ) {
+    if (!requestedProductionId || !acceptedProductionId || requestedProductionId !== acceptedProductionId) {
       return sendJson(res, 409, {
         ok: false,
         error: "production_lock_mismatch",
@@ -61,7 +57,7 @@ export default async function handler(req, res) {
       });
     }
 
-    return nativeHandler(req, res);
+    return integratedHandler(req, res);
   } catch (error) {
     console.error("[ad-film/avatar/pipeline/create-after-seedance]", error);
     return sendJson(res, 500, {
