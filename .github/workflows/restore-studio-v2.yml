@@ -1,0 +1,40 @@
+name: Restore Studio V2
+
+on:
+  push:
+    paths:
+      - '.github/workflows/restore-studio-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore full studio page and bump loader cache
+        shell: bash
+        run: |
+          git show 196d35ae909db756d0114b78effb2c38adfe8d41:studio.v2.html > studio.v2.html
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('studio.v2.html')
+          text = path.read_text()
+          text = text.replace('/toast.compat.js?v=1', '/toast.compat.js?v=2')
+          path.write_text(text)
+          PY
+
+      - name: Commit restored page
+        shell: bash
+        run: |
+          git config user.name 'aivostudio-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add studio.v2.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Restore full studio page and refresh ad film loader'
+          git push
