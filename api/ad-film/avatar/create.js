@@ -2,6 +2,7 @@
 export const config = { runtime: "nodejs" };
 export const maxDuration = 180;
 
+import crypto from "crypto";
 import { copyUrlToR2 } from "../../_lib/copy-to-r2.js";
 import {
   getOwnedProject,
@@ -12,6 +13,7 @@ import {
 } from "../../_lib/ad-film-projects.js";
 
 const MODEL = "fal-ai/flux-2-pro";
+const PROMPT_VERSION = 2;
 const COUNTRIES = {
   tr: "Turkish",
   us: "American",
@@ -75,20 +77,29 @@ function pick(value, allowed, fallback) {
   return allowed.has(normalized) ? normalized : fallback;
 }
 
+function ageFor(settings) {
+  return {
+    "18-25": "a clearly young adult between 18 and 25, with youthful adult facial structure and skin while unmistakably over 18",
+    "26-35": "an adult between 26 and 35, with mature young-professional facial structure",
+    "36-50": "an adult between 36 and 50, with visibly mature facial structure and natural age-appropriate detail",
+    "50+": "an adult over 50, with clearly visible natural mature facial structure, authentic age lines and age-appropriate presence",
+  }[settings.age];
+}
+
 function appearanceFor(settings) {
   if (settings.gender === "male") {
     return {
-      handsome: "exceptionally handsome commercial-model appearance with balanced masculine facial features",
-      charismatic: "charismatic premium spokesperson appearance with strong presence and trustworthy masculine features",
-      attractive: "attractive contemporary advertising-presenter appearance",
-      natural: "natural understated appearance with realistic everyday attractiveness",
+      handsome: "exceptionally handsome commercial-model appearance with symmetrical, polished masculine facial features",
+      charismatic: "charismatic premium spokesperson appearance with strong presence, distinctive facial character and trustworthy masculine features",
+      attractive: "attractive contemporary advertising-presenter appearance with approachable modern facial features",
+      natural: "natural understated appearance with realistic everyday attractiveness, minimal editorial styling and an authentic face",
     }[settings.maleAppearance];
   }
   return {
-    beautiful: "exceptionally beautiful commercial-presenter appearance with balanced feminine facial features",
-    fashion_model: "high-fashion model appearance with refined editorial facial structure and premium presence",
-    attractive: "attractive contemporary advertising-presenter appearance",
-    elegant_natural: "elegant natural appearance with realistic beauty and warm sophistication",
+    beautiful: "exceptionally beautiful commercial-presenter appearance with soft balanced feminine facial features, polished beauty-advertising finish and approachable elegance",
+    fashion_model: "distinct high-fashion editorial model appearance with angular refined facial structure, pronounced cheekbones and premium runway presence",
+    attractive: "attractive contemporary advertising-presenter appearance with approachable modern feminine facial features",
+    elegant_natural: "elegant natural appearance with realistic beauty, minimal editorial styling, warm sophistication and an authentic face",
   }[settings.femaleAppearance];
 }
 
@@ -164,8 +175,10 @@ function promptFor(settings) {
   const wardrobeIntegrity = "Wardrobe integrity is mandatory: use exactly one lower-body garment. Never layer a skirt or dress over trousers, pants, jeans, leggings or shorts. If trousers, pants, jeans or leggings are specified, generate no skirt and no dress. If a skirt or dress is specified, generate no trousers, pants, jeans, leggings or shorts. The outfit must be one coherent, physically wearable ensemble with no duplicated or overlapping garments.";
 
   return [
-    `Photorealistic ${COUNTRIES[settings.country]} ${settings.gender} advertising presenter, age ${settings.age}.`,
+    `Create a completely new and distinct photorealistic ${COUNTRIES[settings.country]} ${settings.gender} advertising presenter.`,
+    `${ageFor(settings)}.`,
     `${appearanceFor(settings)}.`,
+    "The identity must be an original fictional adult person, not a repeated template face and not a recognizable real person.",
     `${settings.hairColor} ${settings.hairStyle} hair, ${wardrobeFor(settings)}, ${outfitColorFor(settings)}, ${expression}.`,
     wardrobeIntegrity,
     `${accessoryFor(settings)}.`,
@@ -185,6 +198,14 @@ function avatarOutputUrl(payload) {
     payload?.data?.image?.url,
     4000,
   );
+}
+
+function signatureFor(settings) {
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify({ promptVersion: PROMPT_VERSION, ...settings }))
+    .digest("hex")
+    .slice(0, 24);
 }
 
 export default async function handler(req, res) {
@@ -223,6 +244,9 @@ export default async function handler(req, res) {
     const key = process.env.FAL_KEY || process.env.FAL_API_KEY || "";
     if (!key) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
 
+    const seed = crypto.randomInt(1, 2147483647);
+    const prompt = promptFor(settings);
+    const signature = signatureFor(settings);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 165000);
     let response;
@@ -235,11 +259,12 @@ export default async function handler(req, res) {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          prompt: promptFor(settings),
+          prompt,
           image_size: settings.framing === "full" ? "portrait_4_3" : "portrait_16_9",
-          num_images: 1,
+          seed,
           output_format: "jpeg",
           safety_tolerance: "2",
+          enable_safety_checker: true,
         }),
         signal: controller.signal,
       });
@@ -266,17 +291,19 @@ export default async function handler(req, res) {
       });
     }
 
-    const objectKey = `${mediaPrefix(user, projectId)}avatar/generated-${Date.now()}.jpg`;
+    const usedSeed = Number.isInteger(Number(fal?.seed)) ? Number(fal.seed) : seed;
+    const objectKey = `${mediaPrefix(user, projectId)}avatar/generated-v${PROMPT_VERSION}-${usedSeed}-${Date.now()}.jpg`;
     const avatarUrl = await copyUrlToR2({ url: sourceUrl, key: objectKey });
+    const now = new Date().toISOString();
     const image = {
       key: objectKey,
       url: avatarUrl,
-      name: "aivo-avatar.jpg",
+      name: `aivo-avatar-${usedSeed}.jpg`,
       contentType: "image/jpeg",
       size: 0,
       kind: "avatar-image",
       source: "generated",
-      uploadedAt: new Date().toISOString(),
+      uploadedAt: now,
     };
 
     const previousAvatar = project.avatar && typeof project.avatar === "object" ? project.avatar : {};
@@ -288,7 +315,15 @@ export default async function handler(req, res) {
       directorNote: cleanPrompt(previousAvatar.directorNote, 1000),
       sceneDescription: cleanPrompt(previousAvatar.sceneDescription, 1000),
       image,
-      imageGeneration: null,
+      imageGeneration: {
+        provider: "fal",
+        model: MODEL,
+        promptVersion: PROMPT_VERSION,
+        seed: usedSeed,
+        settingsSignature: signature,
+        settings,
+        completedAt: now,
+      },
       pipeline: null,
       videoUrl: null,
     };
@@ -299,6 +334,7 @@ export default async function handler(req, res) {
       projectId,
       avatar: saved.avatar,
       avatarImageUrl: saved.avatar?.image?.url || avatarUrl,
+      generation: saved.avatar?.imageGeneration || avatar.imageGeneration,
       project: saved,
     });
   } catch (error) {
