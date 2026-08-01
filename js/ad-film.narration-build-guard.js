@@ -1,10 +1,10 @@
 /* AIVO AI Reklam Filmi — narration approval guidance and hard production gate */
 (function AIVO_AD_FILM_NARRATION_BUILD_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V3__)return;
-  window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V3__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V4__)return;
+  window.__AIVO_AD_FILM_NARRATION_BUILD_GUARD_V4__=true;
 
-  function clean(value){return String(value||"").trim()}
+  function clean(value){return String(value||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function field(scope,key){return scope&&scope.querySelector('[data-adfilm-input="'+key+'"]')}
   function value(scope,key,fallback){var input=field(scope,key);return input?(input.type==="checkbox"?!!input.checked:input.value):fallback}
@@ -25,7 +25,7 @@
     if(audio.mastered!==true)return{ready:false,code:"mastering",reason:text("Ses profesyonel olarak işleniyor. Tamamlanmasını bekle.","The narration is being professionally mastered. Wait for it to finish.")};
     if(audio.approved!==true)return{ready:false,code:"approval",reason:text("Reklam filmini oluşturmadan önce sesi dinleyip onayla.","Preview and approve the narration before creating the advertising film.")};
     var approvedText=clean(audio.approvedText||input.text||"");
-    if(approvedText&&approvedText!==currentText)return{ready:false,code:"changed",reason:text("Seslendirme metni değişti. Sesi yeniden üretip onayla.","The narration script changed. Generate and approve the voice again.")};
+    if(approvedText&&approvedText!==currentText)return{ready:false,code:"changed",reason:text("Onaylanan ses eski metne ait. Güncel metin için sesi yeniden üretip onayla.","The approved voice belongs to the previous script. Generate and approve it again for the current script.")};
     return{ready:true,reason:"",code:"ready"};
   }
 
@@ -36,10 +36,7 @@
     button.dataset.audioApprovalGuard=check.ready?"ready":"blocked";
     button.classList.toggle("is-narration-pending",!check.ready);
     button.title=check.ready?"":check.reason;
-    if(meta)meta.textContent=check.ready?(button.dataset.narrationDefaultMeta||meta.textContent):text("Önce sesi onayla","Approve the voice first");
-    /* Deliberately do not disable the CTA for narration approval. Required
-       field validation remains owned by Basic Mode. A ready form keeps the
-       button clickable so the user receives clear guidance on click. */
+    if(meta)meta.textContent=check.ready?(button.dataset.narrationDefaultMeta||meta.textContent):check.code==="changed"?text("Güncel sesi yeniden üret","Regenerate the current voice"):text("Önce sesi onayla","Approve the voice first");
   }
 
   function sync(scope){
