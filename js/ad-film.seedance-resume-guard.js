@@ -1,20 +1,47 @@
-/* AIVO AI Ad Film — block automatic finalization/resume of completed projects.
-   The Seedance engine may resume only jobs that are genuinely queued/processing.
-   A completed source video must never trigger finalization merely because the
-   module mounted, the page was restored, or a project-sync event fired. */
+/* AIVO AI Ad Film — block automatic finalization/resume of terminal projects.
+   Only genuinely active jobs may resume after module mount, page restore or
+   project-sync. Failed productions must remain failed until the user starts a
+   new production explicitly. */
 (function AIVO_AD_FILM_SEEDANCE_RESUME_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V2__)return;
-  window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V2__=true;
+  if(window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V3__)return;
+  window.__AIVO_AD_FILM_SEEDANCE_RESUME_GUARD_V3__=true;
 
   function clean(value){return String(value==null?"":value).trim().toLowerCase()}
   function projectFromEvent(event){
     return event&&event.detail&&event.detail.project||window.AIVOAdFilmActiveProject||null;
   }
+  function projectStatus(project){return clean(project&&project.status)}
   function generationStatus(project){return clean(project&&project.generation&&project.generation.status)}
   function finalizationStatus(project){return clean(project&&project.finalization&&project.finalization.status)}
   function avatarStatus(project){return clean(project&&project.avatar&&project.avatar.pipeline&&project.avatar.pipeline.status)}
+  function terminalFailure(project){
+    var status=projectStatus(project);
+    var generation=generationStatus(project);
+    var finalization=finalizationStatus(project);
+    if(status==="failed"||status==="error"||status==="cancelled"||status==="canceled")return true;
+    if(generation==="failed"||generation==="error"||generation==="cancelled"||generation==="canceled")return true;
+    if(finalization==="failed"||finalization==="error"||finalization==="cancelled"||finalization==="canceled")return true;
+    return false;
+  }
+  function normalizeTerminalProject(project){
+    if(!project||!terminalFailure(project))return project;
+    var avatar=project.avatar&&project.avatar.pipeline;
+    var reason=clean(project&&project.generation&&project.generation.error||avatar&&avatar.error||project.error||"production_failed");
+    project.status="failed";
+    if(project.generation){
+      project.generation=Object.assign({},project.generation,{
+        status:"failed",
+        avatarWaiting:false,
+        finalizing:false,
+        error:reason||"production_failed"
+      });
+    }
+    return project;
+  }
   function resumable(project){
+    project=normalizeTerminalProject(project);
+    if(!project||terminalFailure(project))return false;
     var generation=generationStatus(project);
     var finalization=finalizationStatus(project);
     var avatar=avatarStatus(project);
@@ -38,7 +65,9 @@
         if(type==="aivo:module-mounted"&&!(event&&event.detail&&event.detail.key==="adfilm")){
           return original.apply(this,arguments);
         }
-        var project=projectFromEvent(event);
+        var project=normalizeTerminalProject(projectFromEvent(event));
+        if(event&&event.detail&&project)event.detail.project=project;
+        if(project)window.AIVOAdFilmActiveProject=project;
         if(project&&!resumable(project))return;
         return original.apply(this,arguments);
       };
@@ -48,6 +77,9 @@
 
   window.AIVOAdFilmResumeGuard={
     resumable:resumable,
+    terminalFailure:terminalFailure,
+    normalizeTerminalProject:normalizeTerminalProject,
+    projectStatus:projectStatus,
     generationStatus:generationStatus,
     finalizationStatus:finalizationStatus,
     avatarStatus:avatarStatus
