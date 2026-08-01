@@ -1,4 +1,4 @@
-const TIMELINE_VERSION = 2;
+const TIMELINE_VERSION = 3;
 const EPSILON = 0.01;
 
 function number(value, fallback = 0) {
@@ -18,6 +18,18 @@ function defaultDurations(duration) {
   if (duration >= 15) return [2, 5, 4, round(duration - 11)];
   if (duration >= 10) return [2, 4, 2, round(duration - 8)];
   return [1, 2, 1, round(duration - 4)];
+}
+
+function assignSourceWindows(segments) {
+  let avatarCursor = 0;
+  return segments.map((segment) => {
+    if (segment.source !== "avatar") {
+      return { ...segment, sourceStart:segment.start, sourceEnd:segment.end };
+    }
+    const sourceStart = round(avatarCursor);
+    avatarCursor = round(avatarCursor + segment.duration);
+    return { ...segment, sourceStart, sourceEnd:avatarCursor };
+  });
 }
 
 function fiveSecondPresenterSegments() {
@@ -42,7 +54,7 @@ function fallbackSegments(duration, avatarEnabled) {
     : ["seedance", "seedance", "seedance", "seedance"];
   const roles = ["hook", "desire", "proof", "memory_lock"];
   let cursor = 0;
-  return durations.map((segmentDuration, index) => {
+  const segments = durations.map((segmentDuration, index) => {
     const start = round(cursor);
     cursor = round(cursor + segmentDuration);
     return {
@@ -53,10 +65,9 @@ function fallbackSegments(duration, avatarEnabled) {
       start,
       end: cursor,
       duration: round(segmentDuration),
-      sourceStart: sources[index] === "avatar" ? 0 : start,
-      sourceEnd: sources[index] === "avatar" ? round(segmentDuration) : cursor,
     };
   });
+  return assignSourceWindows(segments);
 }
 
 function normalizeSegments(shots, duration, avatarEnabled) {
@@ -79,7 +90,6 @@ function normalizeSegments(shots, duration, avatarEnabled) {
     if (Math.abs(start - cursor) > EPSILON || end <= start || end > duration + EPSILON) {
       return fallbackSegments(duration, avatarEnabled);
     }
-    const segmentDuration = round(end - start);
     result.push({
       id: String(shot.id || `segment_${index + 1}`),
       order: index + 1,
@@ -87,16 +97,14 @@ function normalizeSegments(shots, duration, avatarEnabled) {
       source,
       start,
       end,
-      duration:segmentDuration,
-      sourceStart:source === "avatar" ? 0 : start,
-      sourceEnd:source === "avatar" ? segmentDuration : end,
+      duration:round(end - start),
     });
     cursor = end;
   }
   if (Math.abs(cursor - duration) > EPSILON || (avatarEnabled && !result.some((item) => item.source === "avatar"))) {
     return fallbackSegments(duration, avatarEnabled);
   }
-  return result;
+  return assignSourceWindows(result);
 }
 
 function validateAdFilmTimeline(timeline) {
@@ -104,11 +112,20 @@ function validateAdFilmTimeline(timeline) {
   const segments = Array.isArray(timeline?.segments) ? timeline.segments : [];
   if (!segments.length) return { ok:false, error:"timeline_empty" };
   let cursor = 0;
+  let avatarCursor = 0;
   for (const segment of segments) {
     const start = number(segment?.start, -1);
     const end = number(segment?.end, -1);
     if (Math.abs(start - cursor) > EPSILON) return { ok:false, error:"timeline_gap_or_overlap" };
     if (end <= start) return { ok:false, error:"timeline_invalid_segment" };
+    if (segment?.source === "avatar") {
+      const sourceStart = number(segment?.sourceStart, -1);
+      const sourceEnd = number(segment?.sourceEnd, -1);
+      if (Math.abs(sourceStart - avatarCursor) > EPSILON || sourceEnd <= sourceStart) {
+        return { ok:false, error:"avatar_source_window_invalid" };
+      }
+      avatarCursor = sourceEnd;
+    }
     cursor = end;
   }
   if (Math.abs(cursor - duration) > EPSILON) return { ok:false, error:"timeline_duration_mismatch" };
@@ -119,30 +136,41 @@ function buildAdFilmTimeline(input = {}) {
   const duration = normalizeDuration(input.duration);
   const avatarEnabled = input.avatarEnabled === true;
   const segments = normalizeSegments(input.shots, duration, avatarEnabled);
-  const avatarSegment = segments.find((segment) => segment.source === "avatar") || null;
+  const avatarSegments = segments.filter((segment) => segment.source === "avatar");
+  const firstAvatar = avatarSegments[0] || null;
+  const lastAvatar = avatarSegments[avatarSegments.length - 1] || null;
+  const avatarDuration = round(avatarSegments.reduce((sum, segment) => sum + segment.duration, 0));
   const shortPresenter = avatarEnabled && duration <= 5 + EPSILON;
-  const speechInset = avatarSegment && !shortPresenter ? Math.min(0.2, avatarSegment.duration * 0.04) : 0;
-  const speech = avatarSegment ? {
-    start:round(avatarSegment.start + speechInset),
-    end:round(avatarSegment.end - speechInset),
-    duration:round(Math.max(0.5, avatarSegment.duration - speechInset * 2)),
-    clipStart:round(speechInset),
-    clipEnd:round(Math.max(speechInset + 0.5, avatarSegment.duration - speechInset)),
-  } : null;
+  const speechSegments = avatarSegments.map((segment) => {
+    const inset = shortPresenter ? 0 : Math.min(0.2, segment.duration * 0.04);
+    return {
+      start:round(segment.start + inset),
+      end:round(segment.end - inset),
+      duration:round(Math.max(0.5, segment.duration - inset * 2)),
+      clipStart:round(segment.sourceStart + inset),
+      clipEnd:round(Math.max(segment.sourceStart + inset + 0.5, segment.sourceEnd - inset)),
+      sourceStart:segment.sourceStart,
+      sourceEnd:segment.sourceEnd,
+      role:segment.role,
+    };
+  });
   const timeline = {
     version:TIMELINE_VERSION,
-    mode:shortPresenter ? "presenter-short" : "hybrid",
+    mode:shortPresenter ? "presenter-short" : avatarSegments.length > 1 ? "hybrid-multi-avatar" : "hybrid",
     duration,
     avatarEnabled,
     segments,
-    avatar:avatarSegment ? {
-      start:avatarSegment.start,
-      end:avatarSegment.end,
-      duration:avatarSegment.duration,
+    avatar:firstAvatar ? {
+      start:firstAvatar.start,
+      end:lastAvatar.end,
+      duration:avatarDuration,
       sourceStart:0,
-      sourceEnd:avatarSegment.duration,
+      sourceEnd:avatarDuration,
+      appearances:avatarSegments.length,
     } : null,
-    speech,
+    avatarSegments,
+    speech:speechSegments[0] || null,
+    speechSegments,
     seedanceSegments:segments.filter((segment) => segment.source === "seedance"),
     finalCut:segments.map((segment) => ({
       id:segment.id,
