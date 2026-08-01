@@ -10,6 +10,8 @@ import {
 
 const MODEL = "bytedance/seedance-2.0/reference-to-video";
 const QUEUE_URL = `https://queue.fal.run/${MODEL}`;
+const MAX_GENERATION_AGE_MS = 20 * 60 * 1000;
+const AVATAR_PIPELINE_START_GRACE_MS = 2 * 60 * 1000;
 
 function clean(value, max = 1600) {
   return String(value ?? "").trim().slice(0, max);
@@ -134,6 +136,36 @@ function terminalFailureReason(project) {
   return "";
 }
 
+function generationAgeMs(generation) {
+  const startedAt = Date.parse(generation?.startedAt || "");
+  return Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : null;
+}
+
+function staleGenerationReason(project) {
+  const generation = project?.generation || {};
+  const status = clean(generation.status, 80).toLowerCase();
+  if (!["queued", "processing"].includes(status)) return "";
+
+  const age = generationAgeMs(generation);
+  if (!Number.isFinite(age)) return "";
+
+  if (project?.avatar?.enabled === true) {
+    const pipeline = project?.avatar?.pipeline;
+    const productionId = clean(
+      generation.productionId ||
+      generation.input?.productionId ||
+      project?.productionPlan?.productionId,
+      160,
+    );
+    if (productionId && !pipeline && age > AVATAR_PIPELINE_START_GRACE_MS) {
+      return "avatar_pipeline_not_started";
+    }
+  }
+
+  if (age > MAX_GENERATION_AGE_MS) return "seedance_provider_timeout";
+  return "";
+}
+
 async function falFetch(url, key) {
   const response = await fetch(url, {
     method: "GET",
@@ -231,7 +263,7 @@ export default async function handler(req, res) {
     const generation = project.generation || {};
     const savedOutputs = normalizeOutputs(project);
     const avatarFinalRequired = project?.avatar?.enabled === true;
-    const terminalError = terminalFailureReason(project);
+    const terminalError = terminalFailureReason(project) || staleGenerationReason(project);
 
     if (terminalError) {
       const now = new Date().toISOString();
@@ -261,6 +293,7 @@ export default async function handler(req, res) {
         ok: true,
         projectId,
         status: "FAILED",
+        error: terminalError,
         video_url: null,
         source_video_url: terminalProject.generation?.sourceVideoUrl || null,
         generation: terminalProject.generation || terminalGeneration,
