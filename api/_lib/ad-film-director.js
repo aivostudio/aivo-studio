@@ -1,4 +1,4 @@
-const DIRECTOR_VERSION = 1;
+const DIRECTOR_VERSION = 2;
 
 function clean(value, max = 1200) {
   return String(value ?? "")
@@ -6,6 +6,21 @@ function clean(value, max = 1200) {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, max);
+}
+
+function trimAtBoundary(value, max) {
+  const source = clean(value, Math.max(max, 1));
+  if (source.length <= max) return source;
+  let clipped = source.slice(0, max).trim();
+  const boundary = Math.max(
+    clipped.lastIndexOf(". "),
+    clipped.lastIndexOf("! "),
+    clipped.lastIndexOf("? "),
+    clipped.lastIndexOf("; "),
+    clipped.lastIndexOf(", "),
+  );
+  if (boundary >= Math.floor(max * 0.68)) clipped = clipped.slice(0, boundary + 1).trim();
+  return clipped;
 }
 
 function normalizeDuration(value, avatarEnabled) {
@@ -30,7 +45,7 @@ function inferProductProfile(input = {}) {
       label: "wireless earbuds",
       scaleClass: "small_handheld",
       scaleInstruction: "Keep the charging case palm-sized and each earbud fingertip-sized. The complete product must fit naturally in one adult hand.",
-      desireTrigger: "precision, freedom, premium everyday sound",
+      desireTrigger: "precision, freedom and premium everyday sound",
       signatureMotif: "a controlled pulse of light travelling around the charging case",
     };
   }
@@ -40,7 +55,7 @@ function inferProductProfile(input = {}) {
       label: "smartphone",
       scaleClass: "handheld",
       scaleInstruction: "Keep the phone at normal adult-hand scale, approximately palm-to-hand length. Never make it tablet-sized, furniture-sized or larger than the presenter's hand.",
-      desireTrigger: "speed, elegance, tactile confidence",
+      desireTrigger: "speed, elegance and tactile confidence",
       signatureMotif: "a clean edge-light sweep revealing the screen and camera detail",
     };
   }
@@ -139,7 +154,7 @@ function inferProductProfile(input = {}) {
     category: "general_product",
     label: "featured product",
     scaleClass: "semantic_real_world",
-    scaleInstruction: "Infer the product's normal real-world physical size from its identity, function and references. Keep its ratio to adult hands, bodies, furniture, architecture and the floor physically believable. Never make it monumental, toy-sized or decorative unless the product itself is naturally that size.",
+    scaleInstruction: "First identify the object category from the hero reference and its intended use. Infer its normal real-world dimensions, then keep its ratio to adult hands, bodies, furniture, architecture and the floor physically believable. Never make it monumental, toy-sized or decorative unless that is the product's true scale.",
     desireTrigger: "clarity, desirability, confidence and memorable form",
     signatureMotif: "one repeatable light, motion or material detail taken from the product's most distinctive feature",
   };
@@ -151,16 +166,18 @@ function shotDurations(duration) {
   return [1, 2, 1, 1];
 }
 
-function timelineShots({ duration, avatarEnabled, productName, profile, userDirection, manualScenes }) {
+function timelineShots({ duration, avatarEnabled, productName, profile, manualScenes }) {
   const durations = shotDurations(duration);
   const sources = avatarEnabled
     ? ["seedance", "avatar", "seedance", "seedance"]
     : ["seedance", "seedance", "seedance", "seedance"];
-  const supplied = Array.isArray(manualScenes) ? manualScenes.map((item) => clean(item, 220)).filter(Boolean) : [];
+  const supplied = Array.isArray(manualScenes)
+    ? manualScenes.map((item) => clean(item, 220)).filter(Boolean)
+    : [];
   const defaults = [
     `Pattern-interrupt macro hook: reveal the exact ${productName} through its most distinctive silhouette, material and ${profile.signatureMotif}. No presenter. Make the first frame impossible to ignore.`,
     avatarEnabled
-      ? `Native presenter interaction: @Element1 and the exact @Element2 exist in one physical set. The presenter approaches, indicates or naturally handles the real product while preserving realistic scale, floor contact, shadows, perspective and eye line.`
+      ? `Native presenter interaction: the presenter and the exact product exist in one physical set. The presenter approaches, indicates or naturally handles the real product while preserving realistic scale, floor contact, shadows, perspective and eye line.`
       : `Desire and use moment: show the exact product solving a real need or creating an aspirational feeling. Make the benefit visually understandable without unsupported text claims.`,
     `Proof and tactile detail montage: use two or three controlled micro-cuts showing the exact design, material, interface or functional detail that makes the product desirable. Preserve identity and scale in every cut.`,
     `Memory-lock hero ending: finish on a clean premium hero frame with the exact product, a decisive camera settle and ${profile.signatureMotif}. Leave a clean lower corner for the original logo overlay.`,
@@ -186,31 +203,57 @@ function timelineShots({ duration, avatarEnabled, productName, profile, userDire
 function buildDirectorPlan(project = {}, options = {}) {
   const brief = project.brief || {};
   const avatarEnabled = options.avatarEnabled ?? project?.avatar?.enabled === true;
-  const duration = normalizeDuration(options.duration || project?.output?.duration || project?.generation?.input?.duration, avatarEnabled);
+  const duration = normalizeDuration(
+    options.duration || project?.output?.duration || project?.generation?.input?.duration,
+    avatarEnabled,
+  );
   const productName = clean(options.productName || brief.productName, 120) || "featured product";
   const brandName = clean(options.brandName || brief.brandName, 100);
   const description = clean(options.description || brief.description, 500);
   const profile = inferProductProfile({ productName, brandName, description });
   const manualScenes = Array.isArray(options.scenes) ? options.scenes : [];
   const userDirection = clean(options.creativeDirection, 700);
-  const shots = timelineShots({ duration, avatarEnabled, productName, profile, userDirection, manualScenes });
+  const shots = timelineShots({ duration, avatarEnabled, productName, profile, manualScenes });
+  const timing = shots.map((shot) => `${shot.start}-${shot.end}s ${shot.role}`).join("; ");
+
   const seedanceDirection = clean([
-    `Direct a ${duration}-second premium conversion-focused commercial for ${productName}.`,
-    `The goal is immediate desire and strong visual memory, not a slideshow or generic product rotation.`,
-    `Use a four-beat arc: disruptive macro hook, emotionally clear desire/use moment, tactile proof details, and a decisive hero ending.`,
-    `Maintain one coherent visual world, exact product identity and realistic physical scale. ${profile.scaleInstruction}`,
-    `Use ${profile.signatureMotif} as the recurring mnemonic.`,
-    `No product image displayed on a screen, billboard, poster, floating rectangle or video wall. No fake logo or generated text.`,
+    `Act as the advertising director for a ${duration}-second premium, conversion-focused commercial for ${productName}.`,
+    `The goal is immediate desire and strong visual memory, not a slideshow, generic product rotation or reference-image display.`,
+    `Use this four-beat rhythm: ${timing}.`,
+    avatarEnabled
+      ? "Create a complete product-only visual master with no presenter. The final editor will replace the desire beat with a separately generated native presenter performance."
+      : "Keep the product as the visual hero throughout the complete commercial.",
+    `Preserve exact product identity and realistic physical scale. ${profile.scaleInstruction}`,
+    `Build desire around ${profile.desireTrigger}. Use ${profile.signatureMotif} as the recurring mnemonic.`,
+    "Render the physical product itself inside the scene. Never show the uploaded product picture as a flat rectangle, screen, billboard, poster, picture-in-picture panel or video wall.",
+    "Use purposeful camera motion, motivated premium lighting, tactile close-ups, clean continuity and a decisive final camera settle.",
     userDirection ? `User direction: ${userDirection}` : "",
-  ].filter(Boolean).join(" "), 700);
+  ].filter(Boolean).join(" "), 1050);
+
+  const avatarDirection = clean([
+    `Direct one native, photorealistic presenter performance for the ${duration}-second commercial for ${productName}.`,
+    "The presenter and product must exist as real physical subjects in one coherent three-dimensional set, never as separate layers.",
+    `Identify @Element2 as ${profile.label}. ${profile.scaleInstruction}`,
+    `The emotional sales trigger is ${profile.desireTrigger}. The presenter's look, gesture and timing must make the product feel desirable without exaggerated acting.`,
+    "Begin with a short controlled visual setup, move into a confident product interaction, show one clear tactile proof moment, then finish with a composed product-facing hero pose.",
+    `Use ${profile.signatureMotif} subtly as the memory cue, but never replace or distort the real product.`,
+    "Never place the product reference image on a screen, display panel, poster, billboard, floating rectangle or video wall. Render the actual physical product in the set.",
+    userDirection ? `User direction: ${userDirection}` : "",
+  ].filter(Boolean).join(" "), 1150);
 
   return {
     version: DIRECTOR_VERSION,
     status: "ready",
     preparedAt: new Date().toISOString(),
     duration,
-    aspectRatio: clean(options.aspectRatio || project?.output?.aspectRatio || project?.generation?.input?.aspectRatio, 20) || "16:9",
-    quality: clean(options.quality || project?.output?.quality || project?.generation?.input?.resolution, 20).toLowerCase() || "1080p",
+    aspectRatio: clean(
+      options.aspectRatio || project?.output?.aspectRatio || project?.generation?.input?.aspectRatio,
+      20,
+    ) || "16:9",
+    quality: clean(
+      options.quality || project?.output?.quality || project?.generation?.input?.resolution,
+      20,
+    ).toLowerCase() || "1080p",
     objective: "Create desire in the first seconds, prove value visually, and finish with a repeatable brand memory.",
     product: { name: productName, brandName: brandName || null, description: description || null },
     productProfile: profile,
@@ -222,14 +265,51 @@ function buildDirectorPlan(project = {}, options = {}) {
       noGeneratedLogo: true,
     },
     seedanceDirection,
+    avatarDirection,
     scenes: shots.map((shot) => shot.prompt),
     shots,
   };
 }
 
+function composeSeedancePrompt(basePrompt, plan, maxChars = 2480) {
+  const suffix = "Create the visual commercial only. Keep the video completely silent. Do not generate speech, dialogue, narration, music, ambience or sound effects. AIVO will add the approved narration, selected music and original logo during protected final post-production.";
+  const director = clean(plan?.seedanceDirection, 1200);
+  const base = clean(basePrompt, 12000);
+  const labels = "AIVO DIRECTOR:  REFERENCE CONTRACT:  ";
+  const bodyBudget = Math.max(240, maxChars - director.length - suffix.length - labels.length - 3);
+  const referenceContract = trimAtBoundary(base, bodyBudget);
+  return [
+    director ? `AIVO DIRECTOR: ${director}` : "",
+    referenceContract ? `REFERENCE CONTRACT: ${referenceContract}` : "",
+    suffix,
+  ].filter(Boolean).join(" ").slice(0, maxChars);
+}
+
+function composeAvatarPrompt({ project = {}, plan, countryLabel = "international", expression = "confident and trustworthy", maxChars = 2480 }) {
+  const avatar = project.avatar || {};
+  const productName = clean(plan?.product?.name || project?.brief?.productName, 120) || "featured product";
+  const userDirection = clean(avatar.directorNote, 1000);
+  const prefix = `Create one photorealistic premium commercial performance lasting ${plan?.duration || 10} seconds. @Element1 is the exact ${countryLabel} adult presenter and @Element2 is the exact ${productName}. Preserve both identities, face, clothing, product silhouette, proportions, materials, colors and distinctive design details. The presenter is ${expression}.`;
+  const integration = "The presenter, product, floor and set exist inside one coherent three-dimensional world. Match real-world scale, perspective, floor contact, cast shadows, reflections, color temperature, depth of field, occlusion and camera parallax. Camera and subject movement must share the same world coordinates. Keep feet grounded and body weight physically believable.";
+  const safety = "Use controlled professional gestures, natural body motion and clear face visibility for later lip sync. Allow touching or holding only when physically plausible for the identified product category. Never create an oversized duplicate, alternate product, extra person, text, subtitle, generated logo or watermark. No generated speech or audio.";
+  const director = clean(plan?.avatarDirection, 1200);
+  const fixedLength = prefix.length + integration.length + safety.length + director.length + 80;
+  const userBudget = Math.max(0, maxChars - fixedLength);
+  const clippedUserDirection = trimAtBoundary(userDirection, userBudget);
+  return [
+    prefix,
+    director ? `AIVO director plan: ${director}` : "",
+    integration,
+    clippedUserDirection ? `User presenter direction: ${clippedUserDirection}.` : "",
+    safety,
+  ].filter(Boolean).join(" ").slice(0, maxChars);
+}
+
 export {
   DIRECTOR_VERSION,
   buildDirectorPlan,
+  composeAvatarPrompt,
+  composeSeedancePrompt,
   inferProductProfile,
   normalizeDuration,
 };
