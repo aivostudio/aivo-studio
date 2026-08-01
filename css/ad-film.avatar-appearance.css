@@ -1,0 +1,53 @@
+/* AIVO AI Reklam Filmi — compact appearance controls */
+[data-module-root][data-module="adfilm"] .adfilm-avatar-body:has([data-avatar-pane="suggest"]:not([hidden])) .adfilm-avatar-fields .adfilm-avatar-control--appearance,
+[data-module-root][data-module="adfilm"] .adfilm-avatar-body:has([data-avatar-pane="suggest"]:not([hidden])) .adfilm-avatar-fields .adfilm-avatar-control--color,
+[data-module-root][data-module="adfilm"] .adfilm-avatar-body:has([data-avatar-pane="suggest"]:not([hidden])) .adfilm-avatar-fields .adfilm-avatar-control--accessory {
+  min-height: 104px;
+  padding: 12px;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-avatar-control--appearance {
+  transition: opacity .18s ease, filter .18s ease, border-color .18s ease, background .18s ease;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-avatar-control--appearance.is-inactive {
+  opacity: .38;
+  filter: saturate(.55);
+  border-color: rgba(255,255,255,.045) !important;
+  background: rgba(8,10,23,.42) !important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-avatar-control--appearance.is-inactive select {
+  cursor: not-allowed;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-avatar-control--appearance:not(.is-inactive) {
+  border-color: rgba(186,116,255,.24) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035),0 10px 26px rgba(75,40,145,.08);
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-avatar-control--color select,
+[data-module-root][data-module="adfilm"] .adfilm-avatar-control--accessory select {
+  text-overflow: ellipsis;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
+  align-items: stretch;
+}
+
+@media (min-width:1181px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-body:has([data-avatar-pane="suggest"]:not([hidden])) .adfilm-avatar-country,
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-body:has([data-avatar-pane="suggest"]:not([hidden])) .adfilm-avatar-fields .adfilm-control {
+    min-height: 104px;
+    padding: 12px;
+  }
+  [data-module-root][data-module="adfilm"] .adfilm-card--avatar .adfilm-control select {
+    height: 46px;
+  }
+}
+
+@media (max-width:1180px) and (min-width:801px) {
+  [data-module-root][data-module="adfilm"] .adfilm-avatar-fields {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
