@@ -1,10 +1,11 @@
 /* AIVO AI Reklam Filmi — native-scene avatar orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V9__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V9__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V10__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V10__=true;
 
-  var running=false,pollTimer=null,currentLock=null;
+  var running=false,pollTimer=null,currentLock=null,seedanceGate=null;
+  var terminalFailures=new Map();
   var POLL_MS=3500,MAX_POLLS=700;
   var nativeFetch=window.fetch.bind(window);
 
@@ -17,7 +18,19 @@
   function choice(scope,key,fallback){var button=scope&&scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');return button?button.dataset.value:fallback}
   function avatarEnabled(scope){var toggle=scope&&scope.querySelector('[data-avatar-enabled]');return toggle?!!toggle.checked:project()&&project().avatar&&project().avatar.enabled===true}
   function avatarImage(){return project()&&project().avatar&&project().avatar.image&&project().avatar.image.url}
-  function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:5200});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
+  function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:5600});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
+  function urlOf(input){return typeof input==='string'?input:input&&input.url||''}
+  function bodyOf(init){try{return JSON.parse(init&&typeof init.body==='string'?init.body:'{}')||{}}catch(_){return{}}}
+  function cloneInit(init,body){var next=Object.assign({},init||{});next.headers=Object.assign({'Content-Type':'application/json'},next.headers||{});next.body=JSON.stringify(body||{});return next}
+  function jsonResponse(payload,status){return new Response(JSON.stringify(payload),{status:status||409,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}})}
+  async function responseJson(response){try{return await response.clone().json()}catch(_){return{}}}
+  function terminalCode(code){return[
+    'seedance_source_too_short','production_duration_mismatch','production_lock_mismatch',
+    'product_identity_conflict','narration_too_long_for_avatar_window','narration_audio_approval_required',
+    'music_audio_required','timeline_empty','timeline_gap_or_overlap','timeline_invalid_segment',
+    'timeline_duration_mismatch','avatar_pipeline_failed'
+  ].indexOf(clean(code))>=0}
+  function finalizeKey(init){var body=bodyOf(init);return clean(body.projectId)+'|'+clean(body.outputId)}
   async function jsonRequest(url,options){var response=await fetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"}},options||{}));var data=await response.json().catch(function(){return{}});if(!response.ok){var error=new Error(data.message||data.error||"request_failed");error.status=response.status;error.data=data;throw error}return data}
 
   function durationButton(value){return '<button type="button" data-value="'+value+'"><span>'+value+' sn</span></button>'}
@@ -99,19 +112,66 @@
     return next;
   }
 
+  function createSeedanceGate(){
+    var resolveGate,rejectGate;
+    var promise=new Promise(function(resolve,reject){resolveGate=resolve;rejectGate=reject});
+    var timer=setTimeout(function(){rejectGate(new Error('seedance_start_timeout'))},90000);
+    return{
+      promise:promise.finally(function(){clearTimeout(timer)}),
+      resolve:function(value){resolveGate(value)},
+      reject:function(error){rejectGate(error)}
+    };
+  }
+
   window.fetch=async function(input,init){
-    var response=await nativeFetch(input,init);
+    var url=urlOf(input);
+    var nextInit=init;
+    var lock=window.__AIVO_AD_FILM_PRODUCTION_LOCK__||currentLock;
+    var isSeedanceCreate=url.indexOf('/api/ad-film/seedance/create')>=0;
+    var isFinalize=url.indexOf('/api/ad-film/seedance/finalize')>=0;
+
+    if(isSeedanceCreate&&lock){
+      var createBody=bodyOf(init);
+      createBody.duration=lock.duration;
+      createBody.resolution=lock.quality;
+      createBody.aspect_ratio=lock.apiAspectRatio;
+      createBody.production_id=lock.id;
+      nextInit=cloneInit(init,createBody);
+    }
+
+    var key=isFinalize?finalizeKey(nextInit):'';
+    if(isFinalize&&key&&terminalFailures.has(key))return terminalFailures.get(key).clone();
+
+    var response=await nativeFetch(input,nextInit);
     try{
-      var url=typeof input==='string'?input:input&&input.url||'';
+      if(isSeedanceCreate){
+        var created=await responseJson(response);
+        if(response.ok){if(seedanceGate)seedanceGate.resolve(created)}
+        else if(seedanceGate){var createError=new Error(created.message||created.error||'seedance_start_failed');createError.status=response.status;createError.data=created;seedanceGate.reject(createError)}
+      }
+
+      if(isFinalize){
+        var finalizedPayload=await responseJson(response);
+        if(terminalCode(finalizedPayload.error)){
+          var terminal=jsonResponse(finalizedPayload,response.status||409);
+          if(key)terminalFailures.set(key,terminal.clone());
+          return terminal;
+        }
+        if(response.ok&&key)terminalFailures.delete(key);
+      }
+
       if(url.indexOf('/api/ad-film/seedance/status')<0||!response.ok)return response;
       var current=project(),avatar=current&&current.avatar,pipeline=avatar&&avatar.pipeline;
       if(!avatar||avatar.enabled!==true||!pipeline)return response;
-      var data=await response.clone().json().catch(function(){return null});if(!data)return response;
+      var data=await responseJson(response);if(!data)return response;
       if(pipeline.status==='failed'){
         data.status='FAILED';data.video_url=null;data.generation=Object.assign({},data.generation||{},{error:pipeline.error||'avatar_pipeline_failed'});
       }else if(pipeline.status!=='completed'||!pipeline.videoUrl){data.status='RUNNING'}
       return new Response(JSON.stringify(data),{status:response.status,statusText:response.statusText,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
-    }catch(_){return response}
+    }catch(error){
+      if(isSeedanceCreate&&seedanceGate)seedanceGate.reject(error);
+      return response;
+    }
   };
 
   async function poll(scope,id,count){
@@ -127,8 +187,8 @@
       var copy=stageText(data.stage);setStage(scope,copy.text,copy.detail);
       pollTimer=setTimeout(function(){poll(scope,id,count+1)},POLL_MS);
     }catch(error){
-      if(count<8){pollTimer=setTimeout(function(){poll(scope,id,count+1)},POLL_MS);return}
-      running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;console.error('[ADFILM] native avatar pipeline poll',error);notify(text('Oyuncu motoru takip edilemedi. Sayfayı yenileyerek devam edebilirsin.','Presenter engine could not be monitored. Reload the page to continue.'),'warning');
+      if(count<8&&!terminalCode(error&&error.message)){pollTimer=setTimeout(function(){poll(scope,id,count+1)},POLL_MS);return}
+      running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;console.error('[ADFILM] native avatar pipeline poll',error);notify(errorMessage(error),terminalCode(error&&error.message)?'error':'warning');
     }
   }
 
@@ -154,7 +214,8 @@
     if(code==='narration_audio_approval_required')return text('Konuşan oyuncu için sesi oluşturup onayla.','Generate and approve the voice for the talking presenter.');
     if(code==='narration_too_long_for_avatar_window')return text('Onaylı ses seçilen kısa videodaki oyuncu süresine sığmıyor. Metni kısaltıp sesi yeniden oluştur veya 10–15 saniye seç.','The approved voice does not fit the presenter window. Shorten and regenerate it or choose 10–15 seconds.');
     if(code==='product_identity_conflict')return text('Ürün adı, açıklama ve seslendirme farklı ürünleri tarif ediyor. Ürün bilgilerini düzelt veya yeni proje oluştur.','The product name, description and narration describe different products. Correct the project or create a new one.');
-    if(code==='production_duration_mismatch'||code==='production_lock_mismatch')return text('Ürün filmi ile oyuncu motorunun süreleri eşleşmedi. Üretim güvenli biçimde durduruldu; tekrar başlat.','Product-film and presenter durations did not match. Production was stopped safely; start again.');
+    if(code==='seedance_source_too_short'||code==='production_duration_mismatch'||code==='production_lock_mismatch')return text('Ürün filmi ile oyuncu motorunun süreleri eşleşmedi. Üretim güvenli biçimde durduruldu; tekrar başlat.','Product-film and presenter durations did not match. Production was stopped safely; start again.');
+    if(code==='seedance_start_timeout')return text('Ürün filmi motoru zamanında başlatılamadı. Oyuncu motoru çalıştırılmadı.','The product-film engine did not start in time. The presenter engine was not started.');
     if(code==='product_reference_required')return text('Ana ürün referansı bulunamadı. Ürün görsellerini yeniden seçip tekrar dene.','The hero product reference is missing. Select the product images again and retry.');
     if(code==='background_removal_failed'||code==='background_removal_missing_output')return text('Oyuncu görseli hazırlanamadı. Üretim başlatılmadı.','The presenter image could not be prepared. Production was not started.');
     if(code==='project_not_ready')return text('Proje bulut bağlantısı henüz hazır değil.','The project cloud connection is not ready yet.');
@@ -172,14 +233,18 @@
     if(running||button.disabled)return;
     currentLock=captureSettings(scope);
     if(!currentLock.projectId){notify(errorMessage({message:'project_not_ready'}),'error');return}
+    terminalFailures.clear();
     running=true;setBuildBusy(button,true);
-    setStage(scope,text('Üretim başlatıldı','Production started'),text('Süre ve çıktı ayarları kilitlendi; ürün filmi ile oyuncu aynı planla hazırlanıyor.','Duration and output settings are locked; product film and presenter are using the same plan.'));
+    setStage(scope,text('Üretim başlatıldı','Production started'),text('Süre ve çıktı ayarları kilitlendi; ürün filmi onaylandıktan sonra oyuncu motoru başlayacak.','Duration and output settings are locked; the presenter starts after the product-film request is accepted.'));
     (async function(){
       try{
+        seedanceGate=createSeedanceGate();
         invokeSeedance(currentLock);
+        await seedanceGate.promise;
+        seedanceGate=null;
         await start(scope,currentLock);
       }catch(error){
-        running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;setBuildBusy(button,false);console.error('[ADFILM] native avatar orchestrator',error);notify(errorMessage(error),'error')
+        seedanceGate=null;running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;setBuildBusy(button,false);console.error('[ADFILM] native avatar orchestrator',error);notify(errorMessage(error),'error')
       }
     })();
   },true);
