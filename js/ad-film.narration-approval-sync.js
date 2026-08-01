@@ -1,16 +1,18 @@
 /* AIVO AI Reklam Filmi — approve only an already mastered narration */
 (function AIVO_AD_FILM_NARRATION_APPROVAL_SYNC(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V10__)return;
-  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V10__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V11__)return;
+  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V11__=true;
 
   var task=null;
 
-  function clean(value){return String(value||"").trim()}
+  function clean(value){return String(value||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function text(tr,en){return english()?en:tr}
   function projectId(scope){return clean(scope&&scope.dataset.adfilmProjectId||window.AIVOAdFilmActiveProject&&window.AIVOAdFilmActiveProject.id)}
+  function currentText(scope){var input=scope&&scope.querySelector('[data-adfilm-input="narrationText"]');return clean(input&&input.value)}
+  function approvedText(project){var audio=project&&project.narration&&project.narration.audio||{};var generation=project&&project.narrationGeneration||{};return clean(audio.approvedText||generation.input&&generation.input.text||"")}
   function notify(message,type){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:3600});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
   function paint(){return new Promise(function(resolve){requestAnimationFrame(function(){requestAnimationFrame(resolve)})})}
 
@@ -47,25 +49,32 @@
     if(window.AIVOAdFilmNarrationBuildGuard&&typeof window.AIVOAdFilmNarrationBuildGuard.sync==="function")window.AIVOAdFilmNarrationBuildGuard.sync();
   }
 
-  function setReady(scope,button,project){
+  function setReady(scope,button,project,changed){
     if(project)window.AIVOAdFilmActiveProject=project;
     if(button){
       button.disabled=false;
       button.classList.remove("is-approving","is-processing","is-approved");
       button.setAttribute("aria-busy","false");
-      button.textContent=text("Sesi onayla","Approve voice");
+      button.textContent=changed?text("Sesi yeniden üret","Regenerate voice"):text("Sesi onayla","Approve voice");
     }
     var panel=scope&&scope.querySelector('[data-adfilm-narration-engine]');
     var state=panel&&panel.querySelector('[data-narration-engine-state]');
-    if(panel)panel.dataset.state="ready";
-    if(state)state.textContent=text("Reklam sesi hazır. Dinleyip onaylayabilirsin.","The advertising voice is ready. Preview and approve it.");
+    if(panel)panel.dataset.state=changed?"changed":"ready";
+    if(state)state.textContent=changed?text("Metin değişti. Güncel metin için sesi yeniden üret.","The script changed. Regenerate the voice for the current script."):text("Reklam sesi hazır. Dinleyip onaylayabilirsin.","The advertising voice is ready. Preview and approve it.");
   }
 
   async function approve(scope,button,id){
     var current=window.AIVOAdFilmActiveProject||{};
     var audio=current.narration&&current.narration.audio||{};
+    var changed=approvedText(current)&&approvedText(current)!==currentText(scope);
+    if(changed){
+      setReady(scope,button,current,true);
+      notify(text("Onaylanan ses eski metne ait. Güncel metin için sesi yeniden üret.","The approved voice belongs to the previous script. Regenerate it for the current script."),"warning");
+      task=null;
+      return;
+    }
     if(!(audio.url&&audio.mastered===true&&Number(audio.masteringVersion)>=2)){
-      setReady(scope,button,current);
+      setReady(scope,button,current,false);
       notify(text("Ses henüz hazır değil. Yeniden üret işleminin tamamlanmasını bekle.","The voice is not ready yet. Wait for generation to finish."),"warning");
       task=null;
       return;
@@ -84,7 +93,7 @@
       notify(text("Ses onaylandı.","Voice approved."),"success");
     }catch(error){
       console.warn('[ADFILM] narration approval',error);
-      setReady(scope,button,window.AIVOAdFilmActiveProject||null);
+      setReady(scope,button,window.AIVOAdFilmActiveProject||null,false);
       notify(text("Ses onaylanamadı. Tekrar deneyebilirsin.","The voice could not be approved. Try again."),"warning");
     }finally{task=null}
   }
@@ -100,13 +109,24 @@
     task=approve(scope,button,id);
   },true);
 
+  document.addEventListener("input",function(event){
+    var scope=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"]');
+    if(!scope||!event.target.matches('[data-adfilm-input="narrationText"]'))return;
+    var project=window.AIVOAdFilmActiveProject||{};
+    var button=scope.querySelector('[data-narration-audio-approve]');
+    var changed=approvedText(project)&&approvedText(project)!==currentText(scope);
+    if(changed)setReady(scope,button,project,true);
+  },true);
+
   document.addEventListener("aivo:adfilm-project-sync",function(event){
     var scope=root(),project=event&&event.detail&&event.detail.project;if(!scope||!project)return;
     window.AIVOAdFilmActiveProject=project;
     if(task)return;
     var audio=project.narration&&project.narration.audio||{};
     var button=scope.querySelector('[data-narration-audio-approve]');
-    if(audio.approved===true)setApproved(scope,button,project,false);
-    else if(audio.url&&audio.mastered===true)setReady(scope,button,project);
+    var changed=approvedText(project)&&approvedText(project)!==currentText(scope);
+    if(changed)setReady(scope,button,project,true);
+    else if(audio.approved===true)setApproved(scope,button,project,false);
+    else if(audio.url&&audio.mastered===true)setReady(scope,button,project,false);
   });
 })();
