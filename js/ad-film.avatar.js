@@ -1,11 +1,11 @@
-/* AIVO AI Reklam Filmi — avatar source, safety and project persistence */
+/* AIVO AI Reklam Filmi — avatar source, safety, queued generation and project persistence */
 (function AIVO_AD_FILM_AVATAR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_V3__)return;
-  window.__AIVO_AD_FILM_AVATAR_V3__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_V4__)return;
+  window.__AIVO_AD_FILM_AVATAR_V4__=true;
 
-  var busy=false,saveTimer=null;
-  var MAX_AVATAR_BYTES=12*1024*1024;
+  var busy=false,saveTimer=null,pollTimer=null,pollCount=0;
+  var MAX_AVATAR_BYTES=12*1024*1024,MAX_POLLS=400,POLL_MS=3000;
   var ALLOWED_IMAGE_TYPES={"image/jpeg":true,"image/png":true,"image/webp":true};
   var COUNTRIES=[
     ["tr","Türkiye","Turkey"],["us","Amerika","United States"],["de","Almanya","Germany"],
@@ -26,13 +26,12 @@
   function escapeHtml(value){return String(value||"").replace(/[&<>'"]/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]})}
   function svgUser(){return '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M4 21a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>'}
   function svgUpload(){return '<svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'}
-
   function countryOptions(selected){return COUNTRIES.map(function(item){return '<option value="'+item[0]+'"'+(item[0]===selected?' selected':'')+'>'+escapeHtml(english()?item[2]:item[1])+'</option>'}).join("")}
   function option(value,tr,en,current){return '<option value="'+value+'"'+(value===current?' selected':'')+'>'+escapeHtml(text(tr,en))+'</option>'}
   function normalizeImageType(value){var type=clean(value).toLowerCase();return type==="image/jpg"?"image/jpeg":type}
-
-  function defaults(){return{enabled:false,mode:"upload",country:"tr",gender:"female",age:"26-35",hairColor:"brown",hairStyle:"medium",framing:"chest",expression:"friendly",outfit:"business",image:null}}
+  function defaults(){return{enabled:false,mode:"upload",country:"tr",gender:"female",age:"26-35",hairColor:"brown",hairStyle:"medium",framing:"chest",expression:"friendly",outfit:"business",image:null,imageGeneration:null}}
   function avatarState(){return Object.assign(defaults(),project()&&project().avatar||{})}
+  function generationActive(state){var generation=state&&state.imageGeneration;return !!(generation&&["queued","running","saving"].indexOf(String(generation.status))>=0)}
 
   function markup(state){
     var image=state.image&&state.image.url?state.image:null;
@@ -50,16 +49,9 @@
           '</div>'+
           '<label class="adfilm-control adfilm-avatar-country"><span>'+text("Avatarın ülkesi","Avatar country")+'</span><select data-avatar-field="country">'+countryOptions(state.country)+'</select></label>'+
           '<section class="adfilm-avatar-pane" data-avatar-pane="upload" '+(state.mode!=="upload"?'hidden':'')+'>'+
-            '<label class="adfilm-avatar-drop">'+
-              '<input type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>'+
-              '<span class="adfilm-avatar-drop__content" data-avatar-drop-content>'+
-                '<span class="adfilm-avatar-drop__icon">'+svgUpload()+'</span><b>'+text("Avatar fotoğrafını yükle","Upload avatar photo")+'</b>'+
-                '<small>'+text("Tek kişi, yüz ve ağız net görünmeli. JPG, PNG veya WEBP.","One person only; face and mouth must be clearly visible. JPG, PNG or WEBP.")+'</small>'+
-              '</span>'+
-              '<span class="adfilm-avatar-upload-state" data-avatar-upload-state hidden>'+
-                '<span class="adfilm-avatar-upload-spinner" aria-hidden="true"></span>'+
-                '<span><b data-avatar-upload-title>'+text("Fotoğraf hazırlanıyor…","Preparing photo…")+'</b><small data-avatar-upload-detail>'+text("Kısa süre bekle.","Please wait briefly.")+'</small></span>'+
-              '</span>'+
+            '<label class="adfilm-avatar-drop"><input type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>'+
+              '<span class="adfilm-avatar-drop__content" data-avatar-drop-content><span class="adfilm-avatar-drop__icon">'+svgUpload()+'</span><b>'+text("Avatar fotoğrafını yükle","Upload avatar photo")+'</b><small>'+text("Tek kişi, yüz ve ağız net görünmeli. JPG, PNG veya WEBP.","One person only; face and mouth must be clearly visible. JPG, PNG or WEBP.")+'</small></span>'+
+              '<span class="adfilm-avatar-upload-state" data-avatar-upload-state hidden><span class="adfilm-avatar-upload-spinner" aria-hidden="true"></span><span><b data-avatar-upload-title>'+text("Fotoğraf hazırlanıyor…","Preparing photo…")+'</b><small data-avatar-upload-detail>'+text("Kısa süre bekle.","Please wait briefly.")+'</small></span></span>'+
             '</label>'+
             '<div class="adfilm-avatar-rules"><span>✦</span><p>'+text("Görsel AWS yüz ve korunan kişi kontrolünden geçtikten sonra yüklenir.","The image is uploaded only after AWS face and protected-person screening.")+'</p></div>'+
           '</section>'+
@@ -76,234 +68,43 @@
             '<button type="button" class="adfilm-avatar-generate" data-avatar-generate><span>✦</span><b>'+text("Avatar önerisi oluştur","Generate avatar suggestion")+'</b></button>'+
             '<p class="adfilm-avatar-tip">'+text("En iyi dudak senkronu için göğüs hizası kadraj önerilir.","Chest-up framing is recommended for the best lip sync.")+'</p>'+
           '</section>'+
-          '<div class="adfilm-avatar-preview" data-avatar-preview '+(!image?'hidden':'')+'>'+
-            '<img data-avatar-image src="'+(image?escapeHtml(image.url):'')+'" alt="Avatar">'+
-            '<div><b>'+text("Seçili avatar","Selected avatar")+'</b><small data-avatar-source>'+(image?(image.source==="generated"?text("AIVO tarafından oluşturuldu","Generated by AIVO"):text("Güvenlik kontrolünden geçti","Passed safety screening")):'')+'</small></div>'+
-            '<button type="button" data-avatar-remove aria-label="'+text("Avatarı kaldır","Remove avatar")+'">×</button>'+
-          '</div>'+
+          '<div class="adfilm-avatar-preview" data-avatar-preview '+(!image?'hidden':'')+'><img data-avatar-image src="'+(image?escapeHtml(image.url):'')+'" alt="Avatar"><div><b>'+text("Seçili avatar","Selected avatar")+'</b><small data-avatar-source>'+(image?(image.source==="generated"?text("AIVO tarafından oluşturuldu","Generated by AIVO"):text("Güvenlik kontrolünden geçti","Passed safety screening")):'')+'</small></div><button type="button" data-avatar-remove aria-label="'+text("Avatarı kaldır","Remove avatar")+'">×</button></div>'+
         '</div>'+
       '</article>';
   }
 
-  function renumber(card){
-    var settings=card&&card.nextElementSibling;
-    var step=card&&card.querySelector('[data-avatar-step]');
-    var current=settings&&settings.querySelector('.adfilm-card__eyebrow');
-    var number=current&&/^\d+$/.test(clean(current.textContent))?parseInt(current.textContent,10):5;
-    if(step)step.textContent=String(number).padStart(2,"0");
-    var sibling=settings;
-    while(sibling){
-      if(sibling.matches&&sibling.matches('.adfilm-card')){
-        var eyebrow=sibling.querySelector('.adfilm-card__eyebrow');
-        if(eyebrow&&/^\d+$/.test(clean(eyebrow.textContent))&&!eyebrow.dataset.avatarRenumbered){
-          eyebrow.dataset.avatarRenumbered="1";
-          eyebrow.textContent=String(parseInt(eyebrow.textContent,10)+1).padStart(2,"0");
-        }
-      }
-      sibling=sibling.nextElementSibling;
-    }
-  }
+  function renumber(card){var settings=card&&card.nextElementSibling,step=card&&card.querySelector('[data-avatar-step]'),current=settings&&settings.querySelector('.adfilm-card__eyebrow'),number=current&&/^\d+$/.test(clean(current.textContent))?parseInt(current.textContent,10):5;if(step)step.textContent=String(number).padStart(2,"0");var sibling=settings;while(sibling){if(sibling.matches&&sibling.matches('.adfilm-card')){var eyebrow=sibling.querySelector('.adfilm-card__eyebrow');if(eyebrow&&/^\d+$/.test(clean(eyebrow.textContent))&&!eyebrow.dataset.avatarRenumbered){eyebrow.dataset.avatarRenumbered="1";eyebrow.textContent=String(parseInt(eyebrow.textContent,10)+1).padStart(2,"0")}}sibling=sibling.nextElementSibling}}
+  function mount(){var scope=root();if(!scope)return null;var existing=scope.querySelector('[data-adfilm-avatar-card]');if(existing)return existing;var voice=scope.querySelector('.adfilm-card--voice'),settings=scope.querySelector('.adfilm-card--settings');if(!voice&&!settings)return null;var holder=document.createElement('div');holder.innerHTML=markup(avatarState());var card=holder.firstElementChild;if(settings)settings.insertAdjacentElement('beforebegin',card);else voice.insertAdjacentElement('afterend',card);renumber(card);syncEnabled(card);resumeGeneration(card,avatarState());return card}
+  function syncEnabled(card){if(!card)return;var enabled=!!(card.querySelector('[data-avatar-enabled]')||{}).checked;card.classList.toggle('is-avatar-disabled',!enabled);var body=card.querySelector('[data-avatar-body]');if(body)body.setAttribute('aria-disabled',enabled?'false':'true')}
+  function fields(card){var result={};card.querySelectorAll('[data-avatar-field]').forEach(function(input){result[input.dataset.avatarField]=input.value});return result}
+  function currentAvatar(card){var state=avatarState(),selected=card.querySelector('[data-avatar-mode].is-selected');return Object.assign({},state,fields(card),{enabled:!!card.querySelector('[data-avatar-enabled]').checked,mode:selected?selected.dataset.avatarMode:'upload'})}
 
-  function mount(){
-    var scope=root();if(!scope)return null;
-    var existing=scope.querySelector('[data-adfilm-avatar-card]');if(existing)return existing;
-    var voice=scope.querySelector('.adfilm-card--voice');
-    var settings=scope.querySelector('.adfilm-card--settings');
-    if(!voice&&!settings)return null;
-    var holder=document.createElement('div');holder.innerHTML=markup(avatarState());
-    var card=holder.firstElementChild;
-    if(settings)settings.insertAdjacentElement('beforebegin',card);else voice.insertAdjacentElement('afterend',card);
-    renumber(card);syncEnabled(card);return card;
-  }
-
-  function syncEnabled(card){
-    if(!card)return;
-    var enabled=!!(card.querySelector('[data-avatar-enabled]')||{}).checked;
-    card.classList.toggle('is-avatar-disabled',!enabled);
-    var body=card.querySelector('[data-avatar-body]');if(body)body.setAttribute('aria-disabled',enabled?'false':'true');
-  }
-  function fields(card){
-    var result={};
-    card.querySelectorAll('[data-avatar-field]').forEach(function(input){result[input.dataset.avatarField]=input.value});
-    return result;
-  }
-  function currentAvatar(card){
-    var state=avatarState(),selected=card.querySelector('[data-avatar-mode].is-selected');
-    return Object.assign({},state,fields(card),{
-      enabled:!!card.querySelector('[data-avatar-enabled]').checked,
-      mode:selected?selected.dataset.avatarMode:'upload'
-    });
-  }
-
-  async function patchAvatar(card,avatar){
-    var current=project();if(!current||!current.id)throw new Error('project_not_ready');
-    var response=await fetch('/api/ad-film/project?id='+encodeURIComponent(current.id),{method:'PATCH',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({project:{avatar:avatar}})});
-    var data=await response.json().catch(function(){return{}});
-    if(!response.ok||!data.project){var patchError=new Error(data.message||data.error||'avatar_save_failed');patchError.status=response.status;throw patchError}
-    window.AIVOAdFilmActiveProject=data.project;
-    document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||'',media:data.project.media||{}}}));
-    return data.project;
-  }
-  function queueSave(card){clearTimeout(saveTimer);saveTimer=setTimeout(function(){patchAvatar(card,currentAvatar(card)).catch(function(error){console.warn('[ADFILM] avatar save',error)})},500)}
-
-  function validateAvatarFile(file){
-    if(!file)throw new Error('avatar_file_missing');
-    var type=normalizeImageType(file.type);
-    if(!ALLOWED_IMAGE_TYPES[type])throw new Error('avatar_invalid_type');
-    if(!Number.isFinite(Number(file.size))||file.size<=0||file.size>MAX_AVATAR_BYTES)throw new Error('avatar_file_too_large');
-    return type;
-  }
+  async function patchAvatar(card,avatar){var current=project();if(!current||!current.id)throw new Error('project_not_ready');var response=await fetch('/api/ad-film/project?id='+encodeURIComponent(current.id),{method:'PATCH',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({project:{avatar:avatar}})});var data=await response.json().catch(function(){return{}});if(!response.ok||!data.project){var error=new Error(data.message||data.error||'avatar_save_failed');error.status=response.status;throw error}window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||'',media:data.project.media||{}}}));return data.project}
+  function queueSave(card){clearTimeout(saveTimer);saveTimer=setTimeout(function(){if(!busy)patchAvatar(card,currentAvatar(card)).catch(function(error){console.warn('[ADFILM] avatar save',error)})},500)}
+  function validateAvatarFile(file){if(!file)throw new Error('avatar_file_missing');var type=normalizeImageType(file.type);if(!ALLOWED_IMAGE_TYPES[type])throw new Error('avatar_invalid_type');if(!Number.isFinite(Number(file.size))||file.size<=0||file.size>MAX_AVATAR_BYTES)throw new Error('avatar_file_too_large');return type}
   function blobBase64(blob){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onerror=function(){reject(new Error('file_read_failed'))};reader.onload=function(){resolve(String(reader.result||'').split(',').pop()||'')};reader.readAsDataURL(blob)})}
   function canvasBlob(canvas,type,quality){return new Promise(function(resolve,reject){canvas.toBlob(function(blob){if(blob)resolve(blob);else reject(new Error('vision_image_prepare_failed'))},type,quality)})}
-  function loadBrowserImage(file){
-    return new Promise(function(resolve,reject){
-      var url=URL.createObjectURL(file),image=new Image();
-      image.onload=function(){resolve({image:image,url:url})};
-      image.onerror=function(){URL.revokeObjectURL(url);reject(new Error('avatar_image_decode_failed'))};
-      image.src=url;
-    });
-  }
-  async function prepareVisionImage(file){
-    var loaded=await loadBrowserImage(file);
-    try{
-      var image=loaded.image;
-      var sourceWidth=Math.max(1,image.naturalWidth||image.width||1),sourceHeight=Math.max(1,image.naturalHeight||image.height||1);
-      var maxSide=1600,scale=Math.min(1,maxSide/Math.max(sourceWidth,sourceHeight));
-      var width=Math.max(1,Math.round(sourceWidth*scale)),height=Math.max(1,Math.round(sourceHeight*scale));
-      var canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
-      var context=canvas.getContext('2d',{alpha:false});if(!context)throw new Error('vision_canvas_unavailable');
-      context.fillStyle='#ffffff';context.fillRect(0,0,width,height);context.drawImage(image,0,0,width,height);
-      var quality=.86,blob=await canvasBlob(canvas,'image/jpeg',quality);
-      while(blob.size>1900000&&quality>.58){quality-=.08;blob=await canvasBlob(canvas,'image/jpeg',quality)}
-      if(blob.size>2400000)throw new Error('vision_payload_too_large');
-      return{base64:await blobBase64(blob),mimeType:'image/jpeg',size:blob.size,width:width,height:height};
-    }finally{URL.revokeObjectURL(loaded.url)}
-  }
-  async function screenImage(file,prepared){
-    var controller=typeof AbortController==='function'?new AbortController():null;
-    var timer=controller?setTimeout(function(){controller.abort()},60000):null;
-    try{
-      var response=await fetch('/api/media-policy/vision-aws',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},signal:controller&&controller.signal,body:JSON.stringify({app:'ad-film-avatar',fileName:file.name,mimeType:prepared.mimeType,imageBase64:prepared.base64,sourceSize:file.size,screeningSize:prepared.size})});
-      var data=await response.json().catch(function(){return{}});
-      if(!response.ok||!data.ok){var error=new Error(data.detail||data.error||('vision_http_'+response.status));error.status=response.status;error.data=data;throw error}
-      if(!data.hasFace)throw new Error('avatar_face_missing');
-      if(Number(data.faceCount)!==1)throw new Error('avatar_single_face_required');
-      if(Number(data.celebrityRisk||0)>0||Number(data.publicFigureRisk||0)>0)throw new Error('avatar_protected_person');
-      return data;
-    }catch(error){
-      if(error&&error.name==='AbortError')throw new Error('vision_timeout');
-      if(error instanceof TypeError)throw new Error('vision_network_error');
-      throw error;
-    }finally{if(timer)clearTimeout(timer)}
-  }
-  async function uploadAvatar(card,file,onPhase){
-    var current=project();if(!current||!current.id)throw new Error('project_not_ready');
-    var contentType=normalizeImageType(file.type);
-    if(onPhase)onPhase(text('Yükleme hazırlanıyor…','Preparing upload…'),text('Güvenli bulut bağlantısı oluşturuluyor.','Creating a secure cloud connection.'));
-    var signedResponse=await fetch('/api/ad-film/upload-url',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:current.id,filename:file.name,contentType:contentType,size:file.size,kind:'avatar-image'})});
-    var signed=await signedResponse.json().catch(function(){return{}});
-    if(!signedResponse.ok){var signError=new Error(signed.message||signed.error||'avatar_sign_failed');signError.status=signedResponse.status;throw signError}
-    if(onPhase)onPhase(text('Avatar yükleniyor…','Uploading avatar…'),text('Görsel güvenli biçimde buluta kaydediliyor.','Saving the image securely to the cloud.'));
-    var upload;
-    try{upload=await fetch(signed.upload_url,{method:'PUT',headers:signed.required_headers||{'Content-Type':contentType},body:file})}
-    catch(networkError){throw new Error('avatar_upload_network_error')}
-    if(!upload.ok)throw new Error('avatar_upload_failed_'+upload.status);
-    var image={key:signed.key,url:signed.public_url||signed.read_url,name:file.name,contentType:contentType,size:file.size,kind:'avatar-image',source:'upload',uploadedAt:new Date().toISOString()};
-    var avatar=Object.assign(currentAvatar(card),{enabled:true,mode:'upload',image:image});
-    if(onPhase)onPhase(text('Proje kaydediliyor…','Saving project…'),text('Avatar reklam projesine ekleniyor.','Adding the avatar to the advertising project.'));
-    return patchAvatar(card,avatar);
-  }
+  function loadBrowserImage(file){return new Promise(function(resolve,reject){var url=URL.createObjectURL(file),image=new Image();image.onload=function(){resolve({image:image,url:url})};image.onerror=function(){URL.revokeObjectURL(url);reject(new Error('avatar_image_decode_failed'))};image.src=url})}
+  async function prepareVisionImage(file){var loaded=await loadBrowserImage(file);try{var image=loaded.image,sourceWidth=Math.max(1,image.naturalWidth||image.width||1),sourceHeight=Math.max(1,image.naturalHeight||image.height||1),maxSide=1600,scale=Math.min(1,maxSide/Math.max(sourceWidth,sourceHeight)),width=Math.max(1,Math.round(sourceWidth*scale)),height=Math.max(1,Math.round(sourceHeight*scale)),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;var context=canvas.getContext('2d',{alpha:false});if(!context)throw new Error('vision_canvas_unavailable');context.fillStyle='#ffffff';context.fillRect(0,0,width,height);context.drawImage(image,0,0,width,height);var quality=.86,blob=await canvasBlob(canvas,'image/jpeg',quality);while(blob.size>1900000&&quality>.58){quality-=.08;blob=await canvasBlob(canvas,'image/jpeg',quality)}if(blob.size>2400000)throw new Error('vision_payload_too_large');return{base64:await blobBase64(blob),mimeType:'image/jpeg',size:blob.size,width:width,height:height}}finally{URL.revokeObjectURL(loaded.url)}}
+  async function screenImage(file,prepared){var controller=typeof AbortController==='function'?new AbortController():null,timer=controller?setTimeout(function(){controller.abort()},60000):null;try{var response=await fetch('/api/media-policy/vision-aws',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},signal:controller&&controller.signal,body:JSON.stringify({app:'ad-film-avatar',fileName:file.name,mimeType:prepared.mimeType,imageBase64:prepared.base64,sourceSize:file.size,screeningSize:prepared.size})}),data=await response.json().catch(function(){return{}});if(!response.ok||!data.ok){var error=new Error(data.detail||data.error||('vision_http_'+response.status));error.status=response.status;throw error}if(!data.hasFace)throw new Error('avatar_face_missing');if(Number(data.faceCount)!==1)throw new Error('avatar_single_face_required');if(Number(data.celebrityRisk||0)>0||Number(data.publicFigureRisk||0)>0)throw new Error('avatar_protected_person');return data}catch(error){if(error&&error.name==='AbortError')throw new Error('vision_timeout');if(error instanceof TypeError)throw new Error('vision_network_error');throw error}finally{if(timer)clearTimeout(timer)}}
+  async function uploadAvatar(card,file,onPhase){var current=project();if(!current||!current.id)throw new Error('project_not_ready');var contentType=normalizeImageType(file.type);if(onPhase)onPhase(text('Yükleme hazırlanıyor…','Preparing upload…'),text('Güvenli bulut bağlantısı oluşturuluyor.','Creating a secure cloud connection.'));var signedResponse=await fetch('/api/ad-film/upload-url',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify({projectId:current.id,filename:file.name,contentType:contentType,size:file.size,kind:'avatar-image'})}),signed=await signedResponse.json().catch(function(){return{}});if(!signedResponse.ok)throw new Error(signed.message||signed.error||'avatar_sign_failed');if(onPhase)onPhase(text('Avatar yükleniyor…','Uploading avatar…'),text('Görsel güvenli biçimde buluta kaydediliyor.','Saving the image securely to the cloud.'));var upload=await fetch(signed.upload_url,{method:'PUT',headers:signed.required_headers||{'Content-Type':contentType},body:file});if(!upload.ok)throw new Error('avatar_upload_failed_'+upload.status);var image={key:signed.key,url:signed.public_url||signed.read_url,name:file.name,contentType:contentType,size:file.size,kind:'avatar-image',source:'upload',uploadedAt:new Date().toISOString()},avatar=Object.assign(currentAvatar(card),{enabled:true,mode:'upload',image:image,imageGeneration:null});return patchAvatar(card,avatar)}
 
-  function setBusy(card,active,label,detail){
-    busy=active;
-    card.classList.toggle('is-avatar-busy',active);
-    card.setAttribute('aria-busy',active?'true':'false');
-    var button=card.querySelector('[data-avatar-generate]');
-    if(button){button.disabled=active;var buttonLabel=button.querySelector('b');if(buttonLabel)buttonLabel.textContent=active&&card.querySelector('[data-avatar-mode="suggest"].is-selected')?label:text('Avatar önerisi oluştur','Generate avatar suggestion')}
-    var input=card.querySelector('[data-avatar-file]');if(input)input.disabled=active;
-    card.querySelectorAll('[data-avatar-mode], [data-avatar-field], [data-avatar-enabled]').forEach(function(control){control.disabled=active});
-    var state=card.querySelector('[data-avatar-upload-state]');
-    if(state){
-      state.hidden=!active;
-      var title=state.querySelector('[data-avatar-upload-title]');if(title&&label)title.textContent=label;
-      var description=state.querySelector('[data-avatar-upload-detail]');if(description)description.textContent=detail||text('Kısa süre bekle.','Please wait briefly.');
-    }
-  }
-  function refreshPreview(card,state){
-    var preview=card.querySelector('[data-avatar-preview]'),image=state&&state.image;
-    if(!preview)return;
-    preview.hidden=!(image&&image.url);
-    var img=preview.querySelector('[data-avatar-image]');if(img&&image)img.src=image.url;
-    var source=preview.querySelector('[data-avatar-source]');if(source&&image)source.textContent=image.source==='generated'?text('AIVO tarafından oluşturuldu','Generated by AIVO'):text('Güvenlik kontrolünden geçti','Passed safety screening');
-  }
-  function errorText(error){
-    var code=clean(error&&error.message),status=Number(error&&error.status||0);
-    if(code==='avatar_invalid_type')return text('Yalnızca JPG, PNG veya WEBP görsel yükleyebilirsin.','You can upload only JPG, PNG or WEBP images.');
-    if(code==='avatar_file_too_large')return text('Avatar görseli en fazla 12 MB olabilir.','The avatar image can be up to 12 MB.');
-    if(code==='avatar_image_decode_failed'||code==='vision_image_prepare_failed')return text('Görsel okunamadı. Farklı bir JPG, PNG veya WEBP dosyası dene.','The image could not be read. Try another JPG, PNG or WEBP file.');
-    if(code==='avatar_face_missing')return text('Fotoğrafta net bir yüz bulunamadı.','No clear face was detected in the photo.');
-    if(code==='avatar_single_face_required')return text('Avatar fotoğrafında yalnızca bir kişi olmalı.','The avatar photo must contain only one person.');
-    if(code==='avatar_protected_person')return text('Ünlü veya korunan kamu figürü görselleri avatar olarak kullanılamaz.','Celebrity or protected public-figure images cannot be used as avatars.');
-    if(code==='vision_timeout')return text('Görsel güvenlik kontrolü zaman aşımına uğradı. Tekrar dene.','Image safety screening timed out. Try again.');
-    if(code==='vision_network_error'||code==='vision_aws_error'||code==='vision_check_failed'||code.indexOf('vision_http_')===0||status===413)return text('Görsel güvenlik kontrolü tamamlanamadı. Tekrar dene.','Image safety screening could not be completed. Try again.');
-    if(code==='project_not_ready')return text('Proje bulut bağlantısı henüz hazır değil. Birkaç saniye sonra tekrar dene.','The project cloud connection is not ready yet. Try again in a few seconds.');
-    if(code.indexOf('avatar_upload')===0||code==='avatar_sign_failed')return text('Avatar görseli buluta yüklenemedi. Tekrar dene.','The avatar image could not be uploaded to the cloud. Try again.');
-    if(code==='avatar_save_failed')return text('Avatar proje kaydına eklenemedi. Tekrar dene.','The avatar could not be added to the project. Try again.');
-    return text('Avatar işlemi tamamlanamadı. Tekrar deneyebilirsin.','The avatar operation could not be completed. Try again.');
-  }
+  function setBusy(card,active,label,detail){busy=active;card.classList.toggle('is-avatar-busy',active);card.setAttribute('aria-busy',active?'true':'false');var button=card.querySelector('[data-avatar-generate]');if(button){button.disabled=active;var buttonLabel=button.querySelector('b');if(buttonLabel)buttonLabel.textContent=active&&card.querySelector('[data-avatar-mode="suggest"].is-selected')?(label||text('Avatar hazırlanıyor…','Generating avatar…')):text('Avatar önerisi oluştur','Generate avatar suggestion')}var input=card.querySelector('[data-avatar-file]');if(input)input.disabled=active;card.querySelectorAll('[data-avatar-mode], [data-avatar-field], [data-avatar-enabled]').forEach(function(control){control.disabled=active});var state=card.querySelector('[data-avatar-upload-state]');if(state){state.hidden=!active;var title=state.querySelector('[data-avatar-upload-title]');if(title&&label)title.textContent=label;var description=state.querySelector('[data-avatar-upload-detail]');if(description)description.textContent=detail||text('Kısa süre bekle.','Please wait briefly.')}}
+  function refreshPreview(card,state){var preview=card.querySelector('[data-avatar-preview]'),image=state&&state.image;if(!preview)return;preview.hidden=!(image&&image.url);var img=preview.querySelector('[data-avatar-image]');if(img&&image)img.src=image.url;var source=preview.querySelector('[data-avatar-source]');if(source&&image)source.textContent=image.source==='generated'?text('AIVO tarafından oluşturuldu','Generated by AIVO'):text('Güvenlik kontrolünden geçti','Passed safety screening')}
+  function errorText(error){var code=clean(error&&error.message),status=Number(error&&error.status||0);if(code==='avatar_invalid_type')return text('Yalnızca JPG, PNG veya WEBP görsel yükleyebilirsin.','You can upload only JPG, PNG or WEBP images.');if(code==='avatar_file_too_large')return text('Avatar görseli en fazla 12 MB olabilir.','The avatar image can be up to 12 MB.');if(code==='avatar_face_missing')return text('Fotoğrafta net bir yüz bulunamadı.','No clear face was detected in the photo.');if(code==='avatar_single_face_required')return text('Avatar fotoğrafında yalnızca bir kişi olmalı.','The avatar photo must contain only one person.');if(code==='avatar_protected_person')return text('Ünlü veya korunan kamu figürü görselleri avatar olarak kullanılamaz.','Celebrity or protected public-figure images cannot be used as avatars.');if(code==='avatar_generation_timeout'||code==='avatar_status_timeout')return text('Avatar üretimi zaman aşımına uğradı. Tekrar deneyebilirsin.','Avatar generation timed out. You can try again.');if(code==='project_not_ready')return text('Proje bulut bağlantısı henüz hazır değil.','The project cloud connection is not ready yet.');if(code.indexOf('avatar_upload')===0||code==='avatar_sign_failed')return text('Avatar görseli buluta yüklenemedi.','The avatar image could not be uploaded.');if(status===413)return text('Görsel işlenemeyecek kadar büyük.','The image is too large to process.');return text('Avatar işlemi tamamlanamadı. Tekrar deneyebilirsin.','The avatar operation could not be completed. Try again.')}
 
-  document.addEventListener('change',function(event){
-    var card=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card]');if(!card)return;
-    if(event.target.matches('[data-avatar-enabled]')){syncEnabled(card);queueSave(card);return}
-    if(event.target.matches('[data-avatar-field]')){queueSave(card);return}
-    if(event.target.matches('[data-avatar-file]')){
-      var file=event.target.files&&event.target.files[0];if(!file||busy)return;
-      (async function(){
-        try{
-          validateAvatarFile(file);
-          setBusy(card,true,text('Fotoğraf hazırlanıyor…','Preparing photo…'),text('Görsel güvenlik kontrolü için optimize ediliyor.','Optimizing the image for safety screening.'));
-          var prepared=await prepareVisionImage(file);
-          setBusy(card,true,text('Güvenlik kontrolü yapılıyor…','Running safety screening…'),text('Yüz ve korunan kişi kontrol ediliyor.','Checking the face and protected-person policy.'));
-          await screenImage(file,prepared);
-          var saved=await uploadAvatar(card,file,function(title,description){setBusy(card,true,title,description)});
-          refreshPreview(card,saved.avatar);
-          card.querySelector('[data-avatar-enabled]').checked=true;
-          syncEnabled(card);
-          notify(text('Avatar güvenle yüklendi.','Avatar uploaded safely.'),'success');
-        }catch(error){
-          console.warn('[ADFILM] avatar upload',error);
-          notify(errorText(error),'warning');
-        }finally{
-          event.target.value='';
-          setBusy(card,false,'','');
-        }
-      })();
-    }
-  },true);
+  function generationCopy(stage){if(stage==='saving')return{text:text('Avatar kaydediliyor…','Saving avatar…'),detail:text('Oluşturulan görsel güvenli buluta aktarılıyor.','Transferring the generated image to secure cloud storage.')};if(stage==='generating')return{text:text('Avatar oluşturuluyor…','Generating avatar…'),detail:text('Flux seçtiğin görünüm ve kadraja göre çalışıyor.','Flux is rendering your selected appearance and framing.')};return{text:text('Avatar sıraya alındı…','Avatar queued…'),detail:text('Üretim motorunda sıranın gelmesi bekleniyor.','Waiting for the generation engine queue.')}}
+  function syncProject(next){window.AIVOAdFilmActiveProject=next;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:next,projectId:next.id||'',media:next.media||{}}}))}
+  function stopPolling(){clearTimeout(pollTimer);pollTimer=null;pollCount=0}
+  async function pollGeneration(card,projectId){clearTimeout(pollTimer);if(!card||pollCount>=MAX_POLLS){setBusy(card,false,'','');notify(text('Avatar üretimi uzun sürdü. Sayfayı yenileyerek durumu tekrar kontrol edebilirsin.','Avatar generation is taking longer. Reload the page to check its status.'),'warning');return}pollCount+=1;try{var response=await fetch('/api/ad-film/avatar/status?projectId='+encodeURIComponent(projectId),{method:'GET',credentials:'include',cache:'no-store'}),data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.message||data.error||'avatar_status_failed');if(data.project)syncProject(data.project);if(data.status==='COMPLETED'){stopPolling();refreshPreview(card,data.avatar);card.querySelector('[data-avatar-enabled]').checked=true;syncEnabled(card);setBusy(card,false,'','');notify(text('Avatar önerin hazır.','Your avatar suggestion is ready.'),'success');return}if(data.status==='FAILED'){stopPolling();setBusy(card,false,'','');throw new Error(data.generation&&data.generation.error||'avatar_generation_failed')}var copy=generationCopy(data.stage||data.generation&&data.generation.stage);setBusy(card,true,copy.text,copy.detail);pollTimer=setTimeout(function(){pollGeneration(card,projectId)},POLL_MS)}catch(error){console.warn('[ADFILM] avatar status',error);if(pollCount<5){pollTimer=setTimeout(function(){pollGeneration(card,projectId)},POLL_MS);return}stopPolling();setBusy(card,false,'','');notify(errorText(error),'warning')}}
+  function resumeGeneration(card,state){if(!card||!generationActive(state))return;var current=project();if(!current||!current.id)return;var copy=generationCopy(state.imageGeneration.stage);setBusy(card,true,copy.text,copy.detail);pollCount=0;pollGeneration(card,current.id)}
 
-  document.addEventListener('click',function(event){
-    var mode=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card] [data-avatar-mode]');
-    if(mode&&!busy){
-      event.preventDefault();var card=mode.closest('[data-adfilm-avatar-card]');card.querySelectorAll('[data-avatar-mode]').forEach(function(button){button.classList.toggle('is-selected',button===mode)});card.querySelectorAll('[data-avatar-pane]').forEach(function(pane){pane.hidden=pane.dataset.avatarPane!==mode.dataset.avatarMode});queueSave(card);return;
-    }
-    var generate=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card] [data-avatar-generate]');
-    if(generate&&!busy){
-      event.preventDefault();var card=generate.closest('[data-adfilm-avatar-card]'),current=project();if(!current||!current.id){notify(text('Önce proje bağlantısının tamamlanmasını bekle.','Wait for the project connection to finish.'),'warning');return}
-      (async function(){try{setBusy(card,true,text('Avatar hazırlanıyor…','Generating avatar…'),text('AIVO seçimlerine uygun avatarı oluşturuyor.','AIVO is creating an avatar from your selections.'));var payload=Object.assign({projectId:current.id},fields(card));var response=await fetch('/api/ad-film/avatar/create',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});var data=await response.json().catch(function(){return{}});if(!response.ok||!data.project)throw new Error(data.message||data.error||'avatar_generation_failed');window.AIVOAdFilmActiveProject=data.project;card.querySelector('[data-avatar-enabled]').checked=true;refreshPreview(card,data.avatar);syncEnabled(card);document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||'',media:data.project.media||{}}}));notify(text('Avatar önerin hazır.','Your avatar suggestion is ready.'),'success')}catch(error){console.warn('[ADFILM] avatar generation',error);notify(errorText(error),'warning')}finally{setBusy(card,false,'','')}})();return;
-    }
-    var remove=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card] [data-avatar-remove]');
-    if(remove&&!busy){event.preventDefault();var card=remove.closest('[data-adfilm-avatar-card]'),avatar=Object.assign(currentAvatar(card),{image:null});patchAvatar(card,avatar).then(function(saved){refreshPreview(card,saved.avatar);notify(text('Avatar kaldırıldı.','Avatar removed.'),'success')}).catch(function(error){console.warn('[ADFILM] avatar remove',error);notify(errorText(error),'warning')})}
-  },true);
+  document.addEventListener('change',function(event){var card=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card]');if(!card)return;if(event.target.matches('[data-avatar-enabled]')){syncEnabled(card);queueSave(card);return}if(event.target.matches('[data-avatar-field]')){queueSave(card);return}if(event.target.matches('[data-avatar-file]')){var file=event.target.files&&event.target.files[0];if(!file||busy)return;(async function(){try{validateAvatarFile(file);setBusy(card,true,text('Fotoğraf hazırlanıyor…','Preparing photo…'),text('Görsel güvenlik kontrolü için optimize ediliyor.','Optimizing the image for safety screening.'));var prepared=await prepareVisionImage(file);setBusy(card,true,text('Güvenlik kontrolü yapılıyor…','Running safety screening…'),text('Yüz ve korunan kişi kontrol ediliyor.','Checking the face and protected-person policy.'));await screenImage(file,prepared);var saved=await uploadAvatar(card,file,function(title,detail){setBusy(card,true,title,detail)});refreshPreview(card,saved.avatar);card.querySelector('[data-avatar-enabled]').checked=true;syncEnabled(card);notify(text('Avatar güvenle yüklendi.','Avatar uploaded safely.'),'success')}catch(error){console.warn('[ADFILM] avatar upload',error);notify(errorText(error),'warning')}finally{event.target.value='';setBusy(card,false,'','')}})()}},true);
 
-  document.addEventListener('aivo:adfilm-project-sync',function(event){
-    var card=mount(),next=event&&event.detail&&event.detail.project;if(!card||!next||busy)return;
-    var state=Object.assign(defaults(),next.avatar||{});
-    card.querySelector('[data-avatar-enabled]').checked=!!state.enabled;
-    card.querySelectorAll('[data-avatar-mode]').forEach(function(button){button.classList.toggle('is-selected',button.dataset.avatarMode===state.mode)});
-    card.querySelectorAll('[data-avatar-pane]').forEach(function(pane){pane.hidden=pane.dataset.avatarPane!==state.mode});
-    card.querySelectorAll('[data-avatar-field]').forEach(function(input){if(state[input.dataset.avatarField]!=null)input.value=state[input.dataset.avatarField]});
-    refreshPreview(card,state);syncEnabled(card);
-  });
+  document.addEventListener('click',function(event){var mode=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card] [data-avatar-mode]');if(mode&&!busy){event.preventDefault();var card=mode.closest('[data-adfilm-avatar-card]');card.querySelectorAll('[data-avatar-mode]').forEach(function(button){button.classList.toggle('is-selected',button===mode)});card.querySelectorAll('[data-avatar-pane]').forEach(function(pane){pane.hidden=pane.dataset.avatarPane!==mode.dataset.avatarMode});queueSave(card);return}var generate=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card] [data-avatar-generate]');if(generate&&!busy){event.preventDefault();var card=generate.closest('[data-adfilm-avatar-card]'),current=project();if(!current||!current.id){notify(text('Önce proje bağlantısının tamamlanmasını bekle.','Wait for the project connection to finish.'),'warning');return}(async function(){try{setBusy(card,true,text('Avatar sıraya alınıyor…','Queueing avatar…'),text('Üretim motoruna güvenli istek gönderiliyor.','Sending a safe request to the generation engine.'));var payload=Object.assign({projectId:current.id},fields(card)),response=await fetch('/api/ad-film/avatar/create',{method:'POST',credentials:'include',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),data=await response.json().catch(function(){return{}});if(!response.ok||!data.project)throw new Error(data.message||data.error||'avatar_generation_failed');syncProject(data.project);card.querySelector('[data-avatar-enabled]').checked=true;syncEnabled(card);pollCount=0;var copy=generationCopy(data.generation&&data.generation.stage);setBusy(card,true,copy.text,copy.detail);pollGeneration(card,current.id)}catch(error){console.warn('[ADFILM] avatar generation',error);setBusy(card,false,'','');notify(errorText(error),'warning')}})();return}var remove=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card] [data-avatar-remove]');if(remove&&!busy){event.preventDefault();var card=remove.closest('[data-adfilm-avatar-card]'),avatar=Object.assign(currentAvatar(card),{image:null,imageGeneration:null});patchAvatar(card,avatar).then(function(saved){refreshPreview(card,saved.avatar);notify(text('Avatar kaldırıldı.','Avatar removed.'),'success')}).catch(function(error){notify(errorText(error),'warning')})}},true);
+
+  document.addEventListener('aivo:adfilm-project-sync',function(event){var card=mount(),next=event&&event.detail&&event.detail.project;if(!card||!next)return;var state=Object.assign(defaults(),next.avatar||{});card.querySelector('[data-avatar-enabled]').checked=!!state.enabled;card.querySelectorAll('[data-avatar-mode]').forEach(function(button){button.classList.toggle('is-selected',button.dataset.avatarMode===state.mode)});card.querySelectorAll('[data-avatar-pane]').forEach(function(pane){pane.hidden=pane.dataset.avatarPane!==state.mode});card.querySelectorAll('[data-avatar-field]').forEach(function(input){if(state[input.dataset.avatarField]!=null)input.value=state[input.dataset.avatarField]});refreshPreview(card,state);syncEnabled(card);if(generationActive(state)&&!pollTimer)resumeGeneration(card,state)});
   document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')setTimeout(mount,260)});
+  window.addEventListener('pagehide',stopPolling);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(mount,300)},{once:true});else setTimeout(mount,300);
 })();
