@@ -42,6 +42,14 @@ const ENUMS = {
   framing: new Set(["shoulders", "chest", "waist", "full"]),
   expression: new Set(["friendly", "confident", "calm", "energetic"]),
   outfit: new Set(["casual", "business", "premium", "sport", "elegant"]),
+  maleAppearance: new Set(["handsome", "charismatic", "attractive", "natural"]),
+  femaleAppearance: new Set(["beautiful", "fashion_model", "attractive", "elegant_natural"]),
+  outfitColor: new Set([
+    "scene_harmony", "product_tone", "contrast", "mixed",
+    "black", "white", "red", "blue", "navy", "gray", "beige", "brown", "pink", "green",
+    "black_white", "black_red", "black_gold", "white_gold", "navy_white",
+  ]),
+  faceAccessory: new Set(["none", "round_glasses", "square_glasses", "aviator_glasses", "sunglasses"]),
 };
 
 function clean(value, max = 160) {
@@ -65,6 +73,57 @@ function cleanPrompt(value, max = 1000) {
 function pick(value, allowed, fallback) {
   const normalized = clean(value, 40).toLowerCase();
   return allowed.has(normalized) ? normalized : fallback;
+}
+
+function appearanceFor(settings) {
+  if (settings.gender === "male") {
+    return {
+      handsome: "exceptionally handsome commercial-model appearance with balanced masculine facial features",
+      charismatic: "charismatic premium spokesperson appearance with strong presence and trustworthy masculine features",
+      attractive: "attractive contemporary advertising-presenter appearance",
+      natural: "natural understated appearance with realistic everyday attractiveness",
+    }[settings.maleAppearance];
+  }
+  return {
+    beautiful: "exceptionally beautiful commercial-presenter appearance with balanced feminine facial features",
+    fashion_model: "high-fashion model appearance with refined editorial facial structure and premium presence",
+    attractive: "attractive contemporary advertising-presenter appearance",
+    elegant_natural: "elegant natural appearance with realistic beauty and warm sophistication",
+  }[settings.femaleAppearance];
+}
+
+function outfitColorFor(settings) {
+  return {
+    scene_harmony: "clothing colors selected to harmonize with a premium neutral studio and remain adaptable to the final advertising environment",
+    product_tone: "clothing palette coordinated with the featured product's dominant color family without copying logos or graphics",
+    contrast: "a tasteful contrasting clothing palette that separates the presenter clearly from the product and background",
+    mixed: "a refined two-tone mixed clothing palette with controlled premium color blocking",
+    black: "black clothing",
+    white: "white clothing",
+    red: "red clothing",
+    blue: "blue clothing",
+    navy: "navy clothing",
+    gray: "gray clothing",
+    beige: "beige clothing",
+    brown: "brown clothing",
+    pink: "pink clothing",
+    green: "green clothing",
+    black_white: "black and white clothing palette",
+    black_red: "black and red clothing palette",
+    black_gold: "black and restrained gold clothing palette",
+    white_gold: "white and restrained gold clothing palette",
+    navy_white: "navy and white clothing palette",
+  }[settings.outfitColor];
+}
+
+function accessoryFor(settings) {
+  return {
+    none: "no glasses and no face accessory",
+    round_glasses: "clean round optical glasses with clear lenses; eyes remain fully visible",
+    square_glasses: "clean square optical glasses with clear lenses; eyes remain fully visible",
+    aviator_glasses: "refined aviator-style optical glasses with clear lenses; eyes remain fully visible",
+    sunglasses: "premium sunglasses worn naturally; face remains recognizable and unobstructed",
+  }[settings.faceAccessory];
 }
 
 function promptFor(settings) {
@@ -93,11 +152,13 @@ function promptFor(settings) {
 
   return [
     `Photorealistic ${COUNTRIES[settings.country]} ${settings.gender} advertising presenter, age ${settings.age}.`,
-    `${settings.hairColor} ${settings.hairStyle} hair, ${outfit}, ${expression}.`,
+    `${appearanceFor(settings)}.`,
+    `${settings.hairColor} ${settings.hairStyle} hair, ${outfit}, ${outfitColorFor(settings)}, ${expression}.`,
+    `${accessoryFor(settings)}.`,
     `${framing}, facing directly toward the camera, natural eye contact, mouth fully visible, lips unobstructed.`,
     fullBodyRule,
     "Single adult person only, centered composition, clean studio lighting, realistic skin texture, sharp facial details, natural human proportions.",
-    "Neutral premium studio background, no text, no logos, no watermark, no microphone, no hands covering the face, no sunglasses, no mask, no extreme side profile.",
+    "Neutral premium studio background, no text, no logos, no watermark, no microphone, no hands covering the face, no mask, no extreme side profile.",
     "Optimized source portrait for a professional talking-avatar and lip-sync advertising video.",
   ].filter(Boolean).join(" ");
 }
@@ -128,6 +189,10 @@ export default async function handler(req, res) {
       framing: pick(req.body?.framing, ENUMS.framing, "chest"),
       expression: pick(req.body?.expression, ENUMS.expression, "friendly"),
       outfit: pick(req.body?.outfit, ENUMS.outfit, "business"),
+      maleAppearance: pick(req.body?.maleAppearance, ENUMS.maleAppearance, "charismatic"),
+      femaleAppearance: pick(req.body?.femaleAppearance, ENUMS.femaleAppearance, "beautiful"),
+      outfitColor: pick(req.body?.outfitColor, ENUMS.outfitColor, "scene_harmony"),
+      faceAccessory: pick(req.body?.faceAccessory, ENUMS.faceAccessory, "none"),
     };
 
     const key = process.env.FAL_KEY || process.env.FAL_API_KEY || "";
