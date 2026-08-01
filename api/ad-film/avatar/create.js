@@ -1,16 +1,17 @@
 // api/ad-film/avatar/create.js
 export const config = { runtime: "nodejs" };
-export const maxDuration = 60;
+export const maxDuration = 180;
 
+import { copyUrlToR2 } from "../../_lib/copy-to-r2.js";
 import {
   getOwnedProject,
+  mediaPrefix,
   resolveAdFilmUser,
   saveProject,
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
 const MODEL = "fal-ai/flux-2-pro";
-const ACTIVE_JOB_MS = 25 * 60 * 1000;
 const COUNTRIES = {
   tr: "Turkish",
   us: "American",
@@ -58,6 +59,7 @@ function clean(value, max = 160) {
     .trim()
     .slice(0, max);
 }
+
 function cleanPrompt(value, max = 1000) {
   return String(value ?? "")
     .replace(/\r\n?/g, "\n")
@@ -67,22 +69,10 @@ function cleanPrompt(value, max = 1000) {
     .trim()
     .slice(0, max);
 }
-function parseJson(value) {
-  try { return value ? JSON.parse(value) : {}; }
-  catch (_) { return {}; }
-}
+
 function pick(value, allowed, fallback) {
   const normalized = clean(value, 40).toLowerCase();
   return allowed.has(normalized) ? normalized : fallback;
-}
-function falKey() {
-  return process.env.FAL_KEY || process.env.FAL_API_KEY || "";
-}
-function activeGeneration(avatar) {
-  const generation = avatar?.imageGeneration;
-  if (!generation || !["queued", "running", "saving"].includes(generation.status)) return false;
-  const startedAt = Date.parse(generation.startedAt || "");
-  return Number.isFinite(startedAt) && Date.now() - startedAt < ACTIVE_JOB_MS;
 }
 
 function appearanceFor(settings) {
@@ -101,6 +91,7 @@ function appearanceFor(settings) {
     elegant_natural: "elegant natural appearance with realistic beauty and warm sophistication",
   }[settings.femaleAppearance];
 }
+
 function outfitColorFor(settings) {
   return {
     scene_harmony: "clothing colors selected to harmonize with a premium neutral studio and remain adaptable to the final advertising environment",
@@ -124,6 +115,7 @@ function outfitColorFor(settings) {
     navy_white: "navy and white clothing palette",
   }[settings.outfitColor];
 }
+
 function accessoryFor(settings) {
   return {
     none: "no glasses and no face accessory",
@@ -133,6 +125,7 @@ function accessoryFor(settings) {
     sunglasses: "premium sunglasses worn naturally; face remains recognizable and unobstructed",
   }[settings.faceAccessory];
 }
+
 function promptFor(settings) {
   const framing = {
     shoulders: "shoulders-up portrait",
@@ -170,41 +163,6 @@ function promptFor(settings) {
   ].filter(Boolean).join(" ");
 }
 
-async function submitQueue(input) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45000);
-  try {
-    const response = await fetch(`https://queue.fal.run/${MODEL}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Key ${falKey()}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(input),
-      signal: controller.signal,
-    });
-    const data = parseJson(await response.text().catch(() => ""));
-    if (!response.ok) {
-      const error = new Error("avatar_queue_submit_failed");
-      error.status = response.status;
-      error.data = data;
-      throw error;
-    }
-    const requestId = clean(data?.request_id || data?.requestId || data?.id, 240);
-    if (!requestId) throw new Error("avatar_queue_missing_request_id");
-    return {
-      model: MODEL,
-      requestId,
-      statusUrl: clean(data?.status_url || data?.statusUrl || data?.urls?.status, 1800) || `https://queue.fal.run/${MODEL}/requests/${encodeURIComponent(requestId)}/status`,
-      responseUrl: clean(data?.response_url || data?.responseUrl || data?.urls?.response, 1800) || `https://queue.fal.run/${MODEL}/requests/${encodeURIComponent(requestId)}`,
-      submittedAt: new Date().toISOString(),
-    };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -219,18 +177,6 @@ export default async function handler(req, res) {
     if (!projectId) return sendJson(res, 400, { ok: false, error: "missing_project_id" });
     const project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
-
-    const previousAvatar = project.avatar && typeof project.avatar === "object" ? project.avatar : {};
-    if (activeGeneration(previousAvatar)) {
-      return sendJson(res, 202, {
-        ok: true,
-        projectId,
-        status: "IN_PROGRESS",
-        generation: previousAvatar.imageGeneration,
-        avatar: previousAvatar,
-        project,
-      });
-    }
 
     const country = clean(req.body?.country, 20).toLowerCase();
     if (!COUNTRIES[country]) return sendJson(res, 400, { ok: false, error: "unsupported_avatar_country" });
@@ -249,30 +195,60 @@ export default async function handler(req, res) {
       faceAccessory: pick(req.body?.faceAccessory, ENUMS.faceAccessory, "none"),
     };
 
-    if (!falKey()) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
+    const key = process.env.FAL_KEY || process.env.FAL_API_KEY || "";
+    if (!key) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
 
-    const prompt = promptFor(settings);
-    const imageSize = settings.framing === "full" ? "portrait_4_3" : "portrait_16_9";
-    const job = await submitQueue({
-      prompt,
-      image_size: imageSize,
-      num_images: 1,
-      output_format: "jpeg",
-      safety_tolerance: "2",
-    });
-    const now = new Date().toISOString();
-    const imageGeneration = {
-      version: 1,
-      status: "queued",
-      stage: "queued",
-      startedAt: now,
-      updatedAt: now,
-      prompt: cleanPrompt(prompt, 3000),
-      imageSize,
-      settings,
-      job,
-      error: null,
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 165000);
+    let response;
+    try {
+      response = await fetch(`https://fal.run/${MODEL}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Key ${key}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          prompt: promptFor(settings),
+          image_size: settings.framing === "full" ? "portrait_4_3" : "portrait_16_9",
+          num_images: 1,
+          output_format: "jpeg",
+          safety_tolerance: "2",
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    const fal = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return sendJson(res, 502, {
+        ok: false,
+        error: "avatar_generation_failed",
+        fal_status: response.status,
+        fal_response: fal,
+      });
+    }
+
+    const sourceUrl = clean(fal?.images?.[0]?.url, 4000);
+    if (!sourceUrl) return sendJson(res, 502, { ok: false, error: "missing_avatar_output" });
+
+    const objectKey = `${mediaPrefix(user, projectId)}avatar/generated-${Date.now()}.jpg`;
+    const avatarUrl = await copyUrlToR2({ url: sourceUrl, key: objectKey });
+    const image = {
+      key: objectKey,
+      url: avatarUrl,
+      name: "aivo-avatar.jpg",
+      contentType: "image/jpeg",
+      size: 0,
+      kind: "avatar-image",
+      source: "generated",
+      uploadedAt: new Date().toISOString(),
     };
+
+    const previousAvatar = project.avatar && typeof project.avatar === "object" ? project.avatar : {};
     const avatar = {
       ...previousAvatar,
       enabled: true,
@@ -280,26 +256,26 @@ export default async function handler(req, res) {
       ...settings,
       directorNote: cleanPrompt(previousAvatar.directorNote, 1000),
       sceneDescription: cleanPrompt(previousAvatar.sceneDescription, 1000),
-      imageGeneration,
+      image,
+      imageGeneration: null,
       pipeline: null,
       videoUrl: null,
     };
     const saved = await saveProject(user, { ...project, avatar });
 
-    return sendJson(res, 202, {
+    return sendJson(res, 200, {
       ok: true,
       projectId,
-      status: "IN_QUEUE",
-      generation: saved.avatar.imageGeneration,
       avatar: saved.avatar,
       project: saved,
     });
   } catch (error) {
     console.error("[ad-film/avatar/create]", error);
     const timeout = error?.name === "AbortError";
-    return sendJson(res, Number(error?.status) || (timeout ? 504 : 500), {
+    return sendJson(res, timeout ? 504 : 500, {
       ok: false,
-      error: timeout ? "avatar_queue_submit_timeout" : clean(error?.message || error, 300) || "server_error",
+      error: timeout ? "avatar_generation_timeout" : "server_error",
+      message: String(error?.message || error),
     });
   }
 }
