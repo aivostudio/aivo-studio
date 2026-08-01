@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — treat avatar finalization 425 as a waiting state */
 (function AIVO_AD_FILM_FINALIZE_WAIT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_WAIT_V2__)return;
-  window.__AIVO_AD_FILM_FINALIZE_WAIT_V2__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_WAIT_V3__)return;
+  window.__AIVO_AD_FILM_FINALIZE_WAIT_V3__=true;
 
   var previousFetch=window.fetch.bind(window);
   var flights=new Map();
@@ -15,6 +15,10 @@
   function text(tr,en){return english()?en:tr}
   function urlOf(input){return typeof input==="string"?input:input&&input.url||""}
   function isFinalize(input){return urlOf(input).indexOf("/api/ad-film/seedance/finalize")>=0}
+  function isAvatarPending(error){
+    error=clean(error);
+    return error==="avatar_video_processing"||error==="native_avatar_video_processing";
+  }
 
   function requestData(init){
     try{return JSON.parse(init&&typeof init.body==="string"?init.body:"{}")||{}}
@@ -30,7 +34,6 @@
 
   function stageKind(stage){
     stage=clean(stage).toLowerCase();
-    if(stage.indexOf("matting")>=0)return"matting";
     if(stage.indexOf("lipsync")>=0)return"lipsync";
     return"motion";
   }
@@ -39,16 +42,12 @@
     var scope=document.querySelector('[data-module-root][data-module="adfilm"]');
     var status=scope&&scope.querySelector('[data-adfilm-engine-status]');
     var kind=stageKind(stage);
-    var title=kind==="matting"
-      ?text("Avatar transparanlaştırılıyor","Removing avatar background")
-      :kind==="lipsync"
-        ?text("Avatar konuşmaya uyarlanıyor","Synchronizing avatar speech")
-        :text("Sinematik avatar performansı hazırlanıyor","Preparing cinematic avatar performance");
-    var detail=kind==="matting"
-      ?text("Saç, kıyafet ve beden kenarları işleniyor. Final montaj transparan video hazır olunca başlayacak.","Hair, clothing and body edges are being refined. Final compositing will start when the transparent video is ready.")
-      :kind==="lipsync"
-        ?text("Dudak, yüz ve konuşma zamanlaması tamamlanıyor. Üretim ekranını kapatma.","Lip, face and speech timing is being completed. Keep the production screen open.")
-        :text("Beden hareketi, yürüyüş ve kamera koreografisi hazırlanıyor. Final işlem otomatik devam edecek.","Body motion, walking and camera choreography are being prepared. Finalization will continue automatically.");
+    var title=kind==="lipsync"
+      ?text("Avatar konuşmaya uyarlanıyor","Synchronizing avatar speech")
+      :text("Sinematik avatar performansı hazırlanıyor","Preparing cinematic avatar performance");
+    var detail=kind==="lipsync"
+      ?text("Dudak, yüz ve konuşma zamanlaması tamamlanıyor. Final işlem otomatik devam edecek.","Lip, face and speech timing is being completed. Finalization will continue automatically.")
+      :text("Oyuncu, ürün ve kamera aynı sahne içinde hazırlanıyor. Final işlem avatar videosu hazır olunca otomatik devam edecek.","The presenter, product and camera are being prepared in one native scene. Finalization will continue when the avatar video is ready.");
 
     if(status){
       status.className="adfilm-engine-status is-visible is-busy";
@@ -71,12 +70,13 @@
 
   async function advanceAvatar(projectId){
     var response=await previousFetch(
-      "/api/ad-film/avatar/pipeline/status?projectId="+encodeURIComponent(projectId),
+      "/api/ad-film/avatar/pipeline/status-native?projectId="+encodeURIComponent(projectId),
       {method:"GET",credentials:"include",cache:"no-store",headers:{Accept:"application/json"}}
     );
     var data=await readJson(response);
     if(response.ok&&data.project){
       window.AIVOAdFilmActiveProject=data.project;
+      document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:data.project,projectId:data.project.id||projectId,media:data.project.media||{}}}));
     }
     return{response:response,data:data};
   }
@@ -103,17 +103,17 @@
         return jsonResponse({
           ok:false,
           error:"avatar_pipeline_failed",
-          message:clean(pipeline.error)||"avatar_pipeline_failed"
+          message:clean(pipeline.error)||clean(data.error)||"avatar_pipeline_failed"
         },409);
       }
 
-      var transparentUrl=clean(pipeline.transparentVideoUrl||data.video_url);
-      if(publicStatus==="COMPLETED"&&pipelineStatus==="completed"&&transparentUrl){
+      var nativeVideoUrl=clean(pipeline.videoUrl||data.video_url);
+      if(publicStatus==="COMPLETED"&&pipelineStatus==="completed"&&nativeVideoUrl){
         await sleep(250);
         var finalized=await previousFetch(input,init);
         if(finalized.status!==425)return finalized;
         var pending=await readJson(finalized);
-        if(clean(pending.error)!=="avatar_video_processing")return finalized;
+        if(!isAvatarPending(pending.error))return finalized;
       }
 
       await sleep(POLL_MS);
@@ -127,7 +127,7 @@
     if(!isFinalize(input)||response.status!==425)return response;
 
     var payload=await readJson(response);
-    if(clean(payload.error)!=="avatar_video_processing")return response;
+    if(!isAvatarPending(payload.error))return response;
 
     var body=requestData(init);
     var projectId=clean(body.projectId);
