@@ -18,7 +18,7 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 13;
+const MIX_VERSION = 14;
 const FFMPEG_TIMEOUT_MS = 240000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
@@ -88,8 +88,26 @@ function sourceUrl(project) {
 function avatarUrl(project) {
   return clean(project?.avatar?.pipeline?.videoUrl || project?.avatar?.videoUrl,4000);
 }
-function normalizedVideoFilter(inputIndex,size,start,duration,label) {
-  return `[${inputIndex}:v]trim=start=${start}:duration=${duration},setpts=PTS-STARTPTS,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,format=yuv420p[${label}]`;
+function transitionProfile(project) {
+  const category=clean(project?.productionPlan?.productProfile?.category,80);
+  const luxury=["fragrance","wearable_luxury"].includes(category);
+  return {
+    category:category||"general_product",
+    flashDuration:luxury?0.14:0.09,
+    grade:luxury?"eq=contrast=1.035:saturation=1.07:brightness=0.008":"eq=contrast=1.025:saturation=1.045",
+    sharpen:luxury?"unsharp=5:5:0.35:5:5:0":"unsharp=5:5:0.22:5:5:0",
+  };
+}
+function normalizedVideoFilter(inputIndex,size,start,duration,label,index,total,profile) {
+  const segmentDuration=Math.max(0.5,Number(duration)||0.5);
+  const flash=Math.min(Number(profile.flashDuration)||0.1,segmentDuration*0.12);
+  const effects=[profile.grade,profile.sharpen];
+  if(index>0)effects.push(`fade=t=in:st=0:d=${flash.toFixed(3)}:color=white`);
+  if(index<total-1){
+    const outStart=Math.max(0,segmentDuration-flash).toFixed(3);
+    effects.push(`fade=t=out:st=${outStart}:d=${flash.toFixed(3)}:color=white`);
+  }
+  return `[${inputIndex}:v]trim=start=${start}:duration=${segmentDuration},setpts=PTS-STARTPTS,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,${effects.join(",")},format=yuv420p[${label}]`;
 }
 
 export default async function handler(req,res) {
@@ -156,11 +174,12 @@ export default async function handler(req,res) {
 
     const filters=[];
     const segmentLabels=[];
+    const profile=transitionProfile(project);
     timeline.segments.forEach((segment,index)=>{
       const inputIndex=segment.source==="avatar"?1:0;
       const start=segment.source==="avatar"?Number(segment.sourceStart||0):Number(segment.start||0);
       const label=`seg${index}`;
-      filters.push(normalizedVideoFilter(inputIndex,size,start,Number(segment.duration),label));
+      filters.push(normalizedVideoFilter(inputIndex,size,start,Number(segment.duration),label,index,timeline.segments.length,profile));
       segmentLabels.push(`[${label}]`);
     });
     filters.push(`${segmentLabels.join("")}concat=n=${segmentLabels.length}:v=1:a=0[cut]`);
@@ -192,6 +211,7 @@ export default async function handler(req,res) {
     const stat=fs.statSync(outputVideo);
     const finalUrl=await putObject({key,body:fs.createReadStream(outputVideo),contentLength:stat.size,contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});
     const now=new Date().toISOString();
+    const transitionStyle=profile.category==="fragrance"?"luxury-light-flash":"premium-light-flash";
     const finalOutput={
       id:outputId,
       version:Number.parseInt(project?.generation?.version,10)||1,
@@ -212,6 +232,8 @@ export default async function handler(req,res) {
       narrationApplied:Boolean(narrationUrl),
       musicUrl:musicUrl||null,
       musicApplied:Boolean(musicUrl),
+      transitionStyle,
+      colorGrade:profile.category,
       audioCodec:"aac",
       audioBitrate:"192k",
       mixVersion:MIX_VERSION,
@@ -225,10 +247,10 @@ export default async function handler(req,res) {
       status:"completed",
       outputs:nextOutputs,
       activeOutputId:outputId,
-      productionJobs:{...(project.productionJobs||{}),finalization:{status:"completed",outputId,updatedAt:now}},
-      generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl:seedanceVideoUrl,avatarVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"hybrid-timeline",timeline,mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,completedAt:now,error:null}},
+      productionJobs:{...(project.productionJobs||{}),finalization:{status:"completed",outputId,transitionStyle,updatedAt:now}},
+      generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl:seedanceVideoUrl,avatarVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"hybrid-timeline",transitionStyle,timeline,mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,transitionStyle,completedAt:now,error:null}},
     });
-    return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:seedanceVideoUrl,avatar_video_url:avatarVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"hybrid-timeline",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),mix_version:MIX_VERSION,timeline,project:nextProject,outputs:nextOutputs,activeOutputId:outputId});
+    return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:seedanceVideoUrl,avatar_video_url:avatarVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"hybrid-timeline",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),transition_style:transitionStyle,mix_version:MIX_VERSION,timeline,project:nextProject,outputs:nextOutputs,activeOutputId:outputId});
   }catch(error){
     console.error("[ad-film/seedance/finalize-native-scene]",error);
     return sendJson(res,clean(error?.message)==="ffmpeg_timeout"?504:500,{ok:false,error:"hybrid_scene_finalize_failed",message:clean(error?.message||error,1200),retryable:false,video_url:seedanceVideoUrl||null});
