@@ -18,6 +18,19 @@ const ASPECT_RATIOS = new Set(["auto", "21:9", "16:9", "4:3", "1:1", "3:4", "9:1
 const BITRATES = new Set(["standard", "high"]);
 const MAX_PROMPT_CHARS = 2480;
 
+const CATEGORY_PRODUCT_NAMES = Object.freeze({
+  earbuds: "Kablosuz Kulaklık",
+  fragrance: "Parfüm",
+  smartphone: "Akıllı Telefon",
+  vehicle: "Otomobil",
+  footwear: "Ayakkabı",
+  furniture: "Mobilya",
+  large_appliance: "Büyük Ev Aleti",
+  countertop_appliance: "Küçük Ev Aleti",
+  personal_computing: "Bilgisayar",
+  wearable_luxury: "Aksesuar",
+});
+
 function clean(value, max = 12000) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
 }
@@ -92,6 +105,12 @@ function categoryFromText(value) {
   return null;
 }
 
+function canonicalProductName(project, category) {
+  const brandName = clean(project?.brief?.brandName, 80);
+  const categoryName = CATEGORY_PRODUCT_NAMES[category] || "Ürün";
+  return [brandName, categoryName].filter(Boolean).join(" ") || categoryName;
+}
+
 function productIdentityCheck(project) {
   const evidence = {
     productName: categoryFromText(project?.brief?.productName),
@@ -99,7 +118,37 @@ function productIdentityCheck(project) {
     narration: categoryFromText(project?.narration?.audio?.approvedText || project?.narration?.text),
   };
   const categories = [...new Set(Object.values(evidence).filter(Boolean))];
-  if (categories.length <= 1) return { ok: true, category: categories[0] || null, evidence };
+  if (categories.length <= 1) {
+    return {
+      ok: true,
+      category: categories[0] || null,
+      evidence,
+      autoResolved: false,
+      resolvedProductName: clean(project?.brief?.productName, 120) || null,
+    };
+  }
+
+  const descriptionNarrationConsensus =
+    evidence.description &&
+    evidence.description === evidence.narration &&
+    evidence.productName &&
+    evidence.productName !== evidence.description;
+
+  if (descriptionNarrationConsensus) {
+    const category = evidence.description;
+    return {
+      ok: true,
+      category,
+      evidence,
+      categories,
+      autoResolved: true,
+      staleField: "productName",
+      originalProductName: clean(project?.brief?.productName, 120) || null,
+      resolvedProductName: canonicalProductName(project, category),
+      warning: "stale_product_name_auto_resolved",
+    };
+  }
+
   return { ok: false, error: "product_identity_conflict", categories, evidence };
 }
 
@@ -127,7 +176,17 @@ export default async function handler(req, res) {
       });
     }
 
-    const narration = approvedNarration(project);
+    const effectiveProject = identity.autoResolved
+      ? {
+          ...project,
+          brief: {
+            ...(project.brief || {}),
+            productName: identity.resolvedProductName,
+          },
+        }
+      : project;
+
+    const narration = approvedNarration(effectiveProject);
     if (narration.required && !narration.audio) {
       return sendJson(res, 409, {
         ok: false,
@@ -162,16 +221,16 @@ export default async function handler(req, res) {
     if (!BITRATES.has(bitrateMode)) return sendJson(res, 400, { ok: false, error: "invalid_bitrate_mode" });
 
     const referenceMap = req.body?.reference_map && typeof req.body.reference_map === "object" ? req.body.reference_map : null;
-    const directorPlan = buildDirectorPlan(project, {
+    const directorPlan = buildDirectorPlan(effectiveProject, {
       duration,
       aspectRatio,
       quality: resolution,
-      avatarEnabled: project?.avatar?.enabled === true,
-      productName: project?.brief?.productName,
-      brandName: project?.brief?.brandName,
-      description: project?.brief?.description,
-      creativeDirection: project?.creativePlan?.direction || project?.avatar?.sceneDescription || "",
-      scenes: Array.isArray(project?.creativePlan?.scenes) ? project.creativePlan.scenes : [],
+      avatarEnabled: effectiveProject?.avatar?.enabled === true,
+      productName: effectiveProject?.brief?.productName,
+      brandName: effectiveProject?.brief?.brandName,
+      description: effectiveProject?.brief?.description,
+      creativeDirection: effectiveProject?.creativePlan?.direction || effectiveProject?.avatar?.sceneDescription || "",
+      scenes: Array.isArray(effectiveProject?.creativePlan?.scenes) ? effectiveProject.creativePlan.scenes : [],
     });
     const prompt = composeSeedancePrompt(req.body?.prompt, directorPlan, MAX_PROMPT_CHARS);
     if (prompt.length < 20) return sendJson(res, 400, { ok: false, error: "missing_prompt" });
@@ -210,7 +269,7 @@ export default async function handler(req, res) {
     if (!requestId) return sendJson(res, 502, { ok: false, error: "fal_missing_request_id", fal_response: fal });
 
     const now = new Date().toISOString();
-    const version = nextVersion(project);
+    const version = nextVersion(effectiveProject);
     const retryInput = {
       prompt,
       imageUrls,
@@ -222,14 +281,16 @@ export default async function handler(req, res) {
       generateAudio: false,
       referenceMap,
       directorPlan,
+      identityResolution: identity,
       productionId,
     };
     const nextProject = await saveProject(user, {
-      ...project,
+      ...effectiveProject,
       status: "processing",
-      productionPlan: { ...directorPlan, productionId },
-      outputs: Array.isArray(project.outputs) ? project.outputs.slice(0, 30) : [],
-      activeOutputId: project.activeOutputId || null,
+      identityResolution: identity,
+      productionPlan: { ...directorPlan, productionId, identityResolution: identity },
+      outputs: Array.isArray(effectiveProject.outputs) ? effectiveProject.outputs.slice(0, 30) : [],
+      activeOutputId: effectiveProject.activeOutputId || null,
       generation: {
         provider: "fal",
         model: MODEL,
@@ -252,6 +313,7 @@ export default async function handler(req, res) {
         narrationAudioUrl: narration.audio?.url || null,
         narrationApprovedAt: narration.audio?.approvedAt || null,
         directorPlanVersion: directorPlan.version,
+        identityResolution: identity,
         input: {
           productionId,
           duration,
@@ -283,6 +345,7 @@ export default async function handler(req, res) {
       response_url: responseUrl || null,
       status: "IN_QUEUE",
       director_plan: directorPlan,
+      identity_resolution: identity,
       generation: nextProject.generation,
       outputs: nextProject.outputs || [],
       activeOutputId: nextProject.activeOutputId || null,
