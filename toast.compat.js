@@ -37,8 +37,8 @@
 
 /* AI Reklam Filmi varlık yükleyicisi. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V49__) return;
-  window.__AIVO_AD_FILM_ASSETS_V49__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V50__) return;
+  window.__AIVO_AD_FILM_ASSETS_V50__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -107,7 +107,7 @@
     "/js/ad-film.reset-safety.js?v=1",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.narration-engine.js?v=3",
-    "/js/ad-film.narration-approval-sync.js?v=7",
+    "/js/ad-film.narration-approval-sync.js?v=8",
     "/js/ad-film.narration-player-host-fix.js?v=1",
     "/js/ad-film.narration-player.js?v=2",
     "/js/ad-film.narration-master.js?v=3",
@@ -115,8 +115,9 @@
     "/js/ad-film.voice-toggle-fix.js?v=2",
     "/js/ad-film.music-preflight.js?v=3",
     "/js/ad-film.seedance-resume-guard.js?v=2",
-    "/js/ad-film.finalize-wait.js?v=2",
+    "/js/ad-film.finalize-wait.js?v=3",
     "/js/ad-film.avatar-orchestrator.js?v=6",
+    "/js/ad-film.avatar-finalization-bridge.js?v=1",
     "/js/ad-film.seedance-engine.js?v=6",
     "/js/ad-film.progress-stability.js?v=1",
     "/js/ad-film.logo-finalize.js?v=4",
