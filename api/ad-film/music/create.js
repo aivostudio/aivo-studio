@@ -1,6 +1,7 @@
 // api/ad-film/music/create.js
 export const config = { runtime: "nodejs" };
 
+import crypto from "crypto";
 import { buildAdFilmMusicPrompt } from "../../_lib/ad-film-music-prompt.js";
 import {
   getOwnedProject,
@@ -12,6 +13,7 @@ import {
 const PRIMARY_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
 const FALLBACK_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
 const QUALITY_VERSION = 2;
+const PROFILE_VERSION = 1;
 
 function clean(value, max = 1600) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -35,8 +37,28 @@ async function submit(key,model,payload){
     return{response,data,model};
   }finally{clearTimeout(timeout)}
 }
-function reusableAudio(audio){
-  return !!(audio?.url&&audio?.qualityVersion>=QUALITY_VERSION&&audio?.engine===PRIMARY_MODEL);
+function profileSignature(prompt){
+  return crypto.createHash("sha256").update(JSON.stringify({
+    qualityVersion:QUALITY_VERSION,
+    profileVersion:PROFILE_VERSION,
+    duration:prompt.duration,
+    requestedStyle:prompt.requestedStyle,
+    requestedEnergy:prompt.requestedEnergy,
+    resolvedStyle:prompt.resolvedStyle,
+    resolvedEnergy:prompt.resolvedEnergy,
+    voiceEnabled:prompt.voiceEnabled,
+    prompt:prompt.prompt,
+    negativePrompt:prompt.negativePrompt,
+  })).digest("hex").slice(0,32);
+}
+function reusableAudio(audio,signature){
+  return !!(
+    audio?.url&&
+    Number(audio?.qualityVersion)>=QUALITY_VERSION&&
+    Number(audio?.profileVersion)>=PROFILE_VERSION&&
+    audio?.engine===PRIMARY_MODEL&&
+    clean(audio?.signature,80)===signature
+  );
 }
 
 export default async function handler(req,res){
@@ -48,15 +70,23 @@ export default async function handler(req,res){
     const music=project.music||{};
     if(music.mode==="off")return sendJson(res,200,{ok:true,status:"DISABLED",project});
     if(music.mode==="upload"&&project.media?.musicTrack?.url)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.media.musicTrack,project});
-    if(reusableAudio(music.audio))return sendJson(res,200,{ok:true,status:"COMPLETED",audio:music.audio,project});
-    const active=project.musicGeneration;
-    if(active&&["queued","processing"].includes(String(active.status))&&active.qualityVersion>=QUALITY_VERSION)return sendJson(res,200,{ok:true,status:active.status==="queued"?"IN_QUEUE":"RUNNING",generation:active,project});
-    const key=falKey();if(!key)return sendJson(res,500,{ok:false,error:"missing_fal_key",message:"FAL_KEY is not available."});
 
     const prompt=buildAdFilmMusicPrompt({
       productName:project.brief?.productName,brandName:project.brief?.brandName,description:project.brief?.description,targetAudience:project.brief?.targetAudience,cta:project.brief?.cta,
       voiceStyle:project.narration?.voiceStyle,visualStyle:project.sceneStyle,duration:project.output?.duration||15,musicStyle:music.style||"auto",musicEnergy:music.energy||"balanced",voiceEnabled:project.narration?.enabled!==false
     });
+    const signature=profileSignature(prompt);
+
+    if(reusableAudio(music.audio,signature))return sendJson(res,200,{ok:true,status:"COMPLETED",audio:music.audio,project});
+    const active=project.musicGeneration;
+    if(
+      active&&
+      ["queued","processing"].includes(String(active.status))&&
+      Number(active.qualityVersion)>=QUALITY_VERSION&&
+      Number(active.profileVersion)>=PROFILE_VERSION&&
+      clean(active.signature,80)===signature
+    )return sendJson(res,200,{ok:true,status:active.status==="queued"?"IN_QUEUE":"RUNNING",generation:active,project});
+    const key=falKey();if(!key)return sendJson(res,500,{ok:false,error:"missing_fal_key",message:"FAL_KEY is not available."});
 
     const payload={
       prompt:prompt.prompt,
@@ -81,7 +111,7 @@ export default async function handler(req,res){
     if(!attempt.response.ok){
       const message=errorMessage(data,attempt.response.status);
       const now=new Date().toISOString();
-      const failed=await saveProject(user,{...project,musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,meta:prompt}});
+      const failed=await saveProject(user,{...project,musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,meta:prompt}});
       return sendJson(res,attempt.response.status,{ok:false,error:"fal_error",message,fal_status:attempt.response.status,fal_response:data,project:failed});
     }
 
@@ -96,7 +126,7 @@ export default async function handler(req,res){
     const saved=await saveProject(user,{
       ...project,
       music:{...(project.music||{}),audio:null},
-      musicGeneration:{provider:"fal",model:attempt.model,requestId,statusUrl:statusUrl||null,responseUrl:responseUrl||null,status:"queued",startedAt:now,updatedAt:now,error:null,fallbackUsed,qualityVersion:QUALITY_VERSION,prompt:prompt.prompt,meta:prompt}
+      musicGeneration:{provider:"fal",model:attempt.model,requestId,statusUrl:statusUrl||null,responseUrl:responseUrl||null,status:"queued",startedAt:now,updatedAt:now,error:null,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,prompt:prompt.prompt,meta:prompt}
     });
     return sendJson(res,200,{ok:true,status:"IN_QUEUE",generation:saved.musicGeneration,project:saved,fallback_used:fallbackUsed});
   }catch(error){console.error("[ad-film/music/create]",error);return sendJson(res,500,{ok:false,error:"server_error",message:clean(error?.message||error,900)})}
