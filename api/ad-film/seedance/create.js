@@ -71,6 +71,38 @@ function approvedNarration(project) {
   };
 }
 
+function categoryFromText(value) {
+  const source = clean(value, 1000).toLocaleLowerCase("tr-TR");
+  if (!source) return null;
+  const groups = [
+    ["earbuds", ["kulaklık", "earbud", "earphone", "airpods", "şarj kutusu", "charging case"]],
+    ["fragrance", ["parfüm", "parfum", "perfume", "fragrance", "kolonya", "atomizer"]],
+    ["smartphone", ["telefon", "smartphone", "iphone", "cep telefonu"]],
+    ["vehicle", ["otomobil", "araba", "vehicle", "motorcycle", "motosiklet", "suv"]],
+    ["footwear", ["ayakkabı", "sneaker", "shoe", "bot", "terlik"]],
+    ["furniture", ["koltuk", "sofa", "sandalye", "chair", "mobilya", "furniture", "yatak"]],
+    ["large_appliance", ["buzdolabı", "refrigerator", "çamaşır makinesi", "dishwasher", "bulaşık makinesi", "fırın"]],
+    ["countertop_appliance", ["kahve makinesi", "coffee machine", "airfryer", "air fryer", "blender", "kettle"]],
+    ["personal_computing", ["laptop", "notebook", "tablet", "ipad", "bilgisayar"]],
+    ["wearable_luxury", ["saat", "watch", "bileklik", "bracelet", "yüzük", "ring", "mücevher"]],
+  ];
+  for (const [category, terms] of groups) {
+    if (terms.some((term) => source.includes(term))) return category;
+  }
+  return null;
+}
+
+function productIdentityCheck(project) {
+  const evidence = {
+    productName: categoryFromText(project?.brief?.productName),
+    description: categoryFromText(project?.brief?.description),
+    narration: categoryFromText(project?.narration?.audio?.approvedText || project?.narration?.text),
+  };
+  const categories = [...new Set(Object.values(evidence).filter(Boolean))];
+  if (categories.length <= 1) return { ok: true, category: categories[0] || null, evidence };
+  return { ok: false, error: "product_identity_conflict", categories, evidence };
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -84,6 +116,16 @@ export default async function handler(req, res) {
     const project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
     if (activeGeneration(project)) return sendJson(res, 409, { ok: false, error: "generation_in_progress", generation: project.generation });
+
+    const identity = productIdentityCheck(project);
+    if (!identity.ok) {
+      return sendJson(res, 409, {
+        ok: false,
+        error: identity.error,
+        message: "Product name, description and narration describe different product categories.",
+        identity,
+      });
+    }
 
     const narration = approvedNarration(project);
     if (narration.required && !narration.audio) {
@@ -103,9 +145,7 @@ export default async function handler(req, res) {
     try {
       imageUrls = validateOwnedUrls(req.body?.image_urls, publicPrefix, ownedKeyPrefix, 9);
       logoUrl = clean(req.body?.logo_url, 4000);
-      if (logoUrl && !logoUrl.startsWith(publicPrefix) && !isOwnedSignedUrl(logoUrl, ownedKeyPrefix)) {
-        throw new Error("unowned_media_url");
-      }
+      if (logoUrl && !logoUrl.startsWith(publicPrefix) && !isOwnedSignedUrl(logoUrl, ownedKeyPrefix)) throw new Error("unowned_media_url");
     } catch (error) {
       return sendJson(res, 400, { ok: false, error: String(error?.message || error) });
     }
@@ -115,14 +155,13 @@ export default async function handler(req, res) {
     const resolution = clean(req.body?.resolution, 20).toLowerCase();
     const aspectRatio = clean(req.body?.aspect_ratio, 20).toLowerCase();
     const bitrateMode = clean(req.body?.bitrate_mode, 20).toLowerCase();
+    const productionId = clean(req.body?.production_id, 160) || `adfilm-${Date.now()}`;
     if (!duration) return sendJson(res, 400, { ok: false, error: "invalid_duration" });
     if (!RESOLUTIONS.has(resolution)) return sendJson(res, 400, { ok: false, error: "invalid_resolution" });
     if (!ASPECT_RATIOS.has(aspectRatio)) return sendJson(res, 400, { ok: false, error: "invalid_aspect_ratio" });
     if (!BITRATES.has(bitrateMode)) return sendJson(res, 400, { ok: false, error: "invalid_bitrate_mode" });
 
-    const referenceMap = req.body?.reference_map && typeof req.body.reference_map === "object"
-      ? req.body.reference_map
-      : null;
+    const referenceMap = req.body?.reference_map && typeof req.body.reference_map === "object" ? req.body.reference_map : null;
     const directorPlan = buildDirectorPlan(project, {
       duration,
       aspectRatio,
@@ -164,9 +203,7 @@ export default async function handler(req, res) {
 
     const text = await response.text().catch(() => "");
     const fal = parseJson(text);
-    if (!response.ok) {
-      return sendJson(res, response.status, { ok: false, error: "fal_error", fal_status: response.status, fal_response: fal });
-    }
+    if (!response.ok) return sendJson(res, response.status, { ok: false, error: "fal_error", fal_status: response.status, fal_response: fal });
     const requestId = clean(fal?.request_id || fal?.requestId || fal?.id, 240);
     const statusUrl = clean(fal?.status_url || fal?.statusUrl || fal?.urls?.status, 1200);
     const responseUrl = clean(fal?.response_url || fal?.responseUrl || fal?.urls?.response, 1200);
@@ -185,11 +222,12 @@ export default async function handler(req, res) {
       generateAudio: false,
       referenceMap,
       directorPlan,
+      productionId,
     };
     const nextProject = await saveProject(user, {
       ...project,
       status: "processing",
-      productionPlan: directorPlan,
+      productionPlan: { ...directorPlan, productionId },
       outputs: Array.isArray(project.outputs) ? project.outputs.slice(0, 30) : [],
       activeOutputId: project.activeOutputId || null,
       generation: {
@@ -197,6 +235,7 @@ export default async function handler(req, res) {
         model: MODEL,
         requestId,
         outputId: requestId,
+        productionId,
         version,
         statusUrl: statusUrl || null,
         responseUrl: responseUrl || null,
@@ -214,6 +253,7 @@ export default async function handler(req, res) {
         narrationApprovedAt: narration.audio?.approvedAt || null,
         directorPlanVersion: directorPlan.version,
         input: {
+          productionId,
           duration,
           resolution,
           aspectRatio,
@@ -235,6 +275,7 @@ export default async function handler(req, res) {
       provider: "fal",
       model: MODEL,
       projectId,
+      production_id: productionId,
       request_id: requestId,
       output_id: requestId,
       version,
