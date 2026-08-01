@@ -1,11 +1,11 @@
 // api/ad-film/avatar/pipeline/create-native-fixed.js
-// Compatibility route. All duration, director and lipsync timing logic now lives
-// in create-native.js so audio cannot be trimmed or delayed twice.
+// Compatibility route. Avatar creation is now gated until the accepted
+// Seedance source video is fully available for the same production lock.
 export const config = { runtime: "nodejs" };
 export const maxDuration = 180;
 
-import nativeHandler from "./create-native.js";
+import gatedHandler from "./create-after-seedance.js";
 
 export default async function handler(req, res) {
-  return nativeHandler(req, res);
+  return gatedHandler(req, res);
 }
