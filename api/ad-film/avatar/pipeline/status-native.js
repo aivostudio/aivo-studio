@@ -9,8 +9,10 @@ import {
   sendJson,
 } from "../../../_lib/ad-film-projects.js";
 
+const KLING_STANDARD_I2V = "fal-ai/kling-video/v3/standard/image-to-video";
 const LIPSYNC = "fal-ai/sync-lipsync/v3";
 const FRESH_JOB_404_GRACE_MS = 90 * 1000;
+const MOTION_QUEUE_FALLBACK_MS = 8 * 60 * 1000;
 const MAX_PIPELINE_AGE_MS = 20 * 60 * 1000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
@@ -59,6 +61,14 @@ function freshJob(job) {
   const submittedAt = Date.parse(job?.submittedAt || "");
   return Number.isFinite(submittedAt) && Date.now() - submittedAt < FRESH_JOB_404_GRACE_MS;
 }
+function jobAgeMs(job) {
+  const submittedAt = Date.parse(job?.submittedAt || "");
+  return Number.isFinite(submittedAt) ? Math.max(0, Date.now() - submittedAt) : 0;
+}
+function motionQueueExpired(pipeline, result) {
+  const motion = pipeline?.motion || {};
+  return result?.status === "IN_QUEUE" && motion.model !== KLING_STANDARD_I2V && jobAgeMs(motion) >= MOTION_QUEUE_FALLBACK_MS;
+}
 function normalizedDuration(value) {
   const duration = Number.parseInt(value, 10);
   return [5,10,15].includes(duration) ? duration : null;
@@ -88,7 +98,8 @@ function pipelineLockError(project, pipeline) {
   return null;
 }
 function pipelineTimedOut(pipeline) {
-  const startedAt = Date.parse(pipeline?.startedAt || "");
+  const activeJob = pipeline?.stage === "lipsync" ? pipeline?.lipsync : pipeline?.motion;
+  const startedAt = Date.parse(activeJob?.submittedAt || pipeline?.startedAt || "");
   return Number.isFinite(startedAt) && Date.now() - startedAt > MAX_PIPELINE_AGE_MS;
 }
 function failedGeneration(project, error, now) {
@@ -170,6 +181,29 @@ async function submitQueue(model, input) {
     };
   } finally { clearTimeout(timeout); }
 }
+function fallbackMotionInput(pipeline) {
+  return {
+    start_image_url:pipeline.stageImageUrl,
+    prompt:pipeline.prompt,
+    duration:String(pipeline.duration),
+    generate_audio:false,
+    cfg_scale:Number(pipeline.cfgScale || 0.72),
+    negative_prompt:"still image, frozen frame, static pose, identity drift, distorted face, extra people, duplicate limbs, warped hands, wrong product, duplicate product, text, logo, watermark, picture-in-picture, low quality, abrupt camera shake",
+  };
+}
+async function queueMotionFallback(pipeline) {
+  const current = pipeline?.motion || {};
+  if (current.model === KLING_STANDARD_I2V) return null;
+  const job = await submitQueue(KLING_STANDARD_I2V, fallbackMotionInput(pipeline));
+  return {
+    ...job,
+    provider:"fal",
+    inputMode:"native-scene-standard-fallback",
+    fallbackLevel:Number(current.fallbackLevel || 0) + 1,
+    fallbackFrom:current.model || null,
+    fallbackReason:"provider_queue_timeout",
+  };
+}
 async function startLipsync(pipeline, motionVideoUrl) {
   if (!pipeline.lipsyncAudioUrl) return null;
   const job = await submitQueue(LIPSYNC, {
@@ -220,7 +254,19 @@ export default async function handler(req,res) {
 
     if (pipeline.stage === "motion") {
       const result = await readJob(pipeline.motion);
-      if (result.status === "FAILED") {
+      if (motionQueueExpired(pipeline,result)) {
+        const fallback = await queueMotionFallback(pipeline);
+        pipeline = {
+          ...pipeline,
+          status:"motion_queued",
+          stage:"motion",
+          originalStartedAt:pipeline.originalStartedAt || pipeline.startedAt,
+          startedAt:now,
+          updatedAt:now,
+          error:null,
+          motion:fallback,
+        };
+      } else if (result.status === "FAILED") {
         pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error:result.error||"avatar_motion_failed",motion:{...pipeline.motion,error:result.error||"avatar_motion_failed"} };
       } else if (result.status === "COMPLETED" && result.videoUrl) {
         if (pipeline.lipsyncAudioUrl) {
