@@ -126,6 +126,25 @@ function accessoryFor(settings) {
   }[settings.faceAccessory];
 }
 
+function wardrobeFor(settings) {
+  if (settings.gender === "female") {
+    return {
+      casual: "one coherent modern casual outfit consisting of one top and exactly one pair of full-length trousers or jeans; no skirt and no dress",
+      business: "one coherent professional trouser suit consisting of a tailored blazer, blouse and exactly one pair of full-length tailored trousers; no skirt and no dress",
+      premium: "one coherent premium luxury trouser suit consisting of a refined jacket or blazer, an elegant top and exactly one pair of full-length tailored trousers; no skirt and no dress",
+      sport: "one coherent refined sports outfit consisting of one athletic top and exactly one pair of full-length sport trousers or leggings; no skirt and no dress",
+      elegant: "one elegant contemporary dress used as the single lower-body garment; no trousers, no leggings and no shorts",
+    }[settings.outfit];
+  }
+  return {
+    casual: "one coherent modern casual outfit consisting of one top and exactly one pair of full-length trousers or jeans",
+    business: "one coherent professional suit consisting of a tailored jacket, shirt and exactly one pair of full-length tailored trousers",
+    premium: "one coherent premium luxury suit consisting of a refined jacket, shirt or top and exactly one pair of full-length tailored trousers",
+    sport: "one coherent refined sports outfit consisting of one athletic top and exactly one pair of full-length sport trousers",
+    elegant: "one coherent elegant contemporary suit consisting of a refined jacket, shirt and exactly one pair of full-length tailored trousers",
+  }[settings.outfit];
+}
+
 function promptFor(settings) {
   const framing = {
     shoulders: "shoulders-up portrait",
@@ -133,13 +152,6 @@ function promptFor(settings) {
     waist: "waist-up portrait",
     full: "head-to-toe full-body portrait, camera pulled back far enough to show the entire person from the top of the hair to the soles of both shoes",
   }[settings.framing];
-  const outfit = {
-    casual: "modern casual clothing",
-    business: "clean professional business clothing",
-    premium: "premium luxury clothing",
-    sport: "refined modern sportswear",
-    elegant: "elegant contemporary clothing",
-  }[settings.outfit];
   const expression = {
     friendly: "friendly and approachable expression",
     confident: "confident trustworthy expression",
@@ -149,16 +161,18 @@ function promptFor(settings) {
   const fullBodyRule = settings.framing === "full"
     ? "Mandatory full-body composition: both arms and both legs are fully visible, both feet and both shoes are completely inside the image, with comfortable empty margin above the head and below the shoes. Do not crop the head, hands, knees, ankles, feet or shoes. Do not use a close-up, medium shot, three-quarter crop or seated pose."
     : "";
+  const wardrobeIntegrity = "Wardrobe integrity is mandatory: use exactly one lower-body garment. Never layer a skirt or dress over trousers, pants, jeans, leggings or shorts. If trousers, pants, jeans or leggings are specified, generate no skirt and no dress. If a skirt or dress is specified, generate no trousers, pants, jeans, leggings or shorts. The outfit must be one coherent, physically wearable ensemble with no duplicated or overlapping garments.";
 
   return [
     `Photorealistic ${COUNTRIES[settings.country]} ${settings.gender} advertising presenter, age ${settings.age}.`,
     `${appearanceFor(settings)}.`,
-    `${settings.hairColor} ${settings.hairStyle} hair, ${outfit}, ${outfitColorFor(settings)}, ${expression}.`,
+    `${settings.hairColor} ${settings.hairStyle} hair, ${wardrobeFor(settings)}, ${outfitColorFor(settings)}, ${expression}.`,
+    wardrobeIntegrity,
     `${accessoryFor(settings)}.`,
     `${framing}, facing directly toward the camera, natural eye contact, mouth fully visible, lips unobstructed.`,
     fullBodyRule,
     "Single adult person only, centered composition, clean studio lighting, realistic skin texture, sharp facial details, natural human proportions.",
-    "Neutral premium studio background, no text, no logos, no watermark, no microphone, no hands covering the face, no mask, no extreme side profile.",
+    "Neutral premium studio background, no text, no logos, no watermark, no microphone, no lapel microphone, no headset microphone, no visible audio cable, no badge, no hands covering the face, no mask, no extreme side profile.",
     "Optimized source portrait for a professional talking-avatar and lip-sync advertising video.",
   ].filter(Boolean).join(" ");
 }
