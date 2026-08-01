@@ -110,6 +110,30 @@ function outputFromGeneration(project, generation, videoUrl, seed, completedAt) 
   };
 }
 
+function terminalFailureReason(project) {
+  const projectStatus = clean(project?.status, 80).toLowerCase();
+  const generationStatus = clean(project?.generation?.status, 80).toLowerCase();
+  const avatarStatus = clean(project?.avatar?.pipeline?.status, 80).toLowerCase();
+  const finalizationStatus = clean(project?.finalization?.status, 80).toLowerCase();
+  const terminal = new Set(["failed", "error", "cancelled", "canceled"]);
+  if (
+    terminal.has(projectStatus) ||
+    terminal.has(generationStatus) ||
+    terminal.has(avatarStatus) ||
+    terminal.has(finalizationStatus)
+  ) {
+    return clean(
+      project?.generation?.error ||
+      project?.avatar?.pipeline?.error ||
+      project?.finalization?.error ||
+      project?.error ||
+      "production_failed",
+      1200,
+    );
+  }
+  return "";
+}
+
 async function falFetch(url, key) {
   const response = await fetch(url, {
     method: "GET",
@@ -207,6 +231,44 @@ export default async function handler(req, res) {
     const generation = project.generation || {};
     const savedOutputs = normalizeOutputs(project);
     const avatarFinalRequired = project?.avatar?.enabled === true;
+    const terminalError = terminalFailureReason(project);
+
+    if (terminalError) {
+      const now = new Date().toISOString();
+      const terminalGeneration = {
+        ...generation,
+        status: "failed",
+        updatedAt: now,
+        completedAt: generation.completedAt || now,
+        avatarWaiting: false,
+        awaitingFinalComposite: false,
+        finalizing: false,
+        error: terminalError,
+      };
+      const alreadyTerminal =
+        String(project.status) === "failed" &&
+        String(generation.status) === "failed" &&
+        generation.error === terminalError;
+      const terminalProject = alreadyTerminal
+        ? project
+        : await saveProject(user, {
+            ...project,
+            status: "failed",
+            generation: terminalGeneration,
+            outputs: savedOutputs,
+          });
+      return sendJson(res, 200, {
+        ok: true,
+        projectId,
+        status: "FAILED",
+        video_url: null,
+        source_video_url: terminalProject.generation?.sourceVideoUrl || null,
+        generation: terminalProject.generation || terminalGeneration,
+        outputs: terminalProject.outputs || savedOutputs,
+        activeOutputId: terminalProject.activeOutputId || savedOutputs[0]?.id || null,
+      });
+    }
+
     if (!generation.requestId) {
       return sendJson(res, 200, {
         ok: true,
