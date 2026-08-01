@@ -37,8 +37,8 @@
 
 /* AI Reklam Filmi varlık yükleyicisi. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V41__) return;
-  window.__AIVO_AD_FILM_ASSETS_V41__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V42__) return;
+  window.__AIVO_AD_FILM_ASSETS_V42__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -117,7 +117,7 @@
     "/js/ad-film.seedance-resume-guard.js?v=1",
     "/js/ad-film.finalize-wait.js?v=2",
     "/js/ad-film.hybrid-controller.js?v=2",
-    "/js/ad-film.avatar-orchestrator.js?v=4",
+    "/js/ad-film.avatar-orchestrator.js?v=5",
     "/js/ad-film.seedance-engine.js?v=6",
     "/js/ad-film.progress-stability.js?v=1",
     "/js/ad-film.logo-finalize.js?v=4",
