@@ -30,6 +30,16 @@ const AVATAR_HAIR_STYLES = new Set(["short", "medium", "long", "straight", "wavy
 const AVATAR_FRAMINGS = new Set(["shoulders", "chest", "waist", "full"]);
 const AVATAR_EXPRESSIONS = new Set(["friendly", "confident", "calm", "energetic"]);
 const AVATAR_OUTFITS = new Set(["casual", "business", "premium", "sport", "elegant"]);
+const AVATAR_MALE_APPEARANCES = new Set(["handsome", "charismatic", "attractive", "natural"]);
+const AVATAR_FEMALE_APPEARANCES = new Set(["beautiful", "fashion_model", "attractive", "elegant_natural"]);
+const AVATAR_OUTFIT_COLORS = new Set([
+  "scene_harmony", "product_tone", "contrast", "mixed",
+  "black", "white", "red", "blue", "navy", "gray", "beige", "brown", "pink", "green",
+  "black_white", "black_red", "black_gold", "white_gold", "navy_white",
+]);
+const AVATAR_FACE_ACCESSORIES = new Set([
+  "none", "round_glasses", "square_glasses", "aviator_glasses", "sunglasses",
+]);
 const AVATAR_PROMPT_MAX = 1000;
 
 function readProjectId(req) {
@@ -106,10 +116,26 @@ function extendAvatarPatch(rawProject, sanitizedPatch, user, projectId) {
     framing: enumValue(source.framing, AVATAR_FRAMINGS, "chest"),
     expression: enumValue(source.expression, AVATAR_EXPRESSIONS, "friendly"),
     outfit: enumValue(source.outfit, AVATAR_OUTFITS, "business"),
+    maleAppearance: enumValue(source.maleAppearance, AVATAR_MALE_APPEARANCES, "charismatic"),
+    femaleAppearance: enumValue(source.femaleAppearance, AVATAR_FEMALE_APPEARANCES, "beautiful"),
+    outfitColor: enumValue(source.outfitColor, AVATAR_OUTFIT_COLORS, "scene_harmony"),
+    faceAccessory: enumValue(source.faceAccessory, AVATAR_FACE_ACCESSORIES, "none"),
     directorNote: cleanMultiline(source.directorNote, AVATAR_PROMPT_MAX),
     sceneDescription: cleanMultiline(source.sceneDescription, AVATAR_PROMPT_MAX),
     image: source.image === null ? null : sanitizeAvatarMedia(source.image, user, projectId),
   };
+
+  // Client-side recovery may only clear server-owned async state; it can never write a job object.
+  if (Object.prototype.hasOwnProperty.call(source, "imageGeneration") && source.imageGeneration === null) {
+    avatar.imageGeneration = null;
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "pipeline") && source.pipeline === null) {
+    avatar.pipeline = null;
+  }
+  if (Object.prototype.hasOwnProperty.call(source, "videoUrl") && source.videoUrl === null) {
+    avatar.videoUrl = null;
+  }
+
   return { ...sanitizedPatch, avatar };
 }
 
@@ -135,6 +161,10 @@ function mergeWithAvatar(current, patch) {
       framing: "chest",
       expression: "friendly",
       outfit: "business",
+      maleAppearance: "charismatic",
+      femaleAppearance: "beautiful",
+      outfitColor: "scene_harmony",
+      faceAccessory: "none",
       directorNote: "",
       sceneDescription: "",
       image: null,
