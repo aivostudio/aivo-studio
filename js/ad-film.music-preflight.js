@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — generate selected music before video production */
 (function AIVO_AD_FILM_MUSIC_PREFLIGHT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V3__)return;
-  window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V3__=true;
+  if(window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V4__)return;
+  window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V4__=true;
 
   var busy=false;
   function clean(v){return String(v||"").trim()}
@@ -13,6 +13,7 @@
   function toast(message,type,duration){try{var fn=window.toast&&window.toast[type||"info"];if(typeof fn==="function")return fn({message:message,duration:duration||4200});if(typeof window.showToast==="function")return window.showToast(message,type||"info")}catch(_){} }
   function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
   function musicReady(source){source=source||{};var mode=source.music&&source.music.mode||"auto";if(mode==="off")return true;if(mode==="upload")return!!clean(source.media&&source.media.musicTrack&&source.media.musicTrack.url);return!!clean(source.music&&source.music.audio&&source.music.audio.url)}
+  function avatarEnabled(scope,source){var toggle=scope&&scope.querySelector('[data-avatar-enabled]');return toggle?!!toggle.checked:source&&source.avatar&&source.avatar.enabled===true}
   function errorMessage(data,response){return clean(data&&(
     data.message||data.error||data.detail||
     data.fal_response&&data.fal_response.detail||
@@ -96,6 +97,15 @@
     }catch(error){if(handle&&typeof handle.dismiss==="function")handle.dismiss();throw error}
     finally{setBuildBusy(button,false)}
   }
+  function startProduction(scope,button,source){
+    if(avatarEnabled(scope,source)){
+      var hybrid=window.AIVOAdFilmHybridController;
+      if(!hybrid||typeof hybrid.start!=="function")throw new Error("hybrid_controller_not_ready");
+      return hybrid.start(scope,button);
+    }
+    if(!window.AIVOAdFilmSeedanceEngine||typeof window.AIVOAdFilmSeedanceEngine.generate!=="function")throw new Error("seedance_engine_not_ready");
+    return window.AIVOAdFilmSeedanceEngine.generate();
+  }
 
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
@@ -103,23 +113,21 @@
     var guard=window.AIVOAdFilmNarrationBuildGuard&&window.AIVOAdFilmNarrationBuildGuard.state&&window.AIVOAdFilmNarrationBuildGuard.state();
     if(guard&&guard.ready===false)return;
     var source=project();if(!source||musicReady(source))return;
+    var scope=button.closest('[data-module-root][data-module="adfilm"]')||root();
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     busy=true;
     setBuildBusy(button,true);
-    /* The status panel must react in the same click frame as the toast. Music
-       generation can take several seconds before Seedance starts, so waiting
-       for the video engine made the interface appear frozen. */
     showImmediateProcessing(button);
-    ensureMusic(source,button).then(function(){
+    ensureMusic(source,button).then(function(nextSource){
       busy=false;
       if(window.AIVOAdFilmNarrationBuildGuard&&typeof window.AIVOAdFilmNarrationBuildGuard.sync==="function")window.AIVOAdFilmNarrationBuildGuard.sync();
-      if(window.AIVOAdFilmSeedanceEngine&&typeof window.AIVOAdFilmSeedanceEngine.generate==="function")window.AIVOAdFilmSeedanceEngine.generate();
+      return startProduction(scope,button,nextSource);
     }).catch(function(error){
       busy=false;setBuildBusy(button,false);
       console.error("[ADFILM] music preflight",error,error&&error.data||"");
       var detail=clean(error&&error.message);
       var message=detail&&detail!=="music_generation_failed"&&detail!=="music_generation_timeout"
-        ?text("Reklam müziği hazırlanamadı: ","Advertising music could not be prepared: ")+detail
+        ?text("Reklam üretimi başlatılamadı: ","Advertising production could not start: ")+detail
         :text("Reklam müziği hazırlanamadı. Tekrar dene.","Advertising music could not be prepared. Try again.");
       showMusicError(button,message);
       toast(message,"error",6200);
