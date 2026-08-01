@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — native-scene avatar orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V10__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V10__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V11__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V11__=true;
 
   var running=false,pollTimer=null,currentLock=null,seedanceGate=null;
   var terminalFailures=new Map();
@@ -24,8 +24,11 @@
   function cloneInit(init,body){var next=Object.assign({},init||{});next.headers=Object.assign({'Content-Type':'application/json'},next.headers||{});next.body=JSON.stringify(body||{});return next}
   function jsonResponse(payload,status){return new Response(JSON.stringify(payload),{status:status||409,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}})}
   async function responseJson(response){try{return await response.clone().json()}catch(_){return{}}}
+  function normalizedDuration(value){value=clean(value);return value==='5'||value==='10'||value==='15'?value:''}
+  function normalizedRatio(value){value=clean(value);return value==='4:5'?'3:4':value}
   function terminalCode(code){return[
-    'seedance_source_too_short','production_duration_mismatch','production_lock_mismatch',
+    'seedance_source_too_short','seedance_generation_not_ready','production_duration_mismatch','production_lock_mismatch',
+    'production_aspect_ratio_mismatch','production_quality_mismatch','avatar_provider_timeout',
     'product_identity_conflict','narration_too_long_for_avatar_window','narration_audio_approval_required',
     'music_audio_required','timeline_empty','timeline_gap_or_overlap','timeline_invalid_segment',
     'timeline_duration_mismatch','avatar_pipeline_failed'
@@ -66,15 +69,40 @@
     var duration=selectedDuration==='5'?'5':selectedDuration==='15'?'15':'10';
     var ratio=choice(scope,'aspectRatio','16:9');
     var quality=choice(scope,'quality','1080p');
-    return{
+    return Object.freeze({
       id:'adfilm-'+Date.now()+'-'+Math.random().toString(36).slice(2,10),
       projectId:projectId(scope),
       duration:duration,
       aspectRatio:ratio,
-      apiAspectRatio:ratio==='4:5'?'3:4':ratio,
+      apiAspectRatio:normalizedRatio(ratio),
       quality:quality,
       capturedAt:new Date().toISOString()
-    };
+    });
+  }
+
+  function acceptedProductionLock(requested,created){
+    var generation=created&&created.generation||{};
+    var input=generation.input||{};
+    var plan=created&&created.director_plan||{};
+    var acceptedDuration=normalizedDuration(input.duration||plan.duration||requested.duration);
+    var acceptedId=clean(created&&created.production_id||generation.productionId||input.productionId||requested.id);
+    var acceptedRatio=normalizedRatio(input.aspectRatio||input.aspect_ratio||plan.aspectRatio||requested.apiAspectRatio);
+    var acceptedQuality=clean(input.resolution||plan.quality||requested.quality).toLowerCase();
+    if(!acceptedDuration||acceptedDuration!==requested.duration)throw new Error('production_duration_mismatch');
+    if(!acceptedId||acceptedId!==requested.id)throw new Error('production_lock_mismatch');
+    if(acceptedRatio!==normalizedRatio(requested.apiAspectRatio))throw new Error('production_aspect_ratio_mismatch');
+    if(acceptedQuality!==clean(requested.quality).toLowerCase())throw new Error('production_quality_mismatch');
+    return Object.freeze({
+      id:acceptedId,
+      projectId:requested.projectId,
+      duration:acceptedDuration,
+      aspectRatio:requested.aspectRatio,
+      apiAspectRatio:acceptedRatio,
+      quality:acceptedQuality,
+      requestId:clean(created&&created.request_id||generation.requestId),
+      capturedAt:requested.capturedAt,
+      acceptedAt:new Date().toISOString()
+    });
   }
 
   function setBuildBusy(button,busy){
@@ -88,6 +116,11 @@
       if(label&&label.dataset.originalText)label.textContent=label.dataset.originalText;
       button.disabled=false;button.classList.remove('is-loading');button.removeAttribute('aria-busy');
     }
+  }
+
+  function release(scope){
+    running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;
+    var button=scope&&scope.querySelector('[data-adfilm-build]');if(button)setBuildBusy(button,false);
   }
 
   function setStage(scope,title,detail){
@@ -176,27 +209,27 @@
 
   async function poll(scope,id,count){
     clearTimeout(pollTimer);
-    if(count>=MAX_POLLS){running=false;currentLock=null;return}
+    if(count>=MAX_POLLS){release(scope);return}
     try{
       var data=await jsonRequest('/api/ad-film/avatar/pipeline/status-native?projectId='+encodeURIComponent(id),{method:'GET'});
       if(data.project){data.project=holdGeneration(data.project);window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
-      if(data.status==='COMPLETED'){running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;document.dispatchEvent(new CustomEvent('aivo:adfilm-avatar-ready',{detail:data}));return}
+      if(data.status==='COMPLETED'){release(scope);document.dispatchEvent(new CustomEvent('aivo:adfilm-avatar-ready',{detail:data}));return}
       if(data.status==='FAILED'){
-        running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;notify(errorMessage({message:data.error||data.pipeline&&data.pipeline.error||'avatar_pipeline_failed'}),'error');document.dispatchEvent(new CustomEvent('aivo:adfilm-avatar-failed',{detail:data}));return;
+        release(scope);notify(errorMessage({message:data.error||data.pipeline&&data.pipeline.error||'avatar_pipeline_failed'}),'error');document.dispatchEvent(new CustomEvent('aivo:adfilm-avatar-failed',{detail:data}));return;
       }
       var copy=stageText(data.stage);setStage(scope,copy.text,copy.detail);
       pollTimer=setTimeout(function(){poll(scope,id,count+1)},POLL_MS);
     }catch(error){
       if(count<8&&!terminalCode(error&&error.message)){pollTimer=setTimeout(function(){poll(scope,id,count+1)},POLL_MS);return}
-      running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;console.error('[ADFILM] native avatar pipeline poll',error);notify(errorMessage(error),terminalCode(error&&error.message)?'error':'warning');
+      release(scope);console.error('[ADFILM] native avatar pipeline poll',error);notify(errorMessage(error),terminalCode(error&&error.message)?'error':'warning');
     }
   }
 
   async function start(scope,lock){
     var id=lock&&lock.projectId||projectId(scope);if(!id)throw new Error('project_not_ready');
     if(!avatarImage())throw new Error('avatar_image_required');
-    var settings=lock||captureSettings(scope);
-    var data=await jsonRequest('/api/ad-film/avatar/pipeline/create-native-fixed',{method:'POST',body:JSON.stringify({projectId:id,duration:settings.duration,aspect_ratio:settings.apiAspectRatio,quality:settings.quality,production_id:settings.id})});
+    if(!lock||!lock.id||!lock.duration)throw new Error('production_lock_mismatch');
+    var data=await jsonRequest('/api/ad-film/avatar/pipeline/create-native-fixed',{method:'POST',body:JSON.stringify({projectId:id,duration:lock.duration,aspect_ratio:lock.apiAspectRatio,quality:lock.quality,production_id:lock.id})});
     if(data.project){data.project=holdGeneration(data.project);window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
     running=true;poll(scope,id,0);return data;
   }
@@ -214,7 +247,8 @@
     if(code==='narration_audio_approval_required')return text('Konuşan oyuncu için sesi oluşturup onayla.','Generate and approve the voice for the talking presenter.');
     if(code==='narration_too_long_for_avatar_window')return text('Onaylı ses seçilen kısa videodaki oyuncu süresine sığmıyor. Metni kısaltıp sesi yeniden oluştur veya 10–15 saniye seç.','The approved voice does not fit the presenter window. Shorten and regenerate it or choose 10–15 seconds.');
     if(code==='product_identity_conflict')return text('Ürün adı, açıklama ve seslendirme farklı ürünleri tarif ediyor. Ürün bilgilerini düzelt veya yeni proje oluştur.','The product name, description and narration describe different products. Correct the project or create a new one.');
-    if(code==='seedance_source_too_short'||code==='production_duration_mismatch'||code==='production_lock_mismatch')return text('Ürün filmi ile oyuncu motorunun süreleri eşleşmedi. Üretim güvenli biçimde durduruldu; tekrar başlat.','Product-film and presenter durations did not match. Production was stopped safely; start again.');
+    if(code==='seedance_source_too_short'||code==='seedance_generation_not_ready'||code==='production_duration_mismatch'||code==='production_lock_mismatch'||code==='production_aspect_ratio_mismatch'||code==='production_quality_mismatch')return text('Ürün filmi ile oyuncu motorunun üretim kilidi eşleşmedi. Hiçbir ek oyuncu üretimi başlatılmadan işlem durduruldu.','The product-film and presenter production locks did not match. The process stopped before any additional presenter generation was started.');
+    if(code==='avatar_provider_timeout')return text('Oyuncu motoru izin verilen süre içinde tamamlanmadı. Takılı üretim kapatıldı; yeniden deneyebilirsin.','The presenter engine did not finish within the allowed time. The stuck generation was closed; you can retry.');
     if(code==='seedance_start_timeout')return text('Ürün filmi motoru zamanında başlatılamadı. Oyuncu motoru çalıştırılmadı.','The product-film engine did not start in time. The presenter engine was not started.');
     if(code==='product_reference_required')return text('Ana ürün referansı bulunamadı. Ürün görsellerini yeniden seçip tekrar dene.','The hero product reference is missing. Select the product images again and retry.');
     if(code==='background_removal_failed'||code==='background_removal_missing_output')return text('Oyuncu görseli hazırlanamadı. Üretim başlatılmadı.','The presenter image could not be prepared. Production was not started.');
@@ -231,20 +265,24 @@
     if(!avatarEnabled(scope))return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     if(running||button.disabled)return;
-    currentLock=captureSettings(scope);
-    if(!currentLock.projectId){notify(errorMessage({message:'project_not_ready'}),'error');return}
+    var requestedLock=captureSettings(scope);
+    currentLock=requestedLock;
+    if(!requestedLock.projectId){notify(errorMessage({message:'project_not_ready'}),'error');return}
     terminalFailures.clear();
     running=true;setBuildBusy(button,true);
-    setStage(scope,text('Üretim başlatıldı','Production started'),text('Süre ve çıktı ayarları kilitlendi; ürün filmi onaylandıktan sonra oyuncu motoru başlayacak.','Duration and output settings are locked; the presenter starts after the product-film request is accepted.'));
+    setStage(scope,text('Üretim başlatıldı','Production started'),text('Süre ve çıktı ayarları kilitlendi; ürün filmi onaylandıktan sonra aynı kilitle oyuncu motoru başlayacak.','Duration and output settings are locked; the presenter starts with the same accepted lock after the product-film request is accepted.'));
     (async function(){
       try{
         seedanceGate=createSeedanceGate();
-        invokeSeedance(currentLock);
-        await seedanceGate.promise;
+        invokeSeedance(requestedLock);
+        var created=await seedanceGate.promise;
         seedanceGate=null;
-        await start(scope,currentLock);
+        var acceptedLock=acceptedProductionLock(requestedLock,created);
+        currentLock=acceptedLock;
+        window.__AIVO_AD_FILM_PRODUCTION_LOCK__=acceptedLock;
+        await start(scope,acceptedLock);
       }catch(error){
-        seedanceGate=null;running=false;currentLock=null;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;setBuildBusy(button,false);console.error('[ADFILM] native avatar orchestrator',error);notify(errorMessage(error),'error')
+        seedanceGate=null;release(scope);console.error('[ADFILM] native avatar orchestrator',error);notify(errorMessage(error),'error')
       }
     })();
   },true);
