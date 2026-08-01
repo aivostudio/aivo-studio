@@ -11,6 +11,7 @@ import {
 
 const LIPSYNC = "fal-ai/sync-lipsync/v3";
 const FRESH_JOB_404_GRACE_MS = 90 * 1000;
+const MAX_PIPELINE_AGE_MS = 20 * 60 * 1000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
 function falKey() { return process.env.FAL_KEY || process.env.FAL_API_KEY || ""; }
@@ -57,6 +58,38 @@ function normalizeStatus(value, videoUrl) {
 function freshJob(job) {
   const submittedAt = Date.parse(job?.submittedAt || "");
   return Number.isFinite(submittedAt) && Date.now() - submittedAt < FRESH_JOB_404_GRACE_MS;
+}
+function normalizedDuration(value) {
+  const duration = Number.parseInt(value, 10);
+  return [5,10,15].includes(duration) ? duration : null;
+}
+function normalizedRatio(value) {
+  const ratio = clean(value, 20);
+  return ratio === "4:5" ? "3:4" : ratio;
+}
+function pipelineLockError(project, pipeline) {
+  const generation = project?.generation || {};
+  const input = generation.input || {};
+  const acceptedDuration = normalizedDuration(input.duration || project?.productionPlan?.duration);
+  const pipelineDuration = normalizedDuration(pipeline?.duration);
+  if (acceptedDuration && pipelineDuration && acceptedDuration !== pipelineDuration) return "production_duration_mismatch";
+
+  const acceptedRatio = normalizedRatio(input.aspectRatio || input.aspect_ratio || project?.productionPlan?.aspectRatio);
+  const pipelineRatio = normalizedRatio(pipeline?.aspectRatio);
+  if (acceptedRatio && pipelineRatio && acceptedRatio !== pipelineRatio) return "production_aspect_ratio_mismatch";
+
+  const acceptedQuality = clean(input.resolution || project?.productionPlan?.quality, 20).toLowerCase();
+  const pipelineQuality = clean(pipeline?.quality, 20).toLowerCase();
+  if (acceptedQuality && pipelineQuality && acceptedQuality !== pipelineQuality) return "production_quality_mismatch";
+
+  const generationProductionId = clean(generation.productionId || input.productionId, 160);
+  const pipelineProductionId = clean(pipeline?.productionId, 160);
+  if (generationProductionId && pipelineProductionId && generationProductionId !== pipelineProductionId) return "production_lock_mismatch";
+  return null;
+}
+function pipelineTimedOut(pipeline) {
+  const startedAt = Date.parse(pipeline?.startedAt || "");
+  return Number.isFinite(startedAt) && Date.now() - startedAt > MAX_PIPELINE_AGE_MS;
 }
 async function falFetch(url) {
   const response = await fetch(url, { method:"GET", headers:{ Authorization:`Key ${falKey()}`, Accept:"application/json" } });
@@ -138,9 +171,19 @@ export default async function handler(req,res) {
     if (!pipeline) return sendJson(res,200,{ok:true,status:"IDLE",project});
     if (pipeline.status === "completed" && pipeline.videoUrl) return sendJson(res,200,{ok:true,status:"COMPLETED",video_url:pipeline.videoUrl,pipeline,project});
     if (pipeline.status === "failed") return sendJson(res,200,{ok:true,status:"FAILED",pipeline,project});
-    if (!falKey()) return sendJson(res,500,{ok:false,error:"missing_fal_key"});
 
     const now = new Date().toISOString();
+    const lockError = pipelineLockError(project, pipeline);
+    const timeoutError = pipelineTimedOut(pipeline) ? "avatar_provider_timeout" : null;
+    if (lockError || timeoutError) {
+      const error = lockError || timeoutError;
+      pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error };
+      const nextProject = await saveProject(user,{...project,status:"failed",avatar:{...avatar,pipeline,videoUrl:null}});
+      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error,pipeline,project:nextProject});
+    }
+
+    if (!falKey()) return sendJson(res,500,{ok:false,error:"missing_fal_key"});
+
     if (pipeline.stage === "motion") {
       const result = await readJob(pipeline.motion);
       if (result.status === "FAILED") {
@@ -169,7 +212,7 @@ export default async function handler(req,res) {
     const safeVideo = pipeline.status === "completed" ? clean(pipeline.videoUrl,4000) : "";
     const nextProject = await saveProject(user,{...project,avatar:{...avatar,pipeline,videoUrl:safeVideo||null}});
     const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status === "failed" ? "FAILED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
-    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,pipeline,project:nextProject});
+    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:pipeline.error||null,pipeline,project:nextProject});
   } catch(error) {
     console.error("[ad-film/avatar/pipeline/status-native]",error,error?.data||"");
     return sendJson(res,Number(error?.status)||500,{ok:false,error:clean(error?.message||error,1200),detail:error?.data||null});
