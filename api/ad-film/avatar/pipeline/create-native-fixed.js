@@ -32,7 +32,8 @@ function isHttpUrl(value) {
 }
 
 function normalizeAvatarDuration(value) {
-  return String(value ?? "").trim() === "15" ? "15" : "10";
+  const duration = String(value ?? "").trim();
+  return ["5", "10", "15"].includes(duration) ? duration : "10";
 }
 
 function stableMediaUrl(value) {
