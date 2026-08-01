@@ -10,253 +10,35 @@ import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
 import { timelineFromProject, validateAdFilmTimeline } from "../../_lib/ad-film-timeline.js";
 import { putObject } from "../../_lib/r2.js";
-import {
-  getOwnedProject,
-  mediaPrefix,
-  resolveAdFilmUser,
-  saveProject,
-  sendJson,
-} from "../../_lib/ad-film-projects.js";
+import { getOwnedProject, mediaPrefix, resolveAdFilmUser, saveProject, sendJson } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 14;
+const MIX_VERSION = 15;
 const FFMPEG_TIMEOUT_MS = 240000;
 
-function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
-function safePart(value, fallback = "output") {
-  const next = clean(value, 180).replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "");
-  return next || fallback;
-}
-function even(value) {
-  const number = Math.max(2, Math.round(Number(value) || 2));
-  return number % 2 === 0 ? number : number - 1;
-}
-function dimensions(resolution, ratio) {
-  const value = clean(resolution, 20).toLowerCase();
-  const height = value === "4k" ? 2160 : value === "1080p" ? 1080 : value === "720p" ? 720 : 480;
-  const aspect = clean(ratio, 20) || "16:9";
-  if (aspect === "21:9") return { width:even(height * 21 / 9), height };
-  if (aspect === "9:16") return { width:even(height * 9 / 16), height };
-  if (aspect === "1:1") return { width:height, height };
-  if (aspect === "4:5") return { width:even(height * 4 / 5), height };
-  if (aspect === "3:4") return { width:even(height * 3 / 4), height };
-  if (aspect === "4:3") return { width:even(height * 4 / 3), height };
-  return { width:even(height * 16 / 9), height };
-}
-function logoWidth(resolution) {
-  const value = clean(resolution, 20).toLowerCase();
-  if (value === "4k") return 300;
-  if (value === "1080p") return 178;
-  if (value === "720p") return 128;
-  return 90;
-}
-function logoMargin(resolution) {
-  const value = clean(resolution, 20).toLowerCase();
-  if (value === "4k") return 72;
-  if (value === "1080p") return 40;
-  if (value === "720p") return 28;
-  return 20;
-}
-function runFfmpeg(args) {
-  return new Promise((resolve,reject) => {
-    const child = spawn(ffmpegPath,args,{stdio:["ignore","ignore","pipe"]});
-    let stderr="",settled=false;
-    const timer=setTimeout(()=>{if(settled)return;settled=true;child.kill("SIGKILL");reject(new Error("ffmpeg_timeout"));},FFMPEG_TIMEOUT_MS);
-    child.stderr.on("data",chunk=>{stderr+=chunk.toString();if(stderr.length>24000)stderr=stderr.slice(-24000)});
-    child.on("error",error=>{if(settled)return;settled=true;clearTimeout(timer);reject(error)});
-    child.on("close",code=>{if(settled)return;settled=true;clearTimeout(timer);code===0?resolve():reject(new Error(stderr||`ffmpeg_failed:${code}`))});
-  });
-}
-async function download(url,destination,maxBytes=220*1024*1024) {
-  const response=await fetch(url,{method:"GET",cache:"no-store",redirect:"follow"});
-  if(!response.ok)throw new Error(`download_failed:${response.status}`);
-  const body=Buffer.from(await response.arrayBuffer());
-  if(!body.length||body.length>maxBytes)throw new Error("invalid_download_size");
-  fs.writeFileSync(destination,body);
-}
-async function prepareLogo(inputPath,outputPath) {
-  await sharp(inputPath).ensureAlpha().trim().png().toFile(outputPath);
-}
-function musicUrlOf(project) {
-  const mode=project?.music?.mode||"auto";
-  if(mode==="off")return"";
-  if(mode==="upload")return clean(project?.media?.musicTrack?.url,4000);
-  return clean(project?.music?.audio?.url,4000);
-}
-function sourceUrl(project) {
-  return clean(project?.generation?.sourceVideoUrl || project?.generation?.videoUrl || project?.outputs?.[0]?.sourceVideoUrl || project?.outputs?.[0]?.videoUrl,4000);
-}
-function avatarUrl(project) {
-  return clean(project?.avatar?.pipeline?.videoUrl || project?.avatar?.videoUrl,4000);
-}
-function transitionProfile(project) {
-  const category=clean(project?.productionPlan?.productProfile?.category,80);
-  const luxury=["fragrance","wearable_luxury"].includes(category);
-  return {
-    category:category||"general_product",
-    flashDuration:luxury?0.14:0.09,
-    grade:luxury?"eq=contrast=1.035:saturation=1.07:brightness=0.008":"eq=contrast=1.025:saturation=1.045",
-    sharpen:luxury?"unsharp=5:5:0.35:5:5:0":"unsharp=5:5:0.22:5:5:0",
-  };
-}
-function normalizedVideoFilter(inputIndex,size,start,duration,label,index,total,profile) {
-  const segmentDuration=Math.max(0.5,Number(duration)||0.5);
-  const flash=Math.min(Number(profile.flashDuration)||0.1,segmentDuration*0.12);
-  const effects=[profile.grade,profile.sharpen];
-  if(index>0)effects.push(`fade=t=in:st=0:d=${flash.toFixed(3)}:color=white`);
-  if(index<total-1){
-    const outStart=Math.max(0,segmentDuration-flash).toFixed(3);
-    effects.push(`fade=t=out:st=${outStart}:d=${flash.toFixed(3)}:color=white`);
-  }
-  return `[${inputIndex}:v]trim=start=${start}:duration=${segmentDuration},setpts=PTS-STARTPTS,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,${effects.join(",")},format=yuv420p[${label}]`;
-}
+function clean(value,max=4000){return String(value??"").trim().slice(0,max)}
+function safePart(value,fallback="output"){const next=clean(value,180).replace(/[^a-z0-9._-]+/gi,"-").replace(/^-+|-+$/g,"");return next||fallback}
+function even(value){const number=Math.max(2,Math.round(Number(value)||2));return number%2===0?number:number-1}
+function dimensions(resolution,ratio){const value=clean(resolution,20).toLowerCase();const height=value==="4k"?2160:value==="1080p"?1080:value==="720p"?720:480;const aspect=clean(ratio,20)||"16:9";if(aspect==="21:9")return{width:even(height*21/9),height};if(aspect==="9:16")return{width:even(height*9/16),height};if(aspect==="1:1")return{width:height,height};if(aspect==="4:5")return{width:even(height*4/5),height};if(aspect==="3:4")return{width:even(height*3/4),height};if(aspect==="4:3")return{width:even(height*4/3),height};return{width:even(height*16/9),height}}
+function logoWidth(resolution){const value=clean(resolution,20).toLowerCase();if(value==="4k")return 300;if(value==="1080p")return 178;if(value==="720p")return 128;return 90}
+function logoMargin(resolution){const value=clean(resolution,20).toLowerCase();if(value==="4k")return 72;if(value==="1080p")return 40;if(value==="720p")return 28;return 20}
+function runFfmpeg(args){return new Promise((resolve,reject)=>{const child=spawn(ffmpegPath,args,{stdio:["ignore","ignore","pipe"]});let stderr="",settled=false;const timer=setTimeout(()=>{if(settled)return;settled=true;child.kill("SIGKILL");reject(new Error("ffmpeg_timeout"))},FFMPEG_TIMEOUT_MS);child.stderr.on("data",chunk=>{stderr+=chunk.toString();if(stderr.length>24000)stderr=stderr.slice(-24000)});child.on("error",error=>{if(settled)return;settled=true;clearTimeout(timer);reject(error)});child.on("close",code=>{if(settled)return;settled=true;clearTimeout(timer);code===0?resolve():reject(new Error(stderr||`ffmpeg_failed:${code}`))})})}
+function probeDuration(file){return new Promise((resolve,reject)=>{const child=spawn(ffmpegPath,["-hide_banner","-i",file,"-f","null","-"],{stdio:["ignore","ignore","pipe"]});let stderr="";child.stderr.on("data",chunk=>{stderr+=chunk.toString();if(stderr.length>50000)stderr=stderr.slice(-50000)});child.on("error",reject);child.on("close",()=>{const match=stderr.match(/Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/i);if(!match)return reject(new Error("media_duration_unknown"));resolve(Number(match[1])*3600+Number(match[2])*60+Number(match[3]))})})}
+async function download(url,destination,maxBytes=220*1024*1024){const response=await fetch(url,{method:"GET",cache:"no-store",redirect:"follow"});if(!response.ok)throw new Error(`download_failed:${response.status}`);const body=Buffer.from(await response.arrayBuffer());if(!body.length||body.length>maxBytes)throw new Error("invalid_download_size");fs.writeFileSync(destination,body)}
+async function prepareLogo(inputPath,outputPath){await sharp(inputPath).ensureAlpha().trim().png().toFile(outputPath)}
+function musicUrlOf(project){const mode=project?.music?.mode||"auto";if(mode==="off")return"";if(mode==="upload")return clean(project?.media?.musicTrack?.url,4000);return clean(project?.music?.audio?.url,4000)}
+function sourceUrl(project){return clean(project?.generation?.sourceVideoUrl||project?.generation?.videoUrl||project?.outputs?.[0]?.sourceVideoUrl||project?.outputs?.[0]?.videoUrl,4000)}
+function avatarUrl(project){return clean(project?.avatar?.pipeline?.videoUrl||project?.avatar?.videoUrl,4000)}
+function gradeFor(project){const category=clean(project?.productionPlan?.productProfile?.category,80);return["fragrance","wearable_luxury"].includes(category)?"eq=contrast=1.025:saturation=1.055:brightness=0.004,unsharp=5:5:0.20:5:5:0":"eq=contrast=1.02:saturation=1.035,unsharp=5:5:0.16:5:5:0"}
+function normalizedVideoFilter(inputIndex,size,start,duration,label,grade){return`[${inputIndex}:v]trim=start=${start}:duration=${duration},setpts=PTS-STARTPTS,scale=${size.width}:${size.height}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${size.width}:${size.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=30,${grade},format=yuv420p[${label}]`}
 
-export default async function handler(req,res) {
-  const cleanup=[];
-  let user=null,project=null,projectId="",seedanceVideoUrl="",avatarVideoUrl="";
-  try {
-    if(req.method!=="POST"){res.setHeader("Allow","POST");return sendJson(res,405,{ok:false,error:"method_not_allowed"})}
-    user=await resolveAdFilmUser(req);
-    if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});
-    projectId=clean(req.body?.projectId,120);
-    if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
-    project=await getOwnedProject(user,projectId);
-    if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
-
-    const avatarPipeline=project?.avatar?.pipeline||{};
-    if(!["hybrid-timeline","native-scene"].includes(avatarPipeline?.compositeMode)||avatarPipeline?.status!=="completed"){
-      return sendJson(res,425,{ok:false,error:"native_avatar_video_processing",avatar_status:avatarPipeline?.stage||avatarPipeline?.status||"motion"});
-    }
-    seedanceVideoUrl=sourceUrl(project);
-    avatarVideoUrl=avatarUrl(project);
-    if(!seedanceVideoUrl)return sendJson(res,425,{ok:false,error:"seedance_video_processing"});
-    if(!avatarVideoUrl)return sendJson(res,425,{ok:false,error:"native_avatar_video_processing"});
-
-    const timeline=avatarPipeline.timeline||project?.productionPlan?.timeline||timelineFromProject(project);
-    const validation=validateAdFilmTimeline(timeline);
-    if(!validation.ok)return sendJson(res,409,{ok:false,error:validation.error});
-
-    const narrationEnabled=project?.narration?.enabled!==false;
-    const narrationAudio=project?.narration?.audio;
-    const narrationUrl=narrationEnabled&&narrationAudio?.approved===true?clean(narrationAudio.url,4000):"";
-    const musicUrl=musicUrlOf(project);
-    const musicRequired=(project?.music?.mode||"auto")!=="off";
-    const logoUrl=clean(project?.media?.logo?.url,4000);
-    if(narrationEnabled&&!narrationUrl)return sendJson(res,409,{ok:false,error:"narration_audio_approval_required"});
-    if(musicRequired&&!musicUrl)return sendJson(res,409,{ok:false,error:"music_audio_required"});
-
-    const resolution=clean(avatarPipeline.quality||project?.generation?.input?.resolution||project?.output?.quality||"1080p",20).toLowerCase();
-    const ratio=clean(avatarPipeline.aspectRatio||project?.generation?.input?.aspectRatio||project?.output?.aspectRatio||"16:9",20);
-    const size=dimensions(resolution,ratio);
-    const duration=Number(timeline.duration)||15;
-    const outputId=clean(project?.generation?.outputId||project?.generation?.requestId||avatarPipeline?.motion?.requestId||`hybrid-${Date.now()}`,240);
-    const tmpDir=fs.mkdtempSync(path.join(os.tmpdir(),"aivo-hybrid-final-"));
-    const seedanceFile=path.join(tmpDir,"seedance.mp4");
-    const avatarFile=path.join(tmpDir,"avatar.mp4");
-    const originalLogo=path.join(tmpDir,"logo-original");
-    const transparentLogo=path.join(tmpDir,"logo.png");
-    const narrationFile=path.join(tmpDir,"narration");
-    const musicFile=path.join(tmpDir,"music");
-    const outputVideo=path.join(tmpDir,"final.mp4");
-    cleanup.push(outputVideo,musicFile,narrationFile,transparentLogo,originalLogo,avatarFile,seedanceFile,tmpDir);
-
-    const jobs=[download(seedanceVideoUrl,seedanceFile),download(avatarVideoUrl,avatarFile)];
-    if(logoUrl)jobs.push(download(logoUrl,originalLogo,20*1024*1024));
-    if(narrationUrl)jobs.push(download(narrationUrl,narrationFile,30*1024*1024));
-    if(musicUrl)jobs.push(download(musicUrl,musicFile,80*1024*1024));
-    await Promise.all(jobs);
-    if(logoUrl)await prepareLogo(originalLogo,transparentLogo);
-
-    const args=["-y","-hide_banner","-loglevel","error","-i",seedanceFile,"-i",avatarFile];
-    let nextIndex=2,logoIndex=-1,narrationIndex=-1,musicIndex=-1;
-    if(logoUrl){logoIndex=nextIndex++;args.push("-loop","1","-framerate","30","-i",transparentLogo)}
-    if(narrationUrl){narrationIndex=nextIndex++;args.push("-i",narrationFile)}
-    if(musicUrl){musicIndex=nextIndex++;args.push("-stream_loop","-1","-i",musicFile)}
-
-    const filters=[];
-    const segmentLabels=[];
-    const profile=transitionProfile(project);
-    timeline.segments.forEach((segment,index)=>{
-      const inputIndex=segment.source==="avatar"?1:0;
-      const start=segment.source==="avatar"?Number(segment.sourceStart||0):Number(segment.start||0);
-      const label=`seg${index}`;
-      filters.push(normalizedVideoFilter(inputIndex,size,start,Number(segment.duration),label,index,timeline.segments.length,profile));
-      segmentLabels.push(`[${label}]`);
-    });
-    filters.push(`${segmentLabels.join("")}concat=n=${segmentLabels.length}:v=1:a=0[cut]`);
-    let videoLabel="cut";
-    if(logoUrl){
-      const width=logoWidth(resolution),margin=logoMargin(resolution);
-      filters.push(`[${logoIndex}:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`);
-      filters.push(`[${videoLabel}][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:eof_action=pass:shortest=0[vout]`);
-      videoLabel="vout";
-    }
-
-    const fadeOutStart=Math.max(0.5,duration-0.8).toFixed(2);
-    if(narrationUrl&&musicUrl){
-      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},atrim=0:${duration}[voice]`);
-      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.34,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},atrim=0:${duration}[music]`);
-      filters.push("[music][voice]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.985[aout]");
-    }else if(narrationUrl){
-      filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},atrim=0:${duration},alimiter=limit=0.985[aout]`);
-    }else if(musicUrl){
-      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.72,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},atrim=0:${duration},alimiter=limit=0.985[aout]`);
-    }
-
-    args.push("-filter_complex",filters.join(";"),"-map",`[${videoLabel}]`);
-    if(narrationUrl||musicUrl)args.push("-map","[aout]");
-    args.push("-t",String(duration),"-r","30","-c:v","libx264","-preset",resolution==="4k"?"veryfast":"faster","-crf",resolution==="4k"?"20":"18","-pix_fmt","yuv420p","-c:a","aac","-b:a","192k","-ar","48000","-ac","2","-movflags","+faststart",outputVideo);
-    await runFfmpeg(args);
-
-    const key=`${mediaPrefix(user,projectId)}outputs/hybrid/${safePart(outputId,"video")}-final-v${MIX_VERSION}-${Date.now()}.mp4`;
-    const stat=fs.statSync(outputVideo);
-    const finalUrl=await putObject({key,body:fs.createReadStream(outputVideo),contentLength:stat.size,contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});
-    const now=new Date().toISOString();
-    const transitionStyle=profile.category==="fragrance"?"luxury-light-flash":"premium-light-flash";
-    const finalOutput={
-      id:outputId,
-      version:Number.parseInt(project?.generation?.version,10)||1,
-      sourceVideoUrl:seedanceVideoUrl,
-      avatarVideoUrl,
-      videoUrl:finalUrl,
-      duration:String(duration),
-      aspectRatio:ratio,
-      resolution,
-      hybridTimeline:true,
-      timeline,
-      avatarApplied:true,
-      avatarIntegrated:true,
-      avatarCompositeMode:"hybrid-timeline",
-      logoUrl:logoUrl||null,
-      logoApplied:Boolean(logoUrl),
-      narrationUrl:narrationUrl||null,
-      narrationApplied:Boolean(narrationUrl),
-      musicUrl:musicUrl||null,
-      musicApplied:Boolean(musicUrl),
-      transitionStyle,
-      colorGrade:profile.category,
-      audioCodec:"aac",
-      audioBitrate:"192k",
-      mixVersion:MIX_VERSION,
-      finalizedAt:now,
-      completedAt:now,
-    };
-    const previous=Array.isArray(project.outputs)?project.outputs:[];
-    const nextOutputs=[finalOutput,...previous.filter(item=>clean(item?.id)!==outputId)].slice(0,30);
-    const nextProject=await saveProject(user,{
-      ...project,
-      status:"completed",
-      outputs:nextOutputs,
-      activeOutputId:outputId,
-      productionJobs:{...(project.productionJobs||{}),finalization:{status:"completed",outputId,transitionStyle,updatedAt:now}},
-      generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl:seedanceVideoUrl,avatarVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"hybrid-timeline",transitionStyle,timeline,mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,transitionStyle,completedAt:now,error:null}},
-    });
-    return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:seedanceVideoUrl,avatar_video_url:avatarVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"hybrid-timeline",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),transition_style:transitionStyle,mix_version:MIX_VERSION,timeline,project:nextProject,outputs:nextOutputs,activeOutputId:outputId});
-  }catch(error){
-    console.error("[ad-film/seedance/finalize-native-scene]",error);
-    return sendJson(res,clean(error?.message)==="ffmpeg_timeout"?504:500,{ok:false,error:"hybrid_scene_finalize_failed",message:clean(error?.message||error,1200),retryable:false,video_url:seedanceVideoUrl||null});
-  }finally{
-    for(const entry of cleanup.reverse()){
-      try{if(!entry||!fs.existsSync(entry))continue;if(fs.statSync(entry).isDirectory())fs.rmSync(entry,{recursive:true,force:true});else fs.unlinkSync(entry)}catch(_){}
-    }
-  }
-}
+export default async function handler(req,res){const cleanup=[];let user=null,project=null,projectId="",seedanceVideoUrl="",avatarVideoUrl="";try{if(req.method!=="POST"){res.setHeader("Allow","POST");return sendJson(res,405,{ok:false,error:"method_not_allowed"})}user=await resolveAdFilmUser(req);if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});projectId=clean(req.body?.projectId,120);if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});project=await getOwnedProject(user,projectId);if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
+const avatarPipeline=project?.avatar?.pipeline||{};if(!["hybrid-timeline","native-scene"].includes(avatarPipeline?.compositeMode)||avatarPipeline?.status!=="completed")return sendJson(res,425,{ok:false,error:"native_avatar_video_processing",avatar_status:avatarPipeline?.stage||avatarPipeline?.status||"motion"});seedanceVideoUrl=sourceUrl(project);avatarVideoUrl=avatarUrl(project);if(!seedanceVideoUrl)return sendJson(res,425,{ok:false,error:"seedance_video_processing"});if(!avatarVideoUrl)return sendJson(res,425,{ok:false,error:"native_avatar_video_processing"});
+const timeline=avatarPipeline.timeline||project?.productionPlan?.timeline||timelineFromProject(project);const validation=validateAdFilmTimeline(timeline);if(!validation.ok)return sendJson(res,409,{ok:false,error:validation.error});const narrationEnabled=project?.narration?.enabled!==false;const narrationAudio=project?.narration?.audio;const narrationUrl=narrationEnabled&&narrationAudio?.approved===true?clean(narrationAudio.url,4000):"";const musicUrl=musicUrlOf(project);const musicRequired=(project?.music?.mode||"auto")!=="off";const logoUrl=clean(project?.media?.logo?.url,4000);if(narrationEnabled&&!narrationUrl)return sendJson(res,409,{ok:false,error:"narration_audio_approval_required"});if(musicRequired&&!musicUrl)return sendJson(res,409,{ok:false,error:"music_audio_required"});
+const resolution=clean(avatarPipeline.quality||project?.generation?.input?.resolution||project?.output?.quality||"1080p",20).toLowerCase();const ratio=clean(avatarPipeline.aspectRatio||project?.generation?.input?.aspectRatio||project?.output?.aspectRatio||"16:9",20);const size=dimensions(resolution,ratio);const duration=Number(timeline.duration)||15;const outputId=clean(project?.generation?.outputId||project?.generation?.requestId||avatarPipeline?.motion?.requestId||`hybrid-${Date.now()}`,240);const tmpDir=fs.mkdtempSync(path.join(os.tmpdir(),"aivo-hybrid-final-"));const seedanceFile=path.join(tmpDir,"seedance.mp4"),avatarFile=path.join(tmpDir,"avatar.mp4"),originalLogo=path.join(tmpDir,"logo-original"),transparentLogo=path.join(tmpDir,"logo.png"),narrationFile=path.join(tmpDir,"narration"),musicFile=path.join(tmpDir,"music"),outputVideo=path.join(tmpDir,"final.mp4");cleanup.push(outputVideo,musicFile,narrationFile,transparentLogo,originalLogo,avatarFile,seedanceFile,tmpDir);
+const jobs=[download(seedanceVideoUrl,seedanceFile),download(avatarVideoUrl,avatarFile)];if(logoUrl)jobs.push(download(logoUrl,originalLogo,20*1024*1024));if(narrationUrl)jobs.push(download(narrationUrl,narrationFile,30*1024*1024));if(musicUrl)jobs.push(download(musicUrl,musicFile,80*1024*1024));await Promise.all(jobs);if(logoUrl)await prepareLogo(originalLogo,transparentLogo);
+const[seedanceDuration,avatarDuration]=await Promise.all([probeDuration(seedanceFile),probeDuration(avatarFile)]);const requiredAvatar=Number(timeline.avatar?.duration)||0;if(seedanceDuration+0.08<duration)return sendJson(res,409,{ok:false,error:"seedance_source_too_short",expected_duration:duration,actual_duration:Number(seedanceDuration.toFixed(3))});if(requiredAvatar&&avatarDuration+0.08<requiredAvatar)return sendJson(res,409,{ok:false,error:"avatar_source_too_short",expected_duration:requiredAvatar,actual_duration:Number(avatarDuration.toFixed(3))});
+const args=["-y","-hide_banner","-loglevel","error","-i",seedanceFile,"-i",avatarFile];let nextIndex=2,logoIndex=-1,narrationIndex=-1,musicIndex=-1;if(logoUrl){logoIndex=nextIndex++;args.push("-loop","1","-framerate","30","-i",transparentLogo)}if(narrationUrl){narrationIndex=nextIndex++;args.push("-i",narrationFile)}if(musicUrl){musicIndex=nextIndex++;args.push("-stream_loop","-1","-i",musicFile)}
+const filters=[],segmentLabels=[],grade=gradeFor(project);timeline.segments.forEach((segment,index)=>{const inputIndex=segment.source==="avatar"?1:0;const start=segment.source==="avatar"?Number(segment.sourceStart||0):Number(segment.start||0);const label=`seg${index}`;filters.push(normalizedVideoFilter(inputIndex,size,start,Number(segment.duration),label,grade));segmentLabels.push(`[${label}]`)});filters.push(`${segmentLabels.join("")}concat=n=${segmentLabels.length}:v=1:a=0[cut]`);let videoLabel="cut";if(logoUrl){const width=logoWidth(resolution),margin=logoMargin(resolution);filters.push(`[${logoIndex}:v]scale=${width}:-1:flags=lanczos,format=rgba,colorchannelmixer=aa=0.96[logo]`);filters.push(`[${videoLabel}][logo]overlay=W-w-${margin}:H-h-${margin}:format=auto:eof_action=pass:shortest=0[vout]`);videoLabel="vout"}
+const fadeOutStart=Math.max(.5,duration-.8).toFixed(2);if(narrationUrl&&musicUrl){filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},atrim=0:${duration}[voice]`);filters.push(`[${musicIndex}:a]aresample=48000,volume=0.34,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},atrim=0:${duration}[music]`);filters.push("[music][voice]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.985[aout]")}else if(narrationUrl)filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration+1},atrim=0:${duration},alimiter=limit=0.985[aout]`);else if(musicUrl)filters.push(`[${musicIndex}:a]aresample=48000,volume=0.72,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration+1},atrim=0:${duration},alimiter=limit=0.985[aout]`);
+args.push("-filter_complex",filters.join(";"),"-map",`[${videoLabel}]`);if(narrationUrl||musicUrl)args.push("-map","[aout]");args.push("-t",String(duration),"-r","30","-c:v","libx264","-preset",resolution==="4k"?"veryfast":"faster","-crf",resolution==="4k"?"20":"18","-pix_fmt","yuv420p","-c:a","aac","-b:a","192k","-ar","48000","-ac","2","-movflags","+faststart",outputVideo);await runFfmpeg(args);
+const key=`${mediaPrefix(user,projectId)}outputs/hybrid/${safePart(outputId,"video")}-final-v${MIX_VERSION}-${Date.now()}.mp4`;const stat=fs.statSync(outputVideo);const finalUrl=await putObject({key,body:fs.createReadStream(outputVideo),contentLength:stat.size,contentType:"video/mp4",cacheControl:"public, max-age=31536000, immutable",contentDisposition:"inline"});const now=new Date().toISOString();const finalOutput={id:outputId,version:Number.parseInt(project?.generation?.version,10)||1,sourceVideoUrl:seedanceVideoUrl,avatarVideoUrl,videoUrl:finalUrl,duration:String(duration),aspectRatio:ratio,resolution,hybridTimeline:true,timeline,avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"hybrid-timeline",logoUrl:logoUrl||null,logoApplied:Boolean(logoUrl),narrationUrl:narrationUrl||null,narrationApplied:Boolean(narrationUrl),musicUrl:musicUrl||null,musicApplied:Boolean(musicUrl),transitionStyle:"clean-cuts",sourceDurationValidation:{seedance:seedanceDuration,avatar:avatarDuration},audioCodec:"aac",audioBitrate:"192k",mixVersion:MIX_VERSION,finalizedAt:now,completedAt:now};const previous=Array.isArray(project.outputs)?project.outputs:[];const nextOutputs=[finalOutput,...previous.filter(item=>clean(item?.id)!==outputId)].slice(0,30);const nextProject=await saveProject(user,{...project,status:"completed",outputs:nextOutputs,activeOutputId:outputId,productionJobs:{...(project.productionJobs||{}),finalization:{status:"completed",outputId,updatedAt:now}},generation:{...(project.generation||{}),status:"completed",outputId,sourceVideoUrl:seedanceVideoUrl,avatarVideoUrl,videoUrl:finalUrl,logoApplied:Boolean(logoUrl),narrationApplied:Boolean(narrationUrl),musicApplied:Boolean(musicUrl),avatarApplied:true,avatarIntegrated:true,avatarCompositeMode:"hybrid-timeline",timeline,mixVersion:MIX_VERSION,completedAt:now,error:null,finalization:{status:"completed",outputId,completedAt:now,error:null}}});return sendJson(res,200,{ok:true,projectId,outputId,video_url:finalUrl,source_video_url:seedanceVideoUrl,avatar_video_url:avatarVideoUrl,avatar_applied:true,avatar_integrated:true,avatar_composite_mode:"hybrid-timeline",logo_applied:Boolean(logoUrl),narration_applied:Boolean(narrationUrl),music_applied:Boolean(musicUrl),mix_version:MIX_VERSION,timeline,project:nextProject,outputs:nextOutputs,activeOutputId:outputId})}catch(error){console.error("[ad-film/seedance/finalize-native-scene]",error);return sendJson(res,clean(error?.message)==="ffmpeg_timeout"?504:500,{ok:false,error:"hybrid_scene_finalize_failed",message:clean(error?.message||error,1200),retryable:false,video_url:seedanceVideoUrl||null})}finally{for(const entry of cleanup.reverse()){try{if(!entry||!fs.existsSync(entry))continue;if(fs.statSync(entry).isDirectory())fs.rmSync(entry,{recursive:true,force:true});else fs.unlinkSync(entry)}catch(_){}}}}
