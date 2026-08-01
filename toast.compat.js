@@ -95,7 +95,7 @@
     "/js/ad-film.project-sync.js?v=6",
     "/js/ad-film.lifecycle-guard.js?v=3",
     "/js/ad-film.avatar.js?v=4",
-    "/js/ad-film.avatar-appearance.js?v=1",
+    "/js/ad-film.avatar-appearance.js?v=2",
     "/js/ad-film.avatar-direction.js?v=5",
     "/js/ad-film.avatar-actions.js?v=1",
     "/js/ad-film.seedance-upload-fix.js?v=1",
