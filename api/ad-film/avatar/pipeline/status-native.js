@@ -91,6 +91,35 @@ function pipelineTimedOut(pipeline) {
   const startedAt = Date.parse(pipeline?.startedAt || "");
   return Number.isFinite(startedAt) && Date.now() - startedAt > MAX_PIPELINE_AGE_MS;
 }
+function failedGeneration(project, error, now) {
+  return {
+    ...(project?.generation || {}),
+    status:"failed",
+    updatedAt:now,
+    completedAt:now,
+    avatarWaiting:false,
+    awaitingFinalComposite:false,
+    finalizing:false,
+    error:clean(error,1200) || "avatar_pipeline_failed",
+  };
+}
+async function saveTerminalProject(user, project, avatar, pipeline, error, now) {
+  const reason = clean(error || pipeline?.error, 1200) || "avatar_pipeline_failed";
+  const terminalPipeline = {
+    ...(pipeline || {}),
+    status:"failed",
+    stage:"failed",
+    updatedAt:now,
+    completedAt:now,
+    error:reason,
+  };
+  return saveProject(user, {
+    ...project,
+    status:"failed",
+    generation:failedGeneration(project, reason, now),
+    avatar:{...avatar,pipeline:terminalPipeline,videoUrl:null},
+  });
+}
 async function falFetch(url) {
   const response = await fetch(url, { method:"GET", headers:{ Authorization:`Key ${falKey()}`, Accept:"application/json" } });
   return { response, data:parseJson(await response.text().catch(() => "")) };
@@ -169,17 +198,22 @@ export default async function handler(req,res) {
     let pipeline = avatar.pipeline;
     if (avatar.enabled !== true) return sendJson(res,200,{ok:true,skipped:true,status:"DISABLED",project});
     if (!pipeline) return sendJson(res,200,{ok:true,status:"IDLE",project});
-    if (pipeline.status === "completed" && pipeline.videoUrl) return sendJson(res,200,{ok:true,status:"COMPLETED",video_url:pipeline.videoUrl,pipeline,project});
-    if (pipeline.status === "failed") return sendJson(res,200,{ok:true,status:"FAILED",pipeline,project});
 
     const now = new Date().toISOString();
+    if (pipeline.status === "completed" && pipeline.videoUrl) return sendJson(res,200,{ok:true,status:"COMPLETED",video_url:pipeline.videoUrl,pipeline,project});
+    if (pipeline.status === "failed") {
+      const reason = pipeline.error || project?.generation?.error || "avatar_pipeline_failed";
+      const alreadyTerminal = String(project.status) === "failed" && String(project?.generation?.status) === "failed";
+      const nextProject = alreadyTerminal ? project : await saveTerminalProject(user,project,avatar,pipeline,reason,now);
+      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error:reason,pipeline:nextProject.avatar?.pipeline||pipeline,project:nextProject});
+    }
+
     const lockError = pipelineLockError(project, pipeline);
     const timeoutError = pipelineTimedOut(pipeline) ? "avatar_provider_timeout" : null;
     if (lockError || timeoutError) {
       const error = lockError || timeoutError;
-      pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error };
-      const nextProject = await saveProject(user,{...project,status:"failed",avatar:{...avatar,pipeline,videoUrl:null}});
-      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error,pipeline,project:nextProject});
+      const nextProject = await saveTerminalProject(user,project,avatar,pipeline,error,now);
+      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error,pipeline:nextProject.avatar.pipeline,project:nextProject});
     }
 
     if (!falKey()) return sendJson(res,500,{ok:false,error:"missing_fal_key"});
@@ -187,7 +221,7 @@ export default async function handler(req,res) {
     if (pipeline.stage === "motion") {
       const result = await readJob(pipeline.motion);
       if (result.status === "FAILED") {
-        pipeline = { ...pipeline,status:"failed",updatedAt:now,error:result.error||"avatar_motion_failed",motion:{...pipeline.motion,error:result.error||"avatar_motion_failed"} };
+        pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error:result.error||"avatar_motion_failed",motion:{...pipeline.motion,error:result.error||"avatar_motion_failed"} };
       } else if (result.status === "COMPLETED" && result.videoUrl) {
         if (pipeline.lipsyncAudioUrl) {
           const lipsync = await startLipsync(pipeline,result.videoUrl);
@@ -201,7 +235,7 @@ export default async function handler(req,res) {
     } else if (pipeline.stage === "lipsync") {
       const result = await readJob(pipeline.lipsync);
       if (result.status === "FAILED") {
-        pipeline = { ...pipeline,status:"failed",updatedAt:now,error:result.error||"avatar_lipsync_failed",lipsync:{...pipeline.lipsync,error:result.error||"avatar_lipsync_failed"} };
+        pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error:result.error||"avatar_lipsync_failed",lipsync:{...pipeline.lipsync,error:result.error||"avatar_lipsync_failed"} };
       } else if (result.status === "COMPLETED" && result.videoUrl) {
         pipeline = { ...pipeline,status:"completed",stage:"completed",updatedAt:now,completedAt:now,videoUrl:result.videoUrl,lipsync:{...pipeline.lipsync,videoUrl:result.videoUrl,error:null},error:null };
       } else {
@@ -209,10 +243,15 @@ export default async function handler(req,res) {
       }
     }
 
+    if (pipeline.status === "failed") {
+      const nextProject = await saveTerminalProject(user,project,avatar,pipeline,pipeline.error||"avatar_pipeline_failed",now);
+      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error:nextProject.generation?.error||pipeline.error,pipeline:nextProject.avatar.pipeline,project:nextProject});
+    }
+
     const safeVideo = pipeline.status === "completed" ? clean(pipeline.videoUrl,4000) : "";
     const nextProject = await saveProject(user,{...project,avatar:{...avatar,pipeline,videoUrl:safeVideo||null}});
-    const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status === "failed" ? "FAILED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
-    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:pipeline.error||null,pipeline,project:nextProject});
+    const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
+    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:null,pipeline,project:nextProject});
   } catch(error) {
     console.error("[ad-film/avatar/pipeline/status-native]",error,error?.data||"");
     return sendJson(res,Number(error?.status)||500,{ok:false,error:clean(error?.message||error,1200),detail:error?.data||null});
