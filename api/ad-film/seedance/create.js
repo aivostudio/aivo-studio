@@ -1,6 +1,7 @@
 // api/ad-film/seedance/create.js
 export const config = { runtime: "nodejs" };
 
+import { buildDirectorPlan, composeSeedancePrompt } from "../../_lib/ad-film-director.js";
 import {
   buildPublicUrl,
   getOwnedProject,
@@ -20,98 +21,46 @@ const MAX_PROMPT_CHARS = 2480;
 function clean(value, max = 12000) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
 }
-
-function falKey() {
-  return process.env.FAL_KEY || process.env.FAL_API_KEY || "";
-}
-
-function parseJson(text) {
-  try {
-    return text ? JSON.parse(text) : {};
-  } catch (_) {
-    return { raw: text || "" };
-  }
-}
-
-function ownedPublicPrefix(user, projectId) {
-  return buildPublicUrl(mediaPrefix(user, projectId));
-}
-
+function falKey() { return process.env.FAL_KEY || process.env.FAL_API_KEY || ""; }
+function parseJson(text) { try { return text ? JSON.parse(text) : {}; } catch (_) { return { raw: text || "" }; } }
+function ownedPublicPrefix(user, projectId) { return buildPublicUrl(mediaPrefix(user, projectId)); }
 function isOwnedSignedUrl(url, ownedKeyPrefix) {
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== "https:") return false;
     const decodedPath = decodeURIComponent(parsed.pathname || "").replace(/^\/+/, "");
     return decodedPath.includes(ownedKeyPrefix);
-  } catch (_) {
-    return false;
-  }
+  } catch (_) { return false; }
 }
-
 function validateOwnedUrls(values, publicPrefix, ownedKeyPrefix, max) {
   if (!Array.isArray(values)) return [];
   const next = [];
   for (const value of values) {
     const url = clean(value, 4000);
     if (!url || !/^https:\/\//i.test(url)) throw new Error("invalid_media_url");
-    if (!url.startsWith(publicPrefix) && !isOwnedSignedUrl(url, ownedKeyPrefix)) {
-      throw new Error("unowned_media_url");
-    }
+    if (!url.startsWith(publicPrefix) && !isOwnedSignedUrl(url, ownedKeyPrefix)) throw new Error("unowned_media_url");
     if (!next.includes(url)) next.push(url);
     if (next.length >= max) break;
   }
   return next;
 }
-
 function normalizeDuration(value) {
   const duration = Number.parseInt(value, 10);
   if (!Number.isFinite(duration) || duration < 4 || duration > 15) return null;
   return String(duration);
 }
-
 function activeGeneration(project) {
   const generation = project?.generation;
   if (!generation || !["queued", "processing"].includes(String(generation.status))) return false;
   const startedAt = Date.parse(generation.startedAt || "");
   return Number.isFinite(startedAt) && Date.now() - startedAt < 30 * 60 * 1000;
 }
-
 function nextVersion(project) {
   const versions = Array.isArray(project?.outputs)
     ? project.outputs.map((item) => Number.parseInt(item?.version, 10)).filter(Number.isFinite)
     : [];
   return Math.max(0, ...versions) + 1;
 }
-
-function trimPromptBody(value, budget) {
-  const source = clean(value, 12000);
-  if (source.length <= budget) return source;
-  let clipped = source.slice(0, budget).trim();
-  const boundaries = [
-    clipped.lastIndexOf(". "),
-    clipped.lastIndexOf("! "),
-    clipped.lastIndexOf("? "),
-    clipped.lastIndexOf("; "),
-    clipped.lastIndexOf(", "),
-  ];
-  const boundary = Math.max(...boundaries);
-  if (boundary >= Math.floor(budget * 0.72)) clipped = clipped.slice(0, boundary + 1).trim();
-  return clipped;
-}
-
-function visualOnlyPrompt(value) {
-  const source = clean(value)
-    .replace(/Generate synchronized native audio\.[\s\S]*?seconds\./gi, "")
-    .replace(/Generate synchronized commercial ambience and sound effects, but no spoken dialogue\./gi, "")
-    .replace(/Generate synchronized ambience and sound effects without speech\./gi, "")
-    .replace(/Include exactly this spoken voice-over[\s\S]*?seconds\./gi, "")
-    .trim();
-  const suffix = "Create the visual commercial only. Do not generate speech, dialogue, narration, music, ambience or sound effects. Keep the video completely silent. AIVO will add the user's approved narration and selected music during protected final post-production.";
-  const bodyBudget = Math.max(200, MAX_PROMPT_CHARS - suffix.length - 1);
-  const body = trimPromptBody(source, bodyBudget);
-  return `${body} ${suffix}`.trim().slice(0, MAX_PROMPT_CHARS);
-}
-
 function approvedNarration(project) {
   const narration = project?.narration || {};
   if (narration.enabled === false) return { required: false, audio: null };
@@ -128,22 +77,13 @@ export default async function handler(req, res) {
       res.setHeader("Allow", "POST");
       return sendJson(res, 405, { ok: false, error: "method_not_allowed" });
     }
-
     const user = await resolveAdFilmUser(req);
     if (!user) return sendJson(res, 401, { ok: false, error: "unauthorized" });
-
     const projectId = clean(req.body?.projectId, 120);
     if (!projectId) return sendJson(res, 400, { ok: false, error: "missing_project_id" });
-
     const project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
-    if (activeGeneration(project)) {
-      return sendJson(res, 409, {
-        ok: false,
-        error: "generation_in_progress",
-        generation: project.generation,
-      });
-    }
+    if (activeGeneration(project)) return sendJson(res, 409, { ok: false, error: "generation_in_progress", generation: project.generation });
 
     const narration = approvedNarration(project);
     if (narration.required && !narration.audio) {
@@ -153,12 +93,8 @@ export default async function handler(req, res) {
         message: "Generate, preview and approve the narration before creating the advertising film.",
       });
     }
-
     const key = falKey();
     if (!key) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
-
-    const prompt = visualOnlyPrompt(req.body?.prompt);
-    if (prompt.length < 20) return sendJson(res, 400, { ok: false, error: "missing_prompt" });
 
     const ownedKeyPrefix = mediaPrefix(user, projectId);
     const publicPrefix = ownedPublicPrefix(user, projectId);
@@ -167,20 +103,13 @@ export default async function handler(req, res) {
     try {
       imageUrls = validateOwnedUrls(req.body?.image_urls, publicPrefix, ownedKeyPrefix, 9);
       logoUrl = clean(req.body?.logo_url, 4000);
-      if (
-        logoUrl &&
-        !logoUrl.startsWith(publicPrefix) &&
-        !isOwnedSignedUrl(logoUrl, ownedKeyPrefix)
-      ) {
+      if (logoUrl && !logoUrl.startsWith(publicPrefix) && !isOwnedSignedUrl(logoUrl, ownedKeyPrefix)) {
         throw new Error("unowned_media_url");
       }
     } catch (error) {
       return sendJson(res, 400, { ok: false, error: String(error?.message || error) });
     }
-
-    if (!imageUrls.length) {
-      return sendJson(res, 400, { ok: false, error: "missing_reference_image" });
-    }
+    if (!imageUrls.length) return sendJson(res, 400, { ok: false, error: "missing_reference_image" });
 
     const duration = normalizeDuration(req.body?.duration);
     const resolution = clean(req.body?.resolution, 20).toLowerCase();
@@ -190,6 +119,23 @@ export default async function handler(req, res) {
     if (!RESOLUTIONS.has(resolution)) return sendJson(res, 400, { ok: false, error: "invalid_resolution" });
     if (!ASPECT_RATIOS.has(aspectRatio)) return sendJson(res, 400, { ok: false, error: "invalid_aspect_ratio" });
     if (!BITRATES.has(bitrateMode)) return sendJson(res, 400, { ok: false, error: "invalid_bitrate_mode" });
+
+    const referenceMap = req.body?.reference_map && typeof req.body.reference_map === "object"
+      ? req.body.reference_map
+      : null;
+    const directorPlan = buildDirectorPlan(project, {
+      duration,
+      aspectRatio,
+      quality: resolution,
+      avatarEnabled: project?.avatar?.enabled === true,
+      productName: project?.brief?.productName,
+      brandName: project?.brief?.brandName,
+      description: project?.brief?.description,
+      creativeDirection: project?.creativePlan?.direction || project?.avatar?.sceneDescription || "",
+      scenes: Array.isArray(project?.creativePlan?.scenes) ? project.creativePlan.scenes : [],
+    });
+    const prompt = composeSeedancePrompt(req.body?.prompt, directorPlan, MAX_PROMPT_CHARS);
+    if (prompt.length < 20) return sendJson(res, 400, { ok: false, error: "missing_prompt" });
 
     const input = {
       prompt,
@@ -208,41 +154,23 @@ export default async function handler(req, res) {
     try {
       response = await fetch(QUEUE_URL, {
         method: "POST",
-        headers: {
-          Authorization: `Key ${key}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { Authorization: `Key ${key}`, "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(input),
         signal: controller.signal,
       });
     } catch (error) {
-      return sendJson(res, 504, {
-        ok: false,
-        error: "fal_timeout_or_network_error",
-        message: String(error?.message || error),
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
+      return sendJson(res, 504, { ok: false, error: "fal_timeout_or_network_error", message: String(error?.message || error) });
+    } finally { clearTimeout(timeout); }
 
     const text = await response.text().catch(() => "");
     const fal = parseJson(text);
     if (!response.ok) {
-      return sendJson(res, response.status, {
-        ok: false,
-        error: "fal_error",
-        fal_status: response.status,
-        fal_response: fal,
-      });
+      return sendJson(res, response.status, { ok: false, error: "fal_error", fal_status: response.status, fal_response: fal });
     }
-
     const requestId = clean(fal?.request_id || fal?.requestId || fal?.id, 240);
     const statusUrl = clean(fal?.status_url || fal?.statusUrl || fal?.urls?.status, 1200);
     const responseUrl = clean(fal?.response_url || fal?.responseUrl || fal?.urls?.response, 1200);
-    if (!requestId) {
-      return sendJson(res, 502, { ok: false, error: "fal_missing_request_id", fal_response: fal });
-    }
+    if (!requestId) return sendJson(res, 502, { ok: false, error: "fal_missing_request_id", fal_response: fal });
 
     const now = new Date().toISOString();
     const version = nextVersion(project);
@@ -255,10 +183,13 @@ export default async function handler(req, res) {
       aspectRatio,
       bitrateMode,
       generateAudio: false,
+      referenceMap,
+      directorPlan,
     };
     const nextProject = await saveProject(user, {
       ...project,
       status: "processing",
+      productionPlan: directorPlan,
       outputs: Array.isArray(project.outputs) ? project.outputs.slice(0, 30) : [],
       activeOutputId: project.activeOutputId || null,
       generation: {
@@ -281,6 +212,7 @@ export default async function handler(req, res) {
         retryInput,
         narrationAudioUrl: narration.audio?.url || null,
         narrationApprovedAt: narration.audio?.approvedAt || null,
+        directorPlanVersion: directorPlan.version,
         input: {
           duration,
           resolution,
@@ -291,10 +223,10 @@ export default async function handler(req, res) {
           audioCount: 0,
           approvedNarration: !!narration.audio,
           promptLength: prompt.length,
+          image_urls: imageUrls,
+          reference_map: referenceMap,
         },
-        referenceMap: req.body?.reference_map && typeof req.body.reference_map === "object"
-          ? req.body.reference_map
-          : null,
+        referenceMap,
       },
     });
 
@@ -309,16 +241,13 @@ export default async function handler(req, res) {
       status_url: statusUrl || null,
       response_url: responseUrl || null,
       status: "IN_QUEUE",
+      director_plan: directorPlan,
       generation: nextProject.generation,
       outputs: nextProject.outputs || [],
       activeOutputId: nextProject.activeOutputId || null,
     });
   } catch (error) {
     console.error("[ad-film/seedance/create]", error);
-    return sendJson(res, 500, {
-      ok: false,
-      error: "server_error",
-      message: String(error?.message || error),
-    });
+    return sendJson(res, 500, { ok: false, error: "server_error", message: String(error?.message || error) });
   }
 }
