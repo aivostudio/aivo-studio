@@ -1,10 +1,10 @@
 /* AIVO AI Reklam Filmi — gender-aware appearance, outfit color and face accessory controls */
 (function AIVO_AD_FILM_AVATAR_APPEARANCE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V1__)return;
-  window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V1__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V2__)return;
+  window.__AIVO_AD_FILM_AVATAR_APPEARANCE_V2__=true;
 
-  var observer=null;
+  var observer=null,initializedCard=null,localDirtyUntil=0;
 
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function text(tr,en){return english()?en:tr}
@@ -107,10 +107,17 @@
   function install(){
     var target=card();if(!target)return false;
     var fields=target.querySelector('.adfilm-avatar-fields');if(!fields)return false;
+    var inserted=false;
     if(!fields.querySelector('[data-avatar-field="maleAppearance"]')){
       fields.insertAdjacentHTML('beforeend',controlMarkup(state()));
+      inserted=true;
     }
-    applyState(target,state());
+    if(inserted||initializedCard!==target){
+      initializedCard=target;
+      applyState(target,state());
+    }else{
+      syncGender(target);
+    }
     if(!target.__aivoAppearanceObserver){
       target.__aivoAppearanceObserver=true;
       var localObserver=new MutationObserver(function(records){
@@ -126,10 +133,20 @@
   document.addEventListener('change',function(event){
     var target=event.target&&event.target.closest&&event.target.closest('[data-adfilm-avatar-card]');
     if(!target)return;
+    if(event.target.matches('[data-avatar-field="maleAppearance"], [data-avatar-field="femaleAppearance"], [data-avatar-field="outfitColor"], [data-avatar-field="faceAccessory"]')){
+      localDirtyUntil=Date.now()+2500;
+    }
     if(event.target.matches('[data-avatar-field="gender"]'))setTimeout(function(){syncGender(target)},0);
   },true);
 
-  document.addEventListener('aivo:adfilm-project-sync',function(){setTimeout(function(){var target=card();if(target)applyState(target,state());else schedule()},40)});
+  document.addEventListener('aivo:adfilm-project-sync',function(){
+    setTimeout(function(){
+      var target=card();
+      if(!target){schedule();return}
+      if(Date.now()<localDirtyUntil){syncGender(target);return}
+      applyState(target,state());
+    },40)
+  });
   document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')schedule()});
 
   if(document.body){
