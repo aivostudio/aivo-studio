@@ -163,7 +163,18 @@ function promptFor(settings) {
   ].filter(Boolean).join(" ");
 }
 
+function avatarOutputUrl(payload) {
+  return clean(
+    payload?.images?.[0]?.url ||
+    payload?.data?.images?.[0]?.url ||
+    payload?.image?.url ||
+    payload?.data?.image?.url,
+    4000,
+  );
+}
+
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
   try {
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
@@ -232,8 +243,14 @@ export default async function handler(req, res) {
       });
     }
 
-    const sourceUrl = clean(fal?.images?.[0]?.url, 4000);
-    if (!sourceUrl) return sendJson(res, 502, { ok: false, error: "missing_avatar_output" });
+    const sourceUrl = avatarOutputUrl(fal);
+    if (!sourceUrl) {
+      return sendJson(res, 502, {
+        ok: false,
+        error: "missing_avatar_output",
+        fal_response: fal,
+      });
+    }
 
     const objectKey = `${mediaPrefix(user, projectId)}avatar/generated-${Date.now()}.jpg`;
     const avatarUrl = await copyUrlToR2({ url: sourceUrl, key: objectKey });
@@ -267,14 +284,15 @@ export default async function handler(req, res) {
       ok: true,
       projectId,
       avatar: saved.avatar,
+      avatarImageUrl: saved.avatar?.image?.url || avatarUrl,
       project: saved,
     });
   } catch (error) {
     console.error("[ad-film/avatar/create]", error);
-    const timeout = error?.name === "AbortError";
-    return sendJson(res, timeout ? 504 : 500, {
+    const timedOut = error?.name === "AbortError";
+    return sendJson(res, timedOut ? 504 : 500, {
       ok: false,
-      error: timeout ? "avatar_generation_timeout" : "server_error",
+      error: timedOut ? "avatar_generation_timeout" : "server_error",
       message: String(error?.message || error),
     });
   }
