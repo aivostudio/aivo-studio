@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — native-scene avatar orchestration */
 (function AIVO_AD_FILM_AVATAR_ORCHESTRATOR(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V7__)return;
-  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V7__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V8__)return;
+  window.__AIVO_AD_FILM_AVATAR_ORCHESTRATOR_V8__=true;
 
   var running=false,pollTimer=null;
   var POLL_MS=3500,MAX_POLLS=700;
@@ -31,11 +31,11 @@
     group.dataset.avatarDurationMode=mode;
 
     if(enabled){
-      if(selected!=="10"&&selected!=="15")selected="10";
-      group.innerHTML=durationButton("10")+durationButton("15");
+      if(selected!=="5"&&selected!=="10"&&selected!=="15")selected="10";
+      group.innerHTML=durationButton("5")+durationButton("10")+durationButton("15");
       group.classList.add('adfilm-options--avatar-duration');
       var note=group.closest('.adfilm-setting-block')&&group.closest('.adfilm-setting-block').querySelector('[data-adfilm-duration-note]');
-      if(note){if(!note.dataset.avatarOriginalCopy)note.dataset.avatarOriginalCopy=note.textContent||'';note.textContent=text('Avatar açıkken en iyi sonuç için 10 veya 15 saniye kullanılır.','When the presenter is enabled, use 10 or 15 seconds for the best result.')}
+      if(note){if(!note.dataset.avatarOriginalCopy)note.dataset.avatarOriginalCopy=note.textContent||'';note.textContent=text('Test üretimlerinde avatar ile 5, 10 veya 15 saniye kullanılabilir. En iyi final kalite için 10 veya 15 saniye önerilir.','Presenter tests can use 5, 10 or 15 seconds. Use 10 or 15 seconds for the best final quality.')}
     }else{
       if(selected!=="5"&&selected!=="10"&&selected!=="15"&&selected!=="20")selected="10";
       group.innerHTML=durationButton("5")+durationButton("10")+durationButton("15")+'<button type="button" data-value="20"><span>20 sn</span><em class="adfilm-duration-tag">'+text('Uyumlu motor','Compatible engine')+'</em></button>';
@@ -124,7 +124,7 @@
     var id=projectId(scope);if(!id)throw new Error('project_not_ready');
     if(!avatarImage())throw new Error('avatar_image_required');
     var selectedDuration=choice(scope,'duration','10');
-    var duration=selectedDuration==='15'?'15':'10';
+    var duration=selectedDuration==='5'?'5':selectedDuration==='15'?'15':'10';
     var ratio=choice(scope,'aspectRatio','16:9'),quality=choice(scope,'quality','1080p');
     var data=await jsonRequest('/api/ad-film/avatar/pipeline/create-native-fixed',{method:'POST',body:JSON.stringify({projectId:id,duration:duration,aspect_ratio:ratio==='4:5'?'3:4':ratio,quality:quality})});
     if(data.project){data.project=holdGeneration(data.project);window.AIVOAdFilmActiveProject=data.project;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:data.project,projectId:data.project.id||id,media:data.project.media||{}}}))}
