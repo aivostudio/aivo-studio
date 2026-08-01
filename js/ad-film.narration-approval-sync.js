@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — approve only an already mastered narration */
 (function AIVO_AD_FILM_NARRATION_APPROVAL_SYNC(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V9__)return;
-  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V9__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V10__)return;
+  window.__AIVO_AD_FILM_NARRATION_APPROVAL_SYNC_V10__=true;
 
   var task=null;
 
@@ -28,7 +28,7 @@
     if(state)state.textContent=text("Ses onaylanıyor…","Approving voice…");
   }
 
-  function setApproved(scope,button,project){
+  function setApproved(scope,button,project,emitSync){
     window.AIVOAdFilmActiveProject=project;
     if(button){
       button.disabled=true;
@@ -41,7 +41,9 @@
     var state=panel&&panel.querySelector('[data-narration-engine-state]');
     if(panel)panel.dataset.state="approved";
     if(state)state.textContent=text("Ses onaylandı.","Voice approved.");
-    document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:project,projectId:project.id||"",media:project.media||{}}}));
+    if(emitSync===true){
+      document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:project,projectId:project.id||"",media:project.media||{}}}));
+    }
     if(window.AIVOAdFilmNarrationBuildGuard&&typeof window.AIVOAdFilmNarrationBuildGuard.sync==="function")window.AIVOAdFilmNarrationBuildGuard.sync();
   }
 
@@ -78,7 +80,7 @@
       });
       var data=await response.json().catch(function(){return{}});
       if(!response.ok||!data.project)throw new Error(data.message||data.error||"approval_failed");
-      setApproved(scope,button,data.project);
+      setApproved(scope,button,data.project,true);
       notify(text("Ses onaylandı.","Voice approved."),"success");
     }catch(error){
       console.warn('[ADFILM] narration approval',error);
@@ -104,7 +106,7 @@
     if(task)return;
     var audio=project.narration&&project.narration.audio||{};
     var button=scope.querySelector('[data-narration-audio-approve]');
-    if(audio.approved===true)setApproved(scope,button,project);
+    if(audio.approved===true)setApproved(scope,button,project,false);
     else if(audio.url&&audio.mastered===true)setReady(scope,button,project);
   });
 })();
