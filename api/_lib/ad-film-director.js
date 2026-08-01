@@ -1,4 +1,4 @@
-const DIRECTOR_VERSION = 3;
+const DIRECTOR_VERSION = 4;
 
 function clean(value, max = 1200) {
   return String(value ?? "")
@@ -25,9 +25,9 @@ function trimAtBoundary(value, max) {
 
 function normalizeDuration(value, avatarEnabled) {
   const duration = Number.parseInt(value, 10);
-  if (avatarEnabled) return duration === 15 ? 15 : 10;
-  if ([5, 10, 15, 20].includes(duration)) return duration;
-  return 15;
+  if (avatarEnabled && [5, 10, 15].includes(duration)) return duration;
+  if (!avatarEnabled && [5, 10, 15, 20].includes(duration)) return duration;
+  return avatarEnabled ? 10 : 15;
 }
 
 function keywordMatch(source, words) {
@@ -233,7 +233,7 @@ function timelineShots({ duration, avatarEnabled, productName, profile, manualSc
       duration: shotDuration,
       source: sources[index],
       role: ["hook", "desire", "proof", "memory_lock"][index],
-      transition: ["cut", "light_flash", "smooth_push", "dissolve"][index],
+      transition: ["cut", "clean_cut", "smooth_push", "dissolve"][index],
       prompt: supplied[index] || defaults[index],
     };
   });
