@@ -36,12 +36,10 @@
   }
 })();
 
-/* AI Reklam Filmi varlık yükleyicisi.
-   Temel kontroller modül ekrana basılmadan önce hazırlanır;
-   ağır yardımcı motorlar modül açıldıktan sonra arka planda yüklenir. */
+/* AI Reklam Filmi varlık yükleyicisi. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V37__) return;
-  window.__AIVO_AD_FILM_ASSETS_V37__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V38__) return;
+  window.__AIVO_AD_FILM_ASSETS_V38__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -117,6 +115,7 @@
     "/js/ad-film.music-preflight.js?v=2",
     "/js/ad-film.seedance-resume-guard.js?v=1",
     "/js/ad-film.finalize-wait.js?v=2",
+    "/js/ad-film.hybrid-controller.js?v=1",
     "/js/ad-film.avatar-orchestrator.js?v=4",
     "/js/ad-film.seedance-engine.js?v=6",
     "/js/ad-film.progress-stability.js?v=1",
@@ -150,16 +149,11 @@
 
   function loadSequential(list, index = 0) {
     if (index >= list.length) return Promise.resolve();
-
     const src = list[index];
     const path = src.split("?")[0];
     const existing = document.querySelector(`script[src^="${path}"]`);
-
     if (existing) {
-      if (existing.dataset.aivoLoaded === "1") {
-        return loadSequential(list, index + 1);
-      }
-
+      if (existing.dataset.aivoLoaded === "1") return loadSequential(list, index + 1);
       return new Promise((resolve) => {
         let done = false;
         const finish = () => {
@@ -173,7 +167,6 @@
         if (existing.readyState === "complete" || existing.readyState === "loaded") finish();
       });
     }
-
     return new Promise((resolve) => {
       const script = document.createElement("script");
       script.src = src;
@@ -192,19 +185,13 @@
     if (!shellLoadPromise) shellLoadPromise = loadSequential(shellScripts);
     return shellLoadPromise;
   }
-
   function startAdFilmAssets() {
     ensureStyles();
-    if (!moduleLoadPromise) {
-      moduleLoadPromise = ensureAdFilmShell().then(() => loadSequential(moduleScripts));
-    }
+    if (!moduleLoadPromise) moduleLoadPromise = ensureAdFilmShell().then(() => loadSequential(moduleScripts));
     return moduleLoadPromise;
   }
-
   function ensureAdFilmAssets() {
-    return ensureAdFilmShell().then(() => {
-      startAdFilmAssets();
-    });
+    return ensureAdFilmShell().then(() => { startAdFilmAssets(); });
   }
 
   window.AIVOEnsureAdFilmShell = ensureAdFilmShell;
@@ -214,14 +201,10 @@
   document.addEventListener("click", (event) => {
     if (event.target.closest("[data-adfilm-open]")) ensureAdFilmAssets();
   }, true);
-
   document.addEventListener("aivo:module-mounted", (event) => {
     if (event?.detail?.key === "adfilm") startAdFilmAssets();
   });
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", ensureAdFilmShell, { once: true });
-  } else {
-    ensureAdFilmShell();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensureAdFilmShell, { once: true });
+  else ensureAdFilmShell();
 })();
