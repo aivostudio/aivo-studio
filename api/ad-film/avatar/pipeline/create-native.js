@@ -8,6 +8,7 @@ import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
+import { buildDirectorPlan, composeAvatarPrompt } from "../../../_lib/ad-film-director.js";
 import { putObject } from "../../../_lib/r2.js";
 import {
   getOwnedProject,
@@ -20,7 +21,6 @@ import {
 const IMAGE_REMBG = "fal-ai/imageutils/rembg";
 const KLING_PRO_I2V = "fal-ai/kling-video/v3/pro/image-to-video";
 const MAX_PROMPT_CHARS = 2480;
-const MAX_USER_FIELD_CHARS = 1000;
 const KLING_CFG_SCALE = 0.68;
 const ACTIVE_PIPELINE = [
   "motion_queued",
@@ -61,20 +61,6 @@ function dimensions(quality, ratio) {
   if (ratio === "1:1") return { width:height, height };
   return { width:even(height * 16 / 9), height };
 }
-function clipText(value, max) {
-  const source = clean(value, Math.max(max, 1));
-  if (source.length <= max) return source;
-  let clipped = source.slice(0, max).trim();
-  const boundary = Math.max(
-    clipped.lastIndexOf(". "),
-    clipped.lastIndexOf("! "),
-    clipped.lastIndexOf("? "),
-    clipped.lastIndexOf("; "),
-    clipped.lastIndexOf(", ")
-  );
-  if (boundary >= Math.floor(max * 0.72)) clipped = clipped.slice(0, boundary + 1).trim();
-  return clipped;
-}
 function runFfmpeg(args) {
   return new Promise((resolve, reject) => {
     const child = spawn(ffmpegPath, args, { stdio:["ignore","ignore","pipe"] });
@@ -103,43 +89,37 @@ function countryLabel(value) {
 }
 function mediaUrls(project) {
   const generationUrls = project?.generation?.input?.image_urls || project?.generation?.input?.imageUrls;
-  if (Array.isArray(generationUrls) && generationUrls.length) return generationUrls.filter((url) => /^https:\/\//i.test(clean(url, 4000))).slice(0, 9);
+  if (Array.isArray(generationUrls) && generationUrls.length) {
+    return generationUrls.filter((url) => /^https:\/\//i.test(clean(url, 4000))).slice(0, 9);
+  }
   const items = Array.isArray(project?.media?.productImages) ? project.media.productImages : [];
   return items.map((item) => clean(item?.url, 4000)).filter((url) => /^https:\/\//i.test(url)).slice(0, 9);
 }
 function mediaPlan(project) {
   const urls = mediaUrls(project);
-  const map = project?.generation?.input?.reference_map || project?.generation?.input?.referenceMap || null;
+  const map = project?.generation?.input?.reference_map || project?.generation?.input?.referenceMap || project?.generation?.referenceMap || null;
   let heroIndex = 0;
-  let sceneIndex = urls.length > 3 ? urls.length - 1 : Math.max(0, urls.length - 1);
+  let sceneIndex = -1;
   let angleIndexes = urls.length > 1 ? [1,2,3].filter((index) => index < urls.length) : [];
   if (map && typeof map === "object") {
     if (Number(map.hero) > 0) heroIndex = Number(map.hero) - 1;
     if (Array.isArray(map.scenes) && Number(map.scenes[0]) > 0) sceneIndex = Number(map.scenes[0]) - 1;
-    if (Array.isArray(map.angles)) angleIndexes = map.angles.map((index) => Number(index) - 1).filter((index) => index >= 0 && index < urls.length);
+    if (Array.isArray(map.angles)) {
+      angleIndexes = map.angles.map((index) => Number(index) - 1).filter((index) => index >= 0 && index < urls.length);
+    }
   }
   const heroUrl = urls[heroIndex] || urls[0] || "";
-  const sceneUrl = urls[sceneIndex] || heroUrl;
-  const angleUrls = angleIndexes.map((index) => urls[index]).filter(Boolean).filter((url) => url !== sceneUrl).slice(0, 3);
-  return { urls, heroUrl, sceneUrl, angleUrls };
+  const sceneUrl = sceneIndex >= 0 ? (urls[sceneIndex] || "") : "";
+  const angleUrls = angleIndexes.map((index) => urls[index]).filter(Boolean).filter((url) => url !== heroUrl && url !== sceneUrl).slice(0, 3);
+  return { urls, heroUrl, sceneUrl, angleUrls, referenceMap:map };
 }
-function buildPrompt(project, duration, plan) {
-  const avatar = project?.avatar || {};
-  const directorRaw = clean(avatar.directorNote, MAX_USER_FIELD_CHARS);
-  const expression = avatar.expression === "energetic" ? "energetic and charismatic" : avatar.expression === "calm" ? "calm and composed" : avatar.expression === "confident" ? "confident and trustworthy" : "friendly and confident";
-  const productName = clean(project?.brief?.productName, 120) || "the featured product";
-  const prefix = `Create one photorealistic premium commercial shot lasting ${duration} seconds. @Element1 is the exact ${countryLabel(avatar.country)} adult presenter and @Element2 is the exact ${productName}. Preserve both identities, proportions, materials, face, clothing and product design. The presenter is ${expression} and performs naturally beside the product.`;
-  const integration = "The presenter, product, floor and set must exist inside one coherent three-dimensional scene. Match perspective, scale, floor contact, cast shadows, reflections, color temperature, depth of field, occlusion and camera parallax. Camera movement and subject movement must share the same world coordinates. Never make the presenter slide, float, drift over the background, stand in front of a screen, look pasted on, or behave like a transparent overlay. Keep feet grounded and body weight physically believable.";
-  const performance = "Use controlled professional gestures, natural body motion and clear face visibility for later lip sync. Let the presenter approach, indicate or carefully hold the real product only when physically plausible. Do not invent a different product, oversized duplicate product, extra person, text, subtitle, logo or watermark. No generated speech or audio.";
-  const labelLength = " Director instructions: . ".length;
-  const userBudget = Math.max(0, MAX_PROMPT_CHARS - prefix.length - integration.length - performance.length - labelLength - 8);
-  const director = clipText(directorRaw, userBudget);
-  const parts = [prefix, integration];
-  if (director) parts.push(`Director instructions: ${director}.`);
-  parts.push(performance);
-  return parts.join(" ").slice(0, MAX_PROMPT_CHARS);
+function expressionLabel(avatar) {
+  if (avatar.expression === "energetic") return "energetic and charismatic";
+  if (avatar.expression === "calm") return "calm and composed";
+  if (avatar.expression === "confident") return "confident and trustworthy";
+  return "friendly and confident";
 }
-async function removeBackground(sourceUrl) {
+async function removeBackground(sourceUrl, kind) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 120000);
   try {
@@ -151,73 +131,62 @@ async function removeBackground(sourceUrl) {
     });
     const data = parseJson(await response.text().catch(() => ""));
     if (!response.ok) {
-      const error = new Error("background_removal_failed");
+      const error = new Error(`${kind || "image"}_background_removal_failed`);
       error.status = response.status;
       error.data = data;
       throw error;
     }
     const url = clean(data?.image?.url || data?.data?.image?.url || data?.result?.image?.url, 4000);
-    if (!/^https:\/\//i.test(url)) throw new Error("background_removal_missing_output");
+    if (!/^https:\/\//i.test(url)) throw new Error(`${kind || "image"}_background_removal_missing_output`);
     return url;
-  } finally {
-    clearTimeout(timeout);
-  }
+  } finally { clearTimeout(timeout); }
 }
 async function prepareStageImage({ sceneUrl, avatarUrl, productUrl, quality, ratio, user, projectId }) {
   const { width, height } = dimensions(quality, ratio);
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-avatar-native-stage-"));
-  try {
-    let background;
-    if (sceneUrl) {
-      background = await sharp(await downloadBuffer(sceneUrl))
-        .rotate()
-        .resize(width, height, { fit:"cover", position:"center" })
-        .modulate({ brightness:0.96, saturation:0.96 })
-        .toBuffer();
-    } else {
-      background = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1021"/><stop offset="0.55" stop-color="#17142c"/><stop offset="1" stop-color="#070914"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/></svg>`);
-    }
-
-    const portrait = ratio === "9:16" || ratio === "3:4";
-    const avatarBox = portrait
-      ? { width:Math.round(width * 0.72), height:Math.round(height * 0.62), left:Math.round(width * 0.14), top:Math.round(height * 0.34) }
-      : { width:Math.round(width * 0.40), height:Math.round(height * 0.82), left:Math.round(width * 0.07), top:Math.round(height * 0.14) };
-    const productBox = portrait
-      ? { width:Math.round(width * 0.62), height:Math.round(height * 0.34), left:Math.round(width * 0.19), top:Math.round(height * 0.04) }
-      : { width:Math.round(width * 0.46), height:Math.round(height * 0.54), left:Math.round(width * 0.50), top:Math.round(height * 0.32) };
-
-    const composites = [];
-    const avatarBuffer = await sharp(await downloadBuffer(avatarUrl))
-      .rotate().ensureAlpha()
-      .resize(avatarBox.width, avatarBox.height, { fit:"contain", position:"bottom", background:{ r:0,g:0,b:0,alpha:0 } })
-      .png().toBuffer();
-    const avatarShadow = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="${avatarBox.left + Math.round(avatarBox.width * 0.50)}" cy="${Math.round(height * 0.95)}" rx="${Math.round(avatarBox.width * 0.30)}" ry="${Math.max(8,Math.round(height * 0.018))}" fill="rgba(0,0,0,0.40)" filter="blur(10px)"/></svg>`);
-    composites.push({ input:avatarShadow, left:0, top:0 });
-
-    if (productUrl) {
-      try {
-        const productBuffer = await sharp(await downloadBuffer(productUrl))
-          .rotate().ensureAlpha()
-          .resize(productBox.width, productBox.height, { fit:"contain", position:"center", background:{ r:0,g:0,b:0,alpha:0 } })
-          .png().toBuffer();
-        const productShadow = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="${productBox.left + Math.round(productBox.width * 0.50)}" cy="${productBox.top + Math.round(productBox.height * 0.91)}" rx="${Math.round(productBox.width * 0.30)}" ry="${Math.max(7,Math.round(height * 0.015))}" fill="rgba(0,0,0,0.34)" filter="blur(9px)"/></svg>`);
-        composites.push({ input:productShadow, left:0, top:0 });
-        composites.push({ input:productBuffer, left:productBox.left, top:productBox.top });
-      } catch (_) {}
-    }
-    composites.push({ input:avatarBuffer, left:avatarBox.left, top:avatarBox.top });
-
-    const stage = await sharp(background)
-      .resize(width, height, { fit:"cover" })
-      .composite(composites)
-      .jpeg({ quality:95, chromaSubsampling:"4:4:4" })
+  let background;
+  if (sceneUrl) {
+    background = await sharp(await downloadBuffer(sceneUrl))
+      .rotate()
+      .resize(width, height, { fit:"cover", position:"center" })
+      .modulate({ brightness:0.96, saturation:0.96 })
       .toBuffer();
-    const key = `${mediaPrefix(user, projectId)}avatar/pipeline/native-stage-${quality}-${Date.now()}.jpg`;
-    const url = await putObject({ key, body:stage, contentType:"image/jpeg", cacheControl:"public, max-age=31536000, immutable", contentDisposition:"inline" });
-    return { url, width, height };
-  } finally {
-    try { fs.rmSync(tmpDir, { recursive:true, force:true }); } catch (_) {}
+  } else {
+    background = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="r" cx="72%" cy="54%" r="62%"><stop offset="0" stop-color="#20284a"/><stop offset="0.45" stop-color="#12162d"/><stop offset="1" stop-color="#070914"/></radialGradient></defs><rect width="100%" height="100%" fill="url(#r)"/></svg>`);
   }
+
+  const portrait = ratio === "9:16" || ratio === "3:4";
+  const avatarBox = portrait
+    ? { width:Math.round(width * 0.76), height:Math.round(height * 0.67), left:Math.round(width * 0.12), top:Math.round(height * 0.31) }
+    : { width:Math.round(width * 0.43), height:Math.round(height * 0.84), left:Math.round(width * 0.06), top:Math.round(height * 0.13) };
+  const productBox = portrait
+    ? { width:Math.round(width * 0.50), height:Math.round(height * 0.24), left:Math.round(width * 0.25), top:Math.round(height * 0.08) }
+    : { width:Math.round(width * 0.34), height:Math.round(height * 0.36), left:Math.round(width * 0.58), top:Math.round(height * 0.48) };
+
+  const avatarBuffer = await sharp(await downloadBuffer(avatarUrl))
+    .rotate().ensureAlpha()
+    .resize(avatarBox.width, avatarBox.height, { fit:"contain", position:"bottom", background:{ r:0,g:0,b:0,alpha:0 } })
+    .png().toBuffer();
+  const productBuffer = await sharp(await downloadBuffer(productUrl))
+    .rotate().ensureAlpha()
+    .resize(productBox.width, productBox.height, { fit:"contain", position:"center", background:{ r:0,g:0,b:0,alpha:0 } })
+    .png().toBuffer();
+
+  const avatarShadow = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="${avatarBox.left + Math.round(avatarBox.width * 0.50)}" cy="${Math.round(height * 0.95)}" rx="${Math.round(avatarBox.width * 0.30)}" ry="${Math.max(8,Math.round(height * 0.018))}" fill="rgba(0,0,0,0.42)" filter="blur(10px)"/></svg>`);
+  const productShadow = Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg"><ellipse cx="${productBox.left + Math.round(productBox.width * 0.50)}" cy="${productBox.top + Math.round(productBox.height * 0.90)}" rx="${Math.round(productBox.width * 0.28)}" ry="${Math.max(7,Math.round(height * 0.014))}" fill="rgba(0,0,0,0.36)" filter="blur(9px)"/></svg>`);
+
+  const stage = await sharp(background)
+    .resize(width, height, { fit:"cover" })
+    .composite([
+      { input:avatarShadow, left:0, top:0 },
+      { input:productShadow, left:0, top:0 },
+      { input:productBuffer, left:productBox.left, top:productBox.top },
+      { input:avatarBuffer, left:avatarBox.left, top:avatarBox.top },
+    ])
+    .jpeg({ quality:95, chromaSubsampling:"4:4:4" })
+    .toBuffer();
+  const key = `${mediaPrefix(user, projectId)}avatar/pipeline/native-stage-${quality}-${Date.now()}.jpg`;
+  const url = await putObject({ key, body:stage, contentType:"image/jpeg", cacheControl:"public, max-age=31536000, immutable", contentDisposition:"inline" });
+  return { url, width, height };
 }
 async function prepareTimedNarration({ sourceUrl, duration, delayMs, user, projectId }) {
   if (!sourceUrl) return "";
@@ -288,15 +257,27 @@ export default async function handler(req,res) {
     const quality = normalizeQuality(req.body?.quality || project?.generation?.input?.resolution || project?.output?.quality);
     const hasMusic = (project?.music?.mode || "auto") !== "off";
     const delayMs = introDelayMs(duration, hasMusic && project?.narration?.enabled !== false);
-    const plan = mediaPlan(project);
+    const media = mediaPlan(project);
+    if (!media.heroUrl) return sendJson(res,409,{ok:false,error:"product_reference_required"});
 
-    const transparentAvatarUrl = await removeBackground(avatar.image.url);
-    let transparentProductUrl = "";
-    if (plan.heroUrl) {
-      try { transparentProductUrl = await removeBackground(plan.heroUrl); } catch (_) { transparentProductUrl = plan.heroUrl; }
-    }
+    const directorPlan = project?.productionPlan?.version >= 2
+      ? project.productionPlan
+      : buildDirectorPlan(project, {
+          duration,
+          aspectRatio:ratio,
+          quality,
+          avatarEnabled:true,
+          productName:project?.brief?.productName,
+          brandName:project?.brief?.brandName,
+          description:project?.brief?.description,
+          creativeDirection:avatar.directorNote || avatar.sceneDescription || "",
+          scenes:project?.productionPlan?.scenes || [],
+        });
+
+    const transparentAvatarUrl = await removeBackground(avatar.image.url, "avatar");
+    const transparentProductUrl = await removeBackground(media.heroUrl, "product");
     const stage = await prepareStageImage({
-      sceneUrl:plan.sceneUrl,
+      sceneUrl:media.sceneUrl,
       avatarUrl:transparentAvatarUrl,
       productUrl:transparentProductUrl,
       quality,
@@ -304,12 +285,20 @@ export default async function handler(req,res) {
       user,
       projectId,
     });
-    const lipsyncAudioUrl = narration?.url ? await prepareTimedNarration({ sourceUrl:narration.url, duration, delayMs, user, projectId }) : "";
-    const prompt = buildPrompt(project,duration,plan);
+    const lipsyncAudioUrl = narration?.url
+      ? await prepareTimedNarration({ sourceUrl:narration.url, duration, delayMs, user, projectId })
+      : "";
+    const prompt = composeAvatarPrompt({
+      project,
+      plan:directorPlan,
+      countryLabel:countryLabel(avatar.country),
+      expression:expressionLabel(avatar),
+      maxChars:MAX_PROMPT_CHARS,
+    });
     const elements = [
       { frontal_image_url:avatar.image.url, reference_image_urls:[transparentAvatarUrl] },
+      { frontal_image_url:media.heroUrl, reference_image_urls:media.angleUrls },
     ];
-    if (plan.heroUrl) elements.push({ frontal_image_url:plan.heroUrl, reference_image_urls:plan.angleUrls });
     const motionInput = {
       start_image_url:stage.url,
       prompt,
@@ -318,12 +307,12 @@ export default async function handler(req,res) {
       elements,
       shot_type:"customize",
       cfg_scale:KLING_CFG_SCALE,
-      negative_prompt:"floating person, sliding subject, pasted cutout, green screen look, presenter in front of a screen, mismatched lighting, missing contact shadow, wrong perspective, identity drift, deformed face, extra people, duplicate limbs, warped hands, fake product, different product, text, subtitles, logo, watermark, abrupt camera shake, low quality",
+      negative_prompt:"flat product photo, product picture on screen, billboard, poster, floating rectangle, picture-in-picture, video wall, display panel, oversized product, toy-sized product, wrong real-world scale, floating person, sliding subject, pasted cutout, green screen look, mismatched lighting, missing contact shadow, wrong perspective, identity drift, deformed face, extra people, duplicate limbs, warped hands, fake product, different product, text, subtitles, logo, watermark, abrupt camera shake, low quality",
     };
     const motionJob = await submitQueue(KLING_PRO_I2V,motionInput);
     const now = new Date().toISOString();
     const pipeline = {
-      version:5,
+      version:6,
       compositeMode:"native-scene",
       status:"motion_queued",
       stage:"motion",
@@ -337,22 +326,31 @@ export default async function handler(req,res) {
       introDelayMs:delayMs,
       sourceAvatarImageUrl:avatar.image.url,
       transparentAvatarImageUrl:transparentAvatarUrl,
-      sourceProductImageUrl:plan.heroUrl || null,
-      sourceSceneImageUrl:plan.sceneUrl || null,
-      productReferenceUrls:plan.angleUrls,
+      sourceProductImageUrl:media.heroUrl,
+      transparentProductImageUrl:transparentProductUrl,
+      sourceSceneImageUrl:media.sceneUrl || null,
+      productReferenceUrls:media.angleUrls,
+      referenceMap:media.referenceMap,
       stageImageUrl:stage.url,
-      stageBackground:"project-scene",
+      stageBackground:media.sceneUrl ? "project-scene" : "generated-neutral-stage",
+      stageProductMode:"transparent-physical-object",
       lipsyncAudioUrl,
       prompt,
       promptLength:prompt.length,
+      directorPlanVersion:directorPlan.version,
+      productProfile:directorPlan.productProfile,
       cfgScale:KLING_CFG_SCALE,
       generateAudio:false,
-      directorNoteOnly:true,
+      directorNoteOnly:false,
       motion:{ ...motionJob, provider:"fal", inputMode:"native-scene-image-to-video", fallbackLevel:0, videoUrl:null, error:null },
       error:null,
     };
-    const nextProject = await saveProject(user,{...project,avatar:{...avatar,pipeline,videoUrl:null}});
-    return sendJson(res,202,{ok:true,projectId,status:"IN_QUEUE",pipeline,project:nextProject});
+    const nextProject = await saveProject(user,{
+      ...project,
+      productionPlan:directorPlan,
+      avatar:{...avatar,pipeline,videoUrl:null},
+    });
+    return sendJson(res,202,{ok:true,projectId,status:"IN_QUEUE",director_plan:directorPlan,pipeline,project:nextProject});
   } catch(error) {
     console.error("[ad-film/avatar/pipeline/create-native]",error,error?.data||"");
     return sendJson(res,Number(error?.status)||500,{ok:false,error:clean(error?.message||error,1200),detail:error?.data||null});
