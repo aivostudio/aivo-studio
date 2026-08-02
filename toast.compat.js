@@ -4,14 +4,41 @@
 
   const CREDIT_FLOW_RE =
     /(kredi|yetersiz|satın al|satın\s*alma|kredi\s*al|paket|fiyatlandirma|fiyatlandırma|yönlendir|redirect)/i;
+  const RECOVERABLE_ADFILM_RE =
+    /(avatar_pipeline_not_started|seedance_generation_not_ready|hibrit reklam üretimi başlatılamadı|hybrid production could not start)/i;
+
+  function messageText(msg) {
+    if (typeof msg === "string") return msg;
+    if (msg && typeof msg === "object") return String(msg.message || msg.error || "");
+    return String(msg || "");
+  }
+
+  function adFilmStillRunning() {
+    const scope = document.querySelector('[data-module-root][data-module="adfilm"]');
+    if (!scope) return false;
+    const action = scope.querySelector(".adfilm-actionbar");
+    const button = scope.querySelector("[data-adfilm-build]");
+    const status = scope.querySelector("[data-adfilm-engine-status]");
+    return Boolean(
+      action?.classList.contains("is-engine-active") ||
+      button?.classList.contains("is-generating") ||
+      button?.getAttribute("aria-busy") === "true" ||
+      status?.classList.contains("is-busy")
+    );
+  }
+
+  function suppress(type, msg) {
+    return type === "error" && RECOVERABLE_ADFILM_RE.test(messageText(msg)) && adFilmStillRunning();
+  }
 
   function classify(type, msg) {
-    const s = String(msg || "");
+    const s = messageText(msg);
     if (type === "error" && CREDIT_FLOW_RE.test(s)) return "warning";
     return type || "info";
   }
 
   function emit(msg, type = "info", opts) {
+    if (suppress(type, msg)) return undefined;
     const finalType = classify(type, msg);
     const fn =
       finalType === "success" ? t.success :
@@ -29,7 +56,8 @@
   const origError = t.error?.bind(t);
   if (origError) {
     t.error = (msg, opts) => {
-      if (CREDIT_FLOW_RE.test(String(msg || ""))) return t.warning?.(msg, opts);
+      if (suppress("error", msg)) return undefined;
+      if (CREDIT_FLOW_RE.test(messageText(msg))) return t.warning?.(msg, opts);
       return origError(msg, opts);
     };
   }
@@ -37,8 +65,8 @@
 
 /* AI Reklam Filmi varlık yükleyicisi. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V52__) return;
-  window.__AIVO_AD_FILM_ASSETS_V52__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V53__) return;
+  window.__AIVO_AD_FILM_ASSETS_V53__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -113,7 +141,7 @@
     "/js/ad-film.narration-master.js?v=3",
     "/js/ad-film.narration-build-guard.js?v=4",
     "/js/ad-film.voice-toggle-fix.js?v=2",
-    "/js/ad-film.hybrid-controller.js?v=5",
+    "/js/ad-film.hybrid-controller.js?v=6",
     "/js/ad-film.music-preflight.js?v=3",
     "/js/ad-film.seedance-resume-guard.js?v=2",
     "/js/ad-film.finalize-wait.js?v=3",
