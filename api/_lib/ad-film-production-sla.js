@@ -36,17 +36,17 @@ function productionStartedAt(project) {
 
 function finalOutputReady(project) {
   const generation = project?.generation || {};
-  if (
-    clean(generation.status, 40).toLowerCase() === "completed" &&
-    clean(generation.videoUrl) &&
-    generation.awaitingFinalComposite !== true &&
-    generation.avatarWaiting !== true &&
-    generation.finalizing !== true
-  ) return true;
+  const generationStatus = clean(generation.status, 40).toLowerCase();
 
-  const activeOutputId = clean(project?.activeOutputId, 240);
-  const outputs = Array.isArray(project?.outputs) ? project.outputs : [];
-  return Boolean(activeOutputId && outputs.some((item) => clean(item?.id, 240) === activeOutputId && clean(item?.videoUrl)));
+  if (["queued", "processing", "running", "in_queue"].includes(generationStatus)) return false;
+  if (
+    generation.awaitingFinalComposite === true ||
+    generation.avatarWaiting === true ||
+    generation.finalizing === true ||
+    generation.sourceOnly === true
+  ) return false;
+
+  return Boolean(generationStatus === "completed" && clean(generation.videoUrl));
 }
 
 function productionSla(project, nowMs = Date.now()) {
