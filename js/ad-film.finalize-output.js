@@ -1,13 +1,27 @@
 /* AIVO AI Reklam Filmi — legacy finalizer compatibility */
 (function AIVO_AD_FILM_FINALIZE_OUTPUT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V5__)return;
-  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V5__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V6__)return;
+  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V6__=true;
 
-  /* Seedance Engine V2 owns the complete lifecycle now: source video stays
-     hidden, final audio/music/logo processing runs once, and only the finished
-     video is mounted. Keep this legacy public API as a safe manual bridge, but
-     do not install automatic listeners that could race the primary engine. */
+  function loadOnce(path,version){
+    var selector='script[src^="'+path+'"]';
+    if(document.querySelector(selector))return;
+    var script=document.createElement("script");
+    script.src=path+"?v="+version;
+    script.async=false;
+    document.head.appendChild(script);
+  }
+
+  /* These two lifecycle files must always be present. The bridge advances the
+     Seedance -> native avatar -> final composite chain. The final-output sync
+     repairs a completed backend output into the right panel even after a page
+     refresh or a missed project event. */
+  loadOnce("/js/ad-film.avatar-finalization-bridge.js","6");
+  loadOnce("/js/ad-film.final-output-sync.js","1");
+
+  /* Seedance Engine V2 owns the normal lifecycle. Keep this public API as a
+     safe manual bridge without installing a competing automatic listener. */
   async function run(){
     if(window.AIVOAdFilmSeedanceFinalizing)return;
     var project=window.AIVOAdFilmActiveProject;
@@ -24,6 +38,9 @@
       window.AIVOAdFilmGeneratedVideo=data.video_url||"";
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:data.project,projectId:data.project.id||"",media:data.project.media||{}}}));
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(data.video_url,"",{projectId:data.projectId,outputId:data.outputId,logoApplied:!!data.logo_applied,play:false});
+      if(window.AIVOAdFilmLivePreviewState&&typeof window.AIVOAdFilmLivePreviewState.sync==="function")window.AIVOAdFilmLivePreviewState.sync(data.project);
+      if(window.AIVOAdFilmOutputGallery&&typeof window.AIVOAdFilmOutputGallery.render==="function")window.AIVOAdFilmOutputGallery.render(data.project);
+      if(window.AIVOAdFilmOutputWorkflow&&typeof window.AIVOAdFilmOutputWorkflow.render==="function")window.AIVOAdFilmOutputWorkflow.render(data.project);
     }catch(error){console.warn("[ADFILM] manual final output",error)}
     finally{window.AIVOAdFilmSeedanceFinalizing=false}
   }
