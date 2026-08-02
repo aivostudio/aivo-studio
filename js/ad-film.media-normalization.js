@@ -1,18 +1,32 @@
 /* AIVO AI Reklam Filmi — backend image normalization bridge */
 (function AIVO_AD_FILM_MEDIA_NORMALIZATION(){
   "use strict";
-  if(window.__AIVO_AD_FILM_MEDIA_NORMALIZATION_V2__)return;
-  window.__AIVO_AD_FILM_MEDIA_NORMALIZATION_V2__=true;
+  if(window.__AIVO_AD_FILM_MEDIA_NORMALIZATION_V3__)return;
+  window.__AIVO_AD_FILM_MEDIA_NORMALIZATION_V3__=true;
 
   var projectFlights=new Map();
   var ready=false;
 
   function clean(value){return String(value==null?"":value).trim()}
+  function lower(value){return clean(value).toLowerCase()}
   function normalizable(kind){return kind==="logo"||kind==="product-image"}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
   function projectId(){
     var scope=document.querySelector('[data-module-root][data-module="adfilm"]');
     return clean(project()&&project().id||scope&&scope.dataset.adfilmProjectId);
+  }
+  function productionActive(source){
+    source=source||project();
+    if(!source)return false;
+    var generation=source.generation||{};
+    var pipeline=source.avatar&&source.avatar.pipeline||{};
+    var states=[source.status,generation.status,pipeline.status].map(lower);
+    if(states.some(function(value){return[
+      "queued","processing","running","in_queue","motion_queued","motion_processing",
+      "lipsync_queued","lipsync_processing","rendering","finalizing"
+    ].indexOf(value)>=0}))return true;
+    return generation.avatarWaiting===true||generation.awaitingFinalComposite===true||
+      generation.finalizing===true||source.preparingNewVersion===true;
   }
   function dispatch(next){
     if(!next||typeof next!=="object")return;
@@ -39,9 +53,11 @@
     }
     return data.item;
   }
-  async function normalizeProject(projectIdValue){
+  async function normalizeProject(projectIdValue,options){
+    options=options||{};
     projectIdValue=clean(projectIdValue||projectId());
     if(!projectIdValue)return null;
+    if(!options.force&&productionActive(project()))return project();
     if(projectFlights.has(projectIdValue))return projectFlights.get(projectIdValue);
 
     var task=(async function(){
@@ -53,7 +69,7 @@
         body:JSON.stringify({projectId:projectIdValue})
       });
       var data=await response.json().catch(function(){return{}});
-      if(response.status===409&&data.error==="production_active")return data.project||project();
+      if(data.skipped&&data.reason==="production_active")return data.project||project();
       if(!response.ok||!data.project){
         var error=new Error(clean(data.message||data.error)||"project_media_normalization_failed");
         error.status=response.status;
@@ -115,10 +131,12 @@
   document.addEventListener("aivo:adfilm-assets-ready",function(){
     ready=true;
     retry();
-    setTimeout(function(){normalizeProject().catch(function(error){console.warn("[ADFILM] media normalization preflight",error)})},120);
+    if(!productionActive(project()))setTimeout(function(){normalizeProject().catch(function(error){console.warn("[ADFILM] media normalization preflight",error)})},120);
   });
   document.addEventListener("aivo:module-mounted",function(event){
-    if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){normalizeProject().catch(function(error){console.warn("[ADFILM] media normalization mount",error)})},260);
+    if(event&&event.detail&&event.detail.key==="adfilm"&&!productionActive(project())){
+      setTimeout(function(){normalizeProject().catch(function(error){console.warn("[ADFILM] media normalization mount",error)})},260);
+    }
   });
   document.addEventListener("click",function(event){
     if(!ready)return;
@@ -128,7 +146,7 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
     setBuildPending(button,true);
-    normalizeProject().then(function(){
+    normalizeProject("",{force:true}).then(function(){
       setBuildPending(button,false);
       button.dataset.mediaNormalizationReplay="1";
       setTimeout(function(){
@@ -145,5 +163,5 @@
     });
   },true);
 
-  window.AIVOAdFilmMediaNormalization={normalizeProject:normalizeProject,install:install};
+  window.AIVOAdFilmMediaNormalization={normalizeProject:normalizeProject,install:install,productionActive:productionActive};
 })();
