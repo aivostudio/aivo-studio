@@ -68,6 +68,28 @@ function activeGeneration(project) {
   const startedAt = Date.parse(generation.startedAt || "");
   return Number.isFinite(startedAt) && Date.now() - startedAt < 30 * 60 * 1000;
 }
+function finalizedCurrentGeneration(project) {
+  const generation = project?.generation || {};
+  const currentIds = new Set(
+    [generation.outputId, generation.requestId]
+      .map((value) => clean(value, 240))
+      .filter(Boolean),
+  );
+  if (!currentIds.size) return false;
+  const outputs = Array.isArray(project?.outputs) ? project.outputs : [];
+  return outputs.some((item) => {
+    const id = clean(item?.id, 240);
+    if (!id || !currentIds.has(id) || !clean(item?.videoUrl, 4000)) return false;
+    return Boolean(
+      item?.hybridTimeline === true ||
+      item?.avatarApplied === true ||
+      item?.avatarIntegrated === true ||
+      clean(item?.avatarCompositeMode, 80) ||
+      Number(item?.mixVersion || 0) >= 4 ||
+      Number(generation.mixVersion || 0) >= 4
+    );
+  });
+}
 function nextVersion(project) {
   const versions = Array.isArray(project?.outputs)
     ? project.outputs.map((item) => Number.parseInt(item?.version, 10)).filter(Number.isFinite)
@@ -179,7 +201,9 @@ export default async function handler(req, res) {
     if (!projectId) return sendJson(res, 400, { ok: false, error: "missing_project_id" });
     const project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
-    if (activeGeneration(project)) return sendJson(res, 409, { ok: false, error: "generation_in_progress", generation: project.generation });
+    if (activeGeneration(project) && !finalizedCurrentGeneration(project)) {
+      return sendJson(res, 409, { ok: false, error: "generation_in_progress", generation: project.generation });
+    }
 
     const identity = productIdentityCheck(project);
     if (!identity.ok) {
@@ -300,19 +324,21 @@ export default async function handler(req, res) {
       productionId,
     };
     const productionProject = resetActiveProductionState(effectiveProject);
+    const previousActiveOutputId = productionProject.activeOutputId || null;
     const nextProject = await saveProject(user, {
       ...productionProject,
       status: "processing",
       identityResolution: identity,
       productionPlan: { ...directorPlan, productionId, identityResolution: identity },
       outputs: Array.isArray(productionProject.outputs) ? productionProject.outputs.slice(0, 30) : [],
-      activeOutputId: productionProject.activeOutputId || null,
+      activeOutputId: null,
       generation: {
         provider: "fal",
         model: MODEL,
         requestId,
         outputId: requestId,
         productionId,
+        previousActiveOutputId,
         version,
         statusUrl: statusUrl || null,
         responseUrl: responseUrl || null,
