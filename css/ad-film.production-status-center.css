@@ -3,10 +3,11 @@
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
-  width:min(780px,100%)!important;
-  min-height:112px!important;
+  width:calc(100% - 18px)!important;
+  max-width:none!important;
+  min-height:132px!important;
   margin:0 auto!important;
-  padding:16px 24px!important;
+  padding:20px 30px!important;
   box-sizing:border-box!important;
   text-align:center!important;
 }
@@ -14,7 +15,7 @@
 .adfilm-stage-wrap{
   display:grid;
   justify-items:center;
-  gap:5px;
+  gap:8px;
   width:100%;
 }
 
@@ -22,44 +23,50 @@
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-height:24px;
-  padding:3px 10px;
-  border:1px solid rgba(162,126,255,.28);
+  min-height:28px;
+  padding:4px 13px;
+  border:1px solid rgba(162,126,255,.34);
   border-radius:999px;
-  background:rgba(116,69,211,.12);
-  color:rgba(215,200,255,.82);
-  font-size:11px;
-  font-weight:800;
+  background:rgba(116,69,211,.16);
+  color:rgba(225,213,255,.92);
+  font-size:12px;
+  font-weight:850;
   letter-spacing:.08em;
   text-transform:uppercase;
 }
 
 .adfilm-stage-title{
   color:#fff;
-  font-size:16px;
-  font-weight:850;
-  line-height:1.25;
+  font-size:20px;
+  font-weight:900;
+  line-height:1.2;
 }
 
 .adfilm-stage-description{
-  color:rgba(235,231,249,.76);
-  font-size:14px;
-  line-height:1.4;
+  color:rgba(239,235,250,.84);
+  font-size:16px;
+  font-weight:700;
+  line-height:1.45;
 }
 
 .adfilm-stage-time{
   color:#9df2df;
-  font-size:13px;
-  font-weight:750;
-  line-height:1.3;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.35;
 }
 
 @media (min-width:701px){
+  .adfilm-engine-status.is-busy{
+    grid-template-columns:64px minmax(0,1fr)!important;
+  }
+
   .adfilm-engine-status.is-busy>div{
     grid-column:1/-1!important;
     grid-row:1/3!important;
     width:100%!important;
-    padding:0 108px!important;
+    max-width:none!important;
+    padding:0 58px!important;
     box-sizing:border-box!important;
     align-items:center!important;
     justify-items:center!important;
@@ -67,29 +74,40 @@
   }
 
   .adfilm-engine-status.is-busy b{
-    font-size:28px!important;
+    width:100%!important;
+    font-size:32px!important;
     line-height:1.12!important;
     text-align:center!important;
   }
 
   .adfilm-engine-status.is-busy>span{
-    width:44px!important;
-    height:44px!important;
+    width:48px!important;
+    height:48px!important;
     border-width:6px!important;
+  }
+
+  .adfilm-engine-status.is-busy small{
+    width:calc(100% - 8px)!important;
+    max-width:none!important;
   }
 }
 
 @media (max-width:700px){
   .adfilm-engine-status.is-busy small{
-    min-height:126px!important;
-    padding:15px 14px!important;
+    width:100%!important;
+    min-height:140px!important;
+    padding:18px 16px!important;
   }
 
   .adfilm-stage-title{
-    font-size:15px;
+    font-size:17px;
   }
 
   .adfilm-stage-description{
-    font-size:13px;
+    font-size:14px;
+  }
+
+  .adfilm-stage-time{
+    font-size:14px;
   }
 }
