@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable customer-facing production progress */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V7__)return;
-  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V7__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V8__)return;
+  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V8__=true;
 
   var timer=null;
   var visibleStage=null;
@@ -54,21 +54,26 @@
     window[LATCH_KEY]={projectId:currentProjectId(),startedAt:new Date(now).toISOString(),until:now+LAUNCH_LATCH_MS};
   }
   function clearLatch(){try{delete window[LATCH_KEY]}catch(_){window[LATCH_KEY]=null}}
-  function productionActive(source){return Boolean(source&&(latchActive()||pipelineActive(source)||generationActive(source)||generating()))}
+  function terminalState(source){
+    var values=[
+      source&&source.status,
+      generation(source).status,
+      pipeline(source).status,
+      finalization(source).status
+    ].map(statusValue);
+    if(values.some(function(value){return value==="cancelled"||value==="canceled"}))return"cancelled";
+    if(values.some(function(value){return value==="failed"||value==="error"}))return"failed";
+    return"";
+  }
+  function productionActive(source){return Boolean(source&&!terminalState(source)&&(latchActive()||pipelineActive(source)||generationActive(source)||generating()))}
   function finalReady(source){
-    if(!source||pipelineActive(source))return false;
+    if(!source||pipelineActive(source)||terminalState(source))return false;
     var gen=generation(source),finish=finalization(source),current=pipeline(source);
     if(gen.awaitingFinalComposite===true||gen.avatarWaiting===true||gen.sourceOnly===true||gen.finalizing===true)return false;
     if(statusValue(finish.status)==="completed"&&clean(gen.videoUrl))return true;
     if(Number(gen.mixVersion||0)>=4&&clean(gen.videoUrl))return true;
     if(statusValue(gen.status)==="completed"&&clean(gen.videoUrl))return true;
     return statusValue(current.status)==="completed"&&clean(current.videoUrl)&&clean(gen.videoUrl);
-  }
-  function terminalState(source){
-    var value=statusValue(source&&source.status||generation(source).status);
-    if(value==="cancelled"||value==="canceled")return"cancelled";
-    if(value==="failed")return"failed";
-    return"";
   }
   function stage(id,title,description){return{id:id,title:title,description:description}}
   function stageFor(source){
@@ -182,7 +187,7 @@
     node.removeAttribute("data-stage");
     setText(node.querySelector("b"),terminal==="cancelled"?text("Üretim durduruldu","Production stopped"):text("Üretim tamamlanamadı","Production could not be completed"));
     var small=node.querySelector("small");
-    if(small)setText(small,terminal==="cancelled"?text("Azami üretim süresi aşıldığı için işlem güvenli şekilde durduruldu.","The production was safely stopped after exceeding the maximum processing time."):text("İşlem tamamlanamadı. Ayarlarınızı kontrol ederek yeniden deneyebilirsiniz.","The production could not be completed. Check your settings and try again."));
+    if(small)setText(small,terminal==="cancelled"?text("Azami üretim süresi aşıldığı için işlem güvenli şekilde durduruldu.","The production was safely stopped after exceeding the maximum processing time."):text("Oyunculu sahne tamamlanamadı. Tamamlanmamış kaynak video hazır video olarak gösterilmedi.","The presenter scene could not be completed. The unfinished source video was not shown as a ready video."));
     activateButtonState(false);
     visibleStage=null;pendingStage=null;visibleStageAt=0;
     return true;
