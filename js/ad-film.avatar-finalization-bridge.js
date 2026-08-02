@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — advance avatar, enforce SLA and release finalization */
 (function AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V5__)return;
-  window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V5__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V6__)return;
+  window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V6__=true;
 
   var previousFetch=window.fetch.bind(window);
   var avatarFlights=new Map();
@@ -28,7 +28,11 @@
       headers:{"Content-Type":"application/json","Cache-Control":"no-store"}
     });
   }
-  function sourceUrlOf(data,current){return clean(data&&data.source_video_url||data&&data.generation&&data.generation.sourceVideoUrl||current&&current.generation&&current.generation.sourceVideoUrl)}
+  function generationOf(current){return current&&current.generation||{}}
+  function sourceUrlOf(data,current){
+    var generation=generationOf(current);
+    return clean(data&&data.source_video_url||data&&data.generation&&data.generation.sourceVideoUrl||generation.sourceVideoUrl);
+  }
   function avatarEnabled(current){return current&&current.avatar&&current.avatar.enabled===true}
   function terminalPipeline(pipeline){
     var status=clean(pipeline&&pipeline.status).toLowerCase();
@@ -40,20 +44,30 @@
     return !pipeline||!status||status==="waiting_for_seedance"||status==="idle";
   }
   function productionId(current){
-    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
-    return clean(pipeline.productionId||generation.productionId||input.productionId||current&&current.productionPlan&&current.productionPlan.productionId);
+    var generation=generationOf(current),input=generation.input||{};
+    return clean(generation.productionId||input.productionId||current&&current.productionPlan&&current.productionPlan.productionId);
+  }
+  function canonicalSeedanceReady(current){
+    var generation=generationOf(current),input=generation.input||{};
+    var id=clean(generation.productionId||input.productionId||current&&current.productionPlan&&current.productionPlan.productionId);
+    return Boolean(
+      id&&
+      clean(generation.requestId)&&
+      /^https:\/\//i.test(clean(generation.sourceVideoUrl||generation.videoUrl))&&
+      ["queued","processing","completed"].indexOf(clean(generation.status).toLowerCase())>=0
+    );
   }
   function duration(current){
-    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    var generation=generationOf(current),input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
     return clean(pipeline.duration||input.duration||current&&current.output&&current.output.duration||"10");
   }
   function ratio(current){
-    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    var generation=generationOf(current),input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
     var value=clean(pipeline.aspectRatio||input.aspectRatio||input.aspect_ratio||current&&current.output&&current.output.aspectRatio||"16:9");
     return value==="4:5"?"3:4":value;
   }
   function quality(current){
-    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    var generation=generationOf(current),input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
     return clean(pipeline.quality||input.resolution||current&&current.output&&current.output.quality||"1080p").toLowerCase();
   }
 
@@ -74,7 +88,7 @@
   }
 
   async function ensureAvatarStarted(id,current){
-    if(!id||!avatarEnabled(current)||!pipelineNeedsStart(current))return current;
+    if(!id||!avatarEnabled(current)||!pipelineNeedsStart(current)||!canonicalSeedanceReady(current))return current;
     var lock=productionId(current);if(!lock)return current;
     var key=id+"|"+lock;
     if(!startFlights.has(key)){
@@ -93,6 +107,11 @@
         var data=await readJson(response)||{};
         if(response.ok&&data.project){syncProject(data.project,id);return data.project}
         if(response.status===409&&data.error==="production_already_completed")return current;
+        if(response.status===409&&data.error==="production_lock_mismatch"){
+          console.warn("[ADFILM] avatar start skipped: production lock unavailable",data);
+          return current;
+        }
+        if(response.status===425&&data.error==="seedance_generation_not_ready")return current;
         if(!response.ok)throw new Error(clean(data.error||data.message)||"avatar_pipeline_not_started");
         return current;
       })().finally(function(){startFlights.delete(key)}));
@@ -178,8 +197,9 @@
 
       var sourceUrl=sourceUrlOf(data,current);
       var sourceReady=Boolean(sourceUrl||data.source_ready===true);
+      var seedanceReady=canonicalSeedanceReady(current);
 
-      if(sourceReady&&id&&avatarEnabled(current)){
+      if(sourceReady&&seedanceReady&&id&&avatarEnabled(current)){
         var advanced=await advanceAvatar(id,current);
         var avatarData=advanced&&advanced.data||{};
         if(avatarData.project)current=avatarData.project;
@@ -229,7 +249,7 @@
       }
 
       var pipeline=current.avatar&&current.avatar.pipeline||{};
-      if(sourceReady&&terminalPipeline(pipeline)){
+      if(sourceReady&&seedanceReady&&terminalPipeline(pipeline)){
         var status=clean(pipeline.status).toLowerCase();
         if(status==="completed"&&pipeline.videoUrl){
           data.status="COMPLETED";
@@ -247,13 +267,7 @@
       }
     }catch(error){
       console.warn("[ADFILM] avatar finalization bridge",error);
-      try{
-        var failed=await readJson(response)||{};
-        failed.status="FAILED";
-        failed.error=clean(error&&error.message)||"avatar_pipeline_not_started";
-        failed.video_url=null;
-        return jsonResponse(response,failed);
-      }catch(_){}
+      return response;
     }
 
     return response;
