@@ -1,12 +1,13 @@
 /* AIVO AI Reklam Filmi — advance avatar, enforce SLA and release finalization */
 (function AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V4__)return;
-  window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V4__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V5__)return;
+  window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V5__=true;
 
   var previousFetch=window.fetch.bind(window);
   var avatarFlights=new Map();
   var guardFlights=new Map();
+  var startFlights=new Map();
 
   function clean(value){return String(value==null?"":value).trim()}
   function urlOf(input){return typeof input==="string"?input:input&&input.url||""}
@@ -33,6 +34,28 @@
     var status=clean(pipeline&&pipeline.status).toLowerCase();
     return status==="completed"||status==="failed"||status==="cancelled"||status==="canceled";
   }
+  function pipelineNeedsStart(current){
+    var pipeline=current&&current.avatar&&current.avatar.pipeline;
+    var status=clean(pipeline&&pipeline.status).toLowerCase();
+    return !pipeline||!status||status==="waiting_for_seedance"||status==="idle";
+  }
+  function productionId(current){
+    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    return clean(pipeline.productionId||generation.productionId||input.productionId||current&&current.productionPlan&&current.productionPlan.productionId);
+  }
+  function duration(current){
+    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    return clean(pipeline.duration||input.duration||current&&current.output&&current.output.duration||"10");
+  }
+  function ratio(current){
+    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    var value=clean(pipeline.aspectRatio||input.aspectRatio||input.aspect_ratio||current&&current.output&&current.output.aspectRatio||"16:9");
+    return value==="4:5"?"3:4":value;
+  }
+  function quality(current){
+    var generation=current&&current.generation||{},input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
+    return clean(pipeline.quality||input.resolution||current&&current.output&&current.output.quality||"1080p").toLowerCase();
+  }
 
   async function enforceGuard(id){
     if(!id)return null;
@@ -50,8 +73,36 @@
     return guardFlights.get(id);
   }
 
-  async function advanceAvatar(id){
+  async function ensureAvatarStarted(id,current){
+    if(!id||!avatarEnabled(current)||!pipelineNeedsStart(current))return current;
+    var lock=productionId(current);if(!lock)return current;
+    var key=id+"|"+lock;
+    if(!startFlights.has(key)){
+      startFlights.set(key,(async function(){
+        var response=await previousFetch("/api/ad-film/avatar/pipeline/create-native-fixed",{
+          method:"POST",credentials:"include",cache:"no-store",
+          headers:{"Content-Type":"application/json",Accept:"application/json"},
+          body:JSON.stringify({
+            projectId:id,
+            production_id:lock,
+            duration:duration(current),
+            aspect_ratio:ratio(current),
+            quality:quality(current)
+          })
+        });
+        var data=await readJson(response)||{};
+        if(response.ok&&data.project){syncProject(data.project,id);return data.project}
+        if(response.status===409&&data.error==="production_already_completed")return current;
+        if(!response.ok)throw new Error(clean(data.error||data.message)||"avatar_pipeline_not_started");
+        return current;
+      })().finally(function(){startFlights.delete(key)}));
+    }
+    return startFlights.get(key);
+  }
+
+  async function advanceAvatar(id,current){
     if(!id)return null;
+    current=await ensureAvatarStarted(id,current||window.AIVOAdFilmActiveProject||{});
     if(!avatarFlights.has(id)){
       avatarFlights.set(id,(async function(){
         var response=await previousFetch(
@@ -129,7 +180,7 @@
       var sourceReady=Boolean(sourceUrl||data.source_ready===true);
 
       if(sourceReady&&id&&avatarEnabled(current)){
-        var advanced=await advanceAvatar(id);
+        var advanced=await advanceAvatar(id,current);
         var avatarData=advanced&&advanced.data||{};
         if(avatarData.project)current=avatarData.project;
 
@@ -194,7 +245,16 @@
           return jsonResponse(response,data);
         }
       }
-    }catch(error){console.warn("[ADFILM] avatar finalization bridge",error)}
+    }catch(error){
+      console.warn("[ADFILM] avatar finalization bridge",error);
+      try{
+        var failed=await readJson(response)||{};
+        failed.status="FAILED";
+        failed.error=clean(error&&error.message)||"avatar_pipeline_not_started";
+        failed.video_url=null;
+        return jsonResponse(response,failed);
+      }catch(_){}
+    }
 
     return response;
   };
