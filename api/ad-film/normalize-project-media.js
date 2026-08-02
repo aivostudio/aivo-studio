@@ -13,11 +13,26 @@ function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
 }
 
+function hasStoredUrl(item) {
+  return Boolean(
+    clean(item?.key, 1600) &&
+    clean(item?.url || item?.readUrl || item?.publicUrl, 8000),
+  );
+}
+
 function alreadyNormalized(item, kind) {
   if (!item || typeof item !== "object") return true;
-  if (item.normalized !== true || Number(item.normalizationVersion || 0) < 1) return false;
+  if (!hasStoredUrl(item)) return false;
   if (clean(item.kind, 40) && clean(item.kind, 40) !== kind) return false;
-  return Boolean(clean(item.key, 1600) && clean(item.url || item.readUrl || item.publicUrl, 8000));
+
+  const key = clean(item.key, 1600);
+  const normalizedVersion = Number(item.normalizationVersion || 0);
+  const finalizerLogoVersion = Number(item.finalizerLogoVersion || 0);
+  return item.normalized === true && (
+    normalizedVersion >= 1 ||
+    finalizerLogoVersion >= 1 ||
+    key.includes("/normalized/")
+  );
 }
 
 function productionActive(project) {
@@ -77,11 +92,20 @@ export default async function handler(req, res) {
 
     const project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
+
+    // Normalization is a pre-production preparation step. An active production
+    // must never be mutated, but this is an expected no-op rather than an HTTP
+    // conflict. Returning 200 prevents harmless page-mount preflight checks
+    // from appearing as production failures in DevTools.
     if (productionActive(project)) {
-      return sendJson(res, 409, {
-        ok: false,
-        error: "production_active",
-        retryable: true,
+      return sendJson(res, 200, {
+        ok: true,
+        projectId,
+        changed: false,
+        skipped: true,
+        reason: "production_active",
+        normalized_product_count: 0,
+        normalized_logo_count: 0,
         project,
       });
     }
