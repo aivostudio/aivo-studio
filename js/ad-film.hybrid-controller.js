@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — Seedance-first hybrid production controller */
 (function AIVO_AD_FILM_HYBRID_CONTROLLER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V8__)return;
-  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V8__=true;
+  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V9__)return;
+  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V9__=true;
 
   var starting=false;
   var resumeKey="";
@@ -27,7 +27,17 @@
   function sourceUrl(source){return clean(source&&source.generation&&source.generation.sourceVideoUrl||source&&source.generation&&source.generation.videoUrl)}
   function statusSourceUrl(data){return clean(data&&data.source_video_url||data&&data.generation&&data.generation.sourceVideoUrl||data&&data.generation&&data.generation.videoUrl)}
   function pipelineActive(pipeline){return!!(pipeline&&["waiting_for_seedance","motion_queued","motion_processing","lipsync_queued","lipsync_processing","rendering"].indexOf(clean(pipeline.status))>=0)}
+  function finalizedOutput(source){
+    var generation=source&&source.generation||{};
+    var ids=[source&&source.activeOutputId,generation.outputId,generation.requestId].map(clean).filter(Boolean);
+    var outputs=Array.isArray(source&&source.outputs)?source.outputs:[];
+    return outputs.find(function(item){
+      if(ids.indexOf(clean(item&&item.id))<0||!clean(item&&item.videoUrl))return false;
+      return item.hybridTimeline===true||item.avatarApplied===true||item.avatarIntegrated===true||!!clean(item.avatarCompositeMode)||Number(item.mixVersion||0)>=4||Number(generation.mixVersion||0)>=4;
+    })||null;
+  }
   function projectFinalReady(source){
+    if(finalizedOutput(source))return true;
     var generation=source&&source.generation||{};
     var finalization=source&&source.finalization||{};
     var pipeline=source&&source.avatar&&source.avatar.pipeline||{};
@@ -56,20 +66,10 @@
   function captureLock(scope){
     var duration=normalizeDuration(choice(scope,"duration","10"))||"10";
     var ratio=choice(scope,"aspectRatio","16:9");
-    return Object.freeze({
-      id:"adfilm-"+Date.now()+"-"+Math.random().toString(36).slice(2,10),
-      projectId:projectId(scope),
-      duration:duration,
-      aspectRatio:ratio,
-      apiAspectRatio:normalizeRatio(ratio),
-      quality:clean(choice(scope,"quality","1080p")).toLowerCase(),
-      capturedAt:new Date().toISOString()
-    });
+    return Object.freeze({id:"adfilm-"+Date.now()+"-"+Math.random().toString(36).slice(2,10),projectId:projectId(scope),duration:duration,aspectRatio:ratio,apiAspectRatio:normalizeRatio(ratio),quality:clean(choice(scope,"quality","1080p")).toLowerCase(),capturedAt:new Date().toISOString()});
   }
-
   function acceptedLock(requested,data){
-    var generation=data&&data.generation||{};
-    var input=generation.input||{};
+    var generation=data&&data.generation||{},input=generation.input||{};
     var duration=normalizeDuration(input.duration||data&&data.director_plan&&data.director_plan.duration||requested.duration);
     var productionId=clean(generation.productionId||input.productionId||data&&data.production_id||requested.id);
     var ratio=normalizeRatio(input.aspectRatio||input.aspect_ratio||requested.apiAspectRatio);
@@ -78,196 +78,100 @@
     if(productionId!==requested.id)throw new Error("production_lock_mismatch");
     if(ratio!==requested.apiAspectRatio)throw new Error("production_aspect_ratio_mismatch");
     if(quality!==requested.quality)throw new Error("production_quality_mismatch");
-    return Object.freeze({
-      id:productionId,
-      projectId:requested.projectId,
-      duration:duration,
-      aspectRatio:requested.aspectRatio,
-      apiAspectRatio:ratio,
-      quality:quality,
-      requestId:clean(generation.requestId||data&&data.request_id),
-      capturedAt:requested.capturedAt,
-      acceptedAt:new Date().toISOString()
-    });
+    return Object.freeze({id:productionId,projectId:requested.projectId,duration:duration,aspectRatio:requested.aspectRatio,apiAspectRatio:ratio,quality:quality,requestId:clean(generation.requestId||data&&data.request_id),capturedAt:requested.capturedAt,acceptedAt:new Date().toISOString()});
   }
-
   function lockFromProject(source){
-    var generation=source&&source.generation||{};
-    var input=generation.input||{};
-    var pipeline=source&&source.avatar&&source.avatar.pipeline||{};
-    var id=clean(pipeline.productionId||generation.productionId||input.productionId||source&&source.productionPlan&&source.productionPlan.productionId);
-    if(!id)return null;
+    var generation=source&&source.generation||{},input=generation.input||{},pipeline=source&&source.avatar&&source.avatar.pipeline||{};
+    var id=clean(pipeline.productionId||generation.productionId||input.productionId||source&&source.productionPlan&&source.productionPlan.productionId);if(!id)return null;
     var duration=normalizeDuration(pipeline.duration||input.duration||source&&source.output&&source.output.duration)||"10";
     var ratio=clean(pipeline.aspectRatio||input.aspectRatio||source&&source.output&&source.output.aspectRatio||"16:9");
     return Object.freeze({id:id,projectId:clean(source.id),duration:duration,aspectRatio:ratio,apiAspectRatio:normalizeRatio(ratio),quality:clean(pipeline.quality||input.resolution||source&&source.output&&source.output.quality||"1080p").toLowerCase(),requestId:clean(generation.requestId),capturedAt:pipeline.startedAt||generation.startedAt||new Date().toISOString()});
   }
-
   function lockFromStatus(id,data){
-    var generation=data&&data.generation||{};
-    var input=generation.input||{};
-    var productionId=clean(generation.productionId||input.productionId);
-    if(!productionId||!clean(generation.requestId))return null;
-    var duration=normalizeDuration(input.duration)||"10";
-    var ratio=clean(input.aspectRatio||input.aspect_ratio||"16:9");
-    return Object.freeze({
-      id:productionId,
-      projectId:id,
-      duration:duration,
-      aspectRatio:ratio,
-      apiAspectRatio:normalizeRatio(ratio),
-      quality:clean(input.resolution||"1080p").toLowerCase(),
-      requestId:clean(generation.requestId),
-      capturedAt:generation.startedAt||new Date().toISOString(),
-      acceptedAt:generation.updatedAt||new Date().toISOString()
-    });
+    var generation=data&&data.generation||{},input=generation.input||{},productionId=clean(generation.productionId||input.productionId);if(!productionId||!clean(generation.requestId))return null;
+    var duration=normalizeDuration(input.duration)||"10",ratio=clean(input.aspectRatio||input.aspect_ratio||"16:9");
+    return Object.freeze({id:productionId,projectId:id,duration:duration,aspectRatio:ratio,apiAspectRatio:normalizeRatio(ratio),quality:clean(input.resolution||"1080p").toLowerCase(),requestId:clean(generation.requestId),capturedAt:generation.startedAt||new Date().toISOString(),acceptedAt:generation.updatedAt||new Date().toISOString()});
   }
-
   function statusHasActiveGeneration(data){
     if(!data||statusFinalReady(data))return false;
-    var generation=data.generation||{};
-    var status=clean(generation.status).toLowerCase();
-    var publicStatus=clean(data.status).toUpperCase();
-    var current=project();
-    var pipeline=current&&current.avatar&&current.avatar.pipeline;
+    var generation=data.generation||{},status=clean(generation.status).toLowerCase(),publicStatus=clean(data.status).toUpperCase(),current=project(),pipeline=current&&current.avatar&&current.avatar.pipeline;
     var generationActive=["queued","processing"].indexOf(status)>=0||["IN_QUEUE","RUNNING"].indexOf(publicStatus)>=0;
     var sourceAwaitingAvatar=!!statusSourceUrl(data)&&(generation.awaitingFinalComposite===true||generation.avatarWaiting===true||generation.sourceOnly===true||pipelineActive(pipeline));
     return Boolean(generationActive||sourceAwaitingAvatar||pipelineActive(pipeline));
   }
-
   function startSeedance(lock){
     if(!window.AIVOAdFilmSeedanceEngine||typeof window.AIVOAdFilmSeedanceEngine.generate!=="function")throw new Error("seedance_engine_not_ready");
     window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
     var original=window.confirm;window.confirm=function(){return true};
     try{window.AIVOAdFilmSeedanceEngine.generate(lock)}finally{window.confirm=original}
   }
-
   async function waitForNewSeedance(id,previous){
-    for(var i=0;i<180;i++){
-      await sleep(i<12?500:1000);
-      var data=await request("/api/ad-film/seedance/status?projectId="+encodeURIComponent(id),{method:"GET"});
-      var next=clean(data&&data.generation&&data.generation.requestId);
-      if(next&&next!==previous)return data;
-      if(data.status==="FAILED")throw new Error(clean(data.generation&&data.generation.error)||"seedance_failed");
-    }
+    for(var i=0;i<180;i++){await sleep(i<12?500:1000);var data=await request("/api/ad-film/seedance/status?projectId="+encodeURIComponent(id),{method:"GET"});var next=clean(data&&data.generation&&data.generation.requestId);if(next&&next!==previous)return data;if(data.status==="FAILED")throw new Error(clean(data.generation&&data.generation.error)||"seedance_failed")}
     throw new Error("seedance_start_timeout");
   }
-
-  async function prepareAvatar(id,lock){
-    return request("/api/ad-film/avatar/pipeline/prepare",{method:"POST",body:JSON.stringify({projectId:id,duration:lock.duration,aspect_ratio:lock.apiAspectRatio,quality:lock.quality,production_id:lock.id})});
-  }
-
+  async function prepareAvatar(id,lock){return request("/api/ad-film/avatar/pipeline/prepare",{method:"POST",body:JSON.stringify({projectId:id,duration:lock.duration,aspect_ratio:lock.apiAspectRatio,quality:lock.quality,production_id:lock.id})})}
   async function waitForSeedanceSource(scope,id){
-    for(var i=0;i<700;i++){
-      var data=await request("/api/ad-film/seedance/status?projectId="+encodeURIComponent(id),{method:"GET"});
-      var source=statusSourceUrl(data);
-      if(source&&(data.source_ready===true||clean(data.error||data.generation&&data.generation.error)==="avatar_pipeline_not_started"||data.generation&&data.generation.awaitingFinalComposite===true))return data;
-      if(data.status==="FAILED")throw new Error(clean(data.error||data.generation&&data.generation.error)||"seedance_failed");
-      setStage(scope,text("Önce sinematik ürün filmi hazırlanıyor","Creating the cinematic product film first"),text("Seedance tüm sahne, efekt ve geçişleri tamamlıyor. Oyuncu motoru kaynak film hazır olmadan başlamayacak.","Seedance is completing the scenes, effects and transitions. The presenter engine will not start before the source film is ready."));
-      await sleep(3000);
-    }
+    for(var i=0;i<700;i++){var data=await request("/api/ad-film/seedance/status?projectId="+encodeURIComponent(id),{method:"GET"});var source=statusSourceUrl(data);if(source&&(data.source_ready===true||clean(data.error||data.generation&&data.generation.error)==="avatar_pipeline_not_started"||data.generation&&data.generation.awaitingFinalComposite===true))return data;if(data.status==="FAILED")throw new Error(clean(data.error||data.generation&&data.generation.error)||"seedance_failed");setStage(scope,text("Önce sinematik ürün filmi hazırlanıyor","Creating the cinematic product film first"),text("Seedance tüm sahne, efekt ve geçişleri tamamlıyor. Oyuncu motoru kaynak film hazır olmadan başlamayacak.","Seedance is completing the scenes, effects and transitions. The presenter engine will not start before the source film is ready."));await sleep(3000)}
     throw new Error("seedance_provider_timeout");
   }
-
-  async function startAvatar(id,lock){
-    return request("/api/ad-film/avatar/pipeline/create-native-fixed",{method:"POST",body:JSON.stringify({projectId:id,duration:lock.duration,aspect_ratio:lock.apiAspectRatio,quality:lock.quality,production_id:lock.id})});
-  }
-
+  async function startAvatar(id,lock){return request("/api/ad-film/avatar/pipeline/create-native-fixed",{method:"POST",body:JSON.stringify({projectId:id,duration:lock.duration,aspect_ratio:lock.apiAspectRatio,quality:lock.quality,production_id:lock.id})})}
   async function continueAfterSeedance(scope,button,id,lock){
     setStage(scope,text("Sinematik ürün filmi hazırlanıyor","Creating the cinematic product film"),text("Avatar beklemede. Önce Seedance filmin görsel dilini, efektlerini ve geçişlerini tamamlayacak.","The presenter is waiting. Seedance will first complete the film’s visual language, effects and transitions."));
     await waitForSeedanceSource(scope,id);
     setStage(scope,text("Ürün filmi hazır, oyunculu sahne başlıyor","Product film ready, presenter scene starting"),text("Oyuncu motoru artık tamamlanmış Seedance filmiyle aynı üretim kilidi altında başlatılıyor.","The presenter engine is now starting under the same production lock after the Seedance film has completed."));
-    var avatar=await startAvatar(id,lock);
-    if(avatar&&avatar.project)syncProject(avatar.project,id);
-    setStage(scope,text("Oyunculu sahne hazırlanıyor","Preparing the presenter scene"),text("Seedance filmi korunuyor; yalnızca planlanan konuşma bölümü için oyunculu sahne üretiliyor.","The Seedance film is preserved; only the planned speaking segment is being generated."));
-    return avatar;
+    var avatar=await startAvatar(id,lock);if(avatar&&avatar.project)syncProject(avatar.project,id);
+    setStage(scope,text("Oyunculu sahne hazırlanıyor","Preparing the presenter scene"),text("Seedance filmi korunuyor; yalnızca planlanan konuşma bölümü için oyunculu sahne üretiliyor.","The Seedance film is preserved; only the planned speaking segment is being generated."));return avatar;
   }
-
   async function recoverExisting(scope,button,source){
     var lock=lockFromProject(source);if(!lock||!sourceUrl(source)||projectFinalReady(source))return false;
-    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
-    setStage(scope,text("Hazır ürün filmi kurtarılıyor","Recovering the completed product film"),text("Seedance videosu yeniden üretilmeden bekleyen avatar sahnesi başlatılıyor.","The waiting presenter scene is starting without regenerating the completed Seedance video."));
-    var prepared=await prepareAvatar(lock.projectId,lock);
-    if(prepared&&prepared.project)syncProject(prepared.project,lock.projectId);
-    await continueAfterSeedance(scope,button,lock.projectId,lock);
-    return true;
+    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;setStage(scope,text("Hazır ürün filmi kurtarılıyor","Recovering the completed product film"),text("Seedance videosu yeniden üretilmeden bekleyen avatar sahnesi başlatılıyor.","The waiting presenter scene is starting without regenerating the completed Seedance video."));
+    var prepared=await prepareAvatar(lock.projectId,lock);if(prepared&&prepared.project)syncProject(prepared.project,lock.projectId);await continueAfterSeedance(scope,button,lock.projectId,lock);return true;
   }
-
   async function recoverServerGeneration(scope,button,id,data){
-    if(!statusHasActiveGeneration(data))return false;
-    var lock=lockFromStatus(id,data);if(!lock)return false;
-    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
-    setStage(scope,
-      statusSourceUrl(data)?text("Hazır ürün filmi bulundu","Completed product film found"):text("Devam eden ürün filmi bulundu","Active product film found"),
-      statusSourceUrl(data)?text("Yeni Seedance üretimi başlatılmadan avatar aşamasına geçiliyor.","The presenter stage is starting without a new Seedance generation."):text("Mevcut Seedance üretimi izleniyor; ikinci bir ücretli üretim başlatılmayacak.","The existing Seedance generation is being monitored; a second paid generation will not be started.")
-    );
-    var prepared=await prepareAvatar(id,lock);
-    if(prepared&&prepared.project)syncProject(prepared.project,id);
-    await continueAfterSeedance(scope,button,id,lock);
-    return true;
+    if(!statusHasActiveGeneration(data))return false;var lock=lockFromStatus(id,data);if(!lock)return false;
+    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;setStage(scope,statusSourceUrl(data)?text("Hazır ürün filmi bulundu","Completed product film found"):text("Devam eden ürün filmi bulundu","Active product film found"),statusSourceUrl(data)?text("Yeni Seedance üretimi başlatılmadan avatar aşamasına geçiliyor.","The presenter stage is starting without a new Seedance generation."):text("Mevcut Seedance üretimi izleniyor; ikinci bir ücretli üretim başlatılmayacak.","The existing Seedance generation is being monitored; a second paid generation will not be started."));
+    var prepared=await prepareAvatar(id,lock);if(prepared&&prepared.project)syncProject(prepared.project,id);await continueAfterSeedance(scope,button,id,lock);return true;
   }
-
+  async function startFresh(scope,button,id){
+    var requested=captureLock(scope),previous=clean(project()&&project().generation&&project().generation.requestId);
+    setStage(scope,text("Yeni reklam filmi başlatılıyor","Starting a new advertising film"),text("Tamamlanmış eski sürüm korunuyor; seçili ayarlarla yeni üretim başlatılıyor.","The completed previous version is preserved while a new production starts with the selected settings."));
+    startSeedance(requested);
+    var created=await waitForNewSeedance(id,previous),lock=acceptedLock(requested,created);
+    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
+    var prepared=await prepareAvatar(id,lock);if(prepared&&prepared.project)syncProject(prepared.project,id);
+    await continueAfterSeedance(scope,button,id,lock);
+  }
   async function start(scope,button){
-    if(starting)return;
-    scope=scope||root();button=button||scope&&scope.querySelector('[data-adfilm-build]');
-    if(!scope||!enabled(scope))return;
+    if(starting)return;scope=scope||root();button=button||scope&&scope.querySelector('[data-adfilm-build]');if(!scope||!enabled(scope))return;
     starting=true;setBusy(button,true);
     try{
-      var current=project();
+      var current=project(),id=projectId(scope);if(!id)throw new Error("project_not_ready");
+      if(projectFinalReady(current)){await startFresh(scope,button,id);return}
       if(recoverableAvatarStart(current)&&await recoverExisting(scope,button,current))return;
-      var id=projectId(scope);if(!id)throw new Error("project_not_ready");
-      var serverState=null;
-      try{serverState=await request("/api/ad-film/seedance/status?projectId="+encodeURIComponent(id),{method:"GET"})}catch(_){}
+      var serverState=null;try{serverState=await request("/api/ad-film/seedance/status?projectId="+encodeURIComponent(id),{method:"GET"})}catch(_){}
       if(serverState&&await recoverServerGeneration(scope,button,id,serverState))return;
-      var requested=captureLock(scope);
-      var previous=clean(project()&&project().generation&&project().generation.requestId);
-      setStage(scope,text("Ürün filmi başlatılıyor","Starting product film"),text("Seedance önce seçilen ayarlarda yeni ana reklam filmini tek parça olarak kuracak.","Seedance will first build a new main advertising film with the selected settings."));
-      startSeedance(requested);
-      var created=await waitForNewSeedance(id,previous);
-      var lock=acceptedLock(requested,created);
-      window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
-      var prepared=await prepareAvatar(id,lock);
-      if(prepared&&prepared.project)syncProject(prepared.project,id);
-      await continueAfterSeedance(scope,button,id,lock);
+      await startFresh(scope,button,id);
     }catch(error){
-      setBusy(button,false);
-      console.error("[ADFILM] Seedance-first hybrid controller",error,error&&error.data||"");
-      notify(text("Hibrit reklam üretimi başlatılamadı: ","Hybrid production could not start: ")+clean(error&&error.message),"error");
+      setBusy(button,false);console.error("[ADFILM] Seedance-first hybrid controller",error,error&&error.data||"");
+      if(clean(error&&error.message)==="production_already_completed")notify(text("Eski üretim tamamlandı. Yeni üretim başlatılıyor; lütfen bir kez daha tıkla.","The previous production is complete. A new production is ready to start; click once more."),"warning");
+      else notify(text("Hibrit reklam üretimi başlatılamadı: ","Hybrid production could not start: ")+clean(error&&error.message),"error");
       throw error;
-    }finally{
-      starting=false;
-      window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null;
-    }
+    }finally{starting=false;window.__AIVO_AD_FILM_PRODUCTION_LOCK__=null}
   }
-
   async function resume(scope,source){
-    source=source||project();
-    if(!scope||starting||projectFinalReady(source))return;
-    var pipeline=source&&source.avatar&&source.avatar.pipeline;
-    var shouldResume=pipeline&&pipeline.status==="waiting_for_seedance"||recoverableAvatarStart(source);
-    if(!shouldResume)return;
-    var lock=lockFromProject(source);if(!lock)return;
-    var key=lock.projectId+"|"+lock.id;if(resumeKey===key)return;resumeKey=key;
-    starting=true;
-    try{
-      if(recoverableAvatarStart(source))await recoverExisting(scope,scope.querySelector('[data-adfilm-build]'),source);
-      else await continueAfterSeedance(scope,scope.querySelector('[data-adfilm-build]'),lock.projectId,lock);
-    }
+    source=source||project();if(!scope||starting||projectFinalReady(source))return;
+    var pipeline=source&&source.avatar&&source.avatar.pipeline;var shouldResume=pipeline&&pipeline.status==="waiting_for_seedance"||recoverableAvatarStart(source);if(!shouldResume)return;
+    var lock=lockFromProject(source);if(!lock)return;var key=lock.projectId+"|"+lock.id;if(resumeKey===key)return;resumeKey=key;starting=true;
+    try{if(recoverableAvatarStart(source))await recoverExisting(scope,scope.querySelector('[data-adfilm-build]'),source);else await continueAfterSeedance(scope,scope.querySelector('[data-adfilm-build]'),lock.projectId,lock)}
     catch(error){console.error("[ADFILM] Seedance-first resume",error);notify(text("Bekleyen oyunculu sahne devam ettirilemedi: ","The waiting presenter scene could not resume: ")+clean(error&&error.message),"warning")}
     finally{starting=false;resumeKey=""}
   }
-
   document.addEventListener("click",function(event){
-    var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
-    if(!button)return;
-    var scope=button.closest('[data-module-root][data-module="adfilm"]')||root();
-    if(!enabled(scope)||!musicReady(project()))return;
-    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-    if(starting||button.disabled)return;
-    start(scope,button).catch(function(){});
+    var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');if(!button)return;
+    var scope=button.closest('[data-module-root][data-module="adfilm"]')||root();if(!enabled(scope)||!musicReady(project()))return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();if(starting||button.disabled)return;start(scope,button).catch(function(){});
   },true);
-
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){resume(event.detail.root||root(),project())},500)});
   document.addEventListener("aivo:adfilm-project-sync",function(event){var scope=root(),source=event&&event.detail&&event.detail.project;if(scope&&source)setTimeout(function(){resume(scope,source)},80)});
-
   window.AIVOAdFilmHybridController={start:start,enabled:enabled,isStarting:function(){return starting},captureLock:captureLock,resume:resume,projectFinalReady:projectFinalReady};
 })();
