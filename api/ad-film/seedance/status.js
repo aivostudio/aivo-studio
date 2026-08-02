@@ -10,8 +10,6 @@ import {
 
 const MODEL = "bytedance/seedance-2.0/reference-to-video";
 const QUEUE_URL = `https://queue.fal.run/${MODEL}`;
-const MAX_GENERATION_AGE_MS = 20 * 60 * 1000;
-const AVATAR_PIPELINE_START_GRACE_MS = 2 * 60 * 1000;
 
 function clean(value, max = 1600) {
   return String(value ?? "").trim().slice(0, max);
@@ -112,7 +110,18 @@ function outputFromGeneration(project, generation, videoUrl, seed, completedAt) 
   };
 }
 
+function isRecoverableAvatarStartFailure(project) {
+  const generation = project?.generation || {};
+  const reason = clean(generation.error || project?.error, 1200);
+  return (
+    reason === "avatar_pipeline_not_started" &&
+    Boolean(clean(generation.requestId, 240)) &&
+    !clean(generation.sourceVideoUrl, 4000)
+  );
+}
+
 function terminalFailureReason(project) {
+  if (isRecoverableAvatarStartFailure(project)) return "";
   const projectStatus = clean(project?.status, 80).toLowerCase();
   const generationStatus = clean(project?.generation?.status, 80).toLowerCase();
   const avatarStatus = clean(project?.avatar?.pipeline?.status, 80).toLowerCase();
@@ -133,36 +142,6 @@ function terminalFailureReason(project) {
       1200,
     );
   }
-  return "";
-}
-
-function generationAgeMs(generation) {
-  const startedAt = Date.parse(generation?.startedAt || "");
-  return Number.isFinite(startedAt) ? Math.max(0, Date.now() - startedAt) : null;
-}
-
-function staleGenerationReason(project) {
-  const generation = project?.generation || {};
-  const status = clean(generation.status, 80).toLowerCase();
-  if (!["queued", "processing"].includes(status)) return "";
-
-  const age = generationAgeMs(generation);
-  if (!Number.isFinite(age)) return "";
-
-  if (project?.avatar?.enabled === true) {
-    const pipeline = project?.avatar?.pipeline;
-    const productionId = clean(
-      generation.productionId ||
-      generation.input?.productionId ||
-      project?.productionPlan?.productionId,
-      160,
-    );
-    if (productionId && !pipeline && age > AVATAR_PIPELINE_START_GRACE_MS) {
-      return "avatar_pipeline_not_started";
-    }
-  }
-
-  if (age > MAX_GENERATION_AGE_MS) return "seedance_provider_timeout";
   return "";
 }
 
@@ -257,13 +236,32 @@ export default async function handler(req, res) {
     const projectId = clean(source.projectId, 120);
     if (!projectId) return sendJson(res, 400, { ok: false, error: "missing_project_id" });
 
-    const project = await getOwnedProject(user, projectId);
+    let project = await getOwnedProject(user, projectId);
     if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
+
+    if (isRecoverableAvatarStartFailure(project)) {
+      const now = new Date().toISOString();
+      project = await saveProject(user, {
+        ...project,
+        status: "processing",
+        error: null,
+        generation: {
+          ...(project.generation || {}),
+          status: "processing",
+          updatedAt: now,
+          completedAt: null,
+          avatarWaiting: true,
+          awaitingFinalComposite: true,
+          finalizing: false,
+          error: null,
+        },
+      });
+    }
 
     const generation = project.generation || {};
     const savedOutputs = normalizeOutputs(project);
     const avatarFinalRequired = project?.avatar?.enabled === true;
-    const terminalError = terminalFailureReason(project) || staleGenerationReason(project);
+    const terminalError = terminalFailureReason(project);
 
     if (terminalError) {
       const now = new Date().toISOString();
