@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — legacy finalizer compatibility */
 (function AIVO_AD_FILM_FINALIZE_OUTPUT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V11__)return;
-  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V11__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V12__)return;
+  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V12__=true;
 
   function loadOnce(path,version){
     var selector='script[src^="'+path+'"]';
@@ -22,6 +22,7 @@
   loadOnce("/js/ad-film.avatar-finalization-bridge.js","7");
   loadOnce("/js/ad-film.final-output-sync.js","4");
   loadOnce("/js/ad-film.final-output-ui-guard.js","2");
+  loadOnce("/js/ad-film.completed-state-guard.js","1");
 
   async function run(){
     if(window.AIVOAdFilmSeedanceFinalizing)return;
@@ -42,6 +43,7 @@
       if(window.AIVOAdFilmLivePreviewState&&typeof window.AIVOAdFilmLivePreviewState.sync==="function")window.AIVOAdFilmLivePreviewState.sync(data.project);
       if(window.AIVOAdFilmOutputGallery&&typeof window.AIVOAdFilmOutputGallery.render==="function")window.AIVOAdFilmOutputGallery.render(data.project);
       if(window.AIVOAdFilmOutputWorkflow&&typeof window.AIVOAdFilmOutputWorkflow.render==="function")window.AIVOAdFilmOutputWorkflow.render(data.project);
+      if(window.AIVOAdFilmCompletedStateGuard&&typeof window.AIVOAdFilmCompletedStateGuard.render==="function")window.AIVOAdFilmCompletedStateGuard.render();
     }catch(error){console.warn("[ADFILM] manual final output",error)}
     finally{window.AIVOAdFilmSeedanceFinalizing=false}
   }
