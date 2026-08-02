@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V75__) return;
-  window.__AIVO_AD_FILM_ASSETS_V75__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V76__) return;
+  window.__AIVO_AD_FILM_ASSETS_V76__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -100,7 +100,7 @@
     "/js/ad-film.voice-toggle-fix.js?v=2",
     "/js/ad-film.production-id-adapter.js?v=1",
     "/js/ad-film.production-save-guard.js?v=1",
-    "/js/ad-film.progress-lock.js?v=4",
+    "/js/ad-film.progress-lock.js?v=5",
     "/js/ad-film.music-preflight.js?v=4",
     "/js/ad-film.server-state-sync.js?v=1",
     "/js/ad-film.seedance-resume-guard.js?v=3",
