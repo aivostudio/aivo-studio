@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — canonical fresh-production coherence */
 (function AIVO_AD_FILM_PRODUCTION_COHERENCE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V3__)return;
-  window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V3__=true;
+  if(window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V4__)return;
+  window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V4__=true;
 
   var previousFetch=window.fetch.bind(window);
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
@@ -10,17 +10,19 @@
   var canonicalSnapshot=null;
 
   function clean(value){return String(value==null?"":value).trim()}
+  function lower(value){return clean(value).toLowerCase()}
   function urlOf(input){return typeof input==="string"?input:input&&input.url||""}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
-  function currentProjectId(){return clean(project()&&project().id||document.querySelector('[data-module-root][data-module="adfilm"]')&&document.querySelector('[data-module-root][data-module="adfilm"]').dataset.adfilmProjectId)}
+  function currentProjectId(){var scope=document.querySelector('[data-module-root][data-module="adfilm"]');return clean(project()&&project().id||scope&&scope.dataset.adfilmProjectId)}
   function lock(){return window.__AIVO_AD_FILM_PRODUCTION_LOCK__&&typeof window.__AIVO_AD_FILM_PRODUCTION_LOCK__==="object"?window.__AIVO_AD_FILM_PRODUCTION_LOCK__:null}
+  function forceFresh(){return window.__AIVO_AD_FILM_FORCE_FRESH__&&typeof window.__AIVO_AD_FILM_FORCE_FRESH__==="object"?window.__AIVO_AD_FILM_FORCE_FRESH__:null}
   function canonicalId(source){source=source||project()||{};var generation=source.generation||{},input=generation.input||{};return clean(generation.productionId||input.productionId||source.productionPlan&&source.productionPlan.productionId)}
-  function productionId(){return clean(launch&&launch.productionId||canonicalId()||lock()&&lock().id)}
+  function productionId(){var force=forceFresh(),currentLock=lock();return clean(launch&&launch.productionId||force&&force.productionId||currentLock&&currentLock.id||canonicalId())}
   function parseBody(init){if(!init||typeof init.body!=="string")return null;try{var data=JSON.parse(init.body);return data&&typeof data==="object"?data:null}catch(_){return null}}
   function withBody(init,data){var next=Object.assign({},init||{});next.headers=Object.assign({},init&&init.headers||{}, {"Content-Type":"application/json"});next.body=JSON.stringify(data);return next}
   async function readJson(response){try{return await response.clone().json()}catch(_){return null}}
   function syncProject(next,id){if(!next||typeof next!=="object")return;canonicalSnapshot=next;window.AIVOAdFilmActiveProject=next;document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||id||"",media:next.media||{}}}))}
-  function updateLatch(productionIdValue,startedAt,projectId){var now=Date.now(),current=window[LATCH_KEY]&&typeof window[LATCH_KEY]==="object"?window[LATCH_KEY]:{};window[LATCH_KEY]={projectId:clean(projectId||current.projectId||currentProjectId()),productionId:clean(productionIdValue||current.productionId),startedAt:clean(startedAt||current.startedAt)||new Date(now).toISOString(),until:Math.max(Number(current.until||0),now+5*60*1000)}}
+  function updateLatch(productionIdValue,startedAt,projectId){var now=Date.now(),current=window[LATCH_KEY]&&typeof window[LATCH_KEY]==="object"?window[LATCH_KEY]:{};window[LATCH_KEY]={projectId:clean(projectId||current.projectId||currentProjectId()),productionId:clean(productionIdValue||current.productionId),startedAt:clean(startedAt||current.startedAt)||new Date(now).toISOString(),until:Math.max(Number(current.until||0),now+30*60*1000)}}
   function optimisticLaunch(now,pid){
     var current=project();if(!current)return;
     var next=Object.assign({},current,{status:"processing",generation:{status:"processing",startedAt:now,updatedAt:now,requestId:null,outputId:null,productionId:pid,sourceVideoUrl:null,videoUrl:null,completedAt:null,avatarWaiting:false,awaitingFinalComposite:false,finalizing:false,sourceOnly:false,error:null,input:{productionId:pid}},activeOutputId:null,finalization:null,error:null,lastError:null,preparingNewVersion:true});
@@ -30,20 +32,25 @@
   function mergeCreated(data,projectId){
     if(!data||!data.generation)return;
     var current=project()||{};if(projectId&&clean(current.id)&&clean(current.id)!==clean(projectId))return;
+    var createdId=clean(data.production_id||data.generation.productionId||data.generation.input&&data.generation.input.productionId);
+    if(launch&&createdId&&createdId!==launch.productionId)return;
     var next=Object.assign({},current,{status:"processing",generation:data.generation,activeOutputId:data.activeOutputId||null,finalization:null,error:null,lastError:null,preparingNewVersion:false});
-    if(data.director_plan)next.productionPlan=Object.assign({},data.director_plan,{productionId:clean(data.production_id||data.generation.productionId)});
+    if(data.director_plan)next.productionPlan=Object.assign({},data.director_plan,{productionId:createdId});
     if(current.avatar)next.avatar=Object.assign({},current.avatar,{pipeline:null,videoUrl:null});
-    canonicalSnapshot=next;syncProject(next,projectId);updateLatch(data.production_id||data.generation.productionId,data.generation.startedAt,projectId);
+    canonicalSnapshot=next;syncProject(next,projectId);updateLatch(createdId,data.generation.startedAt,projectId);
     if(launch)launch.accepted=true;
   }
   function isSeedanceCreate(url,init){return url.indexOf("/api/ad-film/seedance/create")>=0&&clean(init&&init.method||"GET").toUpperCase()==="POST"}
   function isSeedanceStatus(url){return url.indexOf("/api/ad-film/seedance/status")>=0}
   function isPipelineWrite(url,init){if(clean(init&&init.method||"GET").toUpperCase()!=="POST")return false;return url.indexOf("/api/ad-film/avatar/pipeline/prepare")>=0||url.indexOf("/api/ad-film/avatar/pipeline/create-native-fixed")>=0||url.indexOf("/api/ad-film/avatar/pipeline/create-after-seedance")>=0}
+  function sameLaunchProject(next){return launch&&next&&clean(next.id)===clean(launch.projectId)}
   function staleProject(next){
-    if(!launch||launch.accepted||!next||clean(next.id)!==clean(launch.projectId))return false;
-    var id=canonicalId(next);if(id&&id===launch.productionId)return false;
-    var started=Date.parse(next.generation&&next.generation.startedAt||"");
-    return !id||!Number.isFinite(started)||started<Date.parse(launch.startedAt);
+    if(!sameLaunchProject(next))return false;
+    var id=canonicalId(next);
+    if(id===launch.productionId)return false;
+    var status=lower(next&&next.status||next&&next.generation&&next.generation.status);
+    if(["failed","cancelled","canceled"].indexOf(status)>=0&&id===launch.productionId)return false;
+    return true;
   }
   async function supersede(projectId,pid){
     var response=await previousFetch("/api/ad-film/production/supersede",{method:"POST",credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({projectId:projectId,production_id:pid})});
@@ -56,9 +63,7 @@
   window.fetch=async function(input,init){
     var url=urlOf(input),body=parseBody(init),nextInit=init;
 
-    if((isSeedanceCreate(url,init)||isSeedanceStatus(url)||isPipelineWrite(url,init))&&launch&&!launch.accepted){
-      await awaitPrepared();
-    }
+    if((isSeedanceCreate(url,init)||isSeedanceStatus(url)||isPipelineWrite(url,init))&&launch&&!launch.accepted){await awaitPrepared()}
 
     if(isSeedanceCreate(url,init)&&body){
       var pid=productionId();
@@ -69,13 +74,17 @@
     }
 
     if(isPipelineWrite(url,init)&&body){
-      var accepted=canonicalId()||productionId();
-      if(accepted&&clean(body.production_id)!==accepted){body.production_id=accepted;nextInit=withBody(init,body)}
+      var expected=productionId()||canonicalId();
+      if(expected&&clean(body.production_id)!==expected){body.production_id=expected;nextInit=withBody(init,body)}
       var response=await previousFetch(input,nextInit),data=await readJson(response);
-      if(response.status===409&&data&&data.error==="production_lock_mismatch"&&clean(data.accepted_production_id)){
-        body.production_id=clean(data.accepted_production_id);updateLatch(body.production_id,null,body.projectId);response=await previousFetch(input,withBody(init,body));data=await readJson(response);
+      if(response.status===409&&data&&data.error==="production_lock_mismatch"){
+        console.error("[ADFILM] stale production lock rejected",{expected:expected,accepted:data.accepted_production_id||null,projectId:body.projectId||null});
+        return response;
       }
-      if(response.ok&&data&&data.project)syncProject(data.project,body.projectId);
+      if(response.ok&&data&&data.project){
+        var responseId=canonicalId(data.project);
+        if(!launch||!responseId||responseId===launch.productionId)syncProject(data.project,body.projectId);
+      }
       return response;
     }
 
@@ -96,10 +105,16 @@
     var now=new Date().toISOString();
     var pid="adfilm-"+Date.now()+"-"+Math.random().toString(36).slice(2,10);
     window.__AIVO_AD_FILM_LAUNCH_EPOCH__=now;
-    window.__AIVO_AD_FILM_FORCE_FRESH__={projectId:projectId,productionId:pid,startedAt:now};
+    window.__AIVO_AD_FILM_FORCE_FRESH__={projectId:projectId,productionId:pid,startedAt:now,until:Date.now()+30*60*1000};
     window.__AIVO_AD_FILM_PRODUCTION_LOCK__=Object.freeze({id:pid,projectId:projectId,capturedAt:now});
     launch={projectId:projectId,productionId:pid,startedAt:now,accepted:false,promise:null};
     updateLatch(pid,now,projectId);optimisticLaunch(now,pid);
-    launch.promise=supersede(projectId,pid).then(function(data){if(data&&data.project){var prepared=Object.assign({},data.project,{status:"processing",generation:canonicalSnapshot&&canonicalSnapshot.generation||null,preparingNewVersion:true});canonicalSnapshot=prepared;window.AIVOAdFilmActiveProject=prepared}return data}).catch(function(error){launch=null;throw error});
+    launch.promise=supersede(projectId,pid).then(function(data){
+      if(data&&data.project){
+        var prepared=Object.assign({},data.project,{status:"processing",generation:canonicalSnapshot&&canonicalSnapshot.generation||null,preparingNewVersion:true,error:null,lastError:null});
+        canonicalSnapshot=prepared;window.AIVOAdFilmActiveProject=prepared;
+      }
+      return data;
+    }).catch(function(error){launch=null;throw error});
   },true);
 })();
