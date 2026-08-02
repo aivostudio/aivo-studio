@@ -1,6 +1,8 @@
 // api/ad-film/seedance/result.js
 export const config = { runtime: "nodejs" };
 
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { r2 } from "../../_lib/r2.js";
 import {
   getOwnedProject,
   resolveAdFilmUser,
@@ -34,6 +36,82 @@ function normalizeOutputs(project) {
   return list.slice(0, 30);
 }
 
+function outputIdentity(item) {
+  return `${clean(item?.id, 240)}:${Number.parseInt(item?.version, 10) || 1}`;
+}
+
+function storageKeyOf(item) {
+  const recoveredKey = clean(item?.recoveredKey, 1600);
+  if (recoveredKey.startsWith("uploads/ad-film/")) return recoveredKey;
+
+  const videoUrl = clean(item?.videoUrl, 4000);
+  if (!videoUrl) return "";
+  try {
+    const url = new URL(videoUrl);
+    const key = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+    return key.startsWith("uploads/ad-film/") ? key : "";
+  } catch (_) {
+    return "";
+  }
+}
+
+function deletionRecord(item, fallbackId) {
+  const now = new Date().toISOString();
+  return {
+    id: clean(item?.id || fallbackId, 240),
+    version: Number.parseInt(item?.version, 10) || 1,
+    videoUrl: clean(item?.videoUrl, 4000) || null,
+    recoveredKey: clean(item?.recoveredKey, 1600) || null,
+    storageKey: storageKeyOf(item) || null,
+    deletedAt: now,
+  };
+}
+
+function mergeDeletedOutputs(project, record) {
+  const previous = Array.isArray(project?.deletedOutputs)
+    ? project.deletedOutputs.filter(Boolean)
+    : [];
+  const identity = outputIdentity(record);
+  return [
+    record,
+    ...previous.filter((item) => {
+      if (outputIdentity(item) === identity) return false;
+      if (record.storageKey && clean(item?.storageKey, 1600) === record.storageKey) return false;
+      if (record.videoUrl && clean(item?.videoUrl, 4000) === record.videoUrl) return false;
+      return true;
+    }),
+  ].slice(0, 500);
+}
+
+function alreadyDeleted(project, outputId, outputVersion) {
+  const requestedVersion = Number.parseInt(outputVersion, 10) || 0;
+  return (Array.isArray(project?.deletedOutputs) ? project.deletedOutputs : []).some((item) => {
+    if (clean(item?.id, 240) !== clean(outputId, 240)) return false;
+    return !requestedVersion || (Number.parseInt(item?.version, 10) || 1) === requestedVersion;
+  });
+}
+
+async function deleteStoredObject(item) {
+  const Bucket = process.env.R2_BUCKET;
+  const Key = storageKeyOf(item);
+  if (!Bucket || !Key) return false;
+  try {
+    await r2.send(new DeleteObjectCommand({ Bucket, Key }));
+    return true;
+  } catch (error) {
+    console.warn("[ad-film/seedance/result] storage delete failed", Key, error);
+    return false;
+  }
+}
+
+function findOutput(outputs, outputId, outputVersion) {
+  const requestedVersion = Number.parseInt(outputVersion, 10) || 0;
+  return outputs.find((item) => {
+    if (clean(item?.id, 240) !== clean(outputId, 240)) return false;
+    return !requestedVersion || (Number.parseInt(item?.version, 10) || 1) === requestedVersion;
+  });
+}
+
 export default async function handler(req, res) {
   try {
     if (!["DELETE", "POST", "PATCH"].includes(req.method)) {
@@ -52,6 +130,7 @@ export default async function handler(req, res) {
 
     const outputs = normalizeOutputs(project);
     const requestedOutputId = clean(req.query?.outputId || req.body?.outputId, 240);
+    const requestedOutputVersion = clean(req.query?.outputVersion || req.query?.version || req.body?.outputVersion || req.body?.version, 20);
     const action = clean(req.body?.action || req.query?.action, 40).toLowerCase();
 
     if ((req.method === "POST" || req.method === "PATCH") && action === "prepare-new-version") {
@@ -62,6 +141,7 @@ export default async function handler(req, res) {
         activeOutputId: null,
         preparingNewVersion: true,
         generation: null,
+        intentionalEmpty: false,
       });
       return sendJson(res, 200, {
         ok: true,
@@ -74,7 +154,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST" || req.method === "PATCH") {
-      const selected = outputs.find((item) => item.id === requestedOutputId);
+      const selected = findOutput(outputs, requestedOutputId, requestedOutputVersion);
       if (!selected) return sendJson(res, 404, { ok: false, error: "output_not_found" });
       const saved = await saveProject(user, {
         ...project,
@@ -82,6 +162,7 @@ export default async function handler(req, res) {
         outputs,
         activeOutputId: selected.id,
         preparingNewVersion: false,
+        intentionalEmpty: false,
         generation: project.generation?.videoUrl === selected.videoUrl
           ? project.generation
           : {
@@ -113,13 +194,39 @@ export default async function handler(req, res) {
     }
 
     const targetId = requestedOutputId || project.activeOutputId || outputs[0]?.id || "";
-    const remaining = outputs.filter((item) => item.id !== targetId);
+    const target = findOutput(outputs, targetId, requestedOutputVersion);
+
+    if (!target) {
+      if (targetId && alreadyDeleted(project, targetId, requestedOutputVersion)) {
+        return sendJson(res, 200, {
+          ok: true,
+          projectId,
+          removed: true,
+          alreadyRemoved: true,
+          removedOutputId: targetId,
+          project,
+          outputs: project.outputs || [],
+          activeOutputId: project.activeOutputId || null,
+        });
+      }
+      return sendJson(res, 404, { ok: false, error: "output_not_found" });
+    }
+
+    const targetIdentity = outputIdentity(target);
+    const remaining = outputs.filter((item) => outputIdentity(item) !== targetIdentity);
     const activeOutputId = remaining[0]?.id || null;
     const activeOutput = remaining[0] || null;
+    const deletedAt = new Date().toISOString();
+    const record = deletionRecord(target, targetId);
+    const deletedOutputs = mergeDeletedOutputs(project, record);
+
     const saved = await saveProject(user, {
       ...project,
       status: activeOutput ? "completed" : "draft",
       outputs: remaining,
+      deletedOutputs,
+      lastOutputDeletedAt: deletedAt,
+      intentionalEmpty: !activeOutput,
       activeOutputId,
       preparingNewVersion: false,
       generation: activeOutput
@@ -144,11 +251,15 @@ export default async function handler(req, res) {
         : null,
     });
 
+    const storageDeleted = await deleteStoredObject(target);
+
     return sendJson(res, 200, {
       ok: true,
       projectId,
       removed: true,
-      removedOutputId: targetId,
+      removedOutputId: target.id,
+      removedOutputVersion: target.version || 1,
+      storageDeleted,
       project: saved,
       outputs: saved.outputs || [],
       activeOutputId: saved.activeOutputId || null,
