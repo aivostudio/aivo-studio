@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — Seedance-first hybrid production controller */
 (function AIVO_AD_FILM_HYBRID_CONTROLLER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V5__)return;
-  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V5__=true;
+  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V6__)return;
+  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V6__=true;
 
   var starting=false;
   var resumeKey="";
@@ -24,6 +24,13 @@
   function syncProject(next,id){if(!next)return;window.AIVOAdFilmActiveProject=next;document.dispatchEvent(new CustomEvent('aivo:adfilm-project-sync',{detail:{project:next,projectId:next.id||id||'',media:next.media||{}}}))}
   function normalizeDuration(value){value=clean(value);return value==='5'||value==='10'||value==='15'?value:''}
   function normalizeRatio(value){value=clean(value);return value==='4:5'?'3:4':value}
+  function sourceUrl(source){return clean(source&&source.generation&&source.generation.sourceVideoUrl||source&&source.generation&&source.generation.videoUrl)}
+  function recoverableAvatarStart(source){
+    if(!source||!source.avatar||source.avatar.enabled!==true||!sourceUrl(source))return false;
+    var pipeline=source.avatar.pipeline;
+    if(pipeline&&['motion_queued','motion_processing','lipsync_queued','lipsync_processing','rendering','completed'].indexOf(clean(pipeline.status))>=0)return false;
+    return true;
+  }
 
   function captureLock(scope){
     var duration=normalizeDuration(choice(scope,'duration','10'))||'10';
@@ -99,9 +106,9 @@
   async function waitForSeedanceSource(scope,id){
     for(var i=0;i<700;i++){
       var data=await request('/api/ad-film/seedance/status?projectId='+encodeURIComponent(id),{method:'GET'});
-      if(data.status==='FAILED')throw new Error(clean(data.error||data.generation&&data.generation.error)||'seedance_failed');
       var source=clean(data.source_video_url||data.generation&&data.generation.sourceVideoUrl);
-      if(data.source_ready===true&&source)return data;
+      if(source&&(data.source_ready===true||clean(data.error||data.generation&&data.generation.error)==='avatar_pipeline_not_started'))return data;
+      if(data.status==='FAILED')throw new Error(clean(data.error||data.generation&&data.generation.error)||'seedance_failed');
       setStage(scope,text('Önce sinematik ürün filmi hazırlanıyor','Creating the cinematic product film first'),text('Seedance tüm sahne, efekt ve geçişleri tamamlıyor. Oyuncu motoru kaynak film hazır olmadan başlamayacak.','Seedance is completing the scenes, effects and transitions. The presenter engine will not start before the source film is ready.'));
       await sleep(3000);
     }
@@ -122,13 +129,25 @@
     return avatar;
   }
 
+  async function recoverExisting(scope,button,source){
+    var lock=lockFromProject(source);if(!lock||!sourceUrl(source))return false;
+    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
+    setStage(scope,text('Hazır ürün filmi kurtarılıyor','Recovering the completed product film'),text('Seedance videosu yeniden üretilmeden bekleyen avatar sahnesi başlatılıyor.','The waiting presenter scene is starting without regenerating the completed Seedance video.'));
+    var prepared=await prepareAvatar(lock.projectId,lock);
+    if(prepared&&prepared.project)syncProject(prepared.project,lock.projectId);
+    await continueAfterSeedance(scope,button,lock.projectId,lock);
+    return true;
+  }
+
   async function start(scope,button){
     if(starting)return;
     scope=scope||root();button=button||scope&&scope.querySelector('[data-adfilm-build]');
     if(!scope||!enabled(scope))return;
     starting=true;setBusy(button,true);
-    var requested=captureLock(scope);
     try{
+      var current=project();
+      if(recoverableAvatarStart(current)&&await recoverExisting(scope,button,current))return;
+      var requested=captureLock(scope);
       var id=requested.projectId;if(!id)throw new Error('project_not_ready');
       var previous=clean(project()&&project().generation&&project().generation.requestId);
       setStage(scope,text('Ürün filmi başlatılıyor','Starting product film'),text('Seedance önce 15 saniyelik ana reklam filmini tek parça olarak kuracak.','Seedance will first build the main advertising film as one coherent piece.'));
@@ -152,12 +171,17 @@
 
   async function resume(scope,source){
     source=source||project();
+    if(!scope||starting)return;
     var pipeline=source&&source.avatar&&source.avatar.pipeline;
-    if(!scope||!pipeline||pipeline.status!=='waiting_for_seedance'||starting)return;
+    var shouldResume=pipeline&&pipeline.status==='waiting_for_seedance'||recoverableAvatarStart(source);
+    if(!shouldResume)return;
     var lock=lockFromProject(source);if(!lock)return;
     var key=lock.projectId+'|'+lock.id;if(resumeKey===key)return;resumeKey=key;
     starting=true;
-    try{await continueAfterSeedance(scope,scope.querySelector('[data-adfilm-build]'),lock.projectId,lock)}
+    try{
+      if(recoverableAvatarStart(source))await recoverExisting(scope,scope.querySelector('[data-adfilm-build]'),source);
+      else await continueAfterSeedance(scope,scope.querySelector('[data-adfilm-build]'),lock.projectId,lock);
+    }
     catch(error){console.error('[ADFILM] Seedance-first resume',error);notify(text('Bekleyen oyunculu sahne devam ettirilemedi: ','The waiting presenter scene could not resume: ')+clean(error&&error.message),'warning')}
     finally{starting=false;resumeKey=""}
   }
