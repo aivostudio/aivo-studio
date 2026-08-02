@@ -66,6 +66,7 @@ function jobAgeMs(job) {
   return Number.isFinite(submittedAt) ? Math.max(0, Date.now() - submittedAt) : 0;
 }
 function motionQueueExpired(pipeline, result) {
+  if (pipeline?.directTalkingAvatar === true) return false;
   const motion = pipeline?.motion || {};
   return result?.status === "IN_QUEUE" && motion.model !== KLING_STANDARD_I2V && jobAgeMs(motion) >= MOTION_QUEUE_FALLBACK_MS;
 }
@@ -219,7 +220,7 @@ function fallbackMotionInput(pipeline) {
 }
 async function queueMotionFallback(pipeline) {
   const current = pipeline?.motion || {};
-  if (current.model === KLING_STANDARD_I2V) return null;
+  if (pipeline?.directTalkingAvatar === true || current.model === KLING_STANDARD_I2V) return null;
   const job = await submitQueue(KLING_STANDARD_I2V, fallbackMotionInput(pipeline));
   return {
     ...job,
@@ -290,16 +291,18 @@ export default async function handler(req,res) {
       const result = await readJob(pipeline.motion);
       if (motionQueueExpired(pipeline,result)) {
         const fallback = await queueMotionFallback(pipeline);
-        pipeline = {
-          ...pipeline,
-          status:"motion_queued",
-          stage:"motion",
-          originalStartedAt:pipeline.originalStartedAt || pipeline.startedAt,
-          startedAt:now,
-          updatedAt:now,
-          error:null,
-          motion:fallback,
-        };
+        if (fallback) {
+          pipeline = {
+            ...pipeline,
+            status:"motion_queued",
+            stage:"motion",
+            originalStartedAt:pipeline.originalStartedAt || pipeline.startedAt,
+            startedAt:now,
+            updatedAt:now,
+            error:null,
+            motion:fallback,
+          };
+        }
       } else if (result.status === "FAILED") {
         pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error:result.error||"avatar_motion_failed",motion:{...pipeline.motion,error:result.error||"avatar_motion_failed"} };
       } else if (result.status === "COMPLETED" && result.videoUrl) {
