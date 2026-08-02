@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — advance avatar, enforce SLA and release finalization */
 (function AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V6__)return;
-  window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V6__=true;
+  if(window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V7__)return;
+  window.__AIVO_AD_FILM_AVATAR_FINALIZATION_BRIDGE_V7__=true;
 
   var previousFetch=window.fetch.bind(window);
   var avatarFlights=new Map();
@@ -41,7 +41,13 @@
   function pipelineNeedsStart(current){
     var pipeline=current&&current.avatar&&current.avatar.pipeline;
     var status=clean(pipeline&&pipeline.status).toLowerCase();
-    return !pipeline||!status||status==="waiting_for_seedance"||status==="idle";
+    var videoUrl=clean(pipeline&&pipeline.videoUrl);
+    var pipelineProductionId=clean(pipeline&&pipeline.productionId);
+    var currentProductionId=productionId(current);
+    if(!pipeline||!status||status==="waiting_for_seedance"||status==="idle")return true;
+    if(status==="completed"&&!videoUrl)return true;
+    if(currentProductionId&&pipelineProductionId&&currentProductionId!==pipelineProductionId)return true;
+    return false;
   }
   function productionId(current){
     var generation=generationOf(current),input=generation.input||{};
@@ -59,16 +65,16 @@
   }
   function duration(current){
     var generation=generationOf(current),input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
-    return clean(pipeline.duration||input.duration||current&&current.output&&current.output.duration||"10");
+    return clean(input.duration||current&&current.output&&current.output.duration||pipeline.duration||"10");
   }
   function ratio(current){
     var generation=generationOf(current),input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
-    var value=clean(pipeline.aspectRatio||input.aspectRatio||input.aspect_ratio||current&&current.output&&current.output.aspectRatio||"16:9");
+    var value=clean(input.aspectRatio||input.aspect_ratio||current&&current.output&&current.output.aspectRatio||pipeline.aspectRatio||"16:9");
     return value==="4:5"?"3:4":value;
   }
   function quality(current){
     var generation=generationOf(current),input=generation.input||{},pipeline=current&&current.avatar&&current.avatar.pipeline||{};
-    return clean(pipeline.quality||input.resolution||current&&current.output&&current.output.quality||"1080p").toLowerCase();
+    return clean(input.resolution||current&&current.output&&current.output.quality||pipeline.quality||"1080p").toLowerCase();
   }
 
   async function enforceGuard(id){
@@ -106,7 +112,10 @@
         });
         var data=await readJson(response)||{};
         if(response.ok&&data.project){syncProject(data.project,id);return data.project}
-        if(response.status===409&&data.error==="production_already_completed")return current;
+        if(response.status===409&&data.error==="production_already_completed"){
+          console.warn("[ADFILM] avatar start rejected by completed-output guard",data);
+          return current;
+        }
         if(response.status===409&&data.error==="production_lock_mismatch"){
           console.warn("[ADFILM] avatar start skipped: production lock unavailable",data);
           return current;
