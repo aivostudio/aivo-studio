@@ -1,14 +1,14 @@
-/* AIVO AI Reklam Filmi — stable one-second progress UI */
+/* AIVO AI Reklam Filmi — stable customer-facing production progress */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V5__)return;
-  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V5__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V6__)return;
+  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V6__=true;
 
   var timer=null;
-  var baseSeconds=0;
-  var baseAt=0;
-  var lastBusyTitle="";
-  var lastBusyDetail="";
+  var visibleStage=null;
+  var pendingStage=null;
+  var visibleStageAt=0;
+  var MIN_STAGE_MS=4000;
 
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function status(){var scope=root();return scope&&scope.querySelector('[data-adfilm-engine-status]')}
@@ -19,46 +19,126 @@
   function clean(value){return String(value==null?"":value).trim()}
   function setText(node,value){value=String(value==null?"":value);if(node&&node.textContent!==value)node.textContent=value}
   function setClass(node,value){if(node&&node.className!==value)node.className=value}
-  function generating(){var button=buildButton();return!!(button&&(button.classList.contains("is-generating")||button.classList.contains("is-loading")||button.getAttribute("aria-busy")==="true"))}
-  function parseElapsed(value){var match=String(value||"").match(/(\d+)\s*(?:dk|min)\s*(\d+)\s*(?:sn|sec)/i);return match?Number(match[1])*60+Number(match[2]):null}
+  function pipeline(source){return source&&source.avatar&&source.avatar.pipeline||{}}
+  function generation(source){return source&&source.generation||{}}
+  function finalization(source){var gen=generation(source);return source&&source.finalization||gen.finalization||{}}
+  function statusValue(value){return clean(value).toLowerCase()}
+  function isOneOf(value,list){return list.indexOf(statusValue(value))>=0}
   function formatElapsed(total){var minutes=Math.floor(total/60),seconds=total%60;return minutes+" "+(english()?"min":"dk")+" "+String(seconds).padStart(2,"0")+" "+(english()?"sec":"sn")}
   function elapsedFrom(value){var started=Date.parse(value||"");if(!Number.isFinite(started))return"";return formatElapsed(Math.max(0,Math.floor((Date.now()-started)/1000)))}
-  function pipeline(source){return source&&source.avatar&&source.avatar.pipeline||{}}
   function productionStartedAt(source){
-    var generation=source&&source.generation||{};
-    var current=pipeline(source);
-    return generation.startedAt||generation.createdAt||current.productionStartedAt||current.originalStartedAt||current.startedAt||current.updatedAt||"";
+    var gen=generation(source),current=pipeline(source);
+    return gen.startedAt||gen.createdAt||current.productionStartedAt||current.originalStartedAt||current.startedAt||current.updatedAt||"";
   }
-  function pipelineActive(source){
-    var state=clean(pipeline(source).status).toLowerCase();
-    return ["waiting_for_seedance","motion_queued","motion_processing","lipsync_queued","lipsync_processing","rendering"].indexOf(state)>=0;
+  function pipelineActive(source){return isOneOf(pipeline(source).status,["waiting_for_seedance","motion_queued","motion_processing","lipsync_queued","lipsync_processing","rendering"])}
+  function generationActive(source){
+    var gen=generation(source),state=statusValue(gen.status),projectState=statusValue(source&&source.status);
+    return ["queued","processing","running","in_queue"].indexOf(state)>=0||["queued","processing","running","in_queue"].indexOf(projectState)>=0||gen.awaitingFinalComposite===true||gen.avatarWaiting===true||gen.finalizing===true;
   }
-  function totalElapsedSuffix(source){
-    var elapsed=elapsedFrom(productionStartedAt(source));
-    return elapsed?" · "+text("Toplam geçen süre: ","Total elapsed: ")+elapsed:"";
+  function generating(){
+    var button=buildButton();
+    return Boolean(button&&(button.classList.contains("is-generating")||button.classList.contains("is-loading")||button.getAttribute("aria-busy")==="true"));
   }
-  function activeStageCopy(source){
-    var current=pipeline(source),state=clean(current.status).toLowerCase();
-    var suffix=totalElapsedSuffix(source);
-    if(state==="waiting_for_seedance")return{title:text("Sinematik ürün filmi hazırlanıyor","Creating the cinematic product film"),detail:text("Seedance sahneleri, efektleri ve geçişleri hazırlıyor","Seedance is preparing scenes, effects and transitions")+suffix};
-    if(state.indexOf("lipsync")===0)return{title:text("Oyuncunun konuşması hazırlanıyor","Synchronizing presenter speech"),detail:text("Dudak, yüz ve konuşma zamanlaması hazırlanıyor","Lip, face and speech timing are being prepared")+suffix};
-    if(state==="rendering")return{title:text("Reklam filminin final montajı hazırlanıyor","Preparing the final commercial edit"),detail:text("Ürün filmi, oyunculu sahne, ses, müzik ve logo birleştiriliyor","Combining product film, presenter, narration, music and logo")+suffix};
-    return{title:text("Oyuncu gerçek reklam sahnesine yerleştiriliyor","Integrating presenter into the real ad scene"),detail:text("Oyuncu videosu üretiliyor","The presenter video is being generated")+suffix};
-  }
+  function productionActive(source){return Boolean(source&&(pipelineActive(source)||generationActive(source)||generating()))}
   function finalReady(source){
-    if(pipelineActive(source))return false;
-    var generation=source&&source.generation||{};
-    var finalization=generation.finalization||source&&source.finalization||{};
-    var current=pipeline(source);
-    if(generation.awaitingFinalComposite===true||generation.avatarWaiting===true||generation.sourceOnly===true)return false;
-    if(clean(finalization.status).toLowerCase()==="completed"&&clean(generation.videoUrl))return true;
-    if(Number(generation.mixVersion||0)>=4&&clean(generation.videoUrl))return true;
-    if(clean(generation.status).toLowerCase()==="completed"&&clean(generation.videoUrl))return true;
-    return clean(current.status).toLowerCase()==="completed"&&clean(current.videoUrl)&&clean(generation.videoUrl);
+    if(!source||pipelineActive(source))return false;
+    var gen=generation(source),finish=finalization(source),current=pipeline(source);
+    if(gen.awaitingFinalComposite===true||gen.avatarWaiting===true||gen.sourceOnly===true||gen.finalizing===true)return false;
+    if(statusValue(finish.status)==="completed"&&clean(gen.videoUrl))return true;
+    if(Number(gen.mixVersion||0)>=4&&clean(gen.videoUrl))return true;
+    if(statusValue(gen.status)==="completed"&&clean(gen.videoUrl))return true;
+    return statusValue(current.status)==="completed"&&clean(current.videoUrl)&&clean(gen.videoUrl);
+  }
+  function terminalState(source){
+    var value=statusValue(source&&source.status||generation(source).status);
+    if(value==="cancelled"||value==="canceled")return"cancelled";
+    if(value==="failed")return"failed";
+    return"";
+  }
+  function stage(id,title,description){return{id:id,title:title,description:description}}
+  function stageFor(source){
+    var gen=generation(source),current=pipeline(source),finish=finalization(source);
+    var genState=statusValue(gen.status),pipeState=statusValue(current.status),finishState=statusValue(finish.status);
+    var sourceReady=Boolean(clean(gen.sourceVideoUrl)||gen.sourceReady===true);
+    var avatarEnabled=Boolean(source&&source.avatar&&source.avatar.enabled===true);
+
+    if(!clean(gen.requestId)&&!sourceReady)return stage(1,text("Hazırlık yapılıyor","Preparing production"),text("Seçimleriniz kontrol ediliyor ve üretim planı oluşturuluyor.","Your selections are being checked and the production plan is being created."));
+
+    if(pipeState==="waiting_for_seedance"||(!sourceReady&&["queued","processing","running","in_queue"].indexOf(genState)>=0)){
+      return stage(2,text("Sahneler hazırlanıyor","Preparing scenes"),text("Geçişler, efektler ve görsel akış oluşturuluyor.","Transitions, effects and the visual flow are being created."));
+    }
+
+    if(avatarEnabled&&["motion_queued","motion_processing","lipsync_queued","lipsync_processing"].indexOf(pipeState)>=0){
+      return stage(3,text("Oyuncu sahneye yerleştiriliyor","Placing the presenter into the scene"),text("Oyuncu, konuşma ve sahne uyumu hazırlanıyor.","The presenter, speech and scene timing are being aligned."));
+    }
+
+    if((avatarEnabled&&pipeState==="completed"&&gen.awaitingFinalComposite===true)||gen.avatarWaiting===false&&gen.awaitingFinalComposite===true&&!gen.finalizing){
+      return stage(4,text("Müzik ve ses düzenleniyor","Arranging music and sound"),text("Konuşma, müzik ve ses seviyeleri dengeleniyor.","Narration, music and sound levels are being balanced."));
+    }
+
+    if(["queued","processing","running","rendering"].indexOf(finishState)>=0||pipeState==="rendering"){
+      return stage(5,text("Son rötuşlar yapılıyor","Applying final touches"),text("Görüntü, ses, logo ve sahne geçişleri son kez kontrol ediliyor.","Video, sound, logo and scene transitions are receiving a final review."));
+    }
+
+    if(gen.finalizing===true||sourceReady&&gen.awaitingFinalComposite===true){
+      return stage(6,text("Video dışa aktarılıyor","Exporting video"),text("Reklam filminiz izlemeye hazır hale getiriliyor.","Your advertising film is being prepared for playback."));
+    }
+
+    return stage(2,text("Sahneler hazırlanıyor","Preparing scenes"),text("Geçişler, efektler ve görsel akış oluşturuluyor.","Transitions, effects and the visual flow are being created."));
+  }
+  function stableStage(next){
+    var now=Date.now();
+    if(!visibleStage){visibleStage=next;visibleStageAt=now;pendingStage=null;return visibleStage}
+    if(next.id===visibleStage.id){pendingStage=null;return visibleStage}
+    if(now-visibleStageAt>=MIN_STAGE_MS){visibleStage=next;visibleStageAt=now;pendingStage=null;return visibleStage}
+    pendingStage=next;
+    return visibleStage;
+  }
+  function maybeAdvancePending(){
+    if(pendingStage&&Date.now()-visibleStageAt>=MIN_STAGE_MS){visibleStage=pendingStage;pendingStage=null;visibleStageAt=Date.now()}
+  }
+  function ensureLayout(node){
+    if(!node)return null;
+    var small=node.querySelector("small");
+    if(!small)return null;
+    if(!small.querySelector("[data-adfilm-stage-wrap]")){
+      small.innerHTML='<span class="adfilm-stage-wrap" data-adfilm-stage-wrap><span class="adfilm-stage-count" data-adfilm-stage-count></span><strong class="adfilm-stage-title" data-adfilm-stage-title></strong><span class="adfilm-stage-description" data-adfilm-stage-description></span><span class="adfilm-stage-time" data-adfilm-stage-time></span></span>';
+    }
+    return{
+      count:small.querySelector("[data-adfilm-stage-count]"),
+      title:small.querySelector("[data-adfilm-stage-title]"),
+      description:small.querySelector("[data-adfilm-stage-description]"),
+      time:small.querySelector("[data-adfilm-stage-time]")
+    };
+  }
+  function activateButtonState(active){
+    var button=buildButton(),action=root()&&root().querySelector(".adfilm-actionbar");
+    if(button){
+      button.disabled=Boolean(active);
+      button.classList.toggle("is-generating",Boolean(active));
+      if(active)button.setAttribute("aria-busy","true");else{button.classList.remove("is-loading","is-music-preparing");button.removeAttribute("aria-busy")}
+    }
+    if(action)action.classList.toggle("is-engine-active",Boolean(active));
+  }
+  function renderActive(source){
+    var node=status();if(!node||!productionActive(source)||finalReady(source)||terminalState(source))return false;
+    maybeAdvancePending();
+    var current=stableStage(stageFor(source)),layout=ensureLayout(node);
+    setClass(node,"adfilm-engine-status is-visible is-busy");
+    node.setAttribute("data-stage",String(current.id));
+    setText(node.querySelector("b"),text("Reklam filminiz hazırlanıyor","Your advertising film is being prepared"));
+    if(layout){
+      setText(layout.count,text("Aşama ","Stage ")+current.id+"/6");
+      setText(layout.title,current.title);
+      setText(layout.description,current.description);
+      var elapsed=elapsedFrom(productionStartedAt(source));
+      setText(layout.time,elapsed?text("Toplam geçen süre: ","Total elapsed: ")+elapsed:"");
+    }
+    activateButtonState(true);
+    return true;
   }
   function completedDetail(source){
-    var generation=source&&source.generation||{};
-    var input=generation.input||{};
+    var gen=generation(source),input=gen.input||{};
     var output=(Array.isArray(source&&source.outputs)?source.outputs:[]).find(function(item){return clean(item&&item.id)===clean(source&&source.activeOutputId)})||{};
     var parts=[text("Tamamlandı","Completed")];
     var duration=clean(output.duration||input.duration||source&&source.output&&source.output.duration);if(duration)parts.push(duration+" "+text("sn","sec"));
@@ -67,62 +147,38 @@
     var total=elapsedFrom(productionStartedAt(source));if(total)parts.push(text("Toplam ","Total ")+total);
     return parts.join(" · ");
   }
-  function normalizeActive(){
-    var source=project(),node=status();if(!node||!pipelineActive(source))return false;
-    var copy=activeStageCopy(source);
-    setClass(node,"adfilm-engine-status is-visible is-busy");
-    setText(node.querySelector("b"),copy.title);
-    setText(node.querySelector("small"),copy.detail);
-    var button=buildButton();
-    if(button){button.disabled=true;button.classList.add("is-generating");if(button.getAttribute("aria-busy")!=="true")button.setAttribute("aria-busy","true")}
-    var action=root()&&root().querySelector(".adfilm-actionbar");if(action&&!action.classList.contains("is-engine-active"))action.classList.add("is-engine-active");
-    return true;
-  }
-  function normalizeCompleted(){
-    var source=project(),node=status();if(!node||!finalReady(source))return false;
+  function renderCompleted(source){
+    var node=status();if(!node||!finalReady(source))return false;
     setClass(node,"adfilm-engine-status is-visible is-success");
+    node.removeAttribute("data-stage");
     setText(node.querySelector("b"),text("Reklam filmi hazır","Advertising film ready"));
-    setText(node.querySelector("small"),completedDetail(source));
-    var button=buildButton();
-    if(button){button.disabled=false;button.classList.remove("is-generating","is-loading","is-music-preparing");button.removeAttribute("aria-busy")}
-    var action=root()&&root().querySelector(".adfilm-actionbar");if(action)action.classList.remove("is-engine-active");
-    baseAt=0;baseSeconds=0;lastBusyTitle="";lastBusyDetail="";
+    var small=node.querySelector("small");if(small)setText(small,completedDetail(source));
+    activateButtonState(false);
+    visibleStage=null;pendingStage=null;visibleStageAt=0;
     return true;
   }
-  function remember(){
-    var node=status();if(!node)return;
-    if(normalizeActive()||normalizeCompleted())return;
-    var title=node.querySelector("b"),detail=node.querySelector("small");
-    if(node.classList.contains("is-busy")){
-      lastBusyTitle=title&&title.textContent||lastBusyTitle;
-      lastBusyDetail=detail&&detail.textContent||lastBusyDetail;
-      var parsed=parseElapsed(lastBusyDetail);if(parsed!=null){baseSeconds=parsed;baseAt=Date.now()}
-    }
+  function renderTerminal(source){
+    var terminal=terminalState(source),node=status();if(!node||!terminal)return false;
+    setClass(node,"adfilm-engine-status is-visible is-error");
+    node.removeAttribute("data-stage");
+    setText(node.querySelector("b"),terminal==="cancelled"?text("Üretim durduruldu","Production stopped"):text("Üretim tamamlanamadı","Production could not be completed"));
+    var small=node.querySelector("small");
+    if(small)setText(small,terminal==="cancelled"?text("Azami üretim süresi aşıldığı için işlem güvenli şekilde durduruldu.","The production was safely stopped after exceeding the maximum processing time."):text("İşlem tamamlanamadı. Ayarlarınızı kontrol ederek yeniden deneyebilirsiniz.","The production could not be completed. Check your settings and try again."));
+    activateButtonState(false);
+    visibleStage=null;pendingStage=null;visibleStageAt=0;
+    return true;
   }
-  function forceBusyIfNeeded(){
-    var node=status();if(!node||normalizeActive()||normalizeCompleted()||!generating()||!node.classList.contains("is-success"))return;
-    setClass(node,"adfilm-engine-status is-visible is-busy");
-    var title=node.querySelector("b"),detail=node.querySelector("small");
-    if(title&&lastBusyTitle)setText(title,lastBusyTitle);
-    if(detail&&lastBusyDetail)setText(detail,lastBusyDetail);
+  function render(){
+    var source=project();if(!source)return;
+    if(renderTerminal(source))return;
+    if(renderCompleted(source))return;
+    renderActive(source);
   }
-  function tick(){
-    var node=status();if(!node)return;
-    if(normalizeActive()||normalizeCompleted())return;
-    forceBusyIfNeeded();
-    if(!node.classList.contains("is-busy"))return;
-    var detail=node.querySelector("small");if(!detail)return;
-    var current=parseElapsed(detail.textContent);
-    if(current!=null&&(!baseAt||Math.abs(current-baseSeconds)>2)){baseSeconds=current;baseAt=Date.now()}
-    if(!baseAt)return;
-    var total=baseSeconds+Math.floor((Date.now()-baseAt)/1000);
-    var next=detail.textContent.replace(/\d+\s*(?:dk|min)\s*\d+\s*(?:sn|sec)/i,formatElapsed(total));
-    setText(detail,next);
-  }
-  function start(){clearInterval(timer);remember();timer=setInterval(tick,1000)}
+  function start(){clearInterval(timer);render();timer=setInterval(render,1000)}
 
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(start,500)});
-  document.addEventListener("aivo:adfilm-project-sync",function(){setTimeout(remember,80)});
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(start,350)});
+  document.addEventListener("aivo:adfilm-project-sync",function(){setTimeout(render,60)});
+  document.addEventListener("aivo:adfilm-assets-ready",function(){setTimeout(start,100)});
   window.addEventListener("pagehide",function(){clearInterval(timer)});
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(start,700)},{once:true});else setTimeout(start,700);
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(start,500)},{once:true});else setTimeout(start,500);
 })();
