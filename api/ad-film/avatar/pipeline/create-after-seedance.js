@@ -9,9 +9,95 @@ import {
   sendJson,
 } from "../../../_lib/ad-film-projects.js";
 
+const KLING_V3_QUEUE = /^https:\/\/queue\.fal\.run\/fal-ai\/kling-video\/v3\/(?:pro|standard)\/image-to-video(?:$|[/?])/i;
+const KLING_GUARD_KEY = Symbol.for("aivo.adfilm.kling-v3-input-guard.v1");
+
 function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
 }
+
+function sanitizeKlingElement(element) {
+  if (!element || typeof element !== "object") return null;
+
+  const videoUrl = clean(element.video_url, 4000);
+  if (/^https:\/\//i.test(videoUrl)) {
+    return { video_url: videoUrl };
+  }
+
+  const frontalImageUrl = clean(element.frontal_image_url, 4000);
+  if (!/^https:\/\//i.test(frontalImageUrl)) return null;
+
+  const references = Array.isArray(element.reference_image_urls)
+    ? element.reference_image_urls
+        .map((value) => clean(value, 4000))
+        .filter((value, index, list) => /^https:\/\//i.test(value) && list.indexOf(value) === index)
+        .slice(0, 4)
+    : [];
+
+  // Kling v3 validates image elements as a complete image set. The previous
+  // payload sent an empty reference_image_urls array for the presenter, which
+  // made every request fail immediately with HTTP 422. Reusing the frontal
+  // image as the minimum reference keeps the element schema valid while the
+  // generated start frame remains the visual source of truth.
+  if (!references.length) references.push(frontalImageUrl);
+
+  return {
+    frontal_image_url: frontalImageUrl,
+    reference_image_urls: references,
+  };
+}
+
+function sanitizeKlingPayload(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+  const next = { ...payload };
+
+  if (Array.isArray(payload.elements)) {
+    const elements = payload.elements.map(sanitizeKlingElement).filter(Boolean).slice(0, 4);
+    if (elements.length) next.elements = elements;
+    else delete next.elements;
+  }
+
+  if (!Array.isArray(next.elements) || !next.elements.length) {
+    next.prompt = clean(next.prompt, 5000)
+      .replace(/@Element1\b/g, "the exact presenter in the start frame")
+      .replace(/@Element2\b/g, "the exact hero product in the start frame");
+  }
+
+  return next;
+}
+
+function installKlingInputGuard() {
+  if (globalThis[KLING_GUARD_KEY]) return;
+
+  const nativeFetch = globalThis.fetch.bind(globalThis);
+  globalThis.fetch = async function guardedFetch(input, init) {
+    const url = typeof input === "string" ? input : input?.url || "";
+    const method = clean(init?.method || "GET", 16).toUpperCase();
+
+    if (method === "POST" && KLING_V3_QUEUE.test(url) && typeof init?.body === "string") {
+      try {
+        const parsed = JSON.parse(init.body);
+        const sanitized = sanitizeKlingPayload(parsed);
+        init = {
+          ...(init || {}),
+          headers: {
+            ...(init?.headers || {}),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(sanitized),
+        };
+      } catch (error) {
+        console.warn("[ad-film/kling-v3-input-guard] payload_not_json", error);
+      }
+    }
+
+    return nativeFetch(input, init);
+  };
+
+  globalThis[KLING_GUARD_KEY] = true;
+}
+
+installKlingInputGuard();
 
 function matchingFinalOutput(project) {
   const generation = project?.generation || {};
