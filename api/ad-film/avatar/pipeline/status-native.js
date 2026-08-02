@@ -13,7 +13,6 @@ const KLING_STANDARD_I2V = "fal-ai/kling-video/v3/standard/image-to-video";
 const LIPSYNC = "fal-ai/sync-lipsync/v3";
 const FRESH_JOB_404_GRACE_MS = 90 * 1000;
 const MOTION_QUEUE_FALLBACK_MS = 8 * 60 * 1000;
-const MAX_PIPELINE_AGE_MS = 20 * 60 * 1000;
 
 function clean(value, max = 4000) { return String(value ?? "").trim().slice(0, max); }
 function falKey() { return process.env.FAL_KEY || process.env.FAL_API_KEY || ""; }
@@ -98,10 +97,22 @@ function pipelineLockError(project, pipeline) {
   if (generationProductionId && pipelineProductionId && generationProductionId !== pipelineProductionId) return "production_lock_mismatch";
   return null;
 }
-function pipelineTimedOut(pipeline) {
-  const activeJob = pipeline?.stage === "lipsync" ? pipeline?.lipsync : pipeline?.motion;
-  const startedAt = Date.parse(activeJob?.submittedAt || pipeline?.startedAt || "");
-  return Number.isFinite(startedAt) && Date.now() - startedAt > MAX_PIPELINE_AGE_MS;
+function recoverableLocalTimeout(pipeline, generation) {
+  const reason = clean(pipeline?.error || generation?.error, 1200);
+  return reason === "avatar_provider_timeout" && Boolean(pipeline?.motion?.requestId || pipeline?.lipsync?.requestId);
+}
+function reviveTimedOutPipeline(pipeline, now) {
+  const stage = pipeline?.lipsync?.requestId ? "lipsync" : "motion";
+  return {
+    ...(pipeline || {}),
+    status: stage === "lipsync" ? "lipsync_processing" : "motion_processing",
+    stage,
+    error:null,
+    completedAt:null,
+    updatedAt:now,
+    timeoutRecoveredAt:now,
+    timeoutRecoveryCount:Number(pipeline?.timeoutRecoveryCount || 0) + 1,
+  };
 }
 function failedGeneration(project, error, now) {
   return {
@@ -124,6 +135,7 @@ function activeGeneration(project, pipeline, now) {
     avatarWaiting:true,
     awaitingFinalComposite:true,
     finalizing:false,
+    sourceOnly:true,
     activeAvatarRequestId:clean(pipeline?.motion?.requestId || pipeline?.lipsync?.requestId, 240) || null,
     error:null,
   };
@@ -137,7 +149,9 @@ function avatarReadyGeneration(project, pipeline, now) {
     avatarWaiting:false,
     awaitingFinalComposite:true,
     finalizing:true,
+    sourceOnly:true,
     avatarVideoUrl:clean(pipeline?.videoUrl, 4000) || null,
+    activeAvatarRequestId:null,
     error:null,
   };
 }
@@ -272,17 +286,19 @@ export default async function handler(req,res) {
     }
     if (pipeline.status === "failed") {
       const reason = pipeline.error || project?.generation?.error || "avatar_pipeline_failed";
-      const alreadyTerminal = String(project.status) === "failed" && String(project?.generation?.status) === "failed";
-      const nextProject = alreadyTerminal ? project : await saveTerminalProject(user,project,avatar,pipeline,reason,now);
-      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error:reason,pipeline:nextProject.avatar?.pipeline||pipeline,project:nextProject});
+      if (recoverableLocalTimeout(pipeline, project?.generation)) {
+        pipeline = reviveTimedOutPipeline(pipeline, now);
+      } else {
+        const alreadyTerminal = String(project.status) === "failed" && String(project?.generation?.status) === "failed";
+        const nextProject = alreadyTerminal ? project : await saveTerminalProject(user,project,avatar,pipeline,reason,now);
+        return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error:reason,pipeline:nextProject.avatar?.pipeline||pipeline,project:nextProject});
+      }
     }
 
     const lockError = pipelineLockError(project, pipeline);
-    const timeoutError = pipelineTimedOut(pipeline) ? "avatar_provider_timeout" : null;
-    if (lockError || timeoutError) {
-      const error = lockError || timeoutError;
-      const nextProject = await saveTerminalProject(user,project,avatar,pipeline,error,now);
-      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error,pipeline:nextProject.avatar.pipeline,project:nextProject});
+    if (lockError) {
+      const nextProject = await saveTerminalProject(user,project,avatar,pipeline,lockError,now);
+      return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error:lockError,pipeline:nextProject.avatar.pipeline,project:nextProject});
     }
 
     if (!falKey()) return sendJson(res,500,{ok:false,error:"missing_fal_key"});
@@ -302,6 +318,14 @@ export default async function handler(req,res) {
             error:null,
             motion:fallback,
           };
+        } else {
+          pipeline = {
+            ...pipeline,
+            status:queuedStatus(result,"motion_queued","motion_processing"),
+            updatedAt:now,
+            error:null,
+            motion:{...pipeline.motion,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null},
+          };
         }
       } else if (result.status === "FAILED") {
         pipeline = { ...pipeline,status:"failed",stage:"failed",updatedAt:now,completedAt:now,error:result.error||"avatar_motion_failed",motion:{...pipeline.motion,error:result.error||"avatar_motion_failed"} };
@@ -313,7 +337,7 @@ export default async function handler(req,res) {
           pipeline = { ...pipeline,status:"completed",stage:"completed",updatedAt:now,completedAt:now,motionVideoUrl:result.videoUrl,videoUrl:result.videoUrl,motion:{...pipeline.motion,videoUrl:result.videoUrl,error:null},error:null };
         }
       } else {
-        pipeline = { ...pipeline,status:queuedStatus(result,"motion_queued","motion_processing"),updatedAt:now,motion:{...pipeline.motion,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
+        pipeline = { ...pipeline,status:queuedStatus(result,"motion_queued","motion_processing"),updatedAt:now,error:null,motion:{...pipeline.motion,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
       }
     } else if (pipeline.stage === "lipsync") {
       const result = await readJob(pipeline.lipsync);
@@ -322,7 +346,7 @@ export default async function handler(req,res) {
       } else if (result.status === "COMPLETED" && result.videoUrl) {
         pipeline = { ...pipeline,status:"completed",stage:"completed",updatedAt:now,completedAt:now,videoUrl:result.videoUrl,lipsync:{...pipeline.lipsync,videoUrl:result.videoUrl,error:null},error:null };
       } else {
-        pipeline = { ...pipeline,status:queuedStatus(result,"lipsync_queued","lipsync_processing"),updatedAt:now,lipsync:{...pipeline.lipsync,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
+        pipeline = { ...pipeline,status:queuedStatus(result,"lipsync_queued","lipsync_processing"),updatedAt:now,error:null,lipsync:{...pipeline.lipsync,statusUrl:result.statusUrl,responseUrl:result.responseUrl,error:null} };
       }
     }
 
@@ -340,7 +364,7 @@ export default async function handler(req,res) {
       avatar:{...avatar,pipeline,videoUrl:safeVideo||null},
     });
     const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
-    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:null,pipeline,project:nextProject});
+    return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:null,recovered_from_timeout:Boolean(pipeline.timeoutRecoveredAt),pipeline,project:nextProject});
   } catch(error) {
     console.error("[ad-film/avatar/pipeline/status-native]",error,error?.data||"");
     return sendJson(res,Number(error?.status)||500,{ok:false,error:clean(error?.message||error,1200),detail:error?.data||null});
