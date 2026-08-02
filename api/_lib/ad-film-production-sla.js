@@ -1,10 +1,27 @@
 const TIMEOUT_CODE = "production_sla_timeout";
 
-const TOTAL_LIMITS_MS = Object.freeze({
+// Each expensive provider stage gets its own bounded window. The former
+// single 15 minute 480p deadline could expire at the exact moment Seedance
+// completed, before the avatar or final composite was allowed to start.
+const SOURCE_LIMITS_MS = Object.freeze({
+  "480p": 25 * 60 * 1000,
+  "720p": 30 * 60 * 1000,
+  "1080p": 40 * 60 * 1000,
+  "4k": 60 * 60 * 1000,
+});
+
+const AVATAR_LIMITS_MS = Object.freeze({
+  "480p": 25 * 60 * 1000,
+  "720p": 25 * 60 * 1000,
+  "1080p": 30 * 60 * 1000,
+  "4k": 35 * 60 * 1000,
+});
+
+const FINAL_LIMITS_MS = Object.freeze({
   "480p": 15 * 60 * 1000,
-  "720p": 18 * 60 * 1000,
-  "1080p": 25 * 60 * 1000,
-  "4k": 40 * 60 * 1000,
+  "720p": 15 * 60 * 1000,
+  "1080p": 20 * 60 * 1000,
+  "4k": 25 * 60 * 1000,
 });
 
 function clean(value, max = 4000) {
@@ -19,19 +36,27 @@ function resolutionOf(project) {
     "1080p",
     20,
   ).toLowerCase();
-  return Object.prototype.hasOwnProperty.call(TOTAL_LIMITS_MS, value) ? value : "1080p";
+  return Object.prototype.hasOwnProperty.call(SOURCE_LIMITS_MS, value) ? value : "1080p";
 }
 
-function productionStartedAt(project) {
-  return clean(
-    project?.generation?.startedAt ||
-    project?.avatar?.pipeline?.productionStartedAt ||
-    project?.avatar?.pipeline?.originalStartedAt ||
-    project?.avatar?.pipeline?.startedAt ||
-    project?.finalization?.startedAt ||
-    project?.updatedAt,
-    80,
-  );
+function validDate(...values) {
+  for (const value of values) {
+    const text = clean(value, 80);
+    if (Number.isFinite(Date.parse(text))) return text;
+  }
+  return "";
+}
+
+function sourceReady(project) {
+  return Boolean(clean(project?.generation?.sourceVideoUrl || project?.generation?.videoUrl));
+}
+
+function pipelineStatus(project) {
+  return clean(project?.avatar?.pipeline?.status, 60).toLowerCase();
+}
+
+function pipelineFinished(project) {
+  return pipelineStatus(project) === "completed" && Boolean(clean(project?.avatar?.pipeline?.videoUrl));
 }
 
 function finalOutputReady(project) {
@@ -49,23 +74,86 @@ function finalOutputReady(project) {
   return Boolean(generationStatus === "completed" && clean(generation.videoUrl));
 }
 
+function phasePolicy(project, resolution) {
+  const generation = project?.generation || {};
+  const pipeline = project?.avatar?.pipeline || {};
+  const finalization = project?.finalization || generation?.finalization || {};
+  const avatarRequired = project?.avatar?.enabled === true;
+  const hasSource = sourceReady(project);
+  const avatarDone = pipelineFinished(project);
+  const needsFinal = Boolean(
+    generation.awaitingFinalComposite === true ||
+    generation.finalizing === true ||
+    clean(finalization.status, 40).toLowerCase() === "queued" ||
+    clean(finalization.status, 40).toLowerCase() === "processing" ||
+    clean(finalization.status, 40).toLowerCase() === "running"
+  );
+
+  if (!hasSource) {
+    return {
+      phase: "seedance",
+      limitMs: SOURCE_LIMITS_MS[resolution],
+      startedAt: validDate(
+        generation.startedAt,
+        generation.createdAt,
+        project?.productionPlan?.startedAt,
+        project?.updatedAt,
+      ),
+    };
+  }
+
+  if (avatarRequired && !avatarDone) {
+    return {
+      phase: "avatar",
+      limitMs: AVATAR_LIMITS_MS[resolution],
+      startedAt: validDate(
+        generation.sourceCompletedAt,
+        pipeline.productionStartedAt,
+        pipeline.originalStartedAt,
+        pipeline.startedAt,
+        generation.updatedAt,
+      ),
+    };
+  }
+
+  if (needsFinal || (avatarRequired && avatarDone && !finalOutputReady(project))) {
+    return {
+      phase: "finalization",
+      limitMs: FINAL_LIMITS_MS[resolution],
+      startedAt: validDate(
+        finalization.startedAt,
+        pipeline.completedAt,
+        generation.finalizingStartedAt,
+        generation.updatedAt,
+      ),
+    };
+  }
+
+  return {
+    phase: "complete",
+    limitMs: FINAL_LIMITS_MS[resolution],
+    startedAt: validDate(generation.completedAt, project?.updatedAt),
+  };
+}
+
 function productionSla(project, nowMs = Date.now()) {
   const resolution = resolutionOf(project);
-  const limitMs = TOTAL_LIMITS_MS[resolution];
-  const startedAt = productionStartedAt(project);
-  const startedMs = Date.parse(startedAt || "");
+  const phase = phasePolicy(project, resolution);
+  const startedMs = Date.parse(phase.startedAt || "");
   const validStart = Number.isFinite(startedMs);
   const elapsedMs = validStart ? Math.max(0, nowMs - startedMs) : 0;
-  const deadlineAt = validStart ? new Date(startedMs + limitMs).toISOString() : null;
+  const deadlineAt = validStart ? new Date(startedMs + phase.limitMs).toISOString() : null;
   const terminal = ["completed", "failed", "cancelled", "canceled"].includes(clean(project?.status, 40).toLowerCase());
+
   return {
     code: TIMEOUT_CODE,
+    phase: phase.phase,
     resolution,
-    limitMs,
+    limitMs: phase.limitMs,
     startedAt: validStart ? new Date(startedMs).toISOString() : null,
     deadlineAt,
     elapsedMs,
-    expired: validStart && elapsedMs >= limitMs && !finalOutputReady(project) && !terminal,
+    expired: validStart && elapsedMs >= phase.limitMs && !finalOutputReady(project) && !terminal,
   };
 }
 
@@ -178,6 +266,7 @@ function buildCancelledProject(project, policy, cancellationResults = [], now = 
     cancelledAt: now,
     cancellation: {
       code: TIMEOUT_CODE,
+      phase: policy.phase,
       reason: "maximum_production_time_exceeded",
       cancelledAt: now,
       resolution: policy.resolution,
@@ -222,6 +311,7 @@ function cancellationResponse(project, policy) {
     projectId: project?.id || null,
     status: "CANCELLED",
     stage: "cancelled",
+    phase: policy.phase,
     error: TIMEOUT_CODE,
     message: "Maximum production time exceeded. The production was stopped.",
     video_url: null,
