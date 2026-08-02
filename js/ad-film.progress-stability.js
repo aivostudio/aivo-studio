@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable one-second progress UI */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V4__)return;
-  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V4__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V5__)return;
+  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V5__=true;
 
   var timer=null;
   var baseSeconds=0;
@@ -24,14 +24,23 @@
   function formatElapsed(total){var minutes=Math.floor(total/60),seconds=total%60;return minutes+" "+(english()?"min":"dk")+" "+String(seconds).padStart(2,"0")+" "+(english()?"sec":"sn")}
   function elapsedFrom(value){var started=Date.parse(value||"");if(!Number.isFinite(started))return"";return formatElapsed(Math.max(0,Math.floor((Date.now()-started)/1000)))}
   function pipeline(source){return source&&source.avatar&&source.avatar.pipeline||{}}
+  function productionStartedAt(source){
+    var generation=source&&source.generation||{};
+    var current=pipeline(source);
+    return generation.startedAt||generation.createdAt||current.productionStartedAt||current.originalStartedAt||current.startedAt||current.updatedAt||"";
+  }
   function pipelineActive(source){
     var state=clean(pipeline(source).status).toLowerCase();
     return ["waiting_for_seedance","motion_queued","motion_processing","lipsync_queued","lipsync_processing","rendering"].indexOf(state)>=0;
   }
+  function totalElapsedSuffix(source){
+    var elapsed=elapsedFrom(productionStartedAt(source));
+    return elapsed?" · "+text("Toplam geçen süre: ","Total elapsed: ")+elapsed:"";
+  }
   function activeStageCopy(source){
     var current=pipeline(source),state=clean(current.status).toLowerCase();
-    var elapsed=elapsedFrom(current.startedAt||current.updatedAt);
-    var suffix=elapsed?" · "+elapsed:"";
+    var suffix=totalElapsedSuffix(source);
+    if(state==="waiting_for_seedance")return{title:text("Sinematik ürün filmi hazırlanıyor","Creating the cinematic product film"),detail:text("Seedance sahneleri, efektleri ve geçişleri hazırlıyor","Seedance is preparing scenes, effects and transitions")+suffix};
     if(state.indexOf("lipsync")===0)return{title:text("Oyuncunun konuşması hazırlanıyor","Synchronizing presenter speech"),detail:text("Dudak, yüz ve konuşma zamanlaması hazırlanıyor","Lip, face and speech timing are being prepared")+suffix};
     if(state==="rendering")return{title:text("Reklam filminin final montajı hazırlanıyor","Preparing the final commercial edit"),detail:text("Ürün filmi, oyunculu sahne, ses, müzik ve logo birleştiriliyor","Combining product film, presenter, narration, music and logo")+suffix};
     return{title:text("Oyuncu gerçek reklam sahnesine yerleştiriliyor","Integrating presenter into the real ad scene"),detail:text("Oyuncu videosu üretiliyor","The presenter video is being generated")+suffix};
@@ -55,6 +64,7 @@
     var duration=clean(output.duration||input.duration||source&&source.output&&source.output.duration);if(duration)parts.push(duration+" "+text("sn","sec"));
     var quality=clean(output.resolution||input.resolution||source&&source.output&&source.output.quality);if(quality)parts.push(quality);
     var count=Number(input.imageCount||input.image_count||0);if(count)parts.push(count+" "+text("referans","references"));
+    var total=elapsedFrom(productionStartedAt(source));if(total)parts.push(text("Toplam ","Total ")+total);
     return parts.join(" · ");
   }
   function normalizeActive(){
