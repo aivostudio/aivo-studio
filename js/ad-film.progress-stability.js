@@ -1,15 +1,14 @@
 /* AIVO AI Reklam Filmi — stable one-second progress UI */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V3__)return;
-  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V3__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V4__)return;
+  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V4__=true;
 
   var timer=null;
   var baseSeconds=0;
   var baseAt=0;
   var lastBusyTitle="";
   var lastBusyDetail="";
-  var applying=false;
 
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function status(){var scope=root();return scope&&scope.querySelector('[data-adfilm-engine-status]')}
@@ -18,30 +17,35 @@
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function text(tr,en){return english()?en:tr}
   function clean(value){return String(value==null?"":value).trim()}
+  function setText(node,value){value=String(value==null?"":value);if(node&&node.textContent!==value)node.textContent=value}
+  function setClass(node,value){if(node&&node.className!==value)node.className=value}
   function generating(){var button=buildButton();return!!(button&&(button.classList.contains("is-generating")||button.classList.contains("is-loading")||button.getAttribute("aria-busy")==="true"))}
   function parseElapsed(value){var match=String(value||"").match(/(\d+)\s*(?:dk|min)\s*(\d+)\s*(?:sn|sec)/i);return match?Number(match[1])*60+Number(match[2]):null}
   function formatElapsed(total){var minutes=Math.floor(total/60),seconds=total%60;return minutes+" "+(english()?"min":"dk")+" "+String(seconds).padStart(2,"0")+" "+(english()?"sec":"sn")}
+  function elapsedFrom(value){var started=Date.parse(value||"");if(!Number.isFinite(started))return"";return formatElapsed(Math.max(0,Math.floor((Date.now()-started)/1000)))}
+  function pipeline(source){return source&&source.avatar&&source.avatar.pipeline||{}}
   function pipelineActive(source){
-    var pipeline=source&&source.avatar&&source.avatar.pipeline||{};
-    return ["waiting_for_seedance","motion_queued","motion_processing","lipsync_queued","lipsync_processing","rendering"].indexOf(clean(pipeline.status).toLowerCase())>=0;
+    var state=clean(pipeline(source).status).toLowerCase();
+    return ["waiting_for_seedance","motion_queued","motion_processing","lipsync_queued","lipsync_processing","rendering"].indexOf(state)>=0;
   }
   function activeStageCopy(source){
-    var pipeline=source&&source.avatar&&source.avatar.pipeline||{};
-    var state=clean(pipeline.status).toLowerCase();
-    if(state.indexOf("lipsync")===0)return{text:text("Oyuncunun konuşması hazırlanıyor","Synchronizing presenter speech"),detail:text("Dudak, yüz ve konuşma zamanlaması hazırlanıyor.","Lip, face and speech timing are being prepared.")};
-    if(state==="rendering")return{text:text("Reklam filminin final montajı hazırlanıyor","Preparing the final commercial edit"),detail:text("Ürün filmi, oyunculu sahne, ses, müzik ve logo birleştiriliyor.","Combining product film, presenter, narration, music and logo.")};
-    return{text:text("Oyuncu gerçek reklam sahnesine yerleştiriliyor","Integrating presenter into the real ad scene"),detail:text("Oyuncu videosu üretiliyor. Eski hazır video bu yeni işlem tamamlanana kadar sonuç sayılmayacak.","The presenter video is being generated. The previous completed output will not count as this new result.")};
+    var current=pipeline(source),state=clean(current.status).toLowerCase();
+    var elapsed=elapsedFrom(current.startedAt||current.updatedAt);
+    var suffix=elapsed?" · "+elapsed:"";
+    if(state.indexOf("lipsync")===0)return{title:text("Oyuncunun konuşması hazırlanıyor","Synchronizing presenter speech"),detail:text("Dudak, yüz ve konuşma zamanlaması hazırlanıyor","Lip, face and speech timing are being prepared")+suffix};
+    if(state==="rendering")return{title:text("Reklam filminin final montajı hazırlanıyor","Preparing the final commercial edit"),detail:text("Ürün filmi, oyunculu sahne, ses, müzik ve logo birleştiriliyor","Combining product film, presenter, narration, music and logo")+suffix};
+    return{title:text("Oyuncu gerçek reklam sahnesine yerleştiriliyor","Integrating presenter into the real ad scene"),detail:text("Oyuncu videosu üretiliyor","The presenter video is being generated")+suffix};
   }
   function finalReady(source){
     if(pipelineActive(source))return false;
     var generation=source&&source.generation||{};
     var finalization=generation.finalization||source&&source.finalization||{};
-    var pipeline=source&&source.avatar&&source.avatar.pipeline||{};
+    var current=pipeline(source);
     if(generation.awaitingFinalComposite===true||generation.avatarWaiting===true||generation.sourceOnly===true)return false;
     if(clean(finalization.status).toLowerCase()==="completed"&&clean(generation.videoUrl))return true;
     if(Number(generation.mixVersion||0)>=4&&clean(generation.videoUrl))return true;
     if(clean(generation.status).toLowerCase()==="completed"&&clean(generation.videoUrl))return true;
-    return clean(pipeline.status).toLowerCase()==="completed"&&clean(pipeline.videoUrl)&&clean(generation.videoUrl);
+    return clean(current.status).toLowerCase()==="completed"&&clean(current.videoUrl)&&clean(generation.videoUrl);
   }
   function completedDetail(source){
     var generation=source&&source.generation||{};
@@ -56,29 +60,23 @@
   function normalizeActive(){
     var source=project(),node=status();if(!node||!pipelineActive(source))return false;
     var copy=activeStageCopy(source);
-    applying=true;
-    node.className="adfilm-engine-status is-visible is-busy";
-    var title=node.querySelector("b"),detail=node.querySelector("small");
-    if(title)title.textContent=copy.text;
-    if(detail&&!parseElapsed(detail.textContent))detail.textContent=copy.detail;
+    setClass(node,"adfilm-engine-status is-visible is-busy");
+    setText(node.querySelector("b"),copy.title);
+    setText(node.querySelector("small"),copy.detail);
     var button=buildButton();
-    if(button){button.disabled=true;button.classList.add("is-generating");button.setAttribute("aria-busy","true")}
-    var action=root()&&root().querySelector(".adfilm-actionbar");if(action)action.classList.add("is-engine-active");
-    applying=false;
+    if(button){button.disabled=true;button.classList.add("is-generating");if(button.getAttribute("aria-busy")!=="true")button.setAttribute("aria-busy","true")}
+    var action=root()&&root().querySelector(".adfilm-actionbar");if(action&&!action.classList.contains("is-engine-active"))action.classList.add("is-engine-active");
     return true;
   }
   function normalizeCompleted(){
     var source=project(),node=status();if(!node||!finalReady(source))return false;
-    applying=true;
-    node.className="adfilm-engine-status is-visible is-success";
-    var title=node.querySelector("b"),detail=node.querySelector("small");
-    if(title)title.textContent=text("Reklam filmi hazır","Advertising film ready");
-    if(detail)detail.textContent=completedDetail(source);
+    setClass(node,"adfilm-engine-status is-visible is-success");
+    setText(node.querySelector("b"),text("Reklam filmi hazır","Advertising film ready"));
+    setText(node.querySelector("small"),completedDetail(source));
     var button=buildButton();
     if(button){button.disabled=false;button.classList.remove("is-generating","is-loading","is-music-preparing");button.removeAttribute("aria-busy")}
     var action=root()&&root().querySelector(".adfilm-actionbar");if(action)action.classList.remove("is-engine-active");
     baseAt=0;baseSeconds=0;lastBusyTitle="";lastBusyDetail="";
-    applying=false;
     return true;
   }
   function remember(){
@@ -93,11 +91,10 @@
   }
   function forceBusyIfNeeded(){
     var node=status();if(!node||normalizeActive()||normalizeCompleted()||!generating()||!node.classList.contains("is-success"))return;
-    applying=true;node.className="adfilm-engine-status is-visible is-busy";
+    setClass(node,"adfilm-engine-status is-visible is-busy");
     var title=node.querySelector("b"),detail=node.querySelector("small");
-    if(title&&lastBusyTitle)title.textContent=lastBusyTitle;
-    if(detail&&lastBusyDetail)detail.textContent=lastBusyDetail;
-    applying=false;
+    if(title&&lastBusyTitle)setText(title,lastBusyTitle);
+    if(detail&&lastBusyDetail)setText(detail,lastBusyDetail);
   }
   function tick(){
     var node=status();if(!node)return;
@@ -109,14 +106,13 @@
     if(current!=null&&(!baseAt||Math.abs(current-baseSeconds)>2)){baseSeconds=current;baseAt=Date.now()}
     if(!baseAt)return;
     var total=baseSeconds+Math.floor((Date.now()-baseAt)/1000);
-    detail.textContent=detail.textContent.replace(/\d+\s*(?:dk|min)\s*\d+\s*(?:sn|sec)/i,formatElapsed(total));
+    var next=detail.textContent.replace(/\d+\s*(?:dk|min)\s*\d+\s*(?:sn|sec)/i,formatElapsed(total));
+    setText(detail,next);
   }
   function start(){clearInterval(timer);remember();timer=setInterval(tick,1000)}
 
-  var observer=new MutationObserver(function(){if(applying)return;remember();forceBusyIfNeeded()});
-  function observe(){var node=status();if(node)observer.observe(node,{attributes:true,childList:true,subtree:true,characterData:true});start()}
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(observe,500)});
-  document.addEventListener("aivo:adfilm-project-sync",function(){setTimeout(function(){normalizeActive();normalizeCompleted();remember()},80)});
-  window.addEventListener("pagehide",function(){clearInterval(timer);observer.disconnect()});
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(observe,700)},{once:true});else setTimeout(observe,700);
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(start,500)});
+  document.addEventListener("aivo:adfilm-project-sync",function(){setTimeout(remember,80)});
+  window.addEventListener("pagehide",function(){clearInterval(timer)});
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(start,700)},{once:true});else setTimeout(start,700);
 })();
