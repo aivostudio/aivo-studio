@@ -1,10 +1,12 @@
 /* AIVO AI Reklam Filmi — definitive completed output state guard */
 (function AIVO_AD_FILM_COMPLETED_STATE_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V1__)return;
-  window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V1__=true;
+  if(window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V2__)return;
+  window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V2__=true;
 
   var timer=null;
+  var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
+
   function clean(value){return String(value==null?"":value).trim()}
   function lower(value){return clean(value).toLowerCase()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
@@ -13,6 +15,30 @@
   function text(tr,en){return english()?en:tr}
   function generation(source){return source&&source.generation||{}}
   function outputId(source){var gen=generation(source);return clean(source&&source.activeOutputId||gen.outputId||gen.requestId)}
+  function latch(){return window[LATCH_KEY]&&typeof window[LATCH_KEY]==="object"?window[LATCH_KEY]:null}
+  function clearLatch(){try{delete window[LATCH_KEY]}catch(_){window[LATCH_KEY]=null}}
+  function latchActive(){
+    var value=latch();if(!value)return false;
+    if(Number(value.until||0)<=Date.now()){clearLatch();return false}
+    var source=project(),scope=root();
+    var currentId=clean(source&&source.id||scope&&scope.dataset.adfilmProjectId);
+    return !value.projectId||!currentId||clean(value.projectId)===currentId;
+  }
+  function stateTime(source){
+    var gen=generation(source),finish=source&&source.finalization||gen.finalization||{};
+    var values=[gen.completedAt,finish.completedAt,gen.updatedAt,source&&source.updatedAt,gen.startedAt,gen.createdAt]
+      .map(function(value){return Date.parse(value||"")}).filter(Number.isFinite);
+    return values.length?Math.max.apply(Math,values):0;
+  }
+  function stateBelongsToCurrentLatch(source){
+    var value=latch();if(!value)return true;
+    var latchTime=Date.parse(value.startedAt||"");
+    var gen=generation(source),requestId=clean(gen.requestId),started=Date.parse(gen.startedAt||gen.createdAt||"");
+    if(requestId&&value.previousRequestId&&requestId!==clean(value.previousRequestId))return true;
+    if(Number.isFinite(started)&&Number.isFinite(latchTime)&&started>=latchTime-1500)return true;
+    var changedAt=stateTime(source);
+    return Boolean(changedAt&&Number.isFinite(latchTime)&&changedAt>=latchTime-1500);
+  }
   function output(source){
     var id=outputId(source),list=Array.isArray(source&&source.outputs)?source.outputs:[];
     return list.find(function(item){return clean(item&&item.id)===id})||null;
@@ -30,6 +56,7 @@
   }
   function stopBusyUi(source){
     if(!isFinal(source))return false;
+    if(latchActive()&&!stateBelongsToCurrentLatch(source))return false;
     var scope=root();if(!scope)return false;
     var node=scope.querySelector('[data-adfilm-engine-status]');
     var button=scope.querySelector('[data-adfilm-build]');
@@ -38,6 +65,7 @@
     if(node){
       node.className='adfilm-engine-status is-visible is-success';
       node.removeAttribute('data-stage');
+      node.removeAttribute('data-adfilm-idle-hidden');
       var title=node.querySelector('b'),small=node.querySelector('small');
       if(title)title.textContent=text('Reklam filmi hazır','Advertising film ready');
       if(small)small.textContent=[text('Tamamlandı','Completed'),duration?duration+' '+text('sn','sec'):'',quality].filter(Boolean).join(' · ');
@@ -49,7 +77,7 @@
     }
     if(action)action.classList.remove('is-engine-active');
     try{if(window.AIVOAdFilmProgressUI&&typeof window.AIVOAdFilmProgressUI.release==='function')window.AIVOAdFilmProgressUI.release()}catch(_){}
-    try{delete window.__AIVO_AD_FILM_PRODUCTION_UI_LATCH__}catch(_){window.__AIVO_AD_FILM_PRODUCTION_UI_LATCH__=null}
+    clearLatch();
     return true;
   }
   function normalize(source){
@@ -67,6 +95,7 @@
   }
   function render(){
     var source=project();if(!source)return;
+    if(latchActive()&&!stateBelongsToCurrentLatch(source))return;
     var normalized=normalize(source);
     if(normalized!==source)window.AIVOAdFilmActiveProject=normalized;
     stopBusyUi(normalized);
@@ -75,7 +104,7 @@
 
   document.addEventListener('aivo:adfilm-project-sync',function(event){
     var incoming=event&&event.detail&&event.detail.project;
-    if(incoming&&isFinal(incoming))window.AIVOAdFilmActiveProject=normalize(incoming);
+    if(incoming&&isFinal(incoming)&&(!latchActive()||stateBelongsToCurrentLatch(incoming)))window.AIVOAdFilmActiveProject=normalize(incoming);
     setTimeout(render,0);
   },true);
   document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')setTimeout(start,120)});
