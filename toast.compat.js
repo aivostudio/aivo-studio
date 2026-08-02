@@ -65,8 +65,8 @@
 
 /* AI Reklam Filmi varlık yükleyicisi. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V55__) return;
-  window.__AIVO_AD_FILM_ASSETS_V55__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V56__) return;
+  window.__AIVO_AD_FILM_ASSETS_V56__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -141,14 +141,14 @@
     "/js/ad-film.narration-master.js?v=3",
     "/js/ad-film.narration-build-guard.js?v=4",
     "/js/ad-film.voice-toggle-fix.js?v=2",
-    "/js/ad-film.hybrid-controller.js?v=7",
-    "/js/ad-film.music-preflight.js?v=3",
+    "/js/ad-film.hybrid-controller.js?v=8",
+    "/js/ad-film.music-preflight.js?v=4",
     "/js/ad-film.seedance-resume-guard.js?v=3",
     "/js/ad-film.finalize-wait.js?v=3",
     "/js/ad-film.avatar-orchestrator.js?v=12",
     "/js/ad-film.avatar-finalization-bridge.js?v=1",
     "/js/ad-film.seedance-engine.js?v=6",
-    "/js/ad-film.progress-stability.js?v=1",
+    "/js/ad-film.progress-stability.js?v=2",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.finalize-output.js?v=5",
     "/js/ad-film.mix-upgrade.js?v=3",
@@ -165,6 +165,8 @@
 
   let shellLoadPromise = null;
   let moduleLoadPromise = null;
+  let moduleReady = false;
+  let pendingBuildButton = null;
 
   function ensureStyles() {
     styles.forEach((href) => {
@@ -217,7 +219,19 @@
   }
   function startAdFilmAssets() {
     ensureStyles();
-    if (!moduleLoadPromise) moduleLoadPromise = ensureAdFilmShell().then(() => loadSequential(moduleScripts));
+    if (!moduleLoadPromise) {
+      moduleLoadPromise = ensureAdFilmShell()
+        .then(() => loadSequential(moduleScripts))
+        .then(() => {
+          moduleReady = true;
+          document.dispatchEvent(new CustomEvent("aivo:adfilm-assets-ready"));
+          const button = pendingBuildButton;
+          pendingBuildButton = null;
+          if (button && button.isConnected && !button.disabled) {
+            setTimeout(() => button.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window })), 0);
+          }
+        });
+    }
     return moduleLoadPromise;
   }
   function ensureAdFilmAssets() {
@@ -229,7 +243,21 @@
   window.AIVOAwaitAdFilmAssets = startAdFilmAssets;
 
   document.addEventListener("click", (event) => {
-    if (event.target.closest("[data-adfilm-open]")) ensureAdFilmAssets();
+    const build = event.target.closest?.('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
+    if (build && !moduleReady) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      pendingBuildButton = build;
+      build.setAttribute("aria-busy", "true");
+      startAdFilmAssets().finally(() => {
+        if (build.isConnected && !build.classList.contains("is-generating") && !build.classList.contains("is-loading")) {
+          build.removeAttribute("aria-busy");
+        }
+      });
+      return;
+    }
+    if (event.target.closest?.("[data-adfilm-open]")) ensureAdFilmAssets();
   }, true);
   document.addEventListener("aivo:module-mounted", (event) => {
     if (event?.detail?.key === "adfilm") startAdFilmAssets();
