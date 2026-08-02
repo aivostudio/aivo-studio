@@ -6,15 +6,20 @@
   transition:none!important;
 }
 
+/* Üretim sırasında panel ve başlık parlamasın; yalnız spinner dönsün. */
+.adfilm-engine-status.is-busy:before{
+  animation:none!important;
+  opacity:.10!important;
+}
+.adfilm-engine-status.is-busy b{
+  animation:none!important;
+  background-size:100% 100%!important;
+}
+
 .adfilm-engine-status.is-busy small{
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
-  width:100%!important;
-  max-width:none!important;
-  min-height:108px!important;
-  margin:0!important;
-  padding:16px 26px!important;
   box-sizing:border-box!important;
   text-align:center!important;
 }
@@ -23,7 +28,7 @@
   display:grid;
   justify-items:center;
   align-content:center;
-  gap:7px;
+  gap:6px;
   width:100%;
   min-width:0;
 }
@@ -55,14 +60,14 @@
   color:rgba(239,235,250,.84);
   font-size:16px;
   font-weight:700;
-  line-height:1.38;
+  line-height:1.34;
 }
 
 .adfilm-stage-time{
   color:#9df2df;
   font-size:15px;
   font-weight:800;
-  line-height:1.3;
+  line-height:1.25;
 }
 
 @keyframes aivoAdFilmProgressSpin{
@@ -74,8 +79,8 @@
   .adfilm-engine-status.is-busy{
     position:relative!important;
     display:block!important;
-    min-height:250px!important;
-    padding:24px 24px 22px!important;
+    min-height:238px!important;
+    padding:24px 24px 20px!important;
   }
 
   .adfilm-engine-status.is-busy>span{
@@ -95,36 +100,41 @@
   .adfilm-engine-status.is-busy>div{
     display:grid!important;
     grid-template-rows:auto auto!important;
-    gap:12px!important;
+    gap:14px!important;
     width:100%!important;
     max-width:none!important;
-    padding:0 10px 0 88px!important;
+    padding:0!important;
     box-sizing:border-box!important;
     align-items:center!important;
-    justify-items:stretch!important;
+    justify-items:center!important;
     text-align:center!important;
   }
 
   .adfilm-engine-status.is-busy b{
     width:100%!important;
     margin:0!important;
+    padding:0 90px!important;
+    box-sizing:border-box!important;
     font-size:30px!important;
     line-height:1.08!important;
     text-align:center!important;
   }
 
+  /* Kullanıcının istediği kutu: Aşama + başlık + açıklama + saniye. */
   .adfilm-engine-status.is-busy small{
-    width:100%!important;
+    width:calc(100% - 130px)!important;
     max-width:none!important;
-    min-height:92px!important;
-    padding:11px 18px!important;
-    border-radius:16px!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0 25px 0 105px!important;
+    padding:16px 30px!important;
+    border-radius:18px!important;
   }
 
   .adfilm-stage-wrap{
     width:100%!important;
     max-width:none!important;
-    gap:5px!important;
+    gap:6px!important;
   }
 
   .adfilm-stage-count{
@@ -133,11 +143,12 @@
   }
 
   .adfilm-stage-title{
-    font-size:20px!important;
+    font-size:21px!important;
     line-height:1.12!important;
   }
 
   .adfilm-stage-description{
+    max-width:100%!important;
     font-size:15px!important;
     line-height:1.28!important;
   }
@@ -150,7 +161,7 @@
 
 @media (max-width:700px){
   .adfilm-engine-status.is-busy{
-    min-height:280px!important;
+    min-height:270px!important;
     padding:22px 16px 20px!important;
   }
 
@@ -161,8 +172,11 @@
 
   .adfilm-engine-status.is-busy small{
     width:100%!important;
-    min-height:126px!important;
-    padding:16px 14px!important;
+    max-width:none!important;
+    min-height:0!important;
+    height:auto!important;
+    margin:0!important;
+    padding:15px 14px!important;
   }
 
   .adfilm-stage-title{font-size:17px}
