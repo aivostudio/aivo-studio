@@ -1,0 +1,77 @@
+/* AIVO AI Reklam Filmi — final progress panel proportions and motion */
+@keyframes aivoAdFilmProgressSpin{
+  from{transform:translateY(-50%) rotate(0deg)}
+  to{transform:translateY(-50%) rotate(360deg)}
+}
+
+@media (min-width:701px){
+  .adfilm-engine-status.is-busy{
+    min-height:250px!important;
+    padding:24px 24px 22px!important;
+  }
+
+  .adfilm-engine-status.is-busy>span{
+    left:38px!important;
+    top:50%!important;
+    width:46px!important;
+    height:46px!important;
+    margin:0!important;
+    border-width:6px!important;
+    transform-origin:50% 50%!important;
+    animation:aivoAdFilmProgressSpin .9s linear infinite!important;
+    will-change:transform;
+  }
+
+  .adfilm-engine-status.is-busy>div{
+    width:100%!important;
+    max-width:none!important;
+    padding:0 10px 0 88px!important;
+    gap:12px!important;
+  }
+
+  .adfilm-engine-status.is-busy b{
+    font-size:30px!important;
+    line-height:1.08!important;
+  }
+
+  .adfilm-engine-status.is-busy small{
+    width:100%!important;
+    max-width:none!important;
+    min-height:92px!important;
+    padding:11px 18px!important;
+    border-radius:16px!important;
+  }
+
+  .adfilm-stage-wrap{
+    width:100%!important;
+    max-width:none!important;
+    gap:5px!important;
+  }
+
+  .adfilm-stage-count{
+    min-height:25px!important;
+    padding:2px 12px!important;
+  }
+
+  .adfilm-stage-title{
+    font-size:20px!important;
+    line-height:1.12!important;
+  }
+
+  .adfilm-stage-description{
+    font-size:15px!important;
+    line-height:1.28!important;
+  }
+
+  .adfilm-stage-time{
+    font-size:15px!important;
+    line-height:1.2!important;
+  }
+}
+
+@media (max-width:700px){
+  .adfilm-engine-status.is-busy>span{
+    animation:aivoAdFilmProgressSpin .9s linear infinite!important;
+    transform-origin:50% 50%!important;
+  }
+}
