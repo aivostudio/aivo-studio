@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — canonical fresh-production coherence */
 (function AIVO_AD_FILM_PRODUCTION_COHERENCE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V5__)return;
-  window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V5__=true;
+  if(window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V6__)return;
+  window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V6__=true;
 
   var previousFetch=window.fetch.bind(window);
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
@@ -31,7 +31,20 @@
   }
   function optimisticLaunch(now,pid){
     var current=project();if(!current)return;
-    var next=Object.assign({},current,{status:"processing",generation:{status:"processing",startedAt:now,updatedAt:now,requestId:null,outputId:null,productionId:pid,sourceVideoUrl:null,videoUrl:null,completedAt:null,avatarWaiting:false,awaitingFinalComposite:false,finalizing:false,sourceOnly:false,error:null,input:{productionId:pid}},activeOutputId:null,finalization:null,error:null,lastError:null,preparingNewVersion:true});
+    // Never fabricate a processing generation before /seedance/create returns.
+    // The old optimistic generation had no requestId, so Seedance resume marked
+    // itself active and blocked the real create request. The UI latch is enough
+    // to show Stage 1 while supersede prepares the project.
+    var next=Object.assign({},current,{
+      status:"draft",
+      generation:null,
+      activeOutputId:null,
+      finalization:null,
+      error:null,
+      lastError:null,
+      preparingNewVersion:true,
+      launchIntent:{productionId:pid,requestedAt:now,status:"preparing"}
+    });
     if(current.avatar)next.avatar=Object.assign({},current.avatar,{pipeline:null,videoUrl:null});
     canonicalSnapshot=next;syncProject(next,current.id);
   }
@@ -40,7 +53,7 @@
     var current=project()||{};if(projectId&&clean(current.id)&&clean(current.id)!==clean(projectId))return;
     var createdId=clean(data.production_id||data.generation.productionId||data.generation.input&&data.generation.input.productionId);
     adoptActualLock(createdId);
-    var next=Object.assign({},current,{status:"processing",generation:data.generation,activeOutputId:data.activeOutputId||null,finalization:null,error:null,lastError:null,preparingNewVersion:false});
+    var next=Object.assign({},current,{status:"processing",generation:data.generation,activeOutputId:data.activeOutputId||null,finalization:null,error:null,lastError:null,preparingNewVersion:false,launchIntent:null});
     if(data.director_plan)next.productionPlan=Object.assign({},data.director_plan,{productionId:createdId});
     if(current.avatar)next.avatar=Object.assign({},current.avatar,{pipeline:null,videoUrl:null});
     canonicalSnapshot=next;syncProject(next,projectId);updateLatch(createdId,data.generation.startedAt,projectId);
@@ -107,6 +120,7 @@
   },true);
 
   window.addEventListener("click",function(event){
+    if(window.__AIVO_AD_FILM_ASSETS_READY__!==true)return;
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
     if(!button||button.disabled)return;
     var projectId=currentProjectId();if(!projectId)return;
@@ -119,7 +133,7 @@
     updateLatch(pid,now,projectId);optimisticLaunch(now,pid);
     launch.promise=supersede(projectId,pid).then(function(data){
       if(data&&data.project){
-        var prepared=Object.assign({},data.project,{status:"processing",generation:canonicalSnapshot&&canonicalSnapshot.generation||null,preparingNewVersion:true,error:null,lastError:null});
+        var prepared=Object.assign({},data.project,{status:"draft",generation:null,preparingNewVersion:true,error:null,lastError:null,launchIntent:{productionId:pid,requestedAt:now,status:"prepared"}});
         canonicalSnapshot=prepared;window.AIVOAdFilmActiveProject=prepared;
       }
       return data;
