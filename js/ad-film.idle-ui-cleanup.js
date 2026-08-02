@@ -1,16 +1,26 @@
 /* AIVO AI Reklam Filmi — clean idle/new-project UI */
 (function AIVO_AD_FILM_IDLE_UI_CLEANUP(){
   "use strict";
-  if(window.__AIVO_AD_FILM_IDLE_UI_CLEANUP__)return;
-  window.__AIVO_AD_FILM_IDLE_UI_CLEANUP__=true;
+  if(window.__AIVO_AD_FILM_IDLE_UI_CLEANUP_V2__)return;
+  window.__AIVO_AD_FILM_IDLE_UI_CLEANUP_V2__=true;
+
+  var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
 
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
   function clean(value){return String(value==null?"":value).trim().toLowerCase()}
+  function latchActive(){
+    var value=window[LATCH_KEY];
+    if(!value||typeof value!=="object")return false;
+    if(Number(value.until||0)<=Date.now()){try{delete window[LATCH_KEY]}catch(_){window[LATCH_KEY]=null}return false}
+    var source=project(),scope=root();
+    var currentId=String(source&&source.id||scope&&scope.dataset.adfilmProjectId||"").trim();
+    return !value.projectId||!currentId||String(value.projectId)===currentId;
+  }
   function isRunning(source){
     var status=clean(source&&source.generation&&source.generation.status);
     var button=root()&&root().querySelector('[data-adfilm-build]');
-    return status==="queued"||status==="processing"||!!(button&&button.classList.contains("is-generating"));
+    return latchActive()||status==="queued"||status==="processing"||status==="running"||status==="in_queue"||!!(button&&button.classList.contains("is-generating"));
   }
   function defaultTitle(){
     var en=String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0;
@@ -46,6 +56,10 @@
   function schedule(){[0,80,260,700,1400].forEach(function(delay){setTimeout(cleanup,delay)})}
   document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')schedule()});
   document.addEventListener('aivo:adfilm-project-sync',function(){setTimeout(cleanup,120)});
+  document.addEventListener('click',function(event){
+    var button=event.target&&event.target.closest&&event.target.closest('[data-adfilm-build]');
+    if(button)setTimeout(cleanup,0);
+  },true);
   var observer=new MutationObserver(function(){var scope=root();if(scope)setTimeout(cleanup,20)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
