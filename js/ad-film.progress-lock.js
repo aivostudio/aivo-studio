@@ -1,8 +1,8 @@
-/* AIVO AI Reklam Filmi — single-owner production progress lock */
+/* AIVO AI Reklam Filmi — progress lock begins only after confirmed production */
 (function AIVO_AD_FILM_PROGRESS_LOCK(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_LOCK_V4__)return;
-  window.__AIVO_AD_FILM_PROGRESS_LOCK_V4__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_LOCK_V5__)return;
+  window.__AIVO_AD_FILM_PROGRESS_LOCK_V5__=true;
 
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
   var LATCH_MS=30*60*1000;
@@ -82,7 +82,13 @@
   }
   function buttonBusy(){
     var node=button();
-    return Boolean(node&&(node.classList.contains("is-generating")||node.classList.contains("is-loading")||node.classList.contains("is-music-preparing")||node.getAttribute("aria-busy")==="true"||node.hasAttribute("data-adfilm-loader-pending")));
+    return Boolean(node&&(
+      node.classList.contains("is-generating")||
+      node.classList.contains("is-loading")||
+      node.classList.contains("is-music-preparing")||
+      node.getAttribute("aria-busy")==="true"||
+      node.hasAttribute("data-adfilm-loader-pending")
+    ));
   }
   function active(){
     if(latchActive())return true;
@@ -96,6 +102,7 @@
       node=document.createElement("div");
       node.className="adfilm-engine-status";
       node.setAttribute("data-adfilm-engine-status","");
+      node.setAttribute("data-adfilm-idle-hidden","1");
       node.setAttribute("role","status");
       node.setAttribute("aria-live","polite");
       node.innerHTML="<span></span><div><b></b><small></small></div>";
@@ -132,25 +139,42 @@
       }
     }finally{restoring=false}
   }
+  function releaseVisualLock(){
+    var bar=action();if(bar){bar.removeAttribute("data-adfilm-progress-lock");bar.classList.remove("is-engine-active")}
+    var node=status();if(node){
+      node.style.removeProperty("display");
+      node.style.removeProperty("visibility");
+      node.style.removeProperty("opacity");
+    }
+  }
   function releaseIfFinished(){
     var source=project();
     if(!source||(!finalReady(source)&&!terminal(source)))return false;
     if(latchActive()&&!belongsToCurrentRun(source))return false;
-    clearLatch();
-    var bar=action();if(bar)bar.removeAttribute("data-adfilm-progress-lock");
-    var node=status();if(node){node.style.removeProperty("display");node.style.removeProperty("visibility");node.style.removeProperty("opacity")}
+    clearLatch();releaseVisualLock();return true;
+  }
+  function abortIfStartFailed(){
+    var value=latch();if(!value||buttonBusy())return false;
+    if(value.currentRequestId||value.currentOutputId)return false;
+    var started=Date.parse(value.startedAt||"");
+    if(!Number.isFinite(started)||Date.now()-started<1200)return false;
+    clearLatch();releaseVisualLock();
+    if(window.AIVOAdFilmProgressUI&&typeof window.AIVOAdFilmProgressUI.release==="function")window.AIVOAdFilmProgressUI.release();
     return true;
   }
-  function restore(){if(releaseIfFinished())return;if(active())forceVisible()}
+  function begin(){
+    if(!latchActive())setLatch();
+    forceVisible();
+    [40,120,300,700,1500].forEach(function(delay){setTimeout(restore,delay)});
+  }
+  function restore(){
+    if(!latchActive()&&buttonBusy()){begin();return}
+    if(latchActive())belongsToCurrentRun(project());
+    if(abortIfStartFailed())return;
+    if(releaseIfFinished())return;
+    if(active())forceVisible();
+  }
   function schedule(){if(frame)return;frame=requestAnimationFrame(function(){frame=0;restore()})}
-  function begin(){setLatch();forceVisible();[40,120,300,700,1500].forEach(function(delay){setTimeout(restore,delay)})}
-
-  window.addEventListener("click",function(event){
-    if(window.__AIVO_AD_FILM_ASSETS_READY__!==true)return;
-    var target=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
-    if(!target||target.disabled)return;
-    begin();
-  },true);
 
   document.addEventListener("aivo:adfilm-project-sync",schedule);
   document.addEventListener("aivo:adfilm-finalization-pending",schedule);
@@ -158,15 +182,18 @@
   document.addEventListener("aivo:adfilm-assets-ready",function(){setTimeout(restore,30)});
 
   observer=new MutationObserver(function(mutations){
-    if(restoring||!active())return;
+    if(restoring)return;
     for(var i=0;i<mutations.length;i++){
       var target=mutations[i].target;
-      if(target&&target.closest&&target.closest('[data-module-root][data-module="adfilm"] .adfilm-actionbar')){schedule();break}
+      if(target&&target.closest&&target.closest('[data-module-root][data-module="adfilm"] .adfilm-actionbar')){
+        if(!latchActive()&&buttonBusy())begin();else schedule();
+        break;
+      }
     }
   });
-  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class","style","aria-busy","data-adfilm-idle-hidden"]});
+  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:["class","style","aria-busy","data-adfilm-loader-pending","data-adfilm-idle-hidden"]});
 
   interval=setInterval(restore,500);
   window.addEventListener("pagehide",function(){clearInterval(interval);if(observer)observer.disconnect();if(frame)cancelAnimationFrame(frame)});
-  window.AIVOAdFilmProgressLock={begin:begin,restore:restore,active:active,release:clearLatch,belongsToCurrentRun:belongsToCurrentRun};
+  window.AIVOAdFilmProgressLock={begin:begin,restore:restore,active:active,release:function(){clearLatch();releaseVisualLock()},belongsToCurrentRun:belongsToCurrentRun};
 })();
