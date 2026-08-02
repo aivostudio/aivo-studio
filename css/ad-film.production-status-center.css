@@ -1,4 +1,59 @@
-/* AIVO AI Reklam Filmi — desktop production status alignment */
+/* AIVO AI Reklam Filmi — customer-facing production status */
+.adfilm-engine-status.is-busy small{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:min(780px,100%)!important;
+  min-height:112px!important;
+  margin:0 auto!important;
+  padding:16px 24px!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+}
+
+.adfilm-stage-wrap{
+  display:grid;
+  justify-items:center;
+  gap:5px;
+  width:100%;
+}
+
+.adfilm-stage-count{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  padding:3px 10px;
+  border:1px solid rgba(162,126,255,.28);
+  border-radius:999px;
+  background:rgba(116,69,211,.12);
+  color:rgba(215,200,255,.82);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.adfilm-stage-title{
+  color:#fff;
+  font-size:16px;
+  font-weight:850;
+  line-height:1.25;
+}
+
+.adfilm-stage-description{
+  color:rgba(235,231,249,.76);
+  font-size:14px;
+  line-height:1.4;
+}
+
+.adfilm-stage-time{
+  color:#9df2df;
+  font-size:13px;
+  font-weight:750;
+  line-height:1.3;
+}
+
 @media (min-width:701px){
   .adfilm-engine-status.is-busy>div{
     grid-column:1/-1!important;
@@ -17,23 +72,24 @@
     text-align:center!important;
   }
 
-  .adfilm-engine-status.is-busy small{
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    width:min(780px,100%)!important;
-    min-height:76px!important;
-    margin:0 auto!important;
-    padding:17px 26px!important;
-    box-sizing:border-box!important;
-    font-size:15px!important;
-    line-height:1.4!important;
-    text-align:center!important;
-  }
-
   .adfilm-engine-status.is-busy>span{
     width:44px!important;
     height:44px!important;
     border-width:6px!important;
+  }
+}
+
+@media (max-width:700px){
+  .adfilm-engine-status.is-busy small{
+    min-height:126px!important;
+    padding:15px 14px!important;
+  }
+
+  .adfilm-stage-title{
+    font-size:15px;
+  }
+
+  .adfilm-stage-description{
+    font-size:13px;
   }
 }
