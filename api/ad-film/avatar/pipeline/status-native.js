@@ -155,6 +155,108 @@ function avatarReadyGeneration(project, pipeline, now) {
     error:null,
   };
 }
+function isFinalOutput(item) {
+  return Boolean(item && clean(item.videoUrl, 4000) && (
+    Number(item.mixVersion || 0) >= 4 ||
+    item.finalizedAt ||
+    item.avatarApplied === true ||
+    item.avatarIntegrated === true ||
+    item.hybridTimeline === true ||
+    clean(item.avatarCompositeMode, 80)
+  ));
+}
+function matchingFinalOutput(project, pipeline) {
+  const generation = project?.generation || {};
+  const acceptedProductionId = clean(
+    generation.productionId || generation.input?.productionId || project?.productionPlan?.productionId,
+    160,
+  );
+  const pipelineProductionId = clean(pipeline?.productionId, 160);
+  if (acceptedProductionId && pipelineProductionId && acceptedProductionId !== pipelineProductionId) return null;
+
+  const ids = new Set(
+    [project?.activeOutputId, generation.outputId, generation.requestId]
+      .map((value) => clean(value, 240))
+      .filter(Boolean),
+  );
+  if (!ids.size) return null;
+  const outputs = Array.isArray(project?.outputs) ? project.outputs : [];
+  return outputs.find((item) => ids.has(clean(item?.id, 240)) && isFinalOutput(item)) || null;
+}
+function completedGeneration(project, pipeline, output, now) {
+  const generation = project?.generation || {};
+  const completedAt = clean(output?.completedAt || output?.finalizedAt || generation.completedAt, 80) || now;
+  return {
+    ...generation,
+    status:"completed",
+    outputId:clean(output?.id, 240) || generation.outputId || generation.requestId || null,
+    sourceVideoUrl:clean(output?.sourceVideoUrl || generation.sourceVideoUrl, 4000) || null,
+    videoUrl:clean(output?.videoUrl, 4000) || generation.videoUrl || null,
+    logoUrl:clean(output?.logoUrl || generation.logoUrl, 4000) || null,
+    logoApplied:output?.logoApplied === true || generation.logoApplied === true,
+    narrationUrl:clean(output?.narrationUrl || generation.narrationUrl, 4000) || null,
+    narrationApplied:output?.narrationApplied === true || generation.narrationApplied === true,
+    musicUrl:clean(output?.musicUrl || generation.musicUrl, 4000) || null,
+    musicApplied:output?.musicApplied === true || generation.musicApplied === true,
+    avatarUrl:clean(output?.avatarVideoUrl || output?.avatarUrl || pipeline?.videoUrl || generation.avatarUrl, 4000) || null,
+    avatarApplied:output?.avatarApplied === true || output?.avatarIntegrated === true || generation.avatarApplied === true,
+    mixVersion:Number(output?.mixVersion || generation.mixVersion || 0),
+    updatedAt:now,
+    completedAt,
+    avatarWaiting:false,
+    awaitingFinalComposite:false,
+    finalizing:false,
+    sourceOnly:false,
+    activeAvatarRequestId:null,
+    error:null,
+    finalization:{
+      ...(generation.finalization || {}),
+      status:"completed",
+      outputId:clean(output?.id, 240) || generation.outputId || generation.requestId || null,
+      completedAt,
+      error:null,
+    },
+  };
+}
+async function healCompletedProject(user, project, pipeline, output, now) {
+  const generation = project?.generation || {};
+  const alreadyCanonical = clean(project?.status, 40).toLowerCase() === "completed" &&
+    clean(generation.status, 40).toLowerCase() === "completed" &&
+    clean(generation.videoUrl, 4000) === clean(output?.videoUrl, 4000) &&
+    generation.avatarWaiting !== true && generation.awaitingFinalComposite !== true &&
+    generation.finalizing !== true && generation.sourceOnly !== true &&
+    project?.preparingNewVersion !== true;
+  if (alreadyCanonical) return project;
+
+  return saveProject(user, {
+    ...project,
+    status:"completed",
+    preparingNewVersion:false,
+    activeOutputId:clean(output?.id, 240) || project?.activeOutputId || null,
+    generation:completedGeneration(project, pipeline, output, now),
+    avatar:{
+      ...(project?.avatar || {}),
+      pipeline:{...(pipeline || {}),status:"completed",stage:"completed",error:null},
+      videoUrl:clean(pipeline?.videoUrl, 4000) || project?.avatar?.videoUrl || null,
+    },
+    error:null,
+    lastError:null,
+  });
+}
+async function completedResponse(res, user, projectId, project, pipeline, output, now) {
+  const nextProject = await healCompletedProject(user, project, pipeline, output, now);
+  return sendJson(res,200,{
+    ok:true,
+    projectId,
+    status:"COMPLETED",
+    stage:"completed",
+    video_url:clean(output?.videoUrl,4000) || null,
+    avatar_video_url:clean(pipeline?.videoUrl,4000) || null,
+    error:null,
+    pipeline:nextProject?.avatar?.pipeline || pipeline,
+    project:nextProject,
+  });
+}
 async function saveTerminalProject(user, project, avatar, pipeline, error, now) {
   const reason = clean(error || pipeline?.error, 1200) || "avatar_pipeline_failed";
   const terminalPipeline = {
@@ -275,13 +377,19 @@ export default async function handler(req,res) {
     if (!pipeline) return sendJson(res,200,{ok:true,status:"IDLE",project});
 
     const now = new Date().toISOString();
+    const existingFinal = matchingFinalOutput(project,pipeline);
+    if (existingFinal) return completedResponse(res,user,projectId,project,pipeline,existingFinal,now);
+
     if (pipeline.status === "completed" && pipeline.videoUrl) {
-      const readyProject = await saveProject(user, {
+      // A completed avatar is only an intermediate result. Do not persist a
+      // new processing state on every poll: late status requests used to race
+      // the finalizer and reopen an already completed production.
+      const readyProject = {
         ...project,
         status:"processing",
         generation:avatarReadyGeneration(project,pipeline,now),
         avatar:{...avatar,pipeline,videoUrl:pipeline.videoUrl},
-      });
+      };
       return sendJson(res,200,{ok:true,projectId,status:"COMPLETED",stage:"completed",video_url:pipeline.videoUrl,error:null,pipeline,project:readyProject});
     }
     if (pipeline.status === "failed") {
@@ -350,18 +458,27 @@ export default async function handler(req,res) {
       }
     }
 
+    // Provider calls can overlap with final post-production. Re-read the
+    // canonical project before writing so a late poll cannot overwrite a final
+    // output that completed while this request was waiting on Fal.
+    const latestProject = await getOwnedProject(user,projectId) || project;
+    const latestPipeline = latestProject?.avatar?.pipeline || pipeline;
+    const latestFinal = matchingFinalOutput(latestProject,latestPipeline);
+    if (latestFinal) return completedResponse(res,user,projectId,latestProject,latestPipeline,latestFinal,now);
+
     if (pipeline.status === "failed") {
-      const nextProject = await saveTerminalProject(user,project,avatar,pipeline,pipeline.error||"avatar_pipeline_failed",now);
+      const latestAvatar = latestProject.avatar || avatar;
+      const nextProject = await saveTerminalProject(user,latestProject,latestAvatar,pipeline,pipeline.error||"avatar_pipeline_failed",now);
       return sendJson(res,200,{ok:true,projectId,status:"FAILED",stage:"failed",video_url:null,error:nextProject.generation?.error||pipeline.error,pipeline:nextProject.avatar.pipeline,project:nextProject});
     }
 
     const safeVideo = pipeline.status === "completed" ? clean(pipeline.videoUrl,4000) : "";
-    const generation = safeVideo ? avatarReadyGeneration(project,pipeline,now) : activeGeneration(project,pipeline,now);
+    const generation = safeVideo ? avatarReadyGeneration(latestProject,pipeline,now) : activeGeneration(latestProject,pipeline,now);
     const nextProject = await saveProject(user,{
-      ...project,
+      ...latestProject,
       status:"processing",
       generation,
-      avatar:{...avatar,pipeline,videoUrl:safeVideo||null},
+      avatar:{...(latestProject.avatar || avatar),pipeline,videoUrl:safeVideo||null},
     });
     const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
     return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:null,recovered_from_timeout:Boolean(pipeline.timeoutRecoveredAt),pipeline,project:nextProject});
