@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — hard lock the progress panel while production is active */
 (function AIVO_AD_FILM_PROGRESS_LOCK(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_LOCK_V1__)return;
-  window.__AIVO_AD_FILM_PROGRESS_LOCK_V1__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_LOCK_V2__)return;
+  window.__AIVO_AD_FILM_PROGRESS_LOCK_V2__=true;
 
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
   var LATCH_MS=5*60*1000;
@@ -132,9 +132,11 @@
     [30,90,180,350,700,1200].forEach(function(delay){setTimeout(restore,delay)});
   }
 
-  // Window capture runs before document capture. This guarantees that the
-  // production latch is set before the hybrid controller stops propagation.
+  // The asset loader owns the first click. Do not disable the button until all
+  // production controllers are loaded, otherwise its replay click is dropped
+  // and no /seedance/create request is ever sent.
   window.addEventListener("click",function(event){
+    if(window.__AIVO_AD_FILM_ASSETS_READY__!==true)return;
     var target=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
     if(!target||target.disabled)return;
     begin();
