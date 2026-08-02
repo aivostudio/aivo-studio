@@ -1,16 +1,13 @@
 /* AIVO AI Reklam Filmi — completed output workflow */
 (function AIVO_AD_FILM_OUTPUT_WORKFLOW(){
   "use strict";
-  if(window.__AIVO_AD_FILM_OUTPUT_WORKFLOW_V2__)return;
-  window.__AIVO_AD_FILM_OUTPUT_WORKFLOW_V2__=true;
+  if(window.__AIVO_AD_FILM_OUTPUT_WORKFLOW_V3__)return;
+  window.__AIVO_AD_FILM_OUTPUT_WORKFLOW_V3__=true;
 
   var STORAGE_KEY="aivo_adfilm_active_project_id_v2";
   var LEGACY_STORAGE_KEY="aivo_adfilm_active_project_id_v1";
   var REOPEN_KEY="aivo_adfilm_reopen_module_v1";
   var INTENTIONAL_PROJECT_KEY="aivo_adfilm_intentional_new_project_id_v1";
-  var RECOVERY_TRIED_KEY="aivo_adfilm_recovery_tried_v1";
-  var RECOVERED_NOTICE_KEY="aivo_adfilm_recovered_notice_v1";
-  var recoveryBusy=false;
 
   var COPY={
     tr:{
@@ -26,8 +23,7 @@
       projectConfirm:"Yeni ve boş bir reklam projesi oluşturulsun mu? Mevcut proje ve hazır videoların geçmişte korunacak.",
       projectCreating:"Yeni proje hazırlanıyor...",
       projectFailed:"Yeni proje oluşturulamadı.",
-      viewReady:"Hazır videoyu aç",
-      recovered:"Önceki reklam projen ve hazır videon geri getirildi."
+      viewReady:"Hazır videoyu aç"
     },
     en:{
       title:"Your advertising film is ready",
@@ -42,8 +38,7 @@
       projectConfirm:"Create a new blank advertising project? The current project and its ready videos will remain in history.",
       projectCreating:"Creating a new project...",
       projectFailed:"The new project could not be created.",
-      viewReady:"Open ready video",
-      recovered:"Your previous advertising project and ready video were restored."
+      viewReady:"Open ready video"
     }
   };
 
@@ -75,9 +70,7 @@
       localStorage.removeItem(LEGACY_STORAGE_KEY);
     }catch(_){}
   }
-  function sessionGet(key){try{return sessionStorage.getItem(key)||""}catch(_){return""}}
   function sessionSet(key,value){try{if(value==null)sessionStorage.removeItem(key);else sessionStorage.setItem(key,String(value))}catch(_){} }
-  function localGet(key){try{return localStorage.getItem(key)||""}catch(_){return""}}
   function localSet(key,value){try{if(value==null)localStorage.removeItem(key);else localStorage.setItem(key,String(value))}catch(_){} }
 
   function icon(name){
@@ -187,70 +180,16 @@
     }).catch(function(){});
   }
 
-  function hasReadyOutput(source){return outputs(source).length>0}
-  function recentlyCreated(source){
-    var value=Date.parse(source&&source.createdAt||"");
-    return Number.isFinite(value)&&Date.now()-value<48*60*60*1000;
-  }
-  async function fetchProject(id){
-    var response=await fetch("/api/ad-film/project?id="+encodeURIComponent(id),{method:"GET",credentials:"include"});
-    var data=await response.json().catch(function(){return{}});
-    if(!response.ok||!data.project)throw new Error(data.error||"project_load_failed");
-    return data.project;
-  }
-
-  async function recoverAccidentalEmptyProject(source){
-    if(recoveryBusy||!source||!source.id||hasReadyOutput(source)||source.preparingNewVersion)return;
-    if(localGet(INTENTIONAL_PROJECT_KEY)===source.id)return;
-    if(!recentlyCreated(source))return;
-    if(sessionGet(RECOVERY_TRIED_KEY)===source.id)return;
-    sessionSet(RECOVERY_TRIED_KEY,source.id);
-    recoveryBusy=true;
-    try{
-      var response=await fetch("/api/ad-film/projects",{method:"GET",credentials:"include"});
-      var data=await response.json().catch(function(){return{}});
-      if(!response.ok||!Array.isArray(data.projects))return;
-      var candidates=data.projects.filter(function(item){return item&&item.id&&item.id!==source.id}).slice(0,8);
-      for(var index=0;index<candidates.length;index++){
-        try{
-          var candidate=await fetchProject(candidates[index].id);
-          if(!hasReadyOutput(candidate))continue;
-          storeProjectId(candidate.id);
-          sessionSet(REOPEN_KEY,"1");
-          sessionSet(RECOVERED_NOTICE_KEY,"1");
-          location.reload();
-          return;
-        }catch(_){}
-      }
-    }catch(error){console.warn("[ADFILM] project recovery",error)}
-    finally{recoveryBusy=false}
-  }
-
-  function showRecoveredNotice(){
-    if(sessionGet(RECOVERED_NOTICE_KEY)!=="1")return;
-    sessionSet(RECOVERED_NOTICE_KEY,null);
-    setTimeout(function(){toast(t("recovered"),"success")},500);
-  }
-
   document.addEventListener("aivo:module-mounted",function(event){
-    if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){
-      var source=project();
-      render(source);
-      showRecoveredNotice();
-      recoverAccidentalEmptyProject(source);
-    },420);
+    if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){render(project())},420);
   });
   document.addEventListener("aivo:adfilm-project-sync",function(event){
-    setTimeout(function(){
-      var source=event&&event.detail&&event.detail.project||project();
-      render(source);
-      recoverAccidentalEmptyProject(source);
-    },100);
+    setTimeout(function(){render(event&&event.detail&&event.detail.project||project())},100);
   });
   window.addEventListener("pageshow",function(){render(project())});
   var observer=new MutationObserver(function(){if(panel()&&!panel().querySelector("[data-adfilm-output-workflow]"))setTimeout(function(){render(project())},80)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
-  window.AIVOAdFilmOutputWorkflow={render:render,prepareNewVersion:prepareNewVersion,createNewProject:createNewProject,recover:recoverAccidentalEmptyProject};
+  window.AIVOAdFilmOutputWorkflow={render:render,prepareNewVersion:prepareNewVersion,createNewProject:createNewProject};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){render(project())},{once:true});else render(project());
 })();
