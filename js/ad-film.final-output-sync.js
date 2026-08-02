@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — finalize and mount completed hybrid outputs */
 (function AIVO_AD_FILM_FINAL_OUTPUT_SYNC(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINAL_OUTPUT_SYNC_V1__)return;
-  window.__AIVO_AD_FILM_FINAL_OUTPUT_SYNC_V1__=true;
+  if(window.__AIVO_AD_FILM_FINAL_OUTPUT_SYNC_V2__)return;
+  window.__AIVO_AD_FILM_FINAL_OUTPUT_SYNC_V2__=true;
 
   var flights=new Map();
   var timers=new Map();
@@ -13,8 +13,10 @@
   function pipeline(source){return source&&source.avatar&&source.avatar.pipeline||{}}
   function generation(source){return source&&source.generation||{}}
   function outputId(source){var gen=generation(source),pipe=pipeline(source);return clean(gen.outputId||gen.requestId||pipe.motion&&pipe.motion.requestId)}
-  function sourceReady(source){var gen=generation(source);return Boolean(clean(gen.sourceVideoUrl||gen.videoUrl))}
+  function sourceVideo(source){var gen=generation(source);return clean(gen.sourceVideoUrl||gen.videoUrl)}
+  function sourceReady(source){return Boolean(sourceVideo(source))}
   function avatarReady(source){var pipe=pipeline(source);return clean(pipe.status).toLowerCase()==="completed"&&Boolean(clean(pipe.videoUrl))}
+  function avatarFailed(source){var status=clean(pipeline(source).status).toLowerCase();return status==="failed"||status==="cancelled"||status==="canceled"}
   function finalOutputs(source){
     return (Array.isArray(source&&source.outputs)?source.outputs:[]).filter(function(item){
       return item&&clean(item.videoUrl)&&(
@@ -43,9 +45,31 @@
       detail:{project:next,projectId:next.id||"",media:next.media||{}}
     }));
   }
+  function mountSourceFallback(source){
+    if(!sourceReady(source)||!avatarFailed(source)||finalOutput(source))return false;
+    var url=sourceVideo(source),id=outputId(source);if(!url)return false;
+    window.AIVOAdFilmGeneratedVideo=url;
+    window.AIVOAdFilmActiveOutputId=id;
+    if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function"){
+      window.AIVOAdFilmResultControls.mount(url,"",{
+        projectId:projectId(source),outputId:id,logoApplied:false,play:false,sourceFallback:true
+      });
+    }
+    if(window.AIVOAdFilmLivePreviewState&&typeof window.AIVOAdFilmLivePreviewState.sync==="function")window.AIVOAdFilmLivePreviewState.sync(source);
+    var scope=document.querySelector('[data-module-root][data-module="adfilm"]');
+    var status=scope&&scope.querySelector('[data-adfilm-engine-status]');
+    if(status){
+      status.className="adfilm-engine-status is-visible is-warning";
+      var title=status.querySelector("b"),detail=status.querySelector("small");
+      var en=String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0;
+      if(title)title.textContent=en?"Source video ready":"Kaynak video hazır";
+      if(detail)detail.textContent=en?"Presenter processing failed; the completed cinematic video is shown below.":"Oyunculu sahne tamamlanamadı; biten sinematik video aşağıda gösteriliyor.";
+    }
+    return true;
+  }
   function mount(source,play){
-    var item=finalOutput(source);if(!item)return false;
-    var url=clean(item.videoUrl);if(!url)return false;
+    var item=finalOutput(source);if(!item)return mountSourceFallback(source);
+    var url=clean(item.videoUrl);if(!url)return mountSourceFallback(source);
     window.AIVOAdFilmGeneratedVideo=url;
     window.AIVOAdFilmActiveOutputId=clean(item.id);
     if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function"){
@@ -105,6 +129,6 @@
   });
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(project(),420)});
   window.addEventListener("pageshow",function(){schedule(project(),220)});
-  window.AIVOAdFilmFinalOutputSync={run:run,mount:mount,needsFinalization:needsFinalization};
+  window.AIVOAdFilmFinalOutputSync={run:run,mount:mount,needsFinalization:needsFinalization,mountSourceFallback:mountSourceFallback};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(project(),300)},{once:true});else schedule(project(),300);
 })();
