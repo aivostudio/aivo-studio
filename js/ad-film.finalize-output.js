@@ -1,12 +1,17 @@
 /* AIVO AI Reklam Filmi — legacy finalizer compatibility */
 (function AIVO_AD_FILM_FINALIZE_OUTPUT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V6__)return;
-  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V6__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V7__)return;
+  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V7__=true;
 
   function loadOnce(path,version){
     var selector='script[src^="'+path+'"]';
-    if(document.querySelector(selector))return;
+    var existing=document.querySelector(selector);
+    if(existing){
+      var expected=path+"?v="+version;
+      if(existing.getAttribute("src")!==expected)existing.setAttribute("src",expected);
+      return;
+    }
     var script=document.createElement("script");
     script.src=path+"?v="+version;
     script.async=false;
@@ -17,7 +22,7 @@
      Seedance -> native avatar -> final composite chain. The final-output sync
      repairs a completed backend output into the right panel even after a page
      refresh or a missed project event. */
-  loadOnce("/js/ad-film.avatar-finalization-bridge.js","6");
+  loadOnce("/js/ad-film.avatar-finalization-bridge.js","7");
   loadOnce("/js/ad-film.final-output-sync.js","1");
 
   /* Seedance Engine V2 owns the normal lifecycle. Keep this public API as a
