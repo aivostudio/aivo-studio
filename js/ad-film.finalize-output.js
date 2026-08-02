@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — legacy finalizer compatibility */
 (function AIVO_AD_FILM_FINALIZE_OUTPUT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V10__)return;
-  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V10__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V11__)return;
+  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V11__=true;
 
   function loadOnce(path,version){
     var selector='script[src^="'+path+'"]';
@@ -18,18 +18,11 @@
     document.head.appendChild(script);
   }
 
-  /* These lifecycle files must always be present. The bridge advances the
-     Seedance -> native avatar -> final composite chain. The final-output sync
-     mounts only completed outputs. The UI guard prevents source-only videos
-     from entering the main player or Ready Videos while production is active.
-     The media bridge normalizes future product and logo uploads in backend. */
   loadOnce("/js/ad-film.media-normalization.js","1");
   loadOnce("/js/ad-film.avatar-finalization-bridge.js","7");
-  loadOnce("/js/ad-film.final-output-sync.js","3");
+  loadOnce("/js/ad-film.final-output-sync.js","4");
   loadOnce("/js/ad-film.final-output-ui-guard.js","2");
 
-  /* Seedance Engine owns the normal lifecycle. Keep this public API as a
-     safe manual bridge without installing a competing automatic listener. */
   async function run(){
     if(window.AIVOAdFilmSeedanceFinalizing)return;
     var project=window.AIVOAdFilmActiveProject;
