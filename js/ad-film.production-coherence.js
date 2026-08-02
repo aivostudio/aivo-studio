@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — canonical production ID and fresh-launch coherence */
 (function AIVO_AD_FILM_PRODUCTION_COHERENCE(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V1__)return;
-  window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V1__=true;
+  if(window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V2__)return;
+  window.__AIVO_AD_FILM_PRODUCTION_COHERENCE_V2__=true;
 
   var previousFetch=window.fetch.bind(window);
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
@@ -41,6 +41,35 @@
       startedAt:clean(startedAt||current.startedAt)||new Date(now).toISOString(),
       until:Math.max(Number(current.until||0),now+5*60*1000)
     };
+  }
+  function optimisticLaunch(now){
+    var current=project();if(!current)return;
+    var next=Object.assign({},current,{
+      status:"processing",
+      generation:{
+        status:"processing",
+        startedAt:now,
+        updatedAt:now,
+        requestId:null,
+        outputId:null,
+        productionId:null,
+        sourceVideoUrl:null,
+        videoUrl:null,
+        completedAt:null,
+        avatarWaiting:false,
+        awaitingFinalComposite:false,
+        finalizing:false,
+        sourceOnly:false,
+        error:null,
+        input:{}
+      },
+      activeOutputId:null,
+      finalization:null,
+      error:null,
+      lastError:null
+    });
+    if(current.avatar)next.avatar=Object.assign({},current.avatar,{pipeline:null,videoUrl:null});
+    syncProject(next,current.id);
   }
   function mergeCreated(data,projectId){
     if(!data||!data.generation)return;
@@ -110,5 +139,6 @@
     var now=new Date().toISOString();
     window.__AIVO_AD_FILM_LAUNCH_EPOCH__=now;
     updateLatch("",now,currentProjectId());
+    optimisticLaunch(now);
   },true);
 })();
