@@ -10,7 +10,7 @@ import {
 } from "../../../_lib/ad-film-projects.js";
 
 const KLING_V3_QUEUE = /^https:\/\/queue\.fal\.run\/fal-ai\/kling-video\/v3\/(?:pro|standard)\/image-to-video(?:$|[/?])/i;
-const KLING_GUARD_KEY = Symbol.for("aivo.adfilm.kling-v3-input-guard.v1");
+const KLING_GUARD_KEY = Symbol.for("aivo.adfilm.kling-v3-input-guard.v2");
 
 function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
@@ -34,12 +34,12 @@ function sanitizeKlingElement(element) {
         .slice(0, 4)
     : [];
 
-  // Kling v3 validates image elements as a complete image set. The previous
-  // payload sent an empty reference_image_urls array for the presenter, which
-  // made every request fail immediately with HTTP 422. Reusing the frontal
-  // image as the minimum reference keeps the element schema valid while the
-  // generated start frame remains the visual source of truth.
-  if (!references.length) references.push(frontalImageUrl);
+  // Kling v3 image elements require a real reference set. Never duplicate the
+  // frontal image into reference_image_urls: transparent full-body cutouts can
+  // be narrower than Kling's 0.4 minimum aspect ratio and fail the whole job.
+  // The presenter identity is already baked into start_image_url, so an empty
+  // presenter element is safer to remove than to manufacture an invalid ref.
+  if (!references.length) return null;
 
   return {
     frontal_image_url: frontalImageUrl,
@@ -50,19 +50,35 @@ function sanitizeKlingElement(element) {
 function sanitizeKlingPayload(payload) {
   if (!payload || typeof payload !== "object") return payload;
   const next = { ...payload };
+  const original = Array.isArray(payload.elements) ? payload.elements : [];
+  const retained = [];
 
-  if (Array.isArray(payload.elements)) {
-    const elements = payload.elements.map(sanitizeKlingElement).filter(Boolean).slice(0, 4);
-    if (elements.length) next.elements = elements;
-    else delete next.elements;
+  original.forEach((element, index) => {
+    const sanitized = sanitizeKlingElement(element);
+    if (sanitized) retained.push({ originalIndex: index, value: sanitized });
+  });
+
+  if (retained.length) next.elements = retained.map((item) => item.value);
+  else delete next.elements;
+
+  let prompt = clean(next.prompt, 5000);
+  const presenterRemoved = original.length > 0 && !retained.some((item) => item.originalIndex === 0);
+  const productRetained = retained.findIndex((item) => item.originalIndex === 1);
+
+  if (presenterRemoved) {
+    prompt = prompt.replace(/@Element1\b/g, "the exact presenter already visible in the start frame");
+    if (productRetained >= 0) {
+      prompt = prompt.replace(/@Element2\b/g, `@Element${productRetained + 1}`);
+    } else {
+      prompt = prompt.replace(/@Element2\b/g, "the exact hero product already visible in the start frame");
+    }
+  } else if (!retained.length) {
+    prompt = prompt
+      .replace(/@Element1\b/g, "the exact presenter already visible in the start frame")
+      .replace(/@Element2\b/g, "the exact hero product already visible in the start frame");
   }
 
-  if (!Array.isArray(next.elements) || !next.elements.length) {
-    next.prompt = clean(next.prompt, 5000)
-      .replace(/@Element1\b/g, "the exact presenter in the start frame")
-      .replace(/@Element2\b/g, "the exact hero product in the start frame");
-  }
-
+  next.prompt = prompt;
   return next;
 }
 
