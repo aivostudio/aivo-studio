@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — Seedance-first hybrid production controller */
 (function AIVO_AD_FILM_HYBRID_CONTROLLER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V6__)return;
-  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V6__=true;
+  if(window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V7__)return;
+  window.__AIVO_AD_FILM_HYBRID_CONTROLLER_V7__=true;
 
   var starting=false;
   var resumeKey="";
@@ -25,6 +25,7 @@
   function normalizeDuration(value){value=clean(value);return value==='5'||value==='10'||value==='15'?value:''}
   function normalizeRatio(value){value=clean(value);return value==='4:5'?'3:4':value}
   function sourceUrl(source){return clean(source&&source.generation&&source.generation.sourceVideoUrl||source&&source.generation&&source.generation.videoUrl)}
+  function statusSourceUrl(data){return clean(data&&data.source_video_url||data&&data.generation&&data.generation.sourceVideoUrl||data&&data.generation&&data.generation.videoUrl)}
   function recoverableAvatarStart(source){
     if(!source||!source.avatar||source.avatar.enabled!==true||!sourceUrl(source))return false;
     var pipeline=source.avatar.pipeline;
@@ -81,6 +82,37 @@
     return Object.freeze({id:id,projectId:clean(source.id),duration:duration,aspectRatio:ratio,apiAspectRatio:normalizeRatio(ratio),quality:clean(pipeline.quality||input.resolution||source&&source.output&&source.output.quality||'1080p').toLowerCase(),requestId:clean(generation.requestId),capturedAt:pipeline.startedAt||generation.startedAt||new Date().toISOString()});
   }
 
+  function lockFromStatus(id,data){
+    var generation=data&&data.generation||{};
+    var input=generation.input||{};
+    var productionId=clean(generation.productionId||input.productionId);
+    if(!productionId||!clean(generation.requestId))return null;
+    var duration=normalizeDuration(input.duration)||'10';
+    var ratio=clean(input.aspectRatio||input.aspect_ratio||'16:9');
+    return Object.freeze({
+      id:productionId,
+      projectId:id,
+      duration:duration,
+      aspectRatio:ratio,
+      apiAspectRatio:normalizeRatio(ratio),
+      quality:clean(input.resolution||'1080p').toLowerCase(),
+      requestId:clean(generation.requestId),
+      capturedAt:generation.startedAt||new Date().toISOString(),
+      acceptedAt:generation.updatedAt||new Date().toISOString()
+    });
+  }
+
+  function statusHasActiveGeneration(data){
+    var generation=data&&data.generation||{};
+    var status=clean(generation.status).toLowerCase();
+    var publicStatus=clean(data&&data.status).toUpperCase();
+    return Boolean(
+      statusSourceUrl(data)||
+      ['queued','processing'].indexOf(status)>=0||
+      ['IN_QUEUE','RUNNING'].indexOf(publicStatus)>=0
+    );
+  }
+
   function startSeedance(lock){
     if(!window.AIVOAdFilmSeedanceEngine||typeof window.AIVOAdFilmSeedanceEngine.generate!=="function")throw new Error('seedance_engine_not_ready');
     window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
@@ -106,8 +138,8 @@
   async function waitForSeedanceSource(scope,id){
     for(var i=0;i<700;i++){
       var data=await request('/api/ad-film/seedance/status?projectId='+encodeURIComponent(id),{method:'GET'});
-      var source=clean(data.source_video_url||data.generation&&data.generation.sourceVideoUrl);
-      if(source&&(data.source_ready===true||clean(data.error||data.generation&&data.generation.error)==='avatar_pipeline_not_started'))return data;
+      var source=statusSourceUrl(data);
+      if(source&&(data.source_ready===true||clean(data.error||data.generation&&data.generation.error)==='avatar_pipeline_not_started'||data.generation&&data.generation.awaitingFinalComposite===true))return data;
       if(data.status==='FAILED')throw new Error(clean(data.error||data.generation&&data.generation.error)||'seedance_failed');
       setStage(scope,text('Önce sinematik ürün filmi hazırlanıyor','Creating the cinematic product film first'),text('Seedance tüm sahne, efekt ve geçişleri tamamlıyor. Oyuncu motoru kaynak film hazır olmadan başlamayacak.','Seedance is completing the scenes, effects and transitions. The presenter engine will not start before the source film is ready.'));
       await sleep(3000);
@@ -139,6 +171,20 @@
     return true;
   }
 
+  async function recoverServerGeneration(scope,button,id,data){
+    if(!statusHasActiveGeneration(data))return false;
+    var lock=lockFromStatus(id,data);if(!lock)return false;
+    window.__AIVO_AD_FILM_PRODUCTION_LOCK__=lock;
+    setStage(scope,
+      statusSourceUrl(data)?text('Hazır ürün filmi bulundu','Completed product film found'):text('Devam eden ürün filmi bulundu','Active product film found'),
+      statusSourceUrl(data)?text('Yeni Seedance üretimi başlatılmadan avatar aşamasına geçiliyor.','The presenter stage is starting without a new Seedance generation.'):text('Mevcut Seedance üretimi izleniyor; ikinci bir ücretli üretim başlatılmayacak.','The existing Seedance generation is being monitored; a second paid generation will not be started.')
+    );
+    var prepared=await prepareAvatar(id,lock);
+    if(prepared&&prepared.project)syncProject(prepared.project,id);
+    await continueAfterSeedance(scope,button,id,lock);
+    return true;
+  }
+
   async function start(scope,button){
     if(starting)return;
     scope=scope||root();button=button||scope&&scope.querySelector('[data-adfilm-build]');
@@ -147,8 +193,11 @@
     try{
       var current=project();
       if(recoverableAvatarStart(current)&&await recoverExisting(scope,button,current))return;
+      var id=projectId(scope);if(!id)throw new Error('project_not_ready');
+      var serverState=null;
+      try{serverState=await request('/api/ad-film/seedance/status?projectId='+encodeURIComponent(id),{method:'GET'})}catch(_){}
+      if(serverState&&await recoverServerGeneration(scope,button,id,serverState))return;
       var requested=captureLock(scope);
-      var id=requested.projectId;if(!id)throw new Error('project_not_ready');
       var previous=clean(project()&&project().generation&&project().generation.requestId);
       setStage(scope,text('Ürün filmi başlatılıyor','Starting product film'),text('Seedance önce 15 saniyelik ana reklam filmini tek parça olarak kuracak.','Seedance will first build the main advertising film as one coherent piece.'));
       startSeedance(requested);
