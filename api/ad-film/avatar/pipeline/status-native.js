@@ -114,6 +114,32 @@ function failedGeneration(project, error, now) {
     error:clean(error,1200) || "avatar_pipeline_failed",
   };
 }
+function activeGeneration(project, pipeline, now) {
+  return {
+    ...(project?.generation || {}),
+    status:"processing",
+    updatedAt:now,
+    completedAt:null,
+    avatarWaiting:true,
+    awaitingFinalComposite:true,
+    finalizing:false,
+    activeAvatarRequestId:clean(pipeline?.motion?.requestId || pipeline?.lipsync?.requestId, 240) || null,
+    error:null,
+  };
+}
+function avatarReadyGeneration(project, pipeline, now) {
+  return {
+    ...(project?.generation || {}),
+    status:"processing",
+    updatedAt:now,
+    completedAt:null,
+    avatarWaiting:false,
+    awaitingFinalComposite:true,
+    finalizing:true,
+    avatarVideoUrl:clean(pipeline?.videoUrl, 4000) || null,
+    error:null,
+  };
+}
 async function saveTerminalProject(user, project, avatar, pipeline, error, now) {
   const reason = clean(error || pipeline?.error, 1200) || "avatar_pipeline_failed";
   const terminalPipeline = {
@@ -234,7 +260,15 @@ export default async function handler(req,res) {
     if (!pipeline) return sendJson(res,200,{ok:true,status:"IDLE",project});
 
     const now = new Date().toISOString();
-    if (pipeline.status === "completed" && pipeline.videoUrl) return sendJson(res,200,{ok:true,status:"COMPLETED",video_url:pipeline.videoUrl,pipeline,project});
+    if (pipeline.status === "completed" && pipeline.videoUrl) {
+      const readyProject = await saveProject(user, {
+        ...project,
+        status:"processing",
+        generation:avatarReadyGeneration(project,pipeline,now),
+        avatar:{...avatar,pipeline,videoUrl:pipeline.videoUrl},
+      });
+      return sendJson(res,200,{ok:true,projectId,status:"COMPLETED",stage:"completed",video_url:pipeline.videoUrl,error:null,pipeline,project:readyProject});
+    }
     if (pipeline.status === "failed") {
       const reason = pipeline.error || project?.generation?.error || "avatar_pipeline_failed";
       const alreadyTerminal = String(project.status) === "failed" && String(project?.generation?.status) === "failed";
@@ -295,7 +329,13 @@ export default async function handler(req,res) {
     }
 
     const safeVideo = pipeline.status === "completed" ? clean(pipeline.videoUrl,4000) : "";
-    const nextProject = await saveProject(user,{...project,avatar:{...avatar,pipeline,videoUrl:safeVideo||null}});
+    const generation = safeVideo ? avatarReadyGeneration(project,pipeline,now) : activeGeneration(project,pipeline,now);
+    const nextProject = await saveProject(user,{
+      ...project,
+      status:"processing",
+      generation,
+      avatar:{...avatar,pipeline,videoUrl:safeVideo||null},
+    });
     const publicStatus = pipeline.status === "completed" ? "COMPLETED" : pipeline.status.includes("queued") ? "IN_QUEUE" : "RUNNING";
     return sendJson(res,200,{ok:true,projectId,status:publicStatus,stage:pipeline.stage,video_url:safeVideo||null,error:null,pipeline,project:nextProject});
   } catch(error) {
