@@ -13,6 +13,27 @@ function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
 }
 
+function matchingFinalOutput(project) {
+  const generation = project?.generation || {};
+  const ids = new Set(
+    [project?.activeOutputId, generation.outputId, generation.requestId]
+      .map((value) => clean(value, 240))
+      .filter(Boolean),
+  );
+  const outputs = Array.isArray(project?.outputs) ? project.outputs : [];
+  return outputs.find((item) => {
+    const id = clean(item?.id, 240);
+    if (!id || !ids.has(id) || !clean(item?.videoUrl, 4000)) return false;
+    return Boolean(
+      item?.hybridTimeline === true ||
+      item?.avatarApplied === true ||
+      item?.avatarIntegrated === true ||
+      clean(item?.avatarCompositeMode, 80) ||
+      Number(item?.mixVersion || 0) >= 12
+    );
+  }) || null;
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
@@ -42,6 +63,16 @@ export default async function handler(req, res) {
         ok: false,
         error: "production_lock_mismatch",
         accepted_production_id: acceptedProductionId || null,
+      });
+    }
+
+    const finalizedOutput = matchingFinalOutput(project);
+    if (finalizedOutput && clean(project?.generation?.status, 80).toLowerCase() === "completed") {
+      return sendJson(res, 409, {
+        ok: false,
+        error: "production_already_completed",
+        output_id: finalizedOutput.id,
+        video_url: finalizedOutput.videoUrl,
       });
     }
 
