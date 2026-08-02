@@ -5,7 +5,7 @@
   const CREDIT_FLOW_RE =
     /(kredi|yetersiz|satın al|satın\s*alma|kredi\s*al|paket|fiyatlandirma|fiyatlandırma|yönlendir|redirect)/i;
   const RECOVERABLE_ADFILM_RE =
-    /(avatar_pipeline_not_started|seedance_generation_not_ready|hibrit reklam üretimi başlatılamadı|hybrid production could not start)/i;
+    /(avatar_pipeline_not_started|seedance_generation_not_ready|generation_in_progress|hibrit reklam üretimi başlatılamadı|hybrid production could not start|üretim isteği başarısız oldu)/i;
 
   function messageText(msg) {
     if (typeof msg === "string") return msg;
@@ -65,8 +65,8 @@
 
 /* AI Reklam Filmi varlık yükleyicisi. */
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V53__) return;
-  window.__AIVO_AD_FILM_ASSETS_V53__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V54__) return;
+  window.__AIVO_AD_FILM_ASSETS_V54__ = true;
 
   const styles = [
     "/css/mod.ad-film.css?v=6",
@@ -141,7 +141,7 @@
     "/js/ad-film.narration-master.js?v=3",
     "/js/ad-film.narration-build-guard.js?v=4",
     "/js/ad-film.voice-toggle-fix.js?v=2",
-    "/js/ad-film.hybrid-controller.js?v=6",
+    "/js/ad-film.hybrid-controller.js?v=7",
     "/js/ad-film.music-preflight.js?v=3",
     "/js/ad-film.seedance-resume-guard.js?v=2",
     "/js/ad-film.finalize-wait.js?v=3",
