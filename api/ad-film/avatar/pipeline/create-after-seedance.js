@@ -34,11 +34,6 @@ function sanitizeKlingElement(element) {
         .slice(0, 4)
     : [];
 
-  // Kling v3 image elements require a real reference set. Never duplicate the
-  // frontal image into reference_image_urls: transparent full-body cutouts can
-  // be narrower than Kling's 0.4 minimum aspect ratio and fail the whole job.
-  // The presenter identity is already baked into start_image_url, so an empty
-  // presenter element is safer to remove than to manufacture an invalid ref.
   if (!references.length) return null;
 
   return {
@@ -115,24 +110,55 @@ function installKlingInputGuard() {
 
 installKlingInputGuard();
 
-function matchingFinalOutput(project) {
+function finalOutput(item) {
+  return Boolean(
+    item &&
+    clean(item.videoUrl, 4000) &&
+    (
+      item.hybridTimeline === true ||
+      item.avatarApplied === true ||
+      item.avatarIntegrated === true ||
+      clean(item.avatarCompositeMode, 80) ||
+      Number(item.mixVersion || 0) >= 12
+    )
+  );
+}
+
+function matchingFinalOutput(project, productionId) {
   const generation = project?.generation || {};
   const ids = new Set(
-    [project?.activeOutputId, generation.outputId, generation.requestId]
+    [generation.outputId, generation.requestId]
       .map((value) => clean(value, 240))
       .filter(Boolean),
   );
+  const generationStartedAt = Date.parse(generation.startedAt || generation.createdAt || "");
   const outputs = Array.isArray(project?.outputs) ? project.outputs : [];
+
   return outputs.find((item) => {
+    if (!finalOutput(item)) return false;
+
     const id = clean(item?.id, 240);
-    if (!id || !ids.has(id) || !clean(item?.videoUrl, 4000)) return false;
-    return Boolean(
-      item?.hybridTimeline === true ||
-      item?.avatarApplied === true ||
-      item?.avatarIntegrated === true ||
-      clean(item?.avatarCompositeMode, 80) ||
-      Number(item?.mixVersion || 0) >= 12
+    const itemProductionId = clean(
+      item?.productionId || item?.production_id || item?.input?.productionId,
+      160,
     );
+    const productionMatches = Boolean(
+      productionId && itemProductionId && itemProductionId === productionId,
+    );
+    const idMatches = Boolean(id && ids.has(id));
+    if (!productionMatches && !idMatches) return false;
+    if (productionId && itemProductionId && itemProductionId !== productionId) return false;
+
+    // Older outputs can remain in history while a new version is being made.
+    // Never let an output completed before the current generation started
+    // short-circuit the new avatar pipeline merely because an old ID leaked
+    // into activeOutputId or a stale project snapshot.
+    if (!productionMatches && Number.isFinite(generationStartedAt)) {
+      const completedAt = Date.parse(item?.completedAt || item?.finalizedAt || item?.createdAt || "");
+      if (Number.isFinite(completedAt) && completedAt < generationStartedAt - 5000) return false;
+    }
+
+    return true;
   }) || null;
 }
 
@@ -168,8 +194,9 @@ export default async function handler(req, res) {
       });
     }
 
-    const finalizedOutput = matchingFinalOutput(project);
-    if (finalizedOutput && clean(project?.generation?.status, 80).toLowerCase() === "completed") {
+    const finalizedOutput = matchingFinalOutput(project, acceptedProductionId);
+    const generationCompleted = clean(project?.generation?.status, 80).toLowerCase() === "completed";
+    if (finalizedOutput && generationCompleted && project?.preparingNewVersion !== true) {
       return sendJson(res, 409, {
         ok: false,
         error: "production_already_completed",
