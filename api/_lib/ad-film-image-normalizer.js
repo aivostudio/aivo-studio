@@ -8,6 +8,7 @@ const MAX_INPUT_PIXELS = 80_000_000;
 const PRODUCT_MAX_EDGE = 2048;
 const LOGO_MAX_WIDTH = 2048;
 const LOGO_MAX_HEIGHT = 1024;
+const FINALIZER_LOGO_VERSION = 1;
 
 function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
@@ -20,6 +21,11 @@ function safeName(value, fallback = "media") {
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
   return next || fallback;
+}
+
+function even(value) {
+  const number = Math.max(2, Math.round(Number(value) || 2));
+  return number % 2 === 0 ? number : number - 1;
 }
 
 function colorDistance(a, b) {
@@ -141,7 +147,7 @@ async function normalizeLogo(buffer) {
   const background = dominantEdgeBackground(data, raw.info);
   const backgroundRemoved = removeConnectedEdgeBackground(data, raw.info, background);
 
-  let pipeline = sharp(data, { raw: raw.info })
+  const pipeline = sharp(data, { raw: raw.info })
     .trim({ background: { r: 0, g: 0, b: 0, alpha: 0 }, threshold: 6 })
     .resize({
       width: LOGO_MAX_WIDTH,
@@ -303,6 +309,8 @@ export async function normalizeStoredMedia({ user, projectId, item, kind }) {
     normalization: normalized.metadata,
     sourceKey: item.sourceKey || item.key || null,
     sourceUrl: item.sourceUrl || sourceUrl,
+    renderSourceKey: key,
+    renderSourceUrl: url,
   };
 }
 
@@ -318,10 +326,11 @@ export function calculateLogoSafeBox(frameWidth, frameHeight, aspectRatio, logoM
   const ratio = clean(aspectRatio, 20);
   const portrait = ["9:16", "4:5", "3:4"].includes(ratio) || width < height;
   const square = ratio === "1:1" || Math.abs(width / height - 1) < 0.08;
-  const maxWidthRatio = portrait ? 0.18 : square ? 0.14 : 0.11;
-  const maxHeightRatio = portrait ? 0.072 : square ? 0.09 : 0.10;
-  const marginXRatio = portrait ? 0.035 : 0.024;
-  const marginYRatio = portrait ? 0.024 : 0.032;
+  const ultrawide = ratio === "21:9" || width / height > 2.15;
+  const maxWidthRatio = portrait ? 0.12 : square ? 0.10 : ultrawide ? 0.085 : 0.09;
+  const maxHeightRatio = portrait ? 0.065 : square ? 0.07 : 0.08;
+  const marginXRatio = portrait ? 0.025 : square ? 0.025 : 0.02;
+  const marginYRatio = portrait ? 0.025 : square ? 0.025 : 0.03;
   const logoWidth = Math.max(1, Number(logoMeta.width) || 1);
   const logoHeight = Math.max(1, Number(logoMeta.height) || 1);
   const scale = Math.min(
@@ -340,5 +349,188 @@ export function calculateLogoSafeBox(frameWidth, frameHeight, aspectRatio, logoM
     placement: "bottom-right",
     fit: "contain",
     preserveAspectRatio: true,
+  };
+}
+
+function finalizerDimensions(resolution, ratio, nativeMode) {
+  const value = clean(resolution, 20).toLowerCase();
+  const height = value === "4k" ? 2160 : value === "1080p" ? 1080 : value === "720p" ? 720 : 480;
+  const aspect = clean(ratio, 20) || "16:9";
+  if (nativeMode && aspect === "21:9") return { width: even((height * 21) / 9), height };
+  if (aspect === "9:16") return { width: even((height * 9) / 16), height };
+  if (aspect === "1:1") return { width: height, height };
+  if (aspect === "4:5") return { width: even((height * 4) / 5), height };
+  if (aspect === "3:4") return { width: even((height * 3) / 4), height };
+  if (nativeMode && aspect === "4:3") return { width: even((height * 4) / 3), height };
+  return { width: even((height * 16) / 9), height };
+}
+
+function legacyLogoWidth(resolution) {
+  const value = clean(resolution, 20).toLowerCase();
+  if (value === "4k") return 300;
+  if (value === "1080p") return 178;
+  if (value === "720p") return 128;
+  return 90;
+}
+
+function legacyLogoMargin(resolution) {
+  const value = clean(resolution, 20).toLowerCase();
+  if (value === "4k") return 72;
+  if (value === "1080p") return 40;
+  if (value === "720p") return 28;
+  return 20;
+}
+
+function finalizerPreset({ resolution, aspectRatio, nativeMode, frame, canvasWidth, targetWidth, targetHeight }) {
+  return [
+    `v${FINALIZER_LOGO_VERSION}`,
+    nativeMode ? "native" : "standard",
+    clean(resolution, 20).toLowerCase(),
+    clean(aspectRatio, 20),
+    `${frame.width}x${frame.height}`,
+    `${canvasWidth}x${targetHeight}`,
+    `${targetWidth}x${targetHeight}`,
+  ].join(":");
+}
+
+export async function prepareFinalizerLogoAsset({
+  user,
+  projectId,
+  item,
+  resolution,
+  aspectRatio,
+  nativeMode = false,
+}) {
+  if (!user || !projectId || !item) throw new Error("missing_finalizer_logo_context");
+
+  const frame = finalizerDimensions(resolution, aspectRatio, nativeMode);
+  const canvasWidth = legacyLogoWidth(resolution);
+  const fixedMargin = legacyLogoMargin(resolution);
+  const sourceUrl = clean(
+    item.renderSourceUrl || item.normalizedSourceUrl || item.url || item.readUrl || item.publicUrl,
+    8000,
+  );
+  if (!sourceUrl) throw new Error("missing_finalizer_logo_source");
+
+  const sourceBuffer = await downloadImageBuffer(sourceUrl);
+  const normalized = await normalizeLogo(sourceBuffer);
+  const safeBox = calculateLogoSafeBox(
+    frame.width,
+    frame.height,
+    aspectRatio,
+    normalized.metadata,
+  );
+
+  const widthLimit = Math.max(2, Math.min(canvasWidth, safeBox.targetWidth));
+  const scale = Math.min(
+    widthLimit / normalized.metadata.width,
+    safeBox.targetHeight / normalized.metadata.height,
+  );
+  const targetWidth = Math.max(2, Math.min(canvasWidth, Math.round(normalized.metadata.width * scale)));
+  const targetHeight = Math.max(2, Math.round(normalized.metadata.height * scale));
+  const preset = finalizerPreset({
+    resolution,
+    aspectRatio,
+    nativeMode,
+    frame,
+    canvasWidth,
+    targetWidth,
+    targetHeight,
+  });
+
+  if (
+    item.finalizerLogoPreset === preset &&
+    item.finalizerLogoVersion === FINALIZER_LOGO_VERSION &&
+    clean(item.url, 8000)
+  ) {
+    return item;
+  }
+
+  const resized = await sharp(normalized.buffer, {
+    failOn: "error",
+    limitInputPixels: MAX_INPUT_PIXELS,
+  })
+    .resize({
+      width: targetWidth,
+      height: targetHeight,
+      fit: "inside",
+      withoutEnlargement: false,
+      kernel: sharp.kernel.lanczos3,
+    })
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toBuffer();
+
+  const leftPadding = Math.max(0, canvasWidth - targetWidth);
+  const composites = [
+    { input: resized, left: leftPadding, top: 0 },
+  ];
+
+  // Both existing finalizers trim transparent edges before FFmpeg. A single
+  // nearly invisible edge marker preserves the calculated transparent left
+  // padding without creating a visible plate behind the logo.
+  if (leftPadding > 0) {
+    composites.push({
+      input: { create: { width: 1, height: 1, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 0.065 } } },
+      left: 0,
+      top: 0,
+    });
+  }
+
+  const rendered = await sharp({
+    create: {
+      width: canvasWidth,
+      height: targetHeight,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite(composites)
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toBuffer();
+
+  const id = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex");
+  const key = `${mediaPrefix(user, projectId)}normalized/logo-render/${Date.now()}-${id}-${safeName(item.name || "logo", "logo")}.png`;
+  const url = await putObject({
+    key,
+    body: rendered,
+    contentLength: rendered.length,
+    contentType: "image/png",
+    cacheControl: "public, max-age=31536000, immutable",
+    contentDisposition: "inline",
+  });
+
+  return {
+    ...item,
+    key,
+    url,
+    publicUrl: url,
+    readUrl: url,
+    contentType: "image/png",
+    size: rendered.length,
+    normalized: true,
+    renderSourceKey: item.renderSourceKey || item.key || null,
+    renderSourceUrl: item.renderSourceUrl || sourceUrl,
+    finalizerLogoVersion: FINALIZER_LOGO_VERSION,
+    finalizerLogoPreset: preset,
+    finalizerLogoPreparedAt: new Date().toISOString(),
+    finalizerLogo: {
+      frameWidth: frame.width,
+      frameHeight: frame.height,
+      aspectRatio: clean(aspectRatio, 20),
+      resolution: clean(resolution, 20).toLowerCase(),
+      nativeMode: Boolean(nativeMode),
+      canvasWidth,
+      canvasHeight: targetHeight,
+      visibleWidth: targetWidth,
+      visibleHeight: targetHeight,
+      leftPadding,
+      fixedMargin,
+      safeMarginX: safeBox.marginX,
+      safeMarginY: safeBox.marginY,
+      maxWidth: safeBox.maxWidth,
+      maxHeight: safeBox.maxHeight,
+      placement: "bottom-right",
+      preserveAspectRatio: true,
+    },
   };
 }
