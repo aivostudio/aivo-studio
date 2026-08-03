@@ -1,7 +1,8 @@
 /* AIVO AI Reklam Filmi — professional output quality policy */
 (function AIVO_AD_FILM_QUALITY_POLICY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V4__)return;
+  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V5__)return;
+  window.__AIVO_AD_FILM_QUALITY_POLICY_V5__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V4__=true;
 
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
@@ -36,14 +37,22 @@
     var changed=removeLowQuality(scope);rewriteCopy(scope);return changed;
   }
   function applyBurst(scope){[0,40,120,300,700,1400].forEach(function(delay){setTimeout(function(){apply(scope)},delay)})}
+  function loadElapsedOwner(){
+    if(window.__AIVO_AD_FILM_ELAPSED_OWNER_V1__)return;
+    if(document.querySelector('script[src^="/js/ad-film.elapsed-owner.js"]'))return;
+    var script=document.createElement('script');
+    script.src='/js/ad-film.elapsed-owner.js?v=1';
+    script.async=false;
+    document.head.appendChild(script);
+  }
 
-  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')applyBurst(event.detail.root)});
-  document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst()});
-  document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst()});
+  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){applyBurst(event.detail.root);loadElapsedOwner()}});
+  document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst();loadElapsedOwner()});
+  document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst();loadElapsedOwner()});
   document.addEventListener('click',function(event){
-    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]'))applyBurst();
+    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]')){applyBurst();loadElapsedOwner()}
   },true);
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){applyBurst()},{once:true});else applyBurst();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){applyBurst();loadElapsedOwner()},{once:true});else{applyBurst();loadElapsedOwner()}
   window.AIVOAdFilmQualityPolicy={apply:apply};
 })();
