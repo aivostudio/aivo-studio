@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V84__) return;
-  window.__AIVO_AD_FILM_ASSETS_V84__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V85__) return;
+  window.__AIVO_AD_FILM_ASSETS_V85__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -41,7 +41,7 @@
     "/css/ad-film.project-sync.css?v=2",
     "/css/ad-film.cloud-status-fix.css?v=1",
     "/css/ad-film.readability.css?v=1",
-    "/css/ad-film.vibrant-actions.css?v=3",
+    "/css/ad-film.vibrant-actions.css?v=4",
     "/css/ad-film.production-state.css?v=1",
     "/css/ad-film.storyboard.css?v=1",
     "/css/ad-film.simple-mode.css?v=3",
@@ -71,9 +71,7 @@
     "/js/ad-film.reopen-fix.js?v=1"
   ];
 
-  /* Seedance is now the only production/progress owner. The retired avatar,
-     hybrid-finalization and duplicate progress guards are intentionally not
-     loaded because they were rewriting the same project/status/video DOM. */
+  /* Seedance is the only production and progress owner. */
   const moduleScripts = [
     "/js/ad-film.i18n.js?v=1",
     "/js/ad-film.controls-fix.js?v=3",
@@ -104,7 +102,7 @@
     "/js/ad-film.production-id-adapter.js?v=1",
     "/js/ad-film.production-save-guard.js?v=1",
     "/js/ad-film.music-preflight.js?v=4",
-    "/js/ad-film.seedance-engine.js?v=9",
+    "/js/ad-film.seedance-engine.js?v=10",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
