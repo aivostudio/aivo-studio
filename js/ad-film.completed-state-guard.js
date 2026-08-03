@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — definitive completed output state guard */
 (function AIVO_AD_FILM_COMPLETED_STATE_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V2__)return;
-  window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V2__=true;
+  if(window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V3__)return;
+  window.__AIVO_AD_FILM_COMPLETED_STATE_GUARD_V3__=true;
 
   var timer=null;
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
@@ -11,8 +11,6 @@
   function lower(value){return clean(value).toLowerCase()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
-  function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
-  function text(tr,en){return english()?en:tr}
   function generation(source){return source&&source.generation||{}}
   function outputId(source){var gen=generation(source);return clean(source&&source.activeOutputId||gen.outputId||gen.requestId)}
   function latch(){return window[LATCH_KEY]&&typeof window[LATCH_KEY]==="object"?window[LATCH_KEY]:null}
@@ -54,29 +52,28 @@
     if(item&&(item.completedAt||item.finalizedAt||Number(item.mixVersion||0)>=4||item.hybridTimeline===true))return true;
     return lower(source.status)==="completed"||lower(gen.status)==="completed";
   }
+
+  /* This guard only normalizes project state and releases busy controls.
+     The progress card has a single visual owner: progress-stability.js.
+     Older versions removed data-adfilm-idle-hidden every 400 ms, while
+     idle-ui-cleanup restored it. That writer conflict caused the last flicker. */
   function stopBusyUi(source){
     if(!isFinal(source))return false;
     if(latchActive()&&!stateBelongsToCurrentLatch(source))return false;
     var scope=root();if(!scope)return false;
-    var node=scope.querySelector('[data-adfilm-engine-status]');
     var button=scope.querySelector('[data-adfilm-build]');
     var action=scope.querySelector('.adfilm-actionbar');
-    var item=output(source)||{},duration=clean(item.duration||source&&source.output&&source.output.duration),quality=clean(item.resolution||source&&source.output&&source.output.quality);
-    if(node){
-      node.className='adfilm-engine-status is-visible is-success';
-      node.removeAttribute('data-stage');
-      node.removeAttribute('data-adfilm-idle-hidden');
-      var title=node.querySelector('b'),small=node.querySelector('small');
-      if(title)title.textContent=text('Reklam filmi hazır','Advertising film ready');
-      if(small)small.textContent=[text('Tamamlandı','Completed'),duration?duration+' '+text('sn','sec'):'',quality].filter(Boolean).join(' · ');
-    }
+
     if(button){
       button.disabled=false;
       button.classList.remove('is-generating','is-loading','is-music-preparing');
       button.removeAttribute('aria-busy');
     }
-    if(action)action.classList.remove('is-engine-active');
-    try{if(window.AIVOAdFilmProgressUI&&typeof window.AIVOAdFilmProgressUI.release==='function')window.AIVOAdFilmProgressUI.release()}catch(_){}
+    if(action){
+      action.classList.remove('is-engine-active');
+      action.removeAttribute('data-adfilm-progress-lock');
+    }
+
     clearLatch();
     return true;
   }
