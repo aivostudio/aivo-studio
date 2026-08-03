@@ -1,8 +1,10 @@
 /* AIVO AI Reklam Filmi — UI-only professional quality policy */
 (function AIVO_AD_FILM_QUALITY_UI_ONLY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_UI_ONLY_V1__)return;
-  window.__AIVO_AD_FILM_QUALITY_UI_ONLY_V1__=true;
+  if(window.__AIVO_AD_FILM_QUALITY_UI_ONLY_V2__)return;
+  window.__AIVO_AD_FILM_QUALITY_UI_ONLY_V2__=true;
+
+  var DIRECTION_LIMIT=1200;
 
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function root(scope){
@@ -10,10 +12,27 @@
     return document.querySelector('[data-module-root][data-module="adfilm"]');
   }
   function valueOf(node){return String(node&&node.getAttribute&&node.getAttribute('data-value')||node&&node.textContent||'').trim().toLowerCase()}
+  function applyDirectionLimit(scope){
+    var textarea=scope&&scope.querySelector('[data-adfilm-input="creativeDirection"]');
+    if(!textarea)return;
+    textarea.maxLength=DIRECTION_LIMIT;
+    textarea.setAttribute('maxlength',String(DIRECTION_LIMIT));
+    var count=scope.querySelector('[data-plan-direction-count]');
+    if(count){
+      count.textContent=String(textarea.value.length);
+      var wrap=count.parentElement;
+      if(wrap){
+        Array.from(wrap.childNodes).forEach(function(node){
+          if(node.nodeType===3&&node.nodeValue&&node.nodeValue.indexOf('/')>=0)node.nodeValue=' / '+DIRECTION_LIMIT;
+        });
+      }
+    }
+  }
   function apply(scope){
     scope=root(scope);if(!scope)return false;
+    applyDirectionLimit(scope);
     var group=scope.querySelector('[data-adfilm-choice="quality"]');
-    if(!group)return false;
+    if(!group)return true;
     group.querySelectorAll('[data-value="480p"],[data-value="720p"]').forEach(function(node){node.remove()});
     var allowed=Array.from(group.querySelectorAll('[data-value]')).filter(function(node){return valueOf(node)==='1080p'||valueOf(node)==='4k'});
     var selected=group.querySelector('.is-selected[data-value]');
@@ -33,6 +52,9 @@
   document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm')burst(event.detail.root)});
   document.addEventListener('aivo:adfilm-assets-ready',function(){burst()});
   document.addEventListener('aivo:adfilm-project-sync',function(){burst()});
+  document.addEventListener('input',function(event){
+    if(event.target&&event.target.matches&&event.target.matches('[data-module="adfilm"] [data-adfilm-input="creativeDirection"]'))applyDirectionLimit(root());
+  },true);
   document.addEventListener('click',function(event){if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]'))burst()},true);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){burst()},{once:true});else burst();
   window.AIVOAdFilmQualityUI={apply:apply};
