@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V2__) return;
-  window.__AIVO_AD_FILM_ASSETS_CLEAN_V2__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V3__) return;
+  window.__AIVO_AD_FILM_ASSETS_CLEAN_V3__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -114,7 +114,7 @@
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-ui-only.js?v=1"
+    "/js/ad-film.quality-ui-only.js?v=2"
   ];
 
   let shellLoadPromise = null;
