@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V102__) return;
-  window.__AIVO_AD_FILM_ASSETS_V102__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V103__) return;
+  window.__AIVO_AD_FILM_ASSETS_V103__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -104,25 +104,18 @@
     "/js/ad-film.narration-build-guard.js?v=4",
     "/js/ad-film.voice-toggle-fix.js?v=2",
     "/js/ad-film.production-id-adapter.js?v=1",
-    "/js/ad-film.production-save-guard.js?v=3",
-    "/js/ad-film.active-run-event-guard.js?v=5",
-    "/js/ad-film.music-preflight.js?v=8",
-    "/js/ad-film.seedance-engine.js?v=10",
-    "/js/ad-film.progress-stability.js?v=12",
+    "/js/ad-film.production-controller.js?v=1",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
     "/js/ad-film.draft-preview-owner.js?v=1",
-    "/js/ad-film.final-ui-and-playback.js?v=2",
-    "/js/ad-film.stale-success-guard.js?v=1",
     "/js/ad-film.output-workflow.js?v=2",
     "/js/ad-film.video-modal.js?v=1",
     "/js/ad-film.output-gallery.js?v=10",
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-policy.js?v=4",
-    "/js/ad-film.elapsed-continuity.js?v=1"
+    "/js/ad-film.quality-policy.js?v=4"
   ];
 
   let shellLoadPromise = null;
@@ -190,7 +183,7 @@
     pendingBuildButton = null;
     if (!button || !button.isConnected) return;
     button.removeAttribute("data-adfilm-loader-pending");
-    if (button.dataset.narrationGuard !== "blocked" && !button.classList.contains("is-loading") && !button.classList.contains("is-generating") && !button.classList.contains("is-music-preparing")) {
+    if (button.dataset.narrationGuard !== "blocked" && !button.classList.contains("is-loading") && !button.classList.contains("is-generating")) {
       button.disabled = false;
       button.removeAttribute("aria-busy");
     }
