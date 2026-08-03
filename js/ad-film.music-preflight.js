@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — generate selected music before Seedance production */
 (function AIVO_AD_FILM_MUSIC_PREFLIGHT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V7__)return;
-  window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V7__=true;
+  if(window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V8__)return;
+  window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V8__=true;
 
   var busy=false;
   var preflightStartedAt=0;
@@ -24,7 +24,6 @@
   async function request(url,options){var r=await fetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"}},options||{}));var d=await r.json().catch(function(){return{}});if(!r.ok){var e=new Error(errorMessage(d,r));e.data=d;e.status=r.status;throw e}return d}
   function setBuildBusy(button,on){if(!button)return;button.classList.toggle("is-music-preparing",!!on);if(on)button.setAttribute("aria-busy","true");else button.removeAttribute("aria-busy");button.disabled=!!on}
   function selected(scope,key,fallback){var node=scope&&scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');return clean(node&&node.getAttribute("data-value"))||fallback}
-  function referenceCount(){try{var refs=window.AIVOAdFilmSeedanceEngine&&typeof window.AIVOAdFilmSeedanceEngine.references==="function"&&window.AIVOAdFilmSeedanceEngine.references();return Number(refs&&refs.ordered&&refs.ordered.length||0)}catch(_){return 0}}
   function generation(source){return source&&source.generation||{}}
   function outputId(source){var gen=generation(source);return clean(source&&source.activeOutputId||gen.outputId||gen.requestId)}
   function projectId(source){var scope=root();return clean(source&&source.id||scope&&scope.dataset.adfilmProjectId)}
@@ -96,7 +95,6 @@
   function startPreflightVisual(source,button){
     preflightStartedAt=Date.now();
     ensurePreflightLatch(source);
-    try{if(window.AIVOAdFilmProgressLock&&typeof window.AIVOAdFilmProgressLock.begin==="function")window.AIVOAdFilmProgressLock.begin()}catch(_){}
     showImmediateProcessing(button);
     clearInterval(preflightClock);
     preflightClock=setInterval(function(){enforcePreflightVisual(button)},250);
@@ -108,14 +106,29 @@
     if(!keepLatch)clearPreflightLatch();
   }
   function showMusicError(button,message){var scope=button&&button.closest('[data-module-root][data-module="adfilm"]')||root();if(!scope)return;var status=ensureStatus(scope,button);if(!status)return;status.style.removeProperty("display");status.style.removeProperty("visibility");status.style.removeProperty("opacity");status.removeAttribute("data-stage");status.className="adfilm-engine-status is-visible is-error";var title=status.querySelector("b"),detail=status.querySelector("small");if(title)title.textContent=text("Reklam müziği hazırlanamadı","Advertising music could not be prepared");if(detail)detail.textContent=message||text("Tekrar deneyebilirsin.","You can try again.")}
+
+  function mergeMusicIntoActive(source){
+    var active=project();
+    var lock=window.__AIVO_AD_FILM_PRODUCTION_START_LOCK__;
+    if(!lock||!active||!source||clean(active.id)!==clean(source.id))return source;
+    var merged=Object.assign({},active);
+    merged.music=source.music||active.music||{};
+    merged.media=Object.assign({},active.media||{},source.media||{});
+    merged.musicGeneration=source.musicGeneration||active.musicGeneration||null;
+    merged.updatedAt=source.updatedAt||active.updatedAt;
+    merged.__aivoProductionIntent=true;
+    return merged;
+  }
+
   async function ensureMusic(source,button){
     if(!needsMusicValidation(source))return source;
     var handle=toast(text("Reklam müziği ayarları kontrol ediliyor...","Checking advertising music settings..."),"info",0);
     try{
       var requestBody=currentMusicRequest(source);
+      console.info("[ADFILM FLOW] music-preflight-create",requestBody);
       var created=await request("/api/ad-film/music/create",{method:"POST",body:JSON.stringify(requestBody)});
       if(created.project)source=created.project;
-      if(created.status==="DISABLED")return source;
+      if(created.status==="DISABLED")return mergeMusicIntoActive(source);
       for(var i=0;i<120;i++){
         if(created.status==="COMPLETED"&&musicReady(source))break;
         await sleep(1800);
@@ -126,14 +139,16 @@
       }
       if(!musicReady(source))throw new Error("music_generation_timeout");
       if(handle&&typeof handle.dismiss==="function")handle.dismiss();
+      source=mergeMusicIntoActive(source);
       window.AIVOAdFilmActiveProject=source;
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:source,projectId:source.id||"",media:source.media||{}}}));
       if(created.status!=="COMPLETED")toast(text("Seçtiğin tarza uygun reklam müziği hazır. Video üretimi başlıyor.","Advertising music matching your selected style is ready. Video generation is starting."),"success");
+      console.info("[ADFILM FLOW] music-preflight-complete",{projectId:source.id||"",generation:source.generation&&source.generation.status||""});
       return source;
     }catch(error){if(handle&&typeof handle.dismiss==="function")handle.dismiss();throw error}
     finally{setBuildBusy(button,false)}
   }
-  function startProduction(){if(!window.AIVOAdFilmSeedanceEngine||typeof window.AIVOAdFilmSeedanceEngine.generate!=="function")throw new Error("seedance_engine_not_ready");return window.AIVOAdFilmSeedanceEngine.generate()}
+  function startProduction(){if(!window.AIVOAdFilmSeedanceEngine||typeof window.AIVOAdFilmSeedanceEngine.generate!=="function")throw new Error("seedance_engine_not_ready");console.info("[ADFILM FLOW] seedance-start-requested");return window.AIVOAdFilmSeedanceEngine.generate()}
 
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
