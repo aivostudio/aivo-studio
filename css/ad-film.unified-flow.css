@@ -80,12 +80,19 @@
 [data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status]::before,
 [data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status]::before,
 [data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-engine-status]::before,
-[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status]::before,
-[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status] b,
-[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status] b{
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status]::before{
   animation:none!important;
   transition:none!important;
   filter:none!important;
+}
+
+/* Keep the animated heading free from the stability reset above. */
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status].is-busy b,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status].is-busy b,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-engine-status].is-busy b,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status].is-busy b{
+  animation:aivoAdFilmTitleGradient 3.2s ease-in-out infinite,aivoAdFilmTitleHeartbeat 1.2s ease-in-out infinite!important;
+  transition:none!important;
 }
 
 /* Keep the round loader moving. */
