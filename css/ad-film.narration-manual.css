@@ -1,0 +1,23 @@
+/* AIVO AI Reklam Filmi — single manual narration script mode */
+.is-creative-plan-ready .adfilm-card--voice [data-adfilm-choice="scriptMode"]{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+}
+
+.is-creative-plan-ready .adfilm-card--voice [data-adfilm-choice="scriptMode"] button[data-value="ai"]{
+  display:none!important;
+}
+
+.is-creative-plan-ready .adfilm-card--voice [data-adfilm-choice="scriptMode"] button[data-value="manual"]{
+  width:100%!important;
+  min-height:44px!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.22)!important;
+  background:linear-gradient(112deg,#7c4dff,#b84fd7 52%,#ef5fb4)!important;
+  box-shadow:0 10px 24px rgba(124,77,255,.2),inset 0 1px 0 rgba(255,255,255,.16)!important;
+  font-weight:900!important;
+}
+
+.is-creative-plan-ready .adfilm-card--voice [data-narration-ai]{
+  display:none!important;
+}
