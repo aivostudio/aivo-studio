@@ -1,12 +1,13 @@
 /* AIVO AI Reklam Filmi — active run and clean reopen guard */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V2__)return;
+  if(window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V3__)return;
+  window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V3__=true;
   window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V2__=true;
 
   var runStartedAt=0;
   var sessionRun=false;
-  var observer=null;
+  var cleanupTimer=null;
   var originalConfirm=window.confirm.bind(window);
   var FAL_CONFIRM_RE=/(Bu test gerçek Fal\.ai üretimi başlatır|This test starts a real Fal\.ai generation)/i;
 
@@ -54,6 +55,17 @@
     if(isActive()&&!runStartedAt)runStartedAt=Date.now();
     if(!isActive()&&runStartedAt&&Date.now()-runStartedAt>2000)runStartedAt=0;
   }
+  function scheduleCleanup(){
+    clearTimeout(cleanupTimer);
+    var checks=0;
+    function check(){
+      checks++;
+      markRun();
+      hideStaleCompleted();
+      if(!sessionRun&&checks<8)cleanupTimer=setTimeout(check,250);
+    }
+    check();
+  }
 
   window.confirm=function(message){
     if(FAL_CONFIRM_RE.test(String(message||'')))return true;
@@ -62,13 +74,13 @@
 
   document.addEventListener('click',function(event){
     var build=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
-    if(build)sessionRun=true;
+    if(build){sessionRun=true;clearTimeout(cleanupTimer);markRun()}
   },true);
 
   document.addEventListener('aivo:adfilm-project-sync',function(event){
     markRun();
     if(!isActive()){
-      setTimeout(hideStaleCompleted,0);
+      if(!sessionRun)scheduleCleanup();
       return;
     }
     var incoming=event&&event.detail&&event.detail.project;
@@ -84,12 +96,9 @@
   document.addEventListener('aivo:module-mounted',function(event){
     if(!event||!event.detail||event.detail.key!=='adfilm')return;
     sessionRun=false;
-    [0,300,900,1500].forEach(function(delay){setTimeout(hideStaleCompleted,delay)});
+    scheduleCleanup();
   });
 
-  observer=new MutationObserver(function(){markRun();if(!sessionRun&&!isActive())hideStaleCompleted()});
-  observer.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','aria-busy']});
-  setInterval(function(){markRun();if(!sessionRun&&!isActive())hideStaleCompleted()},500);
-  window.addEventListener('pagehide',function(){if(observer)observer.disconnect()});
+  window.addEventListener('pagehide',function(){clearTimeout(cleanupTimer)});
   window.AIVOAdFilmActiveRunEventGuard={active:isActive,startedAt:function(){return runStartedAt},hideStaleCompleted:hideStaleCompleted};
 })();
