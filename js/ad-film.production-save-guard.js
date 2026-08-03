@@ -1,7 +1,8 @@
 /* AIVO AI Reklam Filmi — protect active production from stale saves and stale completed UI */
 (function AIVO_AD_FILM_PRODUCTION_SAVE_GUARD(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PRODUCTION_SAVE_GUARD_V2__)return;
+  if(window.__AIVO_AD_FILM_PRODUCTION_SAVE_GUARD_V3__)return;
+  window.__AIVO_AD_FILM_PRODUCTION_SAVE_GUARD_V3__=true;
   window.__AIVO_AD_FILM_PRODUCTION_SAVE_GUARD_V2__=true;
   window.__AIVO_AD_FILM_PRODUCTION_SAVE_GUARD_V1__=true;
 
@@ -20,9 +21,10 @@
   function outputId(source){var gen=generation(source);return clean(source&&source.activeOutputId||gen.outputId||gen.requestId)}
   function generationStarted(source){var gen=generation(source);return Date.parse(gen.startedAt||gen.createdAt||source&&source.startedAt||"")||0}
   function completed(source){var gen=generation(source),state=lower(gen.status||source&&source.status);return (state==="completed"||!!clean(gen.videoUrl||source&&source.videoUrl))&&!!clean(gen.videoUrl||source&&source.videoUrl)}
+  function debug(label,data){try{console.info("[ADFILM FLOW] "+label,data||"")}catch(_){} }
   function active(){
     var source=project()||{},gen=generation(source),pipeline=source.avatar&&source.avatar.pipeline||{};
-    var states=["queued","processing","running","in_queue","finalizing","rendering"];
+    var states=["starting","queued","processing","running","in_queue","finalizing","rendering"];
     return states.indexOf(lower(source.status))>=0||states.indexOf(lower(gen.status))>=0||states.indexOf(lower(pipeline.status))>=0||gen.awaitingFinalComposite===true||gen.avatarWaiting===true||gen.finalizing===true||!!window.__AIVO_AD_FILM_FORCE_FRESH__||!!run;
   }
   function synthetic(source){
@@ -40,6 +42,27 @@
       state.approved=true;
       window.AIVOAdFilmNarrationGuideState=state;
     }catch(_){}
+  }
+
+  function startingProject(source,now){
+    source=source&&typeof source==="object"?source:{};
+    var next=Object.assign({},source),gen=Object.assign({},generation(source));
+    next.status="processing";
+    next.videoUrl=null;
+    next.activeOutputId=null;
+    next.generation=Object.assign(gen,{
+      status:"starting",
+      videoUrl:null,
+      sourceVideoUrl:null,
+      finalizing:false,
+      awaitingFinalComposite:false,
+      avatarWaiting:false,
+      sourceOnly:false,
+      startedAt:new Date(now).toISOString(),
+      updatedAt:new Date(now).toISOString()
+    });
+    next.__aivoProductionIntent=true;
+    return next;
   }
 
   function clearOldSuccess(scope){
@@ -69,13 +92,22 @@
       startedAt:now
     };
     window.__AIVO_AD_FILM_PRODUCTION_START_LOCK__=run;
+    window.AIVOAdFilmActiveProject=startingProject(source,now);
     narrationApproved();
     clearOldSuccess(button&&button.closest('[data-module-root][data-module="adfilm"]')||root());
     try{
       if(window.AIVOAdFilmActiveRunEventGuard&&typeof window.AIVOAdFilmActiveRunEventGuard.beginRun==="function")window.AIVOAdFilmActiveRunEventGuard.beginRun();
     }catch(_){}
+    document.dispatchEvent(new CustomEvent("aivo:adfilm-run-start",{detail:{project:window.AIVOAdFilmActiveProject,projectId:run.projectId,startedAt:now}}));
+    debug("run-intent",{projectId:run.projectId,previousRequestId:run.previousRequestId,previousOutputId:run.previousOutputId});
     clearTimeout(runExpiry);
-    runExpiry=setTimeout(function(){run=null;window.__AIVO_AD_FILM_PRODUCTION_START_LOCK__=null},30*60*1000);
+    runExpiry=setTimeout(releaseRun,30*60*1000);
+  }
+
+  function releaseRun(){
+    run=null;
+    window.__AIVO_AD_FILM_PRODUCTION_START_LOCK__=null;
+    clearTimeout(runExpiry);
   }
 
   function belongsToCurrentRun(source){
@@ -101,7 +133,10 @@
 
   window.fetch=function(input,init){
     var url=urlOf(input),method=clean(init&&init.method||"GET").toUpperCase();
-    if((method==="PATCH"||method==="PUT")&&url.indexOf("/api/ad-film/project?id=")>=0&&active())return synthetic(project());
+    if((method==="PATCH"||method==="PUT")&&url.indexOf("/api/ad-film/project?id=")>=0&&active()){
+      debug("stale-save-blocked",{method:method,url:url});
+      return synthetic(project());
+    }
     return previousFetch(input,init);
   };
 
@@ -117,11 +152,11 @@
     rememberRunningGeneration(incoming);
     if(!completed(incoming))return;
     if(belongsToCurrentRun(incoming)){
-      run=null;
-      window.__AIVO_AD_FILM_PRODUCTION_START_LOCK__=null;
-      clearTimeout(runExpiry);
+      debug("current-run-completed",{requestId:requestId(incoming),outputId:outputId(incoming)});
+      releaseRun();
       return;
     }
+    debug("stale-completed-sync-blocked",{requestId:requestId(incoming),outputId:outputId(incoming)});
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
@@ -129,4 +164,5 @@
   },true);
 
   window.addEventListener("pagehide",function(){clearTimeout(runExpiry)});
+  window.AIVOAdFilmProductionSaveGuard={beginRun:beginRun,release:releaseRun,active:function(){return!!run},state:function(){return run}};
 })();
