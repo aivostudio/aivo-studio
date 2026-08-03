@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V96__) return;
-  window.__AIVO_AD_FILM_ASSETS_V96__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V97__) return;
+  window.__AIVO_AD_FILM_ASSETS_V97__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -50,11 +50,12 @@
     "/css/ad-film.video-options-readability.css?v=1",
     "/css/ad-film.advanced-alignment.css?v=2",
     "/css/ad-film.creative-plan.css?v=1",
-    "/css/ad-film.plan-simple.css?v=1",
+    "/css/ad-film.plan-simple.css?v=2",
     "/css/ad-film.creative-plan-tune.css?v=2",
     "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
+    "/css/ad-film.narration-manual.css?v=1",
     "/css/ad-film.narration-engine.css?v=2",
     "/css/ad-film.narration-player.css?v=2",
     "/css/ad-film.seedance-engine.css?v=5",
@@ -95,6 +96,7 @@
     "/js/ad-film.reset-fix.js?v=2",
     "/js/ad-film.reset-safety.js?v=1",
     "/js/ad-film.narration-guide.js?v=1",
+    "/js/ad-film.narration-manual.js?v=1",
     "/js/ad-film.narration-engine.js?v=3",
     "/js/ad-film.narration-approval-sync.js?v=11",
     "/js/ad-film.narration-player-host-fix.js?v=1",
