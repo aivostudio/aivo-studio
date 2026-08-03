@@ -10,14 +10,28 @@
 
 .is-creative-plan-ready .adfilm-card--voice [data-adfilm-choice="scriptMode"] button[data-value="manual"]{
   width:100%!important;
-  min-height:44px!important;
+  min-height:68px!important;
+  padding:14px 32px!important;
   color:#fff!important;
-  border-color:rgba(255,255,255,.22)!important;
+  border-color:rgba(255,255,255,.24)!important;
   background:linear-gradient(112deg,#7c4dff,#b84fd7 52%,#ef5fb4)!important;
-  box-shadow:0 10px 24px rgba(124,77,255,.2),inset 0 1px 0 rgba(255,255,255,.16)!important;
-  font-weight:900!important;
+  box-shadow:0 10px 24px rgba(124,77,255,.2),inset 0 1px 0 rgba(255,255,255,.18)!important;
+  font-size:clamp(20px,1.35vw,27px)!important;
+  font-weight:950!important;
+  line-height:1.12!important;
+  letter-spacing:.012em!important;
+  text-align:center!important;
+  white-space:normal!important;
 }
 
 .is-creative-plan-ready .adfilm-card--voice [data-narration-ai]{
   display:none!important;
+}
+
+@media(max-width:680px){
+  .is-creative-plan-ready .adfilm-card--voice [data-adfilm-choice="scriptMode"] button[data-value="manual"]{
+    min-height:58px!important;
+    padding:12px 18px!important;
+    font-size:18px!important;
+  }
 }
