@@ -1,0 +1,87 @@
+/* AIVO AI Reklam Filmi — 5–15 second policy and clearer format controls */
+
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  min-height:58px!important;
+  padding:9px 8px!important;
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button span{
+  display:inline-block!important;
+  color:rgba(255,255,255,.94)!important;
+  opacity:1!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  letter-spacing:.01em!important;
+  text-shadow:0 1px 8px rgba(0,0,0,.4)!important;
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button .ratio{
+  flex:0 0 auto!important;
+  color:rgba(255,255,255,.9)!important;
+  border-width:2px!important;
+  opacity:1!important;
+  filter:drop-shadow(0 1px 4px rgba(0,0,0,.38));
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button.is-selected span{
+  color:#fff!important;
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button.is-selected .ratio{
+  color:#fff!important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-seedance-duration-control{
+  max-width:660px!important;
+  width:100%!important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-seedance-duration-control select{
+  height:82px!important;
+  padding:0 68px 0 28px!important;
+  border-radius:20px!important;
+  color:#fff!important;
+  font-size:30px!important;
+  font-weight:800!important;
+  line-height:1!important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-seedance-duration-chevron{
+  right:28px!important;
+  width:13px!important;
+  height:13px!important;
+  border-width:0 4px 4px 0!important;
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-seedance-note="duration"]{
+  color:rgba(226,232,240,.9)!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  text-align:center!important;
+}
+
+@media(max-width:1500px){
+  [data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button{
+    min-height:54px!important;
+    gap:8px!important;
+  }
+  [data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button span{
+    font-size:14px!important;
+  }
+}
+
+@media(max-width:700px){
+  [data-module-root][data-module="adfilm"] .adfilm-seedance-duration-control select{
+    height:62px!important;
+    padding-left:20px!important;
+    font-size:22px!important;
+  }
+  [data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"].adfilm-options--seedance-ratio button span{
+    font-size:13px!important;
+  }
+}
