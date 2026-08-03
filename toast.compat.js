@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V1__) return;
-  window.__AIVO_AD_FILM_ASSETS_CLEAN_V1__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V2__) return;
+  window.__AIVO_AD_FILM_ASSETS_CLEAN_V2__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -101,9 +101,9 @@
     "/js/ad-film.narration-player-host-fix.js?v=1",
     "/js/ad-film.narration-player.js?v=2",
     "/js/ad-film.narration-master.js?v=3",
-    "/js/ad-film.narration-build-guard.js?v=4",
+    "/js/ad-film.narration-state.js?v=1",
     "/js/ad-film.voice-toggle-fix.js?v=2",
-    "/js/ad-film.production-controller.js?v=2",
+    "/js/ad-film.production-controller-v2.js?v=1",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
