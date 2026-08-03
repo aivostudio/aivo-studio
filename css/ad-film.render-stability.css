@@ -9,6 +9,19 @@
   transform:none!important;
 }
 
+/* A completed project may be restored before the idle UI owner has finished
+   mounting. Never paint that old green card. The current production guard
+   adds data-adfilm-current-run-completed only when a production started in
+   this page session has actually reached its completed state. */
+[data-module-root][data-module="adfilm"]:not([data-adfilm-current-run-completed="1"]) [data-adfilm-engine-status].is-success{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  animation:none!important;
+  transition:none!important;
+}
+
 /* The large blurred ambient circles create oversized GPU layers inside the
    independently scrolling studio column. The page already has equivalent
    radial gradients, so removing these circles preserves the design while
