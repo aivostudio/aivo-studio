@@ -10,9 +10,33 @@
   animation:none!important;
   opacity:.10!important;
 }
+
+@keyframes aivoAdFilmTitleGradient{
+  0%{background-position:0% 50%;filter:drop-shadow(0 0 8px rgba(124,77,255,.18))}
+  33%{background-position:50% 50%;filter:drop-shadow(0 0 14px rgba(229,74,174,.30))}
+  66%{background-position:100% 50%;filter:drop-shadow(0 0 14px rgba(22,217,247,.26))}
+  100%{background-position:0% 50%;filter:drop-shadow(0 0 8px rgba(124,77,255,.18))}
+}
+
+@keyframes aivoAdFilmTitleHeartbeat{
+  0%,100%{transform:scale(1)}
+  10%{transform:scale(1.025)}
+  18%{transform:scale(.995)}
+  28%{transform:scale(1.018)}
+  40%{transform:scale(1)}
+}
+
 .adfilm-engine-status.is-busy b{
-  animation:none!important;
-  background-size:100% 100%!important;
+  color:transparent!important;
+  background:linear-gradient(90deg,#8b5cff 0%,#d85bc8 28%,#ff5fa8 50%,#16d9f7 75%,#9b70ff 100%)!important;
+  background-size:300% 300%!important;
+  background-position:0% 50%;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  transform-origin:center center!important;
+  animation:aivoAdFilmTitleGradient 5.2s ease-in-out infinite,aivoAdFilmTitleHeartbeat 1.55s ease-in-out infinite!important;
+  will-change:transform,background-position,filter;
 }
 
 .adfilm-engine-status.is-busy small{
@@ -209,4 +233,12 @@
   .adfilm-stage-title{font-size:17px}
   .adfilm-stage-description{font-size:14px}
   .adfilm-stage-time{font-size:14px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .adfilm-engine-status.is-busy b{
+    animation:none!important;
+    background-position:50% 50%!important;
+    transform:none!important;
+  }
 }
