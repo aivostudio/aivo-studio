@@ -1,14 +1,9 @@
 (() => {
-  if (window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V79__) return;
-  window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V79__ = true;
+  if (window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V80__) return;
+  window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V80__ = true;
 
-  const overrideHref = "/css/ad-film.stage-width-override.css?v=1";
-  if (!document.querySelector('link[href^="/css/ad-film.stage-width-override.css"]')) {
-    const style = document.createElement("link");
-    style.rel = "stylesheet";
-    style.href = overrideHref;
-    document.head.appendChild(style);
-  }
+  const staleOverride = document.querySelector('link[href^="/css/ad-film.stage-width-override.css"]');
+  if (staleOverride) staleOverride.remove();
 
   const load = (src) => new Promise((resolve) => {
     const script = document.createElement("script");
@@ -20,5 +15,5 @@
   });
 
   load("/js/ad-film.active-run-event-guard.js?v=3")
-    .then(() => load("/toast.compat.js?v=79"));
+    .then(() => load("/toast.compat.js?v=80"));
 })();
