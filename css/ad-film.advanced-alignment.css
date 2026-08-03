@@ -10,7 +10,6 @@
   flex-direction:column;
 }
 
-/* Keep the icon at the side, but center the title on the card itself. */
 .is-simplified-basic .adfilm-card--advanced-music .adfilm-music-source{
   position:relative;
   flex:1;
@@ -98,7 +97,6 @@
   text-align:center!important;
 }
 
-/* Compact, centered quality selector. */
 .is-simplified-basic .adfilm-card--advanced-output .adfilm-advanced-output__body{
   flex:1;
   display:flex;
@@ -132,8 +130,8 @@
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   align-items:center!important;
-  gap:12px!important;
-  width:min(100%,370px)!important;
+  gap:10px!important;
+  width:min(100%,320px)!important;
   margin:0 auto!important;
 }
 
@@ -145,24 +143,24 @@
   justify-content:center!important;
   width:100%!important;
   min-width:0!important;
-  height:58px!important;
-  min-height:58px!important;
-  max-height:58px!important;
-  padding:8px 12px!important;
-  border-radius:15px!important;
+  height:50px!important;
+  min-height:50px!important;
+  max-height:50px!important;
+  padding:6px 10px!important;
+  border-radius:14px!important;
   overflow:hidden;
   text-align:center!important;
 }
 
 .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button:has(.adfilm-seedance-tag){
-  padding:8px 12px!important;
+  padding:6px 10px!important;
 }
 
 .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button span{
   position:relative;
   z-index:2;
   color:#fff!important;
-  font-size:16px!important;
+  font-size:14px!important;
   font-weight:900!important;
   line-height:1!important;
   transform:none!important;
@@ -170,12 +168,12 @@
 
 .is-simplified-basic .adfilm-card--advanced-output .adfilm-seedance-tag{
   position:absolute!important;
-  top:6px!important;
-  right:7px!important;
+  top:5px!important;
+  right:6px!important;
   left:auto!important;
   min-width:0!important;
   margin:0!important;
-  padding:2px 6px!important;
+  padding:2px 5px!important;
   transform:none!important;
   border-radius:999px!important;
   font-size:6px!important;
