@@ -13,8 +13,8 @@
   var QUALITIES=["1080p","4k"];
 
   var COPY={
-    tr:{durationNote:"Seedance 2.0 · 5–15 saniye",ratioNote:"4:5 seçildiğinde final video güvenli kadrajla hazırlanır.",qualityNote:"1080p profesyonel final, 4K premium.",outputDetailsSub:"1080p profesyonel kalite veya 4K premium kaliteyi seç.",premium:"Premium",seconds:"sn",durationLabel:"Video süresi"},
-    en:{durationNote:"Seedance 2.0 · 5–15 seconds",ratioNote:"When 4:5 is selected, the final video is prepared with a crop-safe frame.",qualityNote:"1080p professional final, 4K premium.",outputDetailsSub:"Choose 1080p professional quality or 4K premium quality.",premium:"Premium",seconds:"sec",durationLabel:"Video duration"}
+    tr:{ratioNote:"4:5 seçildiğinde final video güvenli kadrajla hazırlanır.",qualityNote:"1080p profesyonel final, 4K premium.",outputDetailsSub:"1080p profesyonel kalite veya 4K premium kaliteyi seç.",premium:"Premium",seconds:"sn",durationLabel:"Video süresi"},
+    en:{ratioNote:"When 4:5 is selected, the final video is prepared with a crop-safe frame.",qualityNote:"1080p professional final, 4K premium.",outputDetailsSub:"Choose 1080p professional quality or 4K premium quality.",premium:"Premium",seconds:"sec",durationLabel:"Video duration"}
   };
 
   function language(){var html=String(document.documentElement.lang||"").toLowerCase(),stored="";try{stored=String(localStorage.getItem("aivo_language")||localStorage.getItem("aivo_lang")||"").toLowerCase()}catch(_){}return stored==="en"||html.indexOf("en")===0?"en":"tr"}
@@ -31,6 +31,7 @@
   function qualityMarkup(){return QUALITIES.map(function(value){var label=value==="4k"?"4K":value;var tag=value==="4k"?'<em class="adfilm-seedance-tag">'+t("premium")+'</em>':"";return '<button type="button" data-value="'+value+'"><span>'+label+'</span>'+tag+'</button>'}).join("")}
 
   function ensureNote(group,key,text){var block=group&&group.closest(".adfilm-setting-block");if(!block)return;var note=block.querySelector('[data-adfilm-seedance-note="'+key+'"]');if(!note){note=document.createElement("small");note.className="adfilm-seedance-note";note.setAttribute("data-adfilm-seedance-note",key);block.appendChild(note)}note.textContent=text}
+  function removeNote(group,key){var block=group&&group.closest(".adfilm-setting-block");var note=block&&block.querySelector('[data-adfilm-seedance-note="'+key+'"]');if(note)note.remove()}
   function choose(group,value){var button=group.querySelector('button[data-value="'+value+'"]')||group.querySelector("button[data-value]");if(button&&!button.classList.contains("is-selected"))button.click();else if(button)button.classList.add("is-selected")}
   function syncDurationSelect(group){var block=group.closest(".adfilm-setting-block");var select=block&&block.querySelector("[data-adfilm-seedance-duration-select]");if(select)select.value=normalizeDuration(selected(group))}
 
@@ -52,7 +53,7 @@
     if(!group.__seedanceDurationBound){group.__seedanceDurationBound=true;group.addEventListener("click",function(){setTimeout(function(){syncDurationSelect(group)},0)})}
     ensureDurationSelect(group,target);
     var legacy=group.closest(".adfilm-setting-block")&&group.closest(".adfilm-setting-block").querySelector("[data-adfilm-duration-note]");if(legacy)legacy.hidden=true;
-    ensureNote(group,"duration",t("durationNote"))
+    removeNote(group,"duration")
   }
 
   function setupRatios(scope){
