@@ -1,7 +1,8 @@
 /* AIVO AI Reklam Filmi — active run and clean reopen guard */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V4__)return;
+  if(window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V5__)return;
+  window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V5__=true;
   window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V4__=true;
   window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V3__=true;
   window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V2__=true;
@@ -24,7 +25,12 @@
   }
   function isActive(){
     var build=button(),bar=action();
-    return !!(build&&(build.classList.contains('is-generating')||build.getAttribute('aria-busy')==='true')||bar&&bar.classList.contains('is-engine-active'));
+    return !!(build&&(
+      build.classList.contains('is-generating')||
+      build.classList.contains('is-music-preparing')||
+      build.classList.contains('is-loading')||
+      build.getAttribute('aria-busy')==='true'
+    )||bar&&bar.classList.contains('is-engine-active'));
   }
   function projectTime(project){
     var gen=project&&project.generation||{};
@@ -36,6 +42,20 @@
     return lower(project&&project.status)==='completed'||lower(gen.status)==='completed'||!!clean(gen.videoUrl);
   }
   function idleTitle(){return String(document.documentElement.lang||'').toLowerCase().indexOf('en')===0?'Advertising project will be prepared':'Reklam projesi hazırlanacak'}
+  function syncNarrationApproval(){
+    try{
+      var guard=window.AIVOAdFilmNarrationBuildGuard&&typeof window.AIVOAdFilmNarrationBuildGuard.state==='function'?window.AIVOAdFilmNarrationBuildGuard.state():null;
+      if(!guard||guard.ready!==true)return;
+      var scope=root();
+      var selected=scope&&scope.querySelector('[data-adfilm-choice="scriptMode"] .is-selected[data-value]');
+      var mode=clean(selected&&selected.getAttribute('data-value'))||'manual';
+      var state=window.AIVOAdFilmNarrationGuideState;
+      if(!state||typeof state!=='object')state={};
+      state.mode=state.mode||mode;
+      state.approved=true;
+      window.AIVOAdFilmNarrationGuideState=state;
+    }catch(_){}
+  }
   function hideStaleCompleted(){
     if(isActive())return;
     var scope=root();if(!scope||scope.getAttribute('data-adfilm-current-run-completed')==='1')return;
@@ -72,6 +92,15 @@
     }
     check();
   }
+  function beginRun(){
+    syncNarrationApproval();
+    setCurrentRunCompleted(false);
+    hideStaleCompleted();
+    sessionRun=true;
+    if(!runStartedAt||Date.now()-runStartedAt>1200)runStartedAt=Date.now();
+    window.__AIVO_AD_FILM_RUN_INTENT_AT__=runStartedAt;
+    clearTimeout(cleanupTimer);
+  }
 
   window.confirm=function(message){
     if(FAL_CONFIRM_RE.test(String(message||'')))return true;
@@ -80,16 +109,7 @@
 
   document.addEventListener('click',function(event){
     var build=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
-    if(build){
-      /* Clear an old completed card before the lazy asset loader marks the
-         button busy. Otherwise the previous success state becomes visible for
-         one frame while the production engine is still loading. */
-      setCurrentRunCompleted(false);
-      hideStaleCompleted();
-      sessionRun=true;
-      runStartedAt=Date.now();
-      clearTimeout(cleanupTimer);
-    }
+    if(build)beginRun();
   },true);
 
   document.addEventListener('aivo:adfilm-project-sync',function(event){
@@ -133,6 +153,7 @@
   window.AIVOAdFilmActiveRunEventGuard={
     active:isActive,
     startedAt:function(){return runStartedAt},
+    beginRun:beginRun,
     hideStaleCompleted:hideStaleCompleted,
     allowCurrentCompletion:function(){setCurrentRunCompleted(true)}
   };
