@@ -1,10 +1,15 @@
 /* AIVO AI Reklam Filmi — generate selected music before Seedance production */
 (function AIVO_AD_FILM_MUSIC_PREFLIGHT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V6__)return;
-  window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V6__=true;
+  if(window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V7__)return;
+  window.__AIVO_AD_FILM_MUSIC_PREFLIGHT_V7__=true;
 
   var busy=false;
+  var preflightStartedAt=0;
+  var preflightClock=null;
+  var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
+  var LATCH_MS=30*60*1000;
+
   function clean(v){return String(v||"").trim()}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
@@ -20,6 +25,13 @@
   function setBuildBusy(button,on){if(!button)return;button.classList.toggle("is-music-preparing",!!on);if(on)button.setAttribute("aria-busy","true");else button.removeAttribute("aria-busy");button.disabled=!!on}
   function selected(scope,key,fallback){var node=scope&&scope.querySelector('[data-adfilm-choice="'+key+'"] .is-selected[data-value]');return clean(node&&node.getAttribute("data-value"))||fallback}
   function referenceCount(){try{var refs=window.AIVOAdFilmSeedanceEngine&&typeof window.AIVOAdFilmSeedanceEngine.references==="function"&&window.AIVOAdFilmSeedanceEngine.references();return Number(refs&&refs.ordered&&refs.ordered.length||0)}catch(_){return 0}}
+  function generation(source){return source&&source.generation||{}}
+  function outputId(source){var gen=generation(source);return clean(source&&source.activeOutputId||gen.outputId||gen.requestId)}
+  function projectId(source){var scope=root();return clean(source&&source.id||scope&&scope.dataset.adfilmProjectId)}
+  function elapsed(){
+    var total=Math.max(0,Math.floor((Date.now()-(preflightStartedAt||Date.now()))/1000));
+    return Math.floor(total/60)+" "+text("dk","min")+" "+String(total%60).padStart(2,"0")+" "+text("sn","sec");
+  }
   function currentMusicRequest(source){
     var scope=root(),profile=window.AIVOAdFilmMusicProfile||{},music=source&&source.music||{};
     return{
@@ -30,8 +42,72 @@
     };
   }
   function ensureStatus(scope,button){var action=scope&&scope.querySelector(".adfilm-actionbar");if(!action)return null;var status=action.querySelector("[data-adfilm-engine-status]");if(!status){status=document.createElement("div");status.className="adfilm-engine-status";status.setAttribute("data-adfilm-engine-status","");status.setAttribute("role","status");status.setAttribute("aria-live","polite");status.innerHTML="<span></span><div><b></b><small></small></div>"}if(button&&status.nextElementSibling!==button)action.insertBefore(status,button);return status}
-  function showImmediateProcessing(button){var scope=button&&button.closest('[data-module-root][data-module="adfilm"]')||root();if(!scope)return;var status=ensureStatus(scope,button);if(!status)return;var duration=selected(scope,"duration","15"),quality=selected(scope,"quality","1080p"),count=referenceCount();var parts=[text("İşleniyor","Processing"),text("0 dk 00 sn","0 min 00 sec"),duration+" "+text("sn","sec"),quality];if(count)parts.push(count+" "+text("referans","references"));status.className="adfilm-engine-status is-visible is-busy is-preflight";status.removeAttribute("data-adfilm-idle-hidden");var title=status.querySelector("b"),detail=status.querySelector("small");if(title)title.textContent=text("Reklam filmi hazırlanıyor","Your advertising film is being generated");if(detail)detail.textContent=parts.join(" · ");var action=scope.querySelector(".adfilm-actionbar");if(action)action.classList.add("is-engine-active");var summary=scope.querySelector('.adfilm-actionbar__summary [data-adfilm-i18n="readyTitle"]');if(summary)summary.textContent=text("Reklam filmi hazırlanıyor","Your advertising film is being generated")}
-  function showMusicError(button,message){var scope=button&&button.closest('[data-module-root][data-module="adfilm"]')||root();if(!scope)return;var status=ensureStatus(scope,button);if(!status)return;status.className="adfilm-engine-status is-visible is-error";var title=status.querySelector("b"),detail=status.querySelector("small");if(title)title.textContent=text("Reklam müziği hazırlanamadı","Advertising music could not be prepared");if(detail)detail.textContent=message||text("Tekrar deneyebilirsin.","You can try again.")}
+  function ensurePreflightLatch(source){
+    var now=Date.now(),gen=generation(source),existing=window[LATCH_KEY];
+    if(!existing||typeof existing!=="object"||Number(existing.until||0)<=now){
+      window[LATCH_KEY]={
+        projectId:projectId(source),
+        startedAt:new Date(now).toISOString(),
+        previousRequestId:clean(gen.requestId),
+        previousOutputId:outputId(source),
+        currentRequestId:"",
+        currentOutputId:"",
+        phase:"music-preflight",
+        until:now+LATCH_MS
+      };
+    }else{
+      existing.phase="music-preflight";
+      existing.until=now+LATCH_MS;
+    }
+  }
+  function clearPreflightLatch(){
+    try{
+      if(window.AIVOAdFilmProgressLock&&typeof window.AIVOAdFilmProgressLock.release==="function")window.AIVOAdFilmProgressLock.release();
+      else delete window[LATCH_KEY];
+    }catch(_){window[LATCH_KEY]=null}
+  }
+  function showImmediateProcessing(button){
+    var scope=button&&button.closest('[data-module-root][data-module="adfilm"]')||root();if(!scope)return;
+    var status=ensureStatus(scope,button);if(!status)return;
+    scope.setAttribute("data-adfilm-run-starting","1");
+    status.className="adfilm-engine-status is-visible is-busy is-preflight";
+    status.removeAttribute("data-adfilm-idle-hidden");
+    status.setAttribute("data-stage","1");
+    status.style.setProperty("display","block","important");
+    status.style.setProperty("visibility","visible","important");
+    status.style.setProperty("opacity","1","important");
+    var title=status.querySelector("b"),small=status.querySelector("small");
+    if(title)title.textContent=text("Reklam filminiz hazırlanıyor","Your advertising film is being prepared");
+    if(small){
+      if(!small.querySelector("[data-adfilm-stage-wrap]"))small.innerHTML='<span class="adfilm-stage-wrap" data-adfilm-stage-wrap><span class="adfilm-stage-count" data-adfilm-stage-count></span><strong class="adfilm-stage-title" data-adfilm-stage-title></strong><span class="adfilm-stage-description" data-adfilm-stage-description></span><span class="adfilm-stage-time" data-adfilm-stage-time></span></span>';
+      var count=small.querySelector("[data-adfilm-stage-count]"),stageTitle=small.querySelector("[data-adfilm-stage-title]"),description=small.querySelector("[data-adfilm-stage-description]"),time=small.querySelector("[data-adfilm-stage-time]");
+      if(count)count.textContent=text("Aşama 1/4","Stage 1/4");
+      if(stageTitle)stageTitle.textContent=text("Hazırlık yapılıyor","Preparing production");
+      if(description)description.textContent=text("Reklam müziği, referanslar ve üretim ayarları kontrol ediliyor.","Advertising music, references and production settings are being checked.");
+      if(time)time.textContent=text("Toplam geçen süre: ","Total elapsed: ")+elapsed();
+    }
+    var action=scope.querySelector(".adfilm-actionbar");if(action){action.classList.add("is-engine-active");action.setAttribute("data-adfilm-progress-lock","1")}
+    var summary=scope.querySelector('.adfilm-actionbar__summary [data-adfilm-i18n="readyTitle"]');if(summary)summary.textContent=text("Video oluşturuluyor","Creating video");
+  }
+  function enforcePreflightVisual(button){
+    if(!busy||!button||!button.classList.contains("is-music-preparing"))return;
+    showImmediateProcessing(button);
+  }
+  function startPreflightVisual(source,button){
+    preflightStartedAt=Date.now();
+    ensurePreflightLatch(source);
+    try{if(window.AIVOAdFilmProgressLock&&typeof window.AIVOAdFilmProgressLock.begin==="function")window.AIVOAdFilmProgressLock.begin()}catch(_){}
+    showImmediateProcessing(button);
+    clearInterval(preflightClock);
+    preflightClock=setInterval(function(){enforcePreflightVisual(button)},250);
+    [0,30,80,160,320,700].forEach(function(delay){setTimeout(function(){enforcePreflightVisual(button)},delay)});
+  }
+  function stopPreflightVisual(keepLatch){
+    clearInterval(preflightClock);preflightClock=null;
+    var scope=root();if(scope)scope.removeAttribute("data-adfilm-run-starting");
+    if(!keepLatch)clearPreflightLatch();
+  }
+  function showMusicError(button,message){var scope=button&&button.closest('[data-module-root][data-module="adfilm"]')||root();if(!scope)return;var status=ensureStatus(scope,button);if(!status)return;status.style.removeProperty("display");status.style.removeProperty("visibility");status.style.removeProperty("opacity");status.removeAttribute("data-stage");status.className="adfilm-engine-status is-visible is-error";var title=status.querySelector("b"),detail=status.querySelector("small");if(title)title.textContent=text("Reklam müziği hazırlanamadı","Advertising music could not be prepared");if(detail)detail.textContent=message||text("Tekrar deneyebilirsin.","You can try again.")}
   async function ensureMusic(source,button){
     if(!needsMusicValidation(source))return source;
     var handle=toast(text("Reklam müziği ayarları kontrol ediliyor...","Checking advertising music settings..."),"info",0);
@@ -65,7 +141,21 @@
     var guard=window.AIVOAdFilmNarrationBuildGuard&&window.AIVOAdFilmNarrationBuildGuard.state&&window.AIVOAdFilmNarrationBuildGuard.state();if(guard&&guard.ready===false)return;
     var source=project();if(!source||!needsMusicValidation(source))return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
-    busy=true;setBuildBusy(button,true);showImmediateProcessing(button);
-    ensureMusic(source,button).then(function(){busy=false;if(window.AIVOAdFilmNarrationBuildGuard&&typeof window.AIVOAdFilmNarrationBuildGuard.sync==="function")window.AIVOAdFilmNarrationBuildGuard.sync();return startProduction()}).catch(function(error){busy=false;setBuildBusy(button,false);console.error("[ADFILM] music preflight",error,error&&error.data||"");var detail=clean(error&&error.message);var message=detail&&detail!=="music_generation_failed"&&detail!=="music_generation_timeout"?text("Reklam üretimi başlatılamadı: ","Advertising production could not start: ")+detail:text("Reklam müziği hazırlanamadı. Tekrar dene.","Advertising music could not be prepared. Try again.");showMusicError(button,message);toast(message,"error",6200)})
+    busy=true;setBuildBusy(button,true);startPreflightVisual(source,button);
+    ensureMusic(source,button).then(function(){
+      busy=false;
+      clearInterval(preflightClock);preflightClock=null;
+      if(window.AIVOAdFilmNarrationBuildGuard&&typeof window.AIVOAdFilmNarrationBuildGuard.sync==="function")window.AIVOAdFilmNarrationBuildGuard.sync();
+      var result=startProduction();
+      stopPreflightVisual(true);
+      return result;
+    }).catch(function(error){
+      busy=false;setBuildBusy(button,false);stopPreflightVisual(false);
+      console.error("[ADFILM] music preflight",error,error&&error.data||"");
+      var detail=clean(error&&error.message);
+      var message=detail&&detail!=="music_generation_failed"&&detail!=="music_generation_timeout"?text("Reklam üretimi başlatılamadı: ","Advertising production could not start: ")+detail:text("Reklam müziği hazırlanamadı. Tekrar dene.","Advertising music could not be prepared. Try again.");
+      showMusicError(button,message);toast(message,"error",6200)
+    })
   },true);
+  window.addEventListener("pagehide",function(){clearInterval(preflightClock)});
 })();
