@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V97__) return;
-  window.__AIVO_AD_FILM_ASSETS_V97__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V98__) return;
+  window.__AIVO_AD_FILM_ASSETS_V98__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -48,14 +48,14 @@
     "/css/ad-film.music-profile.css?v=5",
     "/css/ad-film.seedance-options.css?v=5",
     "/css/ad-film.video-options-readability.css?v=1",
-    "/css/ad-film.advanced-alignment.css?v=2",
+    "/css/ad-film.advanced-alignment.css?v=3",
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.plan-simple.css?v=2",
     "/css/ad-film.creative-plan-tune.css?v=2",
     "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
-    "/css/ad-film.narration-manual.css?v=1",
+    "/css/ad-film.narration-manual.css?v=2",
     "/css/ad-film.narration-engine.css?v=2",
     "/css/ad-film.narration-player.css?v=2",
     "/css/ad-film.seedance-engine.css?v=5",
@@ -88,7 +88,7 @@
     "/js/ad-film.project-sync.js?v=7",
     "/js/ad-film.media-normalization.js?v=3",
     "/js/ad-film.seedance-upload-fix.js?v=1",
-    "/js/ad-film.seedance-options.js?v=4",
+    "/js/ad-film.seedance-options.js?v=5",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
