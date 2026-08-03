@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable avatar-free production progress */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V11__)return;
-  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V11__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V12__)return;
+  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V12__=true;
 
   var timer=null;
   var completionToastKey="";
@@ -43,8 +43,8 @@
   }
   function staleDuringLatch(source){return latchActive()&&!stateBelongsToCurrentLatch(source)}
   function startedAt(source){
-    if(staleDuringLatch(source)){var value=latch();return value&&value.startedAt||""}
-    var gen=generation(source);return gen.startedAt||gen.createdAt||gen.updatedAt||latch()&&latch().startedAt||"";
+    if(latchActive()){var value=latch();return value&&value.startedAt||""}
+    var gen=generation(source);return gen.startedAt||gen.createdAt||gen.updatedAt||"";
   }
   function elapsed(value){
     var time=Date.parse(value||"");if(!Number.isFinite(time))return"";
@@ -130,7 +130,6 @@
     try{var fn=window.toast&&window.toast.success;if(typeof fn==="function")fn({message:text("Reklam filminiz hazır.","Your advertising film is ready."),duration:4200})}catch(_){}
   }
   function renderCompleted(source){
-    if(latchActive()&&!stateBelongsToCurrentLatch(source))return false;
     var node=status();if(!node||!finalReady(source))return false;
     forceVisibleStyle(node,false);
     node.className="adfilm-engine-status is-visible is-success";node.removeAttribute("data-stage");node.removeAttribute("data-adfilm-idle-hidden");
@@ -140,21 +139,23 @@
     var duration=clean(output.duration||input.duration||source&&source.output&&source.output.duration);if(duration)parts.push(duration+" "+text("sn","sec"));
     var quality=clean(output.resolution||input.resolution||source&&source.output&&source.output.quality);if(quality)parts.push(quality);
     if(small)setText(small,parts.join(" · "));
-    clearLatch();setButtonActive(false);showCompletionToast(source);return true;
+    setButtonActive(false);showCompletionToast(source);return true;
   }
   function renderTerminal(source){
-    if(latchActive()&&!stateBelongsToCurrentLatch(source))return false;
     var node=status();if(!node||!terminal(source))return false;
     forceVisibleStyle(node,false);
     node.className="adfilm-engine-status is-visible is-error";node.removeAttribute("data-stage");node.removeAttribute("data-adfilm-idle-hidden");
     setText(node.querySelector("b"),text("Üretim tamamlanamadı","Production could not be completed"));
     var small=node.querySelector("small");if(small)setText(small,text("İşlem güvenli şekilde durduruldu. Yeni ücretli üretim otomatik başlatılmadı.","The process was stopped safely. No new paid generation was started automatically."));
-    clearLatch();setButtonActive(false);return true;
+    setButtonActive(false);return true;
   }
   function render(){
     var source=project();
+    /* Once a paid-production latch exists, stale completed project data must
+       never win the render race. Keep the progress panel visible until the
+       progress lock releases the latch after a real terminal result. */
+    if(latchActive()){renderActive(source||{});return}
     if(explicitlyIdle(source))return;
-    if(latchActive()&&(!source||!stateBelongsToCurrentLatch(source))){renderActive(source||{});return}
     if(!source)return;
     if(renderCompleted(source))return;
     if(renderTerminal(source))return;
