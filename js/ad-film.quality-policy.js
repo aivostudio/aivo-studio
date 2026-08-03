@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — professional output quality policy */
 (function AIVO_AD_FILM_QUALITY_POLICY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V3__)return;
-  window.__AIVO_AD_FILM_QUALITY_POLICY_V3__=true;
+  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V4__)return;
+  window.__AIVO_AD_FILM_QUALITY_POLICY_V4__=true;
 
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function root(scope){
@@ -13,10 +13,7 @@
   function valueOf(node){return String(node&&node.getAttribute&&node.getAttribute('data-value')||node&&node.textContent||'').trim().toLowerCase()}
   function removeLowQuality(scope){
     var group=qualityGroup(scope);if(!group)return false;
-    Array.from(group.children).forEach(function(node){
-      var value=valueOf(node);
-      if(value==='480p'||value==='720p')node.remove();
-    });
+    group.querySelectorAll('[data-value="480p"],[data-value="720p"]').forEach(function(node){node.remove()});
     var allowed=Array.from(group.querySelectorAll('[data-value]')).filter(function(node){return valueOf(node)==='1080p'||valueOf(node)==='4k'});
     var selected=group.querySelector('.is-selected[data-value]');
     if(!selected||allowed.indexOf(selected)<0){
