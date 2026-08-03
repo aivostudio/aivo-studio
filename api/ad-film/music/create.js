@@ -12,8 +12,8 @@ import {
 
 const PRIMARY_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
 const FALLBACK_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
-const QUALITY_VERSION = 2;
-const PROFILE_VERSION = 1;
+const QUALITY_VERSION = 3;
+const PROFILE_VERSION = 2;
 
 function clean(value, max = 1600) {
   return String(value ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
@@ -37,6 +37,7 @@ async function submit(key,model,payload){
     return{response,data,model};
   }finally{clearTimeout(timeout)}
 }
+function normalizeDuration(value,fallback){const n=Number(value);return[5,10,15,20].includes(n)?n:fallback}
 function profileSignature(prompt){
   return crypto.createHash("sha256").update(JSON.stringify({
     qualityVersion:QUALITY_VERSION,
@@ -56,7 +57,6 @@ function reusableAudio(audio,signature){
     audio?.url&&
     Number(audio?.qualityVersion)>=QUALITY_VERSION&&
     Number(audio?.profileVersion)>=PROFILE_VERSION&&
-    audio?.engine===PRIMARY_MODEL&&
     clean(audio?.signature,80)===signature
   );
 }
@@ -67,17 +67,24 @@ export default async function handler(req,res){
     const user=await resolveAdFilmUser(req);if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});
     const projectId=clean(req.body?.projectId,120);if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
     const project=await getOwnedProject(user,projectId);if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
-    const music=project.music||{};
+    const currentMusic=project.music||{};
+    const requestedStyle=clean(req.body?.musicStyle,40)||currentMusic.style||"auto";
+    const requestedEnergy=clean(req.body?.musicEnergy,40)||currentMusic.energy||"balanced";
+    const requestedDuration=normalizeDuration(req.body?.duration,Number(project.output?.duration)||10);
+    const music={...currentMusic,style:requestedStyle,energy:requestedEnergy};
     if(music.mode==="off")return sendJson(res,200,{ok:true,status:"DISABLED",project});
     if(music.mode==="upload"&&project.media?.musicTrack?.url)return sendJson(res,200,{ok:true,status:"COMPLETED",audio:project.media.musicTrack,project});
 
     const prompt=buildAdFilmMusicPrompt({
       productName:project.brief?.productName,brandName:project.brief?.brandName,description:project.brief?.description,targetAudience:project.brief?.targetAudience,cta:project.brief?.cta,
-      voiceStyle:project.narration?.voiceStyle,visualStyle:project.sceneStyle,duration:project.output?.duration||15,musicStyle:music.style||"auto",musicEnergy:music.energy||"balanced",voiceEnabled:project.narration?.enabled!==false
+      voiceStyle:project.narration?.voiceStyle,visualStyle:project.sceneStyle,duration:requestedDuration,musicStyle:requestedStyle,musicEnergy:requestedEnergy,voiceEnabled:project.narration?.enabled!==false
     });
     const signature=profileSignature(prompt);
 
-    if(reusableAudio(music.audio,signature))return sendJson(res,200,{ok:true,status:"COMPLETED",audio:music.audio,project});
+    if(reusableAudio(currentMusic.audio,signature)){
+      const reused=await saveProject(user,{...project,music:{...music,audio:currentMusic.audio},output:{...(project.output||{}),duration:String(requestedDuration)}});
+      return sendJson(res,200,{ok:true,status:"COMPLETED",audio:currentMusic.audio,project:reused});
+    }
     const active=project.musicGeneration;
     if(
       active&&
@@ -102,30 +109,25 @@ export default async function handler(req,res){
 
     let attempt=await submit(key,PRIMARY_MODEL,payload);
     let fallbackUsed=false;
-    if(!attempt.response.ok){
-      fallbackUsed=true;
-      attempt=await submit(key,FALLBACK_MODEL,payload);
-    }
+    if(!attempt.response.ok){fallbackUsed=true;attempt=await submit(key,FALLBACK_MODEL,payload)}
 
     const data=attempt.data;
     if(!attempt.response.ok){
       const message=errorMessage(data,attempt.response.status);
       const now=new Date().toISOString();
-      const failed=await saveProject(user,{...project,musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,meta:prompt}});
+      const failed=await saveProject(user,{...project,music:{...music,audio:null},output:{...(project.output||{}),duration:String(requestedDuration)},musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,meta:prompt}});
       return sendJson(res,attempt.response.status,{ok:false,error:"fal_error",message,fal_status:attempt.response.status,fal_response:data,project:failed});
     }
 
     const requestId=clean(pick(data,["request_id","requestId","id"]),240);
     const statusUrl=clean(pick(data,["status_url","statusUrl","urls.status"]),1600);
     const responseUrl=clean(pick(data,["response_url","responseUrl","urls.response"]),1600);
-    if(!requestId){
-      const message="Fal accepted the music request but returned no request id.";
-      return sendJson(res,502,{ok:false,error:"fal_missing_request_id",message,fal_response:data});
-    }
+    if(!requestId)return sendJson(res,502,{ok:false,error:"fal_missing_request_id",message:"Fal accepted the music request but returned no request id.",fal_response:data});
     const now=new Date().toISOString();
     const saved=await saveProject(user,{
       ...project,
-      music:{...(project.music||{}),audio:null},
+      music:{...music,audio:null},
+      output:{...(project.output||{}),duration:String(requestedDuration)},
       musicGeneration:{provider:"fal",model:attempt.model,requestId,statusUrl:statusUrl||null,responseUrl:responseUrl||null,status:"queued",startedAt:now,updatedAt:now,error:null,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,prompt:prompt.prompt,meta:prompt}
     });
     return sendJson(res,200,{ok:true,status:"IN_QUEUE",generation:saved.musicGeneration,project:saved,fallback_used:fallbackUsed});
