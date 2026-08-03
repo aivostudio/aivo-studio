@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V85__) return;
-  window.__AIVO_AD_FILM_ASSETS_V85__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V86__) return;
+  window.__AIVO_AD_FILM_ASSETS_V86__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -106,6 +106,7 @@
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
+    "/js/ad-film.final-ui-and-playback.js?v=1",
     "/js/ad-film.output-workflow.js?v=2",
     "/js/ad-film.video-modal.js?v=1",
     "/js/ad-film.output-gallery.js?v=10",
