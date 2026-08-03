@@ -1,11 +1,14 @@
-/* AIVO AI Reklam Filmi — block stale completed-project events during a new run */
+/* AIVO AI Reklam Filmi — active run and clean reopen guard */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V1__)return;
-  window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V1__=true;
+  if(window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V2__)return;
+  window.__AIVO_AD_FILM_ACTIVE_RUN_EVENT_GUARD_V2__=true;
 
   var runStartedAt=0;
+  var sessionRun=false;
   var observer=null;
+  var originalConfirm=window.confirm.bind(window);
+  var FAL_CONFIRM_RE=/(Bu test gerçek Fal\.ai üretimi başlatır|This test starts a real Fal\.ai generation)/i;
 
   function clean(value){return String(value==null?"":value).trim()}
   function lower(value){return clean(value).toLowerCase()}
@@ -25,14 +28,49 @@
     var gen=project&&project.generation||{};
     return lower(project&&project.status)==='completed'||lower(gen.status)==='completed'||!!clean(gen.videoUrl);
   }
+  function idleTitle(){return String(document.documentElement.lang||'').toLowerCase().indexOf('en')===0?'Advertising project will be prepared':'Reklam projesi hazırlanacak'}
+  function hideStaleCompleted(){
+    if(sessionRun||isActive())return;
+    var scope=root();if(!scope)return;
+    var node=scope.querySelector('[data-adfilm-engine-status]');
+    if(node&&node.classList.contains('is-success')){
+      node.className='adfilm-engine-status';
+      node.setAttribute('data-adfilm-idle-hidden','1');
+      node.removeAttribute('data-stage');
+      node.style.removeProperty('display');
+      node.style.removeProperty('visibility');
+      node.style.removeProperty('opacity');
+    }
+    var bar=action();if(bar){bar.classList.remove('is-engine-active');bar.removeAttribute('data-adfilm-progress-lock')}
+    var build=button();if(build){
+      build.classList.remove('is-generating','is-loading','is-music-preparing');
+      build.removeAttribute('aria-busy');
+      build.disabled=build.dataset.narrationGuard==='blocked';
+    }
+    var title=scope.querySelector('.adfilm-actionbar__summary [data-adfilm-i18n="readyTitle"]');
+    if(title)title.textContent=idleTitle();
+  }
   function markRun(){
     if(isActive()&&!runStartedAt)runStartedAt=Date.now();
     if(!isActive()&&runStartedAt&&Date.now()-runStartedAt>2000)runStartedAt=0;
   }
 
+  window.confirm=function(message){
+    if(FAL_CONFIRM_RE.test(String(message||'')))return true;
+    return originalConfirm(message);
+  };
+
+  document.addEventListener('click',function(event){
+    var build=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
+    if(build)sessionRun=true;
+  },true);
+
   document.addEventListener('aivo:adfilm-project-sync',function(event){
     markRun();
-    if(!isActive())return;
+    if(!isActive()){
+      setTimeout(hideStaleCompleted,0);
+      return;
+    }
     var incoming=event&&event.detail&&event.detail.project;
     if(!incoming||!isCompleted(incoming))return;
     var started=projectTime(incoming);
@@ -43,9 +81,15 @@
     }
   },true);
 
-  observer=new MutationObserver(markRun);
+  document.addEventListener('aivo:module-mounted',function(event){
+    if(!event||!event.detail||event.detail.key!=='adfilm')return;
+    sessionRun=false;
+    [0,300,900,1500].forEach(function(delay){setTimeout(hideStaleCompleted,delay)});
+  });
+
+  observer=new MutationObserver(function(){markRun();if(!sessionRun&&!isActive())hideStaleCompleted()});
   observer.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','aria-busy']});
-  setInterval(markRun,500);
+  setInterval(function(){markRun();if(!sessionRun&&!isActive())hideStaleCompleted()},500);
   window.addEventListener('pagehide',function(){if(observer)observer.disconnect()});
-  window.AIVOAdFilmActiveRunEventGuard={active:isActive,startedAt:function(){return runStartedAt}};
+  window.AIVOAdFilmActiveRunEventGuard={active:isActive,startedAt:function(){return runStartedAt},hideStaleCompleted:hideStaleCompleted};
 })();
