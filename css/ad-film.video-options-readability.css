@@ -1,0 +1,24 @@
+/* AIVO AI Reklam Filmi — video option readability */
+[data-module-root][data-module="adfilm"] .adfilm-options button,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] button,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"] button,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="duration"] button {
+  color: rgba(246, 242, 255, .94);
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .28);
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-options button.is-selected,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] button.is-selected,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="aspectRatio"] button.is-selected,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="duration"] button.is-selected {
+  color: #fff;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-options button em,
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] button em {
+  color: rgba(255, 255, 255, .9);
+  font-size: .66em;
+  font-style: normal;
+  letter-spacing: .08em;
+}
