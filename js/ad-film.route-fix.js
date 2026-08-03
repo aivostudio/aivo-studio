@@ -1,14 +1,10 @@
 /* AIVO AI Reklam Filmi — compatibility bridge; keep mounted video DOM stable */
 (function AIVO_AD_FILM_ROUTE_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROUTE_FIX_V6__)return;
-  window.__AIVO_AD_FILM_ROUTE_FIX_V6__=true;
+  if(window.__AIVO_AD_FILM_ROUTE_FIX_V7__)return;
+  window.__AIVO_AD_FILM_ROUTE_FIX_V7__=true;
 
   var panelGuardInstalled=false;
-
-  function isAdFilmHash(){
-    return String(location.hash||"").replace(/^#/,"").split("?")[0].trim()==="adfilm";
-  }
 
   function currentProject(){
     return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null;
@@ -74,6 +70,11 @@
   }
 
   function openAdFilm(){
+    var host=document.getElementById("moduleHost");
+    var active=host&&host.getAttribute("data-active-module")==="adfilm";
+    var loading=host&&host.getAttribute("data-loading-module")==="adfilm";
+    if(active||loading)return;
+
     if(window.StudioRouter&&typeof window.StudioRouter.go==="function"){
       window.StudioRouter.go("adfilm");
       return;
@@ -85,6 +86,7 @@
     var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-open]");
     if(!button)return;
     event.preventDefault();
+    event.stopPropagation();
     event.stopImmediatePropagation();
     openAdFilm();
   },true);
@@ -100,7 +102,7 @@
     var guardTries=0,guardTimer=setInterval(function(){guardTries++;if(installPanelGuard()||guardTries>80)clearInterval(guardTimer)},100);
   }
 
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",function(){if(isAdFilmHash())openAdFilm()},{once:true});
-  }else if(isAdFilmHash())openAdFilm();
+  /* The studio router is the only initial-route owner. Older versions also
+     called openAdFilm() on DOMContentLoaded when #adfilm was present, causing
+     the same module to mount twice (seq 1 and seq 2) and making all text flash. */
 })();
