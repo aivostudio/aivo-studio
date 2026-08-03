@@ -8,13 +8,13 @@
   if(window.__AIVO_AD_FILM_SEEDANCE_OPTIONS__) return;
   window.__AIVO_AD_FILM_SEEDANCE_OPTIONS__=true;
 
-  var DURATIONS=["4","5","6","7","8","9","10","11","12","13","14","15"];
+  var DURATIONS=["5","6","7","8","9","10","11","12","13","14","15"];
   var RATIOS=["9:16","1:1","16:9","4:5","3:4","4:3","21:9"];
   var QUALITIES=["480p","720p","1080p","4k"];
 
   var COPY={
-    tr:{durationNote:"Seedance 2.0 · 4–15 saniye",ratioNote:"4:5 seçildiğinde final video güvenli kadrajla hazırlanır.",qualityNote:"480p hızlı ön izleme, 720p standart, 1080p kaliteli final, 4K premium.",outputDetailsSub:"480p–4K çıktı kalitesini seç.",premium:"Premium",seconds:"sn",durationLabel:"Video süresi"},
-    en:{durationNote:"Seedance 2.0 · 4–15 seconds",ratioNote:"When 4:5 is selected, the final video is prepared with a crop-safe frame.",qualityNote:"480p fast preview, 720p standard, 1080p quality final, 4K premium.",outputDetailsSub:"Choose an output quality from 480p to 4K.",premium:"Premium",seconds:"sec",durationLabel:"Video duration"}
+    tr:{durationNote:"Seedance 2.0 · 5–15 saniye",ratioNote:"4:5 seçildiğinde final video güvenli kadrajla hazırlanır.",qualityNote:"480p hızlı ön izleme, 720p standart, 1080p kaliteli final, 4K premium.",outputDetailsSub:"480p–4K çıktı kalitesini seç.",premium:"Premium",seconds:"sn",durationLabel:"Video süresi"},
+    en:{durationNote:"Seedance 2.0 · 5–15 seconds",ratioNote:"When 4:5 is selected, the final video is prepared with a crop-safe frame.",qualityNote:"480p fast preview, 720p standard, 1080p quality final, 4K premium.",outputDetailsSub:"Choose an output quality from 480p to 4K.",premium:"Premium",seconds:"sec",durationLabel:"Video duration"}
   };
 
   function language(){var html=String(document.documentElement.lang||"").toLowerCase(),stored="";try{stored=String(localStorage.getItem("aivo_language")||localStorage.getItem("aivo_lang")||"").toLowerCase()}catch(_){}return stored==="en"||html.indexOf("en")===0?"en":"tr"}
@@ -22,7 +22,7 @@
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function values(group){return Array.from(group.querySelectorAll("button[data-value]")).map(function(button){return button.getAttribute("data-value")}).join("|")}
   function selected(group){var button=group&&group.querySelector(".is-selected[data-value]");return button?button.getAttribute("data-value"):""}
-  function normalizeDuration(value){value=String(value||"");if(value==="20"||value==="30"||value==="auto")return"15";return DURATIONS.indexOf(value)>=0?value:"10"}
+  function normalizeDuration(value){var number=Math.round(Number(value)||10);if(number<5)return"5";if(number>15)return"15";return String(number)}
   function normalizeRatio(value){value=String(value||"");return RATIOS.indexOf(value)>=0?value:"9:16"}
   function normalizeQuality(value){value=String(value||"").toLowerCase();if(value==="2k")return"1080p";return QUALITIES.indexOf(value)>=0?value:"1080p"}
   function durationSourceMarkup(){return DURATIONS.map(function(value){return '<button type="button" data-value="'+value+'">'+value+'</button>'}).join("")}
