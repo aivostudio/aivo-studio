@@ -1,0 +1,157 @@
+/* AIVO AI Reklam Filmi — advanced settings alignment */
+.is-simplified-basic .adfilm-simple-advanced__body{
+  align-items:stretch;
+}
+
+/* Center both optional card headers without moving their icons. */
+.is-simplified-basic .adfilm-card--advanced-music,
+.is-simplified-basic .adfilm-card--advanced-output{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-card__head,
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__head{
+  position:relative;
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr) 76px;
+  align-items:center;
+  gap:10px;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-card__head>.adfilm-card__icon,
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__head>.adfilm-card__icon{
+  grid-column:1;
+  justify-self:center;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-card__heading,
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading{
+  grid-column:2;
+  min-width:0;
+  width:100%;
+  text-align:center;
+  align-items:center;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-card__eyebrow,
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__eyebrow,
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-card__heading h2,
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading h2,
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-card__heading p,
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p{
+  display:block;
+  width:100%;
+  text-align:center;
+}
+
+/* Advertising music card is rebuilt from the music source, so center its own header. */
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-music-source{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-music-source__head{
+  justify-content:center;
+  text-align:center;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-music-source__head>div{
+  min-width:0;
+}
+
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-music-source__head b,
+.is-simplified-basic .adfilm-card--advanced-music .adfilm-music-source__head small{
+  text-align:center;
+}
+
+/* Quality label, buttons and note form one centered visual group. */
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-advanced-output__body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  margin-top:18px;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-setting-block{
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+  width:100%;
+  text-align:center;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-setting-block>span:first-child{
+  width:100%;
+  margin:0;
+  color:rgba(255,255,255,.88);
+  font-size:14px;
+  font-weight:850;
+  text-align:center;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"]{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:16px!important;
+  width:min(100%,540px);
+  margin:0 auto!important;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button{
+  position:relative;
+  min-width:0!important;
+  min-height:76px!important;
+  padding:14px 18px!important;
+  border-radius:20px!important;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  text-align:center;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button span{
+  color:#fff!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  line-height:1!important;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-seedance-tag{
+  position:static!important;
+  min-width:92px;
+  margin:0 0 2px;
+  padding:3px 10px!important;
+  font-size:8px!important;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-seedance-note{
+  width:100%;
+  max-width:580px;
+  margin:4px auto 0!important;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.08);
+  color:rgba(236,238,255,.78)!important;
+  font-size:12px!important;
+  line-height:1.5!important;
+  text-align:center;
+}
+
+@media(max-width:900px){
+  .is-simplified-basic .adfilm-card--advanced-music .adfilm-card__head,
+  .is-simplified-basic .adfilm-card--advanced-output .adfilm-card__head{
+    grid-template-columns:58px minmax(0,1fr) 58px;
+  }
+}
+
+@media(max-width:620px){
+  .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"]{
+    grid-template-columns:1fr!important;
+  }
+}
