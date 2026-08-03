@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V98__) return;
-  window.__AIVO_AD_FILM_ASSETS_V98__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V99__) return;
+  window.__AIVO_AD_FILM_ASSETS_V99__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -55,7 +55,7 @@
     "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.role-balance.css?v=1",
     "/css/ad-film.narration-guide.css?v=1",
-    "/css/ad-film.narration-manual.css?v=2",
+    "/css/ad-film.narration-manual.css?v=3",
     "/css/ad-film.narration-engine.css?v=2",
     "/css/ad-film.narration-player.css?v=2",
     "/css/ad-film.seedance-engine.css?v=5",
