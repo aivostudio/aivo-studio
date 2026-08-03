@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — legacy finalizer compatibility */
 (function AIVO_AD_FILM_FINALIZE_OUTPUT(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V12__)return;
-  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V12__=true;
+  if(window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V13__)return;
+  window.__AIVO_AD_FILM_FINALIZE_OUTPUT_V13__=true;
 
   function loadOnce(path,version){
     var selector='script[src^="'+path+'"]';
@@ -22,7 +22,7 @@
   loadOnce("/js/ad-film.avatar-finalization-bridge.js","7");
   loadOnce("/js/ad-film.final-output-sync.js","4");
   loadOnce("/js/ad-film.final-output-ui-guard.js","2");
-  loadOnce("/js/ad-film.completed-state-guard.js","1");
+  loadOnce("/js/ad-film.completed-state-guard.js","3");
 
   async function run(){
     if(window.AIVOAdFilmSeedanceFinalizing)return;
