@@ -1,0 +1,52 @@
+/* Final override: stretch the inner stage card to the exact marked width. */
+@media (min-width:701px){
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy{
+    position:relative!important;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy>div{
+    position:static!important;
+    width:100%!important;
+    max-width:none!important;
+    padding:0!important;
+    margin:0!important;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy>div>b{
+    display:block!important;
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0 90px!important;
+    box-sizing:border-box!important;
+    text-align:center!important;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy>div>small{
+    display:flex!important;
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    width:calc(100% - 230px)!important;
+    max-width:none!important;
+    min-width:0!important;
+    min-height:120px!important;
+    height:auto!important;
+    margin:14px 30px 0 200px!important;
+    padding:18px 30px!important;
+    box-sizing:border-box!important;
+    border-radius:20px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    text-align:center!important;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy .adfilm-stage-wrap,
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy .adfilm-stage-title,
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy .adfilm-stage-description,
+  [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy .adfilm-stage-time{
+    width:100%!important;
+    max-width:none!important;
+    text-align:center!important;
+  }
+}
