@@ -2,7 +2,7 @@
 export { config, maxDuration } from "./finalize-v2.js";
 
 import finalizeV2 from "./finalize-v2.js";
-import { prepareFinalizerLogoAsset } from "../../_lib/ad-film-image-normalizer.js";
+import { prepareFinalizerLogoAsset } from "../../_lib/ad-film-logo-original-quality.js";
 import {
   getOwnedProject,
   resolveAdFilmUser,
