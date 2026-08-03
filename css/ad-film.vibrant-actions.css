@@ -109,22 +109,28 @@
   box-shadow:0 22px 44px rgba(124,77,255,.32),0 12px 32px rgba(239,95,180,.2),inset 0 1px 0 rgba(255,255,255,.28);
 }
 
-/* Production state must remain visually stable. Only the spinner may animate. */
-.adfilm-actionbar.is-engine-active .adfilm-create.is-generating{
-  cursor:progress;
-  animation:none!important;
-  transform:none!important;
-  filter:saturate(.88) brightness(.84)!important;
-  box-shadow:0 12px 28px rgba(124,77,255,.18),inset 0 1px 0 rgba(255,255,255,.14)!important;
-  will-change:auto!important;
+@keyframes adfilmGeneratingHeartbeat{
+  0%,100%{transform:scale(1);filter:saturate(.86) brightness(.82);box-shadow:0 12px 28px rgba(124,77,255,.18),inset 0 1px 0 rgba(255,255,255,.14)}
+  45%{transform:scale(1.012);filter:saturate(1) brightness(.98);box-shadow:0 18px 42px rgba(124,77,255,.32),0 10px 30px rgba(239,95,180,.20),inset 0 1px 0 rgba(255,255,255,.18)}
+  58%{transform:scale(1.004)}
 }
-.adfilm-actionbar.is-engine-active .adfilm-create.is-generating .adfilm-create__icon{
-  animation:none!important;
-  transform:none!important;
-  filter:none!important;
+@keyframes adfilmGeneratingIconBeat{
+  0%,100%{transform:scale(1);opacity:.72}
+  45%{transform:scale(1.16);opacity:1}
+  58%{transform:scale(1.06)}
 }
 
-/* Narration approval is guidance, not a mysterious disabled CTA. */
+.adfilm-actionbar.is-engine-active .adfilm-create.is-generating{
+  cursor:progress;
+  animation:adfilmGeneratingHeartbeat 1.35s ease-in-out infinite!important;
+  transform-origin:center!important;
+  will-change:transform,filter,box-shadow!important;
+}
+.adfilm-actionbar.is-engine-active .adfilm-create.is-generating .adfilm-create__icon{
+  animation:adfilmGeneratingIconBeat 1.35s ease-in-out infinite!important;
+  transform-origin:center!important;
+}
+
 .adfilm-create.is-narration-pending:not(:disabled){
   cursor:pointer;
   filter:none;
@@ -137,9 +143,7 @@
   background:linear-gradient(90deg,rgba(92,22,47,.42),rgba(74,25,70,.32));
   color:#ffabb9;
 }
-.adfilm-card--voice.is-approval-attention{
-  animation:adfilmApprovalAttention 1.15s ease-in-out 2;
-}
+.adfilm-card--voice.is-approval-attention{animation:adfilmApprovalAttention 1.15s ease-in-out 2}
 @keyframes adfilmApprovalAttention{
   0%,100%{box-shadow:inherit}
   45%{box-shadow:0 0 0 2px rgba(117,224,255,.55),0 0 34px rgba(124,77,255,.42),0 20px 55px rgba(4,8,24,.45)}
@@ -158,6 +162,15 @@
 .adfilm-build-reason:not(.is-ready):after{font-size:15px}
 .adfilm-draft-reset{min-height:38px;padding:0 13px}
 
+/* Spinner belongs inside the progress panel and must never touch the card edge. */
+.adfilm-engine-status.is-busy>span{
+  left:44px!important;
+  top:50%!important;
+  width:42px!important;
+  height:42px!important;
+  margin:0!important;
+}
+
 @media(max-width:1500px){
   .adfilm-actionbar{grid-template-columns:minmax(0,1fr) auto;min-height:166px;padding:17px 18px}
   .adfilm-draft-tools{order:initial;width:auto}
@@ -175,5 +188,5 @@
 
 @media(prefers-reduced-motion:reduce){
   .adfilm-actionbar.is-engine-active .adfilm-create.is-generating,
-  .adfilm-actionbar.is-engine-active .adfilm-create.is-generating .adfilm-create__icon{animation:none}
+  .adfilm-actionbar.is-engine-active .adfilm-create.is-generating .adfilm-create__icon{animation:none!important}
 }
