@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable avatar-free production progress */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V10__)return;
-  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V10__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_STABILITY_V11__)return;
+  window.__AIVO_AD_FILM_PROGRESS_STABILITY_V11__=true;
 
   var timer=null;
   var completionToastKey="";
@@ -73,6 +73,12 @@
     return ["queued","processing","running","in_queue"].indexOf(lower(source.status))>=0||
       ["queued","processing","running","in_queue"].indexOf(lower(gen.status))>=0||
       ["queued","processing","running","rendering","finalizing"].indexOf(lower(finish.status))>=0;
+  }
+  function explicitlyIdle(source){
+    var node=status();
+    if(!node||node.getAttribute("data-adfilm-idle-hidden")!=="1")return false;
+    if(latchActive()||active(source))return false;
+    return true;
   }
   function ensureLayout(node){
     var small=node&&node.querySelector("small");if(!small)return null;
@@ -147,6 +153,7 @@
   }
   function render(){
     var source=project();
+    if(explicitlyIdle(source))return;
     if(latchActive()&&(!source||!stateBelongsToCurrentLatch(source))){renderActive(source||{});return}
     if(!source)return;
     if(renderCompleted(source))return;
