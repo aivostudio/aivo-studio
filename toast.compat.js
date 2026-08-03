@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V95__) return;
-  window.__AIVO_AD_FILM_ASSETS_V95__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V96__) return;
+  window.__AIVO_AD_FILM_ASSETS_V96__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -50,6 +50,7 @@
     "/css/ad-film.video-options-readability.css?v=1",
     "/css/ad-film.advanced-alignment.css?v=2",
     "/css/ad-film.creative-plan.css?v=1",
+    "/css/ad-film.plan-simple.css?v=1",
     "/css/ad-film.creative-plan-tune.css?v=2",
     "/css/ad-film.role-readability.css?v=3",
     "/css/ad-film.role-balance.css?v=1",
@@ -88,6 +89,7 @@
     "/js/ad-film.seedance-upload-fix.js?v=1",
     "/js/ad-film.seedance-options.js?v=4",
     "/js/ad-film.creative-plan.js?v=1",
+    "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
     "/js/ad-film.reference-indexes.js?v=1",
     "/js/ad-film.reset-fix.js?v=2",
