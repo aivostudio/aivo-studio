@@ -44,12 +44,6 @@
   }
 }
 
-/*
-   ACTIVE PRODUCTION PANEL — FINAL VISIBILITY OWNER
-   This stylesheet is loaded last. During production, no older rule may hide,
-   fade, collapse, move or pulse the progress card. Only the circular spinner
-   inside the card is allowed to animate.
-*/
 [data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active,
 [data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"],
 [data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating),
@@ -94,19 +88,34 @@
   filter:none!important;
 }
 
-[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-build],
-[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-build],
-[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-build],
-[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-build]{
-  transform:none!important;
-  animation:none!important;
-  transition:none!important;
-}
-
-/* Keep only the round loader moving. */
+/* Keep the round loader moving. */
 [data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status].is-busy>span,
 [data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status].is-busy>span,
 [data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-engine-status].is-busy>span,
 [data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status].is-busy>span{
   animation:aivoAdFilmProgressSpin .9s linear infinite!important;
+}
+
+/* Requested production pulse: the whole build button breathes and dims. */
+[data-module-root][data-module="adfilm"] [data-adfilm-build].is-generating,
+[data-module-root][data-module="adfilm"] [data-adfilm-build][aria-busy="true"]{
+  transform-origin:center!important;
+  animation:aivoAdFilmBuildHeartbeat 1.5s ease-in-out infinite!important;
+  transition:none!important;
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-build].is-generating::before,
+[data-module-root][data-module="adfilm"] [data-adfilm-build][aria-busy="true"]::before{
+  animation:aivoAdFilmBuildDimmer 1.5s ease-in-out infinite!important;
+}
+
+@keyframes aivoAdFilmBuildHeartbeat{
+  0%,100%{transform:scale(1);filter:brightness(1) saturate(1)}
+  45%{transform:scale(1.012);filter:brightness(.76) saturate(.88)}
+  60%{transform:scale(1.02);filter:brightness(.9) saturate(.96)}
+}
+
+@keyframes aivoAdFilmBuildDimmer{
+  0%,100%{opacity:.12}
+  50%{opacity:.48}
 }
