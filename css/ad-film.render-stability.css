@@ -1,0 +1,71 @@
+/* AIVO AI Reklam Filmi — Chromium/macOS render stability
+   Keeps text on a single paint layer and removes obsolete full-screen flash. */
+
+[data-module-root][data-module="adfilm"],
+.rpPanelWrap[data-panel-key="adfilm"]{
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  backface-visibility:visible!important;
+  transform:none!important;
+}
+
+/* The large blurred ambient circles create oversized GPU layers inside the
+   independently scrolling studio column. The page already has equivalent
+   radial gradients, so removing these circles preserves the design while
+   preventing text shimmer/ghost frames in Chromium on macOS. */
+[data-module-root][data-module="adfilm"] .adfilm-orb{
+  display:none!important;
+  filter:none!important;
+  animation:none!important;
+}
+
+/* This was an old preview-only effect. It painted a fixed translucent layer
+   over the whole viewport and could make every label appear to flash. */
+[data-module-root][data-module="adfilm"].adfilm-build-flash::after,
+[data-module-root][data-module="adfilm"] .adfilm-build-flash::after{
+  content:none!important;
+  display:none!important;
+  opacity:0!important;
+  animation:none!important;
+  transition:none!important;
+}
+
+/* Avoid nested backdrop-filter compositor layers around live video/preview
+   elements. Their backgrounds are already opaque enough without the filter. */
+[data-module-root][data-module="adfilm"] .adfilm-hero,
+[data-module-root][data-module="adfilm"] .adfilm-cloud-status,
+.rpPanelWrap[data-panel-key="adfilm"] .adfilm-preview-brandline span,
+.rpPanelWrap[data-panel-key="adfilm"] .adfilm-preview-brandline em,
+.rpPanelWrap[data-panel-key="adfilm"] .adfilm-preview-play{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+/* Keep type crisp. Selected controls previously used a one-pixel text shadow,
+   which looked like a second copy while the video layer was repainting. */
+[data-module-root][data-module="adfilm"] h1,
+[data-module-root][data-module="adfilm"] h2,
+[data-module-root][data-module="adfilm"] h3,
+[data-module-root][data-module="adfilm"] p,
+[data-module-root][data-module="adfilm"] label,
+[data-module-root][data-module="adfilm"] button,
+[data-module-root][data-module="adfilm"] span,
+[data-module-root][data-module="adfilm"] b,
+[data-module-root][data-module="adfilm"] small,
+[data-module-root][data-module="adfilm"] em,
+.rpPanelWrap[data-panel-key="adfilm"] h1,
+.rpPanelWrap[data-panel-key="adfilm"] h2,
+.rpPanelWrap[data-panel-key="adfilm"] h3,
+.rpPanelWrap[data-panel-key="adfilm"] p,
+.rpPanelWrap[data-panel-key="adfilm"] button,
+.rpPanelWrap[data-panel-key="adfilm"] span,
+.rpPanelWrap[data-panel-key="adfilm"] b,
+.rpPanelWrap[data-panel-key="adfilm"] small,
+.rpPanelWrap[data-panel-key="adfilm"] em{
+  text-shadow:none!important;
+}
+
+/* Only the explicit production spinner is allowed to animate continuously. */
+[data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy>span{
+  animation:aivoAdFilmProgressSpin .9s linear infinite!important;
+}
