@@ -1,9 +1,14 @@
 /* AIVO AI Reklam Filmi — professional output quality policy */
 (function AIVO_AD_FILM_QUALITY_POLICY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V5__)return;
+  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V6__)return;
+  window.__AIVO_AD_FILM_QUALITY_POLICY_V6__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V5__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V4__=true;
+
+  var timeoutTimer=null;
+  var timeoutClosingKey="";
+  var MAX_TOTAL_MS=20*60*1000;
 
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
   function root(scope){
@@ -12,6 +17,8 @@
   }
   function qualityGroup(scope){return scope&&scope.querySelector('[data-adfilm-choice="quality"]')}
   function valueOf(node){return String(node&&node.getAttribute&&node.getAttribute('data-value')||node&&node.textContent||'').trim().toLowerCase()}
+  function clean(value){return String(value==null?'':value).trim()}
+  function text(tr,en){return english()?en:tr}
   function removeLowQuality(scope){
     var group=qualityGroup(scope);if(!group)return false;
     group.querySelectorAll('[data-value="480p"],[data-value="720p"]').forEach(function(node){node.remove()});
@@ -46,13 +53,58 @@
     document.head.appendChild(script);
   }
 
-  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){applyBurst(event.detail.root);loadElapsedOwner()}});
-  document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst();loadElapsedOwner()});
-  document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst();loadElapsedOwner()});
+  function productionController(){return window.AIVOAdFilmProductionController}
+  function productionState(){var api=productionController();return api&&typeof api.state==='function'?api.state():null}
+  function productionActive(){var api=productionController();return !!(api&&typeof api.active==='function'&&api.active())}
+  function timeoutKey(run){return clean(run&&run.projectId)+'|'+clean(run&&run.requestId)+'|'+String(run&&run.startedAt||'')}
+  function showTimeoutClosing(){
+    var scope=root();if(!scope)return;
+    var title=scope.querySelector('[data-adfilm-stage-title]');
+    var detail=scope.querySelector('[data-adfilm-stage-description]');
+    if(title)title.textContent=text('Üretim güvenli şekilde durduruluyor','Stopping production safely');
+    if(detail)detail.textContent=text('20 dakikalık toplam süre sınırı aşıldı. Yeni ücretli üretim başlatılmadı.','The 20-minute total time limit was exceeded. No new paid generation was started.');
+  }
+  async function abandonTimedOutRun(run){
+    var key=timeoutKey(run);if(!key||timeoutClosingKey===key)return;
+    timeoutClosingKey=key;
+    showTimeoutClosing();
+    try{
+      var response=await fetch('/api/ad-film/seedance/abandon',{
+        method:'POST',
+        credentials:'include',
+        cache:'no-store',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({projectId:clean(run.projectId)})
+      });
+      var data=await response.json().catch(function(){return{}});
+      if(!response.ok)throw new Error(data.error||data.message||('HTTP '+response.status));
+      console.warn('[ADFILM FLOW] total-timeout-abandoned',{projectId:run.projectId,requestId:run.requestId,totalMs:Date.now()-Number(run.startedAt||0)});
+    }catch(error){
+      timeoutClosingKey='';
+      console.error('[ADFILM FLOW] total-timeout-abandon-failed',error);
+    }
+  }
+  function checkTotalTimeout(){
+    if(!productionActive())return;
+    var run=productionState();
+    var started=Number(run&&run.startedAt||0);
+    if(!started||Date.now()-started<MAX_TOTAL_MS)return;
+    abandonTimedOutRun(run);
+  }
+  function startTimeoutMonitor(){
+    if(timeoutTimer)return;
+    checkTotalTimeout();
+    timeoutTimer=setInterval(checkTotalTimeout,1000);
+  }
+
+  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){applyBurst(event.detail.root);loadElapsedOwner();startTimeoutMonitor()}});
+  document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst();loadElapsedOwner();startTimeoutMonitor()});
+  document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst();loadElapsedOwner();startTimeoutMonitor()});
   document.addEventListener('click',function(event){
-    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]')){applyBurst();loadElapsedOwner()}
+    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]')){applyBurst();loadElapsedOwner();startTimeoutMonitor()}
   },true);
 
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){applyBurst();loadElapsedOwner()},{once:true});else{applyBurst();loadElapsedOwner()}
+  window.addEventListener('pagehide',function(){if(timeoutTimer)clearInterval(timeoutTimer)});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){applyBurst();loadElapsedOwner();startTimeoutMonitor()},{once:true});else{applyBurst();loadElapsedOwner();startTimeoutMonitor()}
   window.AIVOAdFilmQualityPolicy={apply:apply};
 })();
