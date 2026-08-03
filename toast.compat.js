@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V87__) return;
-  window.__AIVO_AD_FILM_ASSETS_V87__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V89__) return;
+  window.__AIVO_AD_FILM_ASSETS_V89__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -60,8 +60,8 @@
     "/css/ad-film.output-gallery.css?v=3",
     "/css/ad-film.video-modal.css?v=1",
     "/css/ad-film.premium-production.css?v=3",
-    "/css/ad-film.production-status-center.css?v=5",
-    "/css/ad-film.unified-flow.css?v=2",
+    "/css/ad-film.production-status-center.css?v=7",
+    "/css/ad-film.unified-flow.css?v=4",
     "/css/ad-film.render-stability.css?v=1"
   ];
 
@@ -101,7 +101,7 @@
     "/js/ad-film.production-id-adapter.js?v=1",
     "/js/ad-film.production-save-guard.js?v=1",
     "/js/ad-film.music-preflight.js?v=4",
-    "/js/ad-film.active-run-event-guard.js?v=1",
+    "/js/ad-film.active-run-event-guard.js?v=2",
     "/js/ad-film.seedance-engine.js?v=10",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
