@@ -1,12 +1,14 @@
-/* AIVO AI Reklam Filmi — keep one elapsed clock across music, upload, generation and finalization */
+/* AIVO AI Reklam Filmi — one elapsed clock and transient provider resilience */
 (function AIVO_AD_FILM_ELAPSED_CONTINUITY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ELAPSED_CONTINUITY_V1__)return;
-  window.__AIVO_AD_FILM_ELAPSED_CONTINUITY_V1__=true;
+  if(window.__AIVO_AD_FILM_ELAPSED_CONTINUITY_V2__)return;
+  window.__AIVO_AD_FILM_ELAPSED_CONTINUITY_V2__=true;
 
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
   var clock=null;
   var runStartedAt=0;
+  var nativeFetch=typeof window.fetch==="function"?window.fetch.bind(window):null;
+  var providerFailures=Object.create(null);
 
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
@@ -63,6 +65,96 @@
     setTimeout(start,0);
   }
 
+  function requestUrl(input){
+    if(typeof input==="string")return input;
+    if(input&&typeof input.url==="string")return input.url;
+    return String(input||"");
+  }
+  function requestMethod(input,options){
+    return String(options&&options.method||input&&input.method||"GET").toUpperCase();
+  }
+  function statusProjectId(url){
+    try{return new URL(url,window.location.href).searchParams.get("projectId")||"unknown"}catch(_){return"unknown"}
+  }
+  function isSeedanceStatusRequest(input,options){
+    if(requestMethod(input,options)!=="GET")return false;
+    try{return new URL(requestUrl(input),window.location.href).pathname==="/api/ad-film/seedance/status"}catch(_){return false}
+  }
+  function payloadText(data){
+    try{return JSON.stringify(data||{}).toLowerCase()}catch(_){return String(data||"").toLowerCase()}
+  }
+  function isTransientProviderFailure(response,data){
+    var http=Number(response&&response.status||0),fal=Number(data&&data.fal_status||0),text=payloadText(data);
+    if([429,502,503,504].indexOf(http)>=0)return true;
+    if([429,500,502,503,504].indexOf(fal)>=0)return true;
+    return text.indexOf("downstream_service_unavailable")>=0||
+      text.indexOf("downstream service unavailable")>=0||
+      text.indexOf("gateway timeout")>=0||
+      text.indexOf("temporarily unavailable")>=0||
+      text.indexOf("timeout_or_network")>=0;
+  }
+  function retryDelay(count){
+    var delays=[2500,5000,10000,15000,20000,30000];
+    return delays[Math.min(Math.max(0,count-1),delays.length-1)];
+  }
+  function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
+  function reconnectMessage(){
+    return english()?"The video service is temporarily busy. Reconnecting automatically; your production will continue.":"Video servisi geçici olarak yoğun. Otomatik yeniden bağlanılıyor; üretiminiz devam edecek.";
+  }
+  function markReconnect(){
+    var scope=root(),description=scope&&scope.querySelector('[data-adfilm-stage-description]');
+    if(description)description.textContent=reconnectMessage();
+    start();
+  }
+  function currentGeneration(){
+    var source=window.AIVOAdFilmActiveProject;
+    return source&&typeof source==="object"&&source.generation&&typeof source.generation==="object"?source.generation:{};
+  }
+  function runningResponse(projectId,count,delay,source){
+    var generation=currentGeneration();
+    var body={
+      ok:true,
+      provider:"fal",
+      projectId:projectId,
+      status:"RUNNING",
+      video_url:null,
+      transient_provider_error:true,
+      retry_count:count,
+      retry_after_ms:delay,
+      generation:generation,
+      provider_error:source&&source.error||"provider_temporarily_unavailable"
+    };
+    return new Response(JSON.stringify(body),{
+      status:200,
+      headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}
+    });
+  }
+  async function resilientFetch(input,options){
+    if(!nativeFetch||!isSeedanceStatusRequest(input,options))return nativeFetch(input,options);
+    var url=requestUrl(input),projectId=statusProjectId(url);
+    try{
+      var response=await nativeFetch(input,options);
+      if(response.ok){providerFailures[projectId]=0;return response}
+      var data=await response.clone().json().catch(function(){return{}});
+      if(!statusBusy()||!isTransientProviderFailure(response,data))return response;
+      var count=(Number(providerFailures[projectId])||0)+1;
+      providerFailures[projectId]=count;
+      var delay=retryDelay(count);
+      markReconnect();
+      await sleep(delay);
+      return runningResponse(projectId,count,delay,data);
+    }catch(error){
+      if(!statusBusy())throw error;
+      var count=(Number(providerFailures[projectId])||0)+1;
+      providerFailures[projectId]=count;
+      var delay=retryDelay(count);
+      markReconnect();
+      await sleep(delay);
+      return runningResponse(projectId,count,delay,{error:String(error&&error.message||error)});
+    }
+  }
+
+  if(nativeFetch)window.fetch=resilientFetch;
   document.addEventListener("click",captureBuild,true);
   document.addEventListener("aivo:adfilm-project-sync",function(){if(latchActive()||statusBusy())start()});
   document.addEventListener("aivo:adfilm-finalization-pending",function(){if(latchActive()||statusBusy())start()});
