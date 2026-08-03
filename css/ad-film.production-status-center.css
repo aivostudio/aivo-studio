@@ -86,8 +86,8 @@
 
 @media (min-width:701px){
   .adfilm-engine-status.is-busy{
-    --adfilm-stage-left:92px;
-    --adfilm-stage-right:12px;
+    --adfilm-stage-left:66px;
+    --adfilm-stage-right:0px;
     position:relative!important;
     display:block!important;
     min-height:238px!important;
@@ -134,7 +134,7 @@
     text-align:center!important;
   }
 
-  /* Aşama + başlık + açıklama + süre birlikte genişleyen tek kart. */
+  /* Aşama kartını spinner'a doğru ve sağ sınıra kadar uzat. */
   .adfilm-engine-status.is-busy small{
     width:calc(100% - var(--adfilm-stage-left) - var(--adfilm-stage-right))!important;
     max-width:none!important;
@@ -142,7 +142,7 @@
     min-height:0!important;
     height:auto!important;
     margin:0 var(--adfilm-stage-right) 0 var(--adfilm-stage-left)!important;
-    padding:17px 34px!important;
+    padding:17px 38px!important;
     border-radius:18px!important;
   }
 
