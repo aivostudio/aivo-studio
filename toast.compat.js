@@ -47,7 +47,6 @@
     "/css/ad-film.simple-mode.css?v=3",
     "/css/ad-film.music-profile.css?v=5",
     "/css/ad-film.seedance-options.css?v=5",
-    "/css/ad-film.video-options-readability.css?v=1",
     "/css/ad-film.advanced-alignment.css?v=3",
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.plan-simple.css?v=2",
