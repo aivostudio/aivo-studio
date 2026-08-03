@@ -1,11 +1,9 @@
 import crypto from "crypto";
-import sharp from "sharp";
 import { putObject } from "./r2.js";
 import { mediaPrefix } from "./ad-film-projects.js";
 import { downloadImageBuffer, normalizeMediaBuffer } from "./ad-film-image-normalizer.js";
 
-const FINALIZER_LOGO_VERSION = 2;
-const MAX_INPUT_PIXELS = 80_000_000;
+const FINALIZER_LOGO_VERSION = 3;
 
 function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
@@ -20,14 +18,6 @@ function safeName(value, fallback = "logo") {
   return next || fallback;
 }
 
-function finalDisplayWidth(resolution) {
-  const value = clean(resolution, 20).toLowerCase();
-  if (value === "4k") return 300;
-  if (value === "1080p") return 178;
-  if (value === "720p") return 128;
-  return 90;
-}
-
 function finalMargin(resolution) {
   const value = clean(resolution, 20).toLowerCase();
   if (value === "4k") return 72;
@@ -36,14 +26,12 @@ function finalMargin(resolution) {
   return 20;
 }
 
-function preset({ resolution, aspectRatio, sourceWidth, sourceHeight, targetWidth, targetHeight }) {
+function preset({ aspectRatio, sourceWidth, sourceHeight }) {
   return [
     `v${FINALIZER_LOGO_VERSION}`,
-    "original-source",
-    clean(resolution, 20).toLowerCase(),
+    "original-pixels",
     clean(aspectRatio, 20),
     `${sourceWidth}x${sourceHeight}`,
-    `${targetWidth}x${targetHeight}`,
   ].join(":");
 }
 
@@ -67,20 +55,7 @@ export async function prepareFinalizerLogoAsset({
   const normalized = await normalizeMediaBuffer(sourceBuffer, "logo");
   const sourceWidth = Math.max(1, Number(normalized.metadata?.width) || 1);
   const sourceHeight = Math.max(1, Number(normalized.metadata?.height) || 1);
-
-  // Always start from the uploaded logo (trimmed to transparent PNG), never
-  // from a previously generated low-resolution finalizer asset. The only
-  // resize happens once, at the final on-video display size, with Lanczos.
-  const targetWidth = finalDisplayWidth(resolution);
-  const targetHeight = Math.max(2, Math.round(sourceHeight * (targetWidth / sourceWidth)));
-  const nextPreset = preset({
-    resolution,
-    aspectRatio,
-    sourceWidth,
-    sourceHeight,
-    targetWidth,
-    targetHeight,
-  });
+  const nextPreset = preset({ aspectRatio, sourceWidth, sourceHeight });
 
   if (
     item.finalizerLogoPreset === nextPreset &&
@@ -90,19 +65,10 @@ export async function prepareFinalizerLogoAsset({
     return item;
   }
 
-  const rendered = await sharp(normalized.buffer, {
-    failOn: "error",
-    limitInputPixels: MAX_INPUT_PIXELS,
-  })
-    .resize({
-      width: targetWidth,
-      height: targetHeight,
-      fit: "inside",
-      withoutEnlargement: false,
-      kernel: sharp.kernel.lanczos3,
-    })
-    .png({ compressionLevel: 9, adaptiveFiltering: true })
-    .toBuffer();
+  // Keep every available pixel from the uploaded logo. This step only removes
+  // the outside background, trims transparent margins and stores a lossless
+  // PNG. The finalizer performs the single display-size resize with Lanczos.
+  const rendered = normalized.buffer;
 
   const id = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex");
   const key = `${mediaPrefix(user, projectId)}normalized/logo-render/${Date.now()}-${id}-${safeName(item.name || "logo")}.png`;
@@ -132,10 +98,10 @@ export async function prepareFinalizerLogoAsset({
     finalizerLogo: {
       sourceWidth,
       sourceHeight,
-      visibleWidth: targetWidth,
-      visibleHeight: targetHeight,
-      canvasWidth: targetWidth,
-      canvasHeight: targetHeight,
+      visibleWidth: sourceWidth,
+      visibleHeight: sourceHeight,
+      canvasWidth: sourceWidth,
+      canvasHeight: sourceHeight,
       leftPadding: 0,
       fixedMargin: finalMargin(resolution),
       aspectRatio: clean(aspectRatio, 20),
@@ -144,8 +110,9 @@ export async function prepareFinalizerLogoAsset({
       placement: "bottom-right",
       preserveAspectRatio: true,
       sourceQualityPreserved: true,
-      resizePasses: 1,
-      resizeKernel: "lanczos3",
+      resizePasses: 0,
+      finalResizeOwner: "ffmpeg",
+      finalResizeKernel: "lanczos",
     },
   };
 }
