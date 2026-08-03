@@ -1,11 +1,12 @@
-/* AIVO AI Reklam Filmi — progress lock begins only after confirmed production */
+/* AIVO AI Reklam Filmi — stable progress lock across async production handoffs */
 (function AIVO_AD_FILM_PROGRESS_LOCK(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PROGRESS_LOCK_V5__)return;
-  window.__AIVO_AD_FILM_PROGRESS_LOCK_V5__=true;
+  if(window.__AIVO_AD_FILM_PROGRESS_LOCK_V6__)return;
+  window.__AIVO_AD_FILM_PROGRESS_LOCK_V6__=true;
 
   var LATCH_KEY="__AIVO_AD_FILM_PRODUCTION_UI_LATCH__";
   var LATCH_MS=30*60*1000;
+  var START_HANDOFF_GRACE_MS=15000;
   var observer=null;
   var interval=null;
   var frame=0;
@@ -67,8 +68,8 @@
   }
   function generationActive(source){
     var gen=generation(source),state=lower(gen.status),projectState=lower(source&&source.status);
-    return ["queued","processing","running","in_queue"].indexOf(state)>=0||
-      ["queued","processing","running","in_queue"].indexOf(projectState)>=0||gen.finalizing===true;
+    return ["queued","processing","running","rendering","finalizing","in_queue"].indexOf(state)>=0||
+      ["queued","processing","running","rendering","finalizing","in_queue"].indexOf(projectState)>=0||gen.finalizing===true;
   }
   function terminal(source){
     var state=lower(source&&source.status||generation(source).status);
@@ -156,8 +157,9 @@
   function abortIfStartFailed(){
     var value=latch();if(!value||buttonBusy())return false;
     if(value.currentRequestId||value.currentOutputId)return false;
+    if(window.AIVOAdFilmSeedanceFinalizing||window.AIVOAdFilmFinalizationPending)return false;
     var started=Date.parse(value.startedAt||"");
-    if(!Number.isFinite(started)||Date.now()-started<1200)return false;
+    if(!Number.isFinite(started)||Date.now()-started<START_HANDOFF_GRACE_MS)return false;
     clearLatch();releaseVisualLock();
     if(window.AIVOAdFilmProgressUI&&typeof window.AIVOAdFilmProgressUI.release==="function")window.AIVOAdFilmProgressUI.release();
     return true;
@@ -165,7 +167,7 @@
   function begin(){
     if(!latchActive())setLatch();
     forceVisible();
-    [40,120,300,700,1500].forEach(function(delay){setTimeout(restore,delay)});
+    [40,120,300,700,1500,3000].forEach(function(delay){setTimeout(restore,delay)});
   }
   function restore(){
     if(!latchActive()&&buttonBusy()){begin();return}
