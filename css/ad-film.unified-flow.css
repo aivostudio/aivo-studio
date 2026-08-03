@@ -1,77 +1,112 @@
 /* AIVO AI Reklam Filmi — unified single-flow header */
-[data-module-root][data-module="adfilm"] .adfilm-modebar{display:none!important}
-[data-module-root][data-module="adfilm"] .adfilm-layout{margin-top:18px}
 
+/* The studio is now one configurable advertising workflow. Voice, music,
+   avatar and future capabilities are controlled inside their own sections,
+   so the old top-level mode selector is intentionally removed. */
+[data-module-root][data-module="adfilm"] .adfilm-modebar{
+  display:none !important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-layout{
+  margin-top:18px;
+}
+
+/* Keep the module icon on the left and cloud state on the right, while the
+   title group is geometrically centered inside the full hero card. */
 @media (min-width:1180px){
-  [data-module-root][data-module="adfilm"] .adfilm-hero{grid-template-columns:minmax(210px,1fr) minmax(0,760px) minmax(210px,1fr)}
-  [data-module-root][data-module="adfilm"] .adfilm-hero__icon{grid-column:1;justify-self:start}
-  [data-module-root][data-module="adfilm"] .adfilm-hero__copy{grid-column:2;width:100%;justify-self:center;text-align:center}
-  [data-module-root][data-module="adfilm"] .adfilm-kicker{justify-content:center}
-  [data-module-root][data-module="adfilm"] .adfilm-hero p{margin:9px auto 0}
-  [data-module-root][data-module="adfilm"] .adfilm-hero__status{grid-column:3;justify-self:end}
+  [data-module-root][data-module="adfilm"] .adfilm-hero{
+    grid-template-columns:minmax(210px,1fr) minmax(0,760px) minmax(210px,1fr);
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero__icon{
+    grid-column:1;
+    justify-self:start;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero__copy{
+    grid-column:2;
+    width:100%;
+    justify-self:center;
+    text-align:center;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-kicker{
+    justify-content:center;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero p{
+    margin:9px auto 0;
+  }
+
+  [data-module-root][data-module="adfilm"] .adfilm-hero__status{
+    grid-column:3;
+    justify-self:end;
+  }
 }
 
-/* Old status nodes remain in the template for compatibility but never paint. */
-[data-module-root][data-module="adfilm"] [data-adfilm-engine-status][data-adfilm-legacy-status="1"]{
-  display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important
-}
-
-/* The canonical controller is the only visible production-status surface. */
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical{
-  box-sizing:border-box!important;
-  display:none!important;
-  width:100%!important;
-  min-height:260px!important;
-  margin:0 0 18px!important;
-  padding:28px 34px 26px!important;
-  grid-template-columns:minmax(90px,140px) minmax(0,1fr) minmax(90px,140px)!important;
-  align-items:center!important;
-  gap:24px!important;
-  border-radius:26px!important;
+/*
+   ACTIVE PRODUCTION PANEL — FINAL VISIBILITY OWNER
+   This stylesheet is loaded last. During production, no older rule may hide,
+   fade, collapse, move or pulse the progress card. Only the circular spinner
+   inside the card is allowed to animate.
+*/
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating),
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]){
   opacity:1!important;
   visibility:visible!important;
   transform:none!important;
+  animation:none!important;
+  filter:none!important;
+}
+
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-engine-status],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status][data-adfilm-idle-hidden="1"],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status][data-adfilm-idle-hidden="1"]{
+  display:block!important;
+  width:100%!important;
+  min-height:238px!important;
+  max-height:none!important;
+  height:auto!important;
+  margin:0 0 16px!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  animation:none!important;
   transition:none!important;
   filter:none!important;
   contain:layout paint!important;
 }
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical.is-visible:not([hidden]){display:grid!important}
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical>span{grid-column:1;justify-self:center}
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical>div{
-  grid-column:2;
-  width:100%!important;
-  max-width:none!important;
-  min-width:0!important;
-  padding:26px 34px!important;
-  border-radius:26px!important;
-}
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical::after{
-  content:"";grid-column:3;width:100%;height:2px;border-radius:999px;
-  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(217,190,255,.78),rgba(255,255,255,0));
-}
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical::before{
-  content:"";position:absolute;left:24px;right:24px;top:74px;height:2px;border-radius:999px;
-  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(217,190,255,.72),rgba(255,255,255,0));
+
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status]::before,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status]::before,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-engine-status]::before,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status]::before,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status] b,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status] b{
+  animation:none!important;
+  transition:none!important;
+  filter:none!important;
 }
 
-/* Only the round loader, title and production button animate. */
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical.is-busy>span{animation:aivoAdFilmProgressSpin .9s linear infinite!important}
-[data-module-root][data-module="adfilm"] .adfilm-progress-canonical.is-busy [data-adfilm-progress-heading]{animation:aivoAdFilmTitlePulse 1.8s ease-in-out infinite!important}
-[data-module-root][data-module="adfilm"] [data-adfilm-build].is-generating{animation:aivoAdFilmBuildPulse 1.55s ease-in-out infinite!important;transform-origin:center!important}
-[data-module-root][data-module="adfilm"] [data-adfilm-build].is-generating::before{animation:aivoAdFilmBuildGlow 1.55s ease-in-out infinite!important}
-
-@keyframes aivoAdFilmTitlePulse{
-  0%,100%{color:#e5d0ff;text-shadow:0 0 12px rgba(188,130,255,.10);transform:scale(1)}
-  50%{color:#fff2ff;text-shadow:0 0 28px rgba(221,149,255,.32);transform:scale(1.012)}
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-build],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-build],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-build],
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-build]{
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
 }
-@keyframes aivoAdFilmBuildPulse{
-  0%,100%{transform:scale(1);filter:brightness(1) saturate(1)}
-  50%{transform:scale(1.012);filter:brightness(.84) saturate(.92)}
-}
-@keyframes aivoAdFilmBuildGlow{0%,100%{opacity:.22}50%{opacity:.48}}
 
-@media (max-width:900px){
-  [data-module-root][data-module="adfilm"] .adfilm-progress-canonical{grid-template-columns:64px minmax(0,1fr)!important;padding:22px 18px!important}
-  [data-module-root][data-module="adfilm"] .adfilm-progress-canonical::after{display:none}
-  [data-module-root][data-module="adfilm"] .adfilm-progress-canonical>div{padding:22px!important}
+/* Keep only the round loader moving. */
+[data-module-root][data-module="adfilm"] .adfilm-actionbar.is-engine-active [data-adfilm-engine-status].is-busy>span,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar[data-adfilm-progress-lock="1"] [data-adfilm-engine-status].is-busy>span,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build].is-generating) [data-adfilm-engine-status].is-busy>span,
+[data-module-root][data-module="adfilm"] .adfilm-actionbar:has([data-adfilm-build][aria-busy="true"]) [data-adfilm-engine-status].is-busy>span{
+  animation:aivoAdFilmProgressSpin .9s linear infinite!important;
 }
