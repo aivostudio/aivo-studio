@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — final UI and one-shot playback */
 (function(){
   "use strict";
-  if(window.__AIVO_AD_FILM_FINAL_UI_PLAYBACK_V1__)return;
-  window.__AIVO_AD_FILM_FINAL_UI_PLAYBACK_V1__=true;
+  if(window.__AIVO_AD_FILM_FINAL_UI_PLAYBACK_V2__)return;
+  window.__AIVO_AD_FILM_FINAL_UI_PLAYBACK_V2__=true;
 
   var playedKeys=new Set();
 
@@ -12,6 +12,11 @@
   function text(tr,en){return english()?en:tr}
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function statusNode(){var scope=root();return scope&&scope.querySelector('[data-adfilm-engine-status]')}
+  function generationActive(){
+    var scope=root();if(!scope)return false;
+    var button=scope.querySelector('[data-adfilm-build]'),action=scope.querySelector('.adfilm-actionbar');
+    return !!(button&&(button.classList.contains('is-generating')||button.getAttribute('aria-busy')==='true')||action&&action.classList.contains('is-engine-active'));
+  }
   function activeOutput(project){
     project=project||{};
     var gen=project.generation||{},outputs=Array.isArray(project.outputs)?project.outputs:[];
@@ -35,7 +40,8 @@
     };
   }
   function renderReady(){
-    var scope=root(),node=statusNode();if(!scope||!node)return;
+    if(generationActive())return false;
+    var scope=root(),node=statusNode();if(!scope||!node)return false;
     node.className="adfilm-engine-status is-visible is-success";
     node.removeAttribute("data-stage");
     node.removeAttribute("data-adfilm-idle-hidden");
@@ -46,6 +52,7 @@
     var action=scope.querySelector('.adfilm-actionbar');if(action)action.classList.remove('is-engine-active');
     var button=scope.querySelector('[data-adfilm-build]');
     if(button){button.classList.remove('is-generating','is-loading','is-music-preparing');button.disabled=false;button.removeAttribute('aria-busy');var label=button.querySelector('[data-adfilm-i18n="createButton"]');if(label)label.textContent=text("Reklam Filmini Oluştur","Create Advertising Film")}
+    return true;
   }
   function stopLoop(video){
     if(!video)return;
@@ -56,11 +63,13 @@
     }
   }
   function playOnce(project){
+    if(generationActive())return;
     var context=finalContext(project);if(!context)return;
-    renderReady();
+    if(!renderReady())return;
     if(playedKeys.has(context.key))return;
     playedKeys.add(context.key);
     setTimeout(function(){
+      if(generationActive())return;
       if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function"){
         var video=window.AIVOAdFilmResultControls.mount(context.url,context.logo,{projectId:context.projectId,outputId:context.outputId,logoApplied:context.logoApplied,play:true,force:false});
         stopLoop(video);
@@ -72,8 +81,8 @@
   }
   function normalizeExistingVideos(){document.querySelectorAll('.rpPanelWrap[data-panel-key="adfilm"] video[data-adfilm-result-video]').forEach(stopLoop)}
 
-  document.addEventListener('aivo:adfilm-project-sync',function(event){playOnce(event&&event.detail&&event.detail.project||window.AIVOAdFilmActiveProject)},false);
-  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){normalizeExistingVideos();setTimeout(function(){playOnce(window.AIVOAdFilmActiveProject)},300)}});
+  document.addEventListener('aivo:adfilm-project-sync',function(event){if(!generationActive())playOnce(event&&event.detail&&event.detail.project||window.AIVOAdFilmActiveProject)},false);
+  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){normalizeExistingVideos();setTimeout(function(){if(!generationActive())playOnce(window.AIVOAdFilmActiveProject)},300)}});
   var observer=new MutationObserver(normalizeExistingVideos);
   observer.observe(document.documentElement,{subtree:true,childList:true});
   window.addEventListener('pagehide',function(){observer.disconnect()});
