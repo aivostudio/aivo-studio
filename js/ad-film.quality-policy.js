@@ -1,13 +1,15 @@
 /* AIVO AI Reklam Filmi — professional output quality policy */
 (function AIVO_AD_FILM_QUALITY_POLICY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V6__)return;
+  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V7__)return;
+  window.__AIVO_AD_FILM_QUALITY_POLICY_V7__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V6__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V5__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V4__=true;
 
   var timeoutTimer=null;
   var timeoutClosingKey="";
+  var staleRecoveryKeys=new Set();
   var MAX_TOTAL_MS=20*60*1000;
 
   function english(){return String(document.documentElement.lang||"").toLowerCase().indexOf("en")===0}
@@ -51,6 +53,55 @@
     script.src='/js/ad-film.elapsed-owner.js?v=1';
     script.async=false;
     document.head.appendChild(script);
+  }
+
+  function requestUrl(input){return typeof input==='string'?input:input&&input.url||''}
+  function requestMethod(input,init){return clean(init&&init.method||input&&input.method||'GET').toUpperCase()}
+  function requestProjectId(init){
+    try{
+      var parsed=JSON.parse(String(init&&init.body||'{}'));
+      return clean(parsed&&parsed.projectId);
+    }catch(_){return''}
+  }
+  function generationAge(generation){
+    var started=Date.parse(generation&&generation.startedAt||'');
+    return Number.isFinite(started)?Date.now()-started:0;
+  }
+  function installStaleCreateRecovery(){
+    if(window.__AIVO_AD_FILM_STALE_CREATE_RECOVERY_V1__)return;
+    window.__AIVO_AD_FILM_STALE_CREATE_RECOVERY_V1__=true;
+    var originalFetch=window.fetch.bind(window);
+    window.fetch=async function(input,init){
+      var response=await originalFetch(input,init);
+      var url=requestUrl(input);
+      if(requestMethod(input,init)!=='POST'||url.indexOf('/api/ad-film/seedance/create')<0||response.status!==409)return response;
+      var data=await response.clone().json().catch(function(){return{}});
+      if(data&&data.error!=='generation_in_progress')return response;
+      var generation=data.generation||{};
+      var ageMs=generationAge(generation);
+      var projectId=requestProjectId(init);
+      var key=projectId+'|'+clean(generation.requestId||generation.outputId);
+      if(!projectId||ageMs<MAX_TOTAL_MS||staleRecoveryKeys.has(key))return response;
+      staleRecoveryKeys.add(key);
+      console.warn('[ADFILM FLOW] stale-generation-recovery-start',{projectId:projectId,requestId:generation.requestId||generation.outputId,ageMs:ageMs});
+      try{
+        var abandon=await originalFetch('/api/ad-film/seedance/abandon',{
+          method:'POST',
+          credentials:'include',
+          cache:'no-store',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({projectId:projectId})
+        });
+        var abandonData=await abandon.clone().json().catch(function(){return{}});
+        if(!abandon.ok)throw new Error(abandonData.error||abandonData.message||('HTTP '+abandon.status));
+        console.warn('[ADFILM FLOW] stale-generation-recovered',{projectId:projectId,requestId:generation.requestId||generation.outputId});
+        return originalFetch(input,init);
+      }catch(error){
+        staleRecoveryKeys.delete(key);
+        console.error('[ADFILM FLOW] stale-generation-recovery-failed',error);
+        return response;
+      }
+    };
   }
 
   function productionController(){return window.AIVOAdFilmProductionController}
@@ -97,14 +148,14 @@
     timeoutTimer=setInterval(checkTotalTimeout,1000);
   }
 
-  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){applyBurst(event.detail.root);loadElapsedOwner();startTimeoutMonitor()}});
-  document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst();loadElapsedOwner();startTimeoutMonitor()});
-  document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst();loadElapsedOwner();startTimeoutMonitor()});
+  document.addEventListener('aivo:module-mounted',function(event){if(event&&event.detail&&event.detail.key==='adfilm'){applyBurst(event.detail.root);loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()}});
+  document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()});
+  document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()});
   document.addEventListener('click',function(event){
-    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]')){applyBurst();loadElapsedOwner();startTimeoutMonitor()}
+    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]')){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()}
   },true);
 
   window.addEventListener('pagehide',function(){if(timeoutTimer)clearInterval(timeoutTimer)});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){applyBurst();loadElapsedOwner();startTimeoutMonitor()},{once:true});else{applyBurst();loadElapsedOwner();startTimeoutMonitor()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()},{once:true});else{applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()}
   window.AIVOAdFilmQualityPolicy={apply:apply};
 })();
