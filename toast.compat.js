@@ -112,6 +112,7 @@
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
     "/js/ad-film.final-ui-and-playback.js?v=2",
+    "/js/ad-film.stale-success-guard.js?v=1",
     "/js/ad-film.output-workflow.js?v=2",
     "/js/ad-film.video-modal.js?v=1",
     "/js/ad-film.output-gallery.js?v=10",
