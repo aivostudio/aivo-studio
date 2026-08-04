@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V3__) return;
-  window.__AIVO_AD_FILM_ASSETS_CLEAN_V3__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V4__) return;
+  window.__AIVO_AD_FILM_ASSETS_CLEAN_V4__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -46,7 +46,7 @@
     "/css/ad-film.storyboard.css?v=1",
     "/css/ad-film.simple-mode.css?v=3",
     "/css/ad-film.music-profile.css?v=5",
-    "/css/ad-film.seedance-options.css?v=5",
+    "/css/ad-film.seedance-options.css?v=6",
     "/css/ad-film.advanced-alignment.css?v=3",
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.plan-simple.css?v=2",
@@ -103,7 +103,7 @@
     "/js/ad-film.narration-master.js?v=3",
     "/js/ad-film.narration-state.js?v=1",
     "/js/ad-film.voice-toggle-fix.js?v=2",
-    "/js/ad-film.production-controller-v2.js?v=1",
+    "/js/ad-film.production-controller-v2.js?v=2",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
@@ -114,7 +114,7 @@
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-ui-only.js?v=2"
+    "/js/ad-film.quality-ui-only.js?v=3"
   ];
 
   let shellLoadPromise = null;
