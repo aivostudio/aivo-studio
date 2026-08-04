@@ -43,27 +43,28 @@
     async function boot(){
       const host=document.getElementById("previewRoot");
       try{
-        const response=await fetch("/modules/ad-film.html?v=720p-preview-2",{cache:"no-store"});
+        const response=await fetch("/modules/ad-film.html?v=720p-preview-3",{cache:"no-store"});
         if(!response.ok) throw new Error("module_http_"+response.status);
         host.innerHTML=await response.text();
         const root=host.querySelector('[data-module-root][data-module="adfilm"]');
         if(!root) throw new Error("adfilm_root_missing");
 
-        await loadScript("/toast.compat.js?v=720p-preview-2");
+        await loadScript("/toast.compat.js?v=720p-preview-3");
         document.dispatchEvent(new CustomEvent("aivo:module-mounted",{detail:{key:"adfilm",root}}));
 
         if(typeof window.AIVOAwaitAdFilmAssets==="function") await window.AIVOAwaitAdFilmAssets();
 
-        await loadScript("/js/ad-film.720p-quality-final.js?v=1");
+        await loadScript("/js/ad-film.720p-quality-all.js?v=1");
         document.dispatchEvent(new CustomEvent("aivo:module-mounted",{detail:{key:"adfilm",root}}));
         document.dispatchEvent(new CustomEvent("aivo:adfilm-assets-ready"));
 
-        [0,100,400,900,1800,3200].forEach((delay)=>setTimeout(()=>{
-          try{window.AIVOAdFilm720pQualityFinal?.apply?.(root)}catch(_){}
+        [0,100,400,900,1800,3200,6000].forEach((delay)=>setTimeout(()=>{
+          try{window.AIVOAdFilm720pAll?.apply?.(root)}catch(_){}
         },delay));
 
         setTimeout(()=>{
-          const quality=root.querySelector('[data-adfilm-choice="quality"]');
+          const groups=root.querySelectorAll('[data-adfilm-choice="quality"]');
+          const quality=groups[groups.length-1];
           quality?.closest(".adfilm-card--advanced-output,.adfilm-setting-block")?.scrollIntoView({behavior:"smooth",block:"center"});
         },1900);
       }catch(error){
