@@ -211,7 +211,7 @@
     }finally{consuming=false}
   }
 
-  document.addEventListener("click",function(event){
+  window.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
     if(!button)return;
     if(button.getAttribute("data-adfilm-credit-bypass")==="1"){
