@@ -29,8 +29,9 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V110__) return;
-  window.__AIVO_AD_FILM_ASSETS_V110__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V111__) return;
+  window.__AIVO_AD_FILM_ASSETS_V111__ = true;
+  window.__AIVO_AD_FILM_ASSET_LOADER_VERSION__ = 111;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -90,7 +91,6 @@
     "/js/ad-film.seedance-upload-fix.js?v=1",
     "/js/ad-film.seedance-options.js?v=6",
     "/js/ad-film.credit-pricing.js?v=2",
-    "/js/ad-film.credit-ledger.js?v=1",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
@@ -107,7 +107,7 @@
     "/js/ad-film.narration-build-guard.js?v=4",
     "/js/ad-film.voice-toggle-fix.js?v=2",
     "/js/ad-film.production-id-adapter.js?v=1",
-    "/js/ad-film.production-controller.js?v=2",
+    "/js/ad-film.production-controller.js?v=3",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
@@ -141,13 +141,35 @@
     });
   }
 
+  function appendScript(src, existing) {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = false;
+      script.onload = () => {
+        script.dataset.aivoLoaded = "1";
+        resolve();
+      };
+      script.onerror = () => resolve();
+      if (existing?.parentNode) {
+        existing.parentNode.insertBefore(script, existing.nextSibling);
+        existing.remove();
+      } else {
+        document.head.appendChild(script);
+      }
+    });
+  }
+
   function loadSequential(list, index = 0) {
     if (index >= list.length) return Promise.resolve();
     const src = list[index];
     const path = src.split("?")[0];
     const existing = document.querySelector(`script[src^="${path}"]`);
+
     if (existing) {
-      if (existing.getAttribute("src") !== src) existing.setAttribute("src", src);
+      if (existing.getAttribute("src") !== src) {
+        return appendScript(src, existing).then(() => loadSequential(list, index + 1));
+      }
       if (existing.dataset.aivoLoaded === "1") return loadSequential(list, index + 1);
       return new Promise((resolve) => {
         let done = false;
@@ -162,17 +184,8 @@
         if (existing.readyState === "complete" || existing.readyState === "loaded") finish();
       });
     }
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = src;
-      script.async = false;
-      script.onload = () => {
-        script.dataset.aivoLoaded = "1";
-        resolve(loadSequential(list, index + 1));
-      };
-      script.onerror = () => resolve(loadSequential(list, index + 1));
-      document.head.appendChild(script);
-    });
+
+    return appendScript(src).then(() => loadSequential(list, index + 1));
   }
 
   function ensureAdFilmShell() {
@@ -181,11 +194,33 @@
     return shellLoadPromise;
   }
 
+  function controllerReady() {
+    return window.__AIVO_AD_FILM_PRODUCTION_CONTROLLER_V3__ === true &&
+      window.AIVOAdFilmProductionController &&
+      typeof window.AIVOAdFilmProductionController.creditState === "function";
+  }
+
+  function blockUnsafeBuild(button) {
+    if (button) {
+      button.disabled = true;
+      button.removeAttribute("aria-busy");
+      button.setAttribute("data-adfilm-credit-gate", "blocked");
+    }
+    try {
+      window.toast?.error?.("Kredi güvenlik denetleyicisi yüklenmedi. Üretim başlatılmadı. Sayfayı yenileyin.", { duration: 8000 });
+    } catch (_) {}
+  }
+
   function replayPendingBuild() {
     const button = pendingBuildButton;
     pendingBuildButton = null;
     if (!button || !button.isConnected) return;
     button.removeAttribute("data-adfilm-loader-pending");
+    if (!controllerReady()) {
+      blockUnsafeBuild(button);
+      return;
+    }
+    button.removeAttribute("data-adfilm-credit-gate");
     if (button.dataset.narrationGuard !== "blocked" && !button.classList.contains("is-loading") && !button.classList.contains("is-generating")) {
       button.disabled = false;
       button.removeAttribute("aria-busy");
@@ -197,10 +232,19 @@
     ensureStyles();
     if (!moduleLoadPromise) {
       moduleLoadPromise = ensureAdFilmShell().then(() => loadSequential(moduleScripts)).then(() => {
+        if (!controllerReady()) throw new Error("adfilm_credit_controller_not_ready");
         moduleReady = true;
         window.__AIVO_AD_FILM_ASSETS_READY__ = true;
         document.dispatchEvent(new CustomEvent("aivo:adfilm-assets-ready"));
         replayPendingBuild();
+      }).catch((error) => {
+        moduleReady = false;
+        window.__AIVO_AD_FILM_ASSETS_READY__ = false;
+        console.error("[ADFILM] secure asset loading failed", error);
+        const button = pendingBuildButton || document.querySelector('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
+        pendingBuildButton = null;
+        blockUnsafeBuild(button);
+        throw error;
       });
     }
     return moduleLoadPromise;
@@ -216,26 +260,21 @@
 
   document.addEventListener("click", (event) => {
     const build = event.target.closest?.('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
-    if (build && !moduleReady) {
+    if (build && (!moduleReady || !controllerReady())) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
       pendingBuildButton = build;
       build.setAttribute("data-adfilm-loader-pending", "1");
       build.setAttribute("aria-busy", "true");
-      startAdFilmAssets().catch((error) => {
-        console.error("[ADFILM] asset loading failed", error);
-        pendingBuildButton = null;
-        build.removeAttribute("data-adfilm-loader-pending");
-        build.removeAttribute("aria-busy");
-      });
+      startAdFilmAssets().catch(() => {});
       return;
     }
     if (event.target.closest?.("[data-adfilm-open]")) ensureAdFilmAssets();
   }, true);
 
   document.addEventListener("aivo:module-mounted", (event) => {
-    if (event?.detail?.key === "adfilm") startAdFilmAssets();
+    if (event?.detail?.key === "adfilm") startAdFilmAssets().catch(() => {});
   });
 
   if (document.readyState === "loading") {
