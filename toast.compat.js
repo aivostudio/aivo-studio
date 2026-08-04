@@ -115,7 +115,7 @@
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-policy.js?v=8"
+    "/js/ad-film.quality-policy.js?v=9"
   ];
 
   let shellLoadPromise = null;
