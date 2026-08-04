@@ -153,13 +153,21 @@
   position:static;
   grid-column:1/-1;
   width:100%;
-  min-height:34px;
+  min-height:48px;
   margin:0;
-  padding:8px 12px;
-  border-radius:11px;
-  font-size:9px;
+  padding:12px 16px;
+  border-radius:13px;
+  font-size:14px;
+  font-weight:850;
+  line-height:1.35;
+  letter-spacing:.005em;
 }
-.adfilm-build-reason:not(.is-ready):after{font-size:15px}
+.adfilm-build-reason b{
+  font-size:inherit;
+  font-weight:850;
+  line-height:inherit;
+}
+.adfilm-build-reason:not(.is-ready):after{font-size:19px}
 .adfilm-draft-reset{min-height:38px;padding:0 13px}
 
 /* Spinner belongs inside the progress panel and must never touch the card edge. */
