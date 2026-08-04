@@ -25,10 +25,6 @@
       .adfilm-kind-switch{margin:18px 0;padding:12px;border-radius:20px}
       .adfilm-kind-switch>span{margin-bottom:8px;font-size:11px}
       .adfilm-kind-switch button{min-height:50px;border-radius:14px;font-size:15px}
-      .adfilm-radio-hero{gap:14px;padding:18px 22px;border-radius:20px}
-      .adfilm-radio-hero__icon{flex-basis:58px;height:58px;border-radius:17px;font-size:27px}
-      .adfilm-radio-hero h2{font-size:28px}
-      .adfilm-radio-hero p{font-size:14px}
       .adfilm-radio-card{padding:18px;border-radius:20px}
       .adfilm-radio-card__head{gap:11px;margin-bottom:14px}
       .adfilm-radio-card__head>b{flex-basis:38px;height:38px;border-radius:12px;font-size:11px}
@@ -88,12 +84,7 @@
 
   function radioMarkup() {
     return `
-      <section class="adfilm-radio-panel" data-adfilm-radio-panel hidden aria-labelledby="adfilmRadioTitle">
-        <div class="adfilm-radio-hero">
-          <div class="adfilm-radio-hero__icon" aria-hidden="true">🎙</div>
-          <div><span>AIVO Creative Engine · YENİ</span><h2 id="adfilmRadioTitle">AI Radyo Reklamı Oluştur</h2><p>Ürün bilgilerini, profesyonel seslendirmeyi, reklam müziğini ve marka jingle’ını tek akışta birleştir.</p></div>
-        </div>
-
+      <section class="adfilm-radio-panel" data-adfilm-radio-panel hidden aria-label="AI Radyo Reklamı Oluştur">
         <article class="adfilm-radio-card">
           <div class="adfilm-radio-card__head"><b>01</b><div><h3>Ürün Bilgileri</h3><p>AIVO reklam metnini ve ses tasarımını bu brief üzerinden hazırlayacak.</p></div><em>Zorunlu</em></div>
           <div class="adfilm-radio-fields">
