@@ -128,10 +128,10 @@
 
 .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"]{
   display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
   align-items:center!important;
-  gap:10px!important;
-  width:min(100%,320px)!important;
+  gap:8px!important;
+  width:min(100%,420px)!important;
   margin:0 auto!important;
 }
 
@@ -143,24 +143,24 @@
   justify-content:center!important;
   width:100%!important;
   min-width:0!important;
-  height:50px!important;
-  min-height:50px!important;
-  max-height:50px!important;
-  padding:6px 10px!important;
-  border-radius:14px!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  padding:5px 8px!important;
+  border-radius:12px!important;
   overflow:hidden;
   text-align:center!important;
 }
 
 .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button:has(.adfilm-seedance-tag){
-  padding:6px 10px!important;
+  padding:5px 8px!important;
 }
 
 .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button span{
   position:relative;
   z-index:2;
   color:#fff!important;
-  font-size:14px!important;
+  font-size:12.5px!important;
   font-weight:900!important;
   line-height:1!important;
   transform:none!important;
@@ -168,17 +168,17 @@
 
 .is-simplified-basic .adfilm-card--advanced-output .adfilm-seedance-tag{
   position:absolute!important;
-  top:5px!important;
-  right:6px!important;
+  top:4px!important;
+  right:5px!important;
   left:auto!important;
   min-width:0!important;
   margin:0!important;
-  padding:2px 5px!important;
+  padding:2px 4px!important;
   transform:none!important;
   border-radius:999px!important;
-  font-size:6px!important;
+  font-size:5.5px!important;
   line-height:1!important;
-  letter-spacing:.08em;
+  letter-spacing:.07em;
 }
 
 .is-simplified-basic .adfilm-card--advanced-output .adfilm-seedance-note{
