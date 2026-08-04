@@ -1,20 +1,15 @@
 (() => {
-  if (window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V84__) return;
-  window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V84__ = true;
+  if (window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V91__) return;
+  window.__AIVO_ROOT_TOAST_COMPAT_LOADING_V91__ = true;
 
   const staleOverride = document.querySelector('link[href^="/css/ad-film.stage-width-override.css"]');
   if (staleOverride) staleOverride.remove();
 
-  const load = (src) => new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = false;
-    script.onload = resolve;
-    script.onerror = resolve;
-    document.head.appendChild(script);
-  });
+  const existing = document.querySelector('script[src^="/toast.compat.js"]');
+  if (existing) existing.remove();
 
-  load("/js/ad-film.active-run-event-guard.js?v=5")
-    .then(() => load("/js/ad-film.quality-policy.js?v=4"))
-    .then(() => load("/toast.compat.js?v=82"));
+  const script = document.createElement("script");
+  script.src = "/toast.compat.js?v=91";
+  script.async = false;
+  document.head.appendChild(script);
 })();
