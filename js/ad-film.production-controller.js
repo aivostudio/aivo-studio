@@ -146,7 +146,7 @@
     return true;
   }
   function normalizeAspect(value){return value==="4:5"?"3:4":value}
-  function normalizeResolution(value){value=lower(value);return value==="4k"?"4k":"1080p"}
+  function normalizeResolution(value){value=lower(value);return value==="720p"?"720p":value==="4k"?"4k":"1080p"}
 
   function buildPrompt(scope,references){
     var product=clean(value(scope,"productName",""));

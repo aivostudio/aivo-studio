@@ -1,7 +1,8 @@
 /* AIVO AI Reklam Filmi — professional output quality policy */
 (function AIVO_AD_FILM_QUALITY_POLICY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V7__)return;
+  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V8__)return;
+  window.__AIVO_AD_FILM_QUALITY_POLICY_V8__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V7__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V6__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V5__=true;
@@ -21,31 +22,41 @@
   function valueOf(node){return String(node&&node.getAttribute&&node.getAttribute('data-value')||node&&node.textContent||'').trim().toLowerCase()}
   function clean(value){return String(value==null?'':value).trim()}
   function text(tr,en){return english()?en:tr}
-  function removeLowQuality(scope){
+  function qualityMarkup(){
+    return '<button type="button" data-value="720p"><span>720p</span></button>'+
+      '<button type="button" class="is-selected" data-value="1080p"><span>1080p</span></button>'+
+      '<button type="button" data-value="4k"><span>4K</span><em class="adfilm-seedance-tag">Premium</em></button>';
+  }
+  function enforceQuality(scope){
     var group=qualityGroup(scope);if(!group)return false;
-    group.querySelectorAll('[data-value="480p"],[data-value="720p"]').forEach(function(node){node.remove()});
-    var allowed=Array.from(group.querySelectorAll('[data-value]')).filter(function(node){return valueOf(node)==='1080p'||valueOf(node)==='4k'});
     var selected=group.querySelector('.is-selected[data-value]');
-    if(!selected||allowed.indexOf(selected)<0){
-      allowed.forEach(function(node){node.classList.remove('is-selected')});
+    var selectedValue=valueOf(selected);
+    if(selectedValue!=='720p'&&selectedValue!=='1080p'&&selectedValue!=='4k')selectedValue='1080p';
+    var values=Array.from(group.querySelectorAll('[data-value]')).map(valueOf).join('|');
+    if(values!=='720p|1080p|4k')group.innerHTML=qualityMarkup();
+    var allowed=Array.from(group.querySelectorAll('[data-value]')).filter(function(node){var value=valueOf(node);return value==='720p'||value==='1080p'||value==='4k'});
+    allowed.forEach(function(node){node.classList.toggle('is-selected',valueOf(node)===selectedValue)});
+    if(!allowed.some(function(node){return node.classList.contains('is-selected')})){
       var button1080=allowed.find(function(node){return valueOf(node)==='1080p'});
-      if(button1080){button1080.classList.add('is-selected');button1080.click()}
+      if(button1080)button1080.classList.add('is-selected');
     }
-    group.setAttribute('data-professional-quality-only','1');
+    group.removeAttribute('data-professional-quality-only');
+    group.setAttribute('data-quality-layout','three');
+    group.classList.add('adfilm-options--seedance-quality');
     return true;
   }
   function rewriteCopy(scope){
     if(!scope)return;
-    var sub=scope.querySelector('[data-adfilm-i18n="outputQualitySub"]');
-    if(sub){sub.removeAttribute('data-adfilm-i18n');sub.textContent=english()?'Choose 1080p professional quality or 4K premium quality.':'1080p profesyonel kalite veya 4K premium kaliteyi seç.'}
-    var note=scope.querySelector('[data-adfilm-i18n="qualityNote"]');
-    if(note){note.removeAttribute('data-adfilm-i18n');note.textContent=english()?'1080p professional final, 4K premium.':'1080p profesyonel final, 4K premium.'}
+    var sub=scope.querySelector('[data-adfilm-i18n="outputQualitySub"],.adfilm-card--advanced-output .adfilm-card__heading p');
+    if(sub){sub.removeAttribute('data-adfilm-i18n');sub.removeAttribute('data-simple-copy');sub.textContent=english()?'Choose 720p economical, 1080p professional or 4K premium quality.':'720p ekonomik, 1080p profesyonel veya 4K premium kaliteyi seç.'}
+    var note=scope.querySelector('[data-adfilm-i18n="qualityNote"],[data-adfilm-seedance-note="quality"]');
+    if(note){note.removeAttribute('data-adfilm-i18n');note.textContent=english()?'720p economical, 1080p professional final, 4K premium.':'720p ekonomik, 1080p profesyonel final, 4K premium.'}
   }
   function apply(scope){
     scope=root(scope);if(!scope)return false;
-    var changed=removeLowQuality(scope);rewriteCopy(scope);return changed;
+    var changed=enforceQuality(scope);rewriteCopy(scope);return changed;
   }
-  function applyBurst(scope){[0,40,120,300,700,1400].forEach(function(delay){setTimeout(function(){apply(scope)},delay)})}
+  function applyBurst(scope){[0,40,120,300,700,1400,2400].forEach(function(delay){setTimeout(function(){apply(scope)},delay)})}
   function loadElapsedOwner(){
     if(window.__AIVO_AD_FILM_ELAPSED_OWNER_V1__)return;
     if(document.querySelector('script[src^="/js/ad-film.elapsed-owner.js"]'))return;
@@ -152,7 +163,7 @@
   document.addEventListener('aivo:adfilm-assets-ready',function(){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()});
   document.addEventListener('aivo:adfilm-project-sync',function(){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()});
   document.addEventListener('click',function(event){
-    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language]')){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()}
+    if(event.target&&event.target.closest&&event.target.closest('[data-adfilm-open],[data-aivo-language],summary')){applyBurst();loadElapsedOwner();installStaleCreateRecovery();startTimeoutMonitor()}
   },true);
 
   window.addEventListener('pagehide',function(){if(timeoutTimer)clearInterval(timeoutTimer)});

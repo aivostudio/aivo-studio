@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V104__) return;
-  window.__AIVO_AD_FILM_ASSETS_V104__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V105__) return;
+  window.__AIVO_AD_FILM_ASSETS_V105__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -87,7 +87,7 @@
     "/js/ad-film.project-sync.js?v=7",
     "/js/ad-film.media-normalization.js?v=3",
     "/js/ad-film.seedance-upload-fix.js?v=1",
-    "/js/ad-film.seedance-options.js?v=5",
+    "/js/ad-film.seedance-options.js?v=6",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
@@ -104,7 +104,7 @@
     "/js/ad-film.narration-build-guard.js?v=4",
     "/js/ad-film.voice-toggle-fix.js?v=2",
     "/js/ad-film.production-id-adapter.js?v=1",
-    "/js/ad-film.production-controller.js?v=1",
+    "/js/ad-film.production-controller.js?v=2",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
@@ -115,7 +115,7 @@
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-policy.js?v=4"
+    "/js/ad-film.quality-policy.js?v=8"
   ];
 
   let shellLoadPromise = null;
