@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIVO Reklam Filmi 720p Preview</title>
+  <link rel="stylesheet" href="/index.css?v=1002">
+  <link rel="stylesheet" href="/studio.shell.css?v=5">
+  <link rel="stylesheet" href="/studio.app.css?v=4">
+  <link rel="stylesheet" href="/studio.pages.css?v=8">
+  <link rel="stylesheet" href="/studio.v2.css?v=20260223_01">
+  <style>
+    html,body{min-height:100%;margin:0;background:#070914;color:#fff}
+    body{overflow-x:hidden}
+    .preview-banner{position:sticky;top:0;z-index:99999;padding:11px 18px;text-align:center;background:rgba(15,18,40,.96);border-bottom:1px solid rgba(168,85,247,.35);font:800 13px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#ede9fe;backdrop-filter:blur(14px)}
+    .preview-banner b{color:#67e8f9}
+    #previewRoot{max-width:1500px;margin:0 auto;padding:18px}
+    .preview-loading{min-height:70vh;display:grid;place-items:center;font:800 16px system-ui;color:#c4b5fd}
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Yalnız arayüz testi — hedef: <b>720p | 1080p | 4K Premium</b>. Bu sayfa üretim başlatmaz.</div>
+  <main id="previewRoot"><div class="preview-loading">Reklam filmi arayüzü yükleniyor…</div></main>
+
+  <script>
+  (() => {
+    "use strict";
+
+    window.toast = window.toast || {
+      info(){}, success(){}, warning(){}, error(){}
+    };
+    window.showToast = window.showToast || function(){};
+
+    function loadScript(src){
+      return new Promise((resolve) => {
+        const script=document.createElement("script");
+        script.src=src;
+        script.async=false;
+        script.onload=resolve;
+        script.onerror=resolve;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function boot(){
+      const host=document.getElementById("previewRoot");
+      try{
+        const response=await fetch("/modules/ad-film.html?v=720p-preview",{cache:"no-store"});
+        if(!response.ok) throw new Error("module_http_"+response.status);
+        host.innerHTML=await response.text();
+        const root=host.querySelector('[data-module-root][data-module="adfilm"]');
+        if(!root) throw new Error("adfilm_root_missing");
+
+        await loadScript("/toast.compat.js?v=720p-preview-1");
+        document.dispatchEvent(new CustomEvent("aivo:module-mounted",{detail:{key:"adfilm",root}}));
+
+        if(typeof window.AIVOAwaitAdFilmAssets==="function"){
+          await window.AIVOAwaitAdFilmAssets();
+        }
+
+        document.dispatchEvent(new CustomEvent("aivo:module-mounted",{detail:{key:"adfilm",root}}));
+        document.dispatchEvent(new CustomEvent("aivo:adfilm-assets-ready"));
+
+        [100,400,900,1600].forEach((delay)=>setTimeout(()=>{
+          try{ window.AIVOAdFilmQualityUI?.apply?.(root); }catch(_){}
+        },delay));
+
+        setTimeout(()=>{
+          const quality=root.querySelector('[data-adfilm-choice="quality"]');
+          quality?.closest(".adfilm-card--advanced-output,.adfilm-setting-block")?.scrollIntoView({behavior:"smooth",block:"center"});
+        },1800);
+      }catch(error){
+        console.error("[ADFILM 720P PREVIEW]",error);
+        host.innerHTML='<div class="preview-loading">Preview yüklenemedi: '+String(error&&error.message||error)+'</div>';
+      }
+    }
+
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot,{once:true});
+    else boot();
+  })();
+  </script>
+</body>
+</html>
