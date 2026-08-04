@@ -15,13 +15,13 @@
 .adfilm-options--seedance-ratio .ratio{display:inline-block;flex:0 0 auto;border:1.5px solid currentColor;border-radius:2px;opacity:.9}
 .adfilm-options--seedance-ratio .ratio--9x16{width:7px;height:13px}.adfilm-options--seedance-ratio .ratio--1x1{width:10px;height:10px}.adfilm-options--seedance-ratio .ratio--16x9{width:15px;height:8px}.adfilm-options--seedance-ratio .ratio--4x5{width:9px;height:11px}.adfilm-options--seedance-ratio .ratio--3x4{width:9px;height:12px}.adfilm-options--seedance-ratio .ratio--4x3{width:13px;height:10px}.adfilm-options--seedance-ratio .ratio--21x9{width:17px;height:7px}
 
-/* 480p, 720p and legacy 2K are retired. Keep them out of the first paint even if an old cached script briefly inserts them. */
+/* 480p and legacy 2K are retired. 720p is the economical option. */
 [data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] [data-value="480p"],
-[data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] [data-value="720p"],
 [data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] [data-value="2k"]{display:none!important}
+[data-module-root][data-module="adfilm"] [data-adfilm-choice="quality"] [data-value="720p"]{display:flex!important}
 
-.adfilm-options--seedance-quality{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
-.adfilm-options--seedance-quality button{position:relative;min-width:0!important;min-height:38px!important;padding:7px 8px!important}
+.adfilm-options--seedance-quality{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important}
+.adfilm-options--seedance-quality button{position:relative;min-width:0!important;min-height:38px!important;padding:7px 7px!important}
 .adfilm-options--seedance-quality button span{font-size:9.5px;font-weight:900;line-height:1}
 .adfilm-seedance-tag{position:absolute;top:3px;right:4px;padding:2px 5px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:rgba(255,255,255,.2);color:#fff!important;font-size:6px!important;font-style:normal;font-weight:950;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,.45);box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .adfilm-options--seedance-quality button.is-selected .adfilm-seedance-tag{border-color:#fff;background:rgba(255,255,255,.28);color:#fff!important}
@@ -32,10 +32,10 @@
 
 .adfilm-seedance-note{display:block;margin-top:7px;color:rgba(207,250,254,.66);font-size:7.5px;line-height:1.45}
 .adfilm-duration-note[hidden]{display:none!important}
-html[lang^="tr"] .is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p:after{content:"1080p profesyonel kalite veya 4K premium kaliteyi seç."}
-html[lang^="en"] .is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p:after{content:"Choose 1080p professional quality or 4K premium quality."}
+html[lang^="tr"] .is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p:after{content:"720p ekonomik, 1080p profesyonel veya 4K premium kaliteyi seç."}
+html[lang^="en"] .is-simplified-basic .adfilm-card--advanced-output .adfilm-card__heading p:after{content:"Choose 720p economical, 1080p professional or 4K premium quality."}
 
 .adfilm-preview-frame.is-seedance-9x16{width:min(78%,310px);aspect-ratio:9/16}.adfilm-preview-frame.is-seedance-1x1{width:min(88%,390px);aspect-ratio:1/1}.adfilm-preview-frame.is-seedance-16x9{width:100%;aspect-ratio:16/9}.adfilm-preview-frame.is-seedance-4x5{width:min(84%,350px);aspect-ratio:4/5}.adfilm-preview-frame.is-seedance-3x4{width:min(84%,350px);aspect-ratio:3/4}.adfilm-preview-frame.is-seedance-4x3{width:100%;aspect-ratio:4/3}.adfilm-preview-frame.is-seedance-21x9{width:100%;aspect-ratio:21/9}
 @media(max-width:1500px){.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:6px!important}.adfilm-options--seedance-ratio button{padding:5px 3px!important;font-size:8px!important}}
-@media(max-width:1120px){.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(4,minmax(0,1fr))!important}.adfilm-options--seedance-quality{grid-template-columns:repeat(2,minmax(0,1fr))!important}.adfilm-seedance-duration-control{max-width:none}}
-@media(max-width:680px){.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:1120px){.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(4,minmax(0,1fr))!important}.adfilm-options--seedance-quality{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}.adfilm-options--seedance-quality button{padding:7px 5px!important}.adfilm-seedance-duration-control{max-width:none}}
+@media(max-width:680px){.is-simplified-basic .adfilm-card--settings .adfilm-options--ratio.adfilm-options--seedance-ratio{grid-template-columns:repeat(3,minmax(0,1fr))!important}.adfilm-options--seedance-quality{grid-template-columns:1fr!important}}
