@@ -2,6 +2,60 @@
   "use strict";
 
   const ROOT_SELECTOR = '[data-module-root][data-module="adfilm"]';
+  const COMPACT_STYLE_ID = 'aivo-radio-compact-style';
+
+  function ensureCompactStyle() {
+    if (document.getElementById(COMPACT_STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = COMPACT_STYLE_ID;
+    style.textContent = `
+      .adfilm-radio-panel{gap:14px;font-size:14px}
+      .adfilm-kind-switch{margin:18px 0;padding:12px;border-radius:20px}
+      .adfilm-kind-switch>span{margin-bottom:8px;font-size:11px}
+      .adfilm-kind-switch button{min-height:50px;border-radius:14px;font-size:15px}
+      .adfilm-radio-hero{gap:14px;padding:18px 22px;border-radius:20px}
+      .adfilm-radio-hero__icon{flex-basis:58px;height:58px;border-radius:17px;font-size:27px}
+      .adfilm-radio-hero h2{font-size:28px}
+      .adfilm-radio-hero p{font-size:14px}
+      .adfilm-radio-card{padding:18px;border-radius:20px}
+      .adfilm-radio-card__head{gap:11px;margin-bottom:14px}
+      .adfilm-radio-card__head>b{flex-basis:38px;height:38px;border-radius:12px;font-size:11px}
+      .adfilm-radio-card__head h3{font-size:18px}
+      .adfilm-radio-card__head p{font-size:13px}
+      .adfilm-radio-gradient-title{min-height:58px;margin-bottom:14px;border-radius:14px;font-size:18px}
+      .adfilm-radio-budget{padding:13px;border-radius:15px}
+      .adfilm-radio-fields{gap:11px}
+      .adfilm-radio-fields label{gap:6px}
+      .adfilm-radio-fields label>span,.adfilm-radio-copy-action>span{font-size:12px}
+      .adfilm-radio-fields input,.adfilm-radio-fields textarea,.adfilm-radio-fields select{padding:11px 13px;border-radius:12px;font-size:14px}
+      .adfilm-radio-copy-action{padding:12px;border-radius:12px}
+      .adfilm-radio-copy-action button{padding:8px 11px;font-size:11px}
+      .adfilm-radio-choice{grid-template-columns:82px 1fr;gap:10px;margin-top:9px}
+      .adfilm-radio-choice button,.adfilm-radio-three button,.adfilm-radio-durations button{min-height:42px;border-radius:12px;font-size:13px}
+      .adfilm-radio-preview{margin-top:14px;padding:15px;border-radius:17px}
+      .adfilm-radio-preview>strong{font-size:16px}
+      .adfilm-radio-preview>span{font-size:13px}
+      .adfilm-radio-preview>div{grid-template-columns:48px 1fr auto;margin-top:12px}
+      .adfilm-radio-preview button{height:46px;border-radius:13px}
+      .adfilm-radio-two-col{gap:13px}
+      .adfilm-radio-two-col>section{padding:15px;border-radius:17px}
+      .adfilm-radio-two-col h4{margin-bottom:10px;font-size:16px}
+      .adfilm-radio-outputs>div{padding:12px;border-radius:13px}
+      .adfilm-radio-jingle-limit{margin-top:11px;padding:10px 12px;border-radius:12px}
+      .adfilm-radio-note{margin-top:13px;padding:11px 13px;border-radius:12px;font-size:11px}
+      .adfilm-radio-timeline>section{min-height:46px;margin:8px 0;border-radius:12px}
+      .adfilm-radio-final{grid-template-columns:48px 1fr auto auto;padding:13px;border-radius:15px}
+      .adfilm-radio-final>button{min-height:42px;border-radius:11px;font-size:13px}
+      .adfilm-radio-buildbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border:1px solid rgba(139,103,205,.34);border-radius:18px;background:linear-gradient(145deg,rgba(27,24,52,.96),rgba(13,15,31,.98))}
+      .adfilm-radio-buildbar>div{display:grid;gap:3px}
+      .adfilm-radio-buildbar strong{font-size:16px}
+      .adfilm-radio-buildbar span{color:#9f97aa;font-size:12px}
+      .adfilm-radio-buildbar button{min-width:240px;min-height:48px;padding:0 22px;border:1px solid rgba(255,255,255,.28);border-radius:14px;background:linear-gradient(100deg,#7046f5,#ca4fd1,#ef5aa8);color:#fff;font:inherit;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 12px 28px rgba(126,64,223,.26)}
+      .adfilm-radio-buildbar button:hover{transform:translateY(-1px)}
+      @media(max-width:900px){.adfilm-radio-buildbar{align-items:stretch;flex-direction:column}.adfilm-radio-buildbar button{width:100%;min-width:0}}
+    `;
+    document.head.appendChild(style);
+  }
 
   function radioMarkup() {
     return `
@@ -68,6 +122,11 @@
           <div class="adfilm-radio-card__head"><b>06</b><div><h3>Final Radyo Reklamı</h3><p>Seslendirme, müzik ve jingle birleştiğinde final reklamını burada dinle.</p></div></div>
           <div class="adfilm-radio-final"><button type="button" disabled>▶</button><div><strong>Final reklam henüz hazırlanmadı</strong><span data-radio-summary>30 sn · MP3 320 kbps + WAV · Müzik + kapanış jingle’ı</span><i></i></div><button type="button" disabled>MP3 indir</button><button type="button" disabled>WAV indir</button></div>
         </article>
+
+        <div class="adfilm-radio-buildbar">
+          <div><strong>Radyo reklamını oluşturmaya hazır mısın?</strong><span>Seslendirme, müzik ve jingle tek final dosyada birleştirilecek.</span></div>
+          <button type="button" data-radio-build>Radyo Reklamını Oluştur</button>
+        </div>
       </section>`;
   }
 
@@ -102,6 +161,11 @@
       const brand = root.querySelector('[data-adfilm-radio-panel] input[placeholder="Örn: AIVO"]')?.value.trim() || 'Markanız';
       if (copy && !copy.value.trim()) copy.value = `${brand} ile ihtiyacınız olan çözüme hızlı, kolay ve güvenle ulaşın. Size özel avantajları şimdi keşfedin. ${brand} — doğru seçim, güçlü sonuç.`;
       updateTiming(root);
+    });
+    const build = root.querySelector('[data-radio-build]');
+    if (build) build.addEventListener('click', () => {
+      const notify = window.toastSafe || window.showToast || window.toastMsg;
+      if (typeof notify === 'function') notify('Radyo reklamı üretim motoru bir sonraki adımda bağlanacak.', 'info');
     });
   }
 
@@ -143,6 +207,7 @@
   function init(root) {
     if (!root || root.dataset.radioInnerReady === '1') return;
     root.dataset.radioInnerReady = '1';
+    ensureCompactStyle();
 
     const hero = root.querySelector('.adfilm-hero');
     if (!hero) return;
