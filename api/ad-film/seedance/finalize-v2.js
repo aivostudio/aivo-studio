@@ -19,7 +19,10 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const MIX_VERSION = 11;
+const MIX_VERSION = 12;
+const MUSIC_CONTINUITY_VERSION = 1;
+const MUSIC_BED_VOLUME = 0.42;
+const MUSIC_ONLY_VOLUME = 0.72;
 const DOWNLOAD_TIMEOUT_MS = 70000;
 const FFMPEG_TIMEOUT_MS = 215000;
 const UPLOAD_TIMEOUT_MS = 65000;
@@ -385,7 +388,8 @@ export default async function handler(req, res) {
     const version = Number.parseInt(target?.version || project?.generation?.version, 10) || 1;
     const duration = durationSeconds(target, project);
     const voiceDelay = narrationUrl && musicUrl ? introDelayMs(duration) : 0;
-    const fadeOutStart = Math.max(0.5, duration - 0.8).toFixed(2);
+    const fadeOutDuration = 0.25;
+    const fadeOutStart = Math.max(0.5, duration - fadeOutDuration).toFixed(2);
 
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aivo-adfilm-final-v2-"));
     const inputVideo = path.join(tmpDir, "source.mp4");
@@ -445,14 +449,16 @@ export default async function handler(req, res) {
       videoLabel = "vout";
     }
 
+    const musicContinuityFilter = `aresample=48000,silenceremove=start_periods=1:start_duration=0.03:start_threshold=-55dB:stop_periods=-1:stop_duration=0.12:stop_threshold=-55dB,asetpts=N/SR/TB,atrim=duration=${duration},afade=t=in:st=0:d=0.06,afade=t=out:st=${fadeOutStart}:d=${fadeOutDuration}`;
+
     if (narrationUrl && musicUrl) {
       filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,adelay=${voiceDelay}|${voiceDelay},apad=pad_dur=${duration + 1}[voice]`);
-      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.34,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration + 1}[music]`);
+      filters.push(`[${musicIndex}:a]${musicContinuityFilter},volume=${MUSIC_BED_VOLUME},alimiter=limit=0.985[music]`);
       filters.push("[music][voice]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0,alimiter=limit=0.985[aout]");
     } else if (narrationUrl) {
       filters.push(`[${narrationIndex}:a]aresample=48000,volume=1.05,apad=pad_dur=${duration + 1},alimiter=limit=0.985[aout]`);
     } else if (musicUrl) {
-      filters.push(`[${musicIndex}:a]aresample=48000,volume=0.72,afade=t=in:st=0:d=0.18,afade=t=out:st=${fadeOutStart}:d=0.8,apad=pad_dur=${duration + 1},alimiter=limit=0.985[aout]`);
+      filters.push(`[${musicIndex}:a]${musicContinuityFilter},volume=${MUSIC_ONLY_VOLUME},alimiter=limit=0.985[aout]`);
     }
 
     args.push("-filter_complex", filters.join(";"));
@@ -518,7 +524,8 @@ export default async function handler(req, res) {
       musicUrl: musicUrl || null,
       musicApplied: Boolean(musicUrl),
       musicMode: project?.music?.mode || "auto",
-      musicBedVolume: narrationUrl && musicUrl ? 0.34 : 0.72,
+      musicBedVolume: narrationUrl && musicUrl ? MUSIC_BED_VOLUME : MUSIC_ONLY_VOLUME,
+      musicContinuityVersion: musicUrl ? MUSIC_CONTINUITY_VERSION : null,
       avatarUrl: avatarUrl || null,
       avatarApplied: Boolean(avatarUrl),
       avatarTransparent: Boolean(avatarUrl),
@@ -552,7 +559,8 @@ export default async function handler(req, res) {
         narrationDelayMs: voiceDelay,
         musicUrl: musicUrl || null,
         musicApplied: Boolean(musicUrl),
-        musicBedVolume: narrationUrl && musicUrl ? 0.34 : 0.72,
+        musicBedVolume: narrationUrl && musicUrl ? MUSIC_BED_VOLUME : MUSIC_ONLY_VOLUME,
+        musicContinuityVersion: musicUrl ? MUSIC_CONTINUITY_VERSION : null,
         avatarUrl: avatarUrl || null,
         avatarApplied: Boolean(avatarUrl),
         avatarTransparent: Boolean(avatarUrl),
@@ -582,6 +590,8 @@ export default async function handler(req, res) {
       narration_delay_ms: voiceDelay,
       music_url: musicUrl || null,
       music_applied: Boolean(musicUrl),
+      music_bed_volume: narrationUrl && musicUrl ? MUSIC_BED_VOLUME : MUSIC_ONLY_VOLUME,
+      music_continuity_version: musicUrl ? MUSIC_CONTINUITY_VERSION : null,
       avatar_url: avatarUrl || null,
       avatar_applied: Boolean(avatarUrl),
       avatar_transparent: Boolean(avatarUrl),
