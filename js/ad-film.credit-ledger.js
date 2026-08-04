@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — existing credit ledger bridge */
 (function AIVO_AD_FILM_CREDIT_LEDGER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_CREDIT_LEDGER_V1__)return;
-  window.__AIVO_AD_FILM_CREDIT_LEDGER_V1__=true;
+  if(window.__AIVO_AD_FILM_CREDIT_LEDGER_V2__)return;
+  window.__AIVO_AD_FILM_CREDIT_LEDGER_V2__=true;
 
   var APP="ad_film";
   var ACTION="studio_ad_film_generate";
@@ -27,8 +27,8 @@
   function notify(message,type,duration){
     try{
       var fn=window.toast&&window.toast[type||"info"];
-      if(typeof fn==="function")return fn({message:message,duration:duration||4600});
-      if(typeof window.showToast==="function")return window.showToast(message,type||"info");
+      if(typeof fn==="function")return fn(message,{duration:duration||4600});
+      if(typeof window.showToast==="function")return window.showToast(message,type||"info",{duration:duration||4600});
     }catch(_){}
   }
   function wait(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
