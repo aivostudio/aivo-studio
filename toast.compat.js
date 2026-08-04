@@ -66,7 +66,8 @@
     "/css/ad-film.premium-production.css?v=3",
     "/css/ad-film.production-status-center.css?v=7",
     "/css/ad-film.unified-flow.css?v=5",
-    "/css/ad-film.render-stability.css?v=1"
+    "/css/ad-film.render-stability.css?v=1",
+    "/css/ad-film.radio-inner.css?v=1"
   ];
 
   const shellScripts = [
@@ -117,7 +118,8 @@
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-policy.js?v=9"
+    "/js/ad-film.quality-policy.js?v=9",
+    "/js/ad-film.radio-inner.js?v=1"
   ];
 
   let shellLoadPromise = null;
