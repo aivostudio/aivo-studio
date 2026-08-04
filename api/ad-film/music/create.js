@@ -37,7 +37,12 @@ async function submit(key,model,payload){
     return{response,data,model};
   }finally{clearTimeout(timeout)}
 }
-function normalizeDuration(value,fallback){const n=Number(value);return[5,10,15,20].includes(n)?n:fallback}
+function normalizeDuration(value,fallback=10){
+  const requested=Number(value);
+  if(Number.isInteger(requested)&&requested>=5&&requested<=15)return requested;
+  const safeFallback=Number(fallback);
+  return Number.isInteger(safeFallback)&&safeFallback>=5&&safeFallback<=15?safeFallback:10;
+}
 function profileSignature(prompt){
   return crypto.createHash("sha256").update(JSON.stringify({
     qualityVersion:QUALITY_VERSION,
@@ -82,7 +87,7 @@ export default async function handler(req,res){
     const signature=profileSignature(prompt);
 
     if(reusableAudio(currentMusic.audio,signature)){
-      const reused=await saveProject(user,{...project,music:{...music,audio:currentMusic.audio},output:{...(project.output||{}),duration:String(requestedDuration)}});
+      const reused=await saveProject(user,{...project,music:{...music,audio:currentMusic.audio}});
       return sendJson(res,200,{ok:true,status:"COMPLETED",audio:currentMusic.audio,project:reused});
     }
     const active=project.musicGeneration;
@@ -101,10 +106,11 @@ export default async function handler(req,res){
       duration:Number(prompt.duration),
       num_inference_steps:8,
       guidance_scale:1,
-      enable_prompt_expansion:true,
+      enable_prompt_expansion:false,
       enable_safety_checker:true,
       sync_mode:false,
-      output_format:"wav"
+      output_format:"mp3",
+      bitrate:"192k"
     };
 
     let attempt=await submit(key,PRIMARY_MODEL,payload);
@@ -115,7 +121,7 @@ export default async function handler(req,res){
     if(!attempt.response.ok){
       const message=errorMessage(data,attempt.response.status);
       const now=new Date().toISOString();
-      const failed=await saveProject(user,{...project,music:{...music,audio:null},output:{...(project.output||{}),duration:String(requestedDuration)},musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,meta:prompt}});
+      const failed=await saveProject(user,{...project,music:{...music,audio:null},musicGeneration:{provider:"fal",model:attempt.model,status:"failed",startedAt:active?.startedAt||now,updatedAt:now,completedAt:now,error:message,falStatus:attempt.response.status,falResponse:data,prompt:prompt.prompt,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,meta:prompt}});
       return sendJson(res,attempt.response.status,{ok:false,error:"fal_error",message,fal_status:attempt.response.status,fal_response:data,project:failed});
     }
 
@@ -127,7 +133,6 @@ export default async function handler(req,res){
     const saved=await saveProject(user,{
       ...project,
       music:{...music,audio:null},
-      output:{...(project.output||{}),duration:String(requestedDuration)},
       musicGeneration:{provider:"fal",model:attempt.model,requestId,statusUrl:statusUrl||null,responseUrl:responseUrl||null,status:"queued",startedAt:now,updatedAt:now,error:null,fallbackUsed,qualityVersion:QUALITY_VERSION,profileVersion:PROFILE_VERSION,signature,prompt:prompt.prompt,meta:prompt}
     });
     return sendJson(res,200,{ok:true,status:"IN_QUEUE",generation:saved.musicGeneration,project:saved,fallback_used:fallbackUsed});
