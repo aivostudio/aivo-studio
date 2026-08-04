@@ -1,4 +1,4 @@
-const ALLOWED_DURATIONS = new Set([5, 10, 15, 20]);
+const ALLOWED_DURATIONS = new Set([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 
 const STYLE_PROMPTS = Object.freeze({
   pop: "modern polished commercial pop instrumental, catchy rhythm, bright memorable advertising feel",
@@ -68,7 +68,7 @@ function normalizeKey(value) {
 
 function normalizeDuration(value) {
   const duration = Number(value);
-  return ALLOWED_DURATIONS.has(duration) ? duration : 10;
+  return Number.isInteger(duration) && ALLOWED_DURATIONS.has(duration) ? duration : 10;
 }
 
 function keywordMatch(haystack, words) {
@@ -313,7 +313,7 @@ function buildAdFilmMusicPrompt(input = {}) {
     duration,
     voiceEnabled,
     ...profile,
-    engine: "fal-ai/stable-audio-3/small/music/text-to-audio",
+    engine: "fal-ai/stable-audio-3/medium/text-to-audio",
   };
 }
 
