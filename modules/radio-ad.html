@@ -1,13 +1,399 @@
 <section class="main-panel radio-ad-page" data-module-root data-module="radioad" aria-labelledby="radioAdTitle">
   <header class="radio-ad-hero">
-    <div>
-      <span class="radio-ad-kicker">AIVO Creative Engine · YENİ</span>
+    <div class="radio-ad-hero__icon" aria-hidden="true">
+      <svg viewBox="0 0 64 64" fill="none">
+        <rect x="22" y="10" width="20" height="31" rx="10" stroke="currentColor" stroke-width="3"/>
+        <path d="M15 31a17 17 0 0 0 34 0M32 48v7M23 55h18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <path d="M10 21c-4 5-4 17 0 22M54 21c4 5 4 17 0 22" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
+      </svg>
+    </div>
+
+    <div class="radio-ad-hero__copy">
+      <div class="radio-ad-kicker">
+        <span>AIVO Creative Engine</span>
+        <span class="radio-ad-new">YENİ</span>
+      </div>
       <h1 id="radioAdTitle">AI Radyo Reklamı Oluştur</h1>
       <p>Ürün bilgilerini, profesyonel seslendirmeyi, reklam müziğini ve marka jingle’ını tek akışta birleştir.</p>
     </div>
+
+    <div class="radio-ad-hero__status">
+      <span></span>
+      <div>
+        <b>Radyo stüdyosu hazırlanıyor</b>
+        <small>Reklam videosundan tamamen ayrı modül</small>
+      </div>
+    </div>
   </header>
-  <div class="radio-ad-placeholder">
-    <h2>Radyo reklamı çalışma alanı</h2>
-    <p>Bu modül reklam videosundan tamamen ayrı olarak hazırlanıyor.</p>
-  </div>
+
+  <form class="radio-ad-workspace" data-radio-ad-form autocomplete="off">
+    <article class="radio-ad-card">
+      <div class="radio-ad-card__head">
+        <span class="radio-ad-card__number">01</span>
+        <div>
+          <h2>Ürün Bilgileri</h2>
+          <p>AIVO reklam metnini ve ses tasarımını bu brief üzerinden otomatik hazırlayacak.</p>
+        </div>
+        <span class="radio-ad-card__tag">Zorunlu</span>
+      </div>
+
+      <div class="radio-ad-fields">
+        <label class="radio-ad-field">
+          <span>Ürün / Hizmet Adı</span>
+          <input type="text" maxlength="80" placeholder="Örn: AIVO Studio" data-radio-ad-input="productName">
+        </label>
+        <label class="radio-ad-field">
+          <span>Marka Adı</span>
+          <input type="text" maxlength="60" placeholder="Örn: AIVO" data-radio-ad-input="brandName">
+        </label>
+        <label class="radio-ad-field radio-ad-field--wide">
+          <span>Kısa Açıklama</span>
+          <textarea maxlength="520" rows="4" placeholder="Ürünün öne çıkan özelliklerini ve reklamda vurgulanmasını istediğin noktaları yaz..." data-radio-ad-input="description"></textarea>
+          <small><b data-radio-ad-count="description">0</b> / 520</small>
+        </label>
+        <label class="radio-ad-field">
+          <span>Hedef Kitle</span>
+          <input type="text" maxlength="120" placeholder="Örn: İçerik üreticileri ve küçük işletmeler" data-radio-ad-input="targetAudience">
+        </label>
+        <label class="radio-ad-field">
+          <span>Kampanya / Çağrı</span>
+          <input type="text" maxlength="120" placeholder="Örn: Şimdi keşfet" data-radio-ad-input="cta">
+        </label>
+      </div>
+    </article>
+
+    <article class="radio-ad-card radio-ad-card--narration">
+      <div class="radio-ad-card__head">
+        <span class="radio-ad-card__number">02</span>
+        <div>
+          <h2>Ses &amp; Anlatım</h2>
+          <p>AIVO briefi kullanarak reklam metnini kendisi hazırlar; sen düzenler ve onaylarsın.</p>
+        </div>
+        <span class="radio-ad-toggle is-on" aria-label="Ses açık"><i></i><b>Açık</b></span>
+      </div>
+
+      <div class="radio-ad-gradient-title">Reklam Seslendirme Metni</div>
+
+      <div class="radio-ad-budget" data-radio-ad-budget>
+        <div>
+          <small>Ses süresi bütçesi</small>
+          <strong data-radio-ad-word-range>33–46 kelime önerilir</strong>
+        </div>
+        <div class="radio-ad-budget__badges">
+          <span data-radio-ad-duration-badge>30 sn</span>
+          <span>Hızlı</span>
+        </div>
+        <div class="radio-ad-budget__bar"><i data-radio-ad-budget-fill></i></div>
+        <div class="radio-ad-budget__message">
+          <span data-radio-ad-budget-message>AIVO, jingle ve müzik girişini hesaba katarak kullanılabilir konuşma süresini otomatik ayarlar.</span>
+          <b><span data-radio-ad-word-count>0</span> kelime · tahmini <span data-radio-ad-estimate>0</span> sn</b>
+        </div>
+      </div>
+
+      <div class="radio-ad-fields radio-ad-fields--voice">
+        <label class="radio-ad-field">
+          <span>Dil</span>
+          <select data-radio-ad-input="language">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+          </select>
+        </label>
+        <label class="radio-ad-field">
+          <span>Ses Stili</span>
+          <select data-radio-ad-input="voiceStyle">
+            <option value="warm">Sıcak ve güven veren</option>
+            <option value="energetic">Enerjik reklam sesi</option>
+            <option value="premium">Premium ve sakin</option>
+            <option value="natural">Doğal konuşma</option>
+          </select>
+        </label>
+        <label class="radio-ad-field">
+          <span>Ses</span>
+          <select data-radio-ad-input="voice">
+            <option value="warm_female">Sıcak kadın sesi</option>
+            <option value="professional_male">Profesyonel erkek sesi</option>
+            <option value="energetic_male">Enerjik erkek sesi</option>
+            <option value="clear_female">Net kadın sesi</option>
+          </select>
+        </label>
+        <div class="radio-ad-auto-copy">
+          <span>Metin üretimi</span>
+          <strong>AIVO brief tamamlandığında metni otomatik hazırlar.</strong>
+          <button type="button" data-radio-ad-action="prepare-copy">AIVO Metnini Hazırla</button>
+        </div>
+        <label class="radio-ad-field radio-ad-field--wide">
+          <span>Reklam Seslendirme Metni</span>
+          <textarea maxlength="1200" rows="7" placeholder="Ürün bilgilerini tamamladığında AIVO reklam metnini burada hazırlayacak. Metni daha sonra özgürce düzenleyebilirsin." data-radio-ad-copy></textarea>
+          <small><b data-radio-ad-count="copy">0</b> / 1200</small>
+        </label>
+      </div>
+
+      <div class="radio-ad-voice-controls">
+        <div class="radio-ad-choice-row">
+          <span>Hız</span>
+          <div data-radio-ad-choice-group="speed">
+            <button type="button" data-value="slow">Yavaş</button>
+            <button type="button" data-value="balanced">Dengeli</button>
+            <button type="button" class="is-active" data-value="fast">Hızlı</button>
+          </div>
+        </div>
+        <div class="radio-ad-choice-row">
+          <span>Ses Akışı</span>
+          <div data-radio-ad-choice-group="flow">
+            <button type="button" class="is-active" data-value="natural">Doğal</button>
+            <button type="button" data-value="balanced">Dengeli</button>
+            <button type="button" data-value="emphatic">Vurgulu</button>
+          </div>
+        </div>
+        <p>✦ AIVO, seçilen reklam süresine göre konuşma temposunu, doğal durakları ve metin uzunluğunu dengeler.</p>
+      </div>
+
+      <section class="radio-ad-preview-player">
+        <div class="radio-ad-preview-player__head">
+          <div>
+            <strong>Ses Ön İzleme</strong>
+            <span>Metni onayladıktan sonra reklam sesini oluştur, dinle ve onayla.</span>
+          </div>
+          <em>Henüz oluşturulmadı</em>
+        </div>
+        <div class="radio-ad-player-row">
+          <button type="button" class="radio-ad-play" disabled aria-label="Oynat">▶</button>
+          <div class="radio-ad-player-track"><i></i><span>0:00 / 0:00</span></div>
+          <button type="button" disabled aria-label="Ses">🔊</button>
+          <button type="button" disabled aria-label="İndir">⇩</button>
+          <button type="button" disabled aria-label="Sil">⌫</button>
+        </div>
+        <div class="radio-ad-player-actions">
+          <button type="button" disabled>Yeniden üret</button>
+          <button type="button" disabled>Onayla</button>
+        </div>
+      </section>
+    </article>
+
+    <article class="radio-ad-card">
+      <div class="radio-ad-card__head">
+        <span class="radio-ad-card__number">03</span>
+        <div>
+          <h2>Ses Ayarları</h2>
+          <p>Toplam reklam süresini seç. Müzik, konuşma ve jingle bu sürenin içine yerleştirilir.</p>
+        </div>
+      </div>
+
+      <div class="radio-ad-settings-grid">
+        <section class="radio-ad-setting-block">
+          <span class="radio-ad-setting-label">Reklam Süresi</span>
+          <div class="radio-ad-duration" data-radio-ad-choice-group="duration">
+            <button type="button" data-value="15">15 sn</button>
+            <button type="button" class="is-active" data-value="30">30 sn</button>
+            <button type="button" data-value="45">45 sn</button>
+            <button type="button" data-value="60">60 sn</button>
+          </div>
+          <p class="radio-ad-engine-note">Stable Audio 3 Small Music motoru 120 saniyeye kadar üretim destekler. AIVO radyo reklamı için 15, 30, 45 ve 60 saniyelik profesyonel yayın süreleri kullanılır.</p>
+        </section>
+
+        <section class="radio-ad-setting-block">
+          <span class="radio-ad-setting-label">Çıkış Dosyaları</span>
+          <div class="radio-ad-output-grid">
+            <div class="radio-ad-output-card is-selected">
+              <span>MP3</span>
+              <strong>320 kbps</strong>
+              <small>Yayın ve dijital kullanım</small>
+              <b>✓</b>
+            </div>
+            <div class="radio-ad-output-card is-selected">
+              <span>WAV</span>
+              <strong>Kayıpsız</strong>
+              <small>Stüdyo ve arşiv kalitesi</small>
+              <b>✓</b>
+            </div>
+          </div>
+          <p class="radio-ad-engine-note">Final reklam tamamlandığında iki dosya da hazırlanır; format seçimi için ayrı kredi alınmaz.</p>
+        </section>
+      </div>
+    </article>
+
+    <article class="radio-ad-card radio-ad-card--music">
+      <div class="radio-ad-card__head">
+        <span class="radio-ad-card__number">04</span>
+        <div>
+          <h2>Reklam Müziği &amp; Marka Jingle’ı</h2>
+          <p>Arka plan müziğini ve kapanıştaki marka imzasını tek bölümden yönet.</p>
+        </div>
+        <span class="radio-ad-card__tag">İsteğe bağlı</span>
+      </div>
+
+      <div class="radio-ad-music-grid">
+        <section class="radio-ad-subcard">
+          <div class="radio-ad-subcard__head">
+            <span class="radio-ad-subcard__icon">♫</span>
+            <div>
+              <small>İsteğe bağlı</small>
+              <h3>Reklam Müziği</h3>
+              <p>Müziğin nasıl hazırlanacağını seç.</p>
+            </div>
+          </div>
+
+          <div class="radio-ad-options" data-radio-ad-choice-group="musicMode">
+            <button type="button" class="is-active" data-value="ai">AIVO müziği hazırlasın</button>
+            <button type="button" data-value="upload">Kendi müziğimi yükleyeceğim</button>
+            <button type="button" data-value="off">Müzik olmasın</button>
+          </div>
+
+          <div class="radio-ad-fields radio-ad-music-fields" data-radio-ad-music-ai>
+            <label class="radio-ad-field">
+              <span>Müzik Tarzı</span>
+              <select data-radio-ad-input="musicStyle">
+                <option value="auto">AIVO otomatik seçsin</option>
+                <option value="cinematic">Sinematik</option>
+                <option value="corporate">Kurumsal</option>
+                <option value="electronic">Elektronik</option>
+                <option value="acoustic">Akustik</option>
+                <option value="luxury">Premium / Lüks</option>
+              </select>
+            </label>
+            <label class="radio-ad-field">
+              <span>Enerji</span>
+              <select data-radio-ad-input="musicEnergy">
+                <option value="balanced">Dengeli</option>
+                <option value="soft">Yumuşak</option>
+                <option value="strong">Güçlü</option>
+                <option value="high">Yüksek</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="radio-ad-upload" data-radio-ad-music-upload hidden>
+            <input type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg">
+            <strong>Kendi reklam müziğini yükle</strong>
+            <span>MP3, WAV, M4A, AAC veya OGG</span>
+          </label>
+        </section>
+
+        <section class="radio-ad-subcard radio-ad-subcard--jingle">
+          <div class="radio-ad-subcard__head">
+            <span class="radio-ad-subcard__icon">✦</span>
+            <div>
+              <small>Marka imzası</small>
+              <h3>Kapanış Jingle’ı</h3>
+              <p>Reklamın sonunda akılda kalan kısa ses imzasını oluştur.</p>
+            </div>
+          </div>
+
+          <div class="radio-ad-options" data-radio-ad-choice-group="jingleMode">
+            <button type="button" class="is-active" data-value="ai">AIVO sonic logo hazırlasın</button>
+            <button type="button" data-value="upload">Kendi jingle’ımı yükleyeceğim</button>
+            <button type="button" data-value="off">Jingle olmasın</button>
+          </div>
+
+          <div data-radio-ad-jingle-ai>
+            <div class="radio-ad-jingle-info">
+              <b>Kesin marka sözü nasıl korunacak?</b>
+              <span>Stable Audio müzikal sonic logo üretir. Marka adı ve slogan, TTS ses katmanıyla net biçimde jingle’ın üzerine yerleştirilir.</span>
+            </div>
+
+            <div class="radio-ad-fields">
+              <label class="radio-ad-field radio-ad-field--wide">
+                <span>Kapanış Sözü / Slogan</span>
+                <input type="text" maxlength="120" placeholder="Örn: AIVO Studio — fikrini reklama dönüştür." data-radio-ad-input="closingLine">
+              </label>
+              <label class="radio-ad-field">
+                <span>Sonic Logo Tarzı</span>
+                <select data-radio-ad-input="jingleStyle">
+                  <option value="modern">Modern ve teknolojik</option>
+                  <option value="warm">Sıcak ve samimi</option>
+                  <option value="premium">Premium ve sinematik</option>
+                  <option value="energetic">Enerjik ve hareketli</option>
+                  <option value="minimal">Minimal ve kısa</option>
+                </select>
+              </label>
+              <label class="radio-ad-field">
+                <span>Yerleşim</span>
+                <select data-radio-ad-input="jinglePlacement">
+                  <option value="end">Reklam sonunda — önerilen</option>
+                  <option value="start">Reklam başında</option>
+                  <option value="both">Başta ve sonda</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <label class="radio-ad-upload" data-radio-ad-jingle-upload hidden>
+            <input type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg">
+            <strong>Kendi marka jingle’ını yükle</strong>
+            <span>MP3, WAV, M4A, AAC veya OGG</span>
+          </label>
+
+          <div class="radio-ad-jingle-limit">
+            <span>Otomatik jingle süresi</span>
+            <strong data-radio-ad-jingle-duration>6 sn</strong>
+            <small data-radio-ad-jingle-note>30 saniyelik reklam için önerilen üst sınır.</small>
+          </div>
+        </section>
+      </div>
+
+      <div class="radio-ad-system-prompt-note">
+        <span>✦</span>
+        <p><b>Kullanıcıdan müzik veya jingle promptu istenmez.</b> AIVO; ürün bilgileri, sektör, hedef kitle, reklam süresi ve seçilen stile göre motor promptlarını arka planda otomatik hazırlar.</p>
+      </div>
+    </article>
+
+    <article class="radio-ad-card">
+      <div class="radio-ad-card__head">
+        <span class="radio-ad-card__number">05</span>
+        <div>
+          <h2>Ses Zaman Akışı</h2>
+          <p>Konuşma, müzik ve jingle’ın toplam reklam süresine nasıl yerleşeceğini gör.</p>
+        </div>
+      </div>
+
+      <div class="radio-ad-timeline">
+        <div class="radio-ad-timeline__scale"><span>00:00</span><span data-radio-ad-total-time>00:30</span></div>
+        <div class="radio-ad-timeline__main" data-radio-ad-timeline-main>
+          <span class="is-intro" style="width:3.33%">Müzik girişi</span>
+          <span class="is-voice" style="width:76.67%">Seslendirme</span>
+          <span class="is-jingle" style="width:20%">Jingle</span>
+        </div>
+        <div class="radio-ad-timeline__bed" data-radio-ad-timeline-bed>
+          <span>Arka plan müziği · 00:00–00:30</span>
+        </div>
+        <div class="radio-ad-timeline__legend" data-radio-ad-timeline-legend>
+          <span><i class="is-intro"></i>Müzik girişi: 1 sn</span>
+          <span><i class="is-voice"></i>Seslendirme: 23 sn</span>
+          <span><i class="is-jingle"></i>Jingle: 6 sn</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="radio-ad-card">
+      <div class="radio-ad-card__head">
+        <span class="radio-ad-card__number">06</span>
+        <div>
+          <h2>Final Radyo Reklamı</h2>
+          <p>Seslendirme, müzik ve jingle birleştiğinde final reklamını burada dinle.</p>
+        </div>
+      </div>
+
+      <div class="radio-ad-final-player">
+        <button type="button" class="radio-ad-final-play" disabled>▶</button>
+        <div>
+          <strong>Final reklam henüz hazırlanmadı</strong>
+          <span data-radio-ad-final-summary>30 sn · MP3 320 kbps + WAV · Müzik + kapanış jingle’ı</span>
+          <div class="radio-ad-final-track"><i></i></div>
+        </div>
+        <button type="button" disabled>MP3 indir</button>
+        <button type="button" disabled>WAV indir</button>
+      </div>
+    </article>
+
+    <footer class="radio-ad-footer">
+      <div>
+        <strong>Radyo reklamı projesi hazırlanacak</strong>
+        <span data-radio-ad-footer-summary>30 sn · Sesli · AIVO müziği · Kapanış jingle’ı · MP3 + WAV</span>
+      </div>
+      <button type="button" class="radio-ad-build" disabled>Radyo Reklamını Oluştur</button>
+    </footer>
+  </form>
 </section>
