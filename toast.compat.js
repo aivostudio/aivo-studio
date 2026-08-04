@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V109__) return;
-  window.__AIVO_AD_FILM_ASSETS_V109__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V110__) return;
+  window.__AIVO_AD_FILM_ASSETS_V110__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -90,6 +90,7 @@
     "/js/ad-film.seedance-upload-fix.js?v=1",
     "/js/ad-film.seedance-options.js?v=6",
     "/js/ad-film.credit-pricing.js?v=2",
+    "/js/ad-film.credit-ledger.js?v=1",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
