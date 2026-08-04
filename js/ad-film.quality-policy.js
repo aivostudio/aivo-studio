@@ -1,7 +1,8 @@
 /* AIVO AI Reklam Filmi — professional output quality policy */
 (function AIVO_AD_FILM_QUALITY_POLICY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V8__)return;
+  if(window.__AIVO_AD_FILM_QUALITY_POLICY_V9__)return;
+  window.__AIVO_AD_FILM_QUALITY_POLICY_V9__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V8__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V7__=true;
   window.__AIVO_AD_FILM_QUALITY_POLICY_V6__=true;
@@ -18,7 +19,9 @@
     if(scope&&scope.matches&&scope.matches('[data-module-root][data-module="adfilm"]'))return scope;
     return document.querySelector('[data-module-root][data-module="adfilm"]');
   }
-  function qualityGroup(scope){return scope&&scope.querySelector('[data-adfilm-choice="quality"]')}
+  function qualityGroup(scope){
+    return scope&&scope.querySelector('.adfilm-card--advanced-output [data-adfilm-choice="quality"]')||scope&&scope.querySelector('[data-adfilm-choice="quality"]');
+  }
   function valueOf(node){return String(node&&node.getAttribute&&node.getAttribute('data-value')||node&&node.textContent||'').trim().toLowerCase()}
   function clean(value){return String(value==null?'':value).trim()}
   function text(tr,en){return english()?en:tr}
