@@ -151,7 +151,7 @@
     return true;
   }
   function normalizeAspect(value){return value==="4:5"?"3:4":value}
-  function normalizeResolution(value){return lower(value)==="4k"?"4k":"1080p"}
+  function normalizeResolution(value){value=lower(value);return value==="720p"?"720p":value==="4k"?"4k":"1080p"}
   function productionId(){return"adfilm-"+Date.now()+"-"+Math.random().toString(36).slice(2,10)}
 
   function buildPrompt(scope,references){
