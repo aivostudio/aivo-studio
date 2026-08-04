@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V4__) return;
-  window.__AIVO_AD_FILM_ASSETS_CLEAN_V4__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V5__) return;
+  window.__AIVO_AD_FILM_ASSETS_CLEAN_V5__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -87,7 +87,7 @@
     "/js/ad-film.project-sync.js?v=7",
     "/js/ad-film.media-normalization.js?v=3",
     "/js/ad-film.seedance-upload-fix.js?v=1",
-    "/js/ad-film.seedance-options.js?v=5",
+    "/js/ad-film.seedance-options.js?v=6",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
