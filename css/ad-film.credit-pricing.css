@@ -1,58 +1,85 @@
-/* AIVO AI Reklam Filmi — live credit pricing */
-.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button{
-  gap:4px!important;
+/* AIVO AI Reklam Filmi — prominent live credit pricing */
+.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"].adfilm-quality-pricing-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  align-items:start!important;
+  gap:14px!important;
+  width:min(100%,460px)!important;
+  overflow:visible!important;
 }
 
-.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button>span{
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-quality-option{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:9px!important;
+  min-width:0!important;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-quality-option>button{
+  width:100%!important;
+  height:50px!important;
+  min-height:50px!important;
+  max-height:50px!important;
+  padding:7px 10px!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+}
+
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-quality-option>button>span{
+  font-size:14px!important;
   line-height:1!important;
 }
 
 .is-simplified-basic .adfilm-card--advanced-output .adfilm-quality-credit{
-  position:relative;
-  z-index:2;
-  display:block;
+  display:block!important;
+  width:100%!important;
+  min-height:20px!important;
   margin:0!important;
   padding:0!important;
-  color:rgba(234,229,255,.72)!important;
-  font-size:7.5px!important;
-  font-weight:800!important;
-  line-height:1!important;
-  letter-spacing:.01em;
-  white-space:nowrap;
+  color:rgba(235,230,255,.88)!important;
+  font-size:13px!important;
+  font-weight:850!important;
+  line-height:20px!important;
+  letter-spacing:.01em!important;
+  text-align:center!important;
+  white-space:nowrap!important;
 }
 
-.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button.is-selected .adfilm-quality-credit{
-  color:rgba(255,255,255,.92)!important;
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-quality-option.is-selected .adfilm-quality-credit{
+  color:#fff!important;
+  font-weight:950!important;
+  text-shadow:0 0 14px rgba(220,135,255,.38)!important;
 }
 
-.is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"] button:has(.adfilm-seedance-tag) .adfilm-quality-credit{
-  padding-right:18px!important;
+.is-simplified-basic .adfilm-card--advanced-output .adfilm-quality-option .adfilm-seedance-tag{
+  top:4px!important;
+  right:5px!important;
+  font-size:5.5px!important;
+}
+
+[data-module-root][data-module="adfilm"] [data-adfilm-build] [data-adfilm-credit-label]{
+  display:inline!important;
+  color:#fff!important;
+  font-size:18px!important;
+  font-weight:850!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
 }
 
 [data-module-root][data-module="adfilm"] [data-adfilm-build] [data-adfilm-credit-total]{
-  display:inline-flex;
-  align-items:center;
-  min-height:22px;
-  margin-left:12px;
-  padding:3px 10px;
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:999px;
-  background:rgba(12,10,35,.2);
-  color:#fff!important;
-  font-size:10.5px!important;
-  font-style:normal;
-  font-weight:850!important;
-  line-height:1!important;
-  white-space:nowrap;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  display:none!important;
 }
 
 @media(max-width:680px){
-  [data-module-root][data-module="adfilm"] [data-adfilm-build]{
-    flex-wrap:wrap;
+  .is-simplified-basic .adfilm-card--advanced-output [data-adfilm-choice="quality"].adfilm-quality-pricing-grid{
+    grid-template-columns:1fr!important;
+    width:min(100%,280px)!important;
   }
 
-  [data-module-root][data-module="adfilm"] [data-adfilm-build] [data-adfilm-credit-total]{
-    margin-left:0;
+  [data-module-root][data-module="adfilm"] [data-adfilm-build] [data-adfilm-credit-label]{
+    font-size:15px!important;
+    white-space:normal!important;
+    text-align:center!important;
   }
 }
