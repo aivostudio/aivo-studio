@@ -23,6 +23,7 @@ window.ensureModuleCSS = function () {
     cartoon: "cartoon",
     photofx: "photofx",
     adfilm: "adfilm",
+    radioad: "radioad",
     invoices: "invoices",
     profile: "profile",
     settings: "settings",
@@ -37,6 +38,7 @@ window.ensureModuleCSS = function () {
     "cartoon",
     "photofx",
     "adfilm",
+    "radioad",
     "invoices",
     "profile",
     "settings",
@@ -51,6 +53,7 @@ window.ensureModuleCSS = function () {
     cartoon: "/modules/child-cartoon.html",
     photofx: "/modules/photofx.html",
     adfilm: "/modules/ad-film.html",
+    radioad: "/modules/radio-ad.html",
     invoices: "/modules/invoices.html",
     profile: "/modules/profile.html",
     settings: "/modules/settings.html",
@@ -59,7 +62,43 @@ window.ensureModuleCSS = function () {
   let __moduleLoadSeq = 0;
   let __moduleLoadCtrl = null;
   let __goSeq = 0;
+  let __radioAdShellPromise = null;
   const __moduleHtmlCache = new Map();
+
+  function loadRadioAdShell() {
+    if (window.__AIVO_RADIO_AD_SHELL_READY__) return Promise.resolve();
+    if (__radioAdShellPromise) return __radioAdShellPromise;
+
+    __radioAdShellPromise = new Promise((resolve) => {
+      const src = "/js/radio-ad.shell.js?v=1";
+      const path = src.split("?")[0];
+      const existing = document.querySelector(`script[src^="${path}"]`);
+
+      if (existing) {
+        if (window.__AIVO_RADIO_AD_SHELL_READY__) {
+          resolve();
+          return;
+        }
+        const finish = () => resolve();
+        existing.addEventListener("load", finish, { once: true });
+        existing.addEventListener("error", finish, { once: true });
+        setTimeout(finish, 1500);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = false;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        console.warn("[ROUTER] radio ad shell failed to load");
+        resolve();
+      };
+      document.head.appendChild(script);
+    });
+
+    return __radioAdShellPromise;
+  }
 
   function parseQueryRouteKey() {
     const sp = new URLSearchParams(location.search || "");
@@ -69,6 +108,7 @@ window.ensureModuleCSS = function () {
     if (p === "atmosphere") return "atmo";
     if (p === "atm") return "atmo";
     if (p === "photofx") return "photofx";
+    if (p === "radio-ad" || p === "radio") return "radioad";
 
     return p;
   }
@@ -87,12 +127,14 @@ window.ensureModuleCSS = function () {
     if (key === "atmosphere") key = "atmo";
     if (key === "atm") key = "atmo";
     if (key === "photofx") key = "photofx";
+    if (key === "radio-ad" || key === "radio") key = "radioad";
 
     if (!ROUTES.has(key)) key = "music";
     return { key, params: {} };
   }
 
   function setHash(key) {
+    if (key === "radio-ad" || key === "radio") key = "radioad";
     if (!ROUTES.has(key)) key = "music";
     const nextHash = `#${key}`;
     if (location.hash === nextHash) return;
@@ -239,6 +281,7 @@ window.ensureModuleCSS = function () {
   }
 
   async function go(key) {
+    if (key === "radio-ad" || key === "radio") key = "radioad";
     if (!ROUTES.has(key)) key = "music";
 
     const host = document.getElementById("moduleHost");
@@ -268,6 +311,14 @@ window.ensureModuleCSS = function () {
         await window.AIVOEnsureAdFilmAssets();
       } catch (e) {
         console.warn("[ROUTER] adfilm assets failed", e);
+      }
+    }
+
+    if (key === "radioad") {
+      try {
+        await loadRadioAdShell();
+      } catch (e) {
+        console.warn("[ROUTER] radio ad assets failed", e);
       }
     }
 
@@ -353,6 +404,8 @@ window.ensureModuleCSS = function () {
   window.addEventListener("hashchange", onHashChange);
 
   window.addEventListener("DOMContentLoaded", () => {
+    loadRadioAdShell().catch(() => {});
+
     const navRoot = document.getElementById("leftMenu") || document;
 
     if (!navRoot.__aivoRouterClickBound) {
