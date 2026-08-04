@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V104__) return;
-  window.__AIVO_AD_FILM_ASSETS_V104__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_CLEAN_V5__) return;
+  window.__AIVO_AD_FILM_ASSETS_CLEAN_V5__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -46,7 +46,7 @@
     "/css/ad-film.storyboard.css?v=1",
     "/css/ad-film.simple-mode.css?v=3",
     "/css/ad-film.music-profile.css?v=5",
-    "/css/ad-film.seedance-options.css?v=5",
+    "/css/ad-film.seedance-options.css?v=6",
     "/css/ad-film.advanced-alignment.css?v=3",
     "/css/ad-film.creative-plan.css?v=1",
     "/css/ad-film.plan-simple.css?v=2",
@@ -87,13 +87,13 @@
     "/js/ad-film.project-sync.js?v=7",
     "/js/ad-film.media-normalization.js?v=3",
     "/js/ad-film.seedance-upload-fix.js?v=1",
-    "/js/ad-film.seedance-options.js?v=5",
+    "/js/ad-film.seedance-options.js?v=6",
     "/js/ad-film.creative-plan.js?v=1",
     "/js/ad-film.plan-simple.js?v=1",
     "/js/ad-film.role-upload-fix.js?v=3",
     "/js/ad-film.reference-indexes.js?v=1",
     "/js/ad-film.reset-fix.js?v=2",
-    "/js/ad-film.reset-safety.js?v=1",
+    "/js/ad-film.reset-only.js?v=1",
     "/js/ad-film.narration-guide.js?v=1",
     "/js/ad-film.narration-manual.js?v=1",
     "/js/ad-film.narration-engine.js?v=3",
@@ -101,10 +101,9 @@
     "/js/ad-film.narration-player-host-fix.js?v=1",
     "/js/ad-film.narration-player.js?v=2",
     "/js/ad-film.narration-master.js?v=3",
-    "/js/ad-film.narration-build-guard.js?v=4",
+    "/js/ad-film.narration-state.js?v=1",
     "/js/ad-film.voice-toggle-fix.js?v=2",
-    "/js/ad-film.production-id-adapter.js?v=1",
-    "/js/ad-film.production-controller.js?v=1",
+    "/js/ad-film.production-controller-v2.js?v=2",
     "/js/ad-film.logo-finalize.js?v=4",
     "/js/ad-film.mix-upgrade.js?v=3",
     "/js/ad-film.result-controls.js?v=11",
@@ -115,7 +114,7 @@
     "/js/ad-film.project-history-stable.js?v=2",
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
-    "/js/ad-film.quality-policy.js?v=4"
+    "/js/ad-film.quality-ui-only.js?v=3"
   ];
 
   let shellLoadPromise = null;
@@ -183,7 +182,7 @@
     pendingBuildButton = null;
     if (!button || !button.isConnected) return;
     button.removeAttribute("data-adfilm-loader-pending");
-    if (button.dataset.narrationGuard !== "blocked" && !button.classList.contains("is-loading") && !button.classList.contains("is-generating")) {
+    if (button.dataset.audioApprovalGuard !== "blocked" && !button.classList.contains("is-loading") && !button.classList.contains("is-generating")) {
       button.disabled = false;
       button.removeAttribute("aria-busy");
     }
