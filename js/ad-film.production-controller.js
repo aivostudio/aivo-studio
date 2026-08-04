@@ -1,15 +1,22 @@
-/* AIVO AI Reklam Filmi — single owner production controller */
+/* AIVO AI Reklam Filmi — single owner production controller + existing credit ledger */
 (function AIVO_AD_FILM_PRODUCTION_CONTROLLER(){
   "use strict";
-  if(window.__AIVO_AD_FILM_PRODUCTION_CONTROLLER_V1__)return;
-  window.__AIVO_AD_FILM_PRODUCTION_CONTROLLER_V1__=true;
+  if(window.__AIVO_AD_FILM_PRODUCTION_CONTROLLER_V3__)return;
+  window.__AIVO_AD_FILM_PRODUCTION_CONTROLLER_V3__=true;
 
   var busy=false;
+  var creditBusy=false;
   var run=null;
+  var creditRun=null;
+  var refundPromise=null;
   var elapsedTimer=null;
   var uploadCache=new Map();
   var POLL_MS=3000;
   var POLL_MAX=400;
+  var CREDIT_APP="ad_film";
+  var CREDIT_ACTION="studio_ad_film_generate";
+  var CREDIT_STORAGE_KEY="aivo:adfilm:credit-run:v3";
+  var BASE_CREDITS={"720p":145,"1080p":290,"4k":575};
 
   function clean(value){return String(value==null?"":value).trim()}
   function lower(value){return clean(value).toLowerCase()}
@@ -29,11 +36,27 @@
   function notify(message,type,duration){
     try{
       var fn=window.toast&&window.toast[type||"info"];
-      if(typeof fn==="function")return fn({message:message,duration:duration||4200});
-      if(typeof window.showToast==="function")return window.showToast(message,type||"info");
+      if(typeof fn==="function")return fn(message,{duration:duration||4200});
+      if(typeof window.showToast==="function")return window.showToast(message,type||"info",{duration:duration||4200});
     }catch(_){}
   }
   function debug(label,data){try{console.info("[ADFILM FLOW] "+label,data||"")}catch(_){} }
+  function creditDebug(label,data){try{console.info("[ADFILM CREDIT] "+label,data||"")}catch(_){} }
+  function sleep(ms){return new Promise(function(resolve){setTimeout(resolve,ms)})}
+
+  function saveCreditRun(){
+    try{
+      if(creditRun)sessionStorage.setItem(CREDIT_STORAGE_KEY,JSON.stringify(creditRun));
+      else sessionStorage.removeItem(CREDIT_STORAGE_KEY);
+    }catch(_){}
+  }
+  function clearCreditRun(){creditRun=null;refundPromise=null;saveCreditRun()}
+  function restoreCreditRun(){
+    try{
+      var parsed=JSON.parse(sessionStorage.getItem(CREDIT_STORAGE_KEY)||"null");
+      if(parsed&&parsed.transactionId&&parsed.requestId&&Number(parsed.amount)>0)creditRun=parsed;
+    }catch(_){creditRun=null}
+  }
 
   function ensureStatus(scope){
     var action=scope&&scope.querySelector(".adfilm-actionbar");if(!action)return null;
@@ -63,14 +86,16 @@
     };
   }
   function setSummary(scope,message){var node=scope&&scope.querySelector('.adfilm-actionbar__summary [data-adfilm-i18n="readyTitle"]');if(node)node.textContent=message}
-  function setButton(scope,on){
+  function setButton(scope,on,label){
     var button=scope&&scope.querySelector("[data-adfilm-build]");if(!button)return;
     button.disabled=!!on||button.dataset.narrationGuard==="blocked";
     button.classList.toggle("is-generating",!!on);
     button.classList.remove("is-loading","is-music-preparing");
     if(on)button.setAttribute("aria-busy","true");else button.removeAttribute("aria-busy");
-    var label=button.querySelector('span[data-adfilm-i18n="createButton"]')||button.querySelector("span:not(.adfilm-create__icon)");
-    if(label)label.textContent=on?text("Reklam Filmi Oluşturuluyor...","Creating Advertising Film..."):text("Reklam Filmini Oluştur","Create Advertising Film");
+    var textNode=button.querySelector('span[data-adfilm-i18n="createButton"]')||button.querySelector("span:not(.adfilm-create__icon)");
+    if(textNode)textNode.textContent=label||(
+      on?text("Reklam Filmi Oluşturuluyor...","Creating Advertising Film..."):text("Reklam Filmini Oluştur","Create Advertising Film")
+    );
   }
   function elapsed(){
     var started=run&&run.startedAt||Date.now();
@@ -115,7 +140,7 @@
     setButton(scope,false);
   }
   function resetIdle(scope){
-    if(busy)return;
+    if(busy||creditBusy)return;
     var status=ensureStatus(scope);if(status){
       status.className="adfilm-engine-status";
       status.setAttribute("data-adfilm-idle-hidden","1");
@@ -147,6 +172,13 @@
   }
   function normalizeAspect(value){return value==="4:5"?"3:4":value}
   function normalizeResolution(value){value=lower(value);return value==="720p"?"720p":value==="4k"?"4k":"1080p"}
+  function normalizeDuration(value){var duration=Math.round(Number(value)||0);return duration>=5&&duration<=15?duration:null}
+  function calculateCreditCost(duration,resolution){
+    var base=BASE_CREDITS[resolution];
+    if(!base||!duration)return null;
+    return Math.ceil((base*duration/15)/5)*5;
+  }
+  function createCreditRequestId(project){return"adfilm:"+project+":"+Date.now()+":"+Math.random().toString(36).slice(2,10)}
 
   function buildPrompt(scope,references){
     var product=clean(value(scope,"productName",""));
@@ -204,14 +236,92 @@
   async function request(url,options,retries){
     retries=Number(retries||0);
     try{
-      var response=await fetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"}},options||{}));
+      var response=await fetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json",Accept:"application/json"}},options||{}));
       var data=await response.json().catch(function(){return{}});
-      if(!response.ok){var error=new Error(data.message||data.error||("HTTP "+response.status));error.status=response.status;error.data=data;throw error}
+      if(!response.ok||data&&data.ok===false){var error=new Error(data.message||data.error||("HTTP "+response.status));error.status=response.status;error.data=data;throw error}
       return data;
     }catch(error){
-      if(retries>0&&[502,503,504].indexOf(Number(error&&error.status))>=0){await new Promise(function(resolve){setTimeout(resolve,1800)});return request(url,options,retries-1)}
+      if(retries>0&&[502,503,504].indexOf(Number(error&&error.status))>=0){await sleep(1800);return request(url,options,retries-1)}
       throw error;
     }
+  }
+
+  function applyCredits(credits){
+    if(typeof credits!=="number")return;
+    var node=document.getElementById("topCreditCount");if(node)node.textContent=String(credits);
+    try{if(window.AIVO_STORE_V1&&typeof window.AIVO_STORE_V1.setCredits==="function")window.AIVO_STORE_V1.setCredits(credits)}catch(_){}
+  }
+  async function refreshCreditsUI(){
+    try{
+      var data=await request("/api/credits/get",{method:"GET"},1);
+      if(typeof data.credits==="number")applyCredits(data.credits);
+      try{if(typeof window.syncCreditsUI==="function")window.syncCreditsUI({force:true})}catch(_){}
+      return typeof data.credits==="number"?data.credits:null;
+    }catch(_){return null}
+  }
+  async function consumeCredits(scope,project){
+    var duration=normalizeDuration(selected(scope,"duration","15"));
+    var resolution=normalizeResolution(selected(scope,"quality","1080p"));
+    var amount=calculateCreditCost(duration,resolution);
+    if(!duration||!amount)throw new Error("invalid_credit_price");
+    var requestId=createCreditRequestId(project);
+    creditDebug("consume:start",{projectId:project,requestId:requestId,amount:amount,duration:duration,resolution:resolution});
+    var data=await request("/api/credits/consume-ledger",{method:"POST",body:JSON.stringify({
+      app:CREDIT_APP,
+      action:CREDIT_ACTION,
+      cost:amount,
+      request_id:requestId,
+      job_id:project,
+      reason:CREDIT_ACTION
+    })},1);
+    var transactionId=clean(data.transaction_id||data.transaction&&data.transaction.id);
+    if(!transactionId)throw new Error("missing_credit_transaction_id");
+    creditRun={projectId:project,requestId:requestId,transactionId:transactionId,amount:amount,duration:duration,resolution:resolution,status:"consumed",createdAt:Date.now()};
+    saveCreditRun();
+    if(typeof data.credits==="number")applyCredits(data.credits);else await refreshCreditsUI();
+    notify(text(amount+" kredi kullanıldı. Reklam filminiz hazırlanıyor.",amount+" credits were used. Your advertising film is being prepared."),"success",5600);
+    creditDebug("consume:success",creditRun);
+    return creditRun;
+  }
+  async function refundCredits(reason){
+    if(!creditRun||creditRun.status==="completed"||creditRun.status==="refunded")return false;
+    if(refundPromise)return refundPromise;
+    creditRun.status="refunding";saveCreditRun();
+    refundPromise=(async function(){
+      try{
+        creditDebug("refund:start",{reason:reason,creditRun:creditRun});
+        var data=await request("/api/credits/refund",{method:"POST",body:JSON.stringify({
+          app:CREDIT_APP,
+          action:CREDIT_ACTION,
+          amount:Number(creditRun.amount),
+          request_id:creditRun.requestId,
+          job_id:creditRun.projectId,
+          related_transaction_id:creditRun.transactionId,
+          reason:clean(reason)||"ad_film_generation_failed",
+          meta:{source:"ad-film.production-controller",duration:creditRun.duration,resolution:creditRun.resolution,error:clean(reason)}
+        })},2);
+        if(!(data.refunded||data.deduped||data.skipped))throw new Error("refund_not_confirmed");
+        var amount=creditRun.amount;
+        creditRun.status="refunded";saveCreditRun();
+        if(typeof data.credits==="number")applyCredits(data.credits);else await refreshCreditsUI();
+        notify(text("Üretim tamamlanamadı. Kullanılan "+amount+" kredi hesabınıza iade edildi.","Production could not be completed. The "+amount+" credits used were refunded to your account."),"error",7600);
+        creditDebug("refund:success",data);
+        clearCreditRun();
+        return true;
+      }catch(error){
+        if(creditRun){creditRun.status="refund_pending";saveCreditRun()}
+        creditDebug("refund:failed",error&&error.data||error);
+        notify(text("Üretim tamamlanamadı. Kredi iadesi kontrol ediliyor.","Production could not be completed. The credit refund is being checked."),"warning",7600);
+        return false;
+      }finally{refundPromise=null}
+    })();
+    return refundPromise;
+  }
+  function markCreditCompleted(){
+    if(!creditRun)return;
+    creditRun.status="completed";saveCreditRun();
+    creditDebug("completed",creditRun);
+    clearCreditRun();
   }
 
   function musicMode(source){var mode=lower(source&&source.music&&source.music.mode||"auto");return mode==="off"||mode==="upload"?mode:"auto"}
@@ -226,7 +336,7 @@
       for(var index=0;index<120;index++){
         var audio=source&&source.music&&source.music.audio&&source.music.audio.url;
         if(created.status==="COMPLETED"&&audio)break;
-        await new Promise(function(resolve){setTimeout(resolve,1800)});
+        await sleep(1800);
         var state=await request("/api/ad-film/music/status?projectId="+encodeURIComponent(project),{method:"GET"},2);
         if(state.project)source=state.project;
         if(state.status==="FAILED")throw new Error(clean(state.error||source.musicGeneration&&source.musicGeneration.error)||"music_generation_failed");
@@ -252,6 +362,7 @@
     window.AIVOAdFilmActiveProject=finalized.project;
     window.AIVOAdFilmGeneratedVideo=finalized.video_url;
     document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:finalized.project,projectId:project,media:finalized.project.media||{},currentRun:true}}));
+    markCreditCompleted();
     busy=false;stopElapsedClock();setSummary(scope,text("Reklam filmi hazır","Advertising film ready"));
     renderTerminal(scope,"success",text("Reklam filmi hazır","Advertising film ready"),text("Üretim ve final işlemleri tamamlandı.","Production and final processing are complete."));
     notify(text("Reklam filminiz hazır.","Your advertising film is ready."),"success");
@@ -275,20 +386,51 @@
     }
   }
   function fail(scope,error){
-    if(!busy)return;
-    busy=false;stopElapsedClock();
+    if(!busy&&!creditRun)return;
+    busy=false;creditBusy=false;stopElapsedClock();
     console.error("[ADFILM] production controller",error,error&&error.data||"");
     renderTerminal(scope,"error",text("Üretim tamamlanamadı","Production could not be completed"),clean(error&&error.message)||text("Tekrar deneyebilirsin.","You can try again."));
-    notify(text("Reklam üretimi başlatılamadı. Tekrar dene.","Advertising production could not be started. Try again."),"error",6200);
+    var hasCredit=!!creditRun;
+    if(hasCredit)refundCredits(clean(error&&error.message)||"ad_film_generation_failed");
+    else notify(text("Reklam üretimi başlatılamadı. Tekrar dene.","Advertising production could not be started. Try again."),"error",6200);
     run=null;
   }
 
   async function start(scope){
-    if(busy)return;
+    if(busy||creditBusy)return;
     var references=collectReferences(scope);if(!validate(scope,references))return;
     var project=projectId(scope);if(!project){notify(text("Bulut projesi henüz hazır değil.","The cloud project is not ready yet."),"warning");return}
+    if(creditRun&&creditRun.status!=="completed"&&creditRun.status!=="refunded"){
+      notify(text("Önceki kredi işlemi hâlâ kontrol ediliyor.","The previous credit transaction is still being checked."),"warning",6200);
+      return;
+    }
+
+    creditBusy=true;
+    setButton(scope,true,text("Kredi kontrol ediliyor...","Checking credits..."));
+    try{
+      await consumeCredits(scope,project);
+    }catch(error){
+      creditBusy=false;setButton(scope,false);
+      creditDebug("consume:failed",error&&error.data||error);
+      var code=clean(error&&error.data&&error.data.error||error&&error.message);
+      if(code==="insufficient_credits"||Number(error&&error.status)===402){
+        var balance=await refreshCreditsUI();
+        var duration=normalizeDuration(selected(scope,"duration","15"));
+        var resolution=normalizeResolution(selected(scope,"quality","1080p"));
+        var amount=calculateCreditCost(duration,resolution)||0;
+        notify(text("Bu üretim için "+amount+" kredi gerekiyor. Mevcut bakiyeniz: "+(typeof balance==="number"?balance:"-")+" kredi.","This production requires "+amount+" credits. Current balance: "+(typeof balance==="number"?balance:"-")+" credits."),"warning",6800);
+        setTimeout(function(){var destination=encodeURIComponent(location.pathname+location.search+location.hash);location.href="/fiyatlandirma.html?from=studio&reason=insufficient_credit&to="+destination},900);
+      }else if(Number(error&&error.status)===401){
+        notify(text("Kredi işlemi için yeniden giriş yapmalısın.","You need to sign in again for the credit transaction."),"warning",6200);
+      }else{
+        notify(text("Kredi işlemi tamamlanamadı. Üretim başlatılmadı.","The credit transaction could not be completed. Production was not started."),"error",6200);
+      }
+      return;
+    }
+
+    creditBusy=false;
     var oldGeneration=generation(activeProject());
-    run={projectId:project,startedAt:Date.now(),stage:1,note:"",previousRequestId:clean(oldGeneration.requestId),previousOutputId:clean(oldGeneration.outputId)};
+    run={projectId:project,startedAt:Date.now(),stage:1,note:"",previousRequestId:clean(oldGeneration.requestId),previousOutputId:clean(oldGeneration.outputId),creditRequestId:creditRun&&creditRun.requestId,creditTransactionId:creditRun&&creditRun.transactionId};
     window.__AIVO_AD_FILM_CURRENT_RUN__=run;
     busy=true;renderStage(scope,1);startElapsedClock(scope);debug("start",run);
     try{
@@ -296,9 +438,9 @@
       var uploaded=await uploadInputs(scope,project,references);
       run.stage=2;run.note="";renderStage(scope,2);
       var quality=normalizeResolution(selected(scope,"quality","1080p"));
-      var payload={projectId:project,prompt:buildPrompt(scope,references),image_urls:uploaded.image_urls,audio_urls:uploaded.audio_urls,logo_url:uploaded.logo_url,resolution:quality,duration:selected(scope,"duration","15"),aspect_ratio:normalizeAspect(selected(scope,"aspectRatio","16:9")),generate_audio:false,bitrate_mode:quality==="4k"?"high":"standard",reference_map:references.map};
+      var payload={projectId:project,prompt:buildPrompt(scope,references),image_urls:uploaded.image_urls,audio_urls:uploaded.audio_urls,logo_url:uploaded.logo_url,resolution:quality,duration:selected(scope,"duration","15"),aspect_ratio:normalizeAspect(selected(scope,"aspectRatio","16:9")),generate_audio:false,bitrate_mode:quality==="4k"?"high":"standard",reference_map:references.map,credit_request_id:creditRun&&creditRun.requestId,credit_transaction_id:creditRun&&creditRun.transactionId};
       window.AIVOAdFilmSeedancePayload=payload;
-      debug("seedance-create",{projectId:project,resolution:quality,duration:payload.duration,aspect_ratio:payload.aspect_ratio,imageCount:payload.image_urls.length});
+      debug("seedance-create",{projectId:project,resolution:quality,duration:payload.duration,aspect_ratio:payload.aspect_ratio,imageCount:payload.image_urls.length,creditRequestId:payload.credit_request_id});
       var created=await request("/api/ad-film/seedance/create",{method:"POST",body:JSON.stringify(payload)},3);
       updateActiveFromResponse(created);
       run.requestId=clean(created.request_id||created.generation&&created.generation.requestId);
@@ -316,10 +458,14 @@
     start(button.closest('[data-module-root][data-module="adfilm"]')||root());
   },true);
 
-  function init(){var scope=root();if(scope)setTimeout(function(){resetIdle(scope)},80)}
+  function init(){
+    restoreCreditRun();
+    creditDebug("ready",{version:3,restored:creditRun||null});
+    var scope=root();if(scope)setTimeout(function(){resetIdle(scope)},80);
+  }
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")setTimeout(function(){resetIdle(event.detail.root||root())},120)});
   document.addEventListener("aivo:adfilm-assets-ready",function(){setTimeout(init,80)});
   window.addEventListener("pagehide",function(){stopElapsedClock()});
-  window.AIVOAdFilmProductionController={start:function(){var scope=root();if(scope)start(scope)},active:function(){return busy},state:function(){return run},reset:init};
+  window.AIVOAdFilmProductionController={start:function(){var scope=root();if(scope)start(scope)},active:function(){return busy||creditBusy},state:function(){return run},creditState:function(){return creditRun},reset:init};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
