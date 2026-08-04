@@ -1,7 +1,8 @@
 /* AIVO AI Reklam Filmi — live duration and quality credit pricing */
 (function AIVO_AD_FILM_CREDIT_PRICING(){
   "use strict";
-  if(window.__AIVO_AD_FILM_CREDIT_PRICING_V1__) return;
+  if(window.__AIVO_AD_FILM_CREDIT_PRICING_V2__) return;
+  window.__AIVO_AD_FILM_CREDIT_PRICING_V2__=true;
   window.__AIVO_AD_FILM_CREDIT_PRICING_V1__=true;
 
   var BASE_CREDITS={"720p":145,"1080p":290,"4k":575};
@@ -57,6 +58,7 @@
     return normalizeQuality(selected&&selected.getAttribute("data-value"));
   }
   function creditText(amount){return String(amount)+" "+(english()?"Credits":"Kredi")}
+  function createText(amount){return (english()?"Create Advertising Film":"Reklam Filmini Oluştur")+" ("+creditText(amount)+")"}
 
   function forceDefaultDuration(scope){
     if(!scope||userChangedDuration)return;
@@ -73,26 +75,37 @@
     }
   }
 
-  function ensureButtonCredit(button,amount){
-    if(!button)return;
-    var node=button.querySelector('[data-adfilm-quality-credit]');
+  function ensureQualityOption(group,button,amount){
+    if(!group||!button)return;
+    var option=button.parentElement&&button.parentElement.classList.contains("adfilm-quality-option")?button.parentElement:null;
+    if(!option){
+      option=document.createElement("div");
+      option.className="adfilm-quality-option";
+      group.insertBefore(option,button);
+      option.appendChild(button);
+    }
+    var node=option.querySelector('[data-adfilm-quality-credit]');
     if(!node){
-      node=document.createElement("small");
+      node=document.createElement("div");
       node.className="adfilm-quality-credit";
       node.setAttribute("data-adfilm-quality-credit","");
-      var premium=button.querySelector(".adfilm-seedance-tag");
-      if(premium)button.insertBefore(node,premium);else button.appendChild(node);
+      option.appendChild(node);
     }
     var text=creditText(amount);
     if(node.textContent!==text)node.textContent=text;
+    option.classList.toggle("is-selected",button.classList.contains("is-selected"));
+    option.setAttribute("data-quality",normalizeQuality(button.getAttribute("data-value")));
     button.setAttribute("data-credit-cost",String(amount));
+    var mainLabel=button.querySelector("span");
+    if(mainLabel)button.setAttribute("aria-label",clean(mainLabel.textContent)+" "+text);
   }
 
   function syncQualityButtons(scope,duration){
     scope.querySelectorAll('[data-adfilm-choice="quality"]').forEach(function(group){
-      group.querySelectorAll('button[data-value]').forEach(function(button){
+      group.classList.add("adfilm-quality-pricing-grid");
+      Array.from(group.querySelectorAll('button[data-value]')).forEach(function(button){
         var quality=normalizeQuality(button.getAttribute("data-value"));
-        ensureButtonCredit(button,calculate(quality,duration));
+        ensureQualityOption(group,button,calculate(quality,duration));
       });
     });
   }
@@ -100,15 +113,15 @@
   function syncCreateButton(scope,quality,duration,total){
     var button=scope.querySelector('[data-adfilm-build]');
     if(!button)return;
-    var node=button.querySelector('[data-adfilm-credit-total]')||button.querySelector('em[data-adfilm-i18n="creditLater"]')||button.querySelector("em");
-    if(!node){
-      node=document.createElement("em");
-      button.appendChild(node);
+    var label=button.querySelector('[data-adfilm-credit-label]')||button.querySelector('span[data-adfilm-i18n="createButton"]')||button.querySelector("span:not(.adfilm-create__icon)");
+    button.querySelectorAll('em[data-adfilm-i18n="creditLater"],em[data-adfilm-credit-total]').forEach(function(node){node.remove()});
+    if(label){
+      label.removeAttribute("data-adfilm-i18n");
+      label.setAttribute("data-adfilm-credit-label","");
+      var busy=button.classList.contains("is-generating")||button.classList.contains("is-loading")||button.getAttribute("aria-busy")==="true";
+      var text=createText(total);
+      if(!busy&&label.textContent!==text)label.textContent=text;
     }
-    node.removeAttribute("data-adfilm-i18n");
-    node.setAttribute("data-adfilm-credit-total","");
-    var text=creditText(total);
-    if(node.textContent!==text)node.textContent=text;
     button.setAttribute("data-credit-cost",String(total));
     button.setAttribute("data-credit-quality",quality);
     button.setAttribute("data-credit-duration",String(duration));
