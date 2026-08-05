@@ -28,6 +28,19 @@
   function stageNodes(panel){return{box:q(panel,'[data-radio-production]'),count:q(panel,'[data-radio-stage-count]'),title:q(panel,'[data-radio-stage-title]'),description:q(panel,'[data-radio-stage-description]'),time:q(panel,'[data-radio-stage-time]'),steps:qa(panel,'[data-radio-stage-steps] span'),button:q(panel,'[data-radio-build]')}}
   function placeFinalAfterProduction(panel){var production=q(panel,'[data-radio-production]');var final=q(panel,'.adfilm-radio-final');var card=final&&final.closest('.adfilm-radio-card');if(!production||!card||production.nextElementSibling===card)return;production.insertAdjacentElement('afterend',card)}
   function removePreviewDownload(panel){var preview=q(panel,'.radio-preview');if(!preview)return;var buttons=qa(preview,'.radio-preview__player .radio-icon-btn:not(.is-danger)');if(buttons.length>1)buttons[1].remove()}
+  function showVideoDefault(root){
+    if(!root)return;
+    var video=q(root,'[data-adfilm-kind="video"]');
+    var radioButton=q(root,'[data-adfilm-kind="radio"]');
+    var modebar=q(root,'.adfilm-modebar');
+    var layout=q(root,'.adfilm-layout');
+    var radioPanel=q(root,PANEL);
+    if(video){video.classList.add('is-active');video.setAttribute('aria-selected','true')}
+    if(radioButton){radioButton.classList.remove('is-active');radioButton.setAttribute('aria-selected','false')}
+    if(modebar)modebar.hidden=false;
+    if(layout)layout.hidden=false;
+    if(radioPanel)radioPanel.hidden=true;
+  }
   function resetProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-complete','is-failed');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamınız hazırlanıyor';if(badge)badge.textContent='Üretim akışı'}
   function completeProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-failed');box.classList.add('is-complete');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamınız hazır';if(badge)badge.textContent='Tamamlandı'}
   function failProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-complete');box.classList.add('is-failed');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamı tamamlanamadı';if(badge)badge.textContent='Hata'}
@@ -37,6 +50,24 @@
   function setBusy(panel,busy){var button=q(panel,'[data-radio-build]');if(!button)return;button.disabled=!!busy;button.textContent=busy?'Radyo Reklamı Oluşturuluyor...':'▶ Radyo Reklamını Oluştur'}
   function errorMessage(error){var code=clean(error&&error.data&&error.data.error||error&&error.message);if(code==='narration_approval_required'||code==='approved_narration_required')return 'Önce seslendirmeyi oluşturup onayla.';if(code==='music_audio_missing')return 'Reklam müziği hazırlanamadı.';if(code==='uploaded_music_missing')return 'Yüklenen müzik dosyası bulunamadı.';if(code==='missing_fal_key')return 'Müzik motoru anahtarı sunucuda tanımlı değil.';return 'Radyo reklamı oluşturulamadı: '+code}
   function updateProject(project,id){if(!project)return;window.AIVORadioAdActiveProject=project;document.dispatchEvent(new CustomEvent('aivo:radioad-project-sync',{detail:{project:project,projectId:id}}))}
+  function downloadIcon(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14"/></svg>'}
+  function deleteIcon(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3m-8 0 1 14h8l1-14M10 11v6m4-6v6"/></svg>'}
+
+  async function downloadFinal(activeProject,finalId,format){
+    var url='/api/radio-ad/final/download?projectId='+encodeURIComponent(activeProject)+'&finalId='+encodeURIComponent(finalId);
+    var response=await fetch(url,{method:'GET',credentials:'include',cache:'no-store'});
+    if(!response.ok)throw new Error('final_download_failed');
+    var blob=await response.blob();
+    var objectUrl=URL.createObjectURL(blob);
+    var link=document.createElement('a');
+    link.href=objectUrl;
+    link.download='AIVO-Radyo-Reklami.'+(clean(format).toLowerCase()==='wav'?'wav':'mp3');
+    link.rel='noopener';
+    link.style.display='none';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(function(){URL.revokeObjectURL(objectUrl);link.remove()},1200);
+  }
 
   function archiveItems(project){
     var list=Array.isArray(project&&project.finalHistory)?project.finalHistory.slice():[];
@@ -47,6 +78,8 @@
   function ensureGallery(panel){
     var final=q(panel,'.adfilm-radio-final');
     if(!final)return null;
+    final.hidden=true;
+    final.setAttribute('aria-hidden','true');
     var card=final.closest('.adfilm-radio-card');
     if(!card)return null;
     var gallery=q(card,'[data-radio-final-gallery]');
@@ -54,7 +87,7 @@
     gallery=document.createElement('section');
     gallery.className='radio-final-gallery';
     gallery.setAttribute('data-radio-final-gallery','');
-    gallery.innerHTML='<div class="radio-final-gallery__head"><div><span>ARŞİV</span><strong>Radyo Reklamlarım</strong><p>Hazırladığın final reklamları dinle, indir veya arşivden kaldır.</p></div><em data-radio-final-count>0 kayıt</em></div><div class="radio-final-gallery__rail" data-radio-final-rail></div>';
+    gallery.innerHTML='<div class="radio-final-gallery__head"><div><span>ARŞİV</span><strong>Radyo Reklamlarım</strong><p>Final reklamlarını dinle, indir veya arşivden kaldır.</p></div><em data-radio-final-count>0 kayıt</em></div><div class="radio-final-gallery__rail" data-radio-final-rail></div>';
     final.insertAdjacentElement('afterend',gallery);
     return gallery;
   }
@@ -72,14 +105,14 @@
       var title=escapeHtml(item.title||'Radyo Reklamı');
       var duration=Number(item.duration||0);
       var active=project&&project.final&&(clean(project.final.id)===clean(item.id)||clean(project.final.url)===clean(item.url));
-      return '<article class="radio-final-tile'+(active?' is-current':'')+'" data-radio-final-id="'+itemId+'" data-radio-final-url="'+escapeHtml(item.url)+'">'
+      return '<article class="radio-final-tile'+(active?' is-current':'')+'" data-radio-final-id="'+itemId+'" data-radio-final-url="'+escapeHtml(item.url)+'" data-radio-final-format="'+escapeHtml(format)+'">'
         +'<div class="radio-final-tile__glow"></div>'
         +'<div class="radio-final-tile__top"><span>'+(active?'AKTİF':'SÜRÜM '+(items.length-index))+'</span><em>'+format+'</em></div>'
         +'<button type="button" class="radio-final-tile__play" data-radio-gallery-play aria-label="Oynat">▶</button>'
         +'<div class="radio-final-tile__wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>'
         +'<strong>'+title+'</strong>'
         +'<small>'+duration+' sn · '+format+' · '+escapeHtml(dateLabel(item.createdAt))+'</small>'
-        +'<div class="radio-final-tile__actions"><button type="button" data-radio-gallery-download title="İndir">⇩</button><button type="button" class="is-danger" data-radio-gallery-delete title="Sil">⌫</button></div>'
+        +'<div class="radio-final-tile__actions"><button type="button" data-radio-gallery-download title="İndir" aria-label="İndir">'+downloadIcon()+'</button><button type="button" class="is-danger" data-radio-gallery-delete title="Sil" aria-label="Sil">'+deleteIcon()+'</button></div>'
         +'</article>';
     }).join('');
   }
@@ -100,6 +133,8 @@
     if(!final||!final.url)return;
     var card=q(panel,'.adfilm-radio-final');
     if(!card)return;
+    card.hidden=true;
+    card.setAttribute('aria-hidden','true');
     var play=q(card,'button:first-child');
     var title=q(card,'strong');
     var summary=q(card,'span');
@@ -111,7 +146,7 @@
     if(summary)summary.textContent=Number(final.duration||0)+' sn · '+(final.format==='wav'?'WAV Kayıpsız':'MP3 320 kbps')+' · '+(final.musicMode==='off'?'Yalnız seslendirme':'Müzik + seslendirme');
     if(play){play.disabled=false;play.textContent='▶';play.onclick=function(){if(finalAudio.paused){finalAudio.play().catch(function(){});play.textContent='❚❚'}else{finalAudio.pause();play.textContent='▶'}}}
     finalAudio.addEventListener('ended',function(){if(play)play.textContent='▶'});
-    if(download){download.disabled=false;download.onclick=function(){var link=document.createElement('a');link.href='/api/radio-ad/final/download?projectId='+encodeURIComponent(id)+(final.id?'&finalId='+encodeURIComponent(final.id):'');link.style.display='none';document.body.appendChild(link);link.click();setTimeout(function(){link.remove()},0)}}
+    if(download){download.disabled=false;download.onclick=async function(event){event.preventDefault();event.stopPropagation();try{await downloadFinal(id,final.id||'',final.format)}catch(_){notify('Dosya indirilemedi.','error')}}}
   }
 
   async function run(panel,root){
@@ -166,7 +201,7 @@
     if(document.getElementById('aivo-radio-production-engine-style'))return;
     var style=document.createElement('style');
     style.id='aivo-radio-production-engine-style';
-    style.textContent='.adfilm-radio-production__stage{text-align:center;justify-items:center}.adfilm-radio-production__stage p{text-align:center!important}.adfilm-radio-production__body{grid-template-columns:58px minmax(0,1fr)}.adfilm-radio-production.is-complete .adfilm-radio-production__spinner,.adfilm-radio-production.is-failed .adfilm-radio-production__spinner{display:none}.adfilm-radio-production.is-complete .adfilm-radio-production__body,.adfilm-radio-production.is-failed .adfilm-radio-production__body{grid-template-columns:1fr}.adfilm-radio-production.is-complete .adfilm-radio-production__top span{background:rgba(20,111,92,.22);color:#75e5c0}.adfilm-radio-production.is-failed .adfilm-radio-production__top span{background:rgba(126,24,55,.28);color:#ff86aa}.radio-final-gallery{margin-top:16px;padding:16px;border:1px solid rgba(141,99,221,.32);border-radius:18px;background:radial-gradient(circle at 15% 0,rgba(127,73,224,.16),transparent 34%),rgba(8,11,29,.72);overflow:hidden}.radio-final-gallery__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}.radio-final-gallery__head span{display:block;margin-bottom:3px;color:#9cebd6;font-size:9px;font-weight:900;letter-spacing:.22em}.radio-final-gallery__head strong{display:block;color:#fff;font-size:17px}.radio-final-gallery__head p{margin:4px 0 0;color:#938ca4;font-size:11px}.radio-final-gallery__head em{padding:6px 9px;border:1px solid rgba(147,98,221,.35);border-radius:999px;background:rgba(91,49,161,.2);color:#d7c4ff;font-size:10px;font-style:normal;font-weight:800;white-space:nowrap}.radio-final-gallery__rail{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:rgba(185,92,226,.55) rgba(31,28,59,.35)}.radio-final-gallery__rail::-webkit-scrollbar{height:7px}.radio-final-gallery__rail::-webkit-scrollbar-track{border-radius:99px;background:rgba(31,28,59,.35)}.radio-final-gallery__rail::-webkit-scrollbar-thumb{border-radius:99px;background:linear-gradient(90deg,#7948f4,#ed58ae)}.radio-final-tile{position:relative;flex:0 0 190px;min-height:205px;padding:13px;border:1px solid rgba(121,88,190,.38);border-radius:16px;background:linear-gradient(160deg,rgba(29,27,61,.98),rgba(10,13,33,.98));box-shadow:0 14px 30px rgba(4,4,18,.25);overflow:hidden;scroll-snap-align:start}.radio-final-tile.is-current{border-color:rgba(232,88,185,.58);box-shadow:0 0 0 1px rgba(139,70,235,.18),0 18px 34px rgba(86,32,141,.24)}.radio-final-tile__glow{position:absolute;inset:-70px -50px auto;height:120px;background:radial-gradient(circle,rgba(223,71,189,.28),transparent 66%);pointer-events:none}.radio-final-tile__top{position:relative;display:flex;justify-content:space-between;gap:8px}.radio-final-tile__top span,.radio-final-tile__top em{font-size:9px;font-style:normal;font-weight:900;letter-spacing:.08em}.radio-final-tile__top span{color:#cbb4fa}.radio-final-tile__top em{color:#83e5c7}.radio-final-tile__play{position:relative;display:grid;place-items:center;width:54px;height:54px;margin:20px auto 12px;border:1px solid rgba(255,255,255,.23);border-radius:50%;background:linear-gradient(145deg,#7449f5,#d34fc9,#ef5a9e);color:#fff;font-size:17px;box-shadow:0 12px 30px rgba(171,66,211,.32);cursor:pointer}.radio-final-tile__wave{display:flex;align-items:center;justify-content:center;gap:3px;height:23px;margin-bottom:9px}.radio-final-tile__wave i{width:3px;border-radius:99px;background:linear-gradient(#8e5bff,#ee5bb3);animation:radioWave 1.2s ease-in-out infinite alternate}.radio-final-tile__wave i:nth-child(3n){height:18px}.radio-final-tile__wave i:nth-child(3n+1){height:9px}.radio-final-tile__wave i:nth-child(3n+2){height:14px}.radio-final-tile strong{display:block;overflow:hidden;color:#f8f5ff;font-size:12px;text-overflow:ellipsis;white-space:nowrap}.radio-final-tile small{display:block;margin-top:4px;color:#8f899e;font-size:9px}.radio-final-tile__actions{display:flex;justify-content:flex-end;gap:7px;margin-top:11px}.radio-final-tile__actions button{display:grid;place-items:center;width:30px;height:30px;border:1px solid rgba(126,93,196,.42);border-radius:9px;background:rgba(36,32,73,.8);color:#ddd4ee;font-size:16px;cursor:pointer}.radio-final-tile__actions button:hover{transform:translateY(-1px);border-color:rgba(217,100,225,.58)}.radio-final-tile__actions .is-danger{border-color:rgba(230,62,112,.42);background:rgba(88,18,43,.38);color:#ff7ca2}.radio-final-gallery__empty{display:grid;gap:4px;min-width:100%;padding:20px;border:1px dashed rgba(126,94,195,.35);border-radius:14px;color:#9992aa;text-align:center}.radio-final-gallery__empty b{color:#d9d1e6;font-size:12px}.radio-final-gallery__empty span{font-size:10px}@keyframes radioWave{from{transform:scaleY(.62);opacity:.55}to{transform:scaleY(1);opacity:1}}';
+    style.textContent='.adfilm-radio-production__stage{text-align:center;justify-items:center}.adfilm-radio-production__stage p{text-align:center!important}.adfilm-radio-production__body{grid-template-columns:58px minmax(0,1fr)}.adfilm-radio-production.is-complete .adfilm-radio-production__spinner,.adfilm-radio-production.is-failed .adfilm-radio-production__spinner{display:none}.adfilm-radio-production.is-complete .adfilm-radio-production__body,.adfilm-radio-production.is-failed .adfilm-radio-production__body{grid-template-columns:1fr}.adfilm-radio-production.is-complete .adfilm-radio-production__top span{background:rgba(20,111,92,.22);color:#75e5c0}.adfilm-radio-production.is-failed .adfilm-radio-production__top span{background:rgba(126,24,55,.28);color:#ff86aa}.adfilm-radio-final[hidden]{display:none!important}.radio-final-gallery{margin-top:4px;padding:14px;border:1px solid rgba(141,99,221,.32);border-radius:16px;background:radial-gradient(circle at 15% 0,rgba(127,73,224,.14),transparent 34%),rgba(8,11,29,.72);overflow:hidden}.radio-final-gallery__head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:11px}.radio-final-gallery__head span{display:block;margin-bottom:2px;color:#9cebd6;font-size:8px;font-weight:900;letter-spacing:.22em}.radio-final-gallery__head strong{display:block;color:#fff;font-size:16px}.radio-final-gallery__head p{margin:3px 0 0;color:#938ca4;font-size:10px}.radio-final-gallery__head em{padding:5px 8px;border:1px solid rgba(147,98,221,.35);border-radius:999px;background:rgba(91,49,161,.2);color:#d7c4ff;font-size:9px;font-style:normal;font-weight:800;white-space:nowrap}.radio-final-gallery__rail{display:flex;gap:10px;overflow-x:auto;padding:1px 1px 7px;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:rgba(185,92,226,.55) rgba(31,28,59,.35)}.radio-final-gallery__rail::-webkit-scrollbar{height:6px}.radio-final-gallery__rail::-webkit-scrollbar-track{border-radius:99px;background:rgba(31,28,59,.35)}.radio-final-gallery__rail::-webkit-scrollbar-thumb{border-radius:99px;background:linear-gradient(90deg,#7948f4,#ed58ae)}.radio-final-tile{position:relative;flex:0 0 168px;min-height:174px;padding:11px;border:1px solid rgba(121,88,190,.38);border-radius:14px;background:linear-gradient(160deg,rgba(29,27,61,.98),rgba(10,13,33,.98));box-shadow:0 12px 24px rgba(4,4,18,.22);overflow:hidden;scroll-snap-align:start}.radio-final-tile.is-current{border-color:rgba(232,88,185,.58);box-shadow:0 0 0 1px rgba(139,70,235,.18),0 14px 28px rgba(86,32,141,.22)}.radio-final-tile__glow{position:absolute;inset:-72px -50px auto;height:112px;background:radial-gradient(circle,rgba(223,71,189,.24),transparent 66%);pointer-events:none}.radio-final-tile__top{position:relative;display:flex;justify-content:space-between;gap:8px}.radio-final-tile__top span,.radio-final-tile__top em{font-size:8px;font-style:normal;font-weight:900;letter-spacing:.08em}.radio-final-tile__top span{color:#cbb4fa}.radio-final-tile__top em{color:#83e5c7}.radio-final-tile__play{position:relative;display:grid;place-items:center;width:46px;height:46px;margin:13px auto 7px;border:1px solid rgba(255,255,255,.23);border-radius:50%;background:linear-gradient(145deg,#7449f5,#d34fc9,#ef5a9e);color:#fff;font-size:15px;box-shadow:0 10px 24px rgba(171,66,211,.28);cursor:pointer}.radio-final-tile.is-playing .radio-final-tile__play{box-shadow:0 0 0 5px rgba(212,78,197,.12),0 10px 24px rgba(171,66,211,.3)}.radio-final-tile__wave{display:flex;align-items:center;justify-content:center;gap:2px;height:18px;margin-bottom:6px}.radio-final-tile__wave i{width:2px;border-radius:99px;background:linear-gradient(#8e5bff,#ee5bb3);animation:radioWave 1.2s ease-in-out infinite alternate;animation-play-state:paused}.radio-final-tile.is-playing .radio-final-tile__wave i{animation-play-state:running}.radio-final-tile__wave i:nth-child(3n){height:15px}.radio-final-tile__wave i:nth-child(3n+1){height:7px}.radio-final-tile__wave i:nth-child(3n+2){height:11px}.radio-final-tile strong{display:block;overflow:hidden;color:#f8f5ff;font-size:11px;text-overflow:ellipsis;white-space:nowrap}.radio-final-tile small{display:block;margin-top:3px;color:#8f899e;font-size:8px}.radio-final-tile__actions{display:flex;justify-content:flex-end;gap:6px;margin-top:8px}.radio-final-tile__actions button{display:grid;place-items:center;width:28px;height:28px;padding:0;border:1px solid rgba(126,93,196,.42);border-radius:8px;background:rgba(36,32,73,.8);color:#ddd4ee;cursor:pointer}.radio-final-tile__actions button:hover{transform:translateY(-1px);border-color:rgba(217,100,225,.58)}.radio-final-tile__actions button:disabled{cursor:wait;opacity:.55}.radio-final-tile__actions svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.radio-final-tile__actions .is-danger{border-color:rgba(230,62,112,.42);background:rgba(88,18,43,.38);color:#ff7ca2}.radio-final-gallery__empty{display:grid;gap:3px;min-width:100%;padding:14px;border:1px dashed rgba(126,94,195,.35);border-radius:12px;color:#9992aa;text-align:center}.radio-final-gallery__empty b{color:#d9d1e6;font-size:11px}.radio-final-gallery__empty span{font-size:9px}@keyframes radioWave{from{transform:scaleY(.62);opacity:.55}to{transform:scaleY(1);opacity:1}}';
     document.head.appendChild(style);
   }
 
@@ -175,13 +210,13 @@
     if(build){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();var panel=build.closest(PANEL),root=build.closest(ROOT);placeFinalAfterProduction(panel);removePreviewDownload(panel);run(panel,root);return}
 
     var play=event.target&&event.target.closest&&event.target.closest('[data-radio-gallery-play]');
-    if(play){var tile=play.closest('[data-radio-final-id]');var url=clean(tile&&tile.dataset.radioFinalUrl);var itemId=clean(tile&&tile.dataset.radioFinalId);if(!url)return;if(galleryAudio&&galleryPlayingId===itemId&&!galleryAudio.paused){galleryAudio.pause();play.textContent='▶';return}if(galleryAudio){galleryAudio.pause()}qa(document,'[data-radio-gallery-play]').forEach(function(button){button.textContent='▶'});galleryAudio=new Audio(url);galleryPlayingId=itemId;galleryAudio.play().then(function(){play.textContent='❚❚'}).catch(function(){notify('Ses oynatılamadı.','error')});galleryAudio.addEventListener('ended',function(){play.textContent='▶';galleryPlayingId=''});return}
+    if(play){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();var tile=play.closest('[data-radio-final-id]');var url=clean(tile&&tile.dataset.radioFinalUrl);var itemId=clean(tile&&tile.dataset.radioFinalId);if(!url)return;if(galleryAudio&&galleryPlayingId===itemId&&!galleryAudio.paused){galleryAudio.pause();play.textContent='▶';tile.classList.remove('is-playing');return}if(galleryAudio){galleryAudio.pause()}qa(document,'[data-radio-gallery-play]').forEach(function(button){button.textContent='▶';var other=button.closest('[data-radio-final-id]');if(other)other.classList.remove('is-playing')});galleryAudio=new Audio(url);galleryPlayingId=itemId;galleryAudio.play().then(function(){play.textContent='❚❚';tile.classList.add('is-playing')}).catch(function(){notify('Ses oynatılamadı.','error')});galleryAudio.addEventListener('ended',function(){play.textContent='▶';tile.classList.remove('is-playing');galleryPlayingId=''});return}
 
     var download=event.target&&event.target.closest&&event.target.closest('[data-radio-gallery-download]');
-    if(download){var downTile=download.closest('[data-radio-final-id]');var downId=clean(downTile&&downTile.dataset.radioFinalId);var activeProject=projectId(document.querySelector(ROOT));if(!activeProject||!downId)return;var link=document.createElement('a');link.href='/api/radio-ad/final/download?projectId='+encodeURIComponent(activeProject)+'&finalId='+encodeURIComponent(downId);link.style.display='none';document.body.appendChild(link);link.click();setTimeout(function(){link.remove()},0);return}
+    if(download){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();var downTile=download.closest('[data-radio-final-id]');var downId=clean(downTile&&downTile.dataset.radioFinalId);var downFormat=clean(downTile&&downTile.dataset.radioFinalFormat);var activeProject=projectId(document.querySelector(ROOT));if(!activeProject||!downId)return;download.disabled=true;try{await downloadFinal(activeProject,downId,downFormat);notify('İndirme başlatıldı.','success')}catch(error){notify('Dosya indirilemedi.','error')}finally{download.disabled=false}return}
 
     var remove=event.target&&event.target.closest&&event.target.closest('[data-radio-gallery-delete]');
-    if(remove){var removeTile=remove.closest('[data-radio-final-id]');var removeId=clean(removeTile&&removeTile.dataset.radioFinalId);var removeProject=projectId(document.querySelector(ROOT));if(!removeProject||!removeId)return;if(!window.confirm('Bu radyo reklamını arşivden silmek istiyor musun?'))return;remove.disabled=true;try{var data=await request('/api/radio-ad/final/delete?projectId='+encodeURIComponent(removeProject)+'&finalId='+encodeURIComponent(removeId),{method:'DELETE'});updateProject(data.project,removeProject);var activePanel=document.querySelector(ROOT+' '+PANEL);renderGallery(activePanel,removeProject,data.project||{});if(data.final)mountFinal(activePanel,removeProject,data.final);notify('Radyo reklamı silindi.','success')}catch(error){remove.disabled=false;notify('Radyo reklamı silinemedi.','error')}return}
+    if(remove){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();var removeTile=remove.closest('[data-radio-final-id]');var removeId=clean(removeTile&&removeTile.dataset.radioFinalId);var removeProject=projectId(document.querySelector(ROOT));if(!removeProject||!removeId)return;if(!window.confirm('Bu radyo reklamını arşivden silmek istiyor musun?'))return;remove.disabled=true;try{var data=await request('/api/radio-ad/final/delete?projectId='+encodeURIComponent(removeProject)+'&finalId='+encodeURIComponent(removeId),{method:'DELETE'});updateProject(data.project,removeProject);var activePanel=document.querySelector(ROOT+' '+PANEL);renderGallery(activePanel,removeProject,data.project||{});if(data.final)mountFinal(activePanel,removeProject,data.final);notify('Radyo reklamı silindi.','success')}catch(error){remove.disabled=false;notify('Radyo reklamı silinemedi.','error')}return}
   },true);
 
   document.addEventListener('aivo:radioad-project-sync',function(event){
@@ -194,10 +229,13 @@
 
   document.addEventListener('aivo:module-mounted',function(event){
     if(!(event&&event.detail&&event.detail.key==='adfilm'))return;
-    var root=event.detail.root||document.querySelector(ROOT);var panel=q(root,PANEL);placeFinalAfterProduction(panel);removePreviewDownload(panel);ensureGallery(panel);renderGallery(panel,projectId(root),window.AIVORadioAdActiveProject||{});
+    var root=event.detail.root||document.querySelector(ROOT);var panel=q(root,PANEL);showVideoDefault(root);placeFinalAfterProduction(panel);removePreviewDownload(panel);ensureGallery(panel);renderGallery(panel,projectId(root),window.AIVORadioAdActiveProject||{});
   });
 
+  window.addEventListener('pageshow',function(){setTimeout(function(){showVideoDefault(document.querySelector(ROOT))},0)});
+
   ensureStyle();
-  var initialPanel=document.querySelector(ROOT+' '+PANEL);
-  placeFinalAfterProduction(initialPanel);removePreviewDownload(initialPanel);ensureGallery(initialPanel);renderGallery(initialPanel,projectId(document.querySelector(ROOT)),window.AIVORadioAdActiveProject||{});
+  var initialRoot=document.querySelector(ROOT);
+  var initialPanel=q(initialRoot,PANEL);
+  showVideoDefault(initialRoot);placeFinalAfterProduction(initialPanel);removePreviewDownload(initialPanel);ensureGallery(initialPanel);renderGallery(initialPanel,projectId(initialRoot),window.AIVORadioAdActiveProject||{});
 })();
