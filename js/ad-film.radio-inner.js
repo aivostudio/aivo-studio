@@ -60,7 +60,6 @@
       .adfilm-radio-music-only h4{margin-bottom:10px;font-size:16px}
       .adfilm-radio-outputs>div{padding:12px;border-radius:13px}
       .adfilm-radio-note{margin-top:13px;padding:11px 13px;border-radius:12px;font-size:11px}
-      .adfilm-radio-timeline>section{min-height:46px;margin:8px 0;border-radius:12px}
       .adfilm-radio-final{grid-template-columns:48px 1fr auto auto;padding:13px;border-radius:15px}
       .adfilm-radio-final>button{min-height:42px;border-radius:11px;font-size:13px}
       .adfilm-radio-production[hidden]{display:none!important}
@@ -95,26 +94,16 @@
     return `
       <section class="adfilm-radio-panel" data-adfilm-radio-panel hidden aria-label="AI Radyo Reklamı Oluştur">
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>01</b><div><h3>Ürün Bilgileri</h3><p>AIVO reklam metnini ve ses tasarımını bu brief üzerinden hazırlayacak.</p></div><em>Zorunlu</em></div>
-          <div class="adfilm-radio-fields">
-            <label><span>Ürün / Hizmet Adı</span><input type="text" maxlength="80" placeholder="Örn: AIVO Studio" data-radio-field="productName"></label>
-            <label><span>Marka Adı</span><input type="text" maxlength="60" placeholder="Örn: AIVO" data-radio-field="brandName"></label>
-            <label class="is-wide"><span>Kısa Açıklama</span><textarea maxlength="520" rows="4" placeholder="Ürünün öne çıkan özelliklerini ve reklamda vurgulanmasını istediğin noktaları yaz..." data-radio-field="description"></textarea></label>
-            <label><span>Hedef Kitle</span><input type="text" maxlength="120" placeholder="Örn: İçerik üreticileri ve küçük işletmeler" data-radio-field="targetAudience"></label>
-            <label><span>Kampanya / Çağrı</span><input type="text" maxlength="120" placeholder="Örn: Şimdi keşfet" data-radio-field="cta"></label>
-          </div>
-        </article>
-
-        <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>02</b><div><h3>Ses & Anlatım</h3><p>AIVO briefi kullanarak reklam metnini hazırlar; sen düzenler ve onaylarsın.</p></div></div>
+          <div class="adfilm-radio-card__head"><b>01</b><div><h3>Ses & Anlatım</h3><p>Reklam briefini yaz; AIVO seslendirme metnini hazırlasın veya metni doğrudan düzenle.</p></div></div>
           <div class="adfilm-radio-gradient-title">Reklam Seslendirme Metni</div>
           <div class="adfilm-radio-budget"><div><small>Ses süresi bütçesi</small><strong data-radio-word-range>42–59 kelime önerilir</strong></div><span data-radio-duration-badge>30 sn</span><i><u data-radio-budget-fill></u></i><p><span>Müzik girişi toplam süreye dahildir.</span><b><span data-radio-word-count>0</span> kelime · tahmini <span data-radio-estimate>0</span> sn</b></p></div>
           <div class="adfilm-radio-fields">
+            <label class="is-wide"><span>Reklam Briefi / Prompt</span><textarea rows="4" maxlength="700" data-radio-brief placeholder="Reklamda anlatılmasını istediğin mesajı, hedef kitleyi ve çağrıyı kısa şekilde yaz..."></textarea></label>
             <label><span>Dil</span><select><option>Türkçe</option><option>English</option><option>Deutsch</option><option>Français</option><option>Español</option></select></label>
             <label><span>Ses Stili</span><select><option>Sıcak ve güven veren</option><option>Enerjik reklam sesi</option><option>Premium ve sakin</option><option>Doğal konuşma</option></select></label>
             <label><span>Ses</span><select><option>Sıcak kadın sesi</option><option>Profesyonel erkek sesi</option><option>Enerjik erkek sesi</option><option>Net kadın sesi</option></select></label>
-            <div class="adfilm-radio-copy-action"><span>Metin üretimi</span><strong>Brief tamamlandığında AIVO metni otomatik hazırlar.</strong><button type="button" data-radio-prepare-copy>AIVO Metnini Hazırla</button></div>
-            <label class="is-wide"><span>Reklam Seslendirme Metni</span><textarea rows="7" maxlength="1200" data-radio-copy placeholder="Ürün bilgilerini tamamladığında AIVO reklam metnini burada hazırlayacak."></textarea></label>
+            <div class="adfilm-radio-copy-action"><span>Metin üretimi</span><strong>Brief üzerinden reklam seslendirme metnini hazırla.</strong><button type="button" data-radio-prepare-copy>AIVO Metnini Hazırla</button></div>
+            <label class="is-wide"><span>Reklam Seslendirme Metni</span><textarea rows="7" maxlength="1200" data-radio-copy placeholder="AIVO'nun hazırladığı veya senin yazdığın reklam metni burada yer alacak."></textarea></label>
           </div>
           <div class="adfilm-radio-choice"><span>Hız</span><div data-radio-choice="speed"><button type="button" data-value="slow">Yavaş</button><button type="button" data-value="balanced">Dengeli</button><button type="button" class="is-active" data-value="fast">Hızlı</button></div></div>
           <div class="adfilm-radio-choice"><span>Ses Akışı</span><div data-radio-choice="flow"><button type="button" class="is-active" data-value="natural">Doğal</button><button type="button" data-value="balanced">Dengeli</button><button type="button" data-value="emphatic">Vurgulu</button></div></div>
@@ -122,7 +111,7 @@
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>03</b><div><h3>Ses Ayarları</h3><p>Müzik ve konuşma seçilen toplam reklam süresine yerleştirilir.</p></div></div>
+          <div class="adfilm-radio-card__head"><b>02</b><div><h3>Ses Ayarları</h3><p>Müzik ve konuşma seçilen toplam reklam süresine yerleştirilir.</p></div></div>
           <div class="adfilm-radio-two-col">
             <section><h4>Reklam Süresi</h4><div class="adfilm-radio-durations" data-radio-choice="duration"><button type="button" data-value="15">15 sn</button><button type="button" class="is-active" data-value="30">30 sn</button><button type="button" data-value="45">45 sn</button><button type="button" data-value="60">60 sn</button></div><p>Stable Audio 3 Small Music motoru 120 saniyeye kadar üretimi destekler. AIVO standart radyo sürelerini kullanır.</p></section>
             <section><h4>Çıkış Dosyaları</h4><div class="adfilm-radio-outputs"><div><b>MP3</b><strong>320 kbps</strong><small>Yayın ve dijital kullanım</small></div><div><b>WAV</b><strong>Kayıpsız</strong><small>Stüdyo ve arşiv kalitesi</small></div></div><p>Final tamamlandığında iki format birlikte hazırlanır.</p></section>
@@ -130,22 +119,17 @@
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>04</b><div><h3>Reklam Müziği</h3><p>Arka plan müziğinin nasıl hazırlanacağını seç.</p></div><em>İsteğe bağlı</em></div>
+          <div class="adfilm-radio-card__head"><b>03</b><div><h3>Reklam Müziği</h3><p>Arka plan müziğinin nasıl hazırlanacağını seç.</p></div><em>İsteğe bağlı</em></div>
           <section class="adfilm-radio-music-only">
             <h4>♫ Reklam Müziği</h4>
             <div class="adfilm-radio-three" data-radio-choice="music"><button type="button" class="is-active" data-value="ai">AIVO müziği hazırlasın</button><button type="button" data-value="upload">Kendi müziğimi yükle</button><button type="button" data-value="off">Müzik olmasın</button></div>
             <div class="adfilm-radio-fields"><label><span>Müzik Tarzı</span><select><option>AIVO otomatik seçsin</option><option>Sinematik</option><option>Kurumsal</option><option>Elektronik</option><option>Akustik</option></select></label><label><span>Enerji</span><select><option>Dengeli</option><option>Yumuşak</option><option>Güçlü</option><option>Yüksek</option></select></label></div>
           </section>
-          <div class="adfilm-radio-note">✦ Kullanıcıdan müzik promptu istenmez. AIVO motor promptunu brief ve seçilen stile göre arka planda hazırlar.</div>
+          <div class="adfilm-radio-note">✦ Kullanıcıdan müzik promptu istenmez. AIVO motor promptunu seçilen stile göre arka planda hazırlar.</div>
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>05</b><div><h3>Ses Zaman Akışı</h3><p>Konuşma ve müziğin toplam süreye yerleşimini gör.</p></div></div>
-          <div class="adfilm-radio-timeline"><div><span>00:00</span><span data-radio-total>00:30</span></div><section data-radio-main><i class="intro" style="width:3.33%">Müzik</i><i class="voice" style="width:96.67%">Seslendirme</i></section><small data-radio-timeline-text>1 sn müzik girişi · 29 sn seslendirme</small></div>
-        </article>
-
-        <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>06</b><div><h3>Final Radyo Reklamı</h3><p>Seslendirme ve müzik birleştiğinde final reklamını burada dinle.</p></div></div>
+          <div class="adfilm-radio-card__head"><b>04</b><div><h3>Final Radyo Reklamı</h3><p>Seslendirme ve müzik birleştiğinde final reklamını burada dinle.</p></div></div>
           <div class="adfilm-radio-final"><button type="button" disabled>▶</button><div><strong>Final reklam henüz hazırlanmadı</strong><span data-radio-summary>30 sn · MP3 320 kbps + WAV · Müzik + seslendirme</span><i></i></div><button type="button" disabled>MP3 indir</button><button type="button" disabled>WAV indir</button></div>
         </article>
 
@@ -172,6 +156,7 @@
 
   function setKind(root, kind) {
     const isRadio = kind === 'radio';
+
     root.querySelectorAll('[data-adfilm-kind]').forEach((button) => {
       const active = button.dataset.adfilmKind === kind;
       button.classList.toggle('is-active', active);
@@ -198,6 +183,7 @@
     if (!panel) return;
 
     panel.hidden = false;
+
     const set = (selector, value) => {
       const node = root.querySelector(selector);
       if (node) node.textContent = value;
@@ -214,21 +200,7 @@
   }
 
   function validateRadio(root) {
-    const product = root.querySelector('[data-radio-field="productName"]');
-    const description = root.querySelector('[data-radio-field="description"]');
     const copy = root.querySelector('[data-radio-copy]');
-
-    if (!product?.value.trim()) {
-      notify('Önce ürün veya hizmet adını yaz.', 'warning');
-      product?.focus();
-      return false;
-    }
-
-    if (!description?.value.trim() || description.value.trim().length < 10) {
-      notify('Ürün hakkında kısa açıklamayı tamamla.', 'warning');
-      description?.focus();
-      return false;
-    }
 
     if (!copy?.value.trim() || copy.value.trim().length < 10) {
       notify('Önce reklam seslendirme metnini hazırla.', 'warning');
@@ -262,18 +234,11 @@
     set('[data-radio-duration-badge]', `${duration} sn`);
     set('[data-radio-word-count]', String(words));
     set('[data-radio-estimate]', String(estimate));
-    set('[data-radio-total]', `00:${String(duration).padStart(2, '0')}`);
-    set('[data-radio-timeline-text]', `${intro} sn müzik girişi · ${voice} sn seslendirme`);
     set('[data-radio-summary]', `${duration} sn · MP3 320 kbps + WAV · ${musicOn ? 'Müzik + seslendirme' : 'Yalnız seslendirme'}`);
     set('[data-radio-build-summary]', `${duration} sn · Seslendirme · ${musicOn ? 'AIVO müziği' : 'Müziksiz'} · MP3 + WAV`);
 
     const fillElement = root.querySelector('[data-radio-budget-fill]');
     if (fillElement) fillElement.style.width = `${fill}%`;
-
-    const timeline = root.querySelector('[data-radio-main]');
-    if (timeline) {
-      timeline.innerHTML = `${intro ? `<i class="intro" style="width:${(intro / duration) * 100}%">Müzik</i>` : ''}<i class="voice" style="width:${(voice / duration) * 100}%">Seslendirme</i>`;
-    }
   }
 
   function wireChoices(root) {
@@ -285,6 +250,7 @@
         group.querySelectorAll('button[data-value]').forEach((item) => {
           item.classList.toggle('is-active', item === button);
         });
+
         updateTiming(root);
       });
     });
@@ -293,13 +259,18 @@
     if (copy) copy.addEventListener('input', () => updateTiming(root));
 
     root.querySelector('[data-radio-prepare-copy]')?.addEventListener('click', () => {
-      const brand = root.querySelector('[data-radio-field="brandName"]')?.value.trim()
-        || root.querySelector('[data-radio-field="productName"]')?.value.trim()
-        || 'Markanız';
+      const brief = root.querySelector('[data-radio-brief]')?.value.trim() || '';
+
+      if (!brief) {
+        notify('Önce reklam briefini yaz.', 'warning');
+        root.querySelector('[data-radio-brief]')?.focus();
+        return;
+      }
 
       if (copy && !copy.value.trim()) {
-        copy.value = `${brand} ile ihtiyacınız olan çözüme hızlı, kolay ve güvenle ulaşın. Size özel avantajları şimdi keşfedin. ${brand} — doğru seçim, güçlü sonuç.`;
+        copy.value = `${brief} Şimdi keşfedin.`;
       }
+
       updateTiming(root);
     });
 
