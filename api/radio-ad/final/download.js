@@ -17,6 +17,26 @@ function selectFinal(project, finalId) {
   return history.find((item) => clean(item?.id, 160) === finalId) || null;
 }
 
+function asciiFilename(value) {
+  return clean(value || "AIVO-Radyo-Reklami", 80)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/İ/g, "I")
+    .replace(/ş/g, "s")
+    .replace(/Ş/g, "S")
+    .replace(/ğ/g, "g")
+    .replace(/Ğ/g, "G")
+    .replace(/ç/g, "c")
+    .replace(/Ç/g, "C")
+    .replace(/ö/g, "o")
+    .replace(/Ö/g, "O")
+    .replace(/ü/g, "u")
+    .replace(/Ü/g, "U")
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "AIVO-Radyo-Reklami";
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method !== "GET") {
@@ -43,14 +63,17 @@ export default async function handler(req, res) {
     const body = Buffer.from(await response.arrayBuffer());
     const format = final.format === "wav" ? "wav" : "mp3";
     const contentType = format === "wav" ? "audio/wav" : "audio/mpeg";
-    const safeTitle = clean(final.title || project.title || "AIVO-Radyo-Reklami", 80)
-      .replace(/[^a-zA-Z0-9çğıöşüÇĞİÖŞÜ_-]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "AIVO-Radyo-Reklami";
+    const title = clean(final.title || project.title || "AIVO Radyo Reklami", 80);
+    const fallbackName = `${asciiFilename(title)}.${format}`;
+    const utf8Name = encodeURIComponent(`${title}.${format}`);
 
     res.statusCode = 200;
     res.setHeader("Content-Type", contentType);
     res.setHeader("Content-Length", String(body.length));
-    res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}.${format}"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fallbackName}"; filename*=UTF-8''${utf8Name}`
+    );
     res.setHeader("Cache-Control", "private, no-store");
     return res.end(body);
   } catch (error) {
