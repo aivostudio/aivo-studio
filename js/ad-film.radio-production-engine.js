@@ -28,6 +28,19 @@
   function stageNodes(panel){return{box:q(panel,'[data-radio-production]'),count:q(panel,'[data-radio-stage-count]'),title:q(panel,'[data-radio-stage-title]'),description:q(panel,'[data-radio-stage-description]'),time:q(panel,'[data-radio-stage-time]'),steps:qa(panel,'[data-radio-stage-steps] span'),button:q(panel,'[data-radio-build]')}}
   function placeFinalAfterProduction(panel){var production=q(panel,'[data-radio-production]');var final=q(panel,'.adfilm-radio-final');var card=final&&final.closest('.adfilm-radio-card');if(!production||!card||production.nextElementSibling===card)return;production.insertAdjacentElement('afterend',card)}
   function removePreviewDownload(panel){var preview=q(panel,'.radio-preview');if(!preview)return;var buttons=qa(preview,'.radio-preview__player .radio-icon-btn:not(.is-danger)');if(buttons.length>1)buttons[1].remove()}
+  function showVideoDefault(root){
+    if(!root)return;
+    var video=q(root,'[data-adfilm-kind="video"]');
+    var radioButton=q(root,'[data-adfilm-kind="radio"]');
+    var modebar=q(root,'.adfilm-modebar');
+    var layout=q(root,'.adfilm-layout');
+    var radioPanel=q(root,PANEL);
+    if(video){video.classList.add('is-active');video.setAttribute('aria-selected','true')}
+    if(radioButton){radioButton.classList.remove('is-active');radioButton.setAttribute('aria-selected','false')}
+    if(modebar)modebar.hidden=false;
+    if(layout)layout.hidden=false;
+    if(radioPanel)radioPanel.hidden=true;
+  }
   function resetProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-complete','is-failed');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamınız hazırlanıyor';if(badge)badge.textContent='Üretim akışı'}
   function completeProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-failed');box.classList.add('is-complete');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamınız hazır';if(badge)badge.textContent='Tamamlandı'}
   function failProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-complete');box.classList.add('is-failed');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamı tamamlanamadı';if(badge)badge.textContent='Hata'}
@@ -216,10 +229,13 @@
 
   document.addEventListener('aivo:module-mounted',function(event){
     if(!(event&&event.detail&&event.detail.key==='adfilm'))return;
-    var root=event.detail.root||document.querySelector(ROOT);var panel=q(root,PANEL);placeFinalAfterProduction(panel);removePreviewDownload(panel);ensureGallery(panel);renderGallery(panel,projectId(root),window.AIVORadioAdActiveProject||{});
+    var root=event.detail.root||document.querySelector(ROOT);var panel=q(root,PANEL);showVideoDefault(root);placeFinalAfterProduction(panel);removePreviewDownload(panel);ensureGallery(panel);renderGallery(panel,projectId(root),window.AIVORadioAdActiveProject||{});
   });
 
+  window.addEventListener('pageshow',function(){setTimeout(function(){showVideoDefault(document.querySelector(ROOT))},0)});
+
   ensureStyle();
-  var initialPanel=document.querySelector(ROOT+' '+PANEL);
-  placeFinalAfterProduction(initialPanel);removePreviewDownload(initialPanel);ensureGallery(initialPanel);renderGallery(initialPanel,projectId(document.querySelector(ROOT)),window.AIVORadioAdActiveProject||{});
+  var initialRoot=document.querySelector(ROOT);
+  var initialPanel=q(initialRoot,PANEL);
+  showVideoDefault(initialRoot);placeFinalAfterProduction(initialPanel);removePreviewDownload(initialPanel);ensureGallery(initialPanel);renderGallery(initialPanel,projectId(initialRoot),window.AIVORadioAdActiveProject||{});
 })();
