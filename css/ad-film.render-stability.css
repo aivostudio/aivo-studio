@@ -1,8 +1,29 @@
 /* AIVO AI Reklam Filmi — Chromium/macOS render stability
    Keeps text on a single paint layer and removes obsolete full-screen flash. */
 
+/* Keep the legacy HTML/CSS transformation frames off-screen during the first
+   module paint. This is intentionally CSS-only: production, credits, project
+   state, video and radio controllers remain untouched. The final UI is shown
+   in one paint after the existing layout passes have settled. */
+@keyframes aivoAdFilmInitialReveal{
+  0%,99%{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+  }
+  100%{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+  }
+}
+
 [data-module-root][data-module="adfilm"],
 .rpPanelWrap[data-panel-key="adfilm"]{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  animation:aivoAdFilmInitialReveal .01s steps(1,end) 1.2s forwards!important;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   backface-visibility:visible!important;
