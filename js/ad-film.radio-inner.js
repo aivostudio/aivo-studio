@@ -4,11 +4,18 @@
   const ROOT_SELECTOR = '[data-module-root][data-module="adfilm"]';
   const COMPACT_STYLE_ID = 'aivo-radio-compact-style';
   const RADIO_STAGES = [
-    { title: 'Hazırlık yapılıyor', description: 'Ürün briefi, reklam süresi, ses, müzik ve jingle seçimleri kontrol ediliyor.' },
-    { title: 'Seslendirme hazırlanıyor', description: 'Onaylanan reklam metni seçilen ses, hız ve anlatım akışıyla oluşturuluyor.' },
-    { title: 'Reklam müziği hazırlanıyor', description: 'Seçilen stile ve toplam reklam süresine uygun arka plan müziği hazırlanıyor.' },
-    { title: 'Marka jingle’ı hazırlanıyor', description: 'Kapanış sözü, sonic logo veya yüklenen jingle reklam akışına yerleştiriliyor.' },
-    { title: 'Final miks hazırlanıyor', description: 'Seslendirme, müzik ve jingle birleştirilerek MP3 ve WAV çıktıları hazırlanıyor.' }
+    {
+      title: 'Seslendirme hazırlanıyor',
+      description: 'Onaylanan reklam metni seçilen ses, hız ve anlatım akışıyla oluşturuluyor.'
+    },
+    {
+      title: 'Reklam müziği hazırlanıyor',
+      description: 'Seçilen stile ve toplam reklam süresine uygun arka plan müziği hazırlanıyor.'
+    },
+    {
+      title: 'Final ses birleştiriliyor',
+      description: 'Seslendirme ve reklam müziği birleştirilerek MP3 ve WAV çıktıları hazırlanıyor.'
+    }
   ];
 
   function notify(message, type = 'info') {
@@ -18,6 +25,7 @@
 
   function ensureCompactStyle() {
     if (document.getElementById(COMPACT_STYLE_ID)) return;
+
     const style = document.createElement('style');
     style.id = COMPACT_STYLE_ID;
     style.textContent = `
@@ -48,8 +56,9 @@
       .adfilm-radio-two-col{gap:13px}
       .adfilm-radio-two-col>section{padding:15px;border-radius:17px}
       .adfilm-radio-two-col h4{margin-bottom:10px;font-size:16px}
+      .adfilm-radio-music-only{padding:15px;border:1px solid rgba(134,101,196,.32);border-radius:17px;background:rgba(17,18,39,.5)}
+      .adfilm-radio-music-only h4{margin-bottom:10px;font-size:16px}
       .adfilm-radio-outputs>div{padding:12px;border-radius:13px}
-      .adfilm-radio-jingle-limit{margin-top:11px;padding:10px 12px;border-radius:12px}
       .adfilm-radio-note{margin-top:13px;padding:11px 13px;border-radius:12px;font-size:11px}
       .adfilm-radio-timeline>section{min-height:46px;margin:8px 0;border-radius:12px}
       .adfilm-radio-final{grid-template-columns:48px 1fr auto auto;padding:13px;border-radius:15px}
@@ -66,7 +75,7 @@
       .adfilm-radio-production__stage strong{font-size:17px}
       .adfilm-radio-production__stage p{font-size:12px!important}
       .adfilm-radio-production__stage small{color:#71dec0;font-size:11px;font-weight:700}
-      .adfilm-radio-production__steps{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+      .adfilm-radio-production__steps{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}
       .adfilm-radio-production__steps span{padding:8px 6px;border:1px solid rgba(118,92,174,.24);border-radius:10px;background:rgba(24,24,50,.72);color:#8f879d;text-align:center;font-size:10px;font-weight:800}
       .adfilm-radio-production__steps span.is-active{border-color:rgba(219,94,204,.48);background:linear-gradient(100deg,rgba(112,70,245,.34),rgba(226,83,169,.28));color:#fff}
       .adfilm-radio-buildbar{display:grid;gap:12px;padding:16px 18px;border:1px solid rgba(139,103,205,.34);border-radius:18px;background:linear-gradient(145deg,rgba(27,24,52,.96),rgba(13,15,31,.98))}
@@ -77,7 +86,7 @@
       .adfilm-radio-buildbar button:hover{transform:translateY(-1px)}
       .adfilm-radio-buildbar button:disabled{cursor:wait;opacity:.76;transform:none}
       @keyframes adfilmRadioSpin{to{transform:rotate(360deg)}}
-      @media(max-width:900px){.adfilm-radio-buildbar>div{align-items:flex-start;flex-direction:column}.adfilm-radio-production__steps{grid-template-columns:1fr 1fr}.adfilm-radio-production__body{grid-template-columns:46px 1fr}}
+      @media(max-width:900px){.adfilm-radio-buildbar>div{align-items:flex-start;flex-direction:column}.adfilm-radio-production__steps{grid-template-columns:1fr}.adfilm-radio-production__body{grid-template-columns:46px 1fr}}
     `;
     document.head.appendChild(style);
   }
@@ -99,7 +108,7 @@
         <article class="adfilm-radio-card">
           <div class="adfilm-radio-card__head"><b>02</b><div><h3>Ses & Anlatım</h3><p>AIVO briefi kullanarak reklam metnini hazırlar; sen düzenler ve onaylarsın.</p></div></div>
           <div class="adfilm-radio-gradient-title">Reklam Seslendirme Metni</div>
-          <div class="adfilm-radio-budget"><div><small>Ses süresi bütçesi</small><strong data-radio-word-range>33–46 kelime önerilir</strong></div><span data-radio-duration-badge>30 sn</span><i><u data-radio-budget-fill></u></i><p><span>Jingle ve müzik girişi toplam süreye dahildir.</span><b><span data-radio-word-count>0</span> kelime · tahmini <span data-radio-estimate>0</span> sn</b></p></div>
+          <div class="adfilm-radio-budget"><div><small>Ses süresi bütçesi</small><strong data-radio-word-range>42–59 kelime önerilir</strong></div><span data-radio-duration-badge>30 sn</span><i><u data-radio-budget-fill></u></i><p><span>Müzik girişi toplam süreye dahildir.</span><b><span data-radio-word-count>0</span> kelime · tahmini <span data-radio-estimate>0</span> sn</b></p></div>
           <div class="adfilm-radio-fields">
             <label><span>Dil</span><select><option>Türkçe</option><option>English</option><option>Deutsch</option><option>Français</option><option>Español</option></select></label>
             <label><span>Ses Stili</span><select><option>Sıcak ve güven veren</option><option>Enerjik reklam sesi</option><option>Premium ve sakin</option><option>Doğal konuşma</option></select></label>
@@ -113,7 +122,7 @@
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>03</b><div><h3>Ses Ayarları</h3><p>Müzik, konuşma ve jingle seçilen toplam reklam süresine yerleştirilir.</p></div></div>
+          <div class="adfilm-radio-card__head"><b>03</b><div><h3>Ses Ayarları</h3><p>Müzik ve konuşma seçilen toplam reklam süresine yerleştirilir.</p></div></div>
           <div class="adfilm-radio-two-col">
             <section><h4>Reklam Süresi</h4><div class="adfilm-radio-durations" data-radio-choice="duration"><button type="button" data-value="15">15 sn</button><button type="button" class="is-active" data-value="30">30 sn</button><button type="button" data-value="45">45 sn</button><button type="button" data-value="60">60 sn</button></div><p>Stable Audio 3 Small Music motoru 120 saniyeye kadar üretimi destekler. AIVO standart radyo sürelerini kullanır.</p></section>
             <section><h4>Çıkış Dosyaları</h4><div class="adfilm-radio-outputs"><div><b>MP3</b><strong>320 kbps</strong><small>Yayın ve dijital kullanım</small></div><div><b>WAV</b><strong>Kayıpsız</strong><small>Stüdyo ve arşiv kalitesi</small></div></div><p>Final tamamlandığında iki format birlikte hazırlanır.</p></section>
@@ -121,22 +130,23 @@
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>04</b><div><h3>Reklam Müziği & Marka Jingle’ı</h3><p>Arka plan müziğini ve kapanıştaki marka ses imzasını yönet.</p></div><em>İsteğe bağlı</em></div>
-          <div class="adfilm-radio-two-col">
-            <section class="adfilm-radio-subcard"><h4>♫ Reklam Müziği</h4><div class="adfilm-radio-three" data-radio-choice="music"><button type="button" class="is-active" data-value="ai">AIVO müziği hazırlasın</button><button type="button" data-value="upload">Kendi müziğimi yükle</button><button type="button" data-value="off">Müzik olmasın</button></div><div class="adfilm-radio-fields"><label><span>Müzik Tarzı</span><select><option>AIVO otomatik seçsin</option><option>Sinematik</option><option>Kurumsal</option><option>Elektronik</option><option>Akustik</option></select></label><label><span>Enerji</span><select><option>Dengeli</option><option>Yumuşak</option><option>Güçlü</option><option>Yüksek</option></select></label></div></section>
-            <section class="adfilm-radio-subcard"><h4>✦ Kapanış Jingle’ı</h4><div class="adfilm-radio-three" data-radio-choice="jingle"><button type="button" class="is-active" data-value="ai">AIVO sonic logo hazırlasın</button><button type="button" data-value="upload">Kendi jingle’ımı yükle</button><button type="button" data-value="off">Jingle olmasın</button></div><div class="adfilm-radio-fields"><label class="is-wide"><span>Kapanış Sözü / Slogan</span><input type="text" maxlength="120" placeholder="Örn: AIVO Studio — fikrini reklama dönüştür."></label><label><span>Sonic Logo Tarzı</span><select><option>Modern ve teknolojik</option><option>Sıcak ve samimi</option><option>Premium ve sinematik</option><option>Enerjik</option></select></label><label><span>Yerleşim</span><select><option>Reklam sonunda — önerilen</option><option>Reklam başında</option><option>Başta ve sonda</option></select></label></div><div class="adfilm-radio-jingle-limit"><span>Otomatik jingle süresi</span><strong data-radio-jingle-duration>6 sn</strong></div></section>
-          </div>
-          <div class="adfilm-radio-note">✦ Kullanıcıdan müzik veya jingle promptu istenmez. AIVO motor promptlarını brief ve seçilen stile göre arka planda hazırlar.</div>
+          <div class="adfilm-radio-card__head"><b>04</b><div><h3>Reklam Müziği</h3><p>Arka plan müziğinin nasıl hazırlanacağını seç.</p></div><em>İsteğe bağlı</em></div>
+          <section class="adfilm-radio-music-only">
+            <h4>♫ Reklam Müziği</h4>
+            <div class="adfilm-radio-three" data-radio-choice="music"><button type="button" class="is-active" data-value="ai">AIVO müziği hazırlasın</button><button type="button" data-value="upload">Kendi müziğimi yükle</button><button type="button" data-value="off">Müzik olmasın</button></div>
+            <div class="adfilm-radio-fields"><label><span>Müzik Tarzı</span><select><option>AIVO otomatik seçsin</option><option>Sinematik</option><option>Kurumsal</option><option>Elektronik</option><option>Akustik</option></select></label><label><span>Enerji</span><select><option>Dengeli</option><option>Yumuşak</option><option>Güçlü</option><option>Yüksek</option></select></label></div>
+          </section>
+          <div class="adfilm-radio-note">✦ Kullanıcıdan müzik promptu istenmez. AIVO motor promptunu brief ve seçilen stile göre arka planda hazırlar.</div>
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>05</b><div><h3>Ses Zaman Akışı</h3><p>Konuşma, müzik ve jingle’ın toplam süreye yerleşimini gör.</p></div></div>
-          <div class="adfilm-radio-timeline"><div><span>00:00</span><span data-radio-total>00:30</span></div><section data-radio-main><i class="intro" style="width:3.33%">Müzik</i><i class="voice" style="width:76.67%">Seslendirme</i><i class="jingle" style="width:20%">Jingle</i></section><small data-radio-timeline-text>1 sn müzik girişi · 23 sn seslendirme · 6 sn jingle</small></div>
+          <div class="adfilm-radio-card__head"><b>05</b><div><h3>Ses Zaman Akışı</h3><p>Konuşma ve müziğin toplam süreye yerleşimini gör.</p></div></div>
+          <div class="adfilm-radio-timeline"><div><span>00:00</span><span data-radio-total>00:30</span></div><section data-radio-main><i class="intro" style="width:3.33%">Müzik</i><i class="voice" style="width:96.67%">Seslendirme</i></section><small data-radio-timeline-text>1 sn müzik girişi · 29 sn seslendirme</small></div>
         </article>
 
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>06</b><div><h3>Final Radyo Reklamı</h3><p>Seslendirme, müzik ve jingle birleştiğinde final reklamını burada dinle.</p></div></div>
-          <div class="adfilm-radio-final"><button type="button" disabled>▶</button><div><strong>Final reklam henüz hazırlanmadı</strong><span data-radio-summary>30 sn · MP3 320 kbps + WAV · Müzik + kapanış jingle’ı</span><i></i></div><button type="button" disabled>MP3 indir</button><button type="button" disabled>WAV indir</button></div>
+          <div class="adfilm-radio-card__head"><b>06</b><div><h3>Final Radyo Reklamı</h3><p>Seslendirme ve müzik birleştiğinde final reklamını burada dinle.</p></div></div>
+          <div class="adfilm-radio-final"><button type="button" disabled>▶</button><div><strong>Final reklam henüz hazırlanmadı</strong><span data-radio-summary>30 sn · MP3 320 kbps + WAV · Müzik + seslendirme</span><i></i></div><button type="button" disabled>MP3 indir</button><button type="button" disabled>WAV indir</button></div>
         </article>
 
         <section class="adfilm-radio-production" data-radio-production hidden aria-live="polite">
@@ -144,17 +154,17 @@
           <div class="adfilm-radio-production__body">
             <div class="adfilm-radio-production__spinner" aria-hidden="true"></div>
             <div class="adfilm-radio-production__stage">
-              <span data-radio-stage-count>AŞAMA 1/5</span>
-              <strong data-radio-stage-title>Hazırlık yapılıyor</strong>
-              <p data-radio-stage-description>Ürün briefi ve ses ayarları kontrol ediliyor.</p>
+              <span data-radio-stage-count>AŞAMA 1/3</span>
+              <strong data-radio-stage-title>Seslendirme hazırlanıyor</strong>
+              <p data-radio-stage-description>Onaylanan reklam metni seçilen ses ve anlatım akışıyla oluşturuluyor.</p>
               <small data-radio-stage-time>Toplam geçen süre: 0 dk 00 sn</small>
             </div>
           </div>
-          <div class="adfilm-radio-production__steps" data-radio-stage-steps><span>Hazırlık</span><span>Seslendirme</span><span>Müzik</span><span>Jingle</span><span>Final miks</span></div>
+          <div class="adfilm-radio-production__steps" data-radio-stage-steps><span>Seslendirme</span><span>Müzik</span><span>Final ses</span></div>
         </section>
 
         <div class="adfilm-radio-buildbar">
-          <div><strong>Radyo reklamı projesi hazırlanacak</strong><span data-radio-build-summary>30 sn · Seslendirme · AIVO müziği · Kapanış jingle’ı · MP3 + WAV</span></div>
+          <div><strong>Radyo reklamı projesi hazırlanacak</strong><span data-radio-build-summary>30 sn · Seslendirme · AIVO müziği · MP3 + WAV</span></div>
           <button type="button" data-radio-build>▶ Radyo Reklamını Oluştur</button>
         </div>
       </section>`;
@@ -167,9 +177,11 @@
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-selected', String(active));
     });
+
     const modebar = root.querySelector('.adfilm-modebar');
     const layout = root.querySelector('.adfilm-layout');
     const radio = root.querySelector('[data-adfilm-radio-panel]');
+
     if (modebar) modebar.hidden = isRadio;
     if (layout) layout.hidden = isRadio;
     if (radio) radio.hidden = !isRadio;
@@ -184,32 +196,54 @@
     const stage = RADIO_STAGES[index];
     const panel = root.querySelector('[data-radio-production]');
     if (!panel) return;
+
     panel.hidden = false;
-    const set = (selector, value) => { const node = root.querySelector(selector); if (node) node.textContent = value; };
+    const set = (selector, value) => {
+      const node = root.querySelector(selector);
+      if (node) node.textContent = value;
+    };
+
     set('[data-radio-stage-count]', `AŞAMA ${index + 1}/${RADIO_STAGES.length}`);
     set('[data-radio-stage-title]', stage.title);
     set('[data-radio-stage-description]', note || stage.description);
     set('[data-radio-stage-time]', 'Toplam geçen süre: 0 dk 00 sn');
-    root.querySelectorAll('[data-radio-stage-steps] span').forEach((item, itemIndex) => item.classList.toggle('is-active', itemIndex === index));
+
+    root.querySelectorAll('[data-radio-stage-steps] span').forEach((item, itemIndex) => {
+      item.classList.toggle('is-active', itemIndex === index);
+    });
   }
 
   function validateRadio(root) {
     const product = root.querySelector('[data-radio-field="productName"]');
     const description = root.querySelector('[data-radio-field="description"]');
     const copy = root.querySelector('[data-radio-copy]');
-    if (!product?.value.trim()) { notify('Önce ürün veya hizmet adını yaz.', 'warning'); product?.focus(); return false; }
-    if (!description?.value.trim() || description.value.trim().length < 10) { notify('Ürün hakkında kısa açıklamayı tamamla.', 'warning'); description?.focus(); return false; }
-    if (!copy?.value.trim() || copy.value.trim().length < 10) { notify('Önce reklam seslendirme metnini hazırla.', 'warning'); copy?.focus(); return false; }
+
+    if (!product?.value.trim()) {
+      notify('Önce ürün veya hizmet adını yaz.', 'warning');
+      product?.focus();
+      return false;
+    }
+
+    if (!description?.value.trim() || description.value.trim().length < 10) {
+      notify('Ürün hakkında kısa açıklamayı tamamla.', 'warning');
+      description?.focus();
+      return false;
+    }
+
+    if (!copy?.value.trim() || copy.value.trim().length < 10) {
+      notify('Önce reklam seslendirme metnini hazırla.', 'warning');
+      copy?.focus();
+      return false;
+    }
+
     return true;
   }
 
   function updateTiming(root) {
     const duration = Number(selected(root, 'duration', '30'));
-    const jingleOn = selected(root, 'jingle', 'ai') !== 'off';
     const musicOn = selected(root, 'music', 'ai') !== 'off';
-    const jingle = jingleOn ? ({ 15: 4, 30: 6, 45: 7, 60: 8 }[duration] || 6) : 0;
     const intro = musicOn ? 1 : 0;
-    const voice = Math.max(1, duration - jingle - intro);
+    const voice = Math.max(1, duration - intro);
     const speed = selected(root, 'speed', 'fast');
     const rate = speed === 'slow' ? 1.55 : speed === 'balanced' ? 1.9 : 2.2;
     const maxWords = Math.floor(voice * rate);
@@ -218,20 +252,28 @@
     const words = copy ? copy.split(/\s+/).filter(Boolean).length : 0;
     const estimate = Math.ceil(words / rate);
     const fill = Math.min(100, maxWords ? (words / maxWords) * 100 : 0);
-    const set = (selector, value) => { const el = root.querySelector(selector); if (el) el.textContent = value; };
+
+    const set = (selector, value) => {
+      const element = root.querySelector(selector);
+      if (element) element.textContent = value;
+    };
+
     set('[data-radio-word-range]', `${minWords}–${maxWords} kelime önerilir`);
     set('[data-radio-duration-badge]', `${duration} sn`);
     set('[data-radio-word-count]', String(words));
     set('[data-radio-estimate]', String(estimate));
-    set('[data-radio-jingle-duration]', `${jingle} sn`);
     set('[data-radio-total]', `00:${String(duration).padStart(2, '0')}`);
-    set('[data-radio-timeline-text]', `${intro} sn müzik girişi · ${voice} sn seslendirme · ${jingle} sn jingle`);
-    set('[data-radio-summary]', `${duration} sn · MP3 320 kbps + WAV · ${musicOn ? 'Müzik' : 'Müziksiz'}${jingleOn ? ' + kapanış jingle’ı' : ''}`);
-    set('[data-radio-build-summary]', `${duration} sn · Seslendirme · ${musicOn ? 'AIVO müziği' : 'Müziksiz'} · ${jingleOn ? 'Kapanış jingle’ı' : 'Jingle yok'} · MP3 + WAV`);
-    const fillEl = root.querySelector('[data-radio-budget-fill]');
-    if (fillEl) fillEl.style.width = `${fill}%`;
-    const main = root.querySelector('[data-radio-main]');
-    if (main) main.innerHTML = `${intro ? `<i class="intro" style="width:${(intro / duration) * 100}%">Müzik</i>` : ''}<i class="voice" style="width:${(voice / duration) * 100}%">Seslendirme</i>${jingle ? `<i class="jingle" style="width:${(jingle / duration) * 100}%">Jingle</i>` : ''}`;
+    set('[data-radio-timeline-text]', `${intro} sn müzik girişi · ${voice} sn seslendirme`);
+    set('[data-radio-summary]', `${duration} sn · MP3 320 kbps + WAV · ${musicOn ? 'Müzik + seslendirme' : 'Yalnız seslendirme'}`);
+    set('[data-radio-build-summary]', `${duration} sn · Seslendirme · ${musicOn ? 'AIVO müziği' : 'Müziksiz'} · MP3 + WAV`);
+
+    const fillElement = root.querySelector('[data-radio-budget-fill]');
+    if (fillElement) fillElement.style.width = `${fill}%`;
+
+    const timeline = root.querySelector('[data-radio-main]');
+    if (timeline) {
+      timeline.innerHTML = `${intro ? `<i class="intro" style="width:${(intro / duration) * 100}%">Müzik</i>` : ''}<i class="voice" style="width:${(voice / duration) * 100}%">Seslendirme</i>`;
+    }
   }
 
   function wireChoices(root) {
@@ -239,24 +281,37 @@
       group.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-value]');
         if (!button) return;
-        group.querySelectorAll('button[data-value]').forEach((item) => item.classList.toggle('is-active', item === button));
+
+        group.querySelectorAll('button[data-value]').forEach((item) => {
+          item.classList.toggle('is-active', item === button);
+        });
         updateTiming(root);
       });
     });
+
     const copy = root.querySelector('[data-radio-copy]');
     if (copy) copy.addEventListener('input', () => updateTiming(root));
+
     root.querySelector('[data-radio-prepare-copy]')?.addEventListener('click', () => {
-      const brand = root.querySelector('[data-radio-field="brandName"]')?.value.trim() || root.querySelector('[data-radio-field="productName"]')?.value.trim() || 'Markanız';
-      if (copy && !copy.value.trim()) copy.value = `${brand} ile ihtiyacınız olan çözüme hızlı, kolay ve güvenle ulaşın. Size özel avantajları şimdi keşfedin. ${brand} — doğru seçim, güçlü sonuç.`;
+      const brand = root.querySelector('[data-radio-field="brandName"]')?.value.trim()
+        || root.querySelector('[data-radio-field="productName"]')?.value.trim()
+        || 'Markanız';
+
+      if (copy && !copy.value.trim()) {
+        copy.value = `${brand} ile ihtiyacınız olan çözüme hızlı, kolay ve güvenle ulaşın. Size özel avantajları şimdi keşfedin. ${brand} — doğru seçim, güçlü sonuç.`;
+      }
       updateTiming(root);
     });
+
     root.querySelector('[data-radio-build]')?.addEventListener('click', (event) => {
       const button = event.currentTarget;
       if (!validateRadio(root)) return;
+
       renderRadioStage(root, 0);
       button.disabled = true;
       button.textContent = 'Radyo Reklamı Oluşturuluyor...';
       root.querySelector('[data-radio-production]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
       window.setTimeout(() => {
         renderRadioStage(root, 0, 'Üretim paneli hazır. Radyo üretim motoru bağlandığında canlı aşamalar burada ilerleyecek.');
         button.disabled = false;
@@ -270,27 +325,35 @@
     if (!root || root.dataset.radioInnerReady === '1') return;
     root.dataset.radioInnerReady = '1';
     ensureCompactStyle();
+
     const hero = root.querySelector('.adfilm-hero');
     if (!hero) return;
+
     const switcher = document.createElement('div');
     switcher.className = 'adfilm-kind-switch';
     switcher.setAttribute('role', 'tablist');
     switcher.setAttribute('aria-label', 'Reklam türünü seç');
     switcher.innerHTML = '<span>Reklam Türünü Seç</span><div><button type="button" class="is-active" data-adfilm-kind="video" role="tab" aria-selected="true">Reklam Videosu</button><button type="button" data-adfilm-kind="radio" role="tab" aria-selected="false">Radyo Reklamı</button></div>';
+
     hero.insertAdjacentElement('afterend', switcher);
     root.insertAdjacentHTML('beforeend', radioMarkup());
+
     switcher.addEventListener('click', (event) => {
       const button = event.target.closest('button[data-adfilm-kind]');
       if (button) setKind(root, button.dataset.adfilmKind);
     });
+
     wireChoices(root);
     updateTiming(root);
     setKind(root, 'video');
   }
 
   document.addEventListener('aivo:module-mounted', (event) => {
-    if (event?.detail?.key === 'adfilm') init(event.detail.root || document.querySelector(ROOT_SELECTOR));
+    if (event?.detail?.key === 'adfilm') {
+      init(event.detail.root || document.querySelector(ROOT_SELECTOR));
+    }
   });
+
   const current = document.querySelector(ROOT_SELECTOR);
   if (current) init(current);
 })();
