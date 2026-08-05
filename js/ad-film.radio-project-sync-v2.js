@@ -641,10 +641,9 @@
       writeStorage(LAST_KIND_KEY, button.getAttribute('data-adfilm-kind'));
     }, true);
 
-    if (readStorage(LAST_KIND_KEY, '') === 'radio') {
-      var radioButton = q(root, '[data-adfilm-kind="radio"]');
-      if (radioButton) setTimeout(function(){ radioButton.click(); }, 0);
-    }
+    writeStorage(LAST_KIND_KEY, 'video');
+    var videoButton = q(root, '[data-adfilm-kind="video"]');
+    if (videoButton) setTimeout(function(){ videoButton.click(); }, 0);
   }
 
   function mount(root){
