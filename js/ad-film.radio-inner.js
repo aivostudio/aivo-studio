@@ -6,7 +6,7 @@
   const RADIO_STAGES = [
     {
       title: 'Seslendirme hazırlanıyor',
-      description: 'Onaylanan reklam metni seçilen ses, hız ve anlatım akışıyla oluşturuluyor.'
+      description: 'Kullanıcının yazdığı reklam metni seçilen ses, hız ve anlatım akışıyla oluşturuluyor.'
     },
     {
       title: 'Reklam müziği hazırlanıyor',
@@ -42,10 +42,8 @@
       .adfilm-radio-budget{padding:13px;border-radius:15px}
       .adfilm-radio-fields{gap:11px}
       .adfilm-radio-fields label{gap:6px}
-      .adfilm-radio-fields label>span,.adfilm-radio-copy-action>span{font-size:12px}
+      .adfilm-radio-fields label>span{font-size:12px}
       .adfilm-radio-fields input,.adfilm-radio-fields textarea,.adfilm-radio-fields select{padding:11px 13px;border-radius:12px;font-size:14px}
-      .adfilm-radio-copy-action{padding:12px;border-radius:12px}
-      .adfilm-radio-copy-action button{padding:8px 11px;font-size:11px}
       .adfilm-radio-choice{grid-template-columns:82px 1fr;gap:10px;margin-top:9px}
       .adfilm-radio-choice button,.adfilm-radio-three button,.adfilm-radio-durations button{min-height:42px;border-radius:12px;font-size:13px}
       .adfilm-radio-preview{margin-top:14px;padding:15px;border-radius:17px}
@@ -94,16 +92,14 @@
     return `
       <section class="adfilm-radio-panel" data-adfilm-radio-panel hidden aria-label="AI Radyo Reklamı Oluştur">
         <article class="adfilm-radio-card">
-          <div class="adfilm-radio-card__head"><b>01</b><div><h3>Ses & Anlatım</h3><p>Reklam briefini yaz; AIVO seslendirme metnini hazırlasın veya metni doğrudan düzenle.</p></div></div>
+          <div class="adfilm-radio-card__head"><b>01</b><div><h3>Ses & Anlatım</h3><p>Reklam seslendirme metnini yaz; AIVO seçtiğin ses ve anlatım ayarlarıyla seslendirsin.</p></div></div>
           <div class="adfilm-radio-gradient-title">Reklam Seslendirme Metni</div>
           <div class="adfilm-radio-budget"><div><small>Ses süresi bütçesi</small><strong data-radio-word-range>42–59 kelime önerilir</strong></div><span data-radio-duration-badge>30 sn</span><i><u data-radio-budget-fill></u></i><p><span>Müzik girişi toplam süreye dahildir.</span><b><span data-radio-word-count>0</span> kelime · tahmini <span data-radio-estimate>0</span> sn</b></p></div>
           <div class="adfilm-radio-fields">
-            <label class="is-wide"><span>Reklam Briefi / Prompt</span><textarea rows="4" maxlength="700" data-radio-brief placeholder="Reklamda anlatılmasını istediğin mesajı, hedef kitleyi ve çağrıyı kısa şekilde yaz..."></textarea></label>
             <label><span>Dil</span><select><option>Türkçe</option><option>English</option><option>Deutsch</option><option>Français</option><option>Español</option></select></label>
             <label><span>Ses Stili</span><select><option>Sıcak ve güven veren</option><option>Enerjik reklam sesi</option><option>Premium ve sakin</option><option>Doğal konuşma</option></select></label>
             <label><span>Ses</span><select><option>Sıcak kadın sesi</option><option>Profesyonel erkek sesi</option><option>Enerjik erkek sesi</option><option>Net kadın sesi</option></select></label>
-            <div class="adfilm-radio-copy-action"><span>Metin üretimi</span><strong>Brief üzerinden reklam seslendirme metnini hazırla.</strong><button type="button" data-radio-prepare-copy>AIVO Metnini Hazırla</button></div>
-            <label class="is-wide"><span>Reklam Seslendirme Metni</span><textarea rows="7" maxlength="1200" data-radio-copy placeholder="AIVO'nun hazırladığı veya senin yazdığın reklam metni burada yer alacak."></textarea></label>
+            <label class="is-wide"><span>Reklam Seslendirme Metni</span><textarea rows="7" maxlength="1200" data-radio-copy placeholder="Reklam metnini buraya yaz..."></textarea></label>
           </div>
           <div class="adfilm-radio-choice"><span>Hız</span><div data-radio-choice="speed"><button type="button" data-value="slow">Yavaş</button><button type="button" data-value="balanced">Dengeli</button><button type="button" class="is-active" data-value="fast">Hızlı</button></div></div>
           <div class="adfilm-radio-choice"><span>Ses Akışı</span><div data-radio-choice="flow"><button type="button" class="is-active" data-value="natural">Doğal</button><button type="button" data-value="balanced">Dengeli</button><button type="button" data-value="emphatic">Vurgulu</button></div></div>
@@ -140,7 +136,7 @@
             <div class="adfilm-radio-production__stage">
               <span data-radio-stage-count>AŞAMA 1/3</span>
               <strong data-radio-stage-title>Seslendirme hazırlanıyor</strong>
-              <p data-radio-stage-description>Onaylanan reklam metni seçilen ses ve anlatım akışıyla oluşturuluyor.</p>
+              <p data-radio-stage-description>Kullanıcının yazdığı reklam metni seçilen ses ve anlatım akışıyla oluşturuluyor.</p>
               <small data-radio-stage-time>Toplam geçen süre: 0 dk 00 sn</small>
             </div>
           </div>
@@ -203,7 +199,7 @@
     const copy = root.querySelector('[data-radio-copy]');
 
     if (!copy?.value.trim() || copy.value.trim().length < 10) {
-      notify('Önce reklam seslendirme metnini hazırla.', 'warning');
+      notify('Önce reklam seslendirme metnini yaz.', 'warning');
       copy?.focus();
       return false;
     }
@@ -257,22 +253,6 @@
 
     const copy = root.querySelector('[data-radio-copy]');
     if (copy) copy.addEventListener('input', () => updateTiming(root));
-
-    root.querySelector('[data-radio-prepare-copy]')?.addEventListener('click', () => {
-      const brief = root.querySelector('[data-radio-brief]')?.value.trim() || '';
-
-      if (!brief) {
-        notify('Önce reklam briefini yaz.', 'warning');
-        root.querySelector('[data-radio-brief]')?.focus();
-        return;
-      }
-
-      if (copy && !copy.value.trim()) {
-        copy.value = `${brief} Şimdi keşfedin.`;
-      }
-
-      updateTiming(root);
-    });
 
     root.querySelector('[data-radio-build]')?.addEventListener('click', (event) => {
       const button = event.currentTarget;
