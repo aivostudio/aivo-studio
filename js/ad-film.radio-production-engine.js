@@ -23,6 +23,7 @@
   function elapsed(){var total=Math.max(0,Math.floor((Date.now()-startedAt)/1000));return Math.floor(total/60)+' dk '+pad(total%60)+' sn'}
   function stageNodes(panel){return{box:q(panel,'[data-radio-production]'),count:q(panel,'[data-radio-stage-count]'),title:q(panel,'[data-radio-stage-title]'),description:q(panel,'[data-radio-stage-description]'),time:q(panel,'[data-radio-stage-time]'),steps:qa(panel,'[data-radio-stage-steps] span'),button:q(panel,'[data-radio-build]')}}
   function placeFinalAfterProduction(panel){var production=q(panel,'[data-radio-production]');var final=q(panel,'.adfilm-radio-final');var card=final&&final.closest('.adfilm-radio-card');if(!production||!card||production.nextElementSibling===card)return;production.insertAdjacentElement('afterend',card)}
+  function removeNarrationDownload(panel){var player=q(panel,'.radio-preview__player');if(!player)return;var actions=qa(player,'button.radio-icon-btn:not(.is-danger)');if(actions.length>1)actions[1].remove()}
   function setStage(panel,index,title,description){var n=stageNodes(panel);if(n.box)n.box.hidden=false;if(n.count)n.count.textContent='AŞAMA '+(index+1)+'/3';if(n.title)n.title.textContent=title;if(n.description)n.description.textContent=description;n.steps.forEach(function(item,i){item.classList.toggle('is-active',i===index)});if(n.time)n.time.textContent='Toplam geçen süre: '+elapsed()}
   function startTimer(panel){clearInterval(timer);startedAt=Date.now();var n=stageNodes(panel);if(n.time)n.time.textContent='Toplam geçen süre: 0 dk 00 sn';timer=setInterval(function(){var current=stageNodes(panel).time;if(current)current.textContent='Toplam geçen süre: '+elapsed()},1000)}
   function stopTimer(){clearInterval(timer);timer=null}
@@ -70,6 +71,7 @@
       return;
     }
     running=true;
+    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
     setBusy(panel,true);
     startTimer(panel);
@@ -110,7 +112,7 @@
     if(document.getElementById('aivo-radio-production-engine-style'))return;
     var style=document.createElement('style');
     style.id='aivo-radio-production-engine-style';
-    style.textContent='.adfilm-radio-production__stage{text-align:center;justify-items:center}.adfilm-radio-production__stage p{text-align:center!important}.adfilm-radio-production__body{grid-template-columns:58px minmax(0,1fr)}';
+    style.textContent='.adfilm-radio-production__stage{text-align:center;justify-items:center}.adfilm-radio-production__stage p{text-align:center!important}.adfilm-radio-production__body{grid-template-columns:58px minmax(0,1fr)}.radio-preview__player{grid-template-columns:48px minmax(0,1fr) 38px 38px!important}';
     document.head.appendChild(style);
   }
 
@@ -121,6 +123,7 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
     var panel=button.closest(PANEL),root=button.closest(ROOT);
+    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
     run(panel,root);
   },true);
@@ -129,6 +132,7 @@
     var project=event&&event.detail&&event.detail.project;
     var panel=document.querySelector(ROOT+' '+PANEL);
     var id=event&&event.detail&&event.detail.projectId||project&&project.id;
+    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
     if(panel&&project&&project.final&&project.final.url)mountFinal(panel,id,project.final);
   });
@@ -136,9 +140,13 @@
   document.addEventListener('aivo:module-mounted',function(event){
     if(!(event&&event.detail&&event.detail.key==='adfilm'))return;
     var root=event.detail.root||document.querySelector(ROOT);
-    placeFinalAfterProduction(q(root,PANEL));
+    var panel=q(root,PANEL);
+    removeNarrationDownload(panel);
+    placeFinalAfterProduction(panel);
   });
 
   ensureStyle();
-  placeFinalAfterProduction(document.querySelector(ROOT+' '+PANEL));
+  var currentPanel=document.querySelector(ROOT+' '+PANEL);
+  removeNarrationDownload(currentPanel);
+  placeFinalAfterProduction(currentPanel);
 })();
