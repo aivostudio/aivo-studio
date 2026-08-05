@@ -23,7 +23,10 @@
   function elapsed(){var total=Math.max(0,Math.floor((Date.now()-startedAt)/1000));return Math.floor(total/60)+' dk '+pad(total%60)+' sn'}
   function stageNodes(panel){return{box:q(panel,'[data-radio-production]'),count:q(panel,'[data-radio-stage-count]'),title:q(panel,'[data-radio-stage-title]'),description:q(panel,'[data-radio-stage-description]'),time:q(panel,'[data-radio-stage-time]'),steps:qa(panel,'[data-radio-stage-steps] span'),button:q(panel,'[data-radio-build]')}}
   function placeFinalAfterProduction(panel){var production=q(panel,'[data-radio-production]');var final=q(panel,'.adfilm-radio-final');var card=final&&final.closest('.adfilm-radio-card');if(!production||!card||production.nextElementSibling===card)return;production.insertAdjacentElement('afterend',card)}
-  function removeNarrationDownload(panel){var player=q(panel,'.radio-preview__player');if(!player)return;var actions=qa(player,'button.radio-icon-btn:not(.is-danger)');if(actions.length>1)actions[1].remove()}
+  function removePreviewDownload(panel){var preview=q(panel,'.radio-preview');if(!preview)return;var buttons=qa(preview,'.radio-preview__player .radio-icon-btn:not(.is-danger)');if(buttons.length>1)buttons[1].remove()}
+  function resetProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-complete','is-failed');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamınız hazırlanıyor';if(badge)badge.textContent='Üretim akışı'}
+  function completeProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-failed');box.classList.add('is-complete');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamınız hazır';if(badge)badge.textContent='Tamamlandı'}
+  function failProductionState(panel){var box=q(panel,'[data-radio-production]');if(!box)return;box.classList.remove('is-complete');box.classList.add('is-failed');var title=q(box,'.adfilm-radio-production__top strong');var badge=q(box,'.adfilm-radio-production__top span');if(title)title.textContent='Radyo reklamı tamamlanamadı';if(badge)badge.textContent='Hata'}
   function setStage(panel,index,title,description){var n=stageNodes(panel);if(n.box)n.box.hidden=false;if(n.count)n.count.textContent='AŞAMA '+(index+1)+'/3';if(n.title)n.title.textContent=title;if(n.description)n.description.textContent=description;n.steps.forEach(function(item,i){item.classList.toggle('is-active',i===index)});if(n.time)n.time.textContent='Toplam geçen süre: '+elapsed()}
   function startTimer(panel){clearInterval(timer);startedAt=Date.now();var n=stageNodes(panel);if(n.time)n.time.textContent='Toplam geçen süre: 0 dk 00 sn';timer=setInterval(function(){var current=stageNodes(panel).time;if(current)current.textContent='Toplam geçen süre: '+elapsed()},1000)}
   function stopTimer(){clearInterval(timer);timer=null}
@@ -71,8 +74,9 @@
       return;
     }
     running=true;
-    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
+    removePreviewDownload(panel);
+    resetProductionState(panel);
     setBusy(panel,true);
     startTimer(panel);
     var box=q(panel,'[data-radio-production]');
@@ -96,9 +100,12 @@
       if(clean(finalData.status).toUpperCase()!=='COMPLETED'||!finalData.final)throw new Error(finalData.error||'final_mix_not_completed');
       mountFinal(panel,id,finalData.final);
       var n=stageNodes(panel);if(n.title)n.title.textContent='Radyo reklamı hazır';if(n.description)n.description.textContent='Final ses dosyan hazırlandı.';if(n.count)n.count.textContent='TAMAMLANDI';n.steps.forEach(function(item){item.classList.add('is-active')});if(n.time)n.time.textContent='Toplam geçen süre: '+elapsed();
+      completeProductionState(panel);
+      placeFinalAfterProduction(panel);
       notify('Radyo reklamın hazır.','success');
     }catch(error){
       console.error('[RADIOAD] final production',error);
+      failProductionState(panel);
       notify(errorMessage(error),'error');
       var nodes=stageNodes(panel);if(nodes.title)nodes.title.textContent='Üretim tamamlanamadı';if(nodes.description)nodes.description.textContent=errorMessage(error);
     }finally{
@@ -112,7 +119,7 @@
     if(document.getElementById('aivo-radio-production-engine-style'))return;
     var style=document.createElement('style');
     style.id='aivo-radio-production-engine-style';
-    style.textContent='.adfilm-radio-production__stage{text-align:center;justify-items:center}.adfilm-radio-production__stage p{text-align:center!important}.adfilm-radio-production__body{grid-template-columns:58px minmax(0,1fr)}.radio-preview__player{grid-template-columns:48px minmax(0,1fr) 38px 38px!important}';
+    style.textContent='.adfilm-radio-production__stage{text-align:center;justify-items:center}.adfilm-radio-production__stage p{text-align:center!important}.adfilm-radio-production__body{grid-template-columns:58px minmax(0,1fr)}.adfilm-radio-production.is-complete .adfilm-radio-production__spinner,.adfilm-radio-production.is-failed .adfilm-radio-production__spinner{display:none}.adfilm-radio-production.is-complete .adfilm-radio-production__body,.adfilm-radio-production.is-failed .adfilm-radio-production__body{grid-template-columns:1fr}.adfilm-radio-production.is-complete .adfilm-radio-production__top span{background:rgba(20,111,92,.22);color:#75e5c0}.adfilm-radio-production.is-failed .adfilm-radio-production__top span{background:rgba(126,24,55,.28);color:#ff86aa}';
     document.head.appendChild(style);
   }
 
@@ -123,8 +130,8 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
     var panel=button.closest(PANEL),root=button.closest(ROOT);
-    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
+    removePreviewDownload(panel);
     run(panel,root);
   },true);
 
@@ -132,21 +139,21 @@
     var project=event&&event.detail&&event.detail.project;
     var panel=document.querySelector(ROOT+' '+PANEL);
     var id=event&&event.detail&&event.detail.projectId||project&&project.id;
-    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
-    if(panel&&project&&project.final&&project.final.url)mountFinal(panel,id,project.final);
+    removePreviewDownload(panel);
+    if(panel&&project&&project.final&&project.final.url){mountFinal(panel,id,project.final);if(!running)completeProductionState(panel)}
   });
 
   document.addEventListener('aivo:module-mounted',function(event){
     if(!(event&&event.detail&&event.detail.key==='adfilm'))return;
     var root=event.detail.root||document.querySelector(ROOT);
     var panel=q(root,PANEL);
-    removeNarrationDownload(panel);
     placeFinalAfterProduction(panel);
+    removePreviewDownload(panel);
   });
 
   ensureStyle();
-  var currentPanel=document.querySelector(ROOT+' '+PANEL);
-  removeNarrationDownload(currentPanel);
-  placeFinalAfterProduction(currentPanel);
+  var initialPanel=document.querySelector(ROOT+' '+PANEL);
+  placeFinalAfterProduction(initialPanel);
+  removePreviewDownload(initialPanel);
 })();
