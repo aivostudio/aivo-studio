@@ -27,6 +27,7 @@
     ["th","ไทย"]
   ];
 
+  var LANGUAGE_SELECTOR='select[data-adfilm-input="language"],[data-adfilm-radio-panel] .adfilm-radio-card:first-child .adfilm-radio-fields>label:first-child>select';
   var applying=false;
   function root(){return document.querySelector('[data-module-root][data-module="adfilm"]')}
   function optionHtml(){return LANGUAGES.map(function(item){return '<option value="'+item[0]+'">'+item[1]+'</option>'}).join("")}
@@ -39,7 +40,7 @@
     scope=scope&&scope.querySelectorAll?scope:root();if(!scope)return;
     applying=true;
     try{
-      scope.querySelectorAll('select[data-adfilm-input="language"]').forEach(function(select){
+      scope.querySelectorAll(LANGUAGE_SELECTOR).forEach(function(select){
         var current=String(preferred||select.value||"tr").toLowerCase();
         if(!hasCompleteList(select))select.innerHTML=optionHtml();
         if(!LANGUAGES.some(function(item){return item[0]===current}))current="tr";
@@ -68,8 +69,8 @@
     var scope=root();if(!scope||applying)return;
     var needsApply=mutations.some(function(mutation){
       if(mutation.type==="childList"){
-        if(mutation.target&&mutation.target.matches&&mutation.target.matches('select[data-adfilm-input="language"]'))return true;
-        return Array.from(mutation.addedNodes||[]).some(function(node){return node.nodeType===1&&(node.matches&&node.matches('select[data-adfilm-input="language"]')||node.querySelector&&node.querySelector('select[data-adfilm-input="language"]'))});
+        if(mutation.target&&mutation.target.matches&&mutation.target.matches(LANGUAGE_SELECTOR))return true;
+        return Array.from(mutation.addedNodes||[]).some(function(node){return node.nodeType===1&&((node.matches&&node.matches(LANGUAGE_SELECTOR))||(node.querySelector&&node.querySelector(LANGUAGE_SELECTOR)))});
       }
       return false;
     });
