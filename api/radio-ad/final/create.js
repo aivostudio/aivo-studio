@@ -16,13 +16,13 @@ import {
   sendJson,
 } from "../../_lib/radio-ad-projects.js";
 
-const PIPELINE_VERSION = "radio-final-v3";
+const PIPELINE_VERSION = "radio-final-v4";
 const DOWNLOAD_LIMIT = 100 * 1024 * 1024;
-const MUSIC_VOLUME = 0.38;
-const DUCKING_THRESHOLD = 0.12;
-const DUCKING_RATIO = 3;
-const DUCKING_ATTACK_MS = 12;
-const DUCKING_RELEASE_MS = 180;
+const MUSIC_VOLUME = 0.5;
+const DUCKING_THRESHOLD = 0.16;
+const DUCKING_RATIO = 2.4;
+const DUCKING_ATTACK_MS = 10;
+const DUCKING_RELEASE_MS = 150;
 
 function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
@@ -213,7 +213,7 @@ export default async function handler(req, res) {
     }
 
     const now = new Date().toISOString();
-    const key = `${mediaPrefix(user, projectId)}final/final-v3-${Date.now()}.${format}`;
+    const key = `${mediaPrefix(user, projectId)}final/final-v4-${Date.now()}.${format}`;
     const contentType = format === "wav" ? "audio/wav" : "audio/mpeg";
     const url = await putObject({
       key,
