@@ -29,8 +29,8 @@
 })();
 
 (() => {
-  if (window.__AIVO_AD_FILM_ASSETS_V111__) return;
-  window.__AIVO_AD_FILM_ASSETS_V111__ = true;
+  if (window.__AIVO_AD_FILM_ASSETS_V112__) return;
+  window.__AIVO_AD_FILM_ASSETS_V112__ = true;
   window.__AIVO_AD_FILM_ASSETS_READY__ = false;
 
   const styles = [
@@ -119,7 +119,8 @@
     "/js/ad-film.output-main-delete.js?v=2",
     "/js/ad-film.output-sync.js?v=2",
     "/js/ad-film.quality-policy.js?v=9",
-    "/js/ad-film.radio-inner.js?v=1"
+    "/js/ad-film.radio-inner.js?v=1",
+    "/js/ad-film.radio-project-sync.js?v=1"
   ];
 
   let shellLoadPromise = null;

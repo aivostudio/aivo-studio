@@ -5,6 +5,7 @@ import {
   createEmptyRadioProject,
   deleteRadioProject,
   getOwnedRadioProject,
+  mediaPrefix,
   mergeRadioProject,
   newRadioProjectId,
   resolveRadioAdUser,
@@ -12,6 +13,7 @@ import {
   saveRadioProject,
   sendJson,
 } from "../_lib/radio-ad-projects.js";
+import { deleteR2Prefix } from "../_lib/delete-r2-prefix.js";
 
 function readProjectId(req) {
   return String(req.query?.id || req.body?.id || "").trim();
@@ -54,9 +56,20 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "DELETE") {
+      const project = await getOwnedRadioProject(user, id);
+      if (!project) return sendJson(res, 404, { ok: false, error: "project_not_found" });
+
+      const prefix = mediaPrefix(user, id);
+      const deletedObjects = await deleteR2Prefix(prefix);
       const deleted = await deleteRadioProject(user, id);
-      if (!deleted) return sendJson(res, 404, { ok: false, error: "project_not_found" });
-      return sendJson(res, 200, { ok: true, deleted: true, id });
+      if (!deleted) return sendJson(res, 409, { ok: false, error: "project_delete_failed" });
+
+      return sendJson(res, 200, {
+        ok: true,
+        deleted: true,
+        id,
+        deleted_r2_objects: deletedObjects,
+      });
     }
 
     res.setHeader("Allow", "GET, POST, PATCH, PUT, DELETE");
