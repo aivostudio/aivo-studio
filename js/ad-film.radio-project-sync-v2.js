@@ -3,7 +3,7 @@
    - Immediate local draft persistence
    - Authenticated cloud project persistence
    - Project-owned R2 music uploads
-   - Full project + R2 deletion through DELETE /api/radio-ad/project
+   - In-place draft reset that preserves generated or uploaded music
    - Draft status and reset controls placed beside the final build action
    ========================================================= */
 (function AIVO_RADIO_AD_PROJECT_SYNC_V2(){
@@ -29,14 +29,14 @@
       saved: 'Taslak kaydedildi',
       uploading: 'Müzik R2’ye yükleniyor',
       uploaded: 'Müzik R2’ye kaydedildi.',
-      resetting: 'Radyo taslağı ve tüm dosyaları siliniyor...',
-      resetDone: 'Yeni boş radyo taslağı açıldı.',
+      resetting: 'Radyo taslağı temizleniyor; reklam müziği korunuyor...',
+      resetDone: 'Taslak temizlendi. Reklam müziği korundu.',
       authRequired: 'Devam etmek için AIVO hesabına giriş yapmalısın.',
       networkError: 'İnternet bağlantısı kurulamadı. Yerel radyo taslağın korunuyor.',
       saveFailed: 'Bulut kaydı tamamlanamadı. Yerel radyo taslağın korunuyor.',
       uploadFailed: 'Müzik dosyası R2’ye yüklenemedi.',
-      deleteFailed: 'Taslak silinemedi. Proje ve dosyalar korunuyor.',
-      confirmDelete: 'Bu radyo taslağı; seslendirme, müzik ve final dosyalarıyla birlikte R2’den kalıcı olarak silinecek. Devam edilsin mi?',
+      deleteFailed: 'Taslak sıfırlanamadı. Proje ve reklam müziği korunuyor.',
+      confirmDelete: 'Radyo taslağındaki metin ve seslendirme temizlenecek. Hazırlanan reklam müziği korunacak. Devam edilsin mi?',
       resetButton: 'Taslağı sıfırla'
     },
     en: {
@@ -47,14 +47,14 @@
       saved: 'Draft saved',
       uploading: 'Uploading music to R2',
       uploaded: 'Music saved to R2.',
-      resetting: 'Deleting the radio draft and all files...',
-      resetDone: 'A new empty radio draft is ready.',
+      resetting: 'Resetting the radio draft while preserving the ad music...',
+      resetDone: 'Draft reset. Ad music was preserved.',
       authRequired: 'Sign in to your AIVO account to continue.',
       networkError: 'Could not connect. Your local radio draft is preserved.',
       saveFailed: 'Cloud save failed. Your local radio draft is preserved.',
       uploadFailed: 'The music file could not be uploaded to R2.',
-      deleteFailed: 'The draft could not be deleted. The project and files are preserved.',
-      confirmDelete: 'This radio draft, narration, music and final files will be permanently deleted from R2. Continue?',
+      deleteFailed: 'The draft could not be reset. The project and ad music are preserved.',
+      confirmDelete: 'The radio draft text and narration will be cleared. The prepared ad music will be preserved. Continue?',
       resetButton: 'Reset draft'
     }
   };
@@ -500,6 +500,27 @@
     };
   }
 
+  function resetProjectPayload(controller){
+    var blank = blankProject();
+    var current = controller.project || {};
+    var music = current.music || {};
+    var output = current.output || {};
+    return {
+      title: blank.title,
+      narration: blank.narration,
+      music: {
+        mode: music.mode || blank.music.mode,
+        style: music.style || blank.music.style,
+        energy: music.energy || blank.music.energy,
+        upload: music.upload || null
+      },
+      output: {
+        duration: Number(output.duration) || blank.output.duration,
+        format: blank.output.format
+      }
+    };
+  }
+
   async function resetProject(controller){
     if (controller.resetting || !controller.projectId) return;
     if (!window.confirm(t('confirmDelete'))) return;
@@ -512,14 +533,10 @@
 
     try {
       await controller.saveChain.catch(function(){});
-      await api.deleteProject(controller.projectId);
-      writeStorage(PROJECT_STORAGE_KEY, null);
+      var saved = (await api.updateProject(controller.projectId, resetProjectPayload(controller))).project;
       clearLocalDraft();
-      var created = (await api.createProject(blankProject())).project;
-      controller.projectId = created.id;
-      controller.project = created;
-      writeStorage(PROJECT_STORAGE_KEY, created.id);
-      applyProject(controller, created);
+      controller.project = saved;
+      applyProject(controller, saved);
       setStatus(controller, 'saved', t('saved'));
       dismiss(handle);
       notify(t('resetDone'), 'success');
