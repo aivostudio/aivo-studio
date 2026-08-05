@@ -22,8 +22,9 @@
   function loadOutputControls(){if(!document.querySelector('link[data-adfilm-output-controls-css]')){var link=document.createElement("link");link.rel="stylesheet";link.href="/css/ad-film.output-controls.css?v=2";link.setAttribute("data-adfilm-output-controls-css","");document.head.appendChild(link)}if(window.__AIVO_AD_FILM_OUTPUT_CONTROLS__||document.querySelector('script[data-adfilm-output-controls]'))return;var script=document.createElement("script");script.src="/js/ad-film.output-controls.js?v=2";script.async=false;script.setAttribute("data-adfilm-output-controls","");document.head.appendChild(script)}
   function loadRadioProjectSyncV2(){window.__AIVO_RADIO_AD_PROJECT_SYNC_V1__=true;if(window.__AIVO_RADIO_AD_PROJECT_SYNC_V2__||document.querySelector('script[data-radio-project-sync-v2]'))return;var script=document.createElement('script');script.src='/js/ad-film.radio-project-sync-v2.js?v=1';script.async=false;script.setAttribute('data-radio-project-sync-v2','');document.head.appendChild(script)}
   function loadRadioNarrationEngine(){if(window.__AIVO_RADIO_NARRATION_ENGINE_V2__||document.querySelector('script[data-radio-narration-engine]'))return;var script=document.createElement('script');script.src='/js/ad-film.radio-narration-engine.js?v=2';script.async=false;script.setAttribute('data-radio-narration-engine','');document.head.appendChild(script)}
+  function loadRadioProductionEngine(){if(window.__AIVO_RADIO_PRODUCTION_ENGINE_V1__||document.querySelector('script[data-radio-production-engine]'))return;var script=document.createElement('script');script.src='/js/ad-film.radio-production-engine.js?v=1';script.async=false;script.setAttribute('data-radio-production-engine','');document.head.appendChild(script)}
 
-  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm"){schedule(event.detail.root);loadOutputControls();loadRadioProjectSyncV2();loadRadioNarrationEngine()}});
+  document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm"){schedule(event.detail.root);loadOutputControls();loadRadioProjectSyncV2();loadRadioNarrationEngine();loadRadioProductionEngine()}});
   document.addEventListener("aivo:adfilm-project-sync",function(event){var project=event&&event.detail&&event.detail.project;schedule(root(),project&&project.narration&&project.narration.language)});
   document.addEventListener("aivo:radioad-project-sync",function(event){var project=event&&event.detail&&event.detail.project;schedule(root(),project&&project.narration&&project.narration.language)});
   document.addEventListener("aivo:language-change",function(){schedule(root())});
@@ -32,6 +33,6 @@
   var observer=new MutationObserver(function(mutations){var scope=root();if(!scope||applying)return;var needsApply=mutations.some(function(mutation){if(mutation.type==="childList"){if(mutation.target&&mutation.target.matches&&mutation.target.matches(LANGUAGE_SELECTOR))return true;return Array.from(mutation.addedNodes||[]).some(function(node){return node.nodeType===1&&((node.matches&&node.matches(LANGUAGE_SELECTOR))||(node.querySelector&&node.querySelector(LANGUAGE_SELECTOR)))})}return false});if(needsApply)schedule(scope)});
   observer.observe(document.documentElement,{childList:true,subtree:true});
 
-  loadOutputControls();loadRadioProjectSyncV2();loadRadioNarrationEngine();
+  loadOutputControls();loadRadioProjectSyncV2();loadRadioNarrationEngine();loadRadioProductionEngine();
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())},{once:true});else schedule(root());
 })();
