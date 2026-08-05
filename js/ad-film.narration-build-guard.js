@@ -66,7 +66,50 @@
     if(target&&!target.disabled)setTimeout(function(){try{target.focus({preventScroll:true})}catch(_){target.focus()}},500);
   }
 
+  function guideToNarrationText(scope){
+    var card=scope&&scope.querySelector('.adfilm-card--voice');
+    var target=field(scope,"narrationText");
+    if(card){
+      card.classList.remove("is-approval-attention");
+      void card.offsetWidth;
+      card.classList.add("is-approval-attention");
+      try{card.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){card.scrollIntoView()}
+      setTimeout(function(){card.classList.remove("is-approval-attention")},2400);
+    }
+    if(target)setTimeout(function(){try{target.focus({preventScroll:true})}catch(_){target.focus()}},500);
+  }
+
+  function restoreOverLimitWarning(scope,hint){
+    var message=text("Seslendirme metni seçilen video süresinden uzun.","The narration is longer than the selected video duration.");
+    setTimeout(function(){
+      if(!scope||!scope.isConnected||scope.dataset.adfilmNarrationFit!=="over")return;
+      var currentHint=hint&&hint.isConnected?hint:scope.querySelector('[data-adfilm-build-reason]');
+      if(currentHint){
+        currentHint.classList.remove("is-ready");
+        currentHint.classList.add("is-narration-warning");
+        var label=currentHint.querySelector("b");if(label)label.textContent=message;
+      }
+      var button=scope.querySelector('[data-adfilm-build]');
+      if(button){
+        button.disabled=true;
+        button.classList.remove("is-ready");
+        button.dataset.narrationGuard="blocked";
+      }
+    },0);
+  }
+
   document.addEventListener("click",function(event){
+    var warning=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build-reason]');
+    if(warning){
+      var warningScope=warning.closest('[data-module-root][data-module="adfilm"]')||root();
+      if(warningScope&&warningScope.dataset.adfilmNarrationFit==="over"){
+        event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+        guideToNarrationText(warningScope);
+        restoreOverLimitWarning(warningScope,warning);
+        return;
+      }
+    }
+
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
     if(!button)return;
     var scope=button.closest('[data-module-root][data-module="adfilm"]')||root();
