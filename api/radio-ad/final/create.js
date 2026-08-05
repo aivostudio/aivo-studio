@@ -16,8 +16,13 @@ import {
   sendJson,
 } from "../../_lib/radio-ad-projects.js";
 
-const PIPELINE_VERSION = "radio-final-v2";
+const PIPELINE_VERSION = "radio-final-v3";
 const DOWNLOAD_LIMIT = 100 * 1024 * 1024;
+const MUSIC_VOLUME = 0.38;
+const DUCKING_THRESHOLD = 0.12;
+const DUCKING_RATIO = 3;
+const DUCKING_ATTACK_MS = 12;
+const DUCKING_RELEASE_MS = 180;
 
 function clean(value, max = 4000) {
   return String(value ?? "").trim().slice(0, max);
@@ -183,8 +188,8 @@ export default async function handler(req, res) {
       const filter = [
         `[0:a]atrim=0:${duration},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=1.0[voicebase]`,
         `[voicebase]asplit=2[voice_sc][voice_mix]`,
-        `[1:a]atrim=0:${duration},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.22,afade=t=in:st=0:d=0.35,afade=t=out:st=${fadeOutStart}:d=0.55[music]`,
-        `[music][voice_sc]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=280[ducked]`,
+        `[1:a]atrim=0:${duration},asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=${MUSIC_VOLUME},afade=t=in:st=0:d=0.35,afade=t=out:st=${fadeOutStart}:d=0.55[music]`,
+        `[music][voice_sc]sidechaincompress=threshold=${DUCKING_THRESHOLD}:ratio=${DUCKING_RATIO}:attack=${DUCKING_ATTACK_MS}:release=${DUCKING_RELEASE_MS}[ducked]`,
         `[voice_mix][ducked]amix=inputs=2:duration=longest:normalize=0:dropout_transition=0,loudnorm=I=-16:TP=-1.0:LRA=5,alimiter=limit=0.96,atrim=0:${duration}[out]`,
       ].join(";");
 
@@ -208,7 +213,7 @@ export default async function handler(req, res) {
     }
 
     const now = new Date().toISOString();
-    const key = `${mediaPrefix(user, projectId)}final/final-v2-${Date.now()}.${format}`;
+    const key = `${mediaPrefix(user, projectId)}final/final-v3-${Date.now()}.${format}`;
     const contentType = format === "wav" ? "audio/wav" : "audio/mpeg";
     const url = await putObject({
       key,
