@@ -1,12 +1,11 @@
 /* AIVO AI Reklam Filmi — single manual narration script workflow */
 (function AIVO_AD_FILM_NARRATION_MANUAL(){
   "use strict";
-  if(window.__AIVO_AD_FILM_NARRATION_MANUAL__)return;
-  window.__AIVO_AD_FILM_NARRATION_MANUAL__=true;
+  if(window.__AIVO_AD_FILM_NARRATION_MANUAL_V2__)return;
+  window.__AIVO_AD_FILM_NARRATION_MANUAL_V2__=true;
 
   var COPY={
     tr:{
-      tab:"Reklam Seslendirme Metni",
       label:"Reklam Seslendirme Metni",
       placeholder:"Reklam filminde okunacak metni yaz...",
       engine:"AIVO Ses Motoru",
@@ -15,7 +14,6 @@
       heroStatus:"Ön izleme hazır olduğunda dinle"
     },
     en:{
-      tab:"Advertising Voice-over Script",
       label:"Advertising Voice-over Script",
       placeholder:"Write the script that will be spoken in the advertising film...",
       engine:"AIVO Voice Engine",
@@ -37,29 +35,18 @@
       '<div class="radio-voice-hero__status"><i></i>'+t('heroStatus')+'</div>'+
     '</div>';
   }
-  function ensureHero(card,segmented){
+  function ensureHero(card,anchor){
     var hero=card.querySelector('[data-adfilm-video-voice-hero]');
     if(hero)hero.outerHTML=heroMarkup();
-    else segmented.insertAdjacentHTML('beforebegin',heroMarkup());
+    else if(anchor)anchor.insertAdjacentHTML('beforebegin',heroMarkup());
+    else card.insertAdjacentHTML('afterbegin',heroMarkup());
   }
   function activate(scope){
     scope=scope||root();if(!scope||!scope.isConnected)return false;
     var card=scope.querySelector('.adfilm-card--voice');if(!card)return false;
-    var segmented=card.querySelector('[data-adfilm-choice="scriptMode"]');if(!segmented)return false;
-    var ai=segmented.querySelector('button[data-value="ai"]');
-    var manual=segmented.querySelector('button[data-value="manual"]');
-    if(ai)ai.remove();
-    if(manual){
-      manual.classList.add('is-selected');
-      manual.removeAttribute('data-adfilm-i18n');
-      manual.removeAttribute('data-narration-copy');
-      manual.textContent=t('tab');
-      manual.tabIndex=-1;
-    }
-    segmented.classList.add('is-single-manual-mode');
-    segmented.hidden=true;
-    segmented.setAttribute('aria-hidden','true');
-    ensureHero(card,segmented);
+    var segmented=card.querySelector('[data-adfilm-choice="scriptMode"]');
+    ensureHero(card,segmented||card.querySelector('.adfilm-fields--compact'));
+    if(segmented)segmented.remove();
     var hidden=field(scope,'scriptMode');if(hidden)hidden.value='manual';
     var textarea=field(scope,'narrationText');
     if(textarea){
