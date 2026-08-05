@@ -2,6 +2,7 @@
 export const config = { runtime: "nodejs" };
 export const maxDuration = 180;
 
+import crypto from "crypto";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -18,6 +19,7 @@ import {
 
 const PIPELINE_VERSION = "radio-final-v4";
 const DOWNLOAD_LIMIT = 100 * 1024 * 1024;
+const MAX_FINAL_HISTORY = 24;
 const MUSIC_VOLUME = 0.5;
 const DUCKING_THRESHOLD = 0.16;
 const DUCKING_RATIO = 2.4;
@@ -31,6 +33,27 @@ function clean(value, max = 4000) {
 function stderrTail(value, max = 5000) {
   const text = String(value || "");
   return text.length > max ? text.slice(-max) : text;
+}
+
+function finalId() {
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${crypto.randomBytes(12).toString("hex")}`;
+}
+
+function finalHistory(project, newest) {
+  const existing = Array.isArray(project?.finalHistory) ? project.finalHistory : [];
+  const list = newest ? [newest, ...existing] : existing.slice();
+  const seen = new Set();
+  return list
+    .filter((item) => item && typeof item === "object" && item.url)
+    .filter((item) => {
+      const key = clean(item.id || item.url, 5000);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, MAX_FINAL_HISTORY);
 }
 
 function runFfmpeg(args) {
@@ -152,6 +175,7 @@ export default async function handler(req, res) {
         status: "COMPLETED",
         reused: true,
         final: project.final,
+        finalHistory: finalHistory(project),
         project,
       });
     }
@@ -224,6 +248,8 @@ export default async function handler(req, res) {
     });
 
     const final = {
+      id: finalId(),
+      key,
       url,
       contentType,
       format,
@@ -232,12 +258,15 @@ export default async function handler(req, res) {
       pipelineVersion: PIPELINE_VERSION,
       createdAt: now,
       musicMode: project.music?.mode || "off",
+      title: clean(project.title || "Radyo Reklamı", 100) || "Radyo Reklamı",
     };
+    const archive = finalHistory(working, final);
 
     working = await saveRadioProject(user, {
       ...working,
       status: "completed",
       final,
+      finalHistory: archive,
       finalGeneration: {
         ...(working.finalGeneration || {}),
         status: "completed",
@@ -253,6 +282,7 @@ export default async function handler(req, res) {
       ok: true,
       status: "COMPLETED",
       final,
+      finalHistory: archive,
       project: working,
     });
   } catch (error) {
