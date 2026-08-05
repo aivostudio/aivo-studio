@@ -22,6 +22,7 @@
   function pad(value){return String(value).padStart(2,'0')}
   function elapsed(){var total=Math.max(0,Math.floor((Date.now()-startedAt)/1000));return Math.floor(total/60)+' dk '+pad(total%60)+' sn'}
   function stageNodes(panel){return{box:q(panel,'[data-radio-production]'),count:q(panel,'[data-radio-stage-count]'),title:q(panel,'[data-radio-stage-title]'),description:q(panel,'[data-radio-stage-description]'),time:q(panel,'[data-radio-stage-time]'),steps:qa(panel,'[data-radio-stage-steps] span'),button:q(panel,'[data-radio-build]')}}
+  function placeFinalAfterProduction(panel){var production=q(panel,'[data-radio-production]');var final=q(panel,'.adfilm-radio-final');var card=final&&final.closest('.adfilm-radio-card');if(!production||!card||production.nextElementSibling===card)return;production.insertAdjacentElement('afterend',card)}
   function setStage(panel,index,title,description){var n=stageNodes(panel);if(n.box)n.box.hidden=false;if(n.count)n.count.textContent='AŞAMA '+(index+1)+'/3';if(n.title)n.title.textContent=title;if(n.description)n.description.textContent=description;n.steps.forEach(function(item,i){item.classList.toggle('is-active',i===index)});if(n.time)n.time.textContent='Toplam geçen süre: '+elapsed()}
   function startTimer(panel){clearInterval(timer);startedAt=Date.now();var n=stageNodes(panel);if(n.time)n.time.textContent='Toplam geçen süre: 0 dk 00 sn';timer=setInterval(function(){var current=stageNodes(panel).time;if(current)current.textContent='Toplam geçen süre: '+elapsed()},1000)}
   function stopTimer(){clearInterval(timer);timer=null}
@@ -69,6 +70,7 @@
       return;
     }
     running=true;
+    placeFinalAfterProduction(panel);
     setBusy(panel,true);
     startTimer(panel);
     var box=q(panel,'[data-radio-production]');
@@ -119,6 +121,7 @@
     event.stopPropagation();
     event.stopImmediatePropagation();
     var panel=button.closest(PANEL),root=button.closest(ROOT);
+    placeFinalAfterProduction(panel);
     run(panel,root);
   },true);
 
@@ -126,8 +129,16 @@
     var project=event&&event.detail&&event.detail.project;
     var panel=document.querySelector(ROOT+' '+PANEL);
     var id=event&&event.detail&&event.detail.projectId||project&&project.id;
+    placeFinalAfterProduction(panel);
     if(panel&&project&&project.final&&project.final.url)mountFinal(panel,id,project.final);
   });
 
+  document.addEventListener('aivo:module-mounted',function(event){
+    if(!(event&&event.detail&&event.detail.key==='adfilm'))return;
+    var root=event.detail.root||document.querySelector(ROOT);
+    placeFinalAfterProduction(q(root,PANEL));
+  });
+
   ensureStyle();
+  placeFinalAfterProduction(document.querySelector(ROOT+' '+PANEL));
 })();
