@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — Safari download without leaving the studio page */
 (function AIVO_AD_FILM_SAFARI_DOWNLOAD_FRAME(){
   "use strict";
-  if(window.__AIVO_AD_FILM_SAFARI_DOWNLOAD_FRAME_V1__)return;
-  window.__AIVO_AD_FILM_SAFARI_DOWNLOAD_FRAME_V1__=true;
+  if(window.__AIVO_AD_FILM_SAFARI_DOWNLOAD_FRAME_V2__)return;
+  window.__AIVO_AD_FILM_SAFARI_DOWNLOAD_FRAME_V2__=true;
 
   var ua=String(navigator.userAgent||"");
   var vendor=String(navigator.vendor||"");
@@ -10,6 +10,7 @@
   if(!isSafari)return;
 
   var busy=false;
+  var apiInstalled=false;
 
   function clean(value){return String(value||"").trim()}
   function project(){return window.AIVOAdFilmActiveProject&&typeof window.AIVOAdFilmActiveProject==="object"?window.AIVOAdFilmActiveProject:null}
@@ -23,7 +24,16 @@
   }
 
   function contextFor(button){
-    var card=button.closest("[data-output-id]");
+    var historyCard=button&&button.closest&&button.closest("[data-history-project-id]");
+    if(historyCard){
+      return{
+        projectId:clean(historyCard.dataset.historyProjectId),
+        outputId:clean(historyCard.dataset.historyOutputId),
+        version:1
+      };
+    }
+
+    var card=button&&button.closest&&button.closest("[data-output-id]");
     if(card){
       return{
         projectId:clean(card.dataset.outputProjectId||project()&&project().id),
@@ -101,10 +111,27 @@
     },60000);
   }
 
+  function installApiOverride(){
+    if(apiInstalled)return true;
+    var api=window.AIVOAdFilmResultControls;
+    if(!api||typeof api.context!=="function")return false;
+    apiInstalled=true;
+    api.downloadOutput=function(id,version,requestedProjectId){
+      submitDownload({
+        projectId:clean(requestedProjectId||project()&&project().id),
+        outputId:clean(id),
+        version:Number(version)||1
+      });
+    };
+    api.download=function(){submitDownload(contextFor(null))};
+    return true;
+  }
+
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest(
       '.rpPanelWrap[data-panel-key="adfilm"] [data-result-action="download"],'+
-      '.rpPanelWrap[data-panel-key="adfilm"] [data-adfilm-output-gallery] [data-output-action="download"]'
+      '.rpPanelWrap[data-panel-key="adfilm"] [data-adfilm-output-gallery] [data-output-action="download"],'+
+      '.rpPanelWrap[data-panel-key="adfilm"] [data-adfilm-project-history] [data-history-action="download"]'
     );
     if(!button)return;
 
@@ -113,4 +140,15 @@
     event.stopImmediatePropagation();
     submitDownload(contextFor(button));
   },true);
+
+  document.addEventListener("aivo:module-mounted",function(event){
+    if(event&&event.detail&&event.detail.key==="adfilm")installApiOverride();
+  });
+
+  if(!installApiOverride()){
+    var tries=0,timer=setInterval(function(){
+      tries++;
+      if(installApiOverride()||tries>120)clearInterval(timer);
+    },100);
+  }
 })();
