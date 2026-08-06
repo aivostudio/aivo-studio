@@ -1,14 +1,15 @@
 /* =========================================================
-   AIVO INDEX — AI REKLAM FILMI SECTION SHELL
-   First step: clone the approved Lipsync showcase structure
-   and mount it directly above the Atmosphere section.
-   Video and final TR/EN copy will be connected next.
+   AIVO INDEX — AI REKLAM FILMI SECTION
+   Clones the approved Lipsync showcase structure and mounts
+   the advertising showcase directly above Atmosphere.
    ========================================================= */
 (function () {
   "use strict";
 
   if (window.__AIVO_INDEX_ADFILM_SECTION__) return;
   window.__AIVO_INDEX_ADFILM_SECTION__ = true;
+
+  var ADFILM_PREVIEW_URL = "/aivo-adfilm-preview.mp4";
 
   function setText(root, selector, value) {
     var node = root.querySelector(selector);
@@ -74,7 +75,10 @@
     var video = section.querySelector("#lipsyncPreviewVideo");
     if (video) {
       video.id = "adfilmPreviewVideo";
-      video.setAttribute("data-adfilm-video-placeholder", "1");
+      video.src = ADFILM_PREVIEW_URL;
+      video.setAttribute("src", ADFILM_PREVIEW_URL);
+      video.removeAttribute("data-adfilm-video-placeholder");
+      video.load();
     }
 
     var soundButton = section.querySelector("#lipsyncSoundToggle");
