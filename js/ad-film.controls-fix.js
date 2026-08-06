@@ -10,4 +10,11 @@
     script.async=false;
     document.head.appendChild(script);
   }
+
+  if(!document.querySelector('script[src^="/js/ad-film.radio-production-i18n.js"]')){
+    var radioScript=document.createElement("script");
+    radioScript.src="/js/ad-film.radio-production-i18n.js?v=1";
+    radioScript.async=false;
+    document.head.appendChild(radioScript);
+  }
 })();
