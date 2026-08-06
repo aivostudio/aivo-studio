@@ -18,13 +18,6 @@
     document.head.appendChild(panelIcons);
   }
 
-  if(!document.querySelector('script[src^="/js/ad-film.safari-download.js"]')){
-    var safariDownload=document.createElement("script");
-    safariDownload.src="/js/ad-film.safari-download.js?v=1";
-    safariDownload.defer=true;
-    document.head.appendChild(safariDownload);
-  }
-
   var panelGuardInstalled=false;
 
   function currentProject(){
