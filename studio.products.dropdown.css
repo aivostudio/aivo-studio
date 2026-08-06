@@ -1,0 +1,126 @@
+/* =========================================================
+   AIVO STUDIO — PREMIUM PRODUCTS MENU FINAL OVERRIDE
+   Scope: studio.v2.html only
+   Purpose: neutralize legacy 6-card / 150px studio rules
+   ========================================================= */
+
+body.is-studio-v2 #navProducts > .dropdown.dropdown--products {
+  width: min(936px, calc(100vw - 24px)) !important;
+  max-width: 936px !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium {
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 124px !important;
+  height: 124px !important;
+  max-height: 124px !important;
+  padding: 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  border-radius: 18px !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card {
+  box-sizing: border-box !important;
+  position: relative !important;
+  display: flex !important;
+  flex: 0 0 108px !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 108px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  min-height: 108px !important;
+  height: 108px !important;
+  max-height: 108px !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-ico {
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  max-width: 30px !important;
+  max-height: 30px !important;
+  flex: 0 0 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-ico svg {
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-txt {
+  display: block !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-title {
+  position: relative !important;
+  z-index: 2 !important;
+  display: -webkit-box !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  color: #f8fafc !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -.025em !important;
+  transform: translateY(-7px) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-sub,
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-badge,
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card .pc-arrow {
+  display: none !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card::after {
+  left: 14px !important;
+  right: 14px !important;
+  bottom: 4px !important;
+  height: 2px !important;
+  box-shadow: 0 -1px 7px rgba(var(--pc-rgb), .18) !important;
+}
+
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card:hover::after,
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card:focus-visible::after,
+body.is-studio-v2 #navProducts .products-menu.products-menu--premium > a.product-card.is-active::after {
+  transform: scaleX(.86) !important;
+}
+
+@media (max-width: 960px) {
+  body.is-studio-v2 #navProducts > .dropdown.dropdown--products {
+    width: calc(100vw - 16px) !important;
+  }
+}
