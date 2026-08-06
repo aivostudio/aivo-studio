@@ -10,9 +10,6 @@
 
   var COPY = {
     tr: {
-      eyebrow: "AIVO CREATIVE SUITE",
-      headline: "Üretmek istediğin alanı seç",
-      count: "8 AI aracı",
       newBadge: "YENİ",
       musicTitle: "AI Müzik Üret",
       coverTitle: "AI Kapak Üret",
@@ -24,9 +21,6 @@
       adfilmTitle: "AI Reklam Filmi Oluştur"
     },
     en: {
-      eyebrow: "AIVO CREATIVE SUITE",
-      headline: "Choose what you want to create",
-      count: "8 AI tools",
       newBadge: "NEW",
       musicTitle: "Create AI Music",
       coverTitle: "Create AI Cover Art",
@@ -50,8 +44,6 @@
     adfilm: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M7 6l2-3M13 6l2-3M9.5 14.5l5 2.5-5 2.5v-5Z"/></svg>'
   };
 
-  var ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>';
-
   var PRODUCTS = [
     { key: "music", href: "/studio.v2.html#music" },
     { key: "cover", href: "/studio.v2.html#cover" },
@@ -72,37 +64,21 @@
   }
 
   function cardMarkup(product) {
-    var tools = product.isNew
-      ? '<span class="pc-badge" data-index-products-copy="newBadge"></span><span class="pc-arrow">' + ARROW + '</span>'
-      : '<span class="pc-arrow">' + ARROW + '</span>';
+    var badge = product.isNew
+      ? '<span class="pc-badge" data-index-products-copy="newBadge"></span>'
+      : "";
 
     return [
       '<a href="' + product.href + '" data-auth="required" class="product-card" data-product="' + product.key + '">',
-        '<span class="pc-top">',
-          '<span class="pc-ico">' + ICONS[product.key] + '</span>',
-          '<span class="pc-card-tools">' + tools + '</span>',
-        '</span>',
-        '<span class="pc-txt">',
-          '<span class="pc-title" data-index-products-copy="' + product.key + 'Title"></span>',
-        '</span>',
+        '<span class="pc-ico">' + ICONS[product.key] + '</span>',
+        '<span class="pc-title" data-index-products-copy="' + product.key + 'Title"></span>',
+        badge,
       '</a>'
     ].join("");
   }
 
   function menuMarkup() {
-    return [
-      '<div class="products-menu-head">',
-        '<div class="products-menu-heading">',
-          '<span class="products-menu-eyebrow" data-index-products-copy="eyebrow"></span>',
-          '<strong class="products-menu-title" data-index-products-copy="headline"></strong>',
-        '</div>',
-        '<span class="products-menu-count">',
-          '<span class="products-menu-count-dot" aria-hidden="true"></span>',
-          '<span data-index-products-copy="count"></span>',
-        '</span>',
-      '</div>',
-      PRODUCTS.map(cardMarkup).join("")
-    ].join("");
+    return PRODUCTS.map(cardMarkup).join("");
   }
 
   function applyCopy(root, lang) {
