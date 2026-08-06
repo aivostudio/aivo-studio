@@ -99,6 +99,7 @@
   }
 
   document.addEventListener("click",function(event){
+    var moduleScope=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"]');
     var warning=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build-reason]');
     if(warning){
       var warningScope=warning.closest('[data-module-root][data-module="adfilm"]')||root();
@@ -108,10 +109,17 @@
         restoreOverLimitWarning(warningScope,warning);
         return;
       }
+      var warningCheck=state(warningScope);
+      if(warningScope&&!warningCheck.ready){
+        event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+        guideToNarration(warningScope,warningCheck);
+        schedule(warningScope);
+        return;
+      }
     }
 
     var button=event.target&&event.target.closest&&event.target.closest('[data-module-root][data-module="adfilm"] [data-adfilm-build]');
-    if(!button)return;
+    if(!button){if(moduleScope)schedule(moduleScope);return}
     var scope=button.closest('[data-module-root][data-module="adfilm"]')||root();
     var check=state(scope);
     if(check.ready)return;
@@ -122,8 +130,8 @@
   function schedule(scope){[0,50,140,360,800].forEach(function(delay){setTimeout(function(){sync(scope||root())},delay)})}
   document.addEventListener("aivo:module-mounted",function(event){if(event&&event.detail&&event.detail.key==="adfilm")schedule(event.detail.root)});
   document.addEventListener("aivo:adfilm-project-sync",function(){schedule(root())});
-  document.addEventListener("input",function(event){if(event.target&&event.target.closest&&event.target.closest('[data-module="adfilm"] [data-adfilm-input="narrationText"]'))schedule(root())},true);
-  document.addEventListener("change",function(event){if(event.target&&event.target.closest&&event.target.closest('[data-module="adfilm"] [data-adfilm-input="voiceEnabled"]'))schedule(root())},true);
+  document.addEventListener("input",function(event){if(event.target&&event.target.closest&&event.target.closest('[data-module="adfilm"] [data-adfilm-input]'))schedule(root())},true);
+  document.addEventListener("change",function(event){if(event.target&&event.target.closest&&event.target.closest('[data-module="adfilm"] [data-adfilm-input]'))schedule(root())},true);
   window.AIVOAdFilmNarrationBuildGuard={state:function(){return state(root())},sync:function(){sync(root())}};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){schedule(root())},{once:true});else schedule(root());
 })();
