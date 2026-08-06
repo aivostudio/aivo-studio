@@ -59,6 +59,7 @@
     segmented.classList.add('is-single-manual-mode');
     segmented.hidden=true;
     segmented.setAttribute('aria-hidden','true');
+    segmented.style.setProperty('display','none','important');
     ensureHero(card,segmented);
     var hidden=field(scope,'scriptMode');if(hidden)hidden.value='manual';
     var textarea=field(scope,'narrationText');
