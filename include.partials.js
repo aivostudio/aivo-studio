@@ -55,7 +55,7 @@
         var rowLink = document.createElement("link");
         rowLink.id = "aivoIndexProductsSingleRowCss";
         rowLink.rel = "stylesheet";
-        rowLink.href = "/index.products.single-row.css?v=20260806_2";
+        rowLink.href = "/index.products.single-row.css?v=20260806_3";
         document.head.appendChild(rowLink);
       }
 
@@ -65,7 +65,7 @@
 
       if (!already) {
         var s = document.createElement("script");
-        s.src = "/js/index.products.premium.js?v=20260806_2";
+        s.src = "/js/index.products.premium.js?v=20260806_3";
         s.defer = true;
         document.head.appendChild(s);
       }
