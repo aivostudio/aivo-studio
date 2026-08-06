@@ -1,8 +1,15 @@
 /* AIVO AI Reklam Filmi — compatibility bridge; keep mounted video DOM stable */
 (function AIVO_AD_FILM_ROUTE_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROUTE_FIX_V7__)return;
-  window.__AIVO_AD_FILM_ROUTE_FIX_V7__=true;
+  if(window.__AIVO_AD_FILM_ROUTE_FIX_V8__)return;
+  window.__AIVO_AD_FILM_ROUTE_FIX_V8__=true;
+
+  if(!document.querySelector('link[href^="/css/studio.sidebar.icons.css"]')){
+    var sidebarIcons=document.createElement("link");
+    sidebarIcons.rel="stylesheet";
+    sidebarIcons.href="/css/studio.sidebar.icons.css?v=2";
+    document.head.appendChild(sidebarIcons);
+  }
 
   var panelGuardInstalled=false;
 
