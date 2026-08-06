@@ -104,15 +104,15 @@
   animation:aivoAdFilmProgressSpin .9s linear infinite!important;
 }
 
-/* Safari can resolve percentage min-height on a full-width CSS-grid item
-   against the entire workspace instead of its own row. The voice card already
-   stretches through the grid alignment rules, so the percentage constraint is
-   unnecessary. Removing only that constraint prevents the temporary giant
-   empty card without changing the Chrome layout or any application logic. */
+/* Safari stretches the outer Voice & Narration grid card to the full track
+   height. Keep that card content-sized while preserving its full column width.
+   This is layout-only; no DOM, event, production or video state is changed. */
+[data-module-root][data-module="adfilm"] .adfilm-workspace > .adfilm-card--voice,
 [data-module-root][data-module="adfilm"] .adfilm-card--voice-has-music,
 [data-module-root][data-module="adfilm"] .adfilm-card--voice-tuned{
   min-height:0!important;
   min-block-size:0!important;
   height:auto!important;
-  align-self:stretch!important;
+  block-size:auto!important;
+  align-self:start!important;
 }
