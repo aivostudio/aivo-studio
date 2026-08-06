@@ -27,6 +27,7 @@ const DOWNLOAD_TIMEOUT_MS = 70000;
 const FFMPEG_TIMEOUT_MS = 215000;
 const UPLOAD_TIMEOUT_MS = 65000;
 const PROCESSING_TTL_MS = 5 * 60 * 1000;
+const POSTER_FRAME_SECONDS = 0.12;
 
 function clean(value, max = 1600) {
   return String(value ?? "").trim().slice(0, max);
@@ -138,6 +139,7 @@ function generationTarget(project) {
     version: Number.parseInt(generation.version, 10) || 1,
     sourceVideoUrl: source,
     videoUrl: source,
+    posterUrl: clean(generation.posterUrl, 4000) || null,
     createdAt: generation.startedAt || project.updatedAt,
     completedAt: generation.completedAt || project.updatedAt,
     seed: generation.seed ?? null,
@@ -358,6 +360,7 @@ export default async function handler(req, res) {
         projectId,
         outputId: target.id,
         video_url: target.videoUrl,
+        poster_url: target.posterUrl || null,
         logo_applied: Boolean(logoUrl),
         narration_applied: Boolean(narrationUrl),
         music_applied: Boolean(musicUrl),
@@ -399,7 +402,8 @@ export default async function handler(req, res) {
     const narrationFile = path.join(tmpDir, "narration-audio");
     const musicFile = path.join(tmpDir, "music-audio");
     const outputVideo = path.join(tmpDir, "final.mp4");
-    cleanup.push(outputVideo, musicFile, narrationFile, transparentLogo, originalLogo, avatarVideo, inputVideo, tmpDir);
+    const posterFile = path.join(tmpDir, "poster.jpg");
+    cleanup.push(posterFile, outputVideo, musicFile, narrationFile, transparentLogo, originalLogo, avatarVideo, inputVideo, tmpDir);
 
     const jobs = [download(sourceVideoUrl, inputVideo)];
     if (avatarUrl) jobs.push(download(avatarUrl, avatarVideo));
@@ -483,6 +487,21 @@ export default async function handler(req, res) {
     );
     await runFfmpeg(args);
 
+    let posterReady = false;
+    try {
+      await runFfmpeg([
+        "-y", "-hide_banner", "-loglevel", "error",
+        "-ss", String(POSTER_FRAME_SECONDS),
+        "-i", outputVideo,
+        "-frames:v", "1",
+        "-q:v", "4",
+        posterFile,
+      ]);
+      posterReady = fs.existsSync(posterFile) && fs.statSync(posterFile).size > 0;
+    } catch (posterError) {
+      console.warn("[ad-film/seedance/finalize-v2/poster]", clean(posterError?.message || posterError, 600));
+    }
+
     const key = `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId, "video")}-v${version}-final-v2-${Date.now()}.mp4`;
     const uploadController = new AbortController();
     const uploadTimer = setTimeout(() => uploadController.abort(), UPLOAD_TIMEOUT_MS);
@@ -505,6 +524,28 @@ export default async function handler(req, res) {
       clearTimeout(uploadTimer);
     }
 
+    let posterUrl = "";
+    if (posterReady) {
+      const posterController = new AbortController();
+      const posterTimer = setTimeout(() => posterController.abort(), UPLOAD_TIMEOUT_MS);
+      try {
+        const posterStat = fs.statSync(posterFile);
+        posterUrl = await putObject({
+          key: `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId, "video")}-v${version}-poster-${Date.now()}.jpg`,
+          body: fs.createReadStream(posterFile),
+          contentLength: posterStat.size,
+          abortSignal: posterController.signal,
+          contentType: "image/jpeg",
+          cacheControl: "public, max-age=31536000, immutable",
+          contentDisposition: "inline",
+        });
+      } catch (posterUploadError) {
+        console.warn("[ad-film/seedance/finalize-v2/poster-upload]", clean(posterUploadError?.message || posterUploadError, 600));
+      } finally {
+        clearTimeout(posterTimer);
+      }
+    }
+
     const now = new Date().toISOString();
     const finalOutput = {
       ...(target || {}),
@@ -512,6 +553,7 @@ export default async function handler(req, res) {
       version,
       sourceVideoUrl,
       videoUrl: finalUrl,
+      posterUrl: posterUrl || null,
       logoUrl: logoUrl || null,
       logoApplied: Boolean(logoUrl),
       logoPosition: logoUrl ? "bottom-right" : null,
@@ -552,6 +594,7 @@ export default async function handler(req, res) {
         outputId: finalOutput.id,
         sourceVideoUrl,
         videoUrl: finalUrl,
+        posterUrl: posterUrl || null,
         logoUrl: logoUrl || null,
         logoApplied: Boolean(logoUrl),
         narrationUrl: narrationUrl || null,
@@ -582,6 +625,7 @@ export default async function handler(req, res) {
       projectId,
       outputId: finalOutput.id,
       video_url: finalUrl,
+      poster_url: posterUrl || null,
       source_video_url: sourceVideoUrl,
       logo_url: logoUrl || null,
       logo_applied: Boolean(logoUrl),
