@@ -1,0 +1,14 @@
+/* AIVO Cartoon — full-width CTA alignment with Story Mode */
+.main-panel[data-module="cartoon"]
+  .cartoon-mode-view[data-cartoon-view="character"]
+  .cartoon-character-footer {
+  width: 100%;
+  max-width: none;
+}
+
+.main-panel[data-module="cartoon"]
+  .cartoon-mode-view[data-cartoon-view="basic"]
+  .cartoon-cta {
+  width: 100%;
+  max-width: none;
+}
