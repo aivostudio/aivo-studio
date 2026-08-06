@@ -1,14 +1,21 @@
 /* AIVO AI Reklam Filmi — compatibility bridge; keep mounted video DOM stable */
 (function AIVO_AD_FILM_ROUTE_FIX(){
   "use strict";
-  if(window.__AIVO_AD_FILM_ROUTE_FIX_V8__)return;
-  window.__AIVO_AD_FILM_ROUTE_FIX_V8__=true;
+  if(window.__AIVO_AD_FILM_ROUTE_FIX_V9__)return;
+  window.__AIVO_AD_FILM_ROUTE_FIX_V9__=true;
 
   if(!document.querySelector('link[href^="/css/studio.sidebar.icons.css"]')){
     var sidebarIcons=document.createElement("link");
     sidebarIcons.rel="stylesheet";
     sidebarIcons.href="/css/studio.sidebar.icons.css?v=2";
     document.head.appendChild(sidebarIcons);
+  }
+
+  if(!document.querySelector('link[href^="/css/studio.sidebar.panel-icons.css"]')){
+    var panelIcons=document.createElement("link");
+    panelIcons.rel="stylesheet";
+    panelIcons.href="/css/studio.sidebar.panel-icons.css?v=1";
+    document.head.appendChild(panelIcons);
   }
 
   var panelGuardInstalled=false;
