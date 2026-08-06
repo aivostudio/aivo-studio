@@ -1,6 +1,6 @@
 /* =========================================================
-   AIVO INDEX — PREMIUM PRODUCTS MENU
-   Runs only when loaded by include.partials.js on index.
+   AIVO SHARED — PREMIUM PRODUCTS MENU
+   Loaded by include.partials.js across desktop pages.
    ========================================================= */
 (function () {
   "use strict";
@@ -69,7 +69,7 @@
       : "";
 
     return [
-      '<a href="' + product.href + '" data-auth="required" class="product-card" data-product="' + product.key + '">',
+      '<a href="' + product.href + '" data-target="' + product.href + '" data-auth="required" class="product-card" data-product="' + product.key + '">',
         '<span class="pc-ico">' + ICONS[product.key] + '</span>',
         '<span class="pc-title" data-index-products-copy="' + product.key + 'Title"></span>',
         badge,

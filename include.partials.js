@@ -70,7 +70,7 @@
 
       if (!already) {
         var s = document.createElement("script");
-        s.src = "/js/index.products.premium.js?v=20260806_6";
+        s.src = "/js/index.products.premium.js?v=20260806_7";
         s.defer = true;
         document.head.appendChild(s);
       }
