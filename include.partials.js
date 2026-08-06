@@ -55,7 +55,7 @@
         var rowLink = document.createElement("link");
         rowLink.id = "aivoIndexProductsSingleRowCss";
         rowLink.rel = "stylesheet";
-        rowLink.href = "/index.products.single-row.css?v=20260806_6";
+        rowLink.href = "/index.products.single-row.css?v=20260806_7";
         document.head.appendChild(rowLink);
       }
 
