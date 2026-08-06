@@ -1,0 +1,56 @@
+name: Apply ad film estimate copy
+
+on:
+  push:
+    branches:
+      - fix/adfilm-estimate-copy
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/adfilm-estimate-copy
+          fetch-depth: 0
+
+      - name: Update TR and EN estimate text
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'js/ad-film.i18n.js';
+          let source = fs.readFileSync(file, 'utf8');
+
+          const replacements = [
+            [
+              '      "studio.adfilm.build.estimate":"Tahmini süre (15 sn video): 480p 3–4 dk · 1080p yaklaşık 6 dk · 4K yaklaşık 12 dk. Yoğunluğa göre değişebilir.",',
+              '      "studio.adfilm.build.estimate":"Tahmini süre: 720p 5 sn yaklaşık 6 dk · 1080p 15 sn yaklaşık 15 dk · 4K 15 sn yaklaşık 30 dk. Yoğunluğa göre değişebilir.",'
+            ],
+            [
+              '      "studio.adfilm.build.estimate":"Estimated time for a 15-second video: 480p 3–4 min · 1080p about 6 min · 4K about 12 min. It may vary with demand.",',
+              '      "studio.adfilm.build.estimate":"Estimated time: 720p 5 sec about 6 min · 1080p 15 sec about 15 min · 4K 15 sec about 30 min. It may vary with demand.",'
+            ]
+          ];
+
+          for (const [oldText, newText] of replacements) {
+            const count = source.split(oldText).length - 1;
+            if (count !== 1) throw new Error(`Expected exactly one match, found ${count}`);
+            source = source.replace(oldText, newText);
+          }
+
+          fs.writeFileSync(file, source);
+          NODE
+
+      - name: Check syntax
+        run: node --check js/ad-film.i18n.js
+
+      - name: Commit copy update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/ad-film.i18n.js
+          git commit -m "Update ad film generation time estimate"
+          git push origin HEAD:fix/adfilm-estimate-copy
