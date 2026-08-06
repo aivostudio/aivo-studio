@@ -299,3 +299,14 @@
 .atmoCardActions{
   margin-top: 8px;
 }
+
+/* ATMOSPHERE CTA — match full-width module actions */
+html body section.main-panel[data-module="atmosphere"]
+  .mode-panel[data-mode-panel="basic"]
+  .atmPersCta--basic,
+html body section.main-panel[data-module="atmosphere"]
+  .mode-panel[data-mode-panel="pro"]
+  .atmPersCta--pro {
+  width: 100% !important;
+  max-width: none !important;
+}
