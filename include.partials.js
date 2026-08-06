@@ -6,6 +6,11 @@
 
   function qs(sel, root) { return (root || document).querySelector(sel); }
 
+  function isIndexPage() {
+    var path = window.location.pathname || "/";
+    return path === "/" || path === "/index.html";
+  }
+
   function loadAuthUnifyFix() {
     try {
       var already = Array.from(document.scripts || []).some(function (s) {
@@ -79,6 +84,24 @@
     }
   }
 
+  function loadIndexAdFilmSection() {
+    if (!isIndexPage()) return;
+
+    try {
+      var already = Array.from(document.scripts || []).some(function (script) {
+        return (script.src || "").includes("/js/index.adfilm.section.js");
+      });
+      if (already) return;
+
+      var s = document.createElement("script");
+      s.src = "/js/index.adfilm.section.js?v=20260806_1";
+      s.defer = true;
+      document.head.appendChild(s);
+    } catch (e) {
+      console.warn("[partials] index ad film section loader error:", e);
+    }
+  }
+
   async function injectTopbar() {
     var mount = qs('[data-include="topbar"]');
     if (!mount) return;
@@ -101,6 +124,7 @@
   function boot() {
     loadAuthUnifyFix();
     loadProductsExperience();
+    loadIndexAdFilmSection();
     injectTopbar();
   }
 
