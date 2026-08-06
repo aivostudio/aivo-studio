@@ -1,19 +1,22 @@
 /* =========================================================
-   AIVO INDEX — FINAL COMPACT PRODUCTS ROW
+   AIVO INDEX — SQUARE PRODUCTS / SINGLE ROW
    Scope: index only, loaded after index.products.premium.css
    ========================================================= */
 
 #navProducts > .dropdown.dropdown--products {
-  width: min(1580px, calc(100vw - 24px)) !important;
-  max-width: 1580px !important;
+  width: min(1260px, calc(100vw - 24px)) !important;
+  max-width: 1260px !important;
 }
 
 #navProducts .products-menu.products-menu--premium {
-  display: grid !important;
-  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
-  grid-template-rows: 62px !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
   align-items: stretch !important;
-  gap: 7px !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
   padding: 8px !important;
   max-height: none !important;
   overflow-x: auto !important;
@@ -31,54 +34,53 @@
 
 #navProducts .products-menu.products-menu--premium > a.product-card {
   box-sizing: border-box !important;
+  position: relative !important;
   display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 8px !important;
-  width: 100% !important;
+  flex: 1 1 0 !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  width: auto !important;
   min-width: 0 !important;
   max-width: none !important;
-  min-height: 62px !important;
-  height: 62px !important;
-  padding: 8px 9px !important;
-  border-radius: 14px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
+}
+
+#navProducts .pc-top {
+  position: relative !important;
+  z-index: 2 !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
 }
 
 #navProducts .products-menu.products-menu--premium .pc-ico {
   position: static !important;
-  width: 30px !important;
-  height: 30px !important;
-  flex: 0 0 30px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  flex: 0 0 34px !important;
   margin: 0 !important;
-  border-radius: 10px !important;
+  border-radius: 11px !important;
 }
 
 #navProducts .products-menu.products-menu--premium .pc-ico svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
-#navProducts .products-menu.products-menu--premium .pc-title {
-  display: -webkit-box !important;
+#navProducts .pc-card-tools {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-end !important;
   min-width: 0 !important;
-  margin: 0 !important;
-  overflow: hidden !important;
-  color: #f8fafc !important;
-  font-size: 12px !important;
-  font-weight: 850 !important;
-  line-height: 1.12 !important;
-  letter-spacing: -.025em !important;
-  -webkit-box-orient: vertical !important;
-  -webkit-line-clamp: 2 !important;
-}
-
-#navProducts .products-menu.products-menu--premium .pc-sub,
-#navProducts .pc-top,
-#navProducts .pc-txt,
-#navProducts .pc-card-tools,
-#navProducts .pc-arrow {
-  display: contents !important;
 }
 
 #navProducts .pc-arrow,
@@ -87,12 +89,37 @@
 }
 
 #navProducts .pc-badge {
-  position: absolute !important;
-  top: 5px !important;
-  right: 5px !important;
-  min-height: 16px !important;
-  padding: 0 5px !important;
+  position: static !important;
+  display: inline-flex !important;
+  min-height: 18px !important;
+  padding: 0 6px !important;
   font-size: 7px !important;
+}
+
+#navProducts .products-menu.products-menu--premium .pc-txt {
+  position: relative !important;
+  z-index: 2 !important;
+  display: block !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+}
+
+#navProducts .products-menu.products-menu--premium .pc-title {
+  display: -webkit-box !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.025em !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+#navProducts .products-menu.products-menu--premium .pc-sub {
+  display: none !important;
 }
 
 #navProducts .product-card[data-product="music"] .pc-ico { color: #e879f9 !important; }
@@ -104,12 +131,15 @@
 #navProducts .product-card[data-product="lipsync"] .pc-ico { color: #f472b6 !important; }
 #navProducts .product-card[data-product="adfilm"] .pc-ico { color: #d8b4fe !important; }
 
-@media (max-width: 1320px) {
+@media (max-width: 1080px) {
   #navProducts > .dropdown.dropdown--products {
     width: calc(100vw - 16px) !important;
   }
 
-  #navProducts .products-menu.products-menu--premium {
-    grid-template-columns: repeat(8, 142px) !important;
+  #navProducts .products-menu.products-menu--premium > a.product-card {
+    flex: 0 0 122px !important;
+    width: 122px !important;
+    height: 122px !important;
+    aspect-ratio: 1 / 1 !important;
   }
 }
