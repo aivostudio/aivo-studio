@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — single stable live-player controller */
 (function AIVO_AD_FILM_RESULT_CONTROLS(){
   "use strict";
-  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V11__)return;
-  window.__AIVO_AD_FILM_RESULT_CONTROLS_V11__=true;
+  if(window.__AIVO_AD_FILM_RESULT_CONTROLS_V12__)return;
+  window.__AIVO_AD_FILM_RESULT_CONTROLS_V12__=true;
 
   var COPY={
     tr:{play:"Oynat",pause:"Duraklat",download:"İndir",downloadStarted:"İndirme başlatıldı.",fullscreen:"Tam ekran",mute:"Sesi kapat",unmute:"Sesi aç",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",downloadFailed:"Video indirilemedi."},
@@ -32,6 +32,7 @@
         id:source.generation.outputId||source.generation.requestId||"legacy-output",
         version:source.generation.version||1,
         videoUrl:source.generation.videoUrl,
+        posterUrl:source.generation.posterUrl||"",
         sourceVideoUrl:source.generation.sourceVideoUrl||"",
         logoUrl:source.generation.logoUrl||source.media&&source.media.logo&&source.media.logo.url||"",
         logoApplied:!!source.generation.logoApplied
@@ -51,6 +52,7 @@
     var item=activeOutput(source);if(!item)return null;
     return{
       url:clean(item.videoUrl),
+      poster:clean(item.posterUrl||source.generation&&source.generation.posterUrl||""),
       logo:clean(item.logoUrl||source.media&&source.media.logo&&source.media.logo.url||source.generation&&source.generation.logoUrl||""),
       logoApplied:!!(item.logoApplied||source.generation&&source.generation.logoApplied),
       projectId:clean(source.id),
@@ -65,6 +67,7 @@
     var item=activeOutput(source);
     return{
       url:clean(url),
+      poster:clean(options.posterUrl||item&&item.posterUrl||source.generation&&source.generation.posterUrl||window.AIVOAdFilmGeneratedPoster),
       logo:clean(logo),
       logoApplied:options.logoApplied===true||!!(item&&item.logoApplied)||!!(source.generation&&source.generation.logoApplied),
       projectId:clean(options.projectId||source.id||window.AIVOAdFilmActiveOutputProjectId),
@@ -86,6 +89,7 @@
       clean(context.projectId),
       clean(context.outputId),
       stableMediaKey(context.url),
+      stableMediaKey(context.poster),
       context.logoApplied===true?"applied":stableMediaKey(context.logo)
     ].join("|");
   }
@@ -93,6 +97,7 @@
     if(!context||!clean(context.url))return null;
     previewContext={
       url:clean(context.url),
+      poster:clean(context.poster),
       logo:clean(context.logo),
       logoApplied:context.logoApplied===true,
       projectId:clean(context.projectId),
@@ -101,6 +106,7 @@
       source:clean(context.source||"explicit")
     };
     window.AIVOAdFilmGeneratedVideo=previewContext.url;
+    window.AIVOAdFilmGeneratedPoster=previewContext.poster;
     window.AIVOAdFilmGeneratedLogo=previewContext.logo;
     window.AIVOAdFilmActiveOutputProjectId=previewContext.projectId;
     window.AIVOAdFilmActiveOutputId=previewContext.outputId;
@@ -114,6 +120,7 @@
   }
   function outputId(){var context=currentContext();return clean(context&&context.outputId||window.AIVOAdFilmActiveOutputId)}
   function currentVideoUrl(){var context=currentContext();return clean(context&&context.url)}
+  function currentPosterUrl(){var context=currentContext();return clean(context&&context.poster)}
   function currentLogoUrl(){var context=currentContext();return clean(context&&context.logo)}
   function toast(message,type){
     try{
@@ -173,6 +180,7 @@
     if(forget!==false){
       previewContext=null;
       window.AIVOAdFilmGeneratedVideo="";
+      window.AIVOAdFilmGeneratedPoster="";
       window.AIVOAdFilmGeneratedLogo="";
       window.AIVOAdFilmActiveOutputProjectId="";
       window.AIVOAdFilmActiveOutputId="";
@@ -277,6 +285,7 @@
     video.setAttribute("playsinline","");
     video.setAttribute("webkit-playsinline","");
     video.preload="metadata";
+    if(clean(context&&context.poster))video.poster=context.poster;else video.removeAttribute("poster");
     video.autoplay=false;
     video.removeAttribute("autoplay");
     var target=video.closest("[data-panel-frame]")||video.parentElement;if(!target)return;
@@ -347,6 +356,7 @@
     }
 
     var mediaChanged=!currentMediaKey||currentMediaKey!==desiredMediaKey;
+    if(clean(context.poster))video.poster=context.poster;else video.removeAttribute("poster");
     if(mediaChanged){
       try{video.pause()}catch(_){}
       lastKnownTime=0;
@@ -424,6 +434,7 @@
     downloadOutput:downloadOutput,
     fullscreen:enterFullscreen,
     videoUrl:currentVideoUrl,
+    posterUrl:currentPosterUrl,
     logoUrl:currentLogoUrl,
     activeOutput:activeOutput,
     context:currentContext

@@ -1,8 +1,8 @@
 /* AIVO AI Reklam Filmi — stable versioned output gallery */
 (function AIVO_AD_FILM_OUTPUT_GALLERY(){
   "use strict";
-  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V5__)return;
-  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V5__=true;
+  if(window.__AIVO_AD_FILM_OUTPUT_GALLERY_V6__)return;
+  window.__AIVO_AD_FILM_OUTPUT_GALLERY_V6__=true;
 
   var COPY={
     tr:{title:"Diğer Sürümler",readyTitle:"Hazır Videolar",video:"video",version:"Sürüm",play:"Büyük oynatıcıda aç",download:"İndir",fullscreen:"Tam ekran",mute:"Sesi aç",unmute:"Sesi kapat",remove:"Sil",removeConfirm:"Bu reklam sürümünü silmek istiyor musun?",removeFailed:"Reklam sürümü silinemedi.",selectFailed:"Video seçilemedi.",downloadFailed:"Video indirilemedi."},
@@ -29,6 +29,7 @@
         requestId:source.generation.requestId||null,
         version:source.generation.version||1,
         videoUrl:source.generation.videoUrl,
+        posterUrl:source.generation.posterUrl||null,
         logoUrl:source.generation.logoUrl||source.media&&source.media.logo&&source.media.logo.url||null,
         createdAt:source.generation.completedAt||source.generation.startedAt||source.updatedAt,
         completedAt:source.generation.completedAt||source.updatedAt,
@@ -47,7 +48,7 @@
       preparing?"ready":"versions",
       clean(selected),
       outputs.map(function(item){return[
-        clean(item.id),item.version||1,clean(item.videoUrl),clean(item.logoUrl),
+        clean(item.id),item.version||1,clean(item.videoUrl),clean(item.posterUrl),clean(item.logoUrl),
         item.duration||"",item.aspectRatio||"",item.resolution||"",
         item.completedAt||item.createdAt||""
       ].join("|")}).join(";")
@@ -93,6 +94,7 @@
     var media=document.createElement("div");media.className="adfilm-output-card__media";
     var video=document.createElement("video");
     video.src=item.videoUrl;
+    if(clean(item.posterUrl))video.poster=item.posterUrl;
     video.preload="metadata";
     video.muted=true;
     video.playsInline=true;
@@ -158,9 +160,10 @@
       var next=data.project||source;
       window.AIVOAdFilmActiveProject=next;
       window.AIVOAdFilmGeneratedVideo=item.videoUrl;
+      window.AIVOAdFilmGeneratedPoster=item.posterUrl||"";
       window.AIVOAdFilmGeneratedLogo=item.logoUrl||"";
       window.AIVOAdFilmActiveOutputId=item.id;
-      if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{projectId:source.id,outputId:item.id,version:item.version||1,play:!!play});
+      if(window.AIVOAdFilmResultControls&&typeof window.AIVOAdFilmResultControls.mount==="function")window.AIVOAdFilmResultControls.mount(item.videoUrl,item.logoUrl||"",{projectId:source.id,outputId:item.id,version:item.version||1,posterUrl:item.posterUrl||"",play:!!play});
       render(next,true);
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
     }catch(error){console.error("[ADFILM] select output",error);toast(t("selectFailed"),"error")}
@@ -193,9 +196,10 @@
       window.AIVOAdFilmActiveProject=next;
       var remaining=outputsFromProject(next),active=remaining.find(function(output){return clean(output.id)===clean(next.activeOutputId)})||remaining[0];
       window.AIVOAdFilmGeneratedVideo=active&&active.videoUrl||"";
+      window.AIVOAdFilmGeneratedPoster=active&&active.posterUrl||"";
       window.AIVOAdFilmGeneratedLogo=active&&active.logoUrl||"";
       window.AIVOAdFilmActiveOutputId=active&&active.id||"";
-      if(active&&window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(active.videoUrl,active.logoUrl||"",{projectId:next.id,outputId:active.id,version:active.version||1});
+      if(active&&window.AIVOAdFilmResultControls)window.AIVOAdFilmResultControls.mount(active.videoUrl,active.logoUrl||"",{projectId:next.id,outputId:active.id,version:active.version||1,posterUrl:active.posterUrl||""});
       else if(window.AIVOAdFilmResultControls&&window.AIVOAdFilmResultControls.clear)window.AIVOAdFilmResultControls.clear();
       render(next,true);
       document.dispatchEvent(new CustomEvent("aivo:adfilm-project-sync",{detail:{project:next,projectId:next.id||"",media:next.media||{}}}));
