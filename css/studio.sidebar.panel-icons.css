@@ -116,6 +116,6 @@
 }
 
 #leftMenu .navScroll .navCard:last-child {
-  margin-top: 0 !important;
+  margin-top: 12px !important;
   margin-bottom: 0 !important;
 }
