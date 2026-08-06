@@ -1,11 +1,11 @@
 /* =========================================================
-   AIVO INDEX — SQUARE PRODUCTS / SINGLE ROW
+   AIVO INDEX — 108PX SQUARE PRODUCTS / SINGLE ROW
    Scope: index only, loaded after index.products.premium.css
    ========================================================= */
 
 #navProducts > .dropdown.dropdown--products {
-  width: min(1260px, calc(100vw - 24px)) !important;
-  max-width: 1260px !important;
+  width: min(936px, calc(100vw - 24px)) !important;
+  max-width: 936px !important;
 }
 
 #navProducts .products-menu.products-menu--premium {
@@ -21,7 +21,7 @@
   max-height: none !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
-  border-radius: 20px !important;
+  border-radius: 18px !important;
 }
 
 #navProducts .products-menu-head,
@@ -36,19 +36,19 @@
   box-sizing: border-box !important;
   position: relative !important;
   display: flex !important;
-  flex: 1 1 0 !important;
+  flex: 0 0 108px !important;
   flex-direction: column !important;
   align-items: stretch !important;
   justify-content: space-between !important;
-  gap: 12px !important;
-  width: auto !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  min-height: 0 !important;
-  height: auto !important;
+  gap: 8px !important;
+  width: 108px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  min-height: 108px !important;
+  height: 108px !important;
   aspect-ratio: 1 / 1 !important;
-  padding: 12px !important;
-  border-radius: 18px !important;
+  padding: 10px !important;
+  border-radius: 16px !important;
 }
 
 #navProducts .pc-top {
@@ -57,23 +57,23 @@
   display: flex !important;
   align-items: flex-start !important;
   justify-content: space-between !important;
-  gap: 8px !important;
+  gap: 6px !important;
 }
 
 #navProducts .products-menu.products-menu--premium .pc-ico {
   position: static !important;
   display: inline-grid !important;
   place-items: center !important;
-  width: 34px !important;
-  height: 34px !important;
-  flex: 0 0 34px !important;
+  width: 30px !important;
+  height: 30px !important;
+  flex: 0 0 30px !important;
   margin: 0 !important;
-  border-radius: 11px !important;
+  border-radius: 10px !important;
 }
 
 #navProducts .products-menu.products-menu--premium .pc-ico svg {
-  width: 18px !important;
-  height: 18px !important;
+  width: 16px !important;
+  height: 16px !important;
 }
 
 #navProducts .pc-card-tools {
@@ -91,9 +91,9 @@
 #navProducts .pc-badge {
   position: static !important;
   display: inline-flex !important;
-  min-height: 18px !important;
-  padding: 0 6px !important;
-  font-size: 7px !important;
+  min-height: 16px !important;
+  padding: 0 5px !important;
+  font-size: 6px !important;
 }
 
 #navProducts .products-menu.products-menu--premium .pc-txt {
@@ -110,9 +110,9 @@
   margin: 0 !important;
   overflow: hidden !important;
   color: #f8fafc !important;
-  font-size: 13px !important;
+  font-size: 11px !important;
   font-weight: 850 !important;
-  line-height: 1.15 !important;
+  line-height: 1.12 !important;
   letter-spacing: -.025em !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 3 !important;
@@ -131,15 +131,8 @@
 #navProducts .product-card[data-product="lipsync"] .pc-ico { color: #f472b6 !important; }
 #navProducts .product-card[data-product="adfilm"] .pc-ico { color: #d8b4fe !important; }
 
-@media (max-width: 1080px) {
+@media (max-width: 960px) {
   #navProducts > .dropdown.dropdown--products {
     width: calc(100vw - 16px) !important;
-  }
-
-  #navProducts .products-menu.products-menu--premium > a.product-card {
-    flex: 0 0 122px !important;
-    width: 122px !important;
-    height: 122px !important;
-    aspect-ratio: 1 / 1 !important;
   }
 }
