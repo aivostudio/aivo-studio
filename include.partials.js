@@ -55,7 +55,7 @@
         var rowLink = document.createElement("link");
         rowLink.id = "aivoIndexProductsSingleRowCss";
         rowLink.rel = "stylesheet";
-        rowLink.href = "/index.products.single-row.css?v=20260806_4";
+        rowLink.href = "/index.products.single-row.css?v=20260806_5";
         document.head.appendChild(rowLink);
       }
 
@@ -84,13 +84,8 @@
       var html = await res.text();
       mount.outerHTML = html;
 
-      // ✅ unify yoksa yükle (gecikmeli gelebilir)
       loadAuthUnifyFix();
-
-      // ✅ topbar geldi sinyali
       document.dispatchEvent(new CustomEvent("aivo:topbar:ready"));
-
-      // ✅ unify hazır olunca refresh (retry ile)
       refreshAuthUIWithRetry();
 
     } catch (e) {
@@ -99,11 +94,8 @@
   }
 
   function boot() {
-    // önce unify’yi çağır (ekler, yüklenmesi async)
     loadAuthUnifyFix();
-    // sadece index için premium ürün menüsünü yükle
     loadIndexProductsExperience();
-    // sonra topbar’ı bas
     injectTopbar();
   }
 
