@@ -34,14 +34,7 @@
     }, 100);
   }
 
-  function isIndexPage() {
-    var path = window.location.pathname || "/";
-    return path === "/" || path === "/index.html";
-  }
-
-  function loadIndexProductsExperience() {
-    if (!isIndexPage()) return;
-
+  function loadProductsExperience() {
     try {
       if (!document.getElementById("aivoIndexProductsPremiumCss")) {
         var link = document.createElement("link");
@@ -70,7 +63,7 @@
         document.head.appendChild(s);
       }
     } catch (e) {
-      console.warn("[partials] index products loader error:", e);
+      console.warn("[partials] products loader error:", e);
     }
   }
 
@@ -95,7 +88,7 @@
 
   function boot() {
     loadAuthUnifyFix();
-    loadIndexProductsExperience();
+    loadProductsExperience();
     injectTopbar();
   }
 
