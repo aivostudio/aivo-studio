@@ -39,12 +39,68 @@
       .replaceAll("lipsyncWave", "adfilmWave");
   }
 
+  function applyAdFilmTheme(section) {
+    var style = document.createElement("style");
+    style.setAttribute("data-adfilm-theme", "1");
+    style.textContent = [
+      "#adfilm-video{",
+      "  --adfilm-rose:#d85c86;",
+      "  --adfilm-copper:#c77a55;",
+      "  --adfilm-champagne:#f2c9a5;",
+      "}",
+      "#adfilm-video .lipsync-card{",
+      "  background:",
+      "    radial-gradient(760px 420px at 4% 0%, rgba(195,72,105,.34), transparent 62%),",
+      "    radial-gradient(520px 360px at 96% 12%, rgba(205,124,83,.24), transparent 66%),",
+      "    linear-gradient(145deg, rgba(64,27,48,.97), rgba(38,27,48,.98) 52%, rgba(67,38,41,.98)) !important;",
+      "  border-color:rgba(241,175,139,.30) !important;",
+      "  box-shadow:0 24px 70px rgba(73,25,44,.32), inset 0 1px 0 rgba(255,230,216,.10) !important;",
+      "}",
+      "#adfilm-video .lipsync-copybox{",
+      "  background:linear-gradient(135deg, rgba(190,82,112,.18), rgba(197,126,81,.13)) !important;",
+      "  border-color:rgba(240,181,147,.24) !important;",
+      "}",
+      "#adfilm-video .lipsync-badge{",
+      "  background:rgba(74,38,50,.72) !important;",
+      "  border-color:rgba(236,167,132,.24) !important;",
+      "}",
+      "#adfilm-video .lipsync-cta{",
+      "  background:linear-gradient(90deg, #b95486 0%, #d46a78 48%, #d99568 100%) !important;",
+      "  box-shadow:0 14px 34px rgba(183,74,116,.28) !important;",
+      "}",
+      "#adfilm-video .lipsync-media{position:relative !important;}",
+      "#adfilm-video #adfilmSoundToggle{",
+      "  top:18px !important;",
+      "  right:18px !important;",
+      "  bottom:auto !important;",
+      "  left:auto !important;",
+      "  background:linear-gradient(135deg, rgba(177,72,111,.96), rgba(211,118,88,.96)) !important;",
+      "  border:1px solid rgba(255,221,202,.34) !important;",
+      "  color:#fffaf7 !important;",
+      "  box-shadow:0 12px 30px rgba(71,25,43,.36), inset 0 1px 0 rgba(255,255,255,.18) !important;",
+      "  backdrop-filter:blur(12px) saturate(130%) !important;",
+      "  -webkit-backdrop-filter:blur(12px) saturate(130%) !important;",
+      "  z-index:7 !important;",
+      "}",
+      "#adfilm-video #adfilmSoundToggle:hover{",
+      "  transform:translateY(-1px) !important;",
+      "  filter:brightness(1.06) !important;",
+      "}",
+      "#adfilm-video .lipsync-video-wrap{",
+      "  border-color:rgba(240,177,142,.24) !important;",
+      "  box-shadow:inset 0 0 0 1px rgba(255,229,214,.05) !important;",
+      "}"
+    ].join("\n");
+
+    section.appendChild(style);
+  }
+
   function connectSoundButton(section) {
     var video = section.querySelector("#adfilmPreviewVideo");
     var button = section.querySelector("#adfilmSoundToggle");
     if (!video || !button) return;
 
-    button.textContent = "🔇 Sesi Aç";
+    button.textContent = video.muted ? "🔇 Sesi Aç" : "🔊 Ses Açık";
 
     button.addEventListener("click", function (event) {
       event.preventDefault();
@@ -137,6 +193,7 @@
       " İlk reklam filmini kısa sürede oluştur."
     );
 
+    applyAdFilmTheme(section);
     connectSoundButton(section);
     return section;
   }
