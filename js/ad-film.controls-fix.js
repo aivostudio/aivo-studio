@@ -17,4 +17,11 @@
     radioScript.async=false;
     document.head.appendChild(radioScript);
   }
+
+  if(!document.querySelector('script[src^="/js/ad-film.radio-word-estimate-i18n.js"]')){
+    var estimateScript=document.createElement("script");
+    estimateScript.src="/js/ad-film.radio-word-estimate-i18n.js?v=1";
+    estimateScript.async=false;
+    document.head.appendChild(estimateScript);
+  }
 })();
