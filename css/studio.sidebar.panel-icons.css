@@ -90,3 +90,32 @@
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 5H5v14h5M14 8l4 4-4 4M18 12H9'/%3E%3C/svg%3E");
           mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 5H5v14h5M14 8l4 4-4 4M18 12H9'/%3E%3C/svg%3E");
 }
+
+/* Sidebar layout cleanup: remove Quick Notes without changing DOM structure,
+   reclaim its space for the Panels card, and align the menu with the shell. */
+#leftMenu #navInfo {
+  display: none !important;
+}
+
+#leftMenu.studioNav {
+  top: calc(var(--topbar-h) + 18px) !important;
+  height: calc(100vh - var(--topbar-h) - 36px) !important;
+}
+
+#leftMenu .navScroll {
+  justify-content: flex-start !important;
+  gap: 16px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+#leftMenu .navScroll .navCard:first-child {
+  margin-top: 0 !important;
+}
+
+#leftMenu .navScroll .navCard:last-child {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
