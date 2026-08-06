@@ -14,7 +14,7 @@
       if (already) return;
 
       var s = document.createElement("script");
-      s.src = "/auth.unify.fix.js?v=2"; // cache break
+      s.src = "/auth.unify.fix.js?v=2";
       s.defer = true;
       document.head.appendChild(s);
     } catch (e) {
@@ -30,7 +30,7 @@
         try { window.__AIVO_TOPBAR_REFRESH__(); } catch (_) {}
         clearInterval(t);
       }
-      if (tries >= 40) clearInterval(t); // max 4s
+      if (tries >= 40) clearInterval(t);
     }, 100);
   }
 
@@ -65,7 +65,7 @@
 
       if (!already) {
         var s = document.createElement("script");
-        s.src = "/js/index.products.premium.js?v=20260806_3";
+        s.src = "/js/index.products.premium.js?v=20260806_6";
         s.defer = true;
         document.head.appendChild(s);
       }
