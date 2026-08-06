@@ -11,6 +11,69 @@
 
   var ADFILM_PREVIEW_URL = "/aivo-adfilm-preview.mp4";
 
+  var COPY = {
+    tr: {
+      sectionLabel: "AI Reklam Filmi",
+      title: "AI Reklam Filmi",
+      sub: "Markan için sahneli, sesli ve profesyonel reklam filmi oluştur.",
+      barStrong: "Senaryodan reklama.",
+      barText: "Ürününü, hizmetini veya markanı kısa reklam filmine dönüştür.",
+      badges: [
+        "🎬 Sahneli Reklam",
+        "🎙️ Ses & Anlatım",
+        "📱 Sosyal Medya"
+      ],
+      cta: "Reklam Filmi Oluştur →",
+      copyTitle: "AI Reklam Filmi Oluştur",
+      copyBox: "Markanı tanıtan sahneli, sesli ve profesyonel reklam filmleri üret.",
+      bullets: [
+        "🎬 Senaryodan çok sahneli reklam filmi oluştur",
+        "🎙️ Seslendirme ve anlatımla mesajını güçlendir",
+        "📱 Reels, Shorts ve kampanya paylaşımına hazır çıktı al",
+        "✨ Marka, ürün ve hizmet tanıtımı için premium görünüm",
+        "⚡ Süre ve kalite seçenekleriyle kontrollü üretim"
+      ],
+      bottomStrong: "Senaryodan hazır reklama.",
+      bottomText: " İlk reklam filmini kısa sürede oluştur.",
+      soundOff: "🔇 Sesi Aç",
+      soundOn: "🔊 Ses Açık"
+    },
+    en: {
+      sectionLabel: "AI Commercial",
+      title: "AI Commercial",
+      sub: "Create a multi-scene, voiced and professional commercial for your brand.",
+      barStrong: "From script to commercial.",
+      barText: "Turn your product, service or brand into a short commercial.",
+      badges: [
+        "🎬 Multi-Scene Ad",
+        "🎙️ Voice & Narration",
+        "📱 Social Media"
+      ],
+      cta: "Create Commercial →",
+      copyTitle: "Create an AI Commercial",
+      copyBox: "Produce multi-scene, voiced and professional commercials that showcase your brand.",
+      bullets: [
+        "🎬 Turn a script into a multi-scene commercial",
+        "🎙️ Strengthen your message with voiceover and narration",
+        "📱 Export ready for Reels, Shorts and campaign posts",
+        "✨ Give your brand, product or service a premium look",
+        "⚡ Control production with duration and quality options"
+      ],
+      bottomStrong: "From script to a finished commercial.",
+      bottomText: " Create your first commercial in a short time.",
+      soundOff: "🔇 Turn Sound On",
+      soundOn: "🔊 Sound On"
+    }
+  };
+
+  function normalizeLanguage(value) {
+    return String(value || "").toLowerCase().indexOf("tr") === 0 ? "tr" : "en";
+  }
+
+  function currentLanguage() {
+    return normalizeLanguage(window.AIVO_LANG || document.documentElement.lang || "en");
+  }
+
   function setText(root, selector, value) {
     var node = root.querySelector(selector);
     if (node) node.textContent = value;
@@ -95,19 +158,53 @@
     section.appendChild(style);
   }
 
+  function updateSoundButton(section, lang) {
+    var video = section.querySelector("#adfilmPreviewVideo");
+    var button = section.querySelector("#adfilmSoundToggle");
+    if (!video || !button) return;
+
+    var pack = COPY[normalizeLanguage(lang)] || COPY.en;
+    button.textContent = video.muted ? pack.soundOff : pack.soundOn;
+  }
+
+  function applyCopy(section, lang) {
+    var pack = COPY[normalizeLanguage(lang)] || COPY.en;
+
+    section.setAttribute("aria-label", pack.sectionLabel);
+    setText(section, ".lipsync-title", pack.title);
+    setText(section, ".lipsync-sub", pack.sub);
+    setText(section, ".lipsync-bar strong", pack.barStrong);
+    setText(section, ".lipsync-bar span", pack.barText);
+    setText(section, ".lipsync-cta", pack.cta);
+    setText(section, ".lipsync-copy h3", pack.copyTitle);
+    setText(section, ".lipsync-copybox", pack.copyBox);
+    setText(section, ".lipsync-bottom strong", pack.bottomStrong);
+    setText(section, ".lipsync-bottom span", pack.bottomText);
+
+    section.querySelectorAll(".lipsync-badge").forEach(function (node, index) {
+      if (pack.badges[index]) node.textContent = pack.badges[index];
+    });
+
+    section.querySelectorAll(".lipsync-bullets li").forEach(function (node, index) {
+      if (pack.bullets[index]) node.textContent = pack.bullets[index];
+    });
+
+    updateSoundButton(section, lang);
+  }
+
   function connectSoundButton(section) {
     var video = section.querySelector("#adfilmPreviewVideo");
     var button = section.querySelector("#adfilmSoundToggle");
     if (!video || !button) return;
 
-    button.textContent = video.muted ? "🔇 Sesi Aç" : "🔊 Ses Açık";
+    updateSoundButton(section, currentLanguage());
 
     button.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
 
       video.muted = !video.muted;
-      button.textContent = video.muted ? "🔇 Sesi Aç" : "🔊 Ses Açık";
+      updateSoundButton(section, currentLanguage());
 
       if (!video.muted) {
         var playPromise = video.play();
@@ -122,7 +219,6 @@
     var section = source.cloneNode(true);
 
     section.id = "adfilm-video";
-    section.setAttribute("aria-label", "AI Reklam Filmi");
     section.setAttribute("data-adfilm-section-shell", "1");
 
     renameScopedStyles(section);
@@ -147,53 +243,8 @@
       card.setAttribute("data-mod", "adfilm");
     }
 
-    setText(section, ".lipsync-title", "AI Reklam Filmi");
-    setText(
-      section,
-      ".lipsync-sub",
-      "Markan için sahneli, sesli ve profesyonel reklam filmi oluştur."
-    );
-    setText(section, ".lipsync-bar strong", "Senaryodan reklama.");
-    setText(
-      section,
-      ".lipsync-bar span",
-      "Ürününü, hizmetini veya markanı kısa reklam filmine dönüştür."
-    );
-
-    var badges = section.querySelectorAll(".lipsync-badge");
-    if (badges[0]) badges[0].textContent = "🎬 Sahneli Reklam";
-    if (badges[1]) badges[1].textContent = "🎙️ Ses & Anlatım";
-    if (badges[2]) badges[2].textContent = "📱 Sosyal Medya";
-
-    setText(section, ".lipsync-cta", "Reklam Filmi Oluştur →");
-    setText(section, ".lipsync-copy h3", "AI Reklam Filmi Oluştur");
-    setText(
-      section,
-      ".lipsync-copybox",
-      "Markanı tanıtan sahneli, sesli ve profesyonel reklam filmleri üret."
-    );
-
-    var bullets = section.querySelectorAll(".lipsync-bullets li");
-    var bulletCopy = [
-      "🎬 Senaryodan çok sahneli reklam filmi oluştur",
-      "🎙️ Seslendirme ve anlatımla mesajını güçlendir",
-      "📱 Reels, Shorts ve kampanya paylaşımına hazır çıktı al",
-      "✨ Marka, ürün ve hizmet tanıtımı için premium görünüm",
-      "⚡ Süre ve kalite seçenekleriyle kontrollü üretim"
-    ];
-
-    bullets.forEach(function (item, index) {
-      if (bulletCopy[index]) item.textContent = bulletCopy[index];
-    });
-
-    setText(section, ".lipsync-bottom strong", "Senaryodan hazır reklama.");
-    setText(
-      section,
-      ".lipsync-bottom span",
-      " İlk reklam filmini kısa sürede oluştur."
-    );
-
     applyAdFilmTheme(section);
+    applyCopy(section, currentLanguage());
     connectSoundButton(section);
     return section;
   }
@@ -226,6 +277,14 @@
       if (mount() || attempts >= 80) window.clearInterval(timer);
     }, 75);
   }
+
+  document.addEventListener("aivo:language-change", function (event) {
+    var section = document.getElementById("adfilm-video");
+    if (!section) return;
+
+    var lang = event && event.detail ? event.detail.lang : currentLanguage();
+    applyCopy(section, lang);
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });
