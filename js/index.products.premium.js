@@ -81,6 +81,46 @@
     return PRODUCTS.map(cardMarkup).join("");
   }
 
+  function forceSingleRow(menu) {
+    var dropdown = menu.closest(".dropdown--products");
+    var cards = Array.from(menu.querySelectorAll(":scope > a.product-card"));
+
+    if (dropdown) {
+      dropdown.style.setProperty("width", "min(936px, calc(100vw - 24px))", "important");
+      dropdown.style.setProperty("max-width", "936px", "important");
+    }
+
+    menu.style.setProperty("display", "flex", "important");
+    menu.style.setProperty("flex-direction", "row", "important");
+    menu.style.setProperty("flex-wrap", "nowrap", "important");
+    menu.style.setProperty("align-items", "stretch", "important");
+    menu.style.setProperty("justify-content", "flex-start", "important");
+    menu.style.setProperty("gap", "8px", "important");
+    menu.style.setProperty("padding", "8px", "important");
+    menu.style.setProperty("height", "124px", "important");
+    menu.style.setProperty("min-height", "124px", "important");
+    menu.style.setProperty("max-height", "124px", "important");
+    menu.style.setProperty("overflow-x", "auto", "important");
+    menu.style.setProperty("overflow-y", "hidden", "important");
+
+    cards.forEach(function (card) {
+      card.style.setProperty("display", "flex", "important");
+      card.style.setProperty("flex", "0 0 108px", "important");
+      card.style.setProperty("width", "108px", "important");
+      card.style.setProperty("min-width", "108px", "important");
+      card.style.setProperty("max-width", "108px", "important");
+      card.style.setProperty("height", "108px", "important");
+      card.style.setProperty("min-height", "108px", "important");
+      card.style.setProperty("max-height", "108px", "important");
+      card.style.setProperty("aspect-ratio", "1 / 1", "important");
+      card.style.setProperty("flex-direction", "column", "important");
+      card.style.setProperty("justify-content", "space-between", "important");
+      card.style.setProperty("padding", "10px", "important");
+      card.style.setProperty("border-radius", "16px", "important");
+      card.style.setProperty("background", "radial-gradient(120px 80px at 20% 0%, rgba(var(--pc-rgb), .30), transparent 65%), linear-gradient(145deg, rgba(29, 33, 58, .97), rgba(9, 13, 28, .98))", "important");
+    });
+  }
+
   function applyCopy(root, lang) {
     var pack = COPY[normalizeLanguage(lang)] || COPY.en;
 
@@ -107,6 +147,15 @@
     }
 
     applyCopy(menu, currentLanguage());
+    forceSingleRow(menu);
+
+    requestAnimationFrame(function () {
+      forceSingleRow(menu);
+    });
+
+    setTimeout(function () {
+      forceSingleRow(menu);
+    }, 250);
 
     try {
       document.dispatchEvent(new CustomEvent("aivo:index-products-ready", {
@@ -131,9 +180,14 @@
     var menu = document.querySelector("#navProducts .products-menu--premium");
     if (!menu) return;
     applyCopy(menu, event && event.detail ? event.detail.lang : currentLanguage());
+    forceSingleRow(menu);
   });
 
   document.addEventListener("aivo:topbar:ready", mount);
+  window.addEventListener("resize", function () {
+    var menu = document.querySelector("#navProducts .products-menu--premium");
+    if (menu) forceSingleRow(menu);
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bootWithRetry, { once: true });
