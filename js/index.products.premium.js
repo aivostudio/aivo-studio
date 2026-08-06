@@ -15,21 +15,13 @@
       count: "8 AI aracı",
       newBadge: "YENİ",
       musicTitle: "AI Müzik Üret",
-      musicSub: "Fikrini yaz, stüdyo kalitesinde müzik üret.",
       coverTitle: "AI Kapak Üret",
-      coverSub: "Kapak, afiş ve profesyonel görsel içerik oluştur.",
       atmoTitle: "AI Atmosfer Video",
-      atmoSub: "Loop sahneler ve sinematik atmosferler tasarla.",
       cartoonTitle: "AI Çocuk Çizgifilm",
-      cartoonSub: "Karakterlerini sahnelere ve hikâyelere dönüştür.",
       photofxTitle: "AI Foto Efekt Video Clip",
-      photofxSub: "Tek fotoğraftan hareketli efekt klibi üret.",
       videoTitle: "AI Resimden Video Üret",
-      videoSub: "Görselini sosyal medyaya hazır videoya dönüştür.",
       lipsyncTitle: "AI Dudak Senkron Video",
-      lipsyncSub: "Görüntü ve sesi doğal dudak hareketleriyle eşleştir.",
-      adfilmTitle: "AI Reklam Filmi Oluştur",
-      adfilmSub: "Markan için sahneli, sesli ve profesyonel reklam üret."
+      adfilmTitle: "AI Reklam Filmi Oluştur"
     },
     en: {
       eyebrow: "AIVO CREATIVE SUITE",
@@ -37,21 +29,13 @@
       count: "8 AI tools",
       newBadge: "NEW",
       musicTitle: "Create AI Music",
-      musicSub: "Turn an idea into studio-quality music.",
       coverTitle: "Create AI Cover Art",
-      coverSub: "Design covers, posters and professional visuals.",
       atmoTitle: "AI Atmosphere Video",
-      atmoSub: "Build loop scenes and cinematic atmospheres.",
       cartoonTitle: "AI Kids Cartoon",
-      cartoonSub: "Turn characters into scenes and complete stories.",
       photofxTitle: "AI Photo Effect Video Clip",
-      photofxSub: "Create an animated effects clip from one photo.",
       videoTitle: "Create AI Image-to-Video",
-      videoSub: "Turn an image into a social-ready video.",
       lipsyncTitle: "AI Lip Sync Video",
-      lipsyncSub: "Match video and audio with natural lip movement.",
-      adfilmTitle: "Create an AI Commercial",
-      adfilmSub: "Produce a voiced, multi-scene commercial for your brand."
+      adfilmTitle: "Create an AI Commercial"
     }
   };
 
@@ -100,7 +84,6 @@
         '</span>',
         '<span class="pc-txt">',
           '<span class="pc-title" data-index-products-copy="' + product.key + 'Title"></span>',
-          '<span class="pc-sub" data-index-products-copy="' + product.key + 'Sub"></span>',
         '</span>',
       '</a>'
     ].join("");
