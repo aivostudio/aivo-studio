@@ -52,6 +52,18 @@
         document.head.appendChild(rowLink);
       }
 
+      if (
+        document.body &&
+        document.body.classList.contains("is-studio-v2") &&
+        !document.getElementById("aivoStudioProductsDropdownCss")
+      ) {
+        var studioLink = document.createElement("link");
+        studioLink.id = "aivoStudioProductsDropdownCss";
+        studioLink.rel = "stylesheet";
+        studioLink.href = "/studio.products.dropdown.css?v=20260806_1";
+        document.head.appendChild(studioLink);
+      }
+
       var already = Array.from(document.scripts || []).some(function (script) {
         return (script.src || "").includes("/js/index.products.premium.js");
       });
