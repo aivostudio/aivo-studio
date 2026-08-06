@@ -94,7 +94,7 @@
       if (already) return;
 
       var s = document.createElement("script");
-      s.src = "/js/index.adfilm.section.js?v=20260806_1";
+      s.src = "/js/index.adfilm.section.js?v=20260806_2";
       s.defer = true;
       document.head.appendChild(s);
     } catch (e) {
