@@ -103,3 +103,16 @@
 [data-module-root][data-module="adfilm"] .adfilm-engine-status.is-busy>span{
   animation:aivoAdFilmProgressSpin .9s linear infinite!important;
 }
+
+/* Safari stretches the outer Voice & Narration grid card to the full track
+   height. Keep that card content-sized while preserving its full column width.
+   This is layout-only; no DOM, event, production or video state is changed. */
+[data-module-root][data-module="adfilm"] .adfilm-workspace > .adfilm-card--voice,
+[data-module-root][data-module="adfilm"] .adfilm-card--voice-has-music,
+[data-module-root][data-module="adfilm"] .adfilm-card--voice-tuned{
+  min-height:0!important;
+  min-block-size:0!important;
+  height:auto!important;
+  block-size:auto!important;
+  align-self:start!important;
+}
