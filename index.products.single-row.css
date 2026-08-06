@@ -118,6 +118,20 @@
   display: none !important;
 }
 
+#navProducts .products-menu.products-menu--premium > a.product-card::after {
+  left: 14px !important;
+  right: 14px !important;
+  bottom: 4px !important;
+  height: 2px !important;
+  box-shadow: 0 -1px 7px rgba(var(--pc-rgb), .18) !important;
+}
+
+#navProducts .products-menu.products-menu--premium > a.product-card:hover::after,
+#navProducts .products-menu.products-menu--premium > a.product-card:focus-visible::after,
+#navProducts .products-menu.products-menu--premium > a.product-card.is-active::after {
+  transform: scaleX(.86) !important;
+}
+
 #navProducts .product-card[data-product="music"] .pc-ico { color: #e879f9 !important; }
 #navProducts .product-card[data-product="cover"] .pc-ico { color: #818cf8 !important; }
 #navProducts .product-card[data-product="atmo"] .pc-ico { color: #67e8f9 !important; }
