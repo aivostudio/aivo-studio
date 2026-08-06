@@ -91,12 +91,24 @@
       var already = Array.from(document.scripts || []).some(function (script) {
         return (script.src || "").includes("/js/index.adfilm.section.js");
       });
-      if (already) return;
 
-      var s = document.createElement("script");
-      s.src = "/js/index.adfilm.section.js?v=20260806_4";
-      s.defer = true;
-      document.head.appendChild(s);
+      if (!already) {
+        var s = document.createElement("script");
+        s.src = "/js/index.adfilm.section.js?v=20260806_4";
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+
+      var radioAlready = Array.from(document.scripts || []).some(function (script) {
+        return (script.src || "").includes("/js/index.adfilm.radio-info.js");
+      });
+
+      if (!radioAlready) {
+        var radioScript = document.createElement("script");
+        radioScript.src = "/js/index.adfilm.radio-info.js?v=20260806_1";
+        radioScript.defer = true;
+        document.head.appendChild(radioScript);
+      }
     } catch (e) {
       console.warn("[partials] index ad film section loader error:", e);
     }
