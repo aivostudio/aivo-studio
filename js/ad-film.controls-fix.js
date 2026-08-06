@@ -4,6 +4,13 @@
   "use strict";
   window.__AIVO_AD_FILM_CONTROLS_FIX__=true;
 
+  if(!document.querySelector('link[href^="/css/studio.sidebar.icons.css"]')){
+    var sidebarIcons=document.createElement("link");
+    sidebarIcons.rel="stylesheet";
+    sidebarIcons.href="/css/studio.sidebar.icons.css?v=1";
+    document.head.appendChild(sidebarIcons);
+  }
+
   if(!document.querySelector('script[src^="/js/ad-film.i18n-completion.js"]')){
     var script=document.createElement("script");
     script.src="/js/ad-film.i18n-completion.js?v=1";
