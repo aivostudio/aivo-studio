@@ -34,6 +34,38 @@
     }, 100);
   }
 
+  function isIndexPage() {
+    var path = window.location.pathname || "/";
+    return path === "/" || path === "/index.html";
+  }
+
+  function loadIndexProductsExperience() {
+    if (!isIndexPage()) return;
+
+    try {
+      if (!document.getElementById("aivoIndexProductsPremiumCss")) {
+        var link = document.createElement("link");
+        link.id = "aivoIndexProductsPremiumCss";
+        link.rel = "stylesheet";
+        link.href = "/index.products.premium.css?v=20260806_1";
+        document.head.appendChild(link);
+      }
+
+      var already = Array.from(document.scripts || []).some(function (script) {
+        return (script.src || "").includes("/js/index.products.premium.js");
+      });
+
+      if (!already) {
+        var s = document.createElement("script");
+        s.src = "/js/index.products.premium.js?v=20260806_1";
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+    } catch (e) {
+      console.warn("[partials] index products loader error:", e);
+    }
+  }
+
   async function injectTopbar() {
     var mount = qs('[data-include="topbar"]');
     if (!mount) return;
@@ -61,6 +93,8 @@
   function boot() {
     // önce unify’yi çağır (ekler, yüklenmesi async)
     loadAuthUnifyFix();
+    // sadece index için premium ürün menüsünü yükle
+    loadIndexProductsExperience();
     // sonra topbar’ı bas
     injectTopbar();
   }
