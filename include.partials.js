@@ -51,6 +51,14 @@
         document.head.appendChild(link);
       }
 
+      if (!document.getElementById("aivoIndexProductsSingleRowCss")) {
+        var rowLink = document.createElement("link");
+        rowLink.id = "aivoIndexProductsSingleRowCss";
+        rowLink.rel = "stylesheet";
+        rowLink.href = "/index.products.single-row.css?v=20260806_1";
+        document.head.appendChild(rowLink);
+      }
+
       var already = Array.from(document.scripts || []).some(function (script) {
         return (script.src || "").includes("/js/index.products.premium.js");
       });
