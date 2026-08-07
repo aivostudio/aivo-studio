@@ -9,7 +9,7 @@
   if (window.__AIVO_INDEX_ADFILM_SECTION__) return;
   window.__AIVO_INDEX_ADFILM_SECTION__ = true;
 
-  var ADFILM_PREVIEW_URL = "/aivo-adfilm-preview.mp4";
+  var ADFILM_PREVIEW_URL = "https://media.aivo.tr/outputs/home/adfilm/adfilm-preview-1786102393483.mp4";
 
   var COPY = {
     tr: {
