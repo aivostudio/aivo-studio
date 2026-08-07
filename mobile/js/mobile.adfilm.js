@@ -7,6 +7,8 @@
   const views = Array.from(root.querySelectorAll("[data-mobile-adfilm-view]"));
   const description = root.querySelector("#mobileAdFilmDescription");
   const descriptionCount = root.querySelector("#mobileAdFilmDescriptionCount");
+  const creativeBrief = root.querySelector("#mobileAdFilmCreativeBrief");
+  const creativeBriefCount = root.querySelector("#mobileAdFilmCreativeBriefCount");
 
   function setMode(mode){
     modeButtons.forEach(function(button){
@@ -33,9 +35,19 @@
     descriptionCount.textContent = String(description.value.length);
   }
 
+  function syncCreativeBriefCount(){
+    if (!creativeBrief || !creativeBriefCount) return;
+    creativeBriefCount.textContent = String(creativeBrief.value.length);
+  }
+
   if (description){
     description.addEventListener("input", syncDescriptionCount);
     syncDescriptionCount();
+  }
+
+  if (creativeBrief){
+    creativeBrief.addEventListener("input", syncCreativeBriefCount);
+    syncCreativeBriefCount();
   }
 
   setMode("video");
