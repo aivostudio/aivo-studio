@@ -137,19 +137,21 @@
 }
 
 .mobile-adfilm-quality-credit{
-  min-height:36px;
-  padding:0 6px;
-  border-radius:12px;
+  min-height:58px;
+  padding:0 8px;
+  border-radius:16px;
   border:1px solid rgba(139,92,246,.28);
   background:rgba(14,16,34,.78);
-  color:rgba(255,255,255,.76);
+  color:rgba(255,255,255,.82);
   display:flex;
   align-items:center;
   justify-content:center;
   text-align:center;
-  font-size:10px;
+  font-size:15px;
   font-weight:950;
+  letter-spacing:-.025em;
   white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 9px 20px rgba(0,0,0,.10);
 }
 
 .mobile-adfilm-quality-radio:checked ~ .mobile-adfilm-quality-credit{
@@ -180,5 +182,5 @@
   .mobile-adfilm-quality-card{padding:14px 13px}
   .mobile-adfilm-quality-grid{gap:7px}
   .mobile-adfilm-quality-button{min-height:54px;font-size:14px}
-  .mobile-adfilm-quality-credit{font-size:9px}
+  .mobile-adfilm-quality-credit{min-height:54px;font-size:14px}
 }
