@@ -488,6 +488,22 @@
   color:rgba(167,243,208,.48);
 }
 
+.mobile-adfilm-voice-approve:not(:disabled){
+  border-color:rgba(74,222,128,.78);
+  background:linear-gradient(135deg,#10b981,#34d399);
+  color:#f0fdf4;
+  box-shadow:0 0 0 1px rgba(110,231,183,.18) inset,0 10px 26px rgba(16,185,129,.34),0 0 22px rgba(52,211,153,.22);
+  cursor:pointer;
+}
+
+.mobile-adfilm-voice-approve.is-approved{
+  border-color:rgba(52,211,153,.22);
+  background:rgba(16,185,129,.10);
+  color:rgba(167,243,208,.56);
+  box-shadow:none;
+  cursor:not-allowed;
+}
+
 .mobile-adfilm-voice-preview button:disabled{
   cursor:not-allowed;
 }
