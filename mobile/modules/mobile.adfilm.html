@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="/mobile/css/mobile.adfilm.voice.css?v=1">
 <link rel="stylesheet" href="/mobile/css/mobile.adfilm.reference.css?v=1">
+<link rel="stylesheet" href="/mobile/css/mobile.adfilm.quality.css?v=1">
 <section id="mobileAdFilmSection" class="mobile-adfilm-section">
   <section class="mobile-adfilm-panel">
     <div class="mobile-adfilm-hero">
@@ -278,6 +279,40 @@
             </div>
           </section>
         </div>
+      </article>
+
+      <article class="mobile-adfilm-card mobile-adfilm-quality-card" data-mobile-adfilm-quality-card>
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-quality-icon" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">07</span>
+            <h4>Çıkış Kalitesi</h4>
+            <p>720p ekonomik, 1080p profesyonel veya 4K premium kaliteyi seç.</p>
+          </div>
+        </div>
+
+        <span class="mobile-adfilm-quality-label">Kalite</span>
+        <div class="mobile-adfilm-quality-grid" role="radiogroup" aria-label="Çıkış kalitesi">
+          <div class="mobile-adfilm-quality-option" data-quality="720p">
+            <input class="mobile-adfilm-quality-radio" type="radio" name="mobileAdFilmQuality" id="mobileAdFilmQuality720" value="720p">
+            <label class="mobile-adfilm-quality-button" for="mobileAdFilmQuality720">720p</label>
+            <div class="mobile-adfilm-quality-credit">50 Kredi</div>
+          </div>
+
+          <div class="mobile-adfilm-quality-option" data-quality="1080p">
+            <input class="mobile-adfilm-quality-radio" type="radio" name="mobileAdFilmQuality" id="mobileAdFilmQuality1080" value="1080p" checked>
+            <label class="mobile-adfilm-quality-button" for="mobileAdFilmQuality1080">1080p</label>
+            <div class="mobile-adfilm-quality-credit">100 Kredi</div>
+          </div>
+
+          <div class="mobile-adfilm-quality-option" data-quality="4k">
+            <input class="mobile-adfilm-quality-radio" type="radio" name="mobileAdFilmQuality" id="mobileAdFilmQuality4k" value="4k">
+            <label class="mobile-adfilm-quality-button" for="mobileAdFilmQuality4k">4K <em class="mobile-adfilm-quality-premium">Premium</em></label>
+            <div class="mobile-adfilm-quality-credit">195 Kredi</div>
+          </div>
+        </div>
+
+        <p class="mobile-adfilm-quality-note">720p ekonomik, 1080p profesyonel final, 4K premium.</p>
       </article>
     </div>
 
