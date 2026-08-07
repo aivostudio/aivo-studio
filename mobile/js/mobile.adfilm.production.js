@@ -278,15 +278,19 @@
     const poster = posterUrl(item);
     const title = clean(item && item.title) || outputTitle();
     const meta = clean(item && (item.completedAt || item.finalizedAt || item.createdAt));
+    const outputId = clean(item && item.id) || String(index);
     return `
-      <article class="mobile-adfilm-production-card" data-mobile-adfilm-output="${esc(clean(item && item.id) || String(index))}">
+      <article class="mobile-adfilm-production-card" data-mobile-adfilm-output="${esc(outputId)}">
         <div class="mobile-adfilm-production-media">
           <video src="${esc(video)}"${poster ? ` poster="${esc(poster)}"` : ""} playsinline webkit-playsinline preload="metadata"></video>
           <div class="mobile-adfilm-production-actions">
-            <button type="button" data-mobile-adfilm-output-action="download" aria-label="Videoyu indir">↓</button>
-            <button type="button" data-mobile-adfilm-output-action="share" aria-label="Videoyu paylaş">↗</button>
-            <button type="button" data-mobile-adfilm-output-action="sound" aria-label="Sesi aç veya kapat">🔊</button>
-            <button type="button" data-mobile-adfilm-output-action="fullscreen" aria-label="Tam ekran">⛶</button>
+            <button type="button" data-mobile-adfilm-output-action="download" aria-label="Videoyu indir" title="Videoyu indir">↓</button>
+            <button type="button" data-mobile-adfilm-output-action="open" aria-label="Videoyu aç" title="Videoyu aç">↗</button>
+            <button type="button" data-mobile-adfilm-output-action="share" aria-label="Videoyu paylaş" title="Videoyu paylaş">⤴</button>
+            <button type="button" data-mobile-adfilm-output-action="sound" aria-label="Sesi aç veya kapat" title="Sesi aç veya kapat">🔊</button>
+            <button type="button" data-mobile-adfilm-output-action="fullscreen" aria-label="Tam ekran" title="Tam ekran">⛶</button>
+            <button type="button" data-mobile-adfilm-output-action="report" aria-label="İçeriği bildir" title="İçeriği bildir">⚑</button>
+            <button type="button" data-mobile-adfilm-output-action="delete" aria-label="Videoyu sil" title="Videoyu sil">🗑</button>
           </div>
           <button class="mobile-adfilm-production-play" type="button" data-mobile-adfilm-output-action="play" aria-label="Videoyu oynat">▶</button>
         </div>
@@ -301,6 +305,12 @@
   function projectOutputs(source){
     const outputs = Array.isArray(source && source.outputs) ? source.outputs : [];
     return outputs.filter(function(item){ return !!outputUrl(item); }).slice(0, 12);
+  }
+
+  function outputFromCard(card){
+    const outputId = clean(card && card.getAttribute("data-mobile-adfilm-output"));
+    if (!outputId) return null;
+    return projectOutputs(currentProject()).find(function(item){ return clean(item && item.id) === outputId; }) || null;
   }
 
   function renderOutputs(source){
@@ -745,6 +755,114 @@
     resumeIfNeeded(source);
   }
 
+  function openReportSheet(item, videoUrl){
+    const old = document.getElementById("aivoMobileAdFilmReportSheet");
+    if (old) old.remove();
+    const outputId = clean(item && item.id);
+    const reasons = [
+      "Rahatsız edici / saldırgan içerik",
+      "Nefret / taciz / ayrımcılık",
+      "Şiddet / tehlikeli içerik",
+      "Cinsel / uygunsuz içerik",
+      "Telif / marka ihlali",
+      "Yanlış / aldatıcı içerik",
+      "Diğer"
+    ];
+    const sheet = document.createElement("div");
+    sheet.id = "aivoMobileAdFilmReportSheet";
+    sheet.setAttribute("role", "dialog");
+    sheet.setAttribute("aria-modal", "true");
+    sheet.innerHTML = `
+      <div data-adfilm-report-backdrop style="position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.56);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);"></div>
+      <div style="position:fixed;left:14px;right:14px;bottom:86px;z-index:9999;border-radius:26px;padding:18px;background:linear-gradient(135deg,rgba(24,26,42,.98),rgba(18,20,34,.98));border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.44);">
+        <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:14px;">
+          <div><b style="display:block;color:#fff;font-size:19px;">İçeriği bildir</b><span style="display:block;margin-top:4px;color:rgba(255,255,255,.62);font-size:12px;">Bu içerikle ilgili sorunu seç.</span></div>
+          <button type="button" data-adfilm-report-close style="width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font-size:22px;">×</button>
+        </div>
+        <div style="display:grid;gap:8px;margin-bottom:14px;">
+          ${reasons.map(function(reason, index){ return `<label style="display:flex;align-items:center;gap:10px;min-height:40px;padding:9px 11px;border-radius:15px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:#fff;font-size:12px;font-weight:800;"><input type="radio" name="mobileAdFilmReportReason" value="${esc(reason)}" ${index === 0 ? "checked" : ""} style="width:17px;height:17px;accent-color:#ec4899;"><span>${esc(reason)}</span></label>`; }).join("")}
+        </div>
+        <textarea data-adfilm-report-details maxlength="500" placeholder="İstersen kısa bir açıklama yaz..." style="box-sizing:border-box;width:100%;min-height:76px;resize:none;border-radius:15px;padding:11px;border:1px solid rgba(255,255,255,.12);outline:none;background:rgba(0,0,0,.24);color:#fff;font-size:12px;"></textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+          <button type="button" data-adfilm-report-close style="min-height:44px;border-radius:15px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font-weight:900;">Vazgeç</button>
+          <button type="button" data-adfilm-report-submit style="min-height:44px;border-radius:15px;border:0;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;font-weight:900;">Raporu gönder</button>
+        </div>
+      </div>`;
+    document.body.appendChild(sheet);
+    function close(){ sheet.remove(); }
+    sheet.querySelectorAll("[data-adfilm-report-close],[data-adfilm-report-backdrop]").forEach(function(node){ node.addEventListener("click", close); });
+    const submit = sheet.querySelector("[data-adfilm-report-submit]");
+    submit.addEventListener("click", async function(){
+      const selected = sheet.querySelector('input[name="mobileAdFilmReportReason"]:checked');
+      const details = sheet.querySelector("[data-adfilm-report-details]");
+      if (!selected) return;
+      submit.disabled = true;
+      submit.textContent = "Gönderiliyor...";
+      try {
+        const response = await fetch("/api/reports/create", {
+          method: "POST",
+          credentials: "include",
+          headers: { "content-type": "application/json", "accept": "application/json" },
+          body: JSON.stringify({
+            app: "adfilm",
+            job_id: outputId,
+            content_url: videoUrl,
+            reason: selected.value,
+            details: clean(details && details.value),
+            source: "mobile_app",
+            meta: { module: "mobile.adfilm", platform: "mobile", project_id: projectId(), title: clean(item && item.title) }
+          })
+        });
+        const data = await response.json().catch(function(){ return null; });
+        if (!response.ok || !data || !data.ok) throw new Error(data && data.error || "report_failed");
+        close();
+        toast("success", "Rapor alındı.", 2800);
+      } catch (error) {
+        console.error("[MOBILE ADFILM][REPORT]", error);
+        submit.disabled = false;
+        submit.textContent = "Raporu gönder";
+        toast("error", "Rapor gönderilemedi. Lütfen tekrar dene.", 3600);
+      }
+    });
+  }
+
+  async function deleteOutput(item, card){
+    const outputId = clean(item && item.id);
+    const pid = projectId();
+    if (!outputId || !pid) {
+      toast("error", "Video kaydı bulunamadı.", 3200);
+      return;
+    }
+    if (!window.confirm("Bu hazır reklam filmini silmek istiyor musun? Bu işlem geri alınamaz.")) return;
+    if (card) card.classList.add("is-deleting");
+    try {
+      const url = "/api/ad-film/seedance/result?projectId=" + encodeURIComponent(pid) + "&outputId=" + encodeURIComponent(outputId);
+      const response = await fetch(url, { method: "DELETE", credentials: "include", cache: "no-store" });
+      const data = await response.json().catch(function(){ return {}; });
+      if (!response.ok) throw new Error(data.error || "delete_failed");
+      let nextProject = data.project || null;
+      if (!nextProject) {
+        try {
+          const refreshed = await request("/api/ad-film/project?id=" + encodeURIComponent(pid), { method: "GET" }, 1);
+          nextProject = refreshed && refreshed.project || null;
+        } catch (_) {}
+      }
+      if (!nextProject) {
+        const source = currentProject() || {};
+        nextProject = Object.assign({}, source, {
+          outputs: Array.isArray(source.outputs) ? source.outputs.filter(function(output){ return clean(output && output.id) !== outputId; }) : []
+        });
+      }
+      adoptProject(nextProject);
+      renderOutputs(nextProject);
+      toast("success", "Reklam filmi silindi.", 2800);
+    } catch (error) {
+      console.error("[MOBILE ADFILM][DELETE]", error);
+      if (card) card.classList.remove("is-deleting");
+      toast("error", "Video silinemedi.", 3200);
+    }
+  }
+
   function installInteractions(){
     if (createButton && !createButton.__mobileAdFilmProductionBound) {
       createButton.__mobileAdFilmProductionBound = true;
@@ -761,6 +879,8 @@
       const video = card && card.querySelector("video");
       if (!video) return;
       const type = action.getAttribute("data-mobile-adfilm-output-action");
+      const item = outputFromCard(card);
+      const videoUrl = video.currentSrc || video.src;
 
       if (type === "play") {
         if (video.paused) {
@@ -785,9 +905,16 @@
         } catch (_) {}
         return;
       }
+      if (type === "open") {
+        try {
+          const opened = window.open(videoUrl, "_blank", "noopener,noreferrer");
+          if (!opened) location.href = videoUrl;
+        } catch (_) { location.href = videoUrl; }
+        return;
+      }
       if (type === "download") {
         const anchor = document.createElement("a");
-        anchor.href = video.currentSrc || video.src;
+        anchor.href = videoUrl;
         anchor.download = "aivo-reklam-filmi.mp4";
         anchor.target = "_blank";
         anchor.rel = "noopener";
@@ -797,14 +924,21 @@
         return;
       }
       if (type === "share") {
-        const url = video.currentSrc || video.src;
         try {
-          if (navigator.share) await navigator.share({ title: "AIVO Reklam Filmi", url: url });
+          if (navigator.share) await navigator.share({ title: "AIVO Reklam Filmi", url: videoUrl });
           else if (navigator.clipboard) {
-            await navigator.clipboard.writeText(url);
+            await navigator.clipboard.writeText(videoUrl);
             toast("success", "Video bağlantısı kopyalandı.", 2400);
           }
         } catch (_) {}
+        return;
+      }
+      if (type === "report") {
+        openReportSheet(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")), title: outputTitle() }, videoUrl);
+        return;
+      }
+      if (type === "delete") {
+        await deleteOutput(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")) }, card);
       }
     });
 
