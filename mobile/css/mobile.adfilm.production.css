@@ -1,0 +1,262 @@
+.mobile-adfilm-production-section{
+  margin:18px 0 4px;
+}
+
+.mobile-adfilm-production-title{
+  margin:0 0 12px;
+  font-size:19px;
+  line-height:1.1;
+  font-weight:950;
+  letter-spacing:-.04em;
+  background:linear-gradient(135deg,#f5d0fe,#a78bfa,#67e8f9);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+.mobile-adfilm-production-progress{
+  margin-bottom:12px;
+  padding:15px;
+  border-radius:24px;
+  border:1px solid rgba(167,139,250,.32);
+  background:
+    radial-gradient(circle at 18% 0%,rgba(139,92,246,.22),transparent 42%),
+    radial-gradient(circle at 100% 100%,rgba(236,72,153,.14),transparent 48%),
+    rgba(10,12,30,.86);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 18px 42px rgba(0,0,0,.28);
+}
+
+.mobile-adfilm-production-progress[hidden]{display:none!important}
+
+.mobile-adfilm-production-progress-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.mobile-adfilm-production-spinner{
+  flex:0 0 46px;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  border:6px solid rgba(167,139,250,.16);
+  border-top-color:#a78bfa;
+  border-right-color:#f0abfc;
+  animation:mobileAdFilmSpin .9s linear infinite;
+  box-shadow:0 0 22px rgba(139,92,246,.24);
+}
+
+.mobile-adfilm-production-progress-copy{
+  min-width:0;
+  flex:1;
+}
+
+.mobile-adfilm-production-progress-copy > strong{
+  display:block;
+  color:#fff;
+  font-size:14px;
+  line-height:1.15;
+  font-weight:950;
+}
+
+.mobile-adfilm-production-stage-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  margin-top:7px;
+  padding:0 9px;
+  border-radius:999px;
+  border:1px solid rgba(196,181,253,.28);
+  background:rgba(124,58,237,.16);
+  color:#ddd6fe;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.12em;
+}
+
+.mobile-adfilm-production-stage{
+  margin-top:12px;
+  padding:12px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(4,7,18,.48);
+}
+
+.mobile-adfilm-production-stage b{
+  display:block;
+  color:#fff;
+  font-size:11px;
+  line-height:1.2;
+  font-weight:950;
+}
+
+.mobile-adfilm-production-stage p{
+  margin:5px 0 0;
+  color:rgba(255,255,255,.60);
+  font-size:9px;
+  line-height:1.45;
+  font-weight:700;
+}
+
+.mobile-adfilm-production-stage small{
+  display:block;
+  margin-top:8px;
+  color:#86efac;
+  font-size:8.5px;
+  font-weight:900;
+}
+
+.mobile-adfilm-production-list{
+  display:grid;
+  gap:14px;
+}
+
+.mobile-adfilm-production-empty{
+  padding:18px 14px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.58);
+  text-align:center;
+  font-size:10px;
+  line-height:1.45;
+  font-weight:800;
+}
+
+.mobile-adfilm-production-card{
+  overflow:hidden;
+  border-radius:24px;
+  border:1px solid rgba(167,139,250,.24);
+  background:rgba(8,10,24,.88);
+  box-shadow:0 16px 38px rgba(0,0,0,.30),inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.mobile-adfilm-production-media{
+  position:relative;
+  min-height:210px;
+  background:
+    radial-gradient(circle at 50% 35%,rgba(139,92,246,.24),transparent 42%),
+    linear-gradient(145deg,#11152d,#090b18 64%);
+}
+
+.mobile-adfilm-production-media video{
+  display:block;
+  width:100%;
+  height:auto;
+  min-height:210px;
+  max-height:430px;
+  object-fit:cover;
+  background:#050713;
+}
+
+.mobile-adfilm-production-loading{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:28px;
+  text-align:center;
+}
+
+.mobile-adfilm-production-loading span{
+  display:grid;
+  place-items:center;
+  gap:12px;
+  color:rgba(255,255,255,.82);
+  font-size:11px;
+  font-weight:900;
+}
+
+.mobile-adfilm-production-loading span::before{
+  content:"";
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  border:5px solid rgba(255,255,255,.10);
+  border-top-color:#c084fc;
+  border-right-color:#f472b6;
+  animation:mobileAdFilmSpin .85s linear infinite;
+}
+
+.mobile-adfilm-production-actions{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.mobile-adfilm-production-actions button{
+  width:34px;
+  height:34px;
+  padding:0;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(8,10,24,.76);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:14px;
+  font-weight:900;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+
+.mobile-adfilm-production-play{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:3;
+  width:58px;
+  height:58px;
+  padding:0;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(135deg,rgba(124,58,237,.94),rgba(236,72,153,.90));
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:19px;
+  box-shadow:0 12px 28px rgba(124,58,237,.36);
+}
+
+.mobile-adfilm-production-card.is-playing .mobile-adfilm-production-play{
+  opacity:0;
+  pointer-events:none;
+}
+
+.mobile-adfilm-production-card-copy{
+  padding:12px 13px 14px;
+}
+
+.mobile-adfilm-production-card-copy strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#fff;
+  font-size:11px;
+  font-weight:950;
+}
+
+.mobile-adfilm-production-card-copy small{
+  display:block;
+  margin-top:4px;
+  color:rgba(255,255,255,.48);
+  font-size:8px;
+  font-weight:800;
+}
+
+.mobile-adfilm-create-button.is-producing{
+  opacity:.68;
+  cursor:wait;
+}
+
+.mobile-adfilm-create-button.is-ready:not(:disabled){
+  box-shadow:0 14px 34px rgba(168,85,247,.28),0 0 28px rgba(236,72,153,.16);
+}
+
+@keyframes mobileAdFilmSpin{to{transform:rotate(360deg)}}
