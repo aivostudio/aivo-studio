@@ -2,6 +2,12 @@
   padding-bottom:18px;
 }
 
+.tool-icon-adfilm::before{
+  background:linear-gradient(135deg,#f472ff,#d99568 52%,#60eaff);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5.5' width='17' height='13' rx='2.2'/%3E%3Cpath d='M9 9.2v5.6l5-2.8-5-2.8z' fill='%23000' stroke='none'/%3E%3Cpath d='M7 3.5h10'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5.5' width='17' height='13' rx='2.2'/%3E%3Cpath d='M9 9.2v5.6l5-2.8-5-2.8z' fill='%23000' stroke='none'/%3E%3Cpath d='M7 3.5h10'/%3E%3C/svg%3E");
+}
+
 .mobile-adfilm-section{
   width:100%;
 }
