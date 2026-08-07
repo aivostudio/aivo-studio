@@ -22,6 +22,8 @@
   let pollTimer = null;
   let elapsedTimer = null;
   let libraryOnly = false;
+  let libraryLoading = false;
+  let libraryItems = [];
 
   function clean(value){ return String(value == null ? "" : value).trim(); }
   function lower(value){ return clean(value).toLowerCase(); }
@@ -276,11 +278,12 @@
   function readyCard(item, index){
     const video = outputUrl(item);
     const poster = posterUrl(item);
-    const title = clean(item && item.title) || outputTitle();
+    const title = clean(item && (item.title || item.projectTitle)) || outputTitle();
     const meta = clean(item && (item.completedAt || item.finalizedAt || item.createdAt));
     const outputId = clean(item && item.id) || String(index);
+    const itemProjectId = clean(item && item.projectId) || projectId();
     return `
-      <article class="mobile-adfilm-production-card" data-mobile-adfilm-output="${esc(outputId)}">
+      <article class="mobile-adfilm-production-card" data-mobile-adfilm-output="${esc(outputId)}" data-mobile-adfilm-project="${esc(itemProjectId)}">
         <div class="mobile-adfilm-production-media">
           <video src="${esc(video)}"${poster ? ` poster="${esc(poster)}"` : ""} playsinline webkit-playsinline preload="metadata"></video>
           <div class="mobile-adfilm-production-actions">
@@ -302,30 +305,110 @@
     `;
   }
 
-  function projectOutputs(source){
-    const outputs = Array.isArray(source && source.outputs) ? source.outputs : [];
-    return outputs.filter(function(item){ return !!outputUrl(item); }).slice(0, 12);
+  function projectOutputs(source, summary){
+    if (!source) return [];
+    let outputs = Array.isArray(source.outputs) ? source.outputs.filter(function(item){ return !!outputUrl(item); }) : [];
+    if (!outputs.length && source.generation && clean(source.generation.videoUrl)) {
+      outputs = [{
+        id: source.generation.outputId || source.generation.requestId || "legacy-output",
+        version: source.generation.version || 1,
+        videoUrl: source.generation.videoUrl,
+        posterUrl: source.generation.posterUrl || "",
+        duration: source.generation.input && source.generation.input.duration || source.output && source.output.duration || "",
+        aspectRatio: source.generation.input && source.generation.input.aspectRatio || source.output && source.output.aspectRatio || "",
+        resolution: source.generation.input && source.generation.input.resolution || source.output && source.output.quality || "",
+        createdAt: source.generation.completedAt || source.updatedAt || source.createdAt || ""
+      }];
+    }
+    const projectTitle = clean(
+      source.brief && source.brief.productName ||
+      summary && summary.title ||
+      summary && summary.name ||
+      "Reklam Filmi"
+    );
+    return outputs.map(function(item){
+      return Object.assign({}, item, {
+        projectId: clean(source.id),
+        projectTitle: projectTitle
+      });
+    });
   }
 
   function outputFromCard(card){
     const outputId = clean(card && card.getAttribute("data-mobile-adfilm-output"));
+    const itemProjectId = clean(card && card.getAttribute("data-mobile-adfilm-project"));
     if (!outputId) return null;
-    return projectOutputs(currentProject()).find(function(item){ return clean(item && item.id) === outputId; }) || null;
+    const pool = libraryOnly ? libraryItems : projectOutputs(currentProject());
+    return pool.find(function(item){
+      return clean(item && item.id) === outputId && (!itemProjectId || clean(item && item.projectId) === itemProjectId);
+    }) || null;
+  }
+
+  function renderOutputItems(items){
+    const list = listNode();
+    if (!list) return;
+    if (!items.length) {
+      list.innerHTML = '<div class="mobile-adfilm-production-empty">Henüz tamamlanmış reklam filmi yok.</div>';
+      return;
+    }
+    list.innerHTML = items.map(readyCard).join("");
   }
 
   function renderOutputs(source){
-    const list = listNode();
-    if (!list) return;
-    const outputs = projectOutputs(source || currentProject());
     if (busy) {
       renderLoadingCard();
       return;
     }
-    if (!outputs.length) {
-      list.innerHTML = '<div class="mobile-adfilm-production-empty">Henüz tamamlanmış reklam filmi yok.</div>';
-      return;
+    renderOutputItems(projectOutputs(source || currentProject()));
+  }
+
+  async function loadLibraryOutputs(){
+    if (libraryLoading) return;
+    libraryLoading = true;
+    const list = listNode();
+    if (list) list.innerHTML = '<div class="mobile-adfilm-production-empty">Reklam filmleri yükleniyor...</div>';
+    try {
+      const response = await fetch("/api/ad-film/projects", {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: { "accept": "application/json" }
+      });
+      const data = await response.json().catch(function(){ return {}; });
+      if (!response.ok || !Array.isArray(data.projects)) throw new Error(data.error || "projects_load_failed");
+
+      const settled = await Promise.allSettled(data.projects.slice(0, 20).map(async function(summary){
+        const pid = clean(summary && (summary.id || summary.projectId));
+        if (!pid) return [];
+        const projectResponse = await fetch("/api/ad-film/project?id=" + encodeURIComponent(pid), {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+          headers: { "accept": "application/json" }
+        });
+        const projectData = await projectResponse.json().catch(function(){ return {}; });
+        if (!projectResponse.ok || !projectData.project) return [];
+        return projectOutputs(projectData.project, summary);
+      }));
+
+      libraryItems = [];
+      settled.forEach(function(result){
+        if (result.status === "fulfilled" && Array.isArray(result.value)) libraryItems = libraryItems.concat(result.value);
+      });
+      libraryItems.sort(function(a, b){
+        const aDate = clean(a && (a.completedAt || a.finalizedAt || a.createdAt));
+        const bDate = clean(b && (b.completedAt || b.finalizedAt || b.createdAt));
+        return bDate.localeCompare(aDate);
+      });
+      renderOutputItems(libraryItems);
+    } catch (error) {
+      console.error("[MOBILE ADFILM][LIBRARY]", error);
+      libraryItems = projectOutputs(currentProject());
+      renderOutputItems(libraryItems);
+      toast("warning", "Reklam filmi geçmişi tamamen yüklenemedi.", 3600);
+    } finally {
+      libraryLoading = false;
     }
-    list.innerHTML = outputs.map(readyCard).join("");
   }
 
   function adoptProject(source){
@@ -601,7 +684,7 @@
     }
   }
 
-  function showLibrary(){
+  async function showLibrary(){
     libraryOnly = true;
     root.dataset.adfilmLibraryOnly = "1";
     if (mount) mount.hidden = false;
@@ -609,9 +692,10 @@
     const productionSection = section();
     productionSection.hidden = false;
     progressNode().hidden = !busy;
-    renderOutputs(currentProject());
     setLibraryNav();
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (busy) renderLoadingCard();
+    else await loadLibraryOutputs();
   }
 
   function complete(source){
@@ -625,7 +709,7 @@
     syncButton();
     renderOutputs(source || currentProject());
     toast("success", "Reklam filmin hazır. Üretimler bölümüne eklendi.", 4200);
-    setTimeout(showLibrary, 500);
+    setTimeout(function(){ showLibrary(); }, 500);
   }
 
   async function fail(error){
@@ -750,7 +834,10 @@
 
   function hydrate(source){
     source = source || currentProject();
-    if (!busy) renderOutputs(source);
+    if (!busy) {
+      if (libraryOnly) loadLibraryOutputs();
+      else renderOutputs(source);
+    }
     syncButton();
     resumeIfNeeded(source);
   }
@@ -810,7 +897,7 @@
             reason: selected.value,
             details: clean(details && details.value),
             source: "mobile_app",
-            meta: { module: "mobile.adfilm", platform: "mobile", project_id: projectId(), title: clean(item && item.title) }
+            meta: { module: "mobile.adfilm", platform: "mobile", project_id: clean(item && item.projectId) || projectId(), title: clean(item && (item.title || item.projectTitle)) }
           })
         });
         const data = await response.json().catch(function(){ return null; });
@@ -828,7 +915,7 @@
 
   async function deleteOutput(item, card){
     const outputId = clean(item && item.id);
-    const pid = projectId();
+    const pid = clean(item && item.projectId) || projectId();
     if (!outputId || !pid) {
       toast("error", "Video kaydı bulunamadı.", 3200);
       return;
@@ -840,21 +927,24 @@
       const response = await fetch(url, { method: "DELETE", credentials: "include", cache: "no-store" });
       const data = await response.json().catch(function(){ return {}; });
       if (!response.ok) throw new Error(data.error || "delete_failed");
-      let nextProject = data.project || null;
-      if (!nextProject) {
-        try {
-          const refreshed = await request("/api/ad-film/project?id=" + encodeURIComponent(pid), { method: "GET" }, 1);
-          nextProject = refreshed && refreshed.project || null;
-        } catch (_) {}
+
+      libraryItems = libraryItems.filter(function(output){
+        return !(clean(output && output.projectId) === pid && clean(output && output.id) === outputId);
+      });
+
+      if (clean(currentProject() && currentProject().id) === pid) {
+        let nextProject = data.project || null;
+        if (!nextProject) {
+          try {
+            const refreshed = await request("/api/ad-film/project?id=" + encodeURIComponent(pid), { method: "GET" }, 1);
+            nextProject = refreshed && refreshed.project || null;
+          } catch (_) {}
+        }
+        if (nextProject) adoptProject(nextProject);
       }
-      if (!nextProject) {
-        const source = currentProject() || {};
-        nextProject = Object.assign({}, source, {
-          outputs: Array.isArray(source.outputs) ? source.outputs.filter(function(output){ return clean(output && output.id) !== outputId; }) : []
-        });
-      }
-      adoptProject(nextProject);
-      renderOutputs(nextProject);
+
+      if (libraryOnly) renderOutputItems(libraryItems);
+      else renderOutputs(currentProject());
       toast("success", "Reklam filmi silindi.", 2800);
     } catch (error) {
       console.error("[MOBILE ADFILM][DELETE]", error);
@@ -934,11 +1024,11 @@
         return;
       }
       if (type === "report") {
-        openReportSheet(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")), title: outputTitle() }, videoUrl);
+        openReportSheet(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")), projectId: clean(card.getAttribute("data-mobile-adfilm-project")), title: outputTitle() }, videoUrl);
         return;
       }
       if (type === "delete") {
-        await deleteOutput(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")) }, card);
+        await deleteOutput(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")), projectId: clean(card.getAttribute("data-mobile-adfilm-project")) }, card);
       }
     });
 
