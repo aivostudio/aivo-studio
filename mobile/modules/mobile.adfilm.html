@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="/mobile/css/mobile.adfilm.voice.css?v=1">
 <section id="mobileAdFilmSection" class="mobile-adfilm-section">
   <section class="mobile-adfilm-panel">
     <div class="mobile-adfilm-hero">
@@ -133,6 +134,90 @@
         <div class="mobile-adfilm-tip mobile-adfilm-reference-tip">
           <span aria-hidden="true"></span>
           <p>Ana ürün görseli net ve temiz olsun. Diğer açılar aynı ürünü göstermeli; sahne görsellerini kullanmak istediğin sırayla seç.</p>
+        </div>
+      </article>
+
+      <article class="mobile-adfilm-card mobile-adfilm-voice-card">
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-voice" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">04</span>
+            <h4>Ses &amp; Anlatım</h4>
+            <p>Dil, ses ve reklam anlatım ayarlarını belirle.</p>
+          </div>
+          <label class="mobile-adfilm-voice-toggle">
+            <input id="mobileAdFilmVoiceEnabled" type="checkbox" checked>
+            <span class="mobile-adfilm-voice-toggle-track" aria-hidden="true"></span>
+            <b id="mobileAdFilmVoiceState">Açık</b>
+          </label>
+        </div>
+
+        <div class="mobile-adfilm-voice-body" id="mobileAdFilmVoiceBody">
+          <div class="mobile-adfilm-script-mode" role="group" aria-label="Seslendirme metni modu">
+            <button class="is-selected" type="button" data-mobile-adfilm-script-mode="ai">Metni AI yazsın</button>
+            <button type="button" data-mobile-adfilm-script-mode="manual">Metni ben yazacağım</button>
+          </div>
+
+          <div class="mobile-adfilm-voice-grid">
+            <label class="mobile-adfilm-select-field">
+              <span>Dil</span>
+              <select id="mobileAdFilmVoiceLanguage">
+                <option value="tr">Türkçe</option>
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+                <option value="ar">العربية</option>
+              </select>
+            </label>
+
+            <label class="mobile-adfilm-select-field">
+              <span>Ses Stili</span>
+              <select id="mobileAdFilmVoiceStyle">
+                <option value="warm">Sıcak ve güven veren</option>
+                <option value="energetic">Enerjik reklam sesi</option>
+                <option value="premium">Premium ve sakin</option>
+                <option value="natural">Doğal konuşma</option>
+              </select>
+            </label>
+
+            <label class="mobile-adfilm-select-field">
+              <span>Ses</span>
+              <select id="mobileAdFilmVoice">
+                <option value="warm-female">Sıcak kadın sesi</option>
+                <option value="warm-male">Sıcak erkek sesi</option>
+                <option value="premium-female">Premium kadın sesi</option>
+                <option value="premium-male">Premium erkek sesi</option>
+              </select>
+            </label>
+
+            <label class="mobile-adfilm-select-field">
+              <span>Tempo</span>
+              <select id="mobileAdFilmVoiceSpeed">
+                <option value="slow">Yavaş</option>
+                <option value="balanced" selected>Dengeli</option>
+                <option value="fast">Hızlı</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="mobile-adfilm-field mobile-adfilm-voice-script">
+            <span>Reklam Seslendirme Metni</span>
+            <textarea id="mobileAdFilmNarrationText" maxlength="900" rows="5" placeholder="Metni AI yazsın seçiliyken ürün bilgilerin ve reklam talimatın kullanılacak. İstersen kendi metnini de yazabilirsin..."></textarea>
+            <div class="mobile-adfilm-voice-hint">
+              <span id="mobileAdFilmNarrationHint">AI modu aktif</span>
+              <span><b id="mobileAdFilmNarrationCount">0</b> / 900</span>
+            </div>
+          </label>
+
+          <div class="mobile-adfilm-voice-preview">
+            <div class="mobile-adfilm-voice-preview-head">
+              <strong>Ses Ön İzleme</strong>
+              <span>Üretim bağlantısı sonraki adımda</span>
+            </div>
+            <div class="mobile-adfilm-voice-preview-row">
+              <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil"></button>
+              <div class="mobile-adfilm-voice-preview-line" aria-hidden="true"></div>
+            </div>
+          </div>
         </div>
       </article>
     </div>

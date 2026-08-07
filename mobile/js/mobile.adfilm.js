@@ -16,6 +16,14 @@
   const sceneInput = root.querySelector("#mobileAdFilmSceneImages");
   const logoInput = root.querySelector("#mobileAdFilmLogoImage");
 
+  const voiceEnabled = root.querySelector("#mobileAdFilmVoiceEnabled");
+  const voiceState = root.querySelector("#mobileAdFilmVoiceState");
+  const voiceBody = root.querySelector("#mobileAdFilmVoiceBody");
+  const scriptModeButtons = Array.from(root.querySelectorAll("[data-mobile-adfilm-script-mode]"));
+  const narrationText = root.querySelector("#mobileAdFilmNarrationText");
+  const narrationCount = root.querySelector("#mobileAdFilmNarrationCount");
+  const narrationHint = root.querySelector("#mobileAdFilmNarrationHint");
+
   const uploadState = {
     primary: [],
     angles: [],
@@ -129,6 +137,33 @@
     referenceTotal.textContent = String(total);
   }
 
+  function syncVoiceEnabled(){
+    if (!voiceEnabled) return;
+    const enabled = !!voiceEnabled.checked;
+    if (voiceState) voiceState.textContent = enabled ? "Açık" : "Kapalı";
+    if (voiceBody) voiceBody.classList.toggle("is-disabled", !enabled);
+  }
+
+  function setScriptMode(mode){
+    scriptModeButtons.forEach(function(button){
+      const selected = button.getAttribute("data-mobile-adfilm-script-mode") === mode;
+      button.classList.toggle("is-selected", selected);
+    });
+
+    if (!narrationText) return;
+    const manual = mode === "manual";
+    narrationText.readOnly = !manual;
+    narrationText.placeholder = manual
+      ? "Reklam seslendirme metnini buraya yaz..."
+      : "AI, ürün bilgilerini ve reklam talimatını kullanarak seslendirme metnini hazırlayacak.";
+    if (narrationHint) narrationHint.textContent = manual ? "Manuel metin modu" : "AI modu aktif";
+  }
+
+  function syncNarrationCount(){
+    if (!narrationText || !narrationCount) return;
+    narrationCount.textContent = String(narrationText.value.length);
+  }
+
   if (description){
     description.addEventListener("input", syncDescriptionCount);
     syncDescriptionCount();
@@ -163,9 +198,26 @@
     });
   }
 
+  if (voiceEnabled){
+    voiceEnabled.addEventListener("change", syncVoiceEnabled);
+    syncVoiceEnabled();
+  }
+
+  scriptModeButtons.forEach(function(button){
+    button.addEventListener("click", function(){
+      setScriptMode(button.getAttribute("data-mobile-adfilm-script-mode"));
+    });
+  });
+
+  if (narrationText){
+    narrationText.addEventListener("input", syncNarrationCount);
+    syncNarrationCount();
+  }
+
   window.addEventListener("beforeunload", function(){
     Object.keys(uploadState).forEach(revokeGroup);
   }, { once: true });
 
+  setScriptMode("ai");
   setMode("video");
 })();
