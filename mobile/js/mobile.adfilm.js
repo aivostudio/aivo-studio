@@ -11,6 +11,7 @@
   const creativeBriefCount = root.querySelector("#mobileAdFilmCreativeBriefCount");
 
   const referenceTotal = root.querySelector("#mobileAdFilmReferenceTotal");
+  const referenceGallery = root.querySelector("#mobileAdFilmReferenceGallery");
   const primaryInput = root.querySelector("#mobileAdFilmPrimaryImage");
   const angleInput = root.querySelector("#mobileAdFilmAngleImages");
   const sceneInput = root.querySelector("#mobileAdFilmSceneImages");
@@ -29,6 +30,33 @@
     angles: [],
     scene: [],
     logo: []
+  };
+
+  const uploadConfig = {
+    primary: {
+      count: root.querySelector("#mobileAdFilmPrimaryCount"),
+      input: primaryInput,
+      limit: 1,
+      label: function(){ return "@Image1"; }
+    },
+    angles: {
+      count: root.querySelector("#mobileAdFilmAngleCount"),
+      input: angleInput,
+      limit: 3,
+      label: function(index){ return "@Image" + (index + 2); }
+    },
+    scene: {
+      count: root.querySelector("#mobileAdFilmSceneCount"),
+      input: sceneInput,
+      limit: 5,
+      label: function(index){ return "@Image" + (index + 5); }
+    },
+    logo: {
+      count: root.querySelector("#mobileAdFilmLogoCount"),
+      input: logoInput,
+      limit: 1,
+      label: function(){ return "Overlay"; }
+    }
   };
 
   function setMode(mode){
@@ -76,58 +104,76 @@
         url: URL.createObjectURL(file)
       };
     });
-    renderUploadGroup(group);
-    syncReferenceTotal();
+    renderReferences();
   }
 
-  function renderUploadGroup(group){
-    const map = {
-      primary: {
-        preview: root.querySelector("#mobileAdFilmPrimaryPreview"),
-        count: root.querySelector("#mobileAdFilmPrimaryCount"),
-        limit: 1
-      },
-      angles: {
-        preview: root.querySelector("#mobileAdFilmAnglePreview"),
-        count: root.querySelector("#mobileAdFilmAngleCount"),
-        limit: 3
-      },
-      scene: {
-        preview: root.querySelector("#mobileAdFilmScenePreview"),
-        count: root.querySelector("#mobileAdFilmSceneCount"),
-        limit: 5
-      },
-      logo: {
-        preview: root.querySelector("#mobileAdFilmLogoPreview"),
-        count: root.querySelector("#mobileAdFilmLogoCount"),
-        limit: 1
-      }
-    };
+  function removeReference(group, index){
+    const item = uploadState[group][index];
+    if (!item) return;
 
-    const target = map[group];
-    if (!target) return;
+    if (item.url) URL.revokeObjectURL(item.url);
+    uploadState[group].splice(index, 1);
 
-    if (target.count){
-      target.count.textContent = uploadState[group].length + " / " + target.limit;
+    const config = uploadConfig[group];
+    if (config && config.input && uploadState[group].length === 0){
+      config.input.value = "";
     }
 
-    if (!target.preview) return;
-    target.preview.innerHTML = "";
+    renderReferences();
+  }
 
-    uploadState[group].forEach(function(item, index){
-      const chip = document.createElement("div");
-      chip.className = "mobile-adfilm-preview-chip";
+  function renderReferences(){
+    Object.keys(uploadConfig).forEach(function(group){
+      const config = uploadConfig[group];
+      const amount = uploadState[group].length;
 
-      const image = document.createElement("img");
-      image.src = item.url;
-      image.alt = "Seçilen referans " + (index + 1);
-      chip.appendChild(image);
+      if (config.count){
+        config.count.textContent = amount + " / " + config.limit;
+      }
 
-      const badge = document.createElement("span");
-      badge.textContent = group === "logo" ? "Logo" : String(index + 1);
-      chip.appendChild(badge);
+      const uploadItem = root.querySelector('[data-adfilm-upload-item="' + group + '"]');
+      if (uploadItem){
+        uploadItem.classList.toggle("is-filled", amount > 0);
+      }
+    });
 
-      target.preview.appendChild(chip);
+    syncReferenceTotal();
+
+    if (!referenceGallery) return;
+    referenceGallery.innerHTML = "";
+
+    ["primary", "angles", "scene", "logo"].forEach(function(group){
+      const config = uploadConfig[group];
+
+      uploadState[group].forEach(function(item, index){
+        const thumb = document.createElement("div");
+        thumb.className = "mobile-adfilm-reference-thumb";
+        thumb.setAttribute("data-reference-group", group);
+        thumb.setAttribute("data-reference-index", String(index));
+
+        const image = document.createElement("img");
+        image.src = item.url;
+        image.alt = config.label(index) + " referansı";
+        thumb.appendChild(image);
+
+        const label = document.createElement("span");
+        label.className = "mobile-adfilm-reference-thumb-label";
+        label.textContent = config.label(index);
+        thumb.appendChild(label);
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "mobile-adfilm-reference-delete";
+        removeButton.setAttribute("aria-label", config.label(index) + " görselini sil");
+        removeButton.addEventListener("click", function(event){
+          event.preventDefault();
+          event.stopPropagation();
+          removeReference(group, index);
+        });
+        thumb.appendChild(removeButton);
+
+        referenceGallery.appendChild(thumb);
+      });
     });
   }
 
@@ -218,6 +264,7 @@
     Object.keys(uploadState).forEach(revokeGroup);
   }, { once: true });
 
+  renderReferences();
   setScriptMode("ai");
   setMode("video");
 })();
