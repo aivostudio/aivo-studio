@@ -96,14 +96,38 @@
     uploadState[group] = [];
   }
 
-  function setFiles(group, fileList, limit){
-    revokeGroup(group);
-    uploadState[group] = Array.from(fileList || []).slice(0, limit).map(function(file){
-      return {
+  function fileKey(file){
+    return [file.name, file.size, file.lastModified, file.type].join("|");
+  }
+
+  function setFiles(group, fileList, limit, append){
+    const files = Array.from(fileList || []);
+
+    if (!append){
+      revokeGroup(group);
+    }
+
+    const existingKeys = new Set(uploadState[group].map(function(item){
+      return fileKey(item.file);
+    }));
+
+    files.forEach(function(file){
+      if (uploadState[group].length >= limit) return;
+      const key = fileKey(file);
+      if (existingKeys.has(key)) return;
+
+      uploadState[group].push({
         file: file,
         url: URL.createObjectURL(file)
-      };
+      });
+      existingKeys.add(key);
     });
+
+    const config = uploadConfig[group];
+    if (config && config.input){
+      config.input.value = "";
+    }
+
     renderReferences();
   }
 
@@ -222,25 +246,25 @@
 
   if (primaryInput){
     primaryInput.addEventListener("change", function(){
-      setFiles("primary", primaryInput.files, 1);
+      setFiles("primary", primaryInput.files, 1, false);
     });
   }
 
   if (angleInput){
     angleInput.addEventListener("change", function(){
-      setFiles("angles", angleInput.files, 3);
+      setFiles("angles", angleInput.files, 3, true);
     });
   }
 
   if (sceneInput){
     sceneInput.addEventListener("change", function(){
-      setFiles("scene", sceneInput.files, 5);
+      setFiles("scene", sceneInput.files, 5, true);
     });
   }
 
   if (logoInput){
     logoInput.addEventListener("change", function(){
-      setFiles("logo", logoInput.files, 1);
+      setFiles("logo", logoInput.files, 1, false);
     });
   }
 
