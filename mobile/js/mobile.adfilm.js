@@ -22,6 +22,20 @@
   const voiceBody = root.querySelector("#mobileAdFilmVoiceBody");
   const narrationText = root.querySelector("#mobileAdFilmNarrationText");
   const narrationCount = root.querySelector("#mobileAdFilmNarrationCount");
+  const narrationDuration = root.querySelector("#mobileAdFilmDuration");
+  const voiceSpeed = root.querySelector("#mobileAdFilmVoiceSpeed");
+  const budgetRecommendation = root.querySelector("#mobileAdFilmBudgetRecommendation");
+  const budgetSpeed = root.querySelector("#mobileAdFilmBudgetSpeed");
+  const budgetMeter = root.querySelector("#mobileAdFilmBudgetMeter");
+  const budgetStatus = root.querySelector("#mobileAdFilmBudgetStatus");
+  const budgetMessage = root.querySelector("#mobileAdFilmBudgetMessage");
+  const budgetEstimate = root.querySelector("#mobileAdFilmBudgetEstimate");
+
+  const speechRates = {
+    slow: { min: 1.25, target: 1.45, max: 1.60, label: "Yavaş" },
+    balanced: { min: 1.60, target: 1.80, max: 2.00, label: "Dengeli" },
+    fast: { min: 1.90, target: 2.15, max: 2.40, label: "Hızlı" }
+  };
 
   const uploadState = {
     primary: [],
@@ -212,9 +226,79 @@
     if (voiceBody) voiceBody.classList.toggle("is-disabled", !enabled);
   }
 
+  function narrationWords(text){
+    const clean = String(text || "").trim();
+    if (!clean) return [];
+    try {
+      return clean.match(/[\p{L}\p{N}]+(?:[’'\-.][\p{L}\p{N}]+)*/gu) || [];
+    } catch (e) {
+      return clean.split(/\s+/).filter(Boolean);
+    }
+  }
+
+  function narrationEstimate(text, rate){
+    const count = narrationWords(text).length;
+    if (!count) return 0;
+    const commas = (String(text).match(/[,;:]/g) || []).length;
+    const stops = (String(text).match(/[.!?…]/g) || []).length;
+    return count / rate.target + commas * 0.12 + stops * 0.28;
+  }
+
+  function formatSeconds(value){
+    if (!value) return "0";
+    return (Math.round(value * 10) / 10).toFixed(1);
+  }
+
+  function syncNarrationBudget(){
+    if (!narrationText || !narrationDuration || !voiceSpeed) return;
+
+    const duration = Math.max(5, Math.min(20, Number(narrationDuration.value) || 10));
+    const speedKey = speechRates[voiceSpeed.value] ? voiceSpeed.value : "balanced";
+    const rate = speechRates[speedKey];
+    const minWords = Math.max(3, Math.floor(duration * rate.min));
+    const maxWords = Math.max(5, Math.floor(duration * rate.max));
+    const wordCount = narrationWords(narrationText.value).length;
+    const estimatedSeconds = narrationEstimate(narrationText.value, rate);
+    const percent = narrationText.value.trim()
+      ? Math.min(100, Math.round((estimatedSeconds / duration) * 100))
+      : 0;
+
+    if (budgetRecommendation) budgetRecommendation.textContent = minWords + "–" + maxWords + " kelime önerilir";
+    if (budgetSpeed) budgetSpeed.textContent = rate.label;
+    if (budgetMeter) budgetMeter.style.width = percent + "%";
+    if (budgetEstimate) budgetEstimate.textContent = wordCount + " kelime · tahmini " + formatSeconds(estimatedSeconds) + " sn";
+
+    let state = "empty";
+    let message = "Metnini yazdıkça süre hesabı burada görünecek.";
+
+    if (narrationText.value.trim()) {
+      const overLimit = wordCount > maxWords || estimatedSeconds > duration + 0.25;
+      const nearLimit = wordCount >= Math.max(minWords, Math.floor(maxWords * 0.86)) || estimatedSeconds >= duration * 0.88;
+      const shortText = wordCount < minWords;
+
+      if (overLimit) {
+        state = "error";
+        message = "Bu metin " + duration + " saniyeye sığmıyor. En fazla " + maxWords + " kelime kullan.";
+      } else if (nearLimit) {
+        state = "warning";
+        message = "Sınıra yakın. Doğal duraklar için birkaç kelime kısaltmak daha güvenli.";
+      } else if (shortText) {
+        state = "short";
+        message = "Metin kısa; reklamda nefes, müzik veya sessiz vurgu alanı kalır.";
+      } else {
+        state = "success";
+        message = "Metin seçilen süreye uygun.";
+      }
+    }
+
+    if (budgetStatus) budgetStatus.className = "mobile-adfilm-narration-status is-" + state;
+    if (budgetMessage) budgetMessage.textContent = message;
+  }
+
   function syncNarrationCount(){
     if (!narrationText || !narrationCount) return;
     narrationCount.textContent = String(narrationText.value.length);
+    syncNarrationBudget();
   }
 
   if (description){
@@ -261,10 +345,19 @@
     syncNarrationCount();
   }
 
+  if (narrationDuration){
+    narrationDuration.addEventListener("change", syncNarrationBudget);
+  }
+
+  if (voiceSpeed){
+    voiceSpeed.addEventListener("change", syncNarrationBudget);
+  }
+
   window.addEventListener("beforeunload", function(){
     Object.keys(uploadState).forEach(revokeGroup);
   }, { once: true });
 
   renderReferences();
+  syncNarrationBudget();
   setMode("video");
 })();

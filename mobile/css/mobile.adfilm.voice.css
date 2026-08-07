@@ -135,6 +135,148 @@
   color:#fff;
 }
 
+.mobile-adfilm-narration-budget{
+  margin:0 0 14px;
+  padding:12px;
+  border-radius:18px;
+  background:rgba(8,10,24,.58);
+  border:1px solid rgba(139,92,246,.24);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.mobile-adfilm-narration-budget-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.mobile-adfilm-narration-budget-copy span{
+  display:block;
+  color:rgba(255,255,255,.52);
+  font-size:8px;
+  font-weight:900;
+}
+
+.mobile-adfilm-narration-budget-copy strong{
+  display:block;
+  margin-top:3px;
+  color:#fff;
+  font-size:11px;
+  line-height:1.15;
+  font-weight:950;
+}
+
+.mobile-adfilm-narration-budget-pills{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex:0 0 auto;
+}
+
+.mobile-adfilm-duration-pill,
+.mobile-adfilm-narration-budget-pills > span{
+  min-height:28px;
+  border-radius:999px;
+  background:rgba(124,58,237,.12);
+  border:1px solid rgba(167,139,250,.24);
+  color:#d8ccff;
+  font-size:8px;
+  font-weight:950;
+}
+
+.mobile-adfilm-duration-pill{
+  position:relative;
+  display:flex;
+  align-items:center;
+  padding:0 8px;
+}
+
+.mobile-adfilm-duration-pill select{
+  appearance:none;
+  -webkit-appearance:none;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:inherit;
+  padding:0 12px 0 0;
+}
+
+.mobile-adfilm-duration-pill::after{
+  content:"";
+  position:absolute;
+  right:7px;
+  width:5px;
+  height:5px;
+  border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;
+  transform:rotate(45deg) translateY(-2px);
+  pointer-events:none;
+}
+
+.mobile-adfilm-narration-budget-pills > span{
+  display:flex;
+  align-items:center;
+  padding:0 9px;
+}
+
+.mobile-adfilm-narration-meter{
+  height:7px;
+  margin-top:12px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.07);
+}
+
+.mobile-adfilm-narration-meter i{
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#8b5cf6,#ec4899);
+  transition:width .2s ease;
+}
+
+.mobile-adfilm-narration-status{
+  display:grid;
+  grid-template-columns:8px minmax(0,1fr);
+  gap:8px;
+  align-items:start;
+  margin-top:9px;
+}
+
+.mobile-adfilm-narration-status > span{
+  width:7px;
+  height:7px;
+  margin-top:4px;
+  border-radius:50%;
+  background:rgba(255,255,255,.30);
+}
+
+.mobile-adfilm-narration-status p{
+  margin:0;
+  color:rgba(255,255,255,.58);
+  font-size:8px;
+  line-height:1.35;
+  font-weight:800;
+}
+
+.mobile-adfilm-narration-status b{
+  grid-column:2;
+  margin-top:-2px;
+  color:#c7b8ff;
+  font-size:8px;
+  line-height:1.2;
+  font-weight:950;
+}
+
+.mobile-adfilm-narration-status.is-success > span{background:#34d399}
+.mobile-adfilm-narration-status.is-warning > span{background:#f59e0b}
+.mobile-adfilm-narration-status.is-error > span{background:#fb7185}
+.mobile-adfilm-narration-status.is-short > span{background:#60a5fa}
+
 .mobile-adfilm-voice-script{
   margin-top:10px;
 }
@@ -353,6 +495,14 @@
 @media (max-width:360px){
   .mobile-adfilm-voice-grid{
     grid-template-columns:1fr;
+  }
+
+  .mobile-adfilm-narration-budget-head{
+    display:block;
+  }
+
+  .mobile-adfilm-narration-budget-pills{
+    margin-top:9px;
   }
 
   .mobile-adfilm-voice-preview-head{
