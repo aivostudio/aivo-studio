@@ -398,3 +398,14 @@
   bindAutoSave();
   bootstrap();
 })();
+
+(function loadMobileAdFilmNarration(){
+  if (window.__AIVO_MOBILE_ADFILM_NARRATION_LOADER__) return;
+  window.__AIVO_MOBILE_ADFILM_NARRATION_LOADER__ = true;
+  if (document.querySelector('script[data-mobile-adfilm-narration]')) return;
+  const script = document.createElement("script");
+  script.src = "/mobile/js/mobile.adfilm.narration.js?v=1";
+  script.defer = true;
+  script.setAttribute("data-mobile-adfilm-narration", "");
+  document.body.appendChild(script);
+})();
