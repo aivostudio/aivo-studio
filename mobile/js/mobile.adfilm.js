@@ -222,11 +222,11 @@
 
     if (!narrationText) return;
     const manual = mode === "manual";
-    narrationText.readOnly = !manual;
+    narrationText.readOnly = false;
     narrationText.placeholder = manual
       ? "Reklam seslendirme metnini buraya yaz..."
-      : "AI, ürün bilgilerini ve reklam talimatını kullanarak seslendirme metnini hazırlayacak.";
-    if (narrationHint) narrationHint.textContent = manual ? "Manuel metin modu" : "AI modu aktif";
+      : "AI, ürün bilgilerini ve reklam talimatını kullanarak seslendirme metnini hazırlayacak. Metni burada düzenleyebilirsin.";
+    if (narrationHint) narrationHint.textContent = manual ? "Manuel metin modu" : "AI modu aktif · metin düzenlenebilir";
   }
 
   function syncNarrationCount(){
