@@ -684,3 +684,114 @@
   }catch(_){ }
   setMusicMode(initialMode);
 })();
+
+(function(){
+  const root = document.getElementById("mobileAdFilmSection");
+  if (!root || root.__mobileAdFilmCreditPricingBound) return;
+  root.__mobileAdFilmCreditPricingBound = true;
+
+  const BASE_CREDITS = { "720p": 145, "1080p": 290, "4k": 575 };
+  const durationSelect = root.querySelector("#mobileAdFilmDuration");
+  const qualityRadios = Array.from(root.querySelectorAll('input[name="mobileAdFilmQuality"]'));
+  const createButton = root.querySelector(".mobile-adfilm-create-button");
+  const summary = root.querySelector(".mobile-adfilm-action-copy small");
+  const voiceToggle = root.querySelector("#mobileAdFilmVoiceEnabled");
+
+  function normalizeDuration(value){
+    const duration = Math.round(Number(value) || 5);
+    return Math.max(5, Math.min(15, duration));
+  }
+
+  function normalizeQuality(value){
+    const quality = String(value || "").toLowerCase();
+    if (quality === "720p" || quality === "4k") return quality;
+    return "1080p";
+  }
+
+  function calculate(quality, duration){
+    const normalizedQuality = normalizeQuality(quality);
+    const normalizedDuration = normalizeDuration(duration);
+    const base = Number(BASE_CREDITS[normalizedQuality] || BASE_CREDITS["1080p"]);
+    return Math.ceil((base * normalizedDuration / 15) / 5) * 5;
+  }
+
+  function currentQuality(){
+    const checked = qualityRadios.find(function(radio){ return radio.checked; });
+    return normalizeQuality(checked && checked.value);
+  }
+
+  function currentFormat(){
+    const active = root.querySelector("[data-mobile-adfilm-format].is-active");
+    return String(active && active.getAttribute("data-mobile-adfilm-format") || "16:9");
+  }
+
+  function creditNode(quality){
+    const option = root.querySelector('.mobile-adfilm-quality-option[data-quality="' + quality + '"]');
+    return option && option.querySelector(".mobile-adfilm-quality-credit");
+  }
+
+  function sync(){
+    if (!durationSelect || !qualityRadios.length) return null;
+
+    const duration = normalizeDuration(durationSelect.value);
+    const quality = currentQuality();
+    const credits = calculate(quality, duration);
+    const format = currentFormat();
+    const voiceLabel = !voiceToggle || voiceToggle.checked ? "Sesli" : "Sessiz";
+
+    ["720p", "1080p", "4k"].forEach(function(itemQuality){
+      const node = creditNode(itemQuality);
+      if (node) node.textContent = calculate(itemQuality, duration) + " Kredi";
+    });
+
+    if (createButton){
+      createButton.textContent = "Reklam Filmini Oluştur (" + credits + " Kredi)";
+      createButton.setAttribute("data-credit-cost", String(credits));
+      createButton.setAttribute("data-credit-quality", quality);
+      createButton.setAttribute("data-credit-duration", String(duration));
+    }
+
+    if (summary){
+      summary.textContent = duration + " sn · " + format + " · " + (quality === "4k" ? "4K" : quality) + " · " + voiceLabel;
+    }
+
+    root.dataset.adfilmCreditCost = String(credits);
+    root.dataset.adfilmCreditQuality = quality;
+    root.dataset.adfilmCreditDuration = String(duration);
+
+    try{
+      window.dispatchEvent(new CustomEvent("aivo:mobile-adfilm-credit-change", {
+        detail: { quality: quality, duration: duration, credits: credits, aspectRatio: format }
+      }));
+    }catch(_){ }
+
+    return { quality: quality, duration: duration, credits: credits, aspectRatio: format };
+  }
+
+  if (durationSelect){
+    durationSelect.addEventListener("change", sync);
+  }
+
+  qualityRadios.forEach(function(radio){
+    radio.addEventListener("change", sync);
+  });
+
+  if (voiceToggle){
+    voiceToggle.addEventListener("change", sync);
+  }
+
+  root.addEventListener("click", function(event){
+    if (event.target.closest("[data-mobile-adfilm-format]")){
+      setTimeout(sync, 0);
+    }
+  });
+
+  window.AIVOMobileAdFilmCreditPricing = {
+    baseCredits: Object.assign({}, BASE_CREDITS),
+    calculate: calculate,
+    current: sync,
+    sync: sync
+  };
+
+  sync();
+})();
