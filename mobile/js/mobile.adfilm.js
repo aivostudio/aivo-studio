@@ -20,6 +20,7 @@
   const voiceEnabled = root.querySelector("#mobileAdFilmVoiceEnabled");
   const voiceState = root.querySelector("#mobileAdFilmVoiceState");
   const voiceBody = root.querySelector("#mobileAdFilmVoiceBody");
+  const voiceCard = root.querySelector(".mobile-adfilm-voice-card");
   const narrationText = root.querySelector("#mobileAdFilmNarrationText");
   const narrationCount = root.querySelector("#mobileAdFilmNarrationCount");
   const narrationDuration = root.querySelector("#mobileAdFilmDuration");
@@ -70,6 +71,94 @@
       label: function(){ return "Overlay"; }
     }
   };
+
+  function ensureVideoSettingsStyles(){
+    if (document.querySelector('link[data-mobile-adfilm-video-settings-style]')) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/mobile/css/mobile.adfilm.video-settings.css?v=1";
+    link.setAttribute("data-mobile-adfilm-video-settings-style", "");
+    document.head.appendChild(link);
+  }
+
+  function buildDurationOptions(){
+    if (!narrationDuration) return;
+    narrationDuration.innerHTML = "";
+    for (let second = 5; second <= 15; second += 1){
+      const option = document.createElement("option");
+      option.value = String(second);
+      option.textContent = second + " sn";
+      narrationDuration.appendChild(option);
+    }
+    narrationDuration.value = "5";
+  }
+
+  function setFormat(format){
+    root.querySelectorAll("[data-mobile-adfilm-format]").forEach(function(button){
+      const active = button.getAttribute("data-mobile-adfilm-format") === format;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function installVideoSettings(){
+    if (!voiceCard || !narrationDuration) return;
+    if (root.querySelector("[data-mobile-adfilm-video-settings]")) return;
+
+    ensureVideoSettingsStyles();
+    buildDurationOptions();
+
+    const oldDurationPill = narrationDuration.closest(".mobile-adfilm-duration-pill");
+    const card = document.createElement("article");
+    card.className = "mobile-adfilm-card mobile-adfilm-video-settings-card";
+    card.setAttribute("data-mobile-adfilm-video-settings", "");
+    card.innerHTML = `
+      <div class="mobile-adfilm-card-head">
+        <span class="mobile-adfilm-video-settings-icon" aria-hidden="true"></span>
+        <div class="mobile-adfilm-card-copy">
+          <span class="mobile-adfilm-step">05</span>
+          <h4>Video Ayarları</h4>
+          <p>Yalnız süreyi ve yayın formatını seç.</p>
+        </div>
+      </div>
+
+      <div class="mobile-adfilm-video-setting-row">
+        <span class="mobile-adfilm-video-setting-label">Süre</span>
+        <label class="mobile-adfilm-video-duration-select" id="mobileAdFilmVideoDurationMount" aria-label="Video süresi"></label>
+      </div>
+
+      <div class="mobile-adfilm-video-setting-row mobile-adfilm-video-format-row">
+        <span class="mobile-adfilm-video-setting-label">Format</span>
+        <div class="mobile-adfilm-video-format-grid" role="group" aria-label="Video formatı">
+          <button type="button" data-mobile-adfilm-format="9:16" aria-pressed="false"><span class="is-vertical"></span>9:16</button>
+          <button type="button" data-mobile-adfilm-format="1:1" aria-pressed="false"><span class="is-square"></span>1:1</button>
+          <button type="button" data-mobile-adfilm-format="16:9" class="is-active" aria-pressed="true"><span class="is-wide"></span>16:9</button>
+          <button type="button" data-mobile-adfilm-format="4:5" aria-pressed="false"><span class="is-portrait"></span>4:5</button>
+          <button type="button" data-mobile-adfilm-format="3:4" aria-pressed="false"><span class="is-portrait"></span>3:4</button>
+          <button type="button" data-mobile-adfilm-format="4:3" aria-pressed="false"><span class="is-landscape"></span>4:3</button>
+          <button type="button" data-mobile-adfilm-format="21:9" aria-pressed="false"><span class="is-ultrawide"></span>21:9</button>
+        </div>
+      </div>
+
+      <p class="mobile-adfilm-video-settings-note">Seçtiğin formata göre final video güvenli kadrajla hazırlanır.</p>
+    `;
+
+    voiceCard.insertAdjacentElement("afterend", card);
+
+    const durationMount = card.querySelector("#mobileAdFilmVideoDurationMount");
+    if (durationMount){
+      durationMount.appendChild(narrationDuration);
+    }
+    if (oldDurationPill) oldDurationPill.remove();
+
+    card.addEventListener("click", function(event){
+      const formatButton = event.target.closest("[data-mobile-adfilm-format]");
+      if (!formatButton) return;
+      setFormat(formatButton.getAttribute("data-mobile-adfilm-format"));
+    });
+
+    narrationDuration.dispatchEvent(new Event("change", { bubbles: true }));
+  }
 
   function setMode(mode){
     modeButtons.forEach(function(button){
@@ -252,7 +341,7 @@
   function syncNarrationBudget(){
     if (!narrationText || !narrationDuration || !voiceSpeed) return;
 
-    const duration = Math.max(5, Math.min(20, Number(narrationDuration.value) || 10));
+    const duration = Math.max(5, Math.min(15, Number(narrationDuration.value) || 5));
     const speedKey = speechRates[voiceSpeed.value] ? voiceSpeed.value : "balanced";
     const rate = speechRates[speedKey];
     const minWords = Math.max(3, Math.floor(duration * rate.min));
@@ -358,6 +447,7 @@
   }, { once: true });
 
   renderReferences();
+  installVideoSettings();
   syncNarrationBudget();
   setMode("video");
 })();
