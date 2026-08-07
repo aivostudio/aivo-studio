@@ -6,10 +6,53 @@
       <p>Markan, ürünün veya hizmetin için sahneli ve sesli reklam filmi oluştur.</p>
     </div>
 
-    <div class="mobile-adfilm-placeholder">
-      <span class="mobile-adfilm-placeholder-icon" aria-hidden="true"></span>
-      <strong>AI Reklam Filmi</strong>
-      <p>Mobil reklam filmi üretim alanı hazırlanıyor.</p>
+    <div class="mobile-adfilm-mode-tabs" role="tablist" aria-label="Reklam türü">
+      <button class="mobile-adfilm-mode is-active" type="button" data-mobile-adfilm-mode="video" aria-selected="true">
+        Reklam Videosu
+      </button>
+      <button class="mobile-adfilm-mode" type="button" data-mobile-adfilm-mode="radio" aria-selected="false">
+        Radyo Reklamı
+      </button>
+    </div>
+
+    <div class="mobile-adfilm-view is-active" data-mobile-adfilm-view="video">
+      <article class="mobile-adfilm-card">
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-product" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">01</span>
+            <h4>Ürün Bilgileri</h4>
+            <p>Marka ve kampanya briefini tanımla.</p>
+          </div>
+          <span class="mobile-adfilm-required">Zorunlu</span>
+        </div>
+
+        <div class="mobile-adfilm-form-grid">
+          <label class="mobile-adfilm-field">
+            <span>Ürün / Hizmet Adı</span>
+            <input id="mobileAdFilmProductName" type="text" maxlength="80" placeholder="Örn: AIVO Studio">
+          </label>
+
+          <label class="mobile-adfilm-field">
+            <span>Marka Adı</span>
+            <input id="mobileAdFilmBrandName" type="text" maxlength="60" placeholder="Örn: AIVO">
+          </label>
+        </div>
+
+        <label class="mobile-adfilm-field mobile-adfilm-field-wide">
+          <span>Kısa Açıklama</span>
+          <textarea id="mobileAdFilmDescription" maxlength="420" rows="4" placeholder="Ürünün öne çıkan özelliklerini ve reklamda vurgulanmasını istediğin detayları yaz..."></textarea>
+          <small><b id="mobileAdFilmDescriptionCount">0</b> / 420</small>
+        </label>
+      </article>
+    </div>
+
+    <div class="mobile-adfilm-view" data-mobile-adfilm-view="radio" hidden>
+      <div class="mobile-adfilm-coming-card">
+        <span class="mobile-adfilm-placeholder-icon" aria-hidden="true"></span>
+        <strong>Radyo Reklamı</strong>
+        <p>Bu bölümü Reklam Videosu tamamlandıktan sonra kuracağız.</p>
+      </div>
     </div>
   </section>
 </section>
