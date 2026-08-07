@@ -222,16 +222,33 @@
             </div>
           </label>
 
-          <div class="mobile-adfilm-voice-preview">
+          <section class="mobile-adfilm-voice-preview" data-mobile-adfilm-voice-preview data-state="idle">
             <div class="mobile-adfilm-voice-preview-head">
-              <strong>Ses Ön İzleme</strong>
-              <span>Üretim bağlantısı sonraki adımda</span>
+              <div class="mobile-adfilm-voice-preview-title">
+                <span class="mobile-adfilm-voice-preview-spark" aria-hidden="true"></span>
+                <div>
+                  <strong>Ses Ön İzleme</strong>
+                  <p>Metni tamamladıktan sonra reklam sesini oluştur, dinle ve onayla.</p>
+                </div>
+              </div>
+              <span class="mobile-adfilm-voice-preview-status">Henüz ses oluşturulmadı.</span>
             </div>
-            <div class="mobile-adfilm-voice-preview-row">
+
+            <div class="mobile-adfilm-voice-player">
               <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil"></button>
-              <div class="mobile-adfilm-voice-preview-line" aria-hidden="true"></div>
+              <div class="mobile-adfilm-voice-player-main">
+                <div class="mobile-adfilm-voice-preview-line" aria-hidden="true"></div>
+                <span class="mobile-adfilm-voice-time">0:00 / 0:00</span>
+              </div>
+              <button class="mobile-adfilm-voice-volume" type="button" disabled aria-label="Ses seviyesi"></button>
+              <button class="mobile-adfilm-voice-delete" type="button" disabled aria-label="Ses kaydını sil"></button>
             </div>
-          </div>
+
+            <div class="mobile-adfilm-voice-preview-actions">
+              <button class="mobile-adfilm-voice-create" type="button" disabled>Sesi oluştur</button>
+              <button class="mobile-adfilm-voice-approve" type="button" disabled>Sesi onayla</button>
+            </div>
+          </section>
         </div>
       </article>
     </div>
