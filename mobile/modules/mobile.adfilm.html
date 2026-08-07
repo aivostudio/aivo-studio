@@ -156,6 +156,34 @@
         </div>
 
         <div class="mobile-adfilm-voice-body" id="mobileAdFilmVoiceBody">
+          <section class="mobile-adfilm-narration-budget" data-mobile-adfilm-narration-budget>
+            <div class="mobile-adfilm-narration-budget-head">
+              <div class="mobile-adfilm-narration-budget-copy">
+                <span>Ses süresi bütçesi</span>
+                <strong id="mobileAdFilmBudgetRecommendation">16–20 kelime önerilir</strong>
+              </div>
+              <div class="mobile-adfilm-narration-budget-pills">
+                <label class="mobile-adfilm-duration-pill" aria-label="Video süresi">
+                  <select id="mobileAdFilmDuration">
+                    <option value="5">5 sn</option>
+                    <option value="10" selected>10 sn</option>
+                    <option value="15">15 sn</option>
+                    <option value="20">20 sn</option>
+                  </select>
+                </label>
+                <span id="mobileAdFilmBudgetSpeed">Dengeli</span>
+              </div>
+            </div>
+            <div class="mobile-adfilm-narration-meter" aria-hidden="true">
+              <i id="mobileAdFilmBudgetMeter"></i>
+            </div>
+            <div class="mobile-adfilm-narration-status is-empty" id="mobileAdFilmBudgetStatus">
+              <span aria-hidden="true"></span>
+              <p id="mobileAdFilmBudgetMessage">Metnini yazdıkça süre hesabı burada görünecek.</p>
+              <b id="mobileAdFilmBudgetEstimate">0 kelime · tahmini 0 sn</b>
+            </div>
+          </section>
+
           <div class="mobile-adfilm-voice-grid">
             <label class="mobile-adfilm-select-field">
               <span>Dil</span>
