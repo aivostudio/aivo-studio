@@ -516,7 +516,7 @@
     </section>
 
     <section class="mobile-adfilm-music-panel" data-mobile-adfilm-music-panel="upload" hidden>
-      <label class="mobile-adfilm-music-upload">
+      <label class="mobile-adfilm-music-upload" data-mobile-adfilm-music-picker>
         <input id="mobileAdFilmMusicFile" type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg">
         <span class="mobile-adfilm-music-upload-icon" aria-hidden="true"></span>
         <span>
@@ -525,11 +525,20 @@
         </span>
       </label>
       <div class="mobile-adfilm-music-file" data-mobile-adfilm-music-file-view hidden>
-        <div>
-          <b data-mobile-adfilm-music-name></b>
-          <small data-mobile-adfilm-music-size></small>
+        <div class="mobile-adfilm-music-file-head">
+          <span class="mobile-adfilm-music-file-note" aria-hidden="true"></span>
+          <div class="mobile-adfilm-music-file-copy">
+            <b data-mobile-adfilm-music-name></b>
+            <small data-mobile-adfilm-music-size></small>
+          </div>
+          <button class="mobile-adfilm-music-remove" type="button" aria-label="Müzik dosyasını kaldır">×</button>
         </div>
-        <button class="mobile-adfilm-music-remove" type="button" aria-label="Müzik dosyasını kaldır">×</button>
+        <div class="mobile-adfilm-music-player">
+          <button class="mobile-adfilm-music-play" type="button" data-mobile-adfilm-music-play aria-label="Müziği oynat"></button>
+          <input class="mobile-adfilm-music-progress" type="range" min="0" max="1000" value="0" step="1" data-mobile-adfilm-music-progress aria-label="Müzik ilerleme çubuğu">
+          <span class="mobile-adfilm-music-time" data-mobile-adfilm-music-time>0:00 / 0:00</span>
+          <audio preload="metadata" data-mobile-adfilm-music-audio></audio>
+        </div>
       </div>
       <p class="mobile-adfilm-music-rights">Yüklediğin müziğin kullanım ve telif hakkına sahip olmalısın.</p>
     </section>
@@ -540,10 +549,47 @@
   const modeButtons = Array.from(card.querySelectorAll("[data-mobile-adfilm-music-mode]"));
   const panels = Array.from(card.querySelectorAll("[data-mobile-adfilm-music-panel]"));
   const fileInput = card.querySelector("#mobileAdFilmMusicFile");
+  const picker = card.querySelector("[data-mobile-adfilm-music-picker]");
   const fileView = card.querySelector("[data-mobile-adfilm-music-file-view]");
   const fileName = card.querySelector("[data-mobile-adfilm-music-name]");
   const fileSize = card.querySelector("[data-mobile-adfilm-music-size]");
   const removeButton = card.querySelector(".mobile-adfilm-music-remove");
+  const audio = card.querySelector("[data-mobile-adfilm-music-audio]");
+  const playButton = card.querySelector("[data-mobile-adfilm-music-play]");
+  const progress = card.querySelector("[data-mobile-adfilm-music-progress]");
+  const time = card.querySelector("[data-mobile-adfilm-music-time]");
+  let musicObjectUrl = "";
+
+  function formatTime(value){
+    const seconds = Number.isFinite(value) ? value : 0;
+    return Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
+  }
+
+  function syncPlayer(){
+    if (!audio || !playButton || !progress || !time) return;
+    const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+    const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+    progress.value = duration ? String(Math.round(current / duration * 1000)) : "0";
+    time.textContent = formatTime(current) + " / " + formatTime(duration);
+    const playing = !audio.paused && !audio.ended;
+    playButton.classList.toggle("is-playing", playing);
+    playButton.setAttribute("aria-label", playing ? "Müziği duraklat" : "Müziği oynat");
+  }
+
+  function clearPlayerSource(){
+    if (audio){
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
+    if (musicObjectUrl){
+      URL.revokeObjectURL(musicObjectUrl);
+      musicObjectUrl = "";
+    }
+    if (progress) progress.value = "0";
+    if (time) time.textContent = "0:00 / 0:00";
+    if (playButton) playButton.classList.remove("is-playing");
+  }
 
   function setMusicMode(mode){
     modeButtons.forEach(function(button){
@@ -552,16 +598,32 @@
     panels.forEach(function(panel){
       panel.hidden = panel.getAttribute("data-mobile-adfilm-music-panel") !== mode;
     });
+    if (mode !== "upload" && audio) audio.pause();
     root.dataset.adfilmMusicMode = mode;
     try{ localStorage.setItem("aivo_adfilm_music_mode_v1", mode); }catch(_){ }
   }
 
   function renderFile(){
     const file = fileInput && fileInput.files && fileInput.files[0];
-    if (!fileView) return;
-    fileView.hidden = !file;
-    if (fileName) fileName.textContent = file ? file.name : "";
-    if (fileSize) fileSize.textContent = file ? Math.max(.1, file.size / 1024 / 1024).toFixed(1) + " MB" : "";
+    if (picker) picker.hidden = !!file;
+    if (fileView) fileView.hidden = !file;
+
+    if (!file){
+      if (fileName) fileName.textContent = "";
+      if (fileSize) fileSize.textContent = "";
+      clearPlayerSource();
+      return;
+    }
+
+    if (fileName) fileName.textContent = file.name;
+    if (fileSize) fileSize.textContent = Math.max(.1, file.size / 1024 / 1024).toFixed(1) + " MB";
+
+    clearPlayerSource();
+    if (audio){
+      musicObjectUrl = URL.createObjectURL(file);
+      audio.src = musicObjectUrl;
+      audio.load();
+    }
   }
 
   modeButtons.forEach(function(button){
@@ -586,6 +648,34 @@
       renderFile();
     });
   }
+
+  if (playButton){
+    playButton.addEventListener("click", function(){
+      if (!audio || !audio.src) return;
+      if (audio.paused){
+        audio.play().catch(function(){});
+      }else{
+        audio.pause();
+      }
+    });
+  }
+
+  if (progress){
+    progress.addEventListener("input", function(){
+      if (!audio || !audio.duration) return;
+      audio.currentTime = Number(progress.value) / 1000 * audio.duration;
+    });
+  }
+
+  if (audio){
+    ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(function(name){
+      audio.addEventListener(name, syncPlayer);
+    });
+  }
+
+  window.addEventListener("beforeunload", function(){
+    clearPlayerSource();
+  }, { once: true });
 
   let initialMode = "auto";
   try{
