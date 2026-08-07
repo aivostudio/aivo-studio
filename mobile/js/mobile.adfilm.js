@@ -20,10 +20,8 @@
   const voiceEnabled = root.querySelector("#mobileAdFilmVoiceEnabled");
   const voiceState = root.querySelector("#mobileAdFilmVoiceState");
   const voiceBody = root.querySelector("#mobileAdFilmVoiceBody");
-  const scriptModeButtons = Array.from(root.querySelectorAll("[data-mobile-adfilm-script-mode]"));
   const narrationText = root.querySelector("#mobileAdFilmNarrationText");
   const narrationCount = root.querySelector("#mobileAdFilmNarrationCount");
-  const narrationHint = root.querySelector("#mobileAdFilmNarrationHint");
 
   const uploadState = {
     primary: [],
@@ -214,21 +212,6 @@
     if (voiceBody) voiceBody.classList.toggle("is-disabled", !enabled);
   }
 
-  function setScriptMode(mode){
-    scriptModeButtons.forEach(function(button){
-      const selected = button.getAttribute("data-mobile-adfilm-script-mode") === mode;
-      button.classList.toggle("is-selected", selected);
-    });
-
-    if (!narrationText) return;
-    const manual = mode === "manual";
-    narrationText.readOnly = false;
-    narrationText.placeholder = manual
-      ? "Reklam seslendirme metnini buraya yaz..."
-      : "AI, ürün bilgilerini ve reklam talimatını kullanarak seslendirme metnini hazırlayacak. Metni burada düzenleyebilirsin.";
-    if (narrationHint) narrationHint.textContent = manual ? "Manuel metin modu" : "AI modu aktif · metin düzenlenebilir";
-  }
-
   function syncNarrationCount(){
     if (!narrationText || !narrationCount) return;
     narrationCount.textContent = String(narrationText.value.length);
@@ -273,12 +256,6 @@
     syncVoiceEnabled();
   }
 
-  scriptModeButtons.forEach(function(button){
-    button.addEventListener("click", function(){
-      setScriptMode(button.getAttribute("data-mobile-adfilm-script-mode"));
-    });
-  });
-
   if (narrationText){
     narrationText.addEventListener("input", syncNarrationCount);
     syncNarrationCount();
@@ -289,6 +266,5 @@
   }, { once: true });
 
   renderReferences();
-  setScriptMode("ai");
   setMode("video");
 })();
