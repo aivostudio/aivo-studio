@@ -77,6 +77,14 @@
   gap:7px;
 }
 
+.mobile-adfilm-quality-radio{
+  position:absolute;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+}
+
 .mobile-adfilm-quality-button{
   position:relative;
   min-width:0;
@@ -92,10 +100,12 @@
   font-size:15px;
   font-weight:950;
   letter-spacing:-.025em;
+  cursor:pointer;
+  user-select:none;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 9px 20px rgba(0,0,0,.12);
 }
 
-.mobile-adfilm-quality-button.is-active{
+.mobile-adfilm-quality-radio:checked + .mobile-adfilm-quality-button{
   color:#fff;
   border-color:rgba(244,114,182,.78);
   background:
@@ -103,6 +113,11 @@
     linear-gradient(135deg,#7c3aed 0%,#a855f7 48%,#ec4899 100%);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 24px rgba(139,92,246,.22),0 0 22px rgba(236,72,153,.10);
   transform:translateY(-1px);
+}
+
+.mobile-adfilm-quality-radio:focus-visible + .mobile-adfilm-quality-button{
+  outline:2px solid rgba(216,180,254,.85);
+  outline-offset:2px;
 }
 
 .mobile-adfilm-quality-premium{
@@ -137,7 +152,7 @@
   white-space:nowrap;
 }
 
-.mobile-adfilm-quality-option.is-active .mobile-adfilm-quality-credit{
+.mobile-adfilm-quality-radio:checked ~ .mobile-adfilm-quality-credit{
   color:#fff;
   border-color:rgba(216,180,254,.66);
   background:linear-gradient(145deg,rgba(89,50,156,.74),rgba(56,34,91,.8));
