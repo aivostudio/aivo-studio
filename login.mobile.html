@@ -522,10 +522,29 @@
   <script>
     (function(){
       const url = new URL(location.href);
-    const rawReturnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
-const returnTo = rawReturnTo.includes("mobile")
-  ? rawReturnTo
-  : "/studio.mobile.html";
+      const rawReturnTo = url.searchParams.get("returnTo") || "/studio.mobile.html";
+
+      function normalizeReturnTo(value){
+        const fallback = "/studio.mobile.html";
+
+        try {
+          const parsed = new URL(value || fallback, window.location.origin);
+
+          if (parsed.origin !== window.location.origin) {
+            return fallback;
+          }
+
+          if (parsed.pathname !== "/studio.mobile.html") {
+            return fallback;
+          }
+
+          return parsed.pathname + parsed.search + parsed.hash;
+        } catch (_) {
+          return fallback;
+        }
+      }
+
+      const returnTo = normalizeReturnTo(rawReturnTo);
       const card = document.getElementById("mobileLoginCard");
       const form = document.getElementById("mobileLoginForm");
       const tabs = Array.from(document.querySelectorAll(".mobile-login-tab"));
@@ -535,7 +554,7 @@ const returnTo = rawReturnTo.includes("mobile")
       const message = document.getElementById("mobileLoginMessage");
       const googleBtn = document.getElementById("mobileGoogleBtn");
       const appleBtn = document.getElementById("mobileAppleBtn");
-     const firstName = document.getElementById("mobileFirstName");
+      const firstName = document.getElementById("mobileFirstName");
       const lastName = document.getElementById("mobileLastName");
       const email = document.getElementById("mobileEmail");
       const password = document.getElementById("mobilePassword");
@@ -544,32 +563,114 @@ const returnTo = rawReturnTo.includes("mobile")
 
       let mode = "login";
 
-  function setMessage(text, type){
-  message.textContent = "";
-  message.classList.remove("is-error", "is-ok");
+      function setMessage(text, type){
+        message.textContent = "";
+        message.classList.remove("is-error", "is-ok");
 
-  if (!text) return;
+        if (!text) return;
 
-  const toastType = type === "is-error"
-    ? "error"
-    : type === "is-ok"
-      ? "success"
-      : "info";
+        const toastType = type === "is-error"
+          ? "error"
+          : type === "is-ok"
+            ? "success"
+            : "info";
 
-  if (window.mobileToast && typeof window.mobileToast.show === "function") {
-    window.mobileToast.show(text, toastType);
-    return;
-  }
+        if (window.mobileToast && typeof window.mobileToast.show === "function") {
+          window.mobileToast.show(text, toastType);
+          return;
+        }
 
-  if (window.toast && typeof window.toast.show === "function") {
-    window.toast.show(text, toastType);
-    return;
-  }
+        if (window.toast && typeof window.toast.show === "function") {
+          window.toast.show(text, toastType);
+          return;
+        }
 
-  message.textContent = text;
-  message.classList.toggle("is-error", type === "is-error");
-  message.classList.toggle("is-ok", type === "is-ok");
-}
+        message.textContent = text;
+        message.classList.toggle("is-error", type === "is-error");
+        message.classList.toggle("is-ok", type === "is-ok");
+      }
+
+      function wait(ms){
+        return new Promise(function(resolve){
+          setTimeout(resolve, ms);
+        });
+      }
+
+      async function readMobileSession(timeoutMs){
+        const controller = new AbortController();
+        const timeout = setTimeout(function(){
+          try {
+            controller.abort();
+          } catch (_) {}
+        }, timeoutMs);
+
+        try {
+          const meRes = await fetch("/api/auth/me", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              "Accept": "application/json"
+            },
+            signal: controller.signal
+          });
+
+          if (!meRes.ok) {
+            return null;
+          }
+
+          const me = await meRes.json().catch(function(){
+            return null;
+          });
+
+          const user = me && (me.user || me);
+          const sessionEmail = String(user && user.email ? user.email : "").trim().toLowerCase();
+
+          if (!sessionEmail) {
+            return null;
+          }
+
+          return {
+            email: sessionEmail,
+            data: me
+          };
+        } catch (_) {
+          return null;
+        } finally {
+          clearTimeout(timeout);
+        }
+      }
+
+      async function waitForMobileSession(expectedEmail){
+        const normalizedExpected = String(expectedEmail || "").trim().toLowerCase();
+        const deadline = Date.now() + 12000;
+        let attempt = 0;
+
+        while (Date.now() < deadline && attempt < 8) {
+          attempt += 1;
+
+          const remaining = deadline - Date.now();
+          if (remaining <= 0) break;
+
+          const session = await readMobileSession(
+            Math.min(4000, Math.max(800, remaining))
+          );
+
+          if (
+            session &&
+            session.email &&
+            (!normalizedExpected || session.email === normalizedExpected)
+          ) {
+            return true;
+          }
+
+          if (Date.now() >= deadline) break;
+
+          await wait(attempt < 3 ? 180 : 350);
+        }
+
+        return false;
+      }
 
       function setMode(nextMode){
         mode = nextMode === "register" ? "register" : "login";
@@ -603,9 +704,10 @@ const returnTo = rawReturnTo.includes("mobile")
       googleBtn.addEventListener("click", function(){
         location.href = "/api/auth/google?returnTo=" + encodeURIComponent(returnTo);
       });
+
       appleBtn.addEventListener("click", function(){
-     location.href = "/api/auth/apple?returnTo=" + encodeURIComponent(returnTo);
-    });
+        location.href = "/api/auth/apple?returnTo=" + encodeURIComponent(returnTo);
+      });
 
       form.addEventListener("submit", async function(e){
         e.preventDefault();
@@ -673,37 +775,46 @@ const returnTo = rawReturnTo.includes("mobile")
             return {};
           });
 
-        if (!res.ok || !data || data.ok === false) {
-          const err = data && data.error ? data.error : "auth_failed";
+          if (!res.ok || !data || data.ok === false) {
+            const err = data && data.error ? data.error : "auth_failed";
 
-          if (err === "email_not_verified") {
-          setMessage("E-posta doğrulaması gerekiyor. Lütfen e-postandaki doğrulama bağlantısına tıkla.", "is-error");
-           } else if (err === "invalid_credentials" || err === "user_not_found") {
-          setMessage("E-posta veya şifre hatalı.", "is-error");
-          } else if (err === "user_exists" || err === "email_exists" || err === "email_already_registered") {
-          setMessage("Bu e-posta ile hesap zaten var.", "is-error");
+            if (err === "email_not_verified") {
+              setMessage("E-posta doğrulaması gerekiyor. Lütfen e-postandaki doğrulama bağlantısına tıkla.", "is-error");
+            } else if (err === "invalid_credentials" || err === "user_not_found") {
+              setMessage("E-posta veya şifre hatalı.", "is-error");
+            } else if (err === "user_exists" || err === "email_exists" || err === "email_already_registered") {
+              setMessage("Bu e-posta ile hesap zaten var.", "is-error");
             } else {
-           setMessage("İşlem tamamlanamadı. Tekrar dene.", "is-error");
-           }
+              setMessage("İşlem tamamlanamadı. Tekrar dene.", "is-error");
+            }
 
-           return;
-           }
+            return;
+          }
 
-       if (mode === "register") {
-  if (data && data.mailSent === false) {
-    setMessage("Hesap oluşturuldu fakat doğrulama e-postası gönderilemedi. Lütfen destek ile iletişime geç.", "is-error");
-    return;
-  }
+          if (mode === "register") {
+            if (data && data.mailSent === false) {
+              setMessage("Hesap oluşturuldu fakat doğrulama e-postası gönderilemedi. Lütfen destek ile iletişime geç.", "is-error");
+              return;
+            }
 
-  setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
-  return;
-}
+            setMessage("Hesap oluşturuldu. Lütfen e-postana gelen doğrulama bağlantısına tıkla.", "is-ok");
+            return;
+          }
 
-         setMessage("Giriş başarılı.", "is-ok");
+          setMessage("Giriş başarılı.", "is-ok");
+          submitBtn.textContent = "Oturum açılıyor...";
 
-         setTimeout(function(){
-        window.location.href = "https://aivo.tr/studio.mobile.html";
-        }, 350);
+          const sessionReady = await waitForMobileSession(cleanEmail);
+
+          if (!sessionReady) {
+            setMessage(
+              "Giriş başarılı ancak oturum doğrulanamadı. Lütfen bağlantını kontrol edip tekrar dene.",
+              "is-error"
+            );
+            return;
+          }
+
+          window.location.replace(returnTo);
         } catch (err) {
           setMessage("Bağlantı hatası. Tekrar dene.", "is-error");
         } finally {
