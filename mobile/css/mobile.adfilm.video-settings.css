@@ -2,7 +2,7 @@
   position:relative;
   overflow:hidden;
   margin-top:16px;
-  padding:20px 18px 18px;
+  padding:16px 18px 14px;
   border-radius:28px;
   border:1px solid rgba(216,180,254,.24);
   background:
@@ -42,8 +42,8 @@
 .mobile-adfilm-video-settings-card .mobile-adfilm-card-head{
   align-items:center;
   gap:13px;
-  padding-bottom:17px;
-  margin-bottom:3px;
+  padding-bottom:12px;
+  margin-bottom:0;
   border-bottom:1px solid rgba(255,255,255,.065);
 }
 
@@ -129,7 +129,7 @@
   grid-template-columns:62px minmax(0,1fr);
   gap:13px;
   align-items:center;
-  margin-top:17px;
+  margin-top:13px;
 }
 
 .mobile-adfilm-video-setting-label{
@@ -301,8 +301,8 @@
 
 .mobile-adfilm-video-settings-note{
   position:relative;
-  margin:18px 0 0;
-  padding:14px 14px 0;
+  margin:14px 0 0;
+  padding:10px 14px 0;
   border-top:1px solid rgba(255,255,255,.07);
   color:rgba(255,255,255,.52);
   text-align:center;
@@ -323,7 +323,7 @@
 
 @media (max-width:390px){
   .mobile-adfilm-video-settings-card{
-    padding:18px 15px 16px;
+    padding:15px 15px 14px;
     border-radius:25px;
   }
 
