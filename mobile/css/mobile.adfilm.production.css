@@ -80,6 +80,7 @@
   border-radius:18px;
   border:1px solid rgba(255,255,255,.08);
   background:rgba(4,7,18,.48);
+  text-align:center;
 }
 
 .mobile-adfilm-production-stage b{
@@ -224,8 +225,17 @@
 }
 
 .mobile-adfilm-production-card.is-playing .mobile-adfilm-production-play{
-  opacity:0;
-  pointer-events:none;
+  opacity:1;
+  pointer-events:auto;
+  font-size:0;
+}
+
+.mobile-adfilm-production-card.is-playing .mobile-adfilm-production-play::before{
+  content:"Ⅱ";
+  font-size:21px;
+  line-height:1;
+  font-weight:900;
+  color:#fff;
 }
 
 .mobile-adfilm-production-card-copy{

@@ -7,7 +7,7 @@
 .adfilm-narration-engine__head p{margin:4px 0 0;color:rgba(230,233,255,.68);font-size:12px;line-height:1.45}
 .adfilm-narration-engine__head em{flex:0 0 auto;max-width:42%;padding:6px 9px;border-radius:999px;color:#cfd4ff;background:rgba(255,255,255,.055);font-size:11px;font-style:normal;text-align:center}
 .adfilm-narration-engine[data-state="queued"] .adfilm-narration-engine__head em,.adfilm-narration-engine[data-state="running"] .adfilm-narration-engine__head em,.adfilm-narration-engine[data-state="creating"] .adfilm-narration-engine__head em{color:#7ef4e7;background:rgba(27,224,199,.1)}
-.adfilm-narration-engine[data-state="ready"] .adfilm-narration-engine__head em,.adfilm-narration-engine[data-state="approved"] .adfilm-narration-engine__head em{color:#9dffc4;background:rgba(52,211,153,.11)}
+.adfilm-narration-engine[data-state="approved"] .adfilm-narration-engine__head em{color:#86d8aa;background:rgba(20,83,62,.28)}
 .adfilm-narration-engine[data-state="failed"] .adfilm-narration-engine__head em{color:#ffb4c0;background:rgba(244,63,94,.11)}
 .adfilm-narration-engine__player{margin-top:14px;padding:8px;border-radius:14px;background:rgba(4,7,20,.55);border:1px solid rgba(255,255,255,.07)}
 .adfilm-narration-engine__player audio{display:block;width:100%;height:38px}
