@@ -1,0 +1,251 @@
+.mobile-adfilm-music-card{
+  position:relative;
+  overflow:hidden;
+  margin-top:14px;
+  padding:16px;
+  border-radius:26px;
+  border:1px solid rgba(196,152,255,.24);
+  background:
+    radial-gradient(circle at 10% 0%,rgba(139,92,246,.20),transparent 38%),
+    radial-gradient(circle at 100% 100%,rgba(236,72,153,.12),transparent 42%),
+    linear-gradient(155deg,rgba(31,29,56,.97),rgba(18,20,39,.98) 58%,rgba(11,14,29,.99));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.075),
+    0 18px 42px rgba(4,7,20,.30);
+}
+
+.mobile-adfilm-music-card::after{
+  content:"";
+  position:absolute;
+  left:22px;
+  right:22px;
+  top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(196,152,255,.58),rgba(244,114,182,.38),transparent);
+}
+
+.mobile-adfilm-music-card .mobile-adfilm-card-head{
+  align-items:center;
+  gap:12px;
+  padding-bottom:13px;
+  border-bottom:1px solid rgba(255,255,255,.065);
+}
+
+.mobile-adfilm-music-icon{
+  position:relative;
+  flex:0 0 48px;
+  width:48px;
+  height:48px;
+  border-radius:17px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(216,180,254,.28);
+  background:
+    radial-gradient(circle at 25% 18%,rgba(255,255,255,.15),transparent 34%),
+    linear-gradient(145deg,rgba(111,52,207,.76),rgba(72,31,106,.92));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 25px rgba(88,40,145,.22);
+}
+
+.mobile-adfilm-music-icon::before{
+  content:"";
+  width:22px;
+  height:22px;
+  background:linear-gradient(180deg,#f3e8ff,#c4b5fd);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V6l10-2v12'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='16' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18V6l10-2v12'/%3E%3Ccircle cx='6' cy='18' r='3'/%3E%3Ccircle cx='16' cy='16' r='3'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+.mobile-adfilm-music-optional{
+  margin-left:auto;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(192,132,252,.22);
+  background:rgba(139,92,246,.10);
+  color:#d8b4fe;
+  font-size:8px;
+  font-style:normal;
+  font-weight:950;
+  letter-spacing:.06em;
+}
+
+.mobile-adfilm-music-modes{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin-top:14px;
+}
+
+.mobile-adfilm-music-modes button{
+  min-height:46px;
+  padding:7px 8px;
+  border-radius:14px;
+  border:1px solid rgba(139,92,246,.24);
+  background:linear-gradient(155deg,rgba(20,22,42,.92),rgba(10,12,28,.94));
+  color:rgba(255,255,255,.68);
+  font:inherit;
+  font-size:9px;
+  line-height:1.2;
+  font-weight:900;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.mobile-adfilm-music-modes button.is-active{
+  color:#fff;
+  border-color:rgba(244,114,182,.76);
+  background:linear-gradient(135deg,#7c3aed 0%,#a855f7 48%,#ec4899 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 9px 22px rgba(139,92,246,.20);
+}
+
+.mobile-adfilm-music-panel{
+  margin-top:12px;
+  padding:13px;
+  border-radius:17px;
+  border:1px solid rgba(167,139,250,.16);
+  background:rgba(9,12,28,.56);
+}
+
+.mobile-adfilm-music-panel[hidden]{display:none!important}
+
+.mobile-adfilm-music-fields{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+
+.mobile-adfilm-music-field{
+  display:grid;
+  gap:6px;
+}
+
+.mobile-adfilm-music-field>span{
+  color:rgba(255,255,255,.66);
+  font-size:9px;
+  font-weight:900;
+}
+
+.mobile-adfilm-music-field select{
+  width:100%;
+  min-width:0;
+  height:44px;
+  padding:0 34px 0 12px;
+  border-radius:13px;
+  border:1px solid rgba(139,92,246,.26);
+  outline:none;
+  color:#fff;
+  background:#0c1020;
+  font:inherit;
+  font-size:11px;
+  font-weight:850;
+}
+
+.mobile-adfilm-music-engine{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:11px;
+  border:1px solid rgba(45,212,191,.18);
+  background:rgba(20,83,73,.13);
+  color:rgba(255,255,255,.50);
+  font-size:8.5px;
+  font-weight:750;
+}
+
+.mobile-adfilm-music-engine b{
+  color:#9ff3d7;
+  font-size:8px;
+  white-space:nowrap;
+}
+
+.mobile-adfilm-music-upload{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:13px;
+  border-radius:14px;
+  border:1px dashed rgba(192,132,252,.42);
+  background:rgba(28,20,51,.44);
+  cursor:pointer;
+}
+
+.mobile-adfilm-music-upload input{display:none}
+
+.mobile-adfilm-music-upload-icon{
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(145deg,#7445e8,#d04dc4);
+  box-shadow:0 8px 18px rgba(111,69,232,.2);
+}
+
+.mobile-adfilm-music-upload-icon::before{
+  content:"";
+  width:18px;
+  height:18px;
+  background:#fff;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5'/%3E%3Cpath d='M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5'/%3E%3Cpath d='M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+.mobile-adfilm-music-upload b{
+  display:block;
+  color:#fff;
+  font-size:11px;
+}
+
+.mobile-adfilm-music-upload small{
+  display:block;
+  margin-top:3px;
+  color:rgba(255,255,255,.46);
+  font-size:8.5px;
+  line-height:1.35;
+}
+
+.mobile-adfilm-music-file{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+  padding:10px 11px;
+  border-radius:12px;
+  border:1px solid rgba(139,92,246,.18);
+  background:rgba(8,11,26,.62);
+}
+
+.mobile-adfilm-music-file[hidden]{display:none!important}
+
+.mobile-adfilm-music-file div{min-width:0}
+.mobile-adfilm-music-file b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff;font-size:10px}
+.mobile-adfilm-music-file small{display:block;margin-top:2px;color:rgba(255,255,255,.46);font-size:8px}
+
+.mobile-adfilm-music-remove{
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  border:1px solid rgba(244,63,94,.28);
+  background:rgba(76,19,38,.28);
+  color:#ff7a9d;
+  font:inherit;
+  font-size:15px;
+  font-weight:800;
+}
+
+.mobile-adfilm-music-rights{
+  margin:9px 0 0;
+  color:rgba(255,255,255,.42);
+  font-size:8px;
+  line-height:1.45;
+}
+
+@media(max-width:390px){
+  .mobile-adfilm-music-card{padding:14px 13px}
+  .mobile-adfilm-music-modes{grid-template-columns:1fr}
+  .mobile-adfilm-music-fields{grid-template-columns:1fr}
+}
