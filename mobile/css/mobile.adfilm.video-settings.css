@@ -211,31 +211,33 @@
 
 .mobile-adfilm-video-format-row{
   align-items:start;
+  grid-template-columns:52px minmax(0,1fr);
+  gap:10px;
 }
 
 .mobile-adfilm-video-format-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:8px;
+  gap:10px;
 }
 
 .mobile-adfilm-video-format-grid button{
   position:relative;
   overflow:hidden;
   min-width:0;
-  min-height:46px;
-  padding:0 7px;
-  border-radius:15px;
+  min-height:60px;
+  padding:0 8px;
+  border-radius:17px;
   border:1px solid rgba(167,139,250,.18);
   background:
     linear-gradient(155deg,rgba(19,22,42,.90),rgba(10,12,27,.92));
-  color:rgba(255,255,255,.64);
+  color:rgba(255,255,255,.72);
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:7px;
   font:inherit;
-  font-size:8.8px;
+  font-size:11px;
   font-weight:950;
   letter-spacing:-.01em;
   box-shadow:
@@ -275,10 +277,10 @@
   position:absolute;
   left:14%;
   right:14%;
-  bottom:4px;
-  height:1px;
+  bottom:5px;
+  height:2px;
   border-radius:999px;
-  background:rgba(255,255,255,.52);
+  background:rgba(255,255,255,.58);
   box-shadow:0 0 8px rgba(255,255,255,.2);
 }
 
@@ -286,18 +288,18 @@
   position:relative;
   z-index:1;
   display:block;
-  border:1.6px solid currentColor;
-  border-radius:2px;
-  opacity:.92;
+  border:2px solid currentColor;
+  border-radius:3px;
+  opacity:.95;
   box-shadow:0 0 0 1px rgba(255,255,255,.015);
 }
 
-.mobile-adfilm-video-format-grid .is-vertical{width:7px;height:13px}
-.mobile-adfilm-video-format-grid .is-square{width:10px;height:10px}
-.mobile-adfilm-video-format-grid .is-wide{width:15px;height:8px}
-.mobile-adfilm-video-format-grid .is-portrait{width:9px;height:12px}
-.mobile-adfilm-video-format-grid .is-landscape{width:13px;height:9px}
-.mobile-adfilm-video-format-grid .is-ultrawide{width:16px;height:6px}
+.mobile-adfilm-video-format-grid .is-vertical{width:9px;height:17px}
+.mobile-adfilm-video-format-grid .is-square{width:13px;height:13px}
+.mobile-adfilm-video-format-grid .is-wide{width:19px;height:10px}
+.mobile-adfilm-video-format-grid .is-portrait{width:11px;height:16px}
+.mobile-adfilm-video-format-grid .is-landscape{width:17px;height:11px}
+.mobile-adfilm-video-format-grid .is-ultrawide{width:21px;height:8px}
 
 .mobile-adfilm-video-settings-note{
   position:relative;
@@ -334,5 +336,10 @@
 
   .mobile-adfilm-video-format-grid{
     grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .mobile-adfilm-video-format-grid button{
+    min-height:62px;
+    font-size:12px;
   }
 }
