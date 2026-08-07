@@ -90,3 +90,8 @@
   from{opacity:.6;transform:scale(.96)}
   to{opacity:1;transform:scale(1.04)}
 }
+
+[data-mobile-adfilm-music-panel="auto"] .mobile-adfilm-music-generate,
+[data-mobile-adfilm-music-panel="auto"] .mobile-adfilm-music-generated{
+  display:none!important;
+}
