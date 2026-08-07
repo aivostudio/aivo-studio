@@ -211,37 +211,44 @@
 
 .mobile-adfilm-video-format-row{
   align-items:start;
-  grid-template-columns:52px minmax(0,1fr);
-  gap:10px;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+.mobile-adfilm-video-format-row .mobile-adfilm-video-setting-label{
+  display:block;
+  padding-left:2px;
 }
 
 .mobile-adfilm-video-format-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:10px;
+  gap:8px;
+  width:100%;
 }
 
 .mobile-adfilm-video-format-grid button{
   position:relative;
   overflow:hidden;
   min-width:0;
-  min-height:60px;
-  padding:0 8px;
-  border-radius:17px;
-  border:1px solid rgba(167,139,250,.18);
+  min-height:48px;
+  padding:0 9px;
+  border-radius:14px;
+  border:1px solid rgba(167,139,250,.22);
   background:
-    linear-gradient(155deg,rgba(19,22,42,.90),rgba(10,12,27,.92));
-  color:rgba(255,255,255,.72);
+    linear-gradient(155deg,rgba(19,22,42,.92),rgba(10,12,27,.94));
+  color:rgba(255,255,255,.78);
   display:flex;
   align-items:center;
   justify-content:center;
   gap:7px;
   font:inherit;
-  font-size:11px;
+  font-size:11.5px;
   font-weight:950;
   letter-spacing:-.01em;
+  white-space:nowrap;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.045),
+    inset 0 1px 0 rgba(255,255,255,.055),
     0 8px 18px rgba(0,0,0,.10);
   transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease,color .16s ease;
 }
@@ -277,10 +284,10 @@
   position:absolute;
   left:14%;
   right:14%;
-  bottom:5px;
+  bottom:4px;
   height:2px;
   border-radius:999px;
-  background:rgba(255,255,255,.58);
+  background:rgba(255,255,255,.62);
   box-shadow:0 0 8px rgba(255,255,255,.2);
 }
 
@@ -288,18 +295,19 @@
   position:relative;
   z-index:1;
   display:block;
+  flex:0 0 auto;
   border:2px solid currentColor;
   border-radius:3px;
-  opacity:.95;
-  box-shadow:0 0 0 1px rgba(255,255,255,.015);
+  opacity:1;
+  box-shadow:0 0 0 1px rgba(255,255,255,.02);
 }
 
-.mobile-adfilm-video-format-grid .is-vertical{width:9px;height:17px}
+.mobile-adfilm-video-format-grid .is-vertical{width:8px;height:16px}
 .mobile-adfilm-video-format-grid .is-square{width:13px;height:13px}
-.mobile-adfilm-video-format-grid .is-wide{width:19px;height:10px}
-.mobile-adfilm-video-format-grid .is-portrait{width:11px;height:16px}
-.mobile-adfilm-video-format-grid .is-landscape{width:17px;height:11px}
-.mobile-adfilm-video-format-grid .is-ultrawide{width:21px;height:8px}
+.mobile-adfilm-video-format-grid .is-wide{width:20px;height:10px}
+.mobile-adfilm-video-format-grid .is-portrait{width:10px;height:15px}
+.mobile-adfilm-video-format-grid .is-landscape{width:18px;height:11px}
+.mobile-adfilm-video-format-grid .is-ultrawide{width:22px;height:8px}
 
 .mobile-adfilm-video-settings-note{
   position:relative;
@@ -335,11 +343,14 @@
   }
 
   .mobile-adfilm-video-format-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:7px;
   }
 
   .mobile-adfilm-video-format-grid button{
-    min-height:62px;
-    font-size:12px;
+    min-height:48px;
+    padding:0 5px;
+    gap:5px;
+    font-size:10.5px;
   }
 }
