@@ -20,6 +20,36 @@
     return Array.from((root || document).querySelectorAll(sel));
   }
 
+  function isEnglish(){
+    try {
+      const lang = String(
+        window.AIVO_LANG ||
+        localStorage.getItem("aivo_mobile_language") ||
+        document.documentElement.lang ||
+        "tr"
+      ).toLowerCase();
+
+      return lang.indexOf("en") === 0;
+    } catch (_) {
+      return String(document.documentElement.lang || "tr").toLowerCase().indexOf("en") === 0;
+    }
+  }
+
+  function settingsText(trText, enText){
+    return isEnglish() ? enText : trText;
+  }
+
+  function tt(key, trFallback, enFallback){
+    try {
+      if (typeof window.t === "function") {
+        const value = window.t(key);
+        if (value && value !== key) return value;
+      }
+    } catch (_) {}
+
+    return settingsText(trFallback, enFallback || trFallback);
+  }
+
   function safeParse(value, fallback){
     try {
       return JSON.parse(String(value || ""));
@@ -248,7 +278,11 @@
       saveBtn.addEventListener("click", function(){
         const next = collectFromDOM(root);
         saveState(next);
-        toast("Ayarlar kaydedildi.");
+        toast(tt(
+          "toast.settingsSaved",
+          "Ayarlar kaydedildi.",
+          "Settings saved."
+        ));
       });
     }
 
@@ -256,7 +290,10 @@
     if (exportBtn) {
       exportBtn.addEventListener("click", function(){
         downloadJSON(collectExportPayload());
-        toast("Export hazırlandı.");
+        toast(settingsText(
+          "Export hazırlandı.",
+          "Export ready."
+        ));
       });
     }
 const privacyBtn = qs("[data-mobile-policy-privacy]", root);
