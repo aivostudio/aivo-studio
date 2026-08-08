@@ -15,7 +15,8 @@
   const aliases = {
     "Örn: modern, premium ve sinematik bir reklam olsun. Ürün yakın planlarla başlasın, ardından kullanım sahneleri ve güçlü final marka karesi gelsin...": "adfilm.design.placeholder",
     "10 saniye kısa marka mesajları, 15–30 saniye standart kampanyalar ve 45–60 saniye detaylı anlatımlar için uygundur.": "radioad.settings.tip",
-    "Radyo Reklamı mobil iskeleti hazır. Sistem bağlantısı sonraki adımda yapılacak.": "radioad.action.needNarration"
+    "Radyo Reklamı mobil iskeleti hazır. Sistem bağlantısı sonraki adımda yapılacak.": "radioad.action.needNarration",
+    "AIVO Reklam Filmi": "adfilm.share.title"
   };
 
   const fragments = [
@@ -65,20 +66,17 @@
   function compileTemplate(key, source){
     const cacheKey = key + "\u0000" + source;
     if (templateCache.has(cacheKey)) return templateCache.get(cacheKey);
-
     const names = [];
     let pattern = "^";
     let lastIndex = 0;
     const token = /\{([a-zA-Z0-9_]+)\}/g;
     let match;
-
     while ((match = token.exec(source))) {
       pattern += escapeRegExp(source.slice(lastIndex, match.index));
       pattern += "(.+?)";
       names.push(match[1]);
       lastIndex = match.index + match[0].length;
     }
-
     pattern += escapeRegExp(source.slice(lastIndex)) + "$";
     const result = { regex: new RegExp(pattern), names: names };
     templateCache.set(cacheKey, result);
@@ -101,7 +99,6 @@
     const sourceText = clean(text);
     if (!sourceText) return null;
     if (aliases[sourceText]) return { key:aliases[sourceText], ignoreCase:false };
-
     for (const lang of ["tr", "en"]) {
       const pack = dictionary(lang);
       for (const key of Object.keys(pack)) {
@@ -110,9 +107,7 @@
         if (value.indexOf("{") >= 0) continue;
         if (value === sourceText) return { key:key, ignoreCase:false };
         try {
-          if (value.toLocaleLowerCase("tr-TR") === sourceText.toLocaleLowerCase("tr-TR")) {
-            return { key:key, ignoreCase:true };
-          }
+          if (value.toLocaleLowerCase("tr-TR") === sourceText.toLocaleLowerCase("tr-TR")) return { key:key, ignoreCase:true };
         } catch (_) {
           if (value.toLowerCase() === sourceText.toLowerCase()) return { key:key, ignoreCase:true };
         }
@@ -129,9 +124,7 @@
       if (sourceText === pair.tr || sourceText === pair.en) return pair[lang];
       try {
         if (sourceText.toLocaleLowerCase("tr-TR") === pair.tr.toLocaleLowerCase("tr-TR") ||
-            sourceText.toLocaleLowerCase("en-US") === pair.en.toLocaleLowerCase("en-US")) {
-          return applyCase(sourceText, pair[lang]);
-        }
+            sourceText.toLocaleLowerCase("en-US") === pair.en.toLocaleLowerCase("en-US")) return applyCase(sourceText, pair[lang]);
       } catch (_) {}
     }
     return "";
@@ -140,23 +133,18 @@
   function templateMatchFor(text, depth){
     const sourceText = clean(text);
     if (!sourceText) return null;
-
     for (const lang of ["tr", "en"]) {
       const pack = dictionary(lang);
       for (const key of Object.keys(pack)) {
         if (!allowedKey(key)) continue;
         const value = String(pack[key] == null ? "" : pack[key]);
         if (value.indexOf("{") < 0) continue;
-
         const compiled = compileTemplate(key, value);
         const match = sourceText.match(compiled.regex);
         if (!match) continue;
-
         const params = {};
-        compiled.names.forEach(function(name, index){
-          params[name] = translateValue(match[index + 1], (depth || 0) + 1);
-        });
-        return { key: key, params: params };
+        compiled.names.forEach(function(name, index){ params[name] = translateValue(match[index + 1], (depth || 0) + 1); });
+        return { key:key, params:params };
       }
     }
     return null;
@@ -173,7 +161,6 @@
   function translateValue(value, depth){
     depth = Number(depth || 0);
     if (depth > 6) return String(value == null ? "" : value);
-
     const original = String(value == null ? "" : value);
     const leading = (original.match(/^\s*/) || [""])[0];
     const trailing = (original.match(/\s*$/) || [""])[0];
@@ -181,22 +168,17 @@
     const body = original.slice(leading.length, end);
     const sourceText = clean(body);
     if (!sourceText) return original;
-
     const exact = exactMatchFor(sourceText);
     if (exact) {
       const next = translate(exact.key, null, sourceText);
       return leading + (exact.ignoreCase ? applyCase(sourceText, next) : next) + trailing;
     }
-
     const fragment = fragmentTranslation(sourceText);
     if (fragment) return leading + fragment + trailing;
-
     const template = templateMatchFor(sourceText, depth);
     if (template) return leading + translate(template.key, template.params, sourceText) + trailing;
-
     const separated = translateSeparated(sourceText, depth);
     if (separated) return leading + separated + trailing;
-
     return original;
   }
 
@@ -222,26 +204,19 @@
   function translateElement(element){
     if (!element || element.nodeType !== 1 || SKIP_TAGS.has(element.tagName)) return;
     ATTRIBUTES.forEach(function(name){ translateAttribute(element, name); });
-    Array.from(element.childNodes || []).forEach(function(node){
-      if (node.nodeType === 3) translateTextNode(node);
-    });
+    Array.from(element.childNodes || []).forEach(function(node){ if (node.nodeType === 3) translateTextNode(node); });
   }
 
   function applyRuntimeI18n(scope){
     const root = scope && scope.querySelectorAll ? scope : document;
     const scopedElement = scope && scope.nodeType === 1 && inScope(scope);
-
     if (scopedElement) {
       translateElement(scope);
       scope.querySelectorAll("*").forEach(translateElement);
       return;
     }
-
     if (!root.querySelectorAll) return;
-    root.querySelectorAll(
-      ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR + "," +
-      ROOT_SELECTOR + " *," + REPORT_SELECTOR + " *"
-    ).forEach(translateElement);
+    root.querySelectorAll(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR + "," + ROOT_SELECTOR + " *," + REPORT_SELECTOR + " *").forEach(translateElement);
   }
 
   function wrapToastObject(object){
@@ -252,9 +227,7 @@
       const wrapped = function(payload){
         const args = Array.from(arguments);
         if (typeof payload === "string") args[0] = translateValue(payload, 0);
-        else if (payload && typeof payload === "object" && typeof payload.message === "string") {
-          args[0] = Object.assign({}, payload, { message: translateValue(payload.message, 0) });
-        }
+        else if (payload && typeof payload === "object" && typeof payload.message === "string") args[0] = Object.assign({}, payload, { message:translateValue(payload.message, 0) });
         return original.apply(this, args);
       };
       wrapped.__aivoAdFilmI18nWrapped = true;
@@ -289,17 +262,28 @@
     window.confirm = wrappedConfirm;
   }
 
+  try {
+    if (navigator.share && !navigator.share.__aivoAdFilmI18nWrapped) {
+      const originalShare = navigator.share.bind(navigator);
+      const wrappedShare = function(data){
+        if (!data || typeof data !== "object") return originalShare(data);
+        const next = Object.assign({}, data);
+        if (typeof next.title === "string") next.title = translateValue(next.title, 0);
+        if (typeof next.text === "string") next.text = translateValue(next.text, 0);
+        return originalShare(next);
+      };
+      wrappedShare.__aivoAdFilmI18nWrapped = true;
+      navigator.share = wrappedShare;
+    }
+  } catch (_) {}
+
   function refresh(){
     try { if (typeof window.aivoApplyI18n === "function") window.aivoApplyI18n(document.getElementById("mobileAdFilmSection") || document); } catch (_) {}
     installToastBindings();
     applyRuntimeI18n(document);
     try {
-      if (window.AIVOMobileAdFilmCreditPricing && typeof window.AIVOMobileAdFilmCreditPricing.sync === "function") {
-        window.AIVOMobileAdFilmCreditPricing.sync();
-      }
-      if (window.AIVOMobileRadioAdProjectSync && typeof window.AIVOMobileRadioAdProjectSync.syncDerived === "function") {
-        window.AIVOMobileRadioAdProjectSync.syncDerived();
-      }
+      if (window.AIVOMobileAdFilmCreditPricing && typeof window.AIVOMobileAdFilmCreditPricing.sync === "function") window.AIVOMobileAdFilmCreditPricing.sync();
+      if (window.AIVOMobileRadioAdProjectSync && typeof window.AIVOMobileRadioAdProjectSync.syncDerived === "function") window.AIVOMobileRadioAdProjectSync.syncDerived();
       if (window.AIVOMobileRadioAdProduction && typeof window.AIVOMobileRadioAdProduction.syncButton === "function") {
         const sync = window.AIVOMobileRadioAdProjectSync;
         const project = sync && typeof sync.getProject === "function" ? sync.getProject() : window.AIVOMobileRadioAdProject;
@@ -310,10 +294,10 @@
   }
 
   window.AIVOMobileAdFilmI18n = {
-    refresh: refresh,
-    translate: function(value){ return translateValue(value, 0); },
-    locale: currentLocale,
-    language: currentLang
+    refresh:refresh,
+    translate:function(value){ return translateValue(value, 0); },
+    locale:currentLocale,
+    language:currentLang
   };
 
   document.addEventListener("aivo:language-change", function(){
@@ -347,13 +331,7 @@
         });
       });
     });
-    observer.observe(document.body, {
-      subtree:true,
-      childList:true,
-      characterData:true,
-      attributes:true,
-      attributeFilter:ATTRIBUTES
-    });
+    observer.observe(document.body, { subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:ATTRIBUTES });
   }
 
   window.addEventListener("pagehide", function(){
@@ -372,7 +350,6 @@
   function loadStyle(href, attr){
     const existing = document.querySelector('link[' + attr + ']');
     if (existing) return;
-
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = href;
@@ -386,11 +363,10 @@
       if (existing.dataset.loaded === "1") {
         if (typeof done === "function") done();
       } else if (typeof done === "function") {
-        existing.addEventListener("load", done, { once: true });
+        existing.addEventListener("load", done, { once:true });
       }
       return;
     }
-
     const script = document.createElement("script");
     script.src = src;
     script.defer = true;
@@ -398,10 +374,8 @@
     script.addEventListener("load", function(){
       script.dataset.loaded = "1";
       if (typeof done === "function") done();
-    }, { once: true });
-    script.addEventListener("error", function(){
-      console.error("[MOBILE ADFILM] script load failed", src);
-    }, { once: true });
+    }, { once:true });
+    script.addEventListener("error", function(){ console.error("[MOBILE ADFILM] script load failed", src); }, { once:true });
     document.body.appendChild(script);
   }
 
@@ -413,7 +387,6 @@
 
   loadScript("/mobile/js/mobile.radio-ad.click-guard.js?v=1", "data-mobile-radio-ad-click-guard", function(){
     loadScript("/mobile/js/mobile.adfilm.aspect-guard.js?v=5", "data-mobile-adfilm-aspect-guard");
-
     loadScript("/mobile/js/mobile.adfilm.project-sync.core.js?v=1", "data-mobile-adfilm-project-sync-core", function(){
       loadScript("/mobile/js/mobile.adfilm.poll-safety.js?v=1", "data-mobile-adfilm-poll-safety", function(){
         loadScript("/mobile/js/mobile.adfilm.production.js?v=1", "data-mobile-adfilm-production-controller");
