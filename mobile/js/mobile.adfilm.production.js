@@ -1003,14 +1003,67 @@
         return;
       }
       if (type === "download") {
-        const anchor = document.createElement("a");
-        anchor.href = videoUrl;
-        anchor.download = "aivo-reklam-filmi.mp4";
-        anchor.target = "_blank";
-        anchor.rel = "noopener";
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
+        let directUrl = String(videoUrl || "").trim();
+        const filename = "aivo-reklam-filmi.mp4";
+
+        directUrl = directUrl.includes("#")
+          ? directUrl.split("#")[0]
+          : directUrl;
+
+        if (
+          directUrl.startsWith("/api/media/proxy?url=") ||
+          directUrl.includes("/api/media/proxy?url=")
+        ) {
+          try {
+            const encoded = directUrl.split("url=")[1] || "";
+            directUrl = decodeURIComponent(encoded).split("#")[0];
+          } catch (_) {}
+        }
+
+        try {
+          const response = await fetch(directUrl, {
+            method: "GET",
+            cache: "no-store"
+          });
+
+          if (!response.ok) {
+            throw new Error("mobile_adfilm_download_failed_" + response.status);
+          }
+
+          const blob = await response.blob();
+          const file = new File([blob], filename, {
+            type: blob.type || "video/mp4"
+          });
+
+          if (
+            navigator.canShare &&
+            navigator.canShare({ files: [file] }) &&
+            navigator.share
+          ) {
+            await navigator.share({
+              files: [file],
+              title: "AIVO Reklam Filmi"
+            });
+            return;
+          }
+
+          const objectUrl = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = objectUrl;
+          anchor.download = filename;
+          anchor.rel = "noopener";
+          anchor.style.display = "none";
+          document.body.appendChild(anchor);
+          anchor.click();
+
+          setTimeout(function(){
+            try { anchor.remove(); } catch (_) {}
+            try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+          }, 1500);
+        } catch (error) {
+          console.error("[MOBILE ADFILM][DOWNLOAD ERROR]", error);
+          toast("error", "Video indirilemedi. Tekrar deneyebilirsin.", 3200);
+        }
         return;
       }
       if (type === "share") {
