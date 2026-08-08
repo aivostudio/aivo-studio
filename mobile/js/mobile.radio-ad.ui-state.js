@@ -88,10 +88,15 @@
   function syncNarrationLoadingLabel(){
     if (!preview || !narrationCreateButton) return;
     if (preview.dataset.state !== "loading") return;
+
     const status = clean(narrationStatus && narrationStatus.textContent).toLowerCase();
-    narrationCreateButton.textContent = status.indexOf("düzenlen") >= 0
+    const nextLabel = status.indexOf("düzenlen") >= 0
       ? "Ses düzenleniyor..."
       : "Ses oluşturuluyor...";
+
+    if (narrationCreateButton.textContent !== nextLabel) {
+      narrationCreateButton.textContent = nextLabel;
+    }
   }
 
   if (durationSelect){
