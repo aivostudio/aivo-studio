@@ -33,6 +33,7 @@
   const wordCount = view.querySelector("[data-mobile-radio-word-count]");
   const estimate = view.querySelector("[data-mobile-radio-estimate]");
   const copyCount = view.querySelector("[data-mobile-radio-copy-count]");
+  const budgetFill = view.querySelector(".mobile-adfilm-narration-meter i");
   const action = view.querySelector("[data-mobile-radio-action]");
   const actionSummary = action && action.querySelector(".mobile-adfilm-action-copy small");
   const actionButton = action && action.querySelector(".mobile-adfilm-create-button");
@@ -114,12 +115,7 @@
 
   function words(text){
     const value = clean(text);
-    if (!value) return [];
-    try{
-      return value.match(/[\p{L}\p{N}]+(?:[’'\-.][\p{L}\p{N}]+)*/gu) || [];
-    }catch(_){
-      return value.split(/\s+/).filter(Boolean);
-    }
+    return value ? value.split(/\s+/).filter(Boolean) : [];
   }
 
   function speechRate(speed){
@@ -176,6 +172,7 @@
     if (wordCount) wordCount.textContent = String(count);
     if (estimate) estimate.textContent = String(estimated);
     if (copyCount) copyCount.textContent = String(payload.narration.text.length);
+    if (budgetFill) budgetFill.style.width = Math.min(100, maxWords ? count / maxWords * 100 : 0) + "%";
 
     if (actionSummary){
       const musicLabel = payload.music.mode === "off"
