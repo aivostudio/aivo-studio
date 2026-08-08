@@ -1,12 +1,8 @@
-(function AIVO_MOBILE_ADFILM_ASPECT_GUARD(){
+(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V2(){
   "use strict";
-  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V1__) return;
-  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V1__ = true;
+  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V2__) return;
+  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V2__ = true;
 
-  const root = document.getElementById("mobileAdFilmSection");
-  if (!root) return;
-
-  const gallery = root.querySelector("#mobileAdFilmReferenceGallery");
   const selector = [
     "#mobileAdFilmPrimaryImage",
     "#mobileAdFilmAngleImages",
@@ -15,7 +11,6 @@
 
   const rejected = new Map();
   let rejectedSequence = 0;
-  let renderingRejected = false;
 
   function clean(value){
     return String(value == null ? "" : value).trim();
@@ -23,19 +18,27 @@
 
   function toast(message){
     try {
-      if (window.toast && typeof window.toast.warning === "function") {
-        return window.toast.warning({ message: message, duration: 5200 });
-      }
       if (window.mobileToast && typeof window.mobileToast.warning === "function") {
         return window.mobileToast.warning(message, { duration: 5200 });
+      }
+      if (window.toast && typeof window.toast.warning === "function") {
+        return window.toast.warning(message, { duration: 5200 });
       }
       if (typeof window.showToast === "function") return window.showToast(message, "warning");
     } catch (_) {}
     return null;
   }
 
-  function currentFormat(){
-    const active = root.querySelector("[data-mobile-adfilm-format].is-active");
+  function rootFor(node){
+    return node && node.closest ? node.closest("#mobileAdFilmSection") : document.getElementById("mobileAdFilmSection");
+  }
+
+  function galleryFor(root){
+    return root && root.querySelector("#mobileAdFilmReferenceGallery");
+  }
+
+  function currentFormat(root){
+    const active = root && root.querySelector("[data-mobile-adfilm-format].is-active");
     const fromButton = clean(active && active.getAttribute("data-mobile-adfilm-format"));
     if (fromButton) return fromButton;
     const source = window.AIVOAdFilmActiveProject || {};
@@ -48,17 +51,18 @@
     return "landscape";
   }
 
-  function orientationLabel(value){
-    if (value === "portrait") return "dikey";
-    if (value === "square") return "kare";
-    return "yatay";
-  }
-
   function actualOrientation(width, height){
     if (!width || !height) return "unknown";
     const delta = Math.abs(width - height) / Math.max(width, height);
     if (delta <= 0.08) return "square";
     return width > height ? "landscape" : "portrait";
+  }
+
+  function orientationLabel(value){
+    if (value === "portrait") return "dikey";
+    if (value === "square") return "kare";
+    if (value === "landscape") return "yatay";
+    return "ölçüsü okunamayan";
   }
 
   function compatible(format, width, height){
@@ -69,14 +73,38 @@
     return actual === expected;
   }
 
-  function imageDimensions(file){
+  function isImageFile(file){
+    const type = clean(file && file.type).toLowerCase();
+    const name = clean(file && file.name).toLowerCase();
+    if (type.indexOf("image/") === 0) return true;
+    return /\.(jpe?g|png|webp|heic|heif|avif|gif|bmp)$/i.test(name);
+  }
+
+  async function imageDimensions(file){
+    if (!file) return { width:0, height:0 };
+
+    if (typeof window.createImageBitmap === "function") {
+      try {
+        const bitmap = await window.createImageBitmap(file);
+        const result = {
+          width: Number(bitmap && bitmap.width || 0),
+          height: Number(bitmap && bitmap.height || 0)
+        };
+        try { if (bitmap && typeof bitmap.close === "function") bitmap.close(); } catch (_) {}
+        if (result.width && result.height) return result;
+      } catch (_) {}
+    }
+
     return new Promise(function(resolve){
       let url = "";
       try {
         url = URL.createObjectURL(file);
         const image = new Image();
         image.onload = function(){
-          const result = { width: Number(image.naturalWidth || image.width || 0), height: Number(image.naturalHeight || image.height || 0) };
+          const result = {
+            width: Number(image.naturalWidth || image.width || 0),
+            height: Number(image.naturalHeight || image.height || 0)
+          };
           try { URL.revokeObjectURL(url); } catch (_) {}
           resolve(result);
         };
@@ -96,132 +124,118 @@
     try { return URL.createObjectURL(file); } catch (_) { return ""; }
   }
 
-  function rejectedLabel(meta){
-    const actual = actualOrientation(meta.width, meta.height);
-    return "UYUMSUZ · " + orientationLabel(actual).toUpperCase();
-  }
-
   function removeRejected(id){
     const entry = rejected.get(id);
     if (entry && entry.previewUrl) {
       try { URL.revokeObjectURL(entry.previewUrl); } catch (_) {}
     }
     rejected.delete(id);
-    if (gallery) {
-      const node = gallery.querySelector('[data-aspect-rejected-id="' + id + '"]');
-      if (node) node.remove();
-    }
+    const node = document.querySelector('[data-aspect-rejected-id="' + id + '"]');
+    if (node) node.remove();
   }
 
-  function addRejected(file, meta, format){
+  function addRejected(root, file, meta){
+    const gallery = galleryFor(root);
+    if (!gallery) return;
+
     rejectedSequence += 1;
     const id = "aspect-rejected-" + Date.now().toString(36) + "-" + rejectedSequence.toString(36);
-    rejected.set(id, {
-      id: id,
-      previewUrl: filePreview(file),
-      format: format,
-      width: meta.width,
-      height: meta.height,
-      label: rejectedLabel(meta)
-    });
+    const previewUrl = filePreview(file);
+    const actual = actualOrientation(meta.width, meta.height);
+    rejected.set(id, { previewUrl:previewUrl });
+
+    const thumb = document.createElement("div");
+    thumb.className = "mobile-adfilm-reference-thumb is-aspect-invalid";
+    thumb.setAttribute("data-aspect-rejected-id", id);
+    thumb.setAttribute("role", "status");
+    thumb.setAttribute("aria-label", "Uyumsuz referans görseli");
+
+    const image = document.createElement("img");
+    image.src = previewUrl;
+    image.alt = "Uyumsuz referans görseli";
+    thumb.appendChild(image);
+
+    const cross = document.createElement("span");
+    cross.className = "mobile-adfilm-aspect-error-cross";
+    cross.setAttribute("aria-hidden", "true");
+    thumb.appendChild(cross);
+
+    const badge = document.createElement("span");
+    badge.className = "mobile-adfilm-reference-thumb-label mobile-adfilm-aspect-error-label";
+    badge.textContent = actual === "unknown" ? "FORMAT OKUNAMADI" : "UYUMSUZ · " + orientationLabel(actual).toUpperCase();
+    thumb.appendChild(badge);
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "mobile-adfilm-reference-delete";
+    remove.setAttribute("data-aspect-rejected-remove", id);
+    remove.setAttribute("aria-label", "Uyumsuz görsel uyarısını kapat");
+    thumb.appendChild(remove);
+
+    gallery.appendChild(thumb);
 
     while (rejected.size > 3) {
       const oldest = rejected.keys().next().value;
       removeRejected(oldest);
     }
-    renderRejected();
-  }
-
-  function renderRejected(){
-    if (!gallery || renderingRejected) return;
-    renderingRejected = true;
-    try {
-      rejected.forEach(function(entry){
-        if (gallery.querySelector('[data-aspect-rejected-id="' + entry.id + '"]')) return;
-
-        const thumb = document.createElement("div");
-        thumb.className = "mobile-adfilm-reference-thumb is-aspect-invalid";
-        thumb.setAttribute("data-aspect-rejected-id", entry.id);
-        thumb.setAttribute("role", "status");
-        thumb.setAttribute("aria-label", "Uyumsuz referans görseli");
-
-        const image = document.createElement("img");
-        image.src = entry.previewUrl;
-        image.alt = "Uyumsuz referans görseli";
-        thumb.appendChild(image);
-
-        const cross = document.createElement("span");
-        cross.className = "mobile-adfilm-aspect-error-cross";
-        cross.setAttribute("aria-hidden", "true");
-        thumb.appendChild(cross);
-
-        const badge = document.createElement("span");
-        badge.className = "mobile-adfilm-reference-thumb-label mobile-adfilm-aspect-error-label";
-        badge.textContent = entry.label;
-        thumb.appendChild(badge);
-
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "mobile-adfilm-reference-delete";
-        remove.setAttribute("data-aspect-rejected-remove", entry.id);
-        remove.setAttribute("aria-label", "Uyumsuz görsel uyarısını kapat");
-        thumb.appendChild(remove);
-
-        gallery.appendChild(thumb);
-      });
-    } finally {
-      renderingRejected = false;
-    }
   }
 
   function warningMessage(format, meta){
     const actual = actualOrientation(meta.width, meta.height);
+    if (actual === "unknown") {
+      return "Görselin yönü okunamadı. Lütfen JPG, PNG veya WEBP olarak tekrar yükle.";
+    }
     const expected = expectedOrientation(format);
-    return "Seçtiğin video formatıyla bu görsel uyumlu değil. " +
-      format + " için " + orientationLabel(expected) + " görsel yüklemelisin; seçtiğin görsel " + orientationLabel(actual) + ".";
+    return "Seçtiğin video formatıyla bu görsel uyumlu değil. " + format + " için " + orientationLabel(expected) + " görsel yüklemelisin; seçtiğin görsel " + orientationLabel(actual) + ".";
   }
 
-  async function validateFiles(input, files){
-    const format = currentFormat();
+  function dispatchFilteredChange(input, valid){
+    if (!valid.length) {
+      input.value = "";
+      return false;
+    }
+    try {
+      const transfer = new DataTransfer();
+      valid.forEach(function(file){ transfer.items.add(file); });
+      input.files = transfer.files;
+    } catch (error) {
+      console.warn("[MOBILE ADFILM] filtered FileList unavailable", error);
+      input.value = "";
+      return false;
+    }
+    input.dataset.adfilmAspectGuardPass = "1";
+    input.dispatchEvent(new Event("change", { bubbles:true }));
+    delete input.dataset.adfilmAspectGuardPass;
+    return true;
+  }
+
+  async function validateFiles(root, input, files){
+    const format = currentFormat(root);
     const valid = [];
     const invalid = [];
 
     for (const file of files) {
-      const type = clean(file && file.type).toLowerCase();
-      if (!/^(image\/jpeg|image\/png|image\/webp)$/.test(type)) {
-        valid.push(file);
+      if (!isImageFile(file)) {
+        invalid.push({ file:file, meta:{ width:0, height:0 } });
         continue;
       }
-
       const meta = await imageDimensions(file);
-      if (!meta.width || !meta.height || !compatible(format, meta.width, meta.height)) {
-        invalid.push({ file:file, meta:meta });
-      } else {
-        valid.push(file);
-      }
+      if (!meta.width || !meta.height || !compatible(format, meta.width, meta.height)) invalid.push({ file:file, meta:meta });
+      else valid.push(file);
     }
 
-    const transfer = new DataTransfer();
-    valid.forEach(function(file){ transfer.items.add(file); });
-    input.files = transfer.files;
+    dispatchFilteredChange(input, valid);
+    if (!invalid.length) return;
 
-    input.dataset.adfilmAspectGuardPass = "1";
-    input.dispatchEvent(new Event("change", { bubbles:true }));
-    delete input.dataset.adfilmAspectGuardPass;
-
-    invalid.forEach(function(item){ addRejected(item.file, item.meta, format); });
-
-    if (invalid.length) {
-      const first = invalid[0];
-      toast(warningMessage(format, first.meta));
-    }
+    invalid.forEach(function(item){ addRejected(root, item.file, item.meta); });
+    toast(warningMessage(format, invalid[0].meta));
   }
 
   document.addEventListener("change", function(event){
     const input = event.target && event.target.closest && event.target.closest(selector);
-    if (!input || !root.contains(input)) return;
-    if (input.dataset.adfilmAspectGuardPass === "1") return;
-
+    if (!input || input.dataset.adfilmAspectGuardPass === "1") return;
+    const root = rootFor(input);
+    if (!root) return;
     const files = Array.from(input.files || []);
     if (!files.length) return;
 
@@ -229,8 +243,9 @@
     event.stopImmediatePropagation();
     event.stopPropagation();
 
-    validateFiles(input, files).catch(function(error){
+    validateFiles(root, input, files).catch(function(error){
       console.error("[MOBILE ADFILM] aspect validation", error);
+      input.value = "";
       toast("Görsel formatı kontrol edilemedi. Lütfen görseli tekrar seç.");
     });
   }, true);
@@ -242,13 +257,6 @@
     event.stopPropagation();
     removeRejected(clean(button.getAttribute("data-aspect-rejected-remove")));
   }, true);
-
-  if (gallery) {
-    const observer = new MutationObserver(function(){
-      if (!renderingRejected && rejected.size) renderRejected();
-    });
-    observer.observe(gallery, { childList:true });
-  }
 
   window.addEventListener("pagehide", function(){
     Array.from(rejected.keys()).forEach(removeRejected);
