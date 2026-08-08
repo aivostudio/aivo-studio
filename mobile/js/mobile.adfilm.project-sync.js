@@ -39,14 +39,16 @@
     document.body.appendChild(script);
   }
 
-  loadStyle("/mobile/css/mobile.adfilm.radio-tone-fix.css?v=1", "data-mobile-radio-tone-fix");
+  loadStyle("/mobile/css/mobile.adfilm.radio-tone-fix.css?v=2", "data-mobile-radio-tone-fix");
+  loadStyle("/mobile/css/mobile.radio-ad.production.css?v=1", "data-mobile-radio-production-style");
 
   loadScript("/mobile/js/mobile.adfilm.project-sync.core.js?v=1", "data-mobile-adfilm-project-sync-core", function(){
     loadScript("/mobile/js/mobile.adfilm.production.js?v=1", "data-mobile-adfilm-production-controller");
   });
 
-  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=1", "data-mobile-radio-ad-project-sync", function(){
+  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
     loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
     loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
+    loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production");
   });
 })();
