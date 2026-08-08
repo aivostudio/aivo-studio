@@ -229,7 +229,14 @@
 
   function applyRuntimeI18n(scope){
     const root = scope && scope.querySelectorAll ? scope : document;
-    if (scope && scope.nodeType === 1 && inScope(scope)) translateElement(scope);
+    const scopedElement = scope && scope.nodeType === 1 && inScope(scope);
+
+    if (scopedElement) {
+      translateElement(scope);
+      scope.querySelectorAll("*").forEach(translateElement);
+      return;
+    }
+
     if (!root.querySelectorAll) return;
     root.querySelectorAll(
       ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR + "," +
@@ -238,7 +245,7 @@
   }
 
   function wrapToastObject(object){
-    if (!object || object.__aivoAdFilmI18nWrapped) return;
+    if (!object) return;
     ["success", "error", "warning", "info", "loading"].forEach(function(name){
       const original = object[name];
       if (typeof original !== "function" || original.__aivoAdFilmI18nWrapped) return;
@@ -253,8 +260,6 @@
       wrapped.__aivoAdFilmI18nWrapped = true;
       object[name] = wrapped;
     });
-    try { Object.defineProperty(object, "__aivoAdFilmI18nWrapped", { value:true, configurable:true }); }
-    catch (_) { object.__aivoAdFilmI18nWrapped = true; }
   }
 
   function wrapToastFunction(name){
