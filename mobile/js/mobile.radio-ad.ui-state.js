@@ -99,6 +99,24 @@
     }
   }
 
+  function isolateRadioBuildFromVideoGuard(event){
+    if (!actionButton || !event || !event.target || !event.target.closest) return;
+    const clicked = event.target.closest(".mobile-adfilm-create-button");
+    if (clicked !== actionButton) return;
+
+    actionButton.classList.remove("mobile-adfilm-create-button");
+    const restore = function(){
+      if (actionButton && !actionButton.classList.contains("mobile-adfilm-create-button")) {
+        actionButton.classList.add("mobile-adfilm-create-button");
+      }
+    };
+
+    if (typeof queueMicrotask === "function") queueMicrotask(restore);
+    else Promise.resolve().then(restore);
+  }
+
+  document.addEventListener("click", isolateRadioBuildFromVideoGuard, true);
+
   if (durationSelect){
     durationSelect.addEventListener("change", syncProductionPrice);
     durationSelect.addEventListener("input", syncProductionPrice);
@@ -125,6 +143,10 @@
       subtree:true
     });
   }
+
+  window.addEventListener("pagehide", function(){
+    document.removeEventListener("click", isolateRadioBuildFromVideoGuard, true);
+  }, { once:true });
 
   syncProductionPrice();
   syncNarrationLoadingLabel();
