@@ -5,16 +5,16 @@
 <section id="mobileAdFilmSection" class="mobile-adfilm-section">
   <section class="mobile-adfilm-panel">
     <div class="mobile-adfilm-hero">
-      <div class="mobile-adfilm-kicker">AIVO Mobile Studio</div>
-      <h3>AI Reklam Filmi</h3>
-      <p>Markan, ürünün veya hizmetin için sahneli ve sesli reklam filmi oluştur.</p>
+      <div class="mobile-adfilm-kicker" data-i18n="adfilm.badge">AIVO Mobile Studio</div>
+      <h3 data-i18n="adfilm.title">AI Reklam Filmi</h3>
+      <p data-i18n="adfilm.subtitle">Markan, ürünün veya hizmetin için sahneli ve sesli reklam filmi oluştur.</p>
     </div>
 
-    <div class="mobile-adfilm-mode-tabs" role="tablist" aria-label="Reklam türü">
-      <button class="mobile-adfilm-mode is-active" type="button" data-mobile-adfilm-mode="video" aria-selected="true">
+    <div class="mobile-adfilm-mode-tabs" role="tablist" aria-label="Reklam türü" data-i18n-attr="aria-label:adfilm.typeAria">
+      <button class="mobile-adfilm-mode is-active" type="button" data-mobile-adfilm-mode="video" aria-selected="true" data-i18n="adfilm.tab.video">
         Reklam Videosu
       </button>
-      <button class="mobile-adfilm-mode" type="button" data-mobile-adfilm-mode="radio" aria-selected="false">
+      <button class="mobile-adfilm-mode" type="button" data-mobile-adfilm-mode="radio" aria-selected="false" data-i18n="adfilm.tab.radio">
         Radyo Reklamı
       </button>
     </div>
@@ -25,27 +25,27 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-product" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">01</span>
-            <h4>Ürün Bilgileri</h4>
-            <p>Marka ve kampanya briefini tanımla.</p>
+            <h4 data-i18n="adfilm.product.title">Ürün Bilgileri</h4>
+            <p data-i18n="adfilm.product.subtitle">Marka ve kampanya briefini tanımla.</p>
           </div>
-          <span class="mobile-adfilm-required">Zorunlu</span>
+          <span class="mobile-adfilm-required" data-i18n="adfilm.required">Zorunlu</span>
         </div>
 
         <div class="mobile-adfilm-form-grid">
           <label class="mobile-adfilm-field">
-            <span>Ürün / Hizmet Adı</span>
-            <input id="mobileAdFilmProductName" type="text" maxlength="80" placeholder="Örn: AIVO Studio">
+            <span data-i18n="adfilm.product.name">Ürün / Hizmet Adı</span>
+            <input id="mobileAdFilmProductName" type="text" maxlength="80" placeholder="Örn: AIVO Studio" data-i18n-placeholder="adfilm.product.namePlaceholder">
           </label>
 
           <label class="mobile-adfilm-field">
-            <span>Marka Adı</span>
-            <input id="mobileAdFilmBrandName" type="text" maxlength="60" placeholder="Örn: AIVO">
+            <span data-i18n="adfilm.product.brand">Marka Adı</span>
+            <input id="mobileAdFilmBrandName" type="text" maxlength="60" placeholder="Örn: AIVO" data-i18n-placeholder="adfilm.product.brandPlaceholder">
           </label>
         </div>
 
         <label class="mobile-adfilm-field mobile-adfilm-field-wide">
-          <span>Kısa Açıklama</span>
-          <textarea id="mobileAdFilmDescription" maxlength="420" rows="4" placeholder="Ürünün öne çıkan özelliklerini ve reklamda vurgulanmasını istediğin detayları yaz..."></textarea>
+          <span data-i18n="adfilm.product.description">Kısa Açıklama</span>
+          <textarea id="mobileAdFilmDescription" maxlength="420" rows="4" placeholder="Ürünün öne çıkan özelliklerini ve reklamda vurgulanmasını istediğin detayları yaz..." data-i18n-placeholder="adfilm.product.descriptionPlaceholder"></textarea>
           <small><b id="mobileAdFilmDescriptionCount">0</b> / 420</small>
         </label>
       </article>
@@ -55,21 +55,21 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-design" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">02</span>
-            <h4>Reklamını Tasarla</h4>
-            <p>Reklam filminin görünümünü, sahnelerini ve akışını tarif et.</p>
+            <h4 data-i18n="adfilm.design.title">Reklamını Tasarla</h4>
+            <p data-i18n="adfilm.design.subtitle">Reklam filminin görünümünü, sahnelerini ve akışını tarif et.</p>
           </div>
-          <span class="mobile-adfilm-required mobile-adfilm-optional">İsteğe bağlı</span>
+          <span class="mobile-adfilm-required mobile-adfilm-optional" data-i18n="adfilm.optional">İsteğe bağlı</span>
         </div>
 
         <label class="mobile-adfilm-field mobile-adfilm-design-field">
-          <span>Reklam filmi yönetmen talimatı</span>
-          <textarea id="mobileAdFilmCreativeBrief" maxlength="700" rows="5" placeholder="Örn: modern, premium ve sinematik bir reklam olsun. Ürün yakın planlarla başlasın, ardından kullanım sahneleri ve güçlü final marka karesi gelsin..."></textarea>
+          <span data-i18n="adfilm.design.director">Reklam filmi yönetmen talimatı</span>
+          <textarea id="mobileAdFilmCreativeBrief" maxlength="700" rows="5" placeholder="Örn: modern, premium ve sinematik bir reklam olsun. Ürün yakın planlarla başlasın, ardından kullanım sahneleri ve güçlü final marka karesi gelsin..." data-i18n-placeholder="adfilm.design.placeholder"></textarea>
           <small><b id="mobileAdFilmCreativeBriefCount">0</b> / 700</small>
         </label>
 
         <div class="mobile-adfilm-tip">
           <span aria-hidden="true"></span>
-          <p>Mekânı, atmosferi, kamera hareketlerini ve görmek istediğin önemli anları kısa ve net anlat.</p>
+          <p data-i18n="adfilm.design.tip">Mekânı, atmosferi, kamera hareketlerini ve görmek istediğin önemli anları kısa ve net anlat.</p>
         </div>
       </article>
 
@@ -78,8 +78,8 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-reference" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">03</span>
-            <h4>Akıllı Referans Yükleme</h4>
-            <p>Ürün görsellerini ve logonu sahne rollerine göre ekle.</p>
+            <h4 data-i18n="adfilm.reference.title">Akıllı Referans Yükleme</h4>
+            <p data-i18n="adfilm.reference.subtitle">Ürün görsellerini ve logonu sahne rollerine göre ekle.</p>
           </div>
           <span class="mobile-adfilm-reference-total"><b id="mobileAdFilmReferenceTotal">0</b> / 9</span>
         </div>
@@ -90,8 +90,8 @@
             <label class="mobile-adfilm-upload-box" for="mobileAdFilmPrimaryImage">
               <span class="mobile-adfilm-upload-tag">@Image1</span>
               <span class="mobile-adfilm-upload-icon mobile-adfilm-upload-icon-primary" aria-hidden="true"></span>
-              <strong>Ana Ürün / Ana Karakter</strong>
-              <small>Zorunlu · Her sahnede korunacak ana görsel</small>
+              <strong data-i18n="adfilm.reference.primaryTitle">Ana Ürün / Ana Karakter</strong>
+              <small data-i18n="adfilm.reference.primarySubtitle">Zorunlu · Her sahnede korunacak ana görsel</small>
               <em id="mobileAdFilmPrimaryCount">0 / 1</em>
             </label>
             <div class="mobile-adfilm-preview-strip" id="mobileAdFilmPrimaryPreview"></div>
@@ -102,8 +102,8 @@
             <label class="mobile-adfilm-upload-box" for="mobileAdFilmAngleImages">
               <span class="mobile-adfilm-upload-tag">@Image2–4</span>
               <span class="mobile-adfilm-upload-icon mobile-adfilm-upload-icon-angle" aria-hidden="true"></span>
-              <strong>Ürünün Diğer Açıları</strong>
-              <small>En fazla 3 · Aynı ürünün farklı açıları</small>
+              <strong data-i18n="adfilm.reference.anglesTitle">Ürünün Diğer Açıları</strong>
+              <small data-i18n="adfilm.reference.anglesSubtitle">En fazla 3 · Aynı ürünün farklı açıları</small>
               <em id="mobileAdFilmAngleCount">0 / 3</em>
             </label>
             <div class="mobile-adfilm-preview-strip" id="mobileAdFilmAnglePreview"></div>
@@ -114,8 +114,8 @@
             <label class="mobile-adfilm-upload-box" for="mobileAdFilmSceneImages">
               <span class="mobile-adfilm-upload-tag">@Image5–9</span>
               <span class="mobile-adfilm-upload-icon mobile-adfilm-upload-icon-scene" aria-hidden="true"></span>
-              <strong>Sahne / Ortam Referansları</strong>
-              <small>En fazla 5 · Sahne sırasına göre ekle</small>
+              <strong data-i18n="adfilm.reference.scenesTitle">Sahne / Ortam Referansları</strong>
+              <small data-i18n="adfilm.reference.scenesSubtitle">En fazla 5 · Sahne sırasına göre ekle</small>
               <em id="mobileAdFilmSceneCount">0 / 5</em>
             </label>
             <div class="mobile-adfilm-preview-strip" id="mobileAdFilmScenePreview"></div>
@@ -126,8 +126,8 @@
             <label class="mobile-adfilm-upload-box" for="mobileAdFilmLogoImage">
               <span class="mobile-adfilm-upload-tag">Overlay</span>
               <span class="mobile-adfilm-upload-icon mobile-adfilm-upload-icon-logo" aria-hidden="true"></span>
-              <strong>Logo</strong>
-              <small>İsteğe bağlı · Final videoya temiz eklenir</small>
+              <strong data-i18n="adfilm.reference.logoTitle">Logo</strong>
+              <small data-i18n="adfilm.reference.logoSubtitle">İsteğe bağlı · Final videoya temiz eklenir</small>
               <em id="mobileAdFilmLogoCount">0 / 1</em>
             </label>
             <div class="mobile-adfilm-preview-strip" id="mobileAdFilmLogoPreview"></div>
@@ -138,7 +138,7 @@
 
         <div class="mobile-adfilm-tip mobile-adfilm-reference-tip">
           <span aria-hidden="true"></span>
-          <p>Ana ürün görseli net ve temiz olsun. Diğer açılar aynı ürünü göstermeli; sahne görsellerini kullanmak istediğin sırayla seç.</p>
+          <p data-i18n="adfilm.reference.tip">Ana ürün görseli net ve temiz olsun. Diğer açılar aynı ürünü göstermeli; sahne görsellerini kullanmak istediğin sırayla seç.</p>
         </div>
       </article>
 
@@ -147,13 +147,13 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-voice" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">04</span>
-            <h4>Ses &amp; Anlatım</h4>
-            <p>Dil, ses ve reklam anlatım ayarlarını belirle.</p>
+            <h4 data-i18n="adfilm.narration.title">Ses &amp; Anlatım</h4>
+            <p data-i18n="adfilm.narration.subtitle">Dil, ses ve reklam anlatım ayarlarını belirle.</p>
           </div>
           <label class="mobile-adfilm-voice-toggle">
             <input id="mobileAdFilmVoiceEnabled" type="checkbox" checked>
             <span class="mobile-adfilm-voice-toggle-track" aria-hidden="true"></span>
-            <b id="mobileAdFilmVoiceState">Açık</b>
+            <b id="mobileAdFilmVoiceState" data-i18n="adfilm.voice.on">Açık</b>
           </label>
         </div>
 
@@ -161,11 +161,11 @@
           <section class="mobile-adfilm-narration-budget" data-mobile-adfilm-narration-budget>
             <div class="mobile-adfilm-narration-budget-head">
               <div class="mobile-adfilm-narration-budget-copy">
-                <span>Ses süresi bütçesi</span>
+                <span data-i18n="adfilm.narration.budgetTitle">Ses süresi bütçesi</span>
                 <strong id="mobileAdFilmBudgetRecommendation">16–20 kelime önerilir</strong>
               </div>
               <div class="mobile-adfilm-narration-budget-pills">
-                <label class="mobile-adfilm-duration-pill" aria-label="Video süresi">
+                <label class="mobile-adfilm-duration-pill" aria-label="Video süresi" data-i18n-attr="aria-label:adfilm.videoSettings.durationAria">
                   <select id="mobileAdFilmDuration">
                     <option value="5">5 sn</option>
                     <option value="10" selected>10 sn</option>
@@ -173,7 +173,7 @@
                     <option value="20">20 sn</option>
                   </select>
                 </label>
-                <span id="mobileAdFilmBudgetSpeed">Dengeli</span>
+                <span id="mobileAdFilmBudgetSpeed" data-i18n="adfilm.narration.balanced">Dengeli</span>
               </div>
             </div>
             <div class="mobile-adfilm-narration-meter" aria-hidden="true">
@@ -181,14 +181,14 @@
             </div>
             <div class="mobile-adfilm-narration-status is-empty" id="mobileAdFilmBudgetStatus">
               <span aria-hidden="true"></span>
-              <p id="mobileAdFilmBudgetMessage">Metnini yazdıkça süre hesabı burada görünecek.</p>
+              <p id="mobileAdFilmBudgetMessage" data-i18n="adfilm.narration.budgetEmpty">Metnini yazdıkça süre hesabı burada görünecek.</p>
               <b id="mobileAdFilmBudgetEstimate">0 kelime · tahmini 0 sn</b>
             </div>
           </section>
 
           <div class="mobile-adfilm-voice-grid">
             <label class="mobile-adfilm-select-field">
-              <span>Dil</span>
+              <span data-i18n="adfilm.narration.language">Dil</span>
               <select id="mobileAdFilmVoiceLanguage">
                 <option value="tr">Türkçe</option>
                 <option value="en">English</option>
@@ -214,40 +214,40 @@
             </label>
 
             <label class="mobile-adfilm-select-field">
-              <span>Ses Stili</span>
+              <span data-i18n="adfilm.narration.voiceStyle">Ses Stili</span>
               <select id="mobileAdFilmVoiceStyle">
-                <option value="warm">Sıcak ve güven veren</option>
-                <option value="energetic">Enerjik reklam sesi</option>
-                <option value="premium">Premium ve sakin</option>
-                <option value="natural">Doğal konuşma</option>
+                <option value="warm" data-i18n="adfilm.narration.styleWarm">Sıcak ve güven veren</option>
+                <option value="energetic" data-i18n="adfilm.narration.styleEnergetic">Enerjik reklam sesi</option>
+                <option value="premium" data-i18n="adfilm.narration.stylePremium">Premium ve sakin</option>
+                <option value="natural" data-i18n="adfilm.narration.styleNatural">Doğal konuşma</option>
               </select>
             </label>
 
             <label class="mobile-adfilm-select-field">
-              <span>Ses</span>
+              <span data-i18n="adfilm.narration.voice">Ses</span>
               <select id="mobileAdFilmVoice">
-                <option value="warm-female">Sıcak kadın sesi</option>
-                <option value="warm-male">Sıcak erkek sesi</option>
-                <option value="premium-female">Premium kadın sesi</option>
-                <option value="premium-male">Premium erkek sesi</option>
+                <option value="warm-female" data-i18n="adfilm.narration.voiceWarmFemale">Sıcak kadın sesi</option>
+                <option value="warm-male" data-i18n="adfilm.narration.voiceWarmMale">Sıcak erkek sesi</option>
+                <option value="premium-female" data-i18n="adfilm.narration.voicePremiumFemale">Premium kadın sesi</option>
+                <option value="premium-male" data-i18n="adfilm.narration.voicePremiumMale">Premium erkek sesi</option>
               </select>
             </label>
 
             <label class="mobile-adfilm-select-field">
-              <span>Tempo</span>
+              <span data-i18n="adfilm.narration.tempo">Tempo</span>
               <select id="mobileAdFilmVoiceSpeed">
-                <option value="slow">Yavaş</option>
-                <option value="balanced" selected>Dengeli</option>
-                <option value="fast">Hızlı</option>
+                <option value="slow" data-i18n="adfilm.narration.speedSlow">Yavaş</option>
+                <option value="balanced" selected data-i18n="adfilm.narration.speedBalanced">Dengeli</option>
+                <option value="fast" data-i18n="adfilm.narration.speedFast">Hızlı</option>
               </select>
             </label>
           </div>
 
           <label class="mobile-adfilm-field mobile-adfilm-voice-script">
-            <span>Reklam Seslendirme Metni</span>
-            <textarea id="mobileAdFilmNarrationText" maxlength="900" rows="5" placeholder="Reklam seslendirme metnini buraya yaz veya oluşturulan metni burada düzenle..."></textarea>
+            <span data-i18n="adfilm.narration.textLabel">Reklam Seslendirme Metni</span>
+            <textarea id="mobileAdFilmNarrationText" maxlength="900" rows="5" placeholder="Reklam seslendirme metnini buraya yaz veya oluşturulan metni burada düzenle..." data-i18n-placeholder="adfilm.narration.textPlaceholder"></textarea>
             <div class="mobile-adfilm-voice-hint">
-              <span>Metni doğrudan düzenleyebilirsin</span>
+              <span data-i18n="adfilm.narration.editTip">Metni doğrudan düzenleyebilirsin</span>
               <span><b id="mobileAdFilmNarrationCount">0</b> / 900</span>
             </div>
           </label>
@@ -257,26 +257,26 @@
               <div class="mobile-adfilm-voice-preview-title">
                 <span class="mobile-adfilm-voice-preview-spark" aria-hidden="true"></span>
                 <div>
-                  <strong>Ses Ön İzleme</strong>
-                  <p>Metni tamamladıktan sonra reklam sesini oluştur, dinle ve onayla.</p>
+                  <strong data-i18n="adfilm.narration.previewTitle">Ses Ön İzleme</strong>
+                  <p data-i18n="adfilm.narration.previewSubtitle">Metni tamamladıktan sonra reklam sesini oluştur, dinle ve onayla.</p>
                 </div>
               </div>
-              <span class="mobile-adfilm-voice-preview-status">Henüz ses oluşturulmadı.</span>
+              <span class="mobile-adfilm-voice-preview-status" data-i18n="adfilm.narration.notCreated">Henüz ses oluşturulmadı.</span>
             </div>
 
             <div class="mobile-adfilm-voice-player">
-              <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil"></button>
+              <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil" data-i18n-attr="aria-label:adfilm.narration.previewNotReadyAria"></button>
               <div class="mobile-adfilm-voice-player-main">
                 <div class="mobile-adfilm-voice-preview-line" aria-hidden="true"></div>
                 <span class="mobile-adfilm-voice-time">0:00 / 0:00</span>
               </div>
-              <button class="mobile-adfilm-voice-volume" type="button" disabled aria-label="Ses seviyesi"></button>
-              <button class="mobile-adfilm-voice-delete" type="button" disabled aria-label="Ses kaydını sil"></button>
+              <button class="mobile-adfilm-voice-volume" type="button" disabled aria-label="Ses seviyesi" data-i18n-attr="aria-label:adfilm.narration.volumeAria"></button>
+              <button class="mobile-adfilm-voice-delete" type="button" disabled aria-label="Ses kaydını sil" data-i18n-attr="aria-label:adfilm.narration.deleteAria"></button>
             </div>
 
             <div class="mobile-adfilm-voice-preview-actions">
-              <button class="mobile-adfilm-voice-create" type="button" disabled>Sesi oluştur</button>
-              <button class="mobile-adfilm-voice-approve" type="button" disabled>Sesi onayla</button>
+              <button class="mobile-adfilm-voice-create" type="button" disabled data-i18n="adfilm.narration.create">Sesi oluştur</button>
+              <button class="mobile-adfilm-voice-approve" type="button" disabled data-i18n="adfilm.narration.approve">Sesi onayla</button>
             </div>
           </section>
         </div>
@@ -287,13 +287,13 @@
           <span class="mobile-adfilm-quality-icon" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">07</span>
-            <h4>Çıkış Kalitesi</h4>
-            <p>720p ekonomik, 1080p profesyonel veya 4K premium kaliteyi seç.</p>
+            <h4 data-i18n="adfilm.quality.title">Çıkış Kalitesi</h4>
+            <p data-i18n="adfilm.quality.subtitle">720p ekonomik, 1080p profesyonel veya 4K premium kaliteyi seç.</p>
           </div>
         </div>
 
-        <span class="mobile-adfilm-quality-label">Kalite</span>
-        <div class="mobile-adfilm-quality-grid" role="radiogroup" aria-label="Çıkış kalitesi">
+        <span class="mobile-adfilm-quality-label" data-i18n="adfilm.quality.label">Kalite</span>
+        <div class="mobile-adfilm-quality-grid" role="radiogroup" aria-label="Çıkış kalitesi" data-i18n-attr="aria-label:adfilm.quality.aria">
           <div class="mobile-adfilm-quality-option" data-quality="720p">
             <input class="mobile-adfilm-quality-radio" type="radio" name="mobileAdFilmQuality" id="mobileAdFilmQuality720" value="720p">
             <label class="mobile-adfilm-quality-button" for="mobileAdFilmQuality720">720p</label>
@@ -308,28 +308,28 @@
 
           <div class="mobile-adfilm-quality-option" data-quality="4k">
             <input class="mobile-adfilm-quality-radio" type="radio" name="mobileAdFilmQuality" id="mobileAdFilmQuality4k" value="4k">
-            <label class="mobile-adfilm-quality-button" for="mobileAdFilmQuality4k">4K <em class="mobile-adfilm-quality-premium">Premium</em></label>
+            <label class="mobile-adfilm-quality-button" for="mobileAdFilmQuality4k">4K <em class="mobile-adfilm-quality-premium" data-i18n="adfilm.quality.premium">Premium</em></label>
             <div class="mobile-adfilm-quality-credit">195 Kredi</div>
           </div>
         </div>
 
-        <p class="mobile-adfilm-quality-note">720p ekonomik, 1080p profesyonel final, 4K premium.</p>
+        <p class="mobile-adfilm-quality-note" data-i18n="adfilm.quality.note">720p ekonomik, 1080p profesyonel final, 4K premium.</p>
       </article>
 
       <section class="mobile-adfilm-action-card" data-mobile-adfilm-action>
         <div class="mobile-adfilm-action-summary">
           <span class="mobile-adfilm-action-spark" aria-hidden="true"></span>
           <div class="mobile-adfilm-action-copy">
-            <strong>Reklam projesi hazırlanacak</strong>
+            <strong data-i18n="adfilm.action.preparing">Reklam projesi hazırlanacak</strong>
             <small>5 sn · 16:9 · 1080p · Sesli</small>
           </div>
         </div>
 
-        <button class="mobile-adfilm-create-button" type="button" disabled>
+        <button class="mobile-adfilm-create-button" type="button" disabled data-i18n="adfilm.action.create">
           Reklam Filmini Oluştur (100 Kredi)
         </button>
 
-        <div class="mobile-adfilm-action-status">Mobil üretim bağlantısı için arayüz hazır.</div>
+        <div class="mobile-adfilm-action-status" data-i18n="adfilm.action.uiReady">Mobil üretim bağlantısı için arayüz hazır.</div>
       </section>
     </div>
 
@@ -339,15 +339,15 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-voice" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">01</span>
-            <h4>Ses &amp; Anlatım</h4>
-            <p>Reklam seslendirme metnini yaz; AIVO seçtiğin ses ve anlatım ayarlarıyla seslendirsin.</p>
+            <h4 data-i18n="radioad.narration.title">Ses &amp; Anlatım</h4>
+            <p data-i18n="radioad.narration.subtitle">Reklam seslendirme metnini yaz; AIVO seçtiğin ses ve anlatım ayarlarıyla seslendirsin.</p>
           </div>
         </div>
 
         <section class="mobile-adfilm-narration-budget" data-mobile-radio-budget>
           <div class="mobile-adfilm-narration-budget-head">
             <div class="mobile-adfilm-narration-budget-copy">
-              <span>Ses süresi bütçesi</span>
+              <span data-i18n="radioad.narration.budgetTitle">Ses süresi bütçesi</span>
               <strong data-mobile-radio-word-range>47–66 kelime önerilir</strong>
             </div>
             <div class="mobile-adfilm-narration-budget-pills">
@@ -357,14 +357,14 @@
           <div class="mobile-adfilm-narration-meter" aria-hidden="true"><i></i></div>
           <div class="mobile-adfilm-narration-status is-empty">
             <span aria-hidden="true"></span>
-            <p>Müzik girişi toplam süreye dahildir.</p>
+            <p data-i18n="radioad.narration.musicIncluded">Müzik girişi toplam süreye dahildir.</p>
             <b><span data-mobile-radio-word-count>0</span> kelime · tahmini <span data-mobile-radio-estimate>0</span> sn</b>
           </div>
         </section>
 
         <div class="mobile-adfilm-voice-grid">
           <label class="mobile-adfilm-select-field">
-            <span>Dil</span>
+            <span data-i18n="radioad.narration.language">Dil</span>
             <select id="mobileRadioLanguage">
               <option value="tr" selected>Türkçe</option>
               <option value="en">English</option>
@@ -390,50 +390,50 @@
           </label>
 
           <label class="mobile-adfilm-select-field">
-            <span>Ses Stili</span>
+            <span data-i18n="radioad.narration.voiceStyle">Ses Stili</span>
             <select id="mobileRadioVoiceStyle">
-              <option value="warm" selected>Sıcak ve güven veren</option>
-              <option value="energetic">Enerjik reklam sesi</option>
-              <option value="premium">Premium ve sakin</option>
-              <option value="natural">Doğal konuşma</option>
+              <option value="warm" selected data-i18n="adfilm.narration.styleWarm">Sıcak ve güven veren</option>
+              <option value="energetic" data-i18n="adfilm.narration.styleEnergetic">Enerjik reklam sesi</option>
+              <option value="premium" data-i18n="adfilm.narration.stylePremium">Premium ve sakin</option>
+              <option value="natural" data-i18n="adfilm.narration.styleNatural">Doğal konuşma</option>
             </select>
           </label>
 
           <label class="mobile-adfilm-select-field">
-            <span>Ses</span>
+            <span data-i18n="radioad.narration.voice">Ses</span>
             <select id="mobileRadioVoice">
-              <option value="warm_female" selected>Sıcak kadın sesi</option>
-              <option value="professional_male">Profesyonel erkek sesi</option>
-              <option value="energetic_male">Enerjik erkek sesi</option>
-              <option value="clear_female">Net kadın sesi</option>
+              <option value="warm_female" selected data-i18n="radioad.narration.voiceWarmFemale">Sıcak kadın sesi</option>
+              <option value="professional_male" data-i18n="radioad.narration.voiceProfessionalMale">Profesyonel erkek sesi</option>
+              <option value="energetic_male" data-i18n="radioad.narration.voiceEnergeticMale">Enerjik erkek sesi</option>
+              <option value="clear_female" data-i18n="radioad.narration.voiceClearFemale">Net kadın sesi</option>
             </select>
           </label>
         </div>
 
         <label class="mobile-adfilm-field mobile-adfilm-voice-script">
-          <span>Reklam Seslendirme Metni</span>
-          <textarea id="mobileRadioNarrationText" maxlength="1200" rows="7" placeholder="Reklam metnini buraya yaz..."></textarea>
+          <span data-i18n="radioad.narration.textLabel">Reklam Seslendirme Metni</span>
+          <textarea id="mobileRadioNarrationText" maxlength="1200" rows="7" placeholder="Reklam metnini buraya yaz..." data-i18n-placeholder="radioad.narration.textPlaceholder"></textarea>
           <div class="mobile-adfilm-voice-hint">
-            <span>Metni doğrudan düzenleyebilirsin</span>
+            <span data-i18n="radioad.narration.editTip">Metni doğrudan düzenleyebilirsin</span>
             <span><b data-mobile-radio-copy-count>0</b> / 1200</span>
           </div>
         </label>
 
         <div class="mobile-adfilm-form-grid">
           <label class="mobile-adfilm-select-field">
-            <span>Hız</span>
+            <span data-i18n="radioad.narration.speed">Hız</span>
             <select id="mobileRadioSpeed">
-              <option value="slow">Yavaş</option>
-              <option value="balanced">Dengeli</option>
-              <option value="fast" selected>Hızlı</option>
+              <option value="slow" data-i18n="adfilm.narration.speedSlow">Yavaş</option>
+              <option value="balanced" data-i18n="adfilm.narration.speedBalanced">Dengeli</option>
+              <option value="fast" selected data-i18n="adfilm.narration.speedFast">Hızlı</option>
             </select>
           </label>
           <label class="mobile-adfilm-select-field">
-            <span>Ses Akışı</span>
+            <span data-i18n="radioad.narration.flow">Ses Akışı</span>
             <select id="mobileRadioFlow">
-              <option value="natural" selected>Doğal</option>
-              <option value="balanced">Dengeli</option>
-              <option value="emphatic">Vurgulu</option>
+              <option value="natural" selected data-i18n="radioad.narration.flowNatural">Doğal</option>
+              <option value="balanced" data-i18n="radioad.narration.flowBalanced">Dengeli</option>
+              <option value="emphatic" data-i18n="radioad.narration.flowEmphasized">Vurgulu</option>
             </select>
           </label>
         </div>
@@ -443,24 +443,24 @@
             <div class="mobile-adfilm-voice-preview-title">
               <span class="mobile-adfilm-voice-preview-spark" aria-hidden="true"></span>
               <div>
-                <strong>Ses Ön İzleme</strong>
-                <p>Reklam sesini oluştur, dinle ve onayla.</p>
+                <strong data-i18n="radioad.narration.previewTitle">Ses Ön İzleme</strong>
+                <p data-i18n="radioad.narration.previewSubtitle">Reklam sesini oluştur, dinle ve onayla.</p>
               </div>
             </div>
-            <span class="mobile-adfilm-voice-preview-status">Henüz ses oluşturulmadı.</span>
+            <span class="mobile-adfilm-voice-preview-status" data-i18n="radioad.narration.notCreated">Henüz ses oluşturulmadı.</span>
           </div>
           <div class="mobile-adfilm-voice-player">
-            <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil"></button>
+            <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil" data-i18n-attr="aria-label:adfilm.narration.previewNotReadyAria"></button>
             <div class="mobile-adfilm-voice-player-main">
               <div class="mobile-adfilm-voice-preview-line" aria-hidden="true"></div>
               <span class="mobile-adfilm-voice-time">0:00 / 0:00</span>
             </div>
-            <button class="mobile-adfilm-voice-volume" type="button" disabled aria-label="Ses seviyesi"></button>
-            <button class="mobile-adfilm-voice-delete" type="button" disabled aria-label="Ses kaydını sil"></button>
+            <button class="mobile-adfilm-voice-volume" type="button" disabled aria-label="Ses seviyesi" data-i18n-attr="aria-label:adfilm.narration.volumeAria"></button>
+            <button class="mobile-adfilm-voice-delete" type="button" disabled aria-label="Ses kaydını sil" data-i18n-attr="aria-label:adfilm.narration.deleteAria"></button>
           </div>
           <div class="mobile-adfilm-voice-preview-actions">
-            <button class="mobile-adfilm-voice-create" type="button" disabled>Sesi oluştur</button>
-            <button class="mobile-adfilm-voice-approve" type="button" disabled>Sesi onayla</button>
+            <button class="mobile-adfilm-voice-create" type="button" disabled data-i18n="radioad.narration.create">Sesi oluştur</button>
+            <button class="mobile-adfilm-voice-approve" type="button" disabled data-i18n="radioad.narration.approve">Sesi onayla</button>
           </div>
         </section>
       </article>
@@ -470,14 +470,14 @@
           <span class="mobile-adfilm-quality-icon" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">02</span>
-            <h4>Ses Ayarları</h4>
-            <p>Müzik ve konuşma seçilen toplam reklam süresine yerleştirilir.</p>
+            <h4 data-i18n="radioad.settings.title">Ses Ayarları</h4>
+            <p data-i18n="radioad.settings.subtitle">Müzik ve konuşma seçilen toplam reklam süresine yerleştirilir.</p>
           </div>
         </div>
 
         <div class="mobile-adfilm-form-grid">
           <label class="mobile-adfilm-select-field">
-            <span>Reklam Süresi</span>
+            <span data-i18n="radioad.settings.duration">Reklam Süresi</span>
             <select id="mobileRadioDuration">
               <option value="10">10 sn</option>
               <option value="15">15 sn</option>
@@ -487,7 +487,7 @@
             </select>
           </label>
           <label class="mobile-adfilm-select-field">
-            <span>Çıkış Dosyası</span>
+            <span data-i18n="radioad.settings.output">Çıkış Dosyası</span>
             <select id="mobileRadioOutputFormat">
               <option value="mp3" selected>MP3 · 320 kbps · 20 Kredi</option>
               <option value="wav">WAV · Kayıpsız · 25 Kredi</option>
@@ -497,7 +497,7 @@
 
         <div class="mobile-adfilm-tip">
           <span aria-hidden="true"></span>
-          <p>10 saniye kısa marka mesajları, 15–30 saniye standart kampanyalar ve 45–60 saniye detaylı anlatımlar için uygundur.</p>
+          <p data-i18n="radioad.settings.tip">Seçtiğin süre, seslendirme ve müziğin birlikte kullanılacağı toplam reklam süresidir.</p>
         </div>
       </article>
 
@@ -506,45 +506,45 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-design" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">03</span>
-            <h4>Reklam Müziği</h4>
-            <p>Arka plan müziğinin nasıl hazırlanacağını seç.</p>
+            <h4 data-i18n="radioad.music.title">Reklam Müziği</h4>
+            <p data-i18n="radioad.music.subtitle">Arka plan müziğinin nasıl hazırlanacağını seç.</p>
           </div>
-          <span class="mobile-adfilm-required mobile-adfilm-optional">İsteğe bağlı</span>
+          <span class="mobile-adfilm-required mobile-adfilm-optional" data-i18n="adfilm.optional">İsteğe bağlı</span>
         </div>
 
         <div class="mobile-adfilm-form-grid">
           <label class="mobile-adfilm-select-field">
-            <span>Müzik Seçimi</span>
+            <span data-i18n="radioad.music.mode">Müzik Seçimi</span>
             <select id="mobileRadioMusicMode">
-              <option value="ai" selected>AIVO müziği hazırlasın</option>
-              <option value="upload">Kendi müziğimi yükle</option>
-              <option value="off">Müzik olmasın</option>
+              <option value="ai" selected data-i18n="radioad.music.modeAi">AIVO müziği hazırlasın</option>
+              <option value="upload" data-i18n="radioad.music.modeUploadShort">Kendi müziğimi yükle</option>
+              <option value="off" data-i18n="radioad.music.modeOff">Müzik olmasın</option>
             </select>
           </label>
           <label class="mobile-adfilm-select-field">
-            <span>Müzik Tarzı</span>
+            <span data-i18n="adfilm.music.style">Müzik Tarzı</span>
             <select id="mobileRadioMusicStyle">
-              <option value="auto" selected>AIVO otomatik seçsin</option>
-              <option value="cinematic">Sinematik</option>
-              <option value="corporate">Kurumsal</option>
-              <option value="electronic">Elektronik</option>
-              <option value="acoustic">Akustik</option>
+              <option value="auto" selected data-i18n="adfilm.music.styleAuto">AIVO otomatik seçsin</option>
+              <option value="cinematic" data-i18n="adfilm.music.styleCinematic">Sinematik</option>
+              <option value="corporate" data-i18n="adfilm.music.styleCorporate">Kurumsal</option>
+              <option value="electronic" data-i18n="adfilm.music.styleElectronic">Elektronik</option>
+              <option value="acoustic" data-i18n="adfilm.music.styleAcoustic">Akustik</option>
             </select>
           </label>
           <label class="mobile-adfilm-select-field">
-            <span>Enerji</span>
+            <span data-i18n="adfilm.music.energy">Enerji</span>
             <select id="mobileRadioMusicEnergy">
-              <option value="balanced" selected>Dengeli</option>
-              <option value="soft">Yumuşak</option>
-              <option value="strong">Güçlü</option>
-              <option value="high">Yüksek</option>
+              <option value="balanced" selected data-i18n="adfilm.music.energyBalanced">Dengeli</option>
+              <option value="soft" data-i18n="adfilm.music.energySoft">Yumuşak</option>
+              <option value="strong" data-i18n="adfilm.music.energyStrong">Güçlü</option>
+              <option value="high" data-i18n="adfilm.music.energyHigh">Yüksek</option>
             </select>
           </label>
         </div>
 
         <div class="mobile-adfilm-tip">
           <span aria-hidden="true"></span>
-          <p>Seçtiğin stile göre reklam müziği final üretim sırasında otomatik hazırlanacak.</p>
+          <p data-i18n="radioad.music.autoTip">Seçtiğin stile göre reklam müziği final üretim sırasında otomatik hazırlanacak.</p>
         </div>
       </article>
 
@@ -553,8 +553,8 @@
           <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-product" aria-hidden="true"></span>
           <div class="mobile-adfilm-card-copy">
             <span class="mobile-adfilm-step">04</span>
-            <h4>Final Radyo Reklamı</h4>
-            <p>Seslendirme ve müzik birleştiğinde final reklamını burada dinle.</p>
+            <h4 data-i18n="radioad.final.title">Final Radyo Reklamı</h4>
+            <p data-i18n="radioad.final.subtitle">Seslendirme ve müzik birleştiğinde final reklamını burada dinle.</p>
           </div>
         </div>
 
@@ -563,15 +563,15 @@
             <div class="mobile-adfilm-voice-preview-title">
               <span class="mobile-adfilm-voice-preview-spark" aria-hidden="true"></span>
               <div>
-                <strong>Radyo Reklamlarım</strong>
-                <p>Final reklamların üretildikçe burada listelenecek.</p>
+                <strong data-i18n="radioad.final.libraryTitle">Radyo Reklamlarım</strong>
+                <p data-i18n="radioad.final.librarySubtitle">Final reklamların üretildikçe burada listelenecek.</p>
               </div>
             </div>
             <span class="mobile-adfilm-voice-preview-status">0 kayıt</span>
           </div>
           <div class="mobile-adfilm-tip">
             <span aria-hidden="true"></span>
-            <p>Henüz final radyo reklamı yok.</p>
+            <p data-i18n="radioad.final.empty">Henüz final radyo reklamı yok.</p>
           </div>
         </section>
       </article>
@@ -580,7 +580,7 @@
         <div class="mobile-adfilm-action-summary">
           <span class="mobile-adfilm-action-spark" aria-hidden="true"></span>
           <div class="mobile-adfilm-action-copy">
-            <strong>Radyo reklamı projesi hazırlanacak</strong>
+            <strong data-i18n="radioad.action.preparing">Radyo reklamı projesi hazırlanacak</strong>
             <small>30 sn · Seslendirme · AIVO müziği · MP3 320 kbps</small>
           </div>
         </div>
@@ -589,7 +589,7 @@
           Radyo Reklamını Oluştur (20 Kredi)
         </button>
 
-        <div class="mobile-adfilm-action-status">Radyo Reklamı mobil iskeleti hazır. Sistem bağlantısı sonraki adımda yapılacak.</div>
+        <div class="mobile-adfilm-action-status" data-i18n="radioad.action.needNarration">Üretim için önce seslendirmeyi oluşturup onayla.</div>
       </section>
     </div>
   </section>
