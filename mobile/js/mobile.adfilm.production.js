@@ -28,6 +28,15 @@
   function clean(value){ return String(value == null ? "" : value).trim(); }
   function lower(value){ return clean(value).toLowerCase(); }
   function sleep(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
+  function currentLocale(){
+    const language = String(
+      window.AIVO_LANG ||
+      localStorage.getItem("aivo_mobile_language") ||
+      document.documentElement.lang ||
+      "tr"
+    ).toLowerCase();
+    return language.startsWith("en") ? "en-US" : "tr-TR";
+  }
   function esc(value){
     return String(value == null ? "" : value)
       .replaceAll("&", "&amp;")
@@ -299,7 +308,7 @@
         </div>
         <div class="mobile-adfilm-production-card-copy">
           <strong>${esc(title)}</strong>
-          <small>${meta ? esc(new Date(meta).toLocaleString("tr-TR")) : "Reklam filmi hazır"}</small>
+          <small>${meta ? esc(new Date(meta).toLocaleString(currentLocale())) : "Reklam filmi hazır"}</small>
         </div>
       </article>
     `;
