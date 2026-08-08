@@ -217,7 +217,10 @@
 
     const openBase = type === "refund" ? "/api/invoices/refund-view" : "/api/invoices/view";
     const openUrl = id && email
-      ? openBase + "?email=" + encodeURIComponent(email) + "&id=" + encodeURIComponent(id)
+      ? openBase +
+        "?email=" + encodeURIComponent(email) +
+        "&id=" + encodeURIComponent(id) +
+        "&lang=" + encodeURIComponent(currentLanguage())
       : "";
 
     const actionText = type === "refund"
