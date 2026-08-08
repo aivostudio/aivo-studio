@@ -56,3 +56,67 @@
   font-weight:800;
   text-align:left;
 }
+
+[data-mobile-adfilm-view="video"]{
+  display:flex;
+  flex-direction:column;
+}
+
+[data-mobile-adfilm-view="video"] > article:first-of-type{
+  order:1;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-design-card{
+  order:2;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-video-settings-card{
+  order:3;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card{
+  order:4;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card{
+  order:5;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-music-card{
+  order:6;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-quality-card{
+  order:7;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-action-card{
+  order:8;
+}
+
+.mobile-adfilm-video-settings-card .mobile-adfilm-step,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card .mobile-adfilm-step,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step{
+  font-size:0;
+  letter-spacing:0;
+}
+
+.mobile-adfilm-video-settings-card .mobile-adfilm-step::after,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card .mobile-adfilm-step::after,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step::after{
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.16em;
+}
+
+.mobile-adfilm-video-settings-card .mobile-adfilm-step::after{
+  content:"03";
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card .mobile-adfilm-step::after{
+  content:"04";
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step::after{
+  content:"05";
+}
