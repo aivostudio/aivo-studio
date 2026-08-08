@@ -13,6 +13,7 @@ const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const os = require("node:os");
 const path = require("node:path");
+const { sendPushToUser } = require("../../_lib/push-user.js");
 
 function getConn() {
   return (
@@ -901,6 +902,29 @@ module.exports = async function handler(req, res) {
         updated_at = now()
       where id = ${job_id}::uuid
     `;
+
+    try {
+      await sendPushToUser({
+        userId: job.user_id,
+        userUuid: job.user_uuid,
+        titleTr: "🎬 Çizgi Filmin Hazır!",
+        bodyTr: "AIVO'da hazırladığın montaj tamamlandı. İzlemek için dokun.",
+        titleEn: "🎬 Your Cartoon Is Ready!",
+        bodyEn: "Your AIVO cartoon edit is ready. Tap to watch.",
+        source: "aivo_generation_complete",
+        idempotencyKey: `generation-complete:cartoon-studio:${job_id}`,
+        imageUrl: poster_url,
+        data: {
+          job_id,
+          module: "cartoon",
+          type: "video",
+          mode: "studio",
+          target: "productions",
+        },
+      });
+    } catch (pushError) {
+      console.error("cartoon studio completion push failed:", pushError);
+    }
 
     return res.status(200).json({
       ok: true,
