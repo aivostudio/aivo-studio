@@ -50,5 +50,6 @@
     loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
     loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
     loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production");
+    loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
   });
 })();
