@@ -63,6 +63,21 @@ function extractFalStatusUrl(data) {
   return null;
 }
 
+function getPublicBaseUrl(req) {
+  const proto =
+    String(req.headers["x-forwarded-proto"] || "")
+      .split(",")[0]
+      .trim() || "https";
+
+  const host =
+    String(req.headers["x-forwarded-host"] || "")
+      .split(",")[0]
+      .trim() || String(req.headers.host || "").trim();
+
+  if (!host) throw new Error("missing_request_host");
+  return `${proto}://${host}`;
+}
+
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
 
@@ -305,6 +320,9 @@ const falUrl = hasImageRef
         : "https://queue.fal.run/fal-ai/kling-video/v3/pro/text-to-video"
     );
 
+const falWebhookUrl = `${getPublicBaseUrl(req)}/api/providers/fal/video/webhook`;
+const falSubmitUrl = `${falUrl}?fal_webhook=${encodeURIComponent(falWebhookUrl)}`;
+
   const rawDetails =
   mode === "pro"
     ? (
@@ -364,7 +382,7 @@ if (mode === "pro" && rawDetails && typeof promptSafe === "string" && promptSafe
 
   let r;
   try {
-    r = await fetch(falUrl, {
+    r = await fetch(falSubmitUrl, {
       method: "POST",
       headers: {
         Authorization: `Key ${FAL_KEY}`,
@@ -458,6 +476,7 @@ const metaObj = {
   kind: "atmo_video",
   provider: "fal",
   request_id,
+  fal_webhook_url: falWebhookUrl,
 
   ...(audio_url
     ? {
