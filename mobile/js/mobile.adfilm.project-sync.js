@@ -34,5 +34,6 @@
 
   loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=1", "data-mobile-radio-ad-project-sync", function(){
     loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
+    loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
   });
 })();
