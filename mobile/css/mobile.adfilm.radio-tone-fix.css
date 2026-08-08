@@ -11,3 +11,90 @@
 [data-mobile-adfilm-view="radio"] > .mobile-adfilm-card::before{
   background:transparent !important;
 }
+
+/* Video tarafındaki koyu form tonu */
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-select-field select{
+  border-color:rgba(236,72,153,.24) !important;
+  background:
+    linear-gradient(45deg,transparent 50%,#b9a8ff 50%) calc(100% - 16px) 19px/5px 5px no-repeat,
+    linear-gradient(135deg,#b9a8ff 50%,transparent 50%) calc(100% - 11px) 19px/5px 5px no-repeat,
+    rgba(6,8,18,.72) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05) !important;
+}
+
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-field input,
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-field textarea,
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-voice-script textarea{
+  border-color:rgba(236,72,153,.28) !important;
+  background:rgba(6,8,18,.72) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 16px 34px rgba(0,0,0,.14) !important;
+}
+
+/* Ses süresi bütçesi: video Ses & Anlatım ile aynı */
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-narration-budget{
+  border-color:rgba(139,92,246,.24) !important;
+  background:rgba(8,10,24,.58) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-narration-budget-pills > span{
+  background:rgba(124,58,237,.12) !important;
+  border-color:rgba(167,139,250,.24) !important;
+}
+
+/* Ses ön izleme ve player: video tarafındaki ton */
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-voice-preview{
+  border-color:rgba(129,140,248,.24) !important;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(96,234,255,.10),transparent 42%),
+    rgba(4,7,16,.62) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-voice-player{
+  border-color:rgba(129,140,248,.20) !important;
+  background:rgba(3,6,16,.78) !important;
+}
+
+/* Ses Ayarları iç paneli */
+[data-mobile-radio-card="settings"] .mobile-adfilm-form-grid{
+  border-color:rgba(255,255,255,.09) !important;
+  background:rgba(255,255,255,.025) !important;
+}
+
+/* Reklam Müziği: video müzik paneliyle aynı */
+[data-mobile-radio-card="music"] .mobile-adfilm-music-panel,
+[data-mobile-radio-card="music"] .mobile-adfilm-form-grid{
+  border-color:rgba(167,139,250,.16) !important;
+  background:rgba(9,12,28,.56) !important;
+}
+
+[data-mobile-radio-card="music"] .mobile-adfilm-music-field select{
+  border-color:rgba(139,92,246,.26) !important;
+  background:#0c1020 !important;
+  box-shadow:none !important;
+}
+
+[data-mobile-radio-card="music"] .mobile-adfilm-music-upload{
+  background:rgba(12,16,32,.72) !important;
+}
+
+[data-mobile-radio-card="music"] .mobile-adfilm-music-file{
+  background:
+    radial-gradient(circle at 0% 0%,rgba(63,205,171,.08),transparent 42%),
+    rgba(8,11,26,.68) !important;
+}
+
+/* Final iç kutusu */
+[data-mobile-radio-card="final"] > .mobile-adfilm-voice-preview{
+  border-color:rgba(129,140,248,.24) !important;
+  background:rgba(4,7,16,.62) !important;
+}
+
+[data-mobile-radio-card="settings"] .mobile-adfilm-tip,
+[data-mobile-radio-card="music"] .mobile-adfilm-tip,
+[data-mobile-radio-card="final"] .mobile-adfilm-tip{
+  background:rgba(8,15,28,.72) !important;
+}
