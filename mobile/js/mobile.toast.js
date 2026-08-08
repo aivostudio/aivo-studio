@@ -1,3 +1,16 @@
+(function AIVO_MOBILE_WEB_I18N_BOOT(){
+  try {
+    if (!/\.mobile\.html$/i.test(String(location.pathname || ""))) return;
+    if (window.__AIVO_MOBILE_WEB_I18N_BOOT__) return;
+    window.__AIVO_MOBILE_WEB_I18N_BOOT__ = true;
+
+    var script = document.createElement("script");
+    script.src = "/mobile/js/mobile.web-i18n.js?v=1";
+    script.defer = true;
+    document.head.appendChild(script);
+  } catch (_) {}
+})();
+
 (function(){
   if (window.__AIVO_MOBILE_TOAST__) return;
   window.__AIVO_MOBILE_TOAST__ = true;
