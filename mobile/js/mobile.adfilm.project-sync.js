@@ -58,7 +58,9 @@
   loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
     loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
     loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
-    loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production");
+    loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production", function(){
+      loadScript("/mobile/js/mobile.radio-ad.archive.js?v=1", "data-mobile-radio-ad-archive");
+    });
     loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
     loadScript("/mobile/js/mobile.radio-ad.ui-state.js?v=4", "data-mobile-radio-ad-ui-state");
   });
