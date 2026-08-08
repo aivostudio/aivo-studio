@@ -29,3 +29,18 @@
   font-size:11px;
   line-height:1.3;
 }
+
+.mobile-adfilm-production-progress::after{
+  content:"Tahmini süre: 720p 5 sn yaklaşık 8 dk · 1080p 15 sn yaklaşık 15 dk · 4K 15 sn yaklaşık 30 dk. Yoğunluğa göre değişebilir.";
+  display:block;
+  margin-top:12px;
+  padding:12px 13px;
+  border-radius:16px;
+  border:1px solid rgba(167,139,250,.22);
+  background:rgba(4,7,18,.42);
+  color:rgba(255,255,255,.72);
+  font-size:10.5px;
+  line-height:1.45;
+  font-weight:800;
+  text-align:left;
+}
