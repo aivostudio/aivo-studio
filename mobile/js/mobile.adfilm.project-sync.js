@@ -32,5 +32,7 @@
     loadScript("/mobile/js/mobile.adfilm.production.js?v=1", "data-mobile-adfilm-production-controller");
   });
 
-  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=1", "data-mobile-radio-ad-project-sync");
+  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=1", "data-mobile-radio-ad-project-sync", function(){
+    loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
+  });
 })();
