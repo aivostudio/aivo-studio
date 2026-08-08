@@ -48,13 +48,6 @@
     return String(value == null ? "" : value).trim();
   }
 
-  function notify(message, type){
-    try{
-      const fn = window.toastSafe || window.showToast || window.toastMsg;
-      if (typeof fn === "function") fn(message, type || "info");
-    }catch(_){ }
-  }
-
   function readStorage(key){
     try{ return localStorage.getItem(key) || ""; }catch(_){ return ""; }
   }
@@ -381,7 +374,8 @@
     getProject: function(){ return project; },
     collect: collect,
     save: save,
-    syncDerived: syncDerived
+    syncDerived: syncDerived,
+    applyProject: applyProject
   };
 
   syncDerived();
