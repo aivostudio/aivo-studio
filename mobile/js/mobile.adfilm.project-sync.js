@@ -3,6 +3,17 @@
   if (window.__AIVO_MOBILE_ADFILM_PROJECT_SYNC_BUNDLE_V1__) return;
   window.__AIVO_MOBILE_ADFILM_PROJECT_SYNC_BUNDLE_V1__ = true;
 
+  function loadStyle(href, attr){
+    const existing = document.querySelector('link[' + attr + ']');
+    if (existing) return;
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute(attr, "");
+    document.head.appendChild(link);
+  }
+
   function loadScript(src, attr, done){
     const existing = document.querySelector('script[' + attr + ']');
     if (existing){
@@ -27,6 +38,8 @@
     }, { once: true });
     document.body.appendChild(script);
   }
+
+  loadStyle("/mobile/css/mobile.adfilm.radio-tone-fix.css?v=1", "data-mobile-radio-tone-fix");
 
   loadScript("/mobile/js/mobile.adfilm.project-sync.core.js?v=1", "data-mobile-adfilm-project-sync-core", function(){
     loadScript("/mobile/js/mobile.adfilm.production.js?v=1", "data-mobile-adfilm-production-controller");
