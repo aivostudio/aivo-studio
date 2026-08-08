@@ -50,6 +50,16 @@
     return String(value == null ? "" : value).trim();
   }
 
+  function currentLocale(){
+    const language = String(
+      window.AIVO_LANG ||
+      localStorage.getItem("aivo_mobile_language") ||
+      document.documentElement.lang ||
+      "tr"
+    ).toLowerCase();
+    return language.startsWith("en") ? "en-US" : "tr-TR";
+  }
+
   function readStorage(key){
     try{ return localStorage.getItem(key) || ""; }catch(_){ return ""; }
   }
@@ -275,7 +285,7 @@
         }
 
         applyProject(data.project);
-        setStatus("saved", "Taslak kaydedildi · " + new Date().toLocaleTimeString("tr-TR", {
+        setStatus("saved", "Taslak kaydedildi · " + new Date().toLocaleTimeString(currentLocale(), {
           hour:"2-digit", minute:"2-digit", second:"2-digit"
         }));
       }catch(error){
