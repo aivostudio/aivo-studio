@@ -103,8 +103,41 @@
     return true;
   }
 
+  function installAdFilmDownloadBridge(){
+    if (window.__AIVO_MOBILE_ADFILM_DOWNLOAD_BRIDGE__) return;
+    window.__AIVO_MOBILE_ADFILM_DOWNLOAD_BRIDGE__ = true;
+
+    document.addEventListener("click", function(event){
+      const target = event.target;
+      const button = target && target.closest
+        ? target.closest('[data-mobile-adfilm-output-action="download"]')
+        : null;
+
+      if (!button) return;
+
+      const card = button.closest(".mobile-adfilm-production-card");
+      const video = card && card.querySelector("video");
+      const videoUrl = String(video && (video.currentSrc || video.src) || "").trim();
+
+      if (!videoUrl) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+
+      download({
+        url: videoUrl,
+        filename: "aivo-reklam-filmi.mp4"
+      }).catch(function(err){
+        console.error("[MOBILE ADFILM][DOWNLOAD BRIDGE]", err);
+      });
+    }, true);
+  }
+
   window.AivoMobileDownload = {
     download: download,
     buildProxyUrl: buildProxyUrl
   };
+
+  installAdFilmDownloadBridge();
 })();
