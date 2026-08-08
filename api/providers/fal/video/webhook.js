@@ -188,8 +188,7 @@ async function findAtmosphereJob(sql, requestId) {
     where lower(app) = 'atmo'
       and deleted_at is null
       and (
-        request_id = ${requestId}
-        or meta->>'request_id' = ${requestId}
+        meta->>'request_id' = ${requestId}
         or meta->'provider_response'->'raw'->>'request_id' = ${requestId}
       )
     order by created_at desc
