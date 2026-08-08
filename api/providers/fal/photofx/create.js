@@ -22,6 +22,20 @@ function safeJson(req) {
   return req.body && typeof req.body === "object" ? req.body : {};
 }
 
+function getPublicBaseUrl(req) {
+  const proto =
+    String(req.headers["x-forwarded-proto"] || "")
+      .split(",")[0]
+      .trim() || "https";
+  const host =
+    String(req.headers["x-forwarded-host"] || "")
+      .split(",")[0]
+      .trim() || String(req.headers.host || "").trim();
+
+  if (!host) throw new Error("missing_request_host");
+  return `${proto}://${host}`;
+}
+
 function pick(obj, paths) {
   for (const p of paths) {
     const parts = p.split(".");
@@ -448,12 +462,15 @@ export default async function handler(req, res) {
 
   console.log("[photofx:create] falBody =", JSON.stringify(falBody, null, 2));
 
+  const falWebhookUrl = `${getPublicBaseUrl(req)}/api/providers/fal/photofx/webhook`;
+  const falSubmitUrl = `${falUrl}?fal_webhook=${encodeURIComponent(falWebhookUrl)}`;
+
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 30000);
 
   let r;
   try {
-    r = await fetch(falUrl, {
+    r = await fetch(falSubmitUrl, {
       method: "POST",
       headers: {
         Authorization: `Key ${FAL_KEY}`,
