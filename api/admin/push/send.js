@@ -285,6 +285,7 @@ const cleanedTokenList = tokenList.filter(function(token) {
 
   const error = String(result.error || '');
 
+  if (error.includes('NotRegistered')) return false;
   if (error.includes('not a valid FCM registration token')) return false;
   if (error.includes('Requested entity was not found')) return false;
   if (/^[a-fA-F0-9]{64,}$/.test(String(token || '').trim())) return false;
