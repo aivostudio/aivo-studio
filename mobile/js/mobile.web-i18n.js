@@ -33,7 +33,11 @@
     ["AIVO Studio ile AI müzik, kapak, video, foto efekt ve çizgifilm üretimini tek platformda başlat.", "Create AI music, cover art, video, photo effects and cartoons from one platform with AIVO Studio."],
     ["Oturum açılıyor...", "Opening session..."],
     ["Giriş başarılı ancak oturum doğrulanamadı. Lütfen bağlantını kontrol edip tekrar dene.", "Login succeeded, but the session could not be verified. Please check your connection and try again."],
-    ["Export hazırlandı.", "Export prepared."]
+    ["Export hazırlandı.", "Export prepared."],
+    ["AIVO ile müzik, kapak, video ve çizgifilm üretimini mobilde dene:", "Try creating music, cover art, video and cartoons with AIVO on mobile:"],
+    ["AIVO linki kopyalandı.", "AIVO link copied."],
+    ["Paylaşım başlatılamadı.", "Sharing could not be started."],
+    ["Çıkış yapıldı.", "Signed out."]
   ];
 
   function clean(value){ return String(value == null ? "" : value).trim(); }
@@ -175,6 +179,52 @@
     meta();
   }
 
+  function wrapToastApi(api){
+    if (!api || api.__aivoMobileWebI18nWrapped) return;
+
+    ["success", "error", "warning", "info", "loading"].forEach(function(method){
+      if (typeof api[method] !== "function") return;
+
+      try {
+        var original = api[method].bind(api);
+        api[method] = function(message){
+          var args = Array.prototype.slice.call(arguments);
+          if (typeof args[0] === "string") args[0] = translate(args[0], 0);
+          return original.apply(null, args);
+        };
+      } catch (_) {}
+    });
+
+    try { api.__aivoMobileWebI18nWrapped = true; } catch (_) {}
+  }
+
+  function wrapToasts(){
+    wrapToastApi(window.mobileToast);
+    if (window.toast && window.toast !== window.mobileToast) wrapToastApi(window.toast);
+  }
+
+  function wrapShare(){
+    if (!navigator || typeof navigator.share !== "function") return;
+    if (navigator.share.__aivoMobileWebI18nWrapped) return;
+
+    try {
+      var originalShare = navigator.share.bind(navigator);
+      var wrappedShare = function(data){
+        var next = data && typeof data === "object" ? Object.assign({}, data) : data;
+
+        if (next && typeof next === "object") {
+          if (typeof next.title === "string") next.title = translate(next.title, 0);
+          if (typeof next.text === "string") next.text = translate(next.text, 0);
+        }
+
+        return originalShare(next);
+      };
+
+      wrappedShare.__aivoMobileWebI18nWrapped = true;
+      navigator.share = wrappedShare;
+    } catch (_) {}
+  }
+
   function observe(){
     if (observer || !document.body) return;
     observer = new MutationObserver(function(records){
@@ -193,6 +243,8 @@
   function refresh(){
     rebuild();
     apply(document);
+    wrapToasts();
+    wrapShare();
     observe();
   }
 
