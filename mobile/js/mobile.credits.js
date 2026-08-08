@@ -311,6 +311,7 @@
           user_id: me.user_id,
           email: me.email,
           plan: pack.plan,
+          lang: isEnglish() ? "en" : "tr",
           source: "mobile",
           return_path: "/studio.mobile.html#credits"
         })
