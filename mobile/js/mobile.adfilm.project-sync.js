@@ -42,7 +42,7 @@
   loadStyle("/mobile/css/mobile.adfilm.reference.css?v=2", "data-mobile-adfilm-reference-v2");
   loadStyle("/mobile/css/mobile.adfilm.radio-tone-fix.css?v=2", "data-mobile-radio-tone-fix");
   loadStyle("/mobile/css/mobile.radio-ad.production.css?v=1", "data-mobile-radio-production-style");
-  loadStyle("/mobile/css/mobile.adfilm.progress-readability.css?v=3", "data-mobile-adfilm-progress-readability");
+  loadStyle("/mobile/css/mobile.adfilm.progress-readability.css?v=4", "data-mobile-adfilm-progress-readability");
   loadStyle("/mobile/css/mobile.radio-ad.player-state.css?v=1", "data-mobile-radio-player-state");
 
   loadScript("/mobile/js/mobile.radio-ad.click-guard.js?v=1", "data-mobile-radio-ad-click-guard", function(){
