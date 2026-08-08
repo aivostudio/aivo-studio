@@ -43,6 +43,7 @@
   let applying = false;
   let saveTimer = null;
   let saveChain = Promise.resolve();
+  let draftRevision = 0;
 
   function clean(value){
     return String(value == null ? "" : value).trim();
@@ -250,6 +251,7 @@
 
   function persistLocalImmediately(){
     if (applying) return;
+    draftRevision += 1;
     const next = localPayload();
     project = next;
     writeLocalDraft(next);
@@ -259,19 +261,31 @@
   async function save(){
     if (applying || !projectId) return;
     const payload = collect();
+    const revision = draftRevision;
+    const targetProjectId = projectId;
     setStatus("saving", "Taslak buluta kaydediliyor...");
 
     saveChain = saveChain.catch(function(){}).then(async function(){
       try{
-        const data = await request("/api/radio-ad/project?id=" + encodeURIComponent(projectId), {
+        const data = await request("/api/radio-ad/project?id=" + encodeURIComponent(targetProjectId), {
           method: "PATCH",
           body: JSON.stringify({ project: payload })
         });
+
+        if (revision !== draftRevision){
+          setStatus("saving", "Yeni değişiklikler buluta kaydediliyor...");
+          return;
+        }
+
         applyProject(data.project);
         setStatus("saved", "Taslak kaydedildi · " + new Date().toLocaleTimeString("tr-TR", {
           hour:"2-digit", minute:"2-digit", second:"2-digit"
         }));
       }catch(error){
+        if (revision !== draftRevision){
+          setStatus("saving", "Yeni değişiklikler buluta kaydediliyor...");
+          return;
+        }
         console.error("[MOBILE RADIO AD] save", error);
         setStatus("error", error.status === 401 ? "Oturum gerekli." : "Taslak kaydedilemedi; yerel kopya korunuyor.");
       }
