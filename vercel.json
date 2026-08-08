@@ -39,6 +39,10 @@
     {
       "path": "/api/push/watch/ad-film",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/push/watch/radio-ad",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
