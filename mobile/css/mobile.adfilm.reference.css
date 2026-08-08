@@ -112,6 +112,59 @@
 .mobile-adfilm-reference-delete::before{transform:rotate(45deg)}
 .mobile-adfilm-reference-delete::after{transform:rotate(-45deg)}
 
+.mobile-adfilm-reference-thumb.is-aspect-invalid{
+  border-color:rgba(251,113,133,.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(251,113,133,.18),
+    0 0 0 1px rgba(244,63,94,.14),
+    0 10px 22px rgba(127,29,29,.28);
+}
+
+.mobile-adfilm-reference-thumb.is-aspect-invalid img{
+  filter:saturate(.58) brightness(.62);
+}
+
+.mobile-adfilm-reference-thumb.is-aspect-invalid::after{
+  inset:0;
+  height:auto;
+  background:linear-gradient(180deg,rgba(74,8,24,.12),rgba(74,8,24,.54));
+}
+
+.mobile-adfilm-aspect-error-cross{
+  position:absolute;
+  left:50%;
+  top:50%;
+  z-index:4;
+  width:42px;
+  height:42px;
+  transform:translate(-50%,-50%);
+  border:2px solid rgba(255,146,163,.92);
+  border-radius:50%;
+  background:rgba(83,12,29,.82);
+  box-shadow:0 8px 20px rgba(0,0,0,.34);
+}
+
+.mobile-adfilm-aspect-error-cross::before,
+.mobile-adfilm-aspect-error-cross::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:20px;
+  height:3px;
+  border-radius:999px;
+  background:#ff9aae;
+  transform-origin:center;
+}
+
+.mobile-adfilm-aspect-error-cross::before{transform:translate(-50%,-50%) rotate(45deg)}
+.mobile-adfilm-aspect-error-cross::after{transform:translate(-50%,-50%) rotate(-45deg)}
+
+.mobile-adfilm-aspect-error-label{
+  color:#ffc2cd;
+  text-shadow:0 1px 4px rgba(0,0,0,.72);
+}
+
 @media (max-width:360px){
   .mobile-adfilm-reference-gallery{
     gap:6px;
