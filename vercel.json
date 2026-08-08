@@ -18,5 +18,11 @@
 
     { "source": "/studio", "destination": "/studio.v2.html" },
     { "source": "/studio/(.*)", "destination": "/studio.v2.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/push/watch/music",
+      "schedule": "*/5 * * * *"
+    }
   ]
 }
