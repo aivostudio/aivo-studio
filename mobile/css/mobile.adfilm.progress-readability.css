@@ -1,0 +1,31 @@
+.mobile-adfilm-production-progress{
+  padding-left:11px;
+  padding-right:11px;
+}
+
+.mobile-adfilm-production-stage{
+  margin-left:-2px;
+  margin-right:-2px;
+  padding:14px 8px;
+}
+
+.mobile-adfilm-production-stage b{
+  font-size:15px;
+  line-height:1.25;
+  letter-spacing:-.015em;
+}
+
+.mobile-adfilm-production-stage p{
+  margin-top:7px;
+  max-width:none;
+  width:100%;
+  font-size:12px;
+  line-height:1.45;
+}
+
+.mobile-adfilm-production-stage small{
+  margin-top:9px;
+  width:100%;
+  font-size:11px;
+  line-height:1.3;
+}
