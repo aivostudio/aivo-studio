@@ -15,6 +15,25 @@
     if (el) el.value = value;
   }
 
+  function isEnglish(){
+    try {
+      const lang = String(
+        window.AIVO_LANG ||
+        localStorage.getItem("aivo_mobile_language") ||
+        document.documentElement.lang ||
+        "tr"
+      ).toLowerCase();
+
+      return lang.indexOf("en") === 0;
+    } catch (_) {
+      return String(document.documentElement.lang || "tr").toLowerCase().indexOf("en") === 0;
+    }
+  }
+
+  function accountText(trText, enText){
+    return isEnglish() ? enText : trText;
+  }
+
   function getInitial(name, email){
     const base = String(name || email || "H").trim();
     return base.charAt(0).toUpperCase() || "H";
@@ -33,7 +52,7 @@
       email: email,
       name: name,
       surname: surname,
-      fullName: fullName || "Kullanıcı"
+      fullName: fullName || accountText("Kullanıcı", "User")
     };
   }
 
@@ -61,15 +80,18 @@
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
 
+    const fallbackUser = accountText("Kullanıcı", "User");
+
     setText("[data-mobile-profile-initial]", getInitial(user.fullName, user.email), root);
-    setText("[data-mobile-profile-name]", user.fullName || "Kullanıcı", root);
+    setText("[data-mobile-profile-name]", user.fullName || fallbackUser, root);
     setText("[data-mobile-profile-email]", user.email || "—", root);
 
     setValue("[data-mobile-profile-name-input]", user.name || "", root);
     setValue("[data-mobile-profile-surname-input]", user.surname || "", root);
     setValue("[data-mobile-profile-email-input]", user.email || "", root);
   }
-    async function savePassword(){
+
+  async function savePassword(){
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
 
@@ -84,17 +106,26 @@
     const newPassword2 = String(new2Input && new2Input.value ? new2Input.value : "").trim();
 
     if (!currentPassword || !newPassword || !newPassword2) {
-      alert("Lütfen tüm şifre alanlarını doldurun.");
+      alert(accountText(
+        "Lütfen tüm şifre alanlarını doldurun.",
+        "Please fill in all password fields."
+      ));
       return;
     }
 
     if (newPassword.length < 8) {
-      alert("Yeni şifre en az 8 karakter olmalı.");
+      alert(accountText(
+        "Yeni şifre en az 8 karakter olmalı.",
+        "The new password must be at least 8 characters."
+      ));
       return;
     }
 
     if (newPassword !== newPassword2) {
-      alert("Yeni şifreler eşleşmiyor.");
+      alert(accountText(
+        "Yeni şifreler eşleşmiyor.",
+        "The new passwords do not match."
+      ));
       return;
     }
 
@@ -128,24 +159,44 @@
       if (new2Input) new2Input.value = "";
       if (modal) modal.hidden = true;
 
+      const successMessage = accountText(
+        "Şifre güncellendi.",
+        "Password updated."
+      );
+
       if (window.toast && typeof window.toast.success === "function") {
-        window.toast.success("Şifre güncellendi.");
+        window.toast.success(successMessage);
       } else {
-        alert("Şifre güncellendi.");
+        alert(successMessage);
       }
-       } catch (err) {
+    } catch (err) {
       const code = String(err && err.message ? err.message : "");
 
-      let message = "Şifre güncellenemedi.";
+      let message = accountText(
+        "Şifre güncellenemedi.",
+        "Password could not be updated."
+      );
 
       if (code === "current_password_invalid") {
-        message = "Mevcut şifre yanlış.";
+        message = accountText(
+          "Mevcut şifre yanlış.",
+          "The current password is incorrect."
+        );
       } else if (code === "password_too_short") {
-        message = "Yeni şifre en az 8 karakter olmalı.";
+        message = accountText(
+          "Yeni şifre en az 8 karakter olmalı.",
+          "The new password must be at least 8 characters."
+        );
       } else if (code === "password_mismatch") {
-        message = "Yeni şifreler eşleşmiyor.";
+        message = accountText(
+          "Yeni şifreler eşleşmiyor.",
+          "The new passwords do not match."
+        );
       } else if (code === "password_same_as_old") {
-        message = "Yeni şifre mevcut şifreyle aynı olamaz.";
+        message = accountText(
+          "Yeni şifre mevcut şifreyle aynı olamaz.",
+          "The new password cannot be the same as the current password."
+        );
       }
 
       if (window.toast && typeof window.toast.error === "function") {
@@ -157,6 +208,7 @@
       if (submitBtn) submitBtn.disabled = false;
     }
   }
+
   async function saveProfile(){
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
@@ -169,7 +221,10 @@
     const surname = String(surnameInput && surnameInput.value ? surnameInput.value : "").trim();
 
     if (!name) {
-      alert("Ad alanı boş olamaz.");
+      alert(accountText(
+        "Ad alanı boş olamaz.",
+        "First name cannot be empty."
+      ));
       return;
     }
 
@@ -201,32 +256,43 @@
 
       hydrateProfile(nextUser);
 
+      const successMessage = accountText(
+        "Profil güncellendi.",
+        "Profile updated."
+      );
+
       if (window.toast && typeof window.toast.success === "function") {
-        window.toast.success("Profil güncellendi.");
+        window.toast.success(successMessage);
       } else {
-        alert("Profil güncellendi.");
+        alert(successMessage);
       }
     } catch (err) {
+      const errorMessage = accountText(
+        "Profil güncellenemedi.",
+        "Profile could not be updated."
+      );
+
       if (window.toast && typeof window.toast.error === "function") {
-        window.toast.error("Profil güncellenemedi.");
+        window.toast.error(errorMessage);
       } else {
-        alert("Profil güncellenemedi.");
+        alert(errorMessage);
       }
     } finally {
       if (saveBtn) saveBtn.disabled = false;
     }
   }
+
   async function initMobileAccount(){
     const root = document.getElementById("mobileAccountProfilePage");
     if (!root) return;
 
-     const saveBtn = qs("[data-mobile-profile-save]", root);
+    const saveBtn = qs("[data-mobile-profile-save]", root);
     if (saveBtn && !saveBtn.__mobileAccountSaveBound) {
       saveBtn.__mobileAccountSaveBound = true;
       saveBtn.addEventListener("click", saveProfile);
     }
 
-      const passwordBtn = qs("[data-mobile-password-open]", root);
+    const passwordBtn = qs("[data-mobile-password-open]", root);
     const passwordModal = qs("[data-mobile-password-modal]", root);
 
     if (passwordBtn && passwordModal && !passwordBtn.__mobilePasswordBound) {
@@ -235,7 +301,8 @@
         passwordModal.hidden = false;
       });
     }
-        if (passwordModal && !passwordModal.__mobilePasswordCloseBound) {
+
+    if (passwordModal && !passwordModal.__mobilePasswordCloseBound) {
       passwordModal.__mobilePasswordCloseBound = true;
       passwordModal.addEventListener("click", function(e){
         const closeBtn = e.target.closest("[data-mobile-password-close]");
@@ -245,12 +312,14 @@
         passwordModal.hidden = true;
       });
     }
-        const passwordSubmitBtn = qs("[data-mobile-password-submit]", root);
+
+    const passwordSubmitBtn = qs("[data-mobile-password-submit]", root);
 
     if (passwordSubmitBtn && !passwordSubmitBtn.__mobilePasswordSubmitBound) {
       passwordSubmitBtn.__mobilePasswordSubmitBound = true;
       passwordSubmitBtn.addEventListener("click", savePassword);
     }
+
     try {
       const user = await fetchMe();
       hydrateProfile(user);
@@ -259,7 +328,7 @@
         email: "",
         name: "",
         surname: "",
-        fullName: "Kullanıcı"
+        fullName: accountText("Kullanıcı", "User")
       });
     }
   }
