@@ -1,7 +1,7 @@
-(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V2(){
+(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V3(){
   "use strict";
-  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V2__) return;
-  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V2__ = true;
+  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V3__) return;
+  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V3__ = true;
 
   const selector = [
     "#mobileAdFilmPrimaryImage",
@@ -9,6 +9,7 @@
     "#mobileAdFilmSceneImages"
   ].join(",");
 
+  const FAL_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
   const rejected = new Map();
   let rejectedSequence = 0;
 
@@ -73,11 +74,18 @@
     return actual === expected;
   }
 
-  function isImageFile(file){
+  function normalizedFileType(file){
     const type = clean(file && file.type).toLowerCase();
+    if (type === "image/jpg") return "image/jpeg";
+    return type;
+  }
+
+  function supportedFalImage(file){
+    const type = normalizedFileType(file);
     const name = clean(file && file.name).toLowerCase();
-    if (type.indexOf("image/") === 0) return true;
-    return /\.(jpe?g|png|webp|heic|heif|avif|gif|bmp)$/i.test(name);
+
+    if (type) return FAL_IMAGE_TYPES.has(type);
+    return /\.(jpe?g|png|webp)$/i.test(name);
   }
 
   async function imageDimensions(file){
@@ -134,7 +142,7 @@
     if (node) node.remove();
   }
 
-  function addRejected(root, file, meta){
+  function addRejected(root, file, meta, reason){
     const gallery = galleryFor(root);
     if (!gallery) return;
 
@@ -162,7 +170,11 @@
 
     const badge = document.createElement("span");
     badge.className = "mobile-adfilm-reference-thumb-label mobile-adfilm-aspect-error-label";
-    badge.textContent = actual === "unknown" ? "FORMAT OKUNAMADI" : "UYUMSUZ · " + orientationLabel(actual).toUpperCase();
+    badge.textContent = reason === "format"
+      ? "DESTEKLENMİYOR"
+      : actual === "unknown"
+        ? "FORMAT OKUNAMADI"
+        : "UYUMSUZ · " + orientationLabel(actual).toUpperCase();
     thumb.appendChild(badge);
 
     const remove = document.createElement("button");
@@ -180,10 +192,14 @@
     }
   }
 
-  function warningMessage(format, meta){
+  function warningMessage(format, meta, reason){
+    if (reason === "format") {
+      return "Bu dosya desteklenmiyor. Reklam filmi referanslarında yalnız JPEG, PNG veya WebP kullanabilirsin.";
+    }
+
     const actual = actualOrientation(meta.width, meta.height);
     if (actual === "unknown") {
-      return "Görselin yönü okunamadı. Lütfen JPG, PNG veya WEBP olarak tekrar yükle.";
+      return "Görselin yönü okunamadı. Lütfen JPEG, PNG veya WebP olarak tekrar yükle.";
     }
     const expected = expectedOrientation(format);
     return "Seçtiğin video formatıyla bu görsel uyumlu değil. " + format + " için " + orientationLabel(expected) + " görsel yüklemelisin; seçtiğin görsel " + orientationLabel(actual) + ".";
@@ -215,20 +231,24 @@
     const invalid = [];
 
     for (const file of files) {
-      if (!isImageFile(file)) {
-        invalid.push({ file:file, meta:{ width:0, height:0 } });
+      if (!supportedFalImage(file)) {
+        invalid.push({ file:file, meta:{ width:0, height:0 }, reason:"format" });
         continue;
       }
+
       const meta = await imageDimensions(file);
-      if (!meta.width || !meta.height || !compatible(format, meta.width, meta.height)) invalid.push({ file:file, meta:meta });
-      else valid.push(file);
+      if (!meta.width || !meta.height || !compatible(format, meta.width, meta.height)) {
+        invalid.push({ file:file, meta:meta, reason:"aspect" });
+      } else {
+        valid.push(file);
+      }
     }
 
     dispatchFilteredChange(input, valid);
     if (!invalid.length) return;
 
-    invalid.forEach(function(item){ addRejected(root, item.file, item.meta); });
-    toast(warningMessage(format, invalid[0].meta));
+    invalid.forEach(function(item){ addRejected(root, item.file, item.meta, item.reason); });
+    toast(warningMessage(format, invalid[0].meta, invalid[0].reason));
   }
 
   document.addEventListener("change", function(event){
