@@ -11,6 +11,7 @@
 
   var PROJECT_KEY="aivo_adfilm_active_project_id_v2";
   var LEGACY_KEY="aivo_adfilm_active_project_id_v1";
+  var FORCE_BLANK_KEY="aivo_adfilm_force_blank_form_v1";
   var nativeFetch=window.fetch.bind(window);
   var resetting=false;
 
@@ -34,6 +35,41 @@
       "aivo_adfilm_narration_review_v1"
     ].forEach(function(key){try{localStorage.removeItem(key);sessionStorage.removeItem(key)}catch(_){}});
   }
+  function setForceBlankMarker(enabled){
+    try{if(enabled)sessionStorage.setItem(FORCE_BLANK_KEY,"1");else sessionStorage.removeItem(FORCE_BLANK_KEY)}catch(_){}
+  }
+  function forceBlankPending(){
+    try{return sessionStorage.getItem(FORCE_BLANK_KEY)==="1"}catch(_){return false}
+  }
+  function clearTextFields(scope){
+    if(!scope)return;
+    ["productName","brandName","description","targetAudience","cta","narrationText"].forEach(function(key){
+      scope.querySelectorAll('[data-adfilm-input="'+key+'"]').forEach(function(field){
+        try{
+          field.value="";
+          field.defaultValue="";
+          if(field.tagName==="TEXTAREA")field.textContent="";
+          field.removeAttribute("value");
+          field.removeAttribute("aria-invalid");
+          var control=field.closest(".adfilm-control");
+          if(control)control.classList.remove("has-error");
+          field.dispatchEvent(new Event("input",{bubbles:true}));
+          field.dispatchEvent(new Event("change",{bubbles:true}));
+        }catch(_){}
+      });
+    });
+    scope.querySelectorAll("[data-adfilm-count]").forEach(function(counter){counter.textContent="0"});
+  }
+  function enforceBlankAfterReload(scope){
+    if(!forceBlankPending())return;
+    [0,60,180,500,1100].forEach(function(delay){
+      setTimeout(function(){
+        var target=scope&&scope.isConnected?scope:document.querySelector('[data-module-root][data-module="adfilm"]');
+        clearTextFields(target);
+      },delay);
+    });
+    setTimeout(function(){setForceBlankMarker(false)},1800);
+  }
   async function json(url,options){
     var response=await nativeFetch(url,Object.assign({credentials:"include",cache:"no-store",headers:{"Content-Type":"application/json"}},options||{}));
     var data=await response.json().catch(function(){return{}});
@@ -47,6 +83,8 @@
     var oldProjectId=activeProjectId(scope);
     var handle=notify(message("Yeni boş taslak hazırlanıyor...","Preparing a fresh draft..."),"info");
     try{
+      clearTextFields(scope);
+      setForceBlankMarker(true);
       if(oldProjectId){
         await json("/api/ad-film/seedance/cancel",{
           method:"POST",
@@ -68,6 +106,7 @@
     }catch(error){
       resetting=false;
       window.__AIVO_AD_FILM_RESETTING__=false;
+      setForceBlankMarker(false);
       if(handle&&typeof handle.dismiss==="function")handle.dismiss();
       console.error("[ADFILM] safe reset",error);
       notify(message("Yeni taslak oluşturulamadı. Eski proje silinmedi.","A new draft could not be created. The old project was not deleted."),"error");
@@ -129,6 +168,12 @@
       headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store"}
     });
   };
+
+  document.addEventListener("aivo:module-mounted",function(event){
+    if(event&&event.detail&&event.detail.key==="adfilm")enforceBlankAfterReload(event.detail.root);
+  });
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){enforceBlankAfterReload(document.querySelector('[data-module-root][data-module="adfilm"]'))},{once:true});
+  else enforceBlankAfterReload(document.querySelector('[data-module-root][data-module="adfilm"]'));
 
   /* Manual recovery remains available through the backend endpoint when explicitly needed.
      It is intentionally not called during module mount or page load because that resurrected
