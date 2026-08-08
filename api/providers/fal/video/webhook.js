@@ -1,6 +1,12 @@
-const crypto = require('node:crypto');
-const { neon } = require('@neondatabase/serverless');
-const { sendPushToUser } = require('../../../_lib/push-user.js');
+import crypto from 'node:crypto';
+import { neon } from '@neondatabase/serverless';
+import pushUserModule from '../../../_lib/push-user.js';
+
+const { sendPushToUser } = pushUserModule;
+
+export const config = {
+  api: { bodyParser: false },
+};
 
 const JWKS_URL = 'https://rest.fal.ai/.well-known/jwks.json';
 const JWKS_CACHE_MS = 24 * 60 * 60 * 1000;
@@ -242,7 +248,7 @@ async function runServerCompletion(req, jobId) {
   return body;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ ok: false, error: 'method_not_allowed' });
@@ -367,4 +373,4 @@ module.exports = async function handler(req, res) {
       message: String(error?.message || error),
     });
   }
-};
+}
