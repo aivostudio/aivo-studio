@@ -1,0 +1,7 @@
+[data-mobile-adfilm-view="radio"] .mobile-adfilm-voice-play.is-playing::before{
+  width:14px;
+  height:15px;
+  background:
+    linear-gradient(to right,#fff 0 35%,transparent 35% 65%,#fff 65% 100%);
+  clip-path:none;
+}
