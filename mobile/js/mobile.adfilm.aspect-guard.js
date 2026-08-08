@@ -1,7 +1,7 @@
-(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V4(){
+(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V5(){
   "use strict";
-  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V4__) return;
-  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V4__ = true;
+  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V5__) return;
+  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V5__ = true;
 
   const selector = [
     "#mobileAdFilmPrimaryImage",
@@ -127,6 +127,14 @@
   async function supportedFalImage(file){
     const declaredType = normalizedFileType(file);
     const name = clean(file && file.name).toLowerCase();
+
+    if (/\.(heic|heif)$/i.test(name) || /image\/(heic|heif|heif-sequence|heic-sequence)/i.test(declaredType)) {
+      return { ok:false, label:"HEIF/HEIC" };
+    }
+    if (/\.avif$/i.test(name) || declaredType === "image/avif") {
+      return { ok:false, label:"AVIF" };
+    }
+
     const declaredAllowed = declaredType
       ? FAL_IMAGE_TYPES.has(declaredType)
       : /\.(jpe?g|png|webp)$/i.test(name);
@@ -244,7 +252,14 @@
 
   function warningMessage(format, meta, reason, formatLabel){
     if (reason === "format") {
-      return clean(formatLabel || "Bu dosya") + " desteklenmiyor. Reklam filmi referanslarında yalnız JPEG, PNG veya WebP kullanabilirsin.";
+      const label = clean(formatLabel || "Bu dosya");
+      if (label === "HEIF/HEIC") {
+        return "HEIF/HEIC görsel formatı desteklenmiyor. Lütfen fotoğrafı JPG, PNG veya WebP olarak yükle.";
+      }
+      if (label === "AVIF") {
+        return "AVIF görsel formatı desteklenmiyor. Lütfen fotoğrafı JPG, PNG veya WebP olarak yükle.";
+      }
+      return "Bu görsel formatı desteklenmiyor. Lütfen JPG, PNG veya WebP kullan.";
     }
 
     const actual = actualOrientation(meta.width, meta.height);
