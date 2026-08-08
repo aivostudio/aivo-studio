@@ -5,7 +5,8 @@
 
   const ROOT_SELECTOR = "#mobileAdFilmSection";
   const REPORT_SELECTOR = "#aivoMobileAdFilmReportSheet";
-  const PREFIXES = ["adfilm.", "radioad."];
+  const CREDIT_SELECTOR = "[data-mobile-credit-balance],#topCreditCount";
+  const PREFIXES = ["adfilm.", "radioad.", "top."];
   const ATTRIBUTES = ["placeholder", "aria-label", "title"];
   const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE"]);
   const templateCache = new Map();
@@ -17,7 +18,25 @@
     "Radyo Reklamı mobil iskeleti hazır. Sistem bağlantısı sonraki adımda yapılacak.": "radioad.action.needNarration"
   };
 
+  const fragments = [
+    { tr:"kelime", en:"words" },
+    { tr:"tahmini", en:"approx." },
+    { tr:"sn", en:"sec" },
+    { tr:"dk", en:"min" },
+    { tr:"Kredi", en:"Credits" },
+    { tr:"kredi", en:"credits" },
+    { tr:"Kayıpsız", en:"Lossless" },
+    { tr:"Reklam filmi hazır", en:"Commercial film ready" }
+  ];
+
   function clean(value){ return String(value == null ? "" : value).trim(); }
+
+  function currentLang(){
+    const value = clean(window.AIVO_LANG || document.documentElement.getAttribute("lang") || "tr").toLowerCase();
+    return value.indexOf("en") === 0 ? "en" : "tr";
+  }
+
+  function currentLocale(){ return currentLang() === "en" ? "en-US" : "tr-TR"; }
 
   function allowedKey(key){
     return PREFIXES.some(function(prefix){ return String(key || "").indexOf(prefix) === 0; });
@@ -66,10 +85,22 @@
     return result;
   }
 
-  function exactKeyFor(text){
+  function isUpperText(value){
+    const source = clean(value);
+    if (!source || !/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(source)) return false;
+    return source === source.toLocaleUpperCase("tr-TR");
+  }
+
+  function applyCase(source, translated){
+    if (!isUpperText(source)) return translated;
+    try { return String(translated).toLocaleUpperCase(currentLocale()); }
+    catch (_) { return String(translated).toUpperCase(); }
+  }
+
+  function exactMatchFor(text){
     const sourceText = clean(text);
-    if (!sourceText) return "";
-    if (aliases[sourceText]) return aliases[sourceText];
+    if (!sourceText) return null;
+    if (aliases[sourceText]) return { key:aliases[sourceText], ignoreCase:false };
 
     for (const lang of ["tr", "en"]) {
       const pack = dictionary(lang);
@@ -77,13 +108,36 @@
         if (!allowedKey(key)) continue;
         const value = String(pack[key] == null ? "" : pack[key]);
         if (value.indexOf("{") >= 0) continue;
-        if (value === sourceText) return key;
+        if (value === sourceText) return { key:key, ignoreCase:false };
+        try {
+          if (value.toLocaleLowerCase("tr-TR") === sourceText.toLocaleLowerCase("tr-TR")) {
+            return { key:key, ignoreCase:true };
+          }
+        } catch (_) {
+          if (value.toLowerCase() === sourceText.toLowerCase()) return { key:key, ignoreCase:true };
+        }
       }
+    }
+    return null;
+  }
+
+  function fragmentTranslation(text){
+    const sourceText = clean(text);
+    if (!sourceText) return "";
+    const lang = currentLang();
+    for (const pair of fragments) {
+      if (sourceText === pair.tr || sourceText === pair.en) return pair[lang];
+      try {
+        if (sourceText.toLocaleLowerCase("tr-TR") === pair.tr.toLocaleLowerCase("tr-TR") ||
+            sourceText.toLocaleLowerCase("en-US") === pair.en.toLocaleLowerCase("en-US")) {
+          return applyCase(sourceText, pair[lang]);
+        }
+      } catch (_) {}
     }
     return "";
   }
 
-  function templateMatchFor(text){
+  function templateMatchFor(text, depth){
     const sourceText = clean(text);
     if (!sourceText) return null;
 
@@ -99,14 +153,27 @@
         if (!match) continue;
 
         const params = {};
-        compiled.names.forEach(function(name, index){ params[name] = match[index + 1]; });
+        compiled.names.forEach(function(name, index){
+          params[name] = translateValue(match[index + 1], (depth || 0) + 1);
+        });
         return { key: key, params: params };
       }
     }
     return null;
   }
 
-  function translateValue(value){
+  function translateSeparated(sourceText, depth){
+    if (sourceText.indexOf(" · ") < 0) return "";
+    const parts = sourceText.split(" · ");
+    const translated = parts.map(function(part){ return translateValue(part, (depth || 0) + 1).trim(); });
+    const next = translated.join(" · ");
+    return next !== sourceText ? next : "";
+  }
+
+  function translateValue(value, depth){
+    depth = Number(depth || 0);
+    if (depth > 6) return String(value == null ? "" : value);
+
     const original = String(value == null ? "" : value);
     const leading = (original.match(/^\s*/) || [""])[0];
     const trailing = (original.match(/\s*$/) || [""])[0];
@@ -115,31 +182,40 @@
     const sourceText = clean(body);
     if (!sourceText) return original;
 
-    const exact = exactKeyFor(sourceText);
-    if (exact) return leading + translate(exact, null, sourceText) + trailing;
+    const exact = exactMatchFor(sourceText);
+    if (exact) {
+      const next = translate(exact.key, null, sourceText);
+      return leading + (exact.ignoreCase ? applyCase(sourceText, next) : next) + trailing;
+    }
 
-    const template = templateMatchFor(sourceText);
+    const fragment = fragmentTranslation(sourceText);
+    if (fragment) return leading + fragment + trailing;
+
+    const template = templateMatchFor(sourceText, depth);
     if (template) return leading + translate(template.key, template.params, sourceText) + trailing;
+
+    const separated = translateSeparated(sourceText, depth);
+    if (separated) return leading + separated + trailing;
 
     return original;
   }
 
   function inScope(node){
     const element = node && node.nodeType === 1 ? node : node && node.parentElement;
-    return !!(element && element.closest && element.closest(ROOT_SELECTOR + "," + REPORT_SELECTOR));
+    return !!(element && element.closest && element.closest(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR));
   }
 
   function translateAttribute(element, name){
     if (!element || !element.hasAttribute || !element.hasAttribute(name)) return;
     const before = element.getAttribute(name);
-    const after = translateValue(before);
+    const after = translateValue(before, 0);
     if (after !== before) element.setAttribute(name, after);
   }
 
   function translateTextNode(node){
     if (!node || node.nodeType !== 3 || !node.parentElement || SKIP_TAGS.has(node.parentElement.tagName)) return;
     const before = node.nodeValue;
-    const after = translateValue(before);
+    const after = translateValue(before, 0);
     if (after !== before) node.nodeValue = after;
   }
 
@@ -155,7 +231,10 @@
     const root = scope && scope.querySelectorAll ? scope : document;
     if (scope && scope.nodeType === 1 && inScope(scope)) translateElement(scope);
     if (!root.querySelectorAll) return;
-    root.querySelectorAll(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + ROOT_SELECTOR + " *," + REPORT_SELECTOR + " *").forEach(translateElement);
+    root.querySelectorAll(
+      ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR + "," +
+      ROOT_SELECTOR + " *," + REPORT_SELECTOR + " *"
+    ).forEach(translateElement);
   }
 
   function wrapToastObject(object){
@@ -165,9 +244,9 @@
       if (typeof original !== "function" || original.__aivoAdFilmI18nWrapped) return;
       const wrapped = function(payload){
         const args = Array.from(arguments);
-        if (typeof payload === "string") args[0] = translateValue(payload);
+        if (typeof payload === "string") args[0] = translateValue(payload, 0);
         else if (payload && typeof payload === "object" && typeof payload.message === "string") {
-          args[0] = Object.assign({}, payload, { message: translateValue(payload.message) });
+          args[0] = Object.assign({}, payload, { message: translateValue(payload.message, 0) });
         }
         return original.apply(this, args);
       };
@@ -183,7 +262,7 @@
     if (typeof original !== "function" || original.__aivoAdFilmI18nWrapped) return;
     const wrapped = function(message){
       const args = Array.from(arguments);
-      if (typeof message === "string") args[0] = translateValue(message);
+      if (typeof message === "string") args[0] = translateValue(message, 0);
       return original.apply(this, args);
     };
     wrapped.__aivoAdFilmI18nWrapped = true;
@@ -200,7 +279,7 @@
 
   if (typeof window.confirm === "function" && !window.confirm.__aivoAdFilmI18nWrapped) {
     const originalConfirm = window.confirm;
-    const wrappedConfirm = function(message){ return originalConfirm.call(window, translateValue(message)); };
+    const wrappedConfirm = function(message){ return originalConfirm.call(window, translateValue(message, 0)); };
     wrappedConfirm.__aivoAdFilmI18nWrapped = true;
     window.confirm = wrappedConfirm;
   }
@@ -227,12 +306,15 @@
 
   window.AIVOMobileAdFilmI18n = {
     refresh: refresh,
-    translate: translateValue
+    translate: function(value){ return translateValue(value, 0); },
+    locale: currentLocale,
+    language: currentLang
   };
 
   document.addEventListener("aivo:language-change", function(){
     setTimeout(refresh, 0);
     setTimeout(refresh, 80);
+    setTimeout(refresh, 260);
   });
   document.addEventListener("aivo:adfilm-project-sync", function(){ setTimeout(refresh, 0); });
   document.addEventListener("aivo:mobile-radioad-project-sync", function(){ setTimeout(refresh, 0); });
@@ -255,8 +337,8 @@
             return;
           }
           if (node.nodeType !== 1) return;
-          if (inScope(node) || (node.matches && node.matches(ROOT_SELECTOR + "," + REPORT_SELECTOR))) applyRuntimeI18n(node);
-          else if (node.querySelector && node.querySelector(ROOT_SELECTOR + "," + REPORT_SELECTOR)) applyRuntimeI18n(node);
+          if (inScope(node) || (node.matches && node.matches(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR))) applyRuntimeI18n(node);
+          else if (node.querySelector && node.querySelector(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR)) applyRuntimeI18n(node);
         });
       });
     });
