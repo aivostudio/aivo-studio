@@ -1,7 +1,7 @@
-(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V3(){
+(function AIVO_MOBILE_ADFILM_ASPECT_GUARD_V4(){
   "use strict";
-  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V3__) return;
-  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V3__ = true;
+  if (window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V4__) return;
+  window.__AIVO_MOBILE_ADFILM_ASPECT_GUARD_V4__ = true;
 
   const selector = [
     "#mobileAdFilmPrimaryImage",
@@ -80,12 +80,62 @@
     return type;
   }
 
-  function supportedFalImage(file){
-    const type = normalizedFileType(file);
-    const name = clean(file && file.name).toLowerCase();
+  function ascii(bytes, start, end){
+    let out = "";
+    for (let i = start; i < end && i < bytes.length; i += 1) out += String.fromCharCode(bytes[i]);
+    return out;
+  }
 
-    if (type) return FAL_IMAGE_TYPES.has(type);
-    return /\.(jpe?g|png|webp)$/i.test(name);
+  async function sniffImageFormat(file){
+    try {
+      const buffer = await file.slice(0, 32).arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+
+      if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+        return { ok:true, type:"image/jpeg", label:"JPEG" };
+      }
+
+      if (
+        bytes.length >= 8 &&
+        bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+        bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a
+      ) {
+        return { ok:true, type:"image/png", label:"PNG" };
+      }
+
+      if (bytes.length >= 12 && ascii(bytes, 0, 4) === "RIFF" && ascii(bytes, 8, 12) === "WEBP") {
+        return { ok:true, type:"image/webp", label:"WebP" };
+      }
+
+      if (bytes.length >= 12 && ascii(bytes, 4, 8) === "ftyp") {
+        const brand = ascii(bytes, 8, 12).toLowerCase();
+        if (["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"].includes(brand)) {
+          return { ok:false, type:"image/heif", label:"HEIF/HEIC" };
+        }
+        if (["avif", "avis"].includes(brand)) {
+          return { ok:false, type:"image/avif", label:"AVIF" };
+        }
+        return { ok:false, type:"application/octet-stream", label:"DESTEKLENMEYEN FORMAT" };
+      }
+
+      return { ok:false, type:"application/octet-stream", label:"BİLİNMEYEN FORMAT" };
+    } catch (_) {
+      return { ok:false, type:"application/octet-stream", label:"FORMAT OKUNAMADI" };
+    }
+  }
+
+  async function supportedFalImage(file){
+    const declaredType = normalizedFileType(file);
+    const name = clean(file && file.name).toLowerCase();
+    const declaredAllowed = declaredType
+      ? FAL_IMAGE_TYPES.has(declaredType)
+      : /\.(jpe?g|png|webp)$/i.test(name);
+
+    const sniffed = await sniffImageFormat(file);
+    if (!sniffed.ok) return { ok:false, label:sniffed.label };
+    if (!declaredAllowed) return { ok:false, label:sniffed.label };
+    if (declaredType && declaredType !== sniffed.type) return { ok:false, label:sniffed.label };
+    return { ok:true, label:sniffed.label, type:sniffed.type };
   }
 
   async function imageDimensions(file){
@@ -142,7 +192,7 @@
     if (node) node.remove();
   }
 
-  function addRejected(root, file, meta, reason){
+  function addRejected(root, file, meta, reason, formatLabel){
     const gallery = galleryFor(root);
     if (!gallery) return;
 
@@ -171,7 +221,7 @@
     const badge = document.createElement("span");
     badge.className = "mobile-adfilm-reference-thumb-label mobile-adfilm-aspect-error-label";
     badge.textContent = reason === "format"
-      ? "DESTEKLENMİYOR"
+      ? "DESTEKLENMİYOR · " + clean(formatLabel || "FORMAT")
       : actual === "unknown"
         ? "FORMAT OKUNAMADI"
         : "UYUMSUZ · " + orientationLabel(actual).toUpperCase();
@@ -192,9 +242,9 @@
     }
   }
 
-  function warningMessage(format, meta, reason){
+  function warningMessage(format, meta, reason, formatLabel){
     if (reason === "format") {
-      return "Bu dosya desteklenmiyor. Reklam filmi referanslarında yalnız JPEG, PNG veya WebP kullanabilirsin.";
+      return clean(formatLabel || "Bu dosya") + " desteklenmiyor. Reklam filmi referanslarında yalnız JPEG, PNG veya WebP kullanabilirsin.";
     }
 
     const actual = actualOrientation(meta.width, meta.height);
@@ -231,14 +281,15 @@
     const invalid = [];
 
     for (const file of files) {
-      if (!supportedFalImage(file)) {
-        invalid.push({ file:file, meta:{ width:0, height:0 }, reason:"format" });
+      const formatCheck = await supportedFalImage(file);
+      if (!formatCheck.ok) {
+        invalid.push({ file:file, meta:{ width:0, height:0 }, reason:"format", formatLabel:formatCheck.label });
         continue;
       }
 
       const meta = await imageDimensions(file);
       if (!meta.width || !meta.height || !compatible(format, meta.width, meta.height)) {
-        invalid.push({ file:file, meta:meta, reason:"aspect" });
+        invalid.push({ file:file, meta:meta, reason:"aspect", formatLabel:formatCheck.label });
       } else {
         valid.push(file);
       }
@@ -247,8 +298,8 @@
     dispatchFilteredChange(input, valid);
     if (!invalid.length) return;
 
-    invalid.forEach(function(item){ addRejected(root, item.file, item.meta, item.reason); });
-    toast(warningMessage(format, invalid[0].meta, invalid[0].reason));
+    invalid.forEach(function(item){ addRejected(root, item.file, item.meta, item.reason, item.formatLabel); });
+    toast(warningMessage(format, invalid[0].meta, invalid[0].reason, invalid[0].formatLabel));
   }
 
   document.addEventListener("change", function(event){
