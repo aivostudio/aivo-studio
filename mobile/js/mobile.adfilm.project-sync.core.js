@@ -14,6 +14,7 @@
   const productName = root.querySelector("#mobileAdFilmProductName");
   const brandName = root.querySelector("#mobileAdFilmBrandName");
   const description = root.querySelector("#mobileAdFilmDescription");
+  const creativeBrief = root.querySelector("#mobileAdFilmCreativeBrief");
   const voiceEnabled = root.querySelector("#mobileAdFilmVoiceEnabled");
   const voiceLanguage = root.querySelector("#mobileAdFilmVoiceLanguage");
   const voiceStyle = root.querySelector("#mobileAdFilmVoiceStyle");
@@ -181,6 +182,7 @@
         productName: productName ? productName.value : "",
         brandName: brandName ? brandName.value : "",
         description: description ? description.value : "",
+        creativeBrief: creativeBrief ? creativeBrief.value : "",
         targetAudience: "",
         cta: ""
       },
@@ -236,7 +238,7 @@
   }
 
   function formMostlyEmpty(){
-    return !clean(productName && productName.value) && !clean(description && description.value) && !clean(narrationText && narrationText.value);
+    return !clean(productName && productName.value) && !clean(description && description.value) && !clean(creativeBrief && creativeBrief.value) && !clean(narrationText && narrationText.value);
   }
 
   function setValue(node, value, eventName){
@@ -260,6 +262,10 @@
     if (description) {
       description.value = brief.description || "";
       description.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    if (creativeBrief) {
+      creativeBrief.value = brief.creativeBrief || "";
+      creativeBrief.dispatchEvent(new Event("input", { bubbles: true }));
     }
     if (voiceEnabled && typeof narration.enabled === "boolean") {
       voiceEnabled.checked = narration.enabled;
@@ -365,7 +371,7 @@
   }
 
   function bindAutoSave(){
-    [productName, brandName, description, narrationText].filter(Boolean).forEach(function(node){
+    [productName, brandName, description, creativeBrief, narrationText].filter(Boolean).forEach(function(node){
       node.addEventListener("input", function(){ queueSave(); });
     });
 
