@@ -99,23 +99,24 @@
     }
   }
 
-  function isolateRadioBuildFromVideoGuard(event){
+  function routeRadioBuild(event){
     if (!actionButton || !event || !event.target || !event.target.closest) return;
-    const clicked = event.target.closest(".mobile-adfilm-create-button");
+    const clicked = event.target.closest("[data-mobile-radio-action] .mobile-adfilm-create-button");
     if (clicked !== actionButton) return;
 
-    actionButton.classList.remove("mobile-adfilm-create-button");
-    const restore = function(){
-      if (actionButton && !actionButton.classList.contains("mobile-adfilm-create-button")) {
-        actionButton.classList.add("mobile-adfilm-create-button");
-      }
-    };
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
 
-    if (typeof queueMicrotask === "function") queueMicrotask(restore);
-    else Promise.resolve().then(restore);
+    Promise.resolve().then(function(){
+      const production = window.AIVOMobileRadioAdProduction;
+      if (production && typeof production.run === "function") {
+        production.run();
+      }
+    });
   }
 
-  document.addEventListener("click", isolateRadioBuildFromVideoGuard, true);
+  document.addEventListener("click", routeRadioBuild, true);
 
   if (durationSelect){
     durationSelect.addEventListener("change", syncProductionPrice);
@@ -145,7 +146,7 @@
   }
 
   window.addEventListener("pagehide", function(){
-    document.removeEventListener("click", isolateRadioBuildFromVideoGuard, true);
+    document.removeEventListener("click", routeRadioBuild, true);
   }, { once:true });
 
   syncProductionPrice();
