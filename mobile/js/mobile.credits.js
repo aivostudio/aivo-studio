@@ -2,7 +2,6 @@
   if (window.__AIVO_MOBILE_CREDITS__) return;
   window.__AIVO_MOBILE_CREDITS__ = true;
 
- 
   const PLAN_MAP = {
     baslangic: {
       plan: "baslangic",
@@ -25,67 +24,99 @@
       credits: 500
     }
   };
+
   const MOBILE_PRICE_MAP = {
-  tr: {
-    starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
-    standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
-    pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
-    studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
-  },
-  us: {
-    starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
-    standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
-    pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
-    studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
-  },
-  eu: {
-    starter: { price: "199₺", amount: "/ 25 kredi", metric: "Kredi başına ₺7.96" },
-    standard: { price: "699₺", amount: "/ 100 kredi", metric: "Kredi başına ₺6.99" },
-    pro: { price: "1.299₺", amount: "/ 200 kredi", metric: "Kredi başına ₺6.49" },
-    studio: { price: "2.999₺", amount: "/ 500 kredi", metric: "Kredi başına ₺6.00" }
-  }
-};
+    tr: {
+      starter: { price: "199₺", amountKey: "credits.pack.starterAmount", metricKey: "credits.pack.starterMetric" },
+      standard: { price: "699₺", amountKey: "credits.pack.standardAmount", metricKey: "credits.pack.standardMetric" },
+      pro: { price: "1.299₺", amountKey: "credits.pack.proAmount", metricKey: "credits.pack.proMetric" },
+      studio: { price: "2.999₺", amountKey: "credits.pack.studioAmount", metricKey: "credits.pack.studioMetric" }
+    },
+    us: {
+      starter: { price: "199₺", amountKey: "credits.pack.starterAmount", metricKey: "credits.pack.starterMetric" },
+      standard: { price: "699₺", amountKey: "credits.pack.standardAmount", metricKey: "credits.pack.standardMetric" },
+      pro: { price: "1.299₺", amountKey: "credits.pack.proAmount", metricKey: "credits.pack.proMetric" },
+      studio: { price: "2.999₺", amountKey: "credits.pack.studioAmount", metricKey: "credits.pack.studioMetric" }
+    },
+    eu: {
+      starter: { price: "199₺", amountKey: "credits.pack.starterAmount", metricKey: "credits.pack.starterMetric" },
+      standard: { price: "699₺", amountKey: "credits.pack.standardAmount", metricKey: "credits.pack.standardMetric" },
+      pro: { price: "1.299₺", amountKey: "credits.pack.proAmount", metricKey: "credits.pack.proMetric" },
+      studio: { price: "2.999₺", amountKey: "credits.pack.studioAmount", metricKey: "credits.pack.studioMetric" }
+    }
+  };
 
-function getMobilePriceRegion(){
-  const lang = String(
-    localStorage.getItem("aivo_mobile_language") ||
-    document.documentElement.lang ||
-    navigator.language ||
-    "tr"
-  ).toLowerCase();
+  function isEnglish(){
+    try {
+      const lang = String(
+        window.AIVO_LANG ||
+        localStorage.getItem("aivo_mobile_language") ||
+        document.documentElement.lang ||
+        navigator.language ||
+        "tr"
+      ).toLowerCase();
 
-  if (lang.startsWith("tr")) return "tr";
-
-  if (
-    lang.startsWith("de") ||
-    lang.startsWith("fr") ||
-    lang.startsWith("es") ||
-    lang.startsWith("it") ||
-    lang.startsWith("nl") ||
-    lang.startsWith("pt")
-  ) {
-    return "eu";
+      return lang.startsWith("en");
+    } catch (_) {
+      return String(document.documentElement.lang || "tr").toLowerCase().startsWith("en");
+    }
   }
 
-  return "us";
-}
+  function creditsText(trText, enText){
+    return isEnglish() ? enText : trText;
+  }
 
-function applyMobileCreditPrices(){
-  const region = getMobilePriceRegion();
-  const prices = MOBILE_PRICE_MAP[region] || MOBILE_PRICE_MAP.tr;
+  function tt(key, trFallback, enFallback){
+    try {
+      if (typeof window.t === "function") {
+        const value = window.t(key);
+        if (value && value !== key) return value;
+      }
+    } catch (_) {}
 
-  Object.keys(prices).forEach(function(key){
-    const item = prices[key];
+    return creditsText(trFallback, enFallback || trFallback);
+  }
 
-    const priceEl = document.querySelector('[data-mobile-price="' + key + '"]');
-    const amountEl = document.querySelector('[data-mobile-price-label="' + key + '"]');
-    const metricEl = document.querySelector('[data-mobile-price-metric="' + key + '"]');
+  function getMobilePriceRegion(){
+    const lang = String(
+      localStorage.getItem("aivo_mobile_language") ||
+      document.documentElement.lang ||
+      navigator.language ||
+      "tr"
+    ).toLowerCase();
 
-    if (priceEl) priceEl.textContent = item.price;
-    if (amountEl) amountEl.textContent = item.amount;
-    if (metricEl) metricEl.textContent = item.metric;
-  });
-}
+    if (lang.startsWith("tr")) return "tr";
+
+    if (
+      lang.startsWith("de") ||
+      lang.startsWith("fr") ||
+      lang.startsWith("es") ||
+      lang.startsWith("it") ||
+      lang.startsWith("nl") ||
+      lang.startsWith("pt")
+    ) {
+      return "eu";
+    }
+
+    return "us";
+  }
+
+  function applyMobileCreditPrices(){
+    const region = getMobilePriceRegion();
+    const prices = MOBILE_PRICE_MAP[region] || MOBILE_PRICE_MAP.tr;
+
+    Object.keys(prices).forEach(function(key){
+      const item = prices[key];
+
+      const priceEl = document.querySelector('[data-mobile-price="' + key + '"]');
+      const amountEl = document.querySelector('[data-mobile-price-label="' + key + '"]');
+      const metricEl = document.querySelector('[data-mobile-price-metric="' + key + '"]');
+
+      if (priceEl) priceEl.textContent = item.price;
+      if (amountEl) amountEl.textContent = tt(item.amountKey, amountEl.textContent, amountEl.textContent);
+      if (metricEl) metricEl.textContent = tt(item.metricKey, metricEl.textContent, metricEl.textContent);
+    });
+  }
 
   function $(selector, root){
     return (root || document).querySelector(selector);
@@ -135,7 +166,13 @@ function applyMobileCreditPrices(){
 
   async function hydrateCredits(){
     const balanceEl = $("#mobileCreditsBalance");
-    if (balanceEl) balanceEl.textContent = "Yükleniyor...";
+    if (balanceEl) {
+      balanceEl.textContent = tt(
+        "common.loading",
+        "Yükleniyor...",
+        "Loading..."
+      );
+    }
 
     try {
       const res = await fetch("/api/credits/get", {
@@ -172,9 +209,11 @@ function applyMobileCreditPrices(){
     const hint = $("#mobileCreditsKvkkHint");
 
     if (hint) {
-         hint.textContent =
-        (window.aivoI18n && window.aivoI18n.t("credits.kvkkHint")) ||
-        "Devam etmek için KVKK onayını kabul etmelisin.";
+      hint.textContent = tt(
+        "credits.kvkkHint",
+        "Devam etmek için KVKK onayını işaretlemelisin.",
+        "You must confirm the privacy consent to continue."
+      );
       hint.style.display = "block";
     }
 
@@ -196,16 +235,20 @@ function applyMobileCreditPrices(){
     if (isLoading) {
       button.dataset.originalText = button.textContent;
       button.disabled = true;
-        button.textContent =
-        (window.aivoI18n && window.aivoI18n.t("credits.paymentLoading")) ||
-        "Ödeme hazırlanıyor...";
+      button.textContent = tt(
+        "credits.paymentLoading",
+        "Ödeme hazırlanıyor...",
+        "Preparing payment..."
+      );
       return;
     }
 
     button.disabled = false;
-     button.textContent =
-      button.dataset.originalText ||
-      ((window.aivoI18n && window.aivoI18n.t("credits.pack.select")) || "Paketi seç");
+    button.textContent = button.dataset.originalText || tt(
+      "credits.pack.select",
+      "Paketi seç",
+      "Select package"
+    );
   }
 
   function submitGatewayForm(gateway){
@@ -238,10 +281,11 @@ function applyMobileCreditPrices(){
     const pack = PLAN_MAP[planKey];
 
     if (!pack) {
-       alert(
-        (window.aivoI18n && window.aivoI18n.t("credits.invalidPackage")) ||
-        "Geçersiz paket seçimi."
-      );
+      alert(tt(
+        "credits.invalidPackage",
+        "Geçersiz paket seçimi.",
+        "Invalid package selection."
+      ));
       return;
     }
 
@@ -263,7 +307,7 @@ function applyMobileCreditPrices(){
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-            body: JSON.stringify({
+        body: JSON.stringify({
           user_id: me.user_id,
           email: me.email,
           plan: pack.plan,
@@ -294,10 +338,11 @@ function applyMobileCreditPrices(){
       submitGatewayForm(data.gateway);
     } catch (err) {
       console.error("[AIVO mobile credits] checkout failed:", err);
-        alert(
-        (window.aivoI18n && window.aivoI18n.t("credits.paymentFailed")) ||
-        "Ödeme başlatılamadı. Lütfen tekrar dene."
-      );
+      alert(tt(
+        "credits.paymentFailed",
+        "Ödeme başlatılamadı. Lütfen tekrar dene.",
+        "Payment could not be started. Please try again."
+      ));
       setButtonLoading(button, false);
     }
   }
@@ -318,16 +363,18 @@ function applyMobileCreditPrices(){
       startCheckout(planKey, button);
     });
   }
-window.mobileCreditsInit = function(){
-  bindClicks();
-  hydrateCredits();
-  applyMobileCreditPrices();
-};
-function boot(){
-  bindClicks();
-  hydrateCredits();
-  applyMobileCreditPrices();
-}
+
+  window.mobileCreditsInit = function(){
+    bindClicks();
+    hydrateCredits();
+    applyMobileCreditPrices();
+  };
+
+  function boot(){
+    bindClicks();
+    hydrateCredits();
+    applyMobileCreditPrices();
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot, { once: true });
