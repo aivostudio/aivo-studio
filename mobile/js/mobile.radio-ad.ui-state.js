@@ -27,6 +27,16 @@
     return String(value == null ? "" : value).trim();
   }
 
+  function t(key, params, fallback){
+    try{
+      if (typeof window.t === "function"){
+        const value = window.t(key, params);
+        if (value && value !== key) return String(value);
+      }
+    }catch(_){ }
+    return fallback == null ? key : String(fallback);
+  }
+
   function duration(){
     const value = Number(durationSelect && durationSelect.value || 30);
     return [10,15,30,45,60].includes(value) ? value : 30;
@@ -43,9 +53,9 @@
 
   function musicLabel(){
     const mode = clean(musicModeSelect && musicModeSelect.value).toLowerCase();
-    if (mode === "off") return "Müziksiz";
-    if (mode === "upload") return "Yüklenen müzik";
-    return "AIVO müziği";
+    if (mode === "off") return t("radioad.music.modeNoMusic", null, "Müziksiz");
+    if (mode === "upload") return t("radioad.music.modeUploaded", null, "Yüklenen müzik");
+    return t("radioad.music.modeAivo", null, "AIVO müziği");
   }
 
   function syncFormatOptionLabels(){
@@ -53,8 +63,8 @@
     const seconds = duration();
     const mp3 = formatSelect.querySelector('option[value="mp3"]');
     const wav = formatSelect.querySelector('option[value="wav"]');
-    if (mp3) mp3.textContent = "MP3 · 320 kbps · " + price("mp3", seconds) + " Kredi";
-    if (wav) wav.textContent = "WAV · Kayıpsız · " + price("wav", seconds) + " Kredi";
+    if (mp3) mp3.textContent = t("radioad.settings.mp3", { credits:price("mp3", seconds) }, "MP3 · 320 kbps · " + price("mp3", seconds) + " Kredi");
+    if (wav) wav.textContent = t("radioad.settings.wav", { credits:price("wav", seconds) }, "WAV · Kayıpsız · " + price("wav", seconds) + " Kredi");
   }
 
   function syncProductionPrice(){
@@ -65,14 +75,19 @@
     syncFormatOptionLabels();
 
     if (actionButton){
-      actionButton.textContent = "Radyo Reklamını Oluştur (" + amount + " Kredi)";
+      actionButton.textContent = t("radioad.action.create", { credits:amount }, "Radyo Reklamını Oluştur (" + amount + " Kredi)");
       actionButton.setAttribute("data-credit-cost", String(amount));
       actionButton.setAttribute("data-credit-duration", String(seconds));
       actionButton.setAttribute("data-credit-format", fmt);
     }
 
     if (actionSummary){
-      actionSummary.textContent = seconds + " sn · Seslendirme · " + musicLabel() + " · " + fmt.toUpperCase() + (fmt === "mp3" ? " 320 kbps" : " Kayıpsız");
+      const formatLabel = fmt.toUpperCase() + (fmt === "mp3" ? " 320 kbps" : "");
+      actionSummary.textContent = t("radioad.action.summary", {
+        duration:seconds,
+        music:musicLabel(),
+        format:formatLabel
+      }, seconds + " sn · Seslendirme · " + musicLabel() + " · " + formatLabel);
     }
 
     try{
@@ -89,10 +104,13 @@
     if (!preview || !narrationCreateButton) return;
     if (preview.dataset.state !== "loading") return;
 
-    const status = clean(narrationStatus && narrationStatus.textContent).toLowerCase();
-    const nextLabel = status.indexOf("düzenlen") >= 0
-      ? "Ses düzenleniyor..."
-      : "Ses oluşturuluyor...";
+    const status = clean(narrationStatus && narrationStatus.textContent);
+    const masteringTr = t("radioad.narration.mastering", null, "Ses düzenleniyor...");
+    const masteringEn = "Processing voice...";
+    const isMastering = status === masteringTr || status === masteringEn || /düzenlen|processing voice/i.test(status);
+    const nextLabel = isMastering
+      ? t("radioad.narration.mastering", null, "Ses düzenleniyor...")
+      : t("radioad.narration.loadingCreate", null, "Ses oluşturuluyor...");
 
     if (narrationCreateButton.textContent !== nextLabel) {
       narrationCreateButton.textContent = nextLabel;
@@ -133,6 +151,10 @@
   }
 
   document.addEventListener("aivo:mobile-radioad-project-sync", syncProductionPrice);
+  document.addEventListener("aivo:language-change", function(){
+    syncProductionPrice();
+    syncNarrationLoadingLabel();
+  });
 
   if (preview){
     const narrationObserver = new MutationObserver(syncNarrationLoadingLabel);

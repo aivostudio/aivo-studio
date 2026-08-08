@@ -19,6 +19,28 @@
     return Array.from((root || document).querySelectorAll(sel));
   }
 
+  function currentLanguage(){
+    try {
+      const value = String(
+        window.AIVO_LANG ||
+        localStorage.getItem("aivo_mobile_language") ||
+        document.documentElement.lang ||
+        "tr"
+      ).toLowerCase();
+      return value.startsWith("en") ? "en" : "tr";
+    } catch (_) {
+      return "tr";
+    }
+  }
+
+  function currentLocale(){
+    return currentLanguage() === "en" ? "en-US" : "tr-TR";
+  }
+
+  function invoiceText(trText, enText){
+    return currentLanguage() === "en" ? enText : trText;
+  }
+
   function escapeHtml(value){
     return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
@@ -60,21 +82,17 @@
     const time = toTime(value);
     if (!time) return "-";
 
-   const locale = String(window.AIVO_LANG || "").toLowerCase() === "en"
-  ? "en-US"
-  : "tr-TR";
-
-return new Date(time).toLocaleDateString(locale, {
-  day: "2-digit",
-  month: "long",
-  year: "numeric"
-});
+    return new Date(time).toLocaleDateString(currentLocale(), {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
   }
 
   function formatMoney(value){
     const n = Number(value || 0);
 
-    return n.toLocaleString("tr-TR", {
+    return n.toLocaleString(currentLocale(), {
       style: "currency",
       currency: "TRY",
       maximumFractionDigits: 0
@@ -136,33 +154,34 @@ return new Date(time).toLocaleDateString(locale, {
 
   function statusLabel(invoice){
     const status = String(invoice.status || "").toLowerCase();
-if (status === "paid" || status === "succeeded" || status === "success") {
-  return window.t ? window.t("invoices.statusPaid") : "Ödendi";
-}
 
-if (
-  status === "refunded" ||
-  status === "partial_refund" ||
-  status === "partially_refunded"
-) {
-  return window.t ? window.t("invoices.statusRefunded") : "İade Edildi";
-}
+    if (status === "paid" || status === "succeeded" || status === "success") {
+      return window.t ? window.t("invoices.statusPaid") : "Ödendi";
+    }
 
-if (
-  status === "pending" ||
-  status === "open" ||
-  status === "processing"
-) {
-  return window.t ? window.t("invoices.statusPending") : "Beklemede";
-}
+    if (
+      status === "refunded" ||
+      status === "partial_refund" ||
+      status === "partially_refunded"
+    ) {
+      return window.t ? window.t("invoices.statusRefunded") : "İade Edildi";
+    }
 
-if (status === "failed" || status === "error") {
-  return window.t ? window.t("invoices.statusFailed") : "Başarısız";
-}
+    if (
+      status === "pending" ||
+      status === "open" ||
+      status === "processing"
+    ) {
+      return window.t ? window.t("invoices.statusPending") : "Beklemede";
+    }
 
-if (status === "canceled" || status === "cancelled") {
-  return window.t ? window.t("invoices.statusCancelled") : "İptal";
-}
+    if (status === "failed" || status === "error") {
+      return window.t ? window.t("invoices.statusFailed") : "Başarısız";
+    }
+
+    if (status === "canceled" || status === "cancelled") {
+      return window.t ? window.t("invoices.statusCancelled") : "İptal";
+    }
 
     return invoice.status || "-";
   }
@@ -172,25 +191,25 @@ if (status === "canceled" || status === "cancelled") {
     const id = String(invoice.id || invoice.order_id || invoice.orderId || "").trim();
     const credits = getCredits(invoice);
 
-  const title = credits > 0
-  ? credits + " " + (window.t ? window.t("invoices.creditPackage") : "Kredilik Paket")
-  : (
-      invoice.pack ||
-      invoice.pack_key ||
-      invoice.plan ||
-      invoice.title ||
-      (window.t ? window.t("invoices.defaultPackage") : "Kredi Paketi")
-    );
+    const title = credits > 0
+      ? credits + " " + (window.t ? window.t("invoices.creditPackage") : "Kredilik Paket")
+      : (
+          invoice.pack ||
+          invoice.pack_key ||
+          invoice.plan ||
+          invoice.title ||
+          (window.t ? window.t("invoices.defaultPackage") : "Kredi Paketi")
+        );
 
-const sub = credits > 0
-  ? (
-      (window.t ? window.t("invoices.totalCredits") : "Toplam") +
-      " " +
-      credits +
-      " " +
-      (window.t ? window.t("invoices.creditDefined") : "kredi tanımı")
-    )
-  : (window.t ? window.t("invoices.purchaseDetail") : "Satın alım detayı");
+    const sub = credits > 0
+      ? (
+          (window.t ? window.t("invoices.totalCredits") : "Toplam") +
+          " " +
+          credits +
+          " " +
+          (window.t ? window.t("invoices.creditDefined") : "kredi tanımı")
+        )
+      : (window.t ? window.t("invoices.purchaseDetail") : "Satın alım detayı");
 
     const amount = formatMoney(getAmount(invoice));
     const date = formatDate(getCreatedAt(invoice));
@@ -202,18 +221,21 @@ const sub = credits > 0
       : "";
 
     const actionText = type === "refund"
-  ? (window.t ? window.t("invoices.openRefund") : "İade Belgesini Aç")
-  : (window.t ? window.t("invoices.openInvoice") : "Faturayı Görüntüle");
+      ? (window.t ? window.t("invoices.openRefund") : "İade Belgesini Aç")
+      : (window.t ? window.t("invoices.openInvoice") : "Faturayı Görüntüle");
 
-const typeText = type === "refund"
-  ? (window.t ? window.t("invoices.typeRefund") : "İade")
-  : (window.t ? window.t("invoices.typePurchase") : "Satın Alım");
+    const typeText = type === "refund"
+      ? (window.t ? window.t("invoices.typeRefund") : "İade")
+      : (window.t ? window.t("invoices.typePurchase") : "Satın Alım");
+
+    const recordLabel = invoiceText("AIVO FATURA KAYDI", "AIVO INVOICE RECORD");
+    const documentNotReady = invoiceText("Belge Hazır Değil", "Document Not Ready");
 
     return `
       <article class="mobile-invoice-card" data-mobile-invoice-type="${escapeHtml(type)}">
         <div class="mobile-invoice-top">
           <div>
-            <small>AIVO FATURA KAYDI</small>
+            <small>${escapeHtml(recordLabel)}</small>
             <h3>${escapeHtml(title)}</h3>
             <p>${escapeHtml(sub)}</p>
           </div>
@@ -223,17 +245,17 @@ const typeText = type === "refund"
 
         <div class="mobile-invoice-meta">
           <div>
-           <small>${window.t ? window.t("invoices.date") : "Tarih"}</small>
+            <small>${window.t ? window.t("invoices.date") : "Tarih"}</small>
             <strong>${escapeHtml(date)}</strong>
           </div>
 
           <div>
-           <small>${window.t ? window.t("invoices.status") : "Durum"}</small>
+            <small>${window.t ? window.t("invoices.status") : "Durum"}</small>
             <strong>${escapeHtml(status)}</strong>
           </div>
 
           <div>
-          <small>${window.t ? window.t("invoices.amount") : "Tutar"}</small>
+            <small>${window.t ? window.t("invoices.amount") : "Tutar"}</small>
             <strong>${escapeHtml(amount)}</strong>
           </div>
         </div>
@@ -241,7 +263,7 @@ const typeText = type === "refund"
         ${
           openUrl
             ? `<a class="mobile-invoice-btn" href="${escapeHtml(openUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(actionText)}</a>`
-            : `<button class="mobile-invoice-btn" type="button" disabled>Belge Hazır Değil</button>`
+            : `<button class="mobile-invoice-btn" type="button" disabled>${escapeHtml(documentNotReady)}</button>`
         }
       </article>
     `;
@@ -268,9 +290,9 @@ const typeText = type === "refund"
       empty.hidden = visibleCount > 0;
 
       if (visibleCount === 0) {
-       empty.textContent = window.t
-  ? window.t("invoices.emptyFilter")
-  : "Bu filtre için fatura bulunamadı.";
+        empty.textContent = window.t
+          ? window.t("invoices.emptyFilter")
+          : "Bu filtre için fatura bulunamadı.";
       }
     }
   }
@@ -292,96 +314,96 @@ const typeText = type === "refund"
     });
   }
 
-async function mobileInvoicesInit(){
-  const root = qs("#mobileAccountInvoicesSection");
-  if (!root) {
-    console.warn("[AIVO_MOBILE_INVOICES] root_not_found");
-    return;
-  }
-
-  const list = qs("[data-mobile-invoices-list]", root);
-  const empty = qs("[data-mobile-invoices-empty]", root);
-
-  if (!list || !empty) {
-    console.warn("[AIVO_MOBILE_INVOICES] list_or_empty_not_found");
-    return;
-  }
-
-  bindFilters(root);
-
-  empty.hidden = false;
-empty.textContent = window.t
-  ? window.t("invoices.loading")
-  : "Faturalar yükleniyor...";
-
-  const email = await resolveEmail();
-  console.log("[AIVO_MOBILE_INVOICES] resolved_email:", email);
-
-  if (!email) {
-    empty.hidden = false;
-    empty.textContent = window.t
-  ? window.t("invoices.sessionMissing")
-  : "Faturaları göstermek için oturum bilgisi bulunamadı.";
-    return;
-  }
-
-  try {
-    const url = "/api/invoices/get?email=" + encodeURIComponent(email);
-    console.log("[AIVO_MOBILE_INVOICES] fetch_url:", url);
-
-    const res = await fetch(url, {
-      method: "GET",
-      credentials: "same-origin",
-      cache: "no-store",
-      headers: {
-        "Accept": "application/json"
-      }
-    });
-
-    const json = await res.json().catch(function(){
-      return null;
-    });
-
-    console.log("[AIVO_MOBILE_INVOICES] response:", {
-      ok: res.ok,
-      status: res.status,
-      json: json
-    });
-
-    if (!res.ok || !json || json.ok !== true) {
-      throw new Error((json && (json.error || json.message)) || "mobile_invoices_fetch_failed");
-    }
-
-    const invoices = Array.isArray(json.invoices) ? json.invoices : [];
-
-    if (!invoices.length) {
-      list.innerHTML = "";
-      empty.hidden = false;
-     empty.textContent = window.t
-  ? window.t("invoices.empty")
-  : "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
+  async function mobileInvoicesInit(){
+    const root = qs("#mobileAccountInvoicesSection");
+    if (!root) {
+      console.warn("[AIVO_MOBILE_INVOICES] root_not_found");
       return;
     }
 
-    const sorted = invoices.slice().sort(function(a, b){
-      return toTime(getCreatedAt(b)) - toTime(getCreatedAt(a));
-    });
+    const list = qs("[data-mobile-invoices-list]", root);
+    const empty = qs("[data-mobile-invoices-empty]", root);
 
-    list.innerHTML = sorted.map(function(invoice){
-      return invoiceCard(invoice, email);
-    }).join("");
+    if (!list || !empty) {
+      console.warn("[AIVO_MOBILE_INVOICES] list_or_empty_not_found");
+      return;
+    }
 
-    empty.hidden = true;
-    applyFilter(root);
-  } catch (err) {
-    console.error("[AIVO_MOBILE_INVOICES] render_failed:", err);
-    list.innerHTML = "";
+    bindFilters(root);
+
     empty.hidden = false;
-   empty.textContent = window.t
-  ? window.t("invoices.loadFailed")
-  : "Faturalar şu an yüklenemedi.";
+    empty.textContent = window.t
+      ? window.t("invoices.loading")
+      : "Faturalar yükleniyor...";
+
+    const email = await resolveEmail();
+    console.log("[AIVO_MOBILE_INVOICES] resolved_email:", email);
+
+    if (!email) {
+      empty.hidden = false;
+      empty.textContent = window.t
+        ? window.t("invoices.sessionMissing")
+        : "Faturaları göstermek için oturum bilgisi bulunamadı.";
+      return;
+    }
+
+    try {
+      const url = "/api/invoices/get?email=" + encodeURIComponent(email);
+      console.log("[AIVO_MOBILE_INVOICES] fetch_url:", url);
+
+      const res = await fetch(url, {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
+
+      const json = await res.json().catch(function(){
+        return null;
+      });
+
+      console.log("[AIVO_MOBILE_INVOICES] response:", {
+        ok: res.ok,
+        status: res.status,
+        json: json
+      });
+
+      if (!res.ok || !json || json.ok !== true) {
+        throw new Error((json && (json.error || json.message)) || "mobile_invoices_fetch_failed");
+      }
+
+      const invoices = Array.isArray(json.invoices) ? json.invoices : [];
+
+      if (!invoices.length) {
+        list.innerHTML = "";
+        empty.hidden = false;
+        empty.textContent = window.t
+          ? window.t("invoices.empty")
+          : "Henüz fatura kaydın yok. Kredi satın aldığında burada görünecek.";
+        return;
+      }
+
+      const sorted = invoices.slice().sort(function(a, b){
+        return toTime(getCreatedAt(b)) - toTime(getCreatedAt(a));
+      });
+
+      list.innerHTML = sorted.map(function(invoice){
+        return invoiceCard(invoice, email);
+      }).join("");
+
+      empty.hidden = true;
+      applyFilter(root);
+    } catch (err) {
+      console.error("[AIVO_MOBILE_INVOICES] render_failed:", err);
+      list.innerHTML = "";
+      empty.hidden = false;
+      empty.textContent = window.t
+        ? window.t("invoices.loadFailed")
+        : "Faturalar şu an yüklenemedi.";
+    }
   }
-}
 
   window.mobileInvoicesInit = mobileInvoicesInit;
 })();
