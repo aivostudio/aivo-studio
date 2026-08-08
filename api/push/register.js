@@ -1,4 +1,6 @@
-const { kvGetJson, kvSetJson } = require('../_kv');
+const { getRedis, kvGetJson, kvSetJson } = require('../_kv');
+const authModule = require('../_lib/auth.js');
+const { requireAuth } = authModule;
 
 function json(res, status, payload) {
   return res.status(status).json(payload);
@@ -19,6 +21,11 @@ function safeString(value) {
   return text || null;
 }
 
+function normalizeEmail(value) {
+  const email = String(value || '').trim().toLowerCase();
+  return email || null;
+}
+
 function normalizeLang(value) {
   const lang = String(value || '').toLowerCase().trim();
 
@@ -37,6 +44,15 @@ function tokenKey(deviceToken) {
 function allTokensKey() {
   return 'push:tokens:all';
 }
+
+function userIdTokensKey(userId) {
+  return `push:user_id:${userId}:tokens`;
+}
+
+function userUuidTokensKey(userUuid) {
+  return `push:user_uuid:${userUuid}:tokens`;
+}
+
 function isInvalidPushTokenForPlatform(platform, deviceToken) {
   const token = String(deviceToken || '').trim();
 
@@ -55,6 +71,51 @@ function isInvalidPushTokenForPlatform(platform, deviceToken) {
   return false;
 }
 
+function hasGrantedPermission(permissionStatus) {
+  return String(permissionStatus || '').toLowerCase().trim() === 'granted';
+}
+
+async function updateUserTokenIndexes({
+  existing,
+  userId,
+  userUuid,
+  deviceToken,
+  permissionStatus
+}) {
+  const redis = getRedis();
+
+  const oldUserId = safeString(existing && existing.user_id);
+  const oldUserUuid = safeString(existing && existing.user_uuid);
+
+  if (oldUserId && oldUserId !== userId) {
+    await redis.srem(userIdTokensKey(oldUserId), deviceToken);
+  }
+
+  if (oldUserUuid && oldUserUuid !== userUuid) {
+    await redis.srem(userUuidTokensKey(oldUserUuid), deviceToken);
+  }
+
+  if (!hasGrantedPermission(permissionStatus)) {
+    if (oldUserId) {
+      await redis.srem(userIdTokensKey(oldUserId), deviceToken);
+    }
+
+    if (oldUserUuid) {
+      await redis.srem(userUuidTokensKey(oldUserUuid), deviceToken);
+    }
+
+    return;
+  }
+
+  if (userId) {
+    await redis.sadd(userIdTokensKey(userId), deviceToken);
+  }
+
+  if (userUuid) {
+    await redis.sadd(userUuidTokensKey(userUuid), deviceToken);
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -67,8 +128,18 @@ export default async function handler(req, res) {
   try {
     const body = req.body || {};
 
-    const userId = safeString(body.user_id);
-    const userUuid = safeString(body.user_uuid);
+    const auth = await requireAuth(req);
+    const authenticatedEmail = normalizeEmail(auth && auth.email);
+
+    if (!auth || !authenticatedEmail) {
+      return json(res, 401, {
+        ok: false,
+        error: 'unauthorized'
+      });
+    }
+
+    const userId = authenticatedEmail;
+    const userUuid = safeString(auth.user_id) || authenticatedEmail;
     const platform = normalizePlatform(body.platform);
     const deviceToken = safeString(body.device_token);
     const permissionStatus = safeString(body.permission_status) || 'granted';
@@ -89,12 +160,14 @@ export default async function handler(req, res) {
         error: 'missing_device_token'
       });
     }
+
     if (isInvalidPushTokenForPlatform(platform, deviceToken)) {
-  return json(res, 400, {
-    ok: false,
-    error: 'invalid_device_token'
-  });
-}
+      return json(res, 400, {
+        ok: false,
+        error: 'invalid_device_token'
+      });
+    }
+
     const now = new Date().toISOString();
 
     const tokenRecord = {
@@ -109,6 +182,7 @@ export default async function handler(req, res) {
       user_agent: req.headers['user-agent'] || null,
       last_seen_at: now,
       revoked_at: null,
+      identity_source: 'authenticated_session',
       meta: body.meta && typeof body.meta === 'object' ? body.meta : {},
       updated_at: now
     };
@@ -124,26 +198,34 @@ export default async function handler(req, res) {
           : now
     };
 
+    await updateUserTokenIndexes({
+      existing,
+      userId,
+      userUuid,
+      deviceToken,
+      permissionStatus
+    });
+
     await kvSetJson(tokenKey(deviceToken), mergedRecord);
 
-  const allCurrentList = await kvGetJson(allTokensKey());
-const allTokensRaw = Array.isArray(allCurrentList) ? allCurrentList : [];
+    const allCurrentList = await kvGetJson(allTokensKey());
+    const allTokensRaw = Array.isArray(allCurrentList) ? allCurrentList : [];
 
-const allTokens = allTokensRaw.filter(function(token) {
-  const value = String(token || '').trim();
+    const allTokens = allTokensRaw.filter(function(token) {
+      const value = String(token || '').trim();
 
-  if (!value) return false;
-  if (value === 'test-token-123') return false;
-  if (/^[a-fA-F0-9]{64,}$/.test(value)) return false;
+      if (!value) return false;
+      if (value === 'test-token-123') return false;
+      if (/^[a-fA-F0-9]{64,}$/.test(value)) return false;
 
-  return true;
-});
+      return true;
+    });
 
-if (!allTokens.includes(deviceToken)) {
-  allTokens.push(deviceToken);
-}
+    if (!allTokens.includes(deviceToken)) {
+      allTokens.push(deviceToken);
+    }
 
-await kvSetJson(allTokensKey(), allTokens);
+    await kvSetJson(allTokensKey(), allTokens);
 
     return json(res, 200, {
       ok: true,
