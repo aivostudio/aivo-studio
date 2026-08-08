@@ -334,11 +334,263 @@
     </div>
 
     <div class="mobile-adfilm-view" data-mobile-adfilm-view="radio" hidden>
-      <div class="mobile-adfilm-coming-card">
-        <span class="mobile-adfilm-placeholder-icon" aria-hidden="true"></span>
-        <strong>Radyo Reklamı</strong>
-        <p>Bu bölümü Reklam Videosu tamamlandıktan sonra kuracağız.</p>
-      </div>
+      <article class="mobile-adfilm-card mobile-adfilm-voice-card" data-mobile-radio-card="narration">
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-voice" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">01</span>
+            <h4>Ses &amp; Anlatım</h4>
+            <p>Reklam seslendirme metnini yaz; AIVO seçtiğin ses ve anlatım ayarlarıyla seslendirsin.</p>
+          </div>
+        </div>
+
+        <section class="mobile-adfilm-narration-budget" data-mobile-radio-budget>
+          <div class="mobile-adfilm-narration-budget-head">
+            <div class="mobile-adfilm-narration-budget-copy">
+              <span>Ses süresi bütçesi</span>
+              <strong data-mobile-radio-word-range>47–66 kelime önerilir</strong>
+            </div>
+            <div class="mobile-adfilm-narration-budget-pills">
+              <span data-mobile-radio-duration-badge>30 sn</span>
+            </div>
+          </div>
+          <div class="mobile-adfilm-narration-meter" aria-hidden="true"><i></i></div>
+          <div class="mobile-adfilm-narration-status is-empty">
+            <span aria-hidden="true"></span>
+            <p>Müzik girişi toplam süreye dahildir.</p>
+            <b><span data-mobile-radio-word-count>0</span> kelime · tahmini <span data-mobile-radio-estimate>0</span> sn</b>
+          </div>
+        </section>
+
+        <div class="mobile-adfilm-voice-grid">
+          <label class="mobile-adfilm-select-field">
+            <span>Dil</span>
+            <select id="mobileRadioLanguage">
+              <option value="tr" selected>Türkçe</option>
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+              <option value="it">Italiano</option>
+              <option value="pt">Português</option>
+              <option value="ar">العربية</option>
+              <option value="ru">Русский</option>
+              <option value="nl">Nederlands</option>
+              <option value="pl">Polski</option>
+              <option value="uk">Українська</option>
+              <option value="hi">हिन्दी</option>
+              <option value="id">Bahasa Indonesia</option>
+              <option value="ms">Bahasa Melayu</option>
+              <option value="ja">日本語</option>
+              <option value="ko">한국어</option>
+              <option value="zh">中文</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="th">ไทย</option>
+            </select>
+          </label>
+
+          <label class="mobile-adfilm-select-field">
+            <span>Ses Stili</span>
+            <select id="mobileRadioVoiceStyle">
+              <option value="warm" selected>Sıcak ve güven veren</option>
+              <option value="energetic">Enerjik reklam sesi</option>
+              <option value="premium">Premium ve sakin</option>
+              <option value="natural">Doğal konuşma</option>
+            </select>
+          </label>
+
+          <label class="mobile-adfilm-select-field">
+            <span>Ses</span>
+            <select id="mobileRadioVoice">
+              <option value="warm_female" selected>Sıcak kadın sesi</option>
+              <option value="professional_male">Profesyonel erkek sesi</option>
+              <option value="energetic_male">Enerjik erkek sesi</option>
+              <option value="clear_female">Net kadın sesi</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="mobile-adfilm-field mobile-adfilm-voice-script">
+          <span>Reklam Seslendirme Metni</span>
+          <textarea id="mobileRadioNarrationText" maxlength="1200" rows="7" placeholder="Reklam metnini buraya yaz..."></textarea>
+          <div class="mobile-adfilm-voice-hint">
+            <span>Metni doğrudan düzenleyebilirsin</span>
+            <span><b data-mobile-radio-copy-count>0</b> / 1200</span>
+          </div>
+        </label>
+
+        <div class="mobile-adfilm-form-grid">
+          <label class="mobile-adfilm-select-field">
+            <span>Hız</span>
+            <select id="mobileRadioSpeed">
+              <option value="slow">Yavaş</option>
+              <option value="balanced">Dengeli</option>
+              <option value="fast" selected>Hızlı</option>
+            </select>
+          </label>
+          <label class="mobile-adfilm-select-field">
+            <span>Ses Akışı</span>
+            <select id="mobileRadioFlow">
+              <option value="natural" selected>Doğal</option>
+              <option value="balanced">Dengeli</option>
+              <option value="emphatic">Vurgulu</option>
+            </select>
+          </label>
+        </div>
+
+        <section class="mobile-adfilm-voice-preview" data-mobile-radio-preview data-state="idle">
+          <div class="mobile-adfilm-voice-preview-head">
+            <div class="mobile-adfilm-voice-preview-title">
+              <span class="mobile-adfilm-voice-preview-spark" aria-hidden="true"></span>
+              <div>
+                <strong>Ses Ön İzleme</strong>
+                <p>Reklam sesini oluştur, dinle ve onayla.</p>
+              </div>
+            </div>
+            <span class="mobile-adfilm-voice-preview-status">Henüz ses oluşturulmadı.</span>
+          </div>
+          <div class="mobile-adfilm-voice-player">
+            <button class="mobile-adfilm-voice-play" type="button" disabled aria-label="Ses ön izleme henüz hazır değil"></button>
+            <div class="mobile-adfilm-voice-player-main">
+              <div class="mobile-adfilm-voice-preview-line" aria-hidden="true"></div>
+              <span class="mobile-adfilm-voice-time">0:00 / 0:00</span>
+            </div>
+            <button class="mobile-adfilm-voice-volume" type="button" disabled aria-label="Ses seviyesi"></button>
+            <button class="mobile-adfilm-voice-delete" type="button" disabled aria-label="Ses kaydını sil"></button>
+          </div>
+          <div class="mobile-adfilm-voice-preview-actions">
+            <button class="mobile-adfilm-voice-create" type="button" disabled>Sesi oluştur</button>
+            <button class="mobile-adfilm-voice-approve" type="button" disabled>Sesi onayla</button>
+          </div>
+        </section>
+      </article>
+
+      <article class="mobile-adfilm-card" data-mobile-radio-card="settings">
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-quality-icon" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">02</span>
+            <h4>Ses Ayarları</h4>
+            <p>Müzik ve konuşma seçilen toplam reklam süresine yerleştirilir.</p>
+          </div>
+        </div>
+
+        <div class="mobile-adfilm-form-grid">
+          <label class="mobile-adfilm-select-field">
+            <span>Reklam Süresi</span>
+            <select id="mobileRadioDuration">
+              <option value="10">10 sn</option>
+              <option value="15">15 sn</option>
+              <option value="30" selected>30 sn</option>
+              <option value="45">45 sn</option>
+              <option value="60">60 sn</option>
+            </select>
+          </label>
+          <label class="mobile-adfilm-select-field">
+            <span>Çıkış Dosyası</span>
+            <select id="mobileRadioOutputFormat">
+              <option value="mp3" selected>MP3 · 320 kbps · 20 Kredi</option>
+              <option value="wav">WAV · Kayıpsız · 25 Kredi</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="mobile-adfilm-tip">
+          <span aria-hidden="true"></span>
+          <p>10 saniye kısa marka mesajları, 15–30 saniye standart kampanyalar ve 45–60 saniye detaylı anlatımlar için uygundur.</p>
+        </div>
+      </article>
+
+      <article class="mobile-adfilm-card" data-mobile-radio-card="music">
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-design" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">03</span>
+            <h4>Reklam Müziği</h4>
+            <p>Arka plan müziğinin nasıl hazırlanacağını seç.</p>
+          </div>
+          <span class="mobile-adfilm-required mobile-adfilm-optional">İsteğe bağlı</span>
+        </div>
+
+        <div class="mobile-adfilm-form-grid">
+          <label class="mobile-adfilm-select-field">
+            <span>Müzik Seçimi</span>
+            <select id="mobileRadioMusicMode">
+              <option value="ai" selected>AIVO müziği hazırlasın</option>
+              <option value="upload">Kendi müziğimi yükle</option>
+              <option value="off">Müzik olmasın</option>
+            </select>
+          </label>
+          <label class="mobile-adfilm-select-field">
+            <span>Müzik Tarzı</span>
+            <select id="mobileRadioMusicStyle">
+              <option value="auto" selected>AIVO otomatik seçsin</option>
+              <option value="cinematic">Sinematik</option>
+              <option value="corporate">Kurumsal</option>
+              <option value="electronic">Elektronik</option>
+              <option value="acoustic">Akustik</option>
+            </select>
+          </label>
+          <label class="mobile-adfilm-select-field">
+            <span>Enerji</span>
+            <select id="mobileRadioMusicEnergy">
+              <option value="balanced" selected>Dengeli</option>
+              <option value="soft">Yumuşak</option>
+              <option value="strong">Güçlü</option>
+              <option value="high">Yüksek</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="mobile-adfilm-tip">
+          <span aria-hidden="true"></span>
+          <p>Seçtiğin stile göre reklam müziği final üretim sırasında otomatik hazırlanacak.</p>
+        </div>
+      </article>
+
+      <article class="mobile-adfilm-card" data-mobile-radio-card="final">
+        <div class="mobile-adfilm-card-head">
+          <span class="mobile-adfilm-step-icon mobile-adfilm-step-icon-product" aria-hidden="true"></span>
+          <div class="mobile-adfilm-card-copy">
+            <span class="mobile-adfilm-step">04</span>
+            <h4>Final Radyo Reklamı</h4>
+            <p>Seslendirme ve müzik birleştiğinde final reklamını burada dinle.</p>
+          </div>
+        </div>
+
+        <section class="mobile-adfilm-voice-preview" data-mobile-radio-final-empty data-state="idle">
+          <div class="mobile-adfilm-voice-preview-head">
+            <div class="mobile-adfilm-voice-preview-title">
+              <span class="mobile-adfilm-voice-preview-spark" aria-hidden="true"></span>
+              <div>
+                <strong>Radyo Reklamlarım</strong>
+                <p>Final reklamların üretildikçe burada listelenecek.</p>
+              </div>
+            </div>
+            <span class="mobile-adfilm-voice-preview-status">0 kayıt</span>
+          </div>
+          <div class="mobile-adfilm-tip">
+            <span aria-hidden="true"></span>
+            <p>Henüz final radyo reklamı yok.</p>
+          </div>
+        </section>
+      </article>
+
+      <section class="mobile-adfilm-action-card" data-mobile-radio-action>
+        <div class="mobile-adfilm-action-summary">
+          <span class="mobile-adfilm-action-spark" aria-hidden="true"></span>
+          <div class="mobile-adfilm-action-copy">
+            <strong>Radyo reklamı projesi hazırlanacak</strong>
+            <small>30 sn · Seslendirme · AIVO müziği · MP3 320 kbps</small>
+          </div>
+        </div>
+
+        <button class="mobile-adfilm-create-button" type="button" disabled>
+          Radyo Reklamını Oluştur (20 Kredi)
+        </button>
+
+        <div class="mobile-adfilm-action-status">Radyo Reklamı mobil iskeleti hazır. Sistem bağlantısı sonraki adımda yapılacak.</div>
+      </section>
     </div>
   </section>
 </section>
