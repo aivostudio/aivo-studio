@@ -18,6 +18,25 @@
     return String(value == null ? "" : value).trim();
   }
 
+  function t(key, params, fallback){
+    try{
+      if (typeof window.t === "function"){
+        const value = window.t(key, params);
+        if (value && value !== key) return String(value);
+      }
+    }catch(_){ }
+    return fallback == null ? key : String(fallback);
+  }
+
+  function locale(){
+    try{
+      if (window.AIVOMobileAdFilmI18n && typeof window.AIVOMobileAdFilmI18n.locale === "function") {
+        return window.AIVOMobileAdFilmI18n.locale();
+      }
+    }catch(_){ }
+    return String(window.AIVO_LANG || document.documentElement.lang || "tr").toLowerCase().indexOf("en") === 0 ? "en-US" : "tr-TR";
+  }
+
   function notify(message, type){
     try{
       const fn = window.toastSafe || window.showToast || window.toastMsg;
@@ -44,7 +63,7 @@
   function formatDate(value){
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("tr-TR",{
+    return new Intl.DateTimeFormat(locale(),{
       day:"2-digit",
       month:"2-digit",
       hour:"2-digit",
@@ -90,7 +109,7 @@
       .map(function(item){
         return Object.assign({}, item, {
           _projectId: clean(project.id),
-          _projectTitle: clean(project.title || "Radyo Reklamı") || "Radyo Reklamı",
+          _projectTitle: clean(project.title || t("radioad.final.itemTitle", null, "Radyo Reklamı")) || t("radioad.final.itemTitle", null, "Radyo Reklamı"),
           _projectUpdatedAt: project.updatedAt || null
         });
       });
@@ -129,7 +148,7 @@
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = objectUrl;
-    link.download = "AIVO-Radyo-Reklami." + (clean(finalFormat).toLowerCase() === "wav" ? "wav" : "mp3");
+    link.download = "AIVO-Radio-Ad." + (clean(finalFormat).toLowerCase() === "wav" ? "wav" : "mp3");
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
@@ -141,7 +160,7 @@
 
   function render(items){
     const status = finalEmpty && finalEmpty.querySelector('.mobile-adfilm-voice-preview-status');
-    if (status) status.textContent = items.length + " kayıt";
+    if (status) status.textContent = t("radioad.final.count", { count:items.length }, items.length + " kayıt");
 
     let list = finalCard.querySelector('[data-mobile-radio-final-list]');
     if (!list){
@@ -169,15 +188,16 @@
       const projectId = clean(item._projectId);
       const fmt = clean(item.format || "mp3").toUpperCase();
       const sec = Number(item.duration || 0);
-      const title = clean(item.title || item._projectTitle || "Radyo Reklamı") || "Radyo Reklamı";
+      const title = clean(item.title || item._projectTitle || t("radioad.final.itemTitle", null, "Radyo Reklamı")) || t("radioad.final.itemTitle", null, "Radyo Reklamı");
+      const meta = t("radioad.final.meta", { seconds:sec, format:fmt, date:formatDate(item.createdAt || item._projectUpdatedAt) }, sec + " sn · " + fmt + " · " + formatDate(item.createdAt || item._projectUpdatedAt));
       return '<article class="mobile-radio-final-item" data-mobile-radio-final-id="' + id.replace(/"/g,'&quot;') + '" data-mobile-radio-project-id="' + projectId.replace(/"/g,'&quot;') + '">' +
-        '<div class="mobile-radio-final-meta"><b>Sürüm ' + (items.length - index) + '</b><em>' + fmt + '</em></div>' +
-        '<button class="mobile-radio-final-play" type="button" data-mobile-radio-final-play aria-label="Radyo reklamını oynat"></button>' +
+        '<div class="mobile-radio-final-meta"><b>' + t("radioad.final.version", { version:items.length - index }, "Sürüm " + (items.length - index)) + '</b><em>' + fmt + '</em></div>' +
+        '<button class="mobile-radio-final-play" type="button" data-mobile-radio-final-play aria-label="' + t("radioad.final.playAria", null, "Radyo reklamını oynat") + '"></button>' +
         '<h5>' + title.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</h5>' +
-        '<small>' + sec + ' sn · ' + fmt + ' · ' + formatDate(item.createdAt || item._projectUpdatedAt) + '</small>' +
+        '<small>' + meta + '</small>' +
         '<div class="mobile-radio-final-actions">' +
-          '<button type="button" data-mobile-radio-final-download aria-label="İndir">' + downloadIcon() + '</button>' +
-          '<button type="button" data-mobile-radio-final-delete aria-label="Sil">' + deleteIcon() + '</button>' +
+          '<button type="button" data-mobile-radio-final-download aria-label="' + t("radioad.final.downloadAria", null, "İndir") + '">' + downloadIcon() + '</button>' +
+          '<button type="button" data-mobile-radio-final-delete aria-label="' + t("radioad.final.deleteAria", null, "Sil") + '">' + deleteIcon() + '</button>' +
         '</div></article>';
     }).join("");
 
@@ -204,7 +224,7 @@
         audio.addEventListener("ended",stopAudio,{once:true});
         audio.play().catch(function(){
           stopAudio();
-          notify("Radyo reklamı oynatılamadı.","error");
+          notify(t("radioad.final.playFailed", null, "Radyo reklamı oynatılamadı."),"error");
         });
       });
     });
@@ -221,7 +241,7 @@
         try{
           await downloadFinal(projectId,id,item.format);
         }catch(_){
-          notify("Dosya indirilemedi.","error");
+          notify(t("radioad.final.downloadFailed", null, "Dosya indirilemedi."),"error");
         }
       });
     });
@@ -247,9 +267,9 @@
 
           stopAudio();
           await refreshArchive();
-          notify("Radyo reklamı silindi.","success");
+          notify(t("radioad.final.deleted", null, "Radyo reklamı silindi."),"success");
         }catch(_){
-          notify("Radyo reklamı silinemedi.","error");
+          notify(t("radioad.final.deleteFailed", null, "Radyo reklamı silinemedi."),"error");
         }
       });
     });
@@ -273,6 +293,7 @@
   }
 
   document.addEventListener("aivo:mobile-radioad-project-sync",queueRefresh);
+  document.addEventListener("aivo:language-change",queueRefresh);
   document.addEventListener("visibilitychange",function(){
     if (!document.hidden) queueRefresh();
   });
@@ -281,6 +302,7 @@
     clearTimeout(refreshTimer);
     stopAudio();
     document.removeEventListener("aivo:mobile-radioad-project-sync",queueRefresh);
+    document.removeEventListener("aivo:language-change",queueRefresh);
   },{once:true});
 
   window.AIVOMobileRadioAdArchive = {
