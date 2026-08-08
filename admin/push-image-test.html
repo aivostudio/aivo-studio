@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO Admin - Resimli Push Test</title>
+  <link rel="stylesheet" href="./admin.css" />
+  <style>
+    body{min-height:100vh}
+    .test-wrap{max-width:920px;margin:0 auto;padding:32px 20px 60px}
+    .test-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+    .test-title{margin:0;font-size:28px}
+    .test-card{border:1px solid rgba(255,255,255,.10);border-radius:22px;background:rgba(255,255,255,.035);padding:20px}
+    .test-grid{display:grid;gap:16px}
+    .test-label{display:block;margin:0 0 8px;color:#aeb6c4;font-size:13px}
+    .test-input,.test-textarea{width:100%;background:#0b0f17;color:#fff;border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px 16px;outline:none;font:inherit}
+    .test-textarea{min-height:120px;resize:vertical;line-height:1.5}
+    .test-note{font-size:13px;line-height:1.55;color:#aeb6c4}
+    .test-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:4px}
+    .test-status{display:inline-flex;align-items:center;min-height:40px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:#c7ced9;font-size:13px}
+    .test-preview{display:none;margin-top:16px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:#090d14}
+    .test-preview img{display:block;width:100%;max-height:360px;object-fit:cover}
+    .test-out{margin-top:16px;min-height:90px;white-space:pre-wrap;word-break:break-word}
+    .test-danger{color:#ff9b9b}
+    .test-ok{color:#8ef0b5}
+  </style>
+</head>
+<body class="is-locked">
+  <main class="test-wrap">
+    <div class="test-head">
+      <div>
+        <div class="muted" style="margin-bottom:6px;">AIVO Admin / Güvenli Test</div>
+        <h1 class="test-title">🖼️ Resimli Push Test</h1>
+      </div>
+      <a class="btn" href="/admin/">Admin Panele Dön</a>
+    </div>
+
+    <section class="test-card">
+      <div class="test-grid">
+        <div class="test-note">
+          Bu ekran toplu gönderim yapmaz. Bildirim yalnızca giriş yaptığın admin hesabının en son aktif push cihazına gönderilir.
+        </div>
+
+        <div>
+          <label class="test-label" for="testTitle">Başlık</label>
+          <input id="testTitle" class="test-input" maxlength="120" placeholder="Örn: AIVO Resimli Bildirim Testi" />
+        </div>
+
+        <div>
+          <label class="test-label" for="testMessage">Mesaj</label>
+          <textarea id="testMessage" class="test-textarea" maxlength="500" placeholder="Bu bildirim yalnızca test cihazına gönderilecektir."></textarea>
+        </div>
+
+        <div>
+          <label class="test-label" for="testImageUrl">Görsel URL (HTTPS zorunlu)</label>
+          <input id="testImageUrl" class="test-input" inputmode="url" placeholder="https://aivo.tr/...jpg" />
+          <div class="test-preview" id="testPreview"><img id="testPreviewImg" alt="Bildirim görseli önizleme" /></div>
+        </div>
+
+        <div class="test-actions">
+          <span id="testStatus" class="test-status">Admin yetkisi kontrol ediliyor...</span>
+          <button id="btnImagePushTest" class="btn btn-primary" disabled>Resimli Test Bildirimi Gönder</button>
+        </div>
+      </div>
+
+      <pre id="testOut" class="out test-out"></pre>
+    </section>
+  </main>
+
+  <script>
+  (function(){
+    const $ = (id) => document.getElementById(id);
+    const btn = $('btnImagePushTest');
+    const titleEl = $('testTitle');
+    const messageEl = $('testMessage');
+    const imageEl = $('testImageUrl');
+    const statusEl = $('testStatus');
+    const outEl = $('testOut');
+    const preview = $('testPreview');
+    const previewImg = $('testPreviewImg');
+
+    let adminEmail = '';
+    let authorized = false;
+
+    function setStatus(text, type){
+      statusEl.textContent = text;
+      statusEl.classList.remove('test-danger','test-ok');
+      if (type === 'error') statusEl.classList.add('test-danger');
+      if (type === 'ok') statusEl.classList.add('test-ok');
+    }
+
+    function print(value){
+      outEl.textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    }
+
+    function validHttpsUrl(value){
+      try {
+        const url = new URL(String(value || '').trim());
+        return url.protocol === 'https:' ? url.toString() : '';
+      } catch (_) {
+        return '';
+      }
+    }
+
+    imageEl.addEventListener('input', function(){
+      const url = validHttpsUrl(imageEl.value);
+      if (!url) {
+        preview.style.display = 'none';
+        previewImg.removeAttribute('src');
+        return;
+      }
+      previewImg.src = url;
+      preview.style.display = 'block';
+    });
+
+    previewImg.addEventListener('error', function(){
+      preview.style.display = 'none';
+      setStatus('Görsel URL açılmadı. HTTPS ve herkese açık bir görsel kullan.', 'error');
+    });
+
+    previewImg.addEventListener('load', function(){
+      if (authorized) setStatus('Hazır. Test yalnızca kendi admin cihazına gidecek.', 'ok');
+    });
+
+    async function checkAdmin(){
+      try {
+        const meResponse = await fetch('/api/auth/me', {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        if (!meResponse.ok) throw new Error('Giriş bulunamadı.');
+
+        const me = await meResponse.json();
+        adminEmail = String(me && me.email || '').trim().toLowerCase();
+        if (!adminEmail) throw new Error('Admin e-posta adresi okunamadı.');
+
+        const authResponse = await fetch('/api/admin/auth?email=' + encodeURIComponent(adminEmail), {
+          credentials: 'include',
+          cache: 'no-store'
+        });
+
+        const auth = await authResponse.json();
+        if (!authResponse.ok || !auth || !auth.ok) throw new Error('Bu hesap admin yetkisine sahip değil.');
+
+        authorized = true;
+        document.body.classList.remove('is-locked');
+        btn.disabled = false;
+        setStatus('Hazır: ' + adminEmail, 'ok');
+      } catch (err) {
+        authorized = false;
+        btn.disabled = true;
+        setStatus(err && err.message ? err.message : 'Admin kontrolü başarısız.', 'error');
+      }
+    }
+
+    btn.addEventListener('click', async function(){
+      if (!authorized || !adminEmail) return;
+
+      const title = String(titleEl.value || '').trim();
+      const message = String(messageEl.value || '').trim();
+      const imageUrl = validHttpsUrl(imageEl.value);
+
+      if (!title || !message) {
+        setStatus('Başlık ve mesaj zorunlu.', 'error');
+        return;
+      }
+
+      if (!imageUrl) {
+        setStatus('Geçerli bir HTTPS görsel URL gerekli.', 'error');
+        return;
+      }
+
+      const confirmed = window.confirm(
+        'Bu resimli test bildirimi yalnızca ' + adminEmail + ' hesabının en son aktif cihazına gönderilecek. Devam edilsin mi?'
+      );
+
+      if (!confirmed) return;
+
+      btn.disabled = true;
+      setStatus('Tek cihaza test gönderiliyor...');
+      print('');
+
+      try {
+        const response = await fetch('/api/admin/push/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          cache: 'no-store',
+          body: JSON.stringify({
+            email: adminEmail,
+            targetEmail: adminEmail,
+            title,
+            message,
+            imageUrl
+          })
+        });
+
+        const text = await response.text();
+        let data;
+        try { data = JSON.parse(text); }
+        catch (_) { data = { ok:false, error:'invalid_json_response', raw:text }; }
+
+        print(data);
+
+        if (!response.ok || !data || !data.ok) {
+          throw new Error((data && (data.message || data.error)) || 'Test gönderimi başarısız.');
+        }
+
+        setStatus('Test Firebase’e başarıyla gönderildi. Telefonda bildirimi kontrol et.', 'ok');
+      } catch (err) {
+        setStatus(err && err.message ? err.message : 'Test gönderimi başarısız.', 'error');
+      } finally {
+        btn.disabled = !authorized;
+      }
+    });
+
+    checkAdmin();
+  })();
+  </script>
+</body>
+</html>
