@@ -1,0 +1,65 @@
+name: AIVO iOS adfilm HEIC accept patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-heic-accept-temp
+    paths:
+      - .github/workflows/aivo-ios-adfilm-heic-accept-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ios-adfilm-heic-accept:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-heic-accept-temp
+          fetch-depth: 0
+
+      - name: Allow HEIC and HEIF selection in adfilm inputs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("mobile/modules/mobile.adfilm.html")
+          text = path.read_text(encoding="utf-8")
+
+          plain_old = 'accept="image/png,image/jpeg,image/webp"'
+          plain_new = 'accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif"'
+          logo_old = 'accept="image/png,image/jpeg,image/webp,image/svg+xml"'
+          logo_new = 'accept="image/png,image/jpeg,image/webp,image/heic,image/heif,.heic,.heif,image/svg+xml"'
+
+          if text.count(plain_old) != 3:
+              raise SystemExit(f"Expected 3 standard image accept attributes, found {text.count(plain_old)}")
+          if text.count(logo_old) != 1:
+              raise SystemExit(f"Expected 1 logo accept attribute, found {text.count(logo_old)}")
+
+          text = text.replace(plain_old, plain_new)
+          text = text.replace(logo_old, logo_new)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify HEIC accept-only diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "mobile/modules/mobile.adfilm.html"
+          test "$(grep -o 'image/heic' mobile/modules/mobile.adfilm.html | wc -l | tr -d ' ')" = "4"
+          test "$(grep -o 'image/heif' mobile/modules/mobile.adfilm.html | wc -l | tr -d ' ')" = "4"
+          test "$(grep -o '\.heic' mobile/modules/mobile.adfilm.html | wc -l | tr -d ' ')" = "4"
+          test "$(grep -o '\.heif' mobile/modules/mobile.adfilm.html | wc -l | tr -d ' ')" = "4"
+          git diff --unified=2 -- mobile/modules/mobile.adfilm.html
+
+      - name: Commit HEIC accept patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add mobile/modules/mobile.adfilm.html
+          git commit -m "Allow iOS HEIC ad reference selection"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-heic-accept-temp
