@@ -53,14 +53,15 @@ export default async function handler(req, res) {
       args: chromium.args,
       defaultViewport: {
         width: 1400,
-        height: 1800,
-        deviceScaleFactor: 2,
+        height: 1900,
+        deviceScaleFactor: 1,
       },
       executablePath,
       headless: true,
     });
 
     const page = await browser.newPage();
+    await page.emulateMediaType("screen");
 
     const cookieHeader = safeStr(req.headers.cookie);
     if (cookieHeader) {
@@ -77,11 +78,29 @@ export default async function handler(req, res) {
       throw new Error(`INVOICE_VIEW_FAILED_${status}`);
     }
 
+    const renderSize = await page.evaluate(() => {
+      const el = document.querySelector(".page") || document.documentElement;
+      const rect = el.getBoundingClientRect();
+      const width = Math.ceil(Math.max(rect.width, el.scrollWidth || 0));
+      const height = Math.ceil(Math.max(rect.height, el.scrollHeight || 0));
+      return { width, height };
+    });
+
+    const a4WidthPx = 793.7008;
+    const a4HeightPx = 1122.5197;
+    const safety = 0.97;
+    const fitScale = Math.min(
+      1,
+      (a4WidthPx / Math.max(1, renderSize.width)) * safety,
+      (a4HeightPx / Math.max(1, renderSize.height)) * safety
+    );
+    const pdfScale = Math.max(0.1, Number(fitScale.toFixed(4)));
+
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
       preferCSSPageSize: false,
-      scale: 0.64,
+      scale: pdfScale,
       margin: {
         top: "0mm",
         right: "0mm",
@@ -96,6 +115,9 @@ export default async function handler(req, res) {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("X-AIVO-PDF-Render-Width", String(renderSize.width));
+    res.setHeader("X-AIVO-PDF-Render-Height", String(renderSize.height));
+    res.setHeader("X-AIVO-PDF-Scale", String(pdfScale));
 
     return res.status(200).send(Buffer.from(pdfBuffer));
   } catch (err) {
