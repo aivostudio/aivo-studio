@@ -41,70 +41,6 @@
   function fingerprint(file){ return [file.name || "", Number(file.size || 0), file.type || "", Number(file.lastModified || 0)].join("|"); }
   function entryId(){ sequence += 1; return "ref-" + Date.now().toString(36) + "-" + sequence.toString(36); }
 
-  function isIOSDevice(){
-    const ua = String(navigator.userAgent || "");
-    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  }
-
-  function isHeicFile(file){
-    if (!file) return false;
-    const type = clean(file.type).toLowerCase();
-    const name = clean(file.name).toLowerCase();
-    return type === "image/heic" || type === "image/heif" || type === "image/heic-sequence" || type === "image/heif-sequence" || /\.(heic|heif)$/.test(name);
-  }
-
-  function jpegName(name){
-    const base = clean(name || "iPhone-photo").replace(/\.(heic|heif)$/i, "").replace(/\.[^.]+$/, "") || "iPhone-photo";
-    return base + ".jpg";
-  }
-
-  async function convertIOSHeicToJpeg(file){
-    if (!isIOSDevice() || !isHeicFile(file)) return file;
-
-    const objectUrl = URL.createObjectURL(file);
-    try {
-      const image = new Image();
-      image.decoding = "async";
-      await new Promise(function(resolve, reject){
-        image.onload = resolve;
-        image.onerror = function(){ reject(new Error("heic_decode_failed")); };
-        image.src = objectUrl;
-      });
-
-      const sourceWidth = Number(image.naturalWidth || image.width || 0);
-      const sourceHeight = Number(image.naturalHeight || image.height || 0);
-      if (!sourceWidth || !sourceHeight) throw new Error("heic_invalid_dimensions");
-
-      const maxEdge = 4096;
-      const scale = Math.min(1, maxEdge / Math.max(sourceWidth, sourceHeight));
-      const width = Math.max(1, Math.round(sourceWidth * scale));
-      const height = Math.max(1, Math.round(sourceHeight * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      const context = canvas.getContext("2d", { alpha: false });
-      if (!context) throw new Error("heic_canvas_unavailable");
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, width, height);
-      context.drawImage(image, 0, 0, width, height);
-
-      const blob = await new Promise(function(resolve, reject){
-        canvas.toBlob(function(result){
-          if (result) resolve(result);
-          else reject(new Error("heic_jpeg_encode_failed"));
-        }, "image/jpeg", 0.92);
-      });
-
-      return new File([blob], jpegName(file.name), {
-        type: "image/jpeg",
-        lastModified: Number(file.lastModified || Date.now())
-      });
-    } finally {
-      try { URL.revokeObjectURL(objectUrl); } catch (_) {}
-    }
-  }
-
   function toast(type, message, duration){
     try {
       if (window.toast && typeof window.toast[type] === "function") {
@@ -279,30 +215,9 @@
     };
   }
 
-  async function addFiles(group, fileList){
-    const selected = Array.from(fileList || []);
-    const incoming = [];
-    let convertedCount = 0;
-
-    for (const selectedFile of selected) {
-      let file = selectedFile;
-      if (isIOSDevice() && isHeicFile(file)) {
-        try {
-          setStatus("converting", "iPhone HEIC görseli JPEG'e dönüştürülüyor...");
-          file = await convertIOSHeicToJpeg(file);
-          convertedCount += 1;
-        } catch (error) {
-          console.error("[MOBILE ADFILM] HEIC conversion", error);
-          toast("warning", "HEIC/HEIF görsel JPEG'e dönüştürülemedi. JPG veya PNG seçebilirsin.", 4400);
-          continue;
-        }
-      }
-      if (validFile(group, file)) incoming.push(file);
-    }
-
+  function addFiles(group, fileList){
+    const incoming = Array.from(fileList || []).filter(function(file){ return validFile(group, file); });
     if (!incoming.length) return;
-    if (convertedCount === 1) toast("success", "iPhone HEIC görseli JPEG'e dönüştürüldü.", 2400);
-    else if (convertedCount > 1) toast("success", convertedCount + " HEIC görsel JPEG'e dönüştürüldü.", 2600);
 
     if (group === "primary" || group === "logo") {
       state[group].forEach(revoke);
@@ -497,10 +412,7 @@
     const files = Array.from(event.target.files || []);
     event.stopPropagation();
     event.stopImmediatePropagation();
-    addFiles(group, files).catch(function(error){
-      console.error("[MOBILE ADFILM] reference file prepare", error);
-      toast("error", "Görsel yüklemeye hazırlanamadı. Tekrar deneyebilirsin.", 4200);
-    });
+    addFiles(group, files);
     event.target.value = "";
   }, true);
 
