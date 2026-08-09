@@ -1,0 +1,84 @@
+name: AIVO iOS adfilm routing patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-routing-temp
+    paths:
+      - .github/workflows/aivo-ios-adfilm-routing-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ios-adfilm-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-routing-temp
+          fetch-depth: 0
+
+      - name: Add adfilm routing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("studio.ios.html")
+          text = path.read_text(encoding="utf-8")
+
+          if 'let adfilmMount = document.getElementById("mobileAdFilmMount");' in text:
+              raise SystemExit("adfilm routing already exists")
+
+          declaration = 'let lipsyncMount = document.getElementById("mobileLipsyncMount");\n'
+          if text.count(declaration) != 1:
+              raise SystemExit("Expected exactly one lipsync mount declaration")
+          text = text.replace(declaration, declaration + 'let adfilmMount = document.getElementById("mobileAdFilmMount");\n', 1)
+
+          fast_nav = '      "mobileLipsyncMount",\n      "mobileCreditsMount",\n'
+          if text.count(fast_nav) != 1:
+              raise SystemExit("Expected exactly one fast-nav mount anchor")
+          text = text.replace(fast_nav, '      "mobileLipsyncMount",\n      "mobileAdFilmMount",\n      "mobileCreditsMount",\n', 1)
+
+          hide_line = '  if (lipsyncMount) lipsyncMount.hidden = true;\n'
+          if text.count(hide_line) < 6:
+              raise SystemExit("Unexpected lipsync hide count")
+          text = text.replace(hide_line, hide_line + '  if (adfilmMount) adfilmMount.hidden = true;\n')
+
+          show_anchor = '''  if (lipsyncSection) {\n    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");\n    const lipsyncTitle = lipsyncSection.querySelector(".section-title");\n    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");\n\n    if (lipsyncPanel) lipsyncPanel.hidden = false;\n    if (lipsyncTitle) lipsyncTitle.hidden = true;\n    if (lipsyncResults) lipsyncResults.hidden = true;\n  }\n}\n    \nif (homeNav) {\n'''
+          if text.count(show_anchor) != 1:
+              raise SystemExit("Expected exactly one showLipsync tail anchor")
+          text = text.replace(show_anchor, '''  if (lipsyncSection) {\n    const lipsyncPanel = lipsyncSection.querySelector(".mobile-lipsync-panel");\n    const lipsyncTitle = lipsyncSection.querySelector(".section-title");\n    const lipsyncResults = lipsyncSection.querySelector("#mobileLipsyncResults");\n\n    if (lipsyncPanel) lipsyncPanel.hidden = false;\n    if (lipsyncTitle) lipsyncTitle.hidden = true;\n    if (lipsyncResults) lipsyncResults.hidden = true;\n  }\n}\nfunction showAdFilm(){\n  homeMount.hidden = true;\n  musicMount.hidden = true;\n  coverMount.hidden = true;\n  atmoMount.hidden = true;\n  if (cartoonMount) cartoonMount.hidden = true;\n  if (photofxMount) photofxMount.hidden = true;\n  if (videoMount) videoMount.hidden = true;\n  if (lipsyncMount) lipsyncMount.hidden = true;\n  if (adfilmMount) adfilmMount.hidden = false;\n  if (toolsMount) toolsMount.hidden = true;\n  if (creditsMount) creditsMount.hidden = true;\n  if (accountMount) accountMount.hidden = true;\n  if (policyMount) policyMount.hidden = true;\n}\n    \nif (homeNav) {\n''', 1)
+
+          tool_value_anchor = '  const tool = btn.getAttribute("data-mobile-tool");\n\n'
+          if text.count(tool_value_anchor) != 1:
+              raise SystemExit("Expected exactly one tool value anchor")
+          text = text.replace(tool_value_anchor, tool_value_anchor + '  if (adfilmMount) adfilmMount.hidden = true;\n\n', 1)
+
+          tool_anchor = '''  if (tool === "lipsync") {\n    activeMobileModule = "lipsync";\n    homeMount.hidden = true;\n    showLipsync();\n    setActiveNav(toolsNav);\n    window.scrollTo({ top: 0, behavior: "smooth" });\n    return;\n  }\n});\n'''
+          if text.count(tool_anchor) != 1:
+              raise SystemExit("Expected exactly one lipsync tool click anchor")
+          text = text.replace(tool_anchor, '''  if (tool === "lipsync") {\n    activeMobileModule = "lipsync";\n    homeMount.hidden = true;\n    showLipsync();\n    setActiveNav(toolsNav);\n    window.scrollTo({ top: 0, behavior: "smooth" });\n    return;\n  }\n\n  if (tool === "adfilm") {\n    activeMobileModule = "adfilm";\n    showAdFilm();\n    setActiveNav(toolsNav);\n    window.scrollTo({ top: 0, behavior: "smooth" });\n    return;\n  }\n});\n''', 1)
+
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify routing-only diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "studio.ios.html"
+          grep -q 'let adfilmMount = document.getElementById("mobileAdFilmMount");' studio.ios.html
+          grep -q 'function showAdFilm(){' studio.ios.html
+          grep -q 'if (tool === "adfilm") {' studio.ios.html
+
+      - name: Commit routing patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add studio.ios.html
+          git commit -m "Wire iOS adfilm tool routing"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-routing-temp
