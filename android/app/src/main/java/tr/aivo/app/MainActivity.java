@@ -68,11 +68,14 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
     cookieManager.setAcceptThirdPartyCookies(getBridge().getWebView(), true);
     cookieManager.flush();
 
-
-
-      getBridge().getWebView().addJavascriptInterface(
+    getBridge().getWebView().addJavascriptInterface(
       new AivoAndroidDownloadBridge(),
       "AivoAndroidDownload"
+    );
+
+    getBridge().getWebView().addJavascriptInterface(
+      new AivoAndroidShareBridge(this),
+      "AivoAndroidShare"
     );
 
     getBridge().getWebView().setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
