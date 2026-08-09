@@ -233,7 +233,7 @@
 
       const returnTo = location.pathname + location.search + location.hash;
       const viewerUrl =
-        "/mobile/invoice.viewer.html" +
+        "/desktop/invoice.viewer.html" +
         "?url=" + encodeURIComponent(documentUrl.pathname + documentUrl.search) +
         "&lang=" + encodeURIComponent(currentLanguage()) +
         "&return=" + encodeURIComponent(returnTo);
