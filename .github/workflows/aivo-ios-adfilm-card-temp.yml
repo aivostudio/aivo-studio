@@ -1,0 +1,78 @@
+name: AIVO iOS adfilm tool card patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-card-temp
+    paths:
+      - .github/workflows/aivo-ios-adfilm-card-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ios-adfilm-card:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-card-temp
+          fetch-depth: 0
+
+      - name: Add adfilm tool card exactly once
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("studio.ios.html")
+          text = path.read_text(encoding="utf-8")
+          anchor = '''  <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">\n    <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>\n    <b data-i18n="tools.lipsync">AI Dudak Senkron Video</b>\n  </button>\n'''
+          addition = '''\n  <button class="mobile-tool-card" type="button" data-mobile-tool="adfilm">\n    <span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span>\n    <b>AI Reklam Filmi Oluştur</b>\n  </button>\n'''
+
+          if 'data-mobile-tool="adfilm"' in text:
+              raise SystemExit("adfilm tool card already exists")
+
+          count = text.count(anchor)
+          if count != 1:
+              raise SystemExit(f"Expected exactly one lipsync tool card anchor, found {count}")
+
+          text = text.replace(anchor, anchor + addition, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify card-only diff
+        shell: bash
+        run: |
+          git diff --check
+          python3 - <<'PY'
+          import subprocess
+
+          diff = subprocess.check_output(
+              ["git", "diff", "--unified=0", "--", "studio.ios.html"],
+              text=True,
+          )
+          expected_added = [
+              '+',
+              '+  <button class="mobile-tool-card" type="button" data-mobile-tool="adfilm">',
+              '+    <span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span>',
+              '+    <b>AI Reklam Filmi Oluştur</b>',
+              '+  </button>',
+          ]
+          added = [line for line in diff.splitlines() if line.startswith("+") and not line.startswith("+++")]
+          removed = [line for line in diff.splitlines() if line.startswith("-") and not line.startswith("---")]
+
+          if added != expected_added or removed:
+              raise SystemExit("Unexpected studio.ios.html diff:\n" + diff)
+          print(diff)
+          PY
+
+      - name: Commit card patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add studio.ios.html
+          git commit -m "Add iOS adfilm tool card"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-card-temp
