@@ -66,36 +66,72 @@
     resize();
 
     let pdfBlobPromise=null;
+    let preparedBlob=null;
+    let preparedFile=null;
+
     function fetchPdfBlob(){
       if(!pdfBlobPromise){
         pdfBlobPromise=fetch(pdf,{method:"GET",credentials:"include",cache:"no-store",headers:{Accept:"application/pdf"}})
           .then(function(response){if(!response.ok)throw new Error("invoice_pdf_failed_"+response.status);return response.blob()})
-          .then(function(blob){const type=String(blob.type||"").toLowerCase();if(type&&!type.includes("application/pdf"))throw new Error("invoice_pdf_invalid_type_"+type);return blob})
-          .catch(function(err){pdfBlobPromise=null;throw err});
+          .then(function(blob){
+            const type=String(blob.type||"").toLowerCase();
+            if(type&&!type.includes("application/pdf"))throw new Error("invoice_pdf_invalid_type_"+type);
+            preparedBlob=blob;
+            preparedFile=new File([blob],filename(),{type:blob.type||"application/pdf"});
+            return blob;
+          })
+          .catch(function(err){pdfBlobPromise=null;preparedBlob=null;preparedFile=null;throw err});
       }
       return pdfBlobPromise;
     }
 
+    function isSafariBrowser(){
+      const ua=String(navigator.userAgent||"");
+      return /Safari/i.test(ua)&&!/(Chrome|CriOS|Chromium|Edg|OPR|FxiOS)/i.test(ua);
+    }
+
+    function downloadPreparedPdf(){
+      if(!preparedBlob||!preparedFile)return false;
+
+      if(
+        isSafariBrowser()&&
+        navigator.canShare&&
+        navigator.share&&
+        navigator.canShare({files:[preparedFile]})
+      ){
+        navigator.share({files:[preparedFile],title:C.shareTitle}).catch(function(err){
+          if(err&&err.name==="AbortError")return;
+          console.error("[AIVO DESKTOP INVOICE SAFARI DOWNLOAD]",err);
+        });
+        return true;
+      }
+
+      const objectUrl=URL.createObjectURL(preparedBlob);
+      const anchor=document.createElement("a");
+      anchor.href=objectUrl;
+      anchor.download=filename();
+      anchor.rel="noopener";
+      anchor.style.position="fixed";
+      anchor.style.left="-10000px";
+      anchor.style.top="0";
+      document.body.appendChild(anchor);
+      anchor.click();
+
+      setTimeout(function(){
+        try{anchor.remove()}catch(_){}
+        try{URL.revokeObjectURL(objectUrl)}catch(_){}
+      },10000);
+      return true;
+    }
+
     downloadBtn.disabled=true;
     downloadBtn.textContent=C.preparingPdf;
-    fetchPdfBlob().then(function(){downloadBtn.disabled=false;downloadBtn.textContent=C.download}).catch(function(err){downloadBtn.disabled=false;downloadBtn.textContent=C.download;console.error("[AIVO DESKTOP INVOICE PREFETCH]",err)});
+    fetchPdfBlob().then(function(){downloadBtn.disabled=false;downloadBtn.textContent=C.download}).catch(function(err){downloadBtn.disabled=true;downloadBtn.textContent=C.download;console.error("[AIVO DESKTOP INVOICE PREFETCH]",err)});
 
-    downloadBtn.addEventListener("click",async function(){
+    downloadBtn.addEventListener("click",function(){
       if(downloadBtn.disabled)return;
-      try{
-        const blob=await fetchPdfBlob();
-        const objectUrl=URL.createObjectURL(blob);
-        const anchor=document.createElement("a");
-        anchor.href=objectUrl;
-        anchor.download=filename();
-        anchor.rel="noopener";
-        anchor.style.display="none";
-        document.body.appendChild(anchor);
-        anchor.click();
-        setTimeout(function(){try{anchor.remove()}catch(_){}try{URL.revokeObjectURL(objectUrl)}catch(_){}},1500);
-      }catch(err){
-        console.error("[AIVO DESKTOP INVOICE DOWNLOAD]",err);
-      }
+      if(downloadPreparedPdf())return;
+      console.error("[AIVO DESKTOP INVOICE DOWNLOAD] PDF not prepared");
     });
 
     shareBtn.addEventListener("click",function(){
