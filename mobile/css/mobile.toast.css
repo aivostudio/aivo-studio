@@ -1,3 +1,15 @@
+html{
+  visibility:visible !important;
+}
+
+html[class].aivo-hash-routing-pending{
+  visibility:visible !important;
+}
+
+html[class].aivo-hash-routing-pending body{
+  opacity:1 !important;
+}
+
 #mobileToastRoot{
   position:fixed;
   left:50%;
