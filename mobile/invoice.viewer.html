@@ -307,6 +307,67 @@
 
       const invoiceUrl = normalizeInvoiceUrl(rawUrl);
 
+      function buildPdfUrl(value){
+        if (!value) return "";
+
+        try {
+          const source = new URL(value, "https://aivo.tr");
+          const email = String(source.searchParams.get("email") || "").trim();
+          const id = String(source.searchParams.get("id") || "").trim();
+
+          if (!email || !id) return "";
+
+          const pdf = new URL("/api/invoices/pdf", "https://aivo.tr");
+          pdf.searchParams.set("email", email);
+          pdf.searchParams.set("id", id);
+          pdf.searchParams.set("lang", lang);
+          return pdf.href;
+        } catch (_) {
+          return "";
+        }
+      }
+
+      const pdfUrl = buildPdfUrl(invoiceUrl);
+
+      function invoiceFileName(){
+        try {
+          const source = new URL(invoiceUrl);
+          const rawId = String(source.searchParams.get("id") || "document");
+          const safeId = rawId.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 80) || "document";
+          return "aivo-invoice-" + safeId + ".pdf";
+        } catch (_) {
+          return "aivo-invoice.pdf";
+        }
+      }
+
+      async function fetchPdfFile(){
+        if (!pdfUrl) throw new Error("invoice_pdf_url_missing");
+
+        const response = await fetch(pdfUrl, {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Accept": "application/pdf"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("invoice_pdf_failed_" + response.status);
+        }
+
+        const blob = await response.blob();
+        const type = String(blob.type || "").toLowerCase();
+
+        if (type && !type.includes("application/pdf")) {
+          throw new Error("invoice_pdf_invalid_type_" + type);
+        }
+
+        return new File([blob], invoiceFileName(), {
+          type: "application/pdf"
+        });
+      }
+
       function resizeInvoice(){
         const available = Math.max(280, stage.clientWidth);
         const scale = Math.min(1, available / 1240);
@@ -356,28 +417,20 @@
 
       downloadBtn.addEventListener("click", async function(){
         try {
-          const response = await fetch(invoiceUrl, {
-            method: "GET",
-            credentials: "include",
-            cache: "no-store"
-          });
+          const file = await fetchPdfFile();
 
-          if (!response.ok) throw new Error("invoice_download_failed_" + response.status);
-
-          const blob = await response.blob();
-          const file = new File([blob], "aivo-invoice.html", {
-            type: blob.type || "text/html"
-          });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-            await navigator.share({ files: [file], title: copy.shareTitle });
+          if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            await navigator.share({
+              files: [file],
+              title: copy.shareTitle
+            });
             return;
           }
 
-          const objectUrl = URL.createObjectURL(blob);
+          const objectUrl = URL.createObjectURL(file);
           const a = document.createElement("a");
           a.href = objectUrl;
-          a.download = "aivo-invoice.html";
+          a.download = file.name;
           a.rel = "noopener";
           a.style.display = "none";
           document.body.appendChild(a);
@@ -388,19 +441,25 @@
             try { URL.revokeObjectURL(objectUrl); } catch (_) {}
           }, 1500);
         } catch (err) {
+          if (err && err.name === "AbortError") return;
           console.error("[AIVO INVOICE VIEWER][DOWNLOAD ERROR]", err);
         }
       });
 
       shareBtn.addEventListener("click", async function(){
         try {
-          if (navigator.share) {
-            await navigator.share({ title: copy.shareTitle, url: invoiceUrl });
+          const file = await fetchPdfFile();
+
+          if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            await navigator.share({
+              files: [file],
+              title: copy.shareTitle
+            });
             return;
           }
 
           if (navigator.clipboard) {
-            await navigator.clipboard.writeText(invoiceUrl);
+            await navigator.clipboard.writeText(pdfUrl);
           }
         } catch (err) {
           if (err && err.name === "AbortError") return;
