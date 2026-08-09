@@ -1375,6 +1375,7 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
       "mobilePhotoFxMount",
       "mobileVideoMount",
       "mobileLipsyncMount",
+      "mobileAdFilmMount",
       "mobileCreditsMount",
       "mobileToolsMount",
       "mobileAccountMount",
@@ -1457,6 +1458,7 @@ let cartoonMount = document.getElementById("mobileCartoonMount");
 let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
+let adfilmMount = document.getElementById("mobileAdFilmMount");
 let creditsMount = document.getElementById("mobileCreditsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
@@ -1831,6 +1833,7 @@ document.body.appendChild(contactScript);
       if (photofxMount) photofxMount.hidden = true;
       if (videoMount) videoMount.hidden = true;
       if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
       if (toolsMount) toolsMount.hidden = true;
       if (accountMount) accountMount.hidden = true;
       if (policyMount) policyMount.hidden = true;
@@ -1923,6 +1926,7 @@ function showHome(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -1937,6 +1941,7 @@ function showMusic(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2024,6 +2029,7 @@ function showPhotoFx(){
   if (photofxMount) photofxMount.hidden = false;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2047,6 +2053,7 @@ function showVideo(){
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = false;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2084,6 +2091,21 @@ function showLipsync(){
     if (lipsyncTitle) lipsyncTitle.hidden = true;
     if (lipsyncResults) lipsyncResults.hidden = true;
   }
+}
+function showAdFilm(){
+  homeMount.hidden = true;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
 }
     
 if (homeNav) {
@@ -2303,6 +2325,7 @@ if (toolsNav) {
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = false;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2331,6 +2354,7 @@ if (toolsNav) {
     if (photofxMount) photofxMount.hidden = true;
     if (videoMount) videoMount.hidden = true;
     if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
 
     if (toolsMount) toolsMount.hidden = true;
     if (accountMount) accountMount.hidden = true;
@@ -2357,6 +2381,7 @@ if (accountNav) {
     if (photofxMount) photofxMount.hidden = true;
     if (videoMount) videoMount.hidden = true;
     if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
     if (toolsMount) toolsMount.hidden = true;
     if (creditsMount) creditsMount.hidden = true;
     if (policyMount) policyMount.hidden = true;
@@ -2422,6 +2447,7 @@ if (accountNav) {
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2826,6 +2852,8 @@ document.addEventListener("click", function(e){
 
   const tool = btn.getAttribute("data-mobile-tool");
 
+  if (adfilmMount) adfilmMount.hidden = true;
+
   if (tool === "music") {
     activeMobileModule = "music";
     homeMount.hidden = true;
@@ -2913,6 +2941,14 @@ if (tool === "atmo") {
     activeMobileModule = "lipsync";
     homeMount.hidden = true;
     showLipsync();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (tool === "adfilm") {
+    activeMobileModule = "adfilm";
+    showAdFilm();
     setActiveNav(toolsNav);
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
