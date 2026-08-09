@@ -1,9 +1,5 @@
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
-import kvMod from "../_kv.js";
-
-const kv = kvMod?.default || kvMod || {};
-const getRedis = kv.getRedis;
 
 function safeStr(v) {
   return String(v || "").trim();
@@ -14,47 +10,8 @@ function normEmail(v) {
   return s.includes("@") ? s : "";
 }
 
-function safeJsonParse(v, fallback = null) {
-  try {
-    if (v == null) return fallback;
-    if (typeof v === "object") return v;
-    return JSON.parse(String(v));
-  } catch {
-    return fallback;
-  }
-}
-
-async function readInvoicesByEmail(email) {
-  if (typeof getRedis !== "function") {
-    throw new Error("KV_GETREDIS_MISSING");
-  }
-
-  const redis = getRedis();
-  const key = `invoices:${email}`;
-  const keyType = await redis.type(key);
-
-  if (keyType === "list") {
-    const rows = await redis.lrange(key, 0, -1);
-    return Array.isArray(rows)
-      ? rows
-          .map((row) => safeJsonParse(row, null))
-          .filter((x) => x && typeof x === "object")
-      : [];
-  }
-
-  if (keyType === "string") {
-    const raw = await redis.get(key);
-    const arr = safeJsonParse(raw, []);
-    return Array.isArray(arr)
-      ? arr.filter((x) => x && typeof x === "object")
-      : [];
-  }
-
-  if (keyType === "none") {
-    return [];
-  }
-
-  throw new Error(`Unexpected Redis type for ${key}: ${keyType}`);
+function normalizeLanguage(value) {
+  return safeStr(value).toLowerCase() === "en" ? "en" : "tr";
 }
 
 async function resolveExecutablePath() {
@@ -73,12 +30,9 @@ export default async function handler(req, res) {
       return res.status(405).json({ ok: false, error: "METHOD_NOT_ALLOWED" });
     }
 
-    if (typeof getRedis !== "function") {
-      return res.status(500).json({ ok: false, error: "KV_GETREDIS_MISSING" });
-    }
-
     const email = normEmail(req.query?.email);
     const id = safeStr(req.query?.id);
+    const lang = normalizeLanguage(req.query?.lang);
 
     if (!email) {
       return res.status(400).json({ ok: false, error: "EMAIL_REQUIRED" });
@@ -88,21 +42,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "ID_REQUIRED" });
     }
 
-    const invoices = await readInvoicesByEmail(email);
-    const invoice = invoices.find((x) => safeStr(x?.id) === id);
+    const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
+    const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
+    const reqOrigin = `${reqProto}://${reqHost}`;
 
-    if (!invoice) {
-      return res.status(404).json({ ok: false, error: "INVOICE_NOT_FOUND" });
-    }
-
-    const aivoHtml =
-      safeStr(invoice?.aivo_html) ||
-      safeStr(invoice?.html) ||
-      safeStr(invoice?.invoice_html);
-
-    if (!aivoHtml) {
-      return res.status(404).json({ ok: false, error: "AIVO_HTML_NOT_FOUND" });
-    }
+    const viewUrl = new URL("/api/invoices/view", reqOrigin);
+    viewUrl.searchParams.set("email", email);
+    viewUrl.searchParams.set("id", id);
+    viewUrl.searchParams.set("lang", lang);
 
     const executablePath = await resolveExecutablePath();
 
@@ -119,9 +66,20 @@ export default async function handler(req, res) {
 
     const page = await browser.newPage();
 
-    await page.setContent(aivoHtml, {
+    const cookieHeader = safeStr(req.headers.cookie);
+    if (cookieHeader) {
+      await page.setExtraHTTPHeaders({ cookie: cookieHeader });
+    }
+
+    const viewResponse = await page.goto(viewUrl.href, {
       waitUntil: ["domcontentloaded", "networkidle0"],
+      timeout: 30000,
     });
+
+    if (!viewResponse || !viewResponse.ok()) {
+      const status = viewResponse ? viewResponse.status() : 0;
+      throw new Error(`INVOICE_VIEW_FAILED_${status}`);
+    }
 
     const pdfBuffer = await page.pdf({
       format: "A4",
@@ -135,7 +93,8 @@ export default async function handler(req, res) {
       },
     });
 
-    const filename = `aivo-invoice-${safeStr(invoice?.id || "document")}.pdf`;
+    const safeId = id.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 100) || "document";
+    const filename = `aivo-invoice-${safeId}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
