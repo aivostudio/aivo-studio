@@ -1,0 +1,66 @@
+name: AIVO iOS adfilm aspect persistence patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-aspect-persist-temp
+    paths:
+      - .github/workflows/aivo-ios-adfilm-aspect-persist-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-adfilm-aspect-persistence:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-aspect-persist-temp
+          fetch-depth: 0
+
+      - name: Expand adfilm aspect persistence allow-lists
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          frontend = Path("mobile/js/mobile.adfilm.project-sync.core.js")
+          backend = Path("api/_lib/ad-film-projects.js")
+
+          frontend_text = frontend.read_text(encoding="utf-8")
+          backend_text = backend.read_text(encoding="utf-8")
+
+          frontend_old = '    return ["9:16", "1:1", "16:9", "4:5"].includes(value) ? value : "16:9";'
+          frontend_new = '    return ["9:16", "1:1", "16:9", "4:5", "3:4", "4:3", "21:9"].includes(value) ? value : "16:9";'
+
+          backend_old = '        ["9:16", "1:1", "16:9", "4:5"],'
+          backend_new = '        ["9:16", "1:1", "16:9", "4:5", "3:4", "4:3", "21:9"],'
+
+          if frontend_text.count(frontend_old) != 1:
+              raise SystemExit(f"Expected exactly one frontend aspect allow-list, found {frontend_text.count(frontend_old)}")
+          if backend_text.count(backend_old) != 1:
+              raise SystemExit(f"Expected exactly one backend aspect allow-list, found {backend_text.count(backend_old)}")
+
+          frontend.write_text(frontend_text.replace(frontend_old, frontend_new, 1), encoding="utf-8")
+          backend.write_text(backend_text.replace(backend_old, backend_new, 1), encoding="utf-8")
+          PY
+
+      - name: Verify aspect persistence-only diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "api/_lib/ad-film-projects.js mobile/js/mobile.adfilm.project-sync.core.js "
+          grep -Fq '["9:16", "1:1", "16:9", "4:5", "3:4", "4:3", "21:9"]' mobile/js/mobile.adfilm.project-sync.core.js
+          grep -Fq '["9:16", "1:1", "16:9", "4:5", "3:4", "4:3", "21:9"]' api/_lib/ad-film-projects.js
+          git diff --unified=3 -- mobile/js/mobile.adfilm.project-sync.core.js api/_lib/ad-film-projects.js
+
+      - name: Commit aspect persistence patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add mobile/js/mobile.adfilm.project-sync.core.js api/_lib/ad-film-projects.js
+          git commit -m "Preserve all adfilm aspect ratios"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-aspect-persist-temp
