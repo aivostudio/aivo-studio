@@ -42,11 +42,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "ID_REQUIRED" });
     }
 
-    const reqProto = safeStr(req.headers["x-forwarded-proto"] || "https");
-    const reqHost = safeStr(req.headers["x-forwarded-host"] || req.headers.host || "aivo.tr");
-    const reqOrigin = `${reqProto}://${reqHost}`;
-
-    const viewUrl = new URL("/api/invoices/view", reqOrigin);
+    const viewUrl = new URL("/api/invoices/view", "https://aivo.tr");
     viewUrl.searchParams.set("email", email);
     viewUrl.searchParams.set("id", id);
     viewUrl.searchParams.set("lang", lang);
