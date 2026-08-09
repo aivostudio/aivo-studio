@@ -214,13 +214,22 @@
     const amount = formatMoney(getAmount(invoice));
     const date = formatDate(getCreatedAt(invoice));
     const status = statusLabel(invoice);
+    const lang = currentLanguage();
 
     const openBase = type === "refund" ? "/api/invoices/refund-view" : "/api/invoices/view";
-    const openUrl = id && email
+    const documentUrl = id && email
       ? openBase +
         "?email=" + encodeURIComponent(email) +
         "&id=" + encodeURIComponent(id) +
-        "&lang=" + encodeURIComponent(currentLanguage())
+        "&lang=" + encodeURIComponent(lang)
+      : "";
+
+    const returnTo = location.pathname + location.search + location.hash;
+    const openUrl = documentUrl
+      ? "/mobile/invoice.viewer.html" +
+        "?url=" + encodeURIComponent(documentUrl) +
+        "&lang=" + encodeURIComponent(lang) +
+        "&return=" + encodeURIComponent(returnTo)
       : "";
 
     const actionText = type === "refund"
@@ -265,7 +274,7 @@
 
         ${
           openUrl
-            ? `<a class="mobile-invoice-btn" href="${escapeHtml(openUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(actionText)}</a>`
+            ? `<a class="mobile-invoice-btn" href="${escapeHtml(openUrl)}">${escapeHtml(actionText)}</a>`
             : `<button class="mobile-invoice-btn" type="button" disabled>${escapeHtml(documentNotReady)}</button>`
         }
       </article>
