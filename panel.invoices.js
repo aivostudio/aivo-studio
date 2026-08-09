@@ -207,6 +207,45 @@
     return false;
   }
 
+  function installDesktopInvoiceViewerBridge() {
+    if (!/\/studio\.v2\.html$/i.test(String(location.pathname || ""))) return;
+    if (window.__AIVO_DESKTOP_INVOICE_VIEWER_BRIDGE__) return;
+
+    window.__AIVO_DESKTOP_INVOICE_VIEWER_BRIDGE__ = true;
+
+    document.addEventListener("click", function (event) {
+      const link = event.target && event.target.closest
+        ? event.target.closest('a.invoice-row__btn[href*="/api/invoices/"]')
+        : null;
+
+      if (!link) return;
+
+      let documentUrl;
+
+      try {
+        documentUrl = new URL(link.getAttribute("href") || "", location.origin);
+      } catch (_) {
+        return;
+      }
+
+      if (documentUrl.origin !== location.origin) return;
+      if (!documentUrl.pathname.startsWith("/api/invoices/")) return;
+
+      const returnTo = location.pathname + location.search + location.hash;
+      const viewerUrl =
+        "/mobile/invoice.viewer.html" +
+        "?url=" + encodeURIComponent(documentUrl.pathname + documentUrl.search) +
+        "&lang=" + encodeURIComponent(currentLanguage()) +
+        "&return=" + encodeURIComponent(returnTo);
+
+      event.preventDefault();
+      event.stopPropagation();
+      location.href = viewerUrl;
+    }, true);
+  }
+
+  installDesktopInvoiceViewerBridge();
+
   if (registerWhenReady()) return;
 
   const startedAt = Date.now();
