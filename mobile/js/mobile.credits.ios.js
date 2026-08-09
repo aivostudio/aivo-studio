@@ -297,6 +297,13 @@ function applyMobileCreditPrices(){
           user_id: me.user_id,
           email: me.email,
           plan: pack.plan,
+          lang: String(
+            window.AIVO_LANG ||
+            localStorage.getItem("aivo_mobile_language") ||
+            document.documentElement.lang ||
+            navigator.language ||
+            "tr"
+          ).toLowerCase().startsWith("en") ? "en" : "tr",
           source: "mobile",
           return_path: "/studio.mobile.html#credits"
         })
