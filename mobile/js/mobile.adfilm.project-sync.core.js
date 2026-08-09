@@ -171,7 +171,7 @@
   }
 
   function serverAspect(value){
-    return ["9:16", "1:1", "16:9", "4:5"].includes(value) ? value : "16:9";
+    return ["9:16", "1:1", "16:9", "4:5", "3:4", "4:3", "21:9"].includes(value) ? value : "16:9";
   }
 
   function collect(){
