@@ -286,11 +286,32 @@
   async function downloadFinal(projectId, finalId, finalFormat){
     const response = await fetch('/api/radio-ad/final/download?projectId=' + encodeURIComponent(projectId) + '&finalId=' + encodeURIComponent(finalId),{credentials:'include',cache:'no-store'});
     if (!response.ok) throw new Error('final_download_failed');
+
     const blob = await response.blob();
+    const extension = clean(finalFormat).toLowerCase() === 'wav' ? 'wav' : 'mp3';
+    const filename = 'AIVO-Radyo-Reklami.' + extension;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    if (isIOS && typeof File === 'function' && navigator.share){
+      const file = new File([blob], filename, {
+        type: blob.type || (extension === 'wav' ? 'audio/wav' : 'audio/mpeg')
+      });
+      const canShareFile = !navigator.canShare || navigator.canShare({ files:[file] });
+
+      if (canShareFile){
+        await navigator.share({
+          files:[file],
+          title:'AIVO Radyo Reklamı'
+        });
+        return;
+      }
+    }
+
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = objectUrl;
-    link.download = 'AIVO-Radyo-Reklami.' + (clean(finalFormat).toLowerCase() === 'wav' ? 'wav' : 'mp3');
+    link.download = filename;
     link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
