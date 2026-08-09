@@ -1,3 +1,19 @@
+(function bindMobileAdFilmToolI18n(){
+  function syncToolLabel(){
+    const label = document.querySelector('[data-mobile-tool="adfilm"] b');
+    if (!label) return;
+
+    label.setAttribute("data-i18n", "tools.adfilm");
+
+    if (typeof window.t === "function") {
+      label.textContent = window.t("tools.adfilm");
+    }
+  }
+
+  syncToolLabel();
+  document.addEventListener("aivo:language-change", syncToolLabel);
+})();
+
 (function(){
   const root = document.getElementById("mobileAdFilmSection");
   if (!root || root.__mobileAdFilmBound) return;
