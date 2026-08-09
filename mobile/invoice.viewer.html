@@ -186,6 +186,13 @@
       font-weight: 950;
     }
 
+    .viewer-action:active,
+    .viewer-action.is-pressed {
+      transform: scale(.96);
+      filter: brightness(.72);
+      opacity: .82;
+    }
+
     .viewer-action--primary {
       border: 0;
       background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
@@ -291,6 +298,28 @@
       const errorState = document.getElementById("errorState");
       const downloadBtn = document.getElementById("downloadBtn");
       const shareBtn = document.getElementById("shareBtn");
+
+      function bindPressFeedback(button){
+        const press = function(){
+          button.classList.add("is-pressed");
+        };
+
+        const release = function(){
+          setTimeout(function(){
+            button.classList.remove("is-pressed");
+          }, 130);
+        };
+
+        button.addEventListener("touchstart", press, { passive: true });
+        button.addEventListener("touchend", release, { passive: true });
+        button.addEventListener("touchcancel", release, { passive: true });
+        button.addEventListener("pointerdown", press, { passive: true });
+        button.addEventListener("pointerup", release, { passive: true });
+        button.addEventListener("pointercancel", release, { passive: true });
+      }
+
+      bindPressFeedback(downloadBtn);
+      bindPressFeedback(shareBtn);
 
       function normalizeInvoiceUrl(value){
         if (!value) return "";
@@ -416,14 +445,15 @@
 
       frame.addEventListener("load", function(){
         loadingState.hidden = true;
-        fetchPdfFile().catch(function(err){
-          console.warn("[AIVO INVOICE VIEWER][PDF PREFETCH ERROR]", err);
-        });
       });
 
       frame.addEventListener("error", function(){
         loadingState.hidden = true;
         errorState.hidden = false;
+      });
+
+      fetchPdfFile().catch(function(err){
+        console.warn("[AIVO INVOICE VIEWER][PDF PREFETCH ERROR]", err);
       });
 
       frame.src = invoiceUrl;
