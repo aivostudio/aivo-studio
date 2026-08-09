@@ -328,6 +328,7 @@
       }
 
       const pdfUrl = buildPdfUrl(invoiceUrl);
+      let pdfFilePromise = null;
 
       function invoiceFileName(){
         try {
@@ -340,7 +341,7 @@
         }
       }
 
-      async function fetchPdfFile(){
+      async function loadPdfFile(){
         if (!pdfUrl) throw new Error("invoice_pdf_url_missing");
 
         const response = await fetch(pdfUrl, {
@@ -366,6 +367,16 @@
         return new File([blob], invoiceFileName(), {
           type: "application/pdf"
         });
+      }
+
+      function fetchPdfFile(){
+        if (!pdfFilePromise) {
+          pdfFilePromise = loadPdfFile().catch(function(err){
+            pdfFilePromise = null;
+            throw err;
+          });
+        }
+        return pdfFilePromise;
       }
 
       function resizeInvoice(){
@@ -405,6 +416,9 @@
 
       frame.addEventListener("load", function(){
         loadingState.hidden = true;
+        fetchPdfFile().catch(function(err){
+          console.warn("[AIVO INVOICE VIEWER][PDF PREFETCH ERROR]", err);
+        });
       });
 
       frame.addEventListener("error", function(){
