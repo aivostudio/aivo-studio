@@ -408,6 +408,24 @@
         return pdfFilePromise;
       }
 
+      function fileToBase64(file){
+        return new Promise(function(resolve, reject){
+          const reader = new FileReader();
+          reader.onloadend = function(){
+            try {
+              const result = String(reader.result || "");
+              resolve(result.indexOf(",") >= 0 ? result.split(",")[1] : result);
+            } catch (err) {
+              reject(err);
+            }
+          };
+          reader.onerror = function(){
+            reject(reader.error || new Error("invoice_file_read_failed"));
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
       function resizeInvoice(){
         const available = Math.max(280, stage.clientWidth);
         const scale = Math.min(1, available / 1240);
@@ -478,6 +496,19 @@
         try {
           const file = await fetchPdfFile();
 
+          if (
+            window.AivoAndroidDownload &&
+            typeof window.AivoAndroidDownload.saveBase64File === "function"
+          ) {
+            const base64 = await fileToBase64(file);
+            window.AivoAndroidDownload.saveBase64File(
+              base64,
+              file.name,
+              file.type || "application/pdf"
+            );
+            return;
+          }
+
           if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
             await navigator.share({
               files: [file],
@@ -502,12 +533,32 @@
         } catch (err) {
           if (err && err.name === "AbortError") return;
           console.error("[AIVO INVOICE VIEWER][DOWNLOAD ERROR]", err);
+          if (
+            window.AivoAndroidDownload &&
+            typeof window.AivoAndroidDownload.downloadFailed === "function"
+          ) {
+            window.AivoAndroidDownload.downloadFailed(String(err || "invoice_download_failed"));
+          }
         }
       });
 
       shareBtn.addEventListener("click", async function(){
         try {
           const file = await fetchPdfFile();
+
+          if (
+            window.AivoAndroidShare &&
+            typeof window.AivoAndroidShare.shareBase64File === "function"
+          ) {
+            const base64 = await fileToBase64(file);
+            window.AivoAndroidShare.shareBase64File(
+              base64,
+              file.name,
+              file.type || "application/pdf",
+              copy.shareTitle
+            );
+            return;
+          }
 
           if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
             await navigator.share({
