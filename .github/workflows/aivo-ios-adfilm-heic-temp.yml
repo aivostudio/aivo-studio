@@ -1,0 +1,78 @@
+name: AIVO iOS adfilm HEIC patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-heic-temp2
+    paths:
+      - .github/workflows/aivo-ios-adfilm-heic-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ios-adfilm-heic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-heic-temp2
+          fetch-depth: 0
+
+      - name: Add iOS HEIC to JPEG normalization
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("mobile/js/mobile.adfilm.references.js")
+          text = path.read_text(encoding="utf-8")
+
+          if "convertIOSHeicToJpeg" in text:
+              raise SystemExit("HEIC converter already exists")
+
+          helper_anchor = '''  function clean(value){ return String(value == null ? "" : value).trim(); }\n  function fingerprint(file){ return [file.name || "", Number(file.size || 0), file.type || "", Number(file.lastModified || 0)].join("|"); }\n  function entryId(){ sequence += 1; return "ref-" + Date.now().toString(36) + "-" + sequence.toString(36); }\n'''
+
+          helper_replacement = '''  function clean(value){ return String(value == null ? "" : value).trim(); }\n  function fingerprint(file){ return [file.name || "", Number(file.size || 0), file.type || "", Number(file.lastModified || 0)].join("|"); }\n  function entryId(){ sequence += 1; return "ref-" + Date.now().toString(36) + "-" + sequence.toString(36); }\n\n  function isIOSDevice(){\n    const ua = String(navigator.userAgent || "");\n    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);\n  }\n\n  function isHeicFile(file){\n    if (!file) return false;\n    const type = clean(file.type).toLowerCase();\n    const name = clean(file.name).toLowerCase();\n    return type === "image/heic" || type === "image/heif" || type === "image/heic-sequence" || type === "image/heif-sequence" || /\\.(heic|heif)$/.test(name);\n  }\n\n  function jpegName(name){\n    const base = clean(name || "iPhone-photo").replace(/\\.(heic|heif)$/i, "").replace(/\\.[^.]+$/, "") || "iPhone-photo";\n    return base + ".jpg";\n  }\n\n  async function convertIOSHeicToJpeg(file){\n    if (!isIOSDevice() || !isHeicFile(file)) return file;\n\n    const objectUrl = URL.createObjectURL(file);\n    try {\n      const image = new Image();\n      image.decoding = "async";\n      await new Promise(function(resolve, reject){\n        image.onload = resolve;\n        image.onerror = function(){ reject(new Error("heic_decode_failed")); };\n        image.src = objectUrl;\n      });\n\n      const sourceWidth = Number(image.naturalWidth || image.width || 0);\n      const sourceHeight = Number(image.naturalHeight || image.height || 0);\n      if (!sourceWidth || !sourceHeight) throw new Error("heic_invalid_dimensions");\n\n      const maxEdge = 4096;\n      const scale = Math.min(1, maxEdge / Math.max(sourceWidth, sourceHeight));\n      const width = Math.max(1, Math.round(sourceWidth * scale));\n      const height = Math.max(1, Math.round(sourceHeight * scale));\n      const canvas = document.createElement("canvas");\n      canvas.width = width;\n      canvas.height = height;\n\n      const context = canvas.getContext("2d", { alpha: false });\n      if (!context) throw new Error("heic_canvas_unavailable");\n      context.fillStyle = "#ffffff";\n      context.fillRect(0, 0, width, height);\n      context.drawImage(image, 0, 0, width, height);\n\n      const blob = await new Promise(function(resolve, reject){\n        canvas.toBlob(function(result){\n          if (result) resolve(result);\n          else reject(new Error("heic_jpeg_encode_failed"));\n        }, "image/jpeg", 0.92);\n      });\n\n      return new File([blob], jpegName(file.name), {\n        type: "image/jpeg",\n        lastModified: Number(file.lastModified || Date.now())\n      });\n    } finally {\n      try { URL.revokeObjectURL(objectUrl); } catch (_) {}\n    }\n  }\n'''
+
+          if text.count(helper_anchor) != 1:
+              raise SystemExit("Expected exactly one helper anchor")
+          text = text.replace(helper_anchor, helper_replacement, 1)
+
+          old_add = '''  function addFiles(group, fileList){\n    const incoming = Array.from(fileList || []).filter(function(file){ return validFile(group, file); });\n    if (!incoming.length) return;\n\n    if (group === "primary" || group === "logo") {\n      state[group].forEach(revoke);\n      state[group] = [];\n    }\n\n    const seen = new Set(state[group].map(function(entry){ return entry.fingerprint; }));\n    incoming.forEach(function(file){\n      if (state[group].length >= config[group].limit) return;\n      const fp = fingerprint(file);\n      if (seen.has(fp)) return;\n      state[group].push(makeLocalEntry(file));\n      seen.add(fp);\n    });\n    render();\n    queueUpload();\n  }\n'''
+
+          new_add = '''  async function addFiles(group, fileList){\n    const selected = Array.from(fileList || []);\n    const incoming = [];\n    let convertedCount = 0;\n\n    for (const selectedFile of selected) {\n      let file = selectedFile;\n      if (isIOSDevice() && isHeicFile(file)) {\n        try {\n          setStatus("converting", "iPhone HEIC görseli JPEG'e dönüştürülüyor...");\n          file = await convertIOSHeicToJpeg(file);\n          convertedCount += 1;\n        } catch (error) {\n          console.error("[MOBILE ADFILM] HEIC conversion", error);\n          toast("warning", "HEIC/HEIF görsel JPEG'e dönüştürülemedi. JPG veya PNG seçebilirsin.", 4400);\n          continue;\n        }\n      }\n      if (validFile(group, file)) incoming.push(file);\n    }\n\n    if (!incoming.length) return;\n    if (convertedCount === 1) toast("success", "iPhone HEIC görseli JPEG'e dönüştürüldü.", 2400);\n    else if (convertedCount > 1) toast("success", convertedCount + " HEIC görsel JPEG'e dönüştürüldü.", 2600);\n\n    if (group === "primary" || group === "logo") {\n      state[group].forEach(revoke);\n      state[group] = [];\n    }\n\n    const seen = new Set(state[group].map(function(entry){ return entry.fingerprint; }));\n    incoming.forEach(function(file){\n      if (state[group].length >= config[group].limit) return;\n      const fp = fingerprint(file);\n      if (seen.has(fp)) return;\n      state[group].push(makeLocalEntry(file));\n      seen.add(fp);\n    });\n    render();\n    queueUpload();\n  }\n'''
+
+          if text.count(old_add) != 1:
+              raise SystemExit("Expected exactly one addFiles block")
+          text = text.replace(old_add, new_add, 1)
+
+          old_event = '''    addFiles(group, files);\n    event.target.value = "";\n'''
+          new_event = '''    addFiles(group, files).catch(function(error){\n      console.error("[MOBILE ADFILM] reference file prepare", error);\n      toast("error", "Görsel yüklemeye hazırlanamadı. Tekrar deneyebilirsin.", 4200);\n    });\n    event.target.value = "";\n'''
+          if text.count(old_event) != 1:
+              raise SystemExit("Expected exactly one addFiles event call")
+          text = text.replace(old_event, new_event, 1)
+
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify HEIC-only diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "mobile/js/mobile.adfilm.references.js"
+          grep -q "async function convertIOSHeicToJpeg" mobile/js/mobile.adfilm.references.js
+          grep -q "maxEdge = 4096" mobile/js/mobile.adfilm.references.js
+          grep -q "type: \"image/jpeg\"" mobile/js/mobile.adfilm.references.js
+          grep -q "async function addFiles" mobile/js/mobile.adfilm.references.js
+          git diff --unified=3 -- mobile/js/mobile.adfilm.references.js
+
+      - name: Commit HEIC patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add mobile/js/mobile.adfilm.references.js
+          git commit -m "Convert iOS HEIC ad references to JPEG"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-heic-temp2
