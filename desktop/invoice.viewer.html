@@ -18,7 +18,8 @@
     iframe{display:block;width:1240px;height:1754px;border:0;background:#fff}
     .state{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:28px;text-align:center;background:linear-gradient(180deg,rgba(7,9,20,.96),rgba(11,14,27,.96))}.state[hidden]{display:none}.state-card{width:min(100%,330px);padding:22px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.06)}.state-card strong{display:block;font-size:18px;font-weight:950}.state-card p{margin:8px 0 0;color:var(--muted);font-size:13px;font-weight:750;line-height:1.5}
     .actions{position:fixed;left:20px;right:20px;bottom:12px;z-index:30;display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(calc(100% - 40px),736px);margin:0 auto;padding:10px;border:1px solid var(--line);border-radius:24px;background:rgba(11,14,27,.90);backdrop-filter:blur(22px);box-shadow:0 22px 60px rgba(0,0,0,.42)}
-    .action{min-height:50px;border:1px solid rgba(255,255,255,.12);border-radius:17px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:14px;font-weight:950;cursor:pointer;text-decoration:none;display:grid;place-items:center}.action:active{transform:scale(.98)}.action:disabled{cursor:wait;opacity:.62}.primary{border:0;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 0 28px rgba(236,72,153,.24)}
+    .action{min-height:50px;border:1px solid rgba(255,255,255,.12);border-radius:17px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:14px;font-weight:950;cursor:pointer;text-decoration:none;display:grid;place-items:center}.action:active{transform:scale(.98)}.primary{border:0;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 0 28px rgba(236,72,153,.24)}
+    #downloadFrame{display:none!important;width:0!important;height:0!important;border:0!important}
   </style>
 </head>
 <body>
@@ -38,6 +39,7 @@
     <button class="action" id="downloadBtn" type="button">İndir</button>
     <button class="action primary" id="shareBtn" type="button">Paylaş</button>
   </nav>
+  <iframe id="downloadFrame" name="invoiceDownloadFrame" title="" aria-hidden="true"></iframe>
   <script>
   (function(){
     "use strict";
@@ -45,7 +47,7 @@
     const lang=String(p.get("lang")||"tr").toLowerCase()==="en"?"en":"tr";
     const raw=String(p.get("url")||"").trim();
     const ret=String(p.get("return")||"").trim();
-    const C=lang==="en"?{title:"Invoice",subtitle:"AIVO document viewer",loading:"Loading invoice…",preparing:"Your document is being prepared.",bad:"Invoice could not be opened",badText:"The document link is invalid or unavailable.",download:"Download",preparingPdf:"Preparing PDF…",share:"Share",copied:"Link copied",shareTitle:"AIVO Invoice"}:{title:"Fatura",subtitle:"AIVO belge görüntüleyici",loading:"Fatura yükleniyor…",preparing:"Belgen hazırlanıyor.",bad:"Fatura açılamadı",badText:"Belge bağlantısı geçersiz veya kullanılamıyor.",download:"İndir",preparingPdf:"PDF hazırlanıyor…",share:"Paylaş",copied:"Bağlantı kopyalandı",shareTitle:"AIVO Fatura"};
+    const C=lang==="en"?{title:"Invoice",subtitle:"AIVO document viewer",loading:"Loading invoice…",preparing:"Your document is being prepared.",bad:"Invoice could not be opened",badText:"The document link is invalid or unavailable.",download:"Download",downloading:"Downloading…",share:"Share",copied:"Link copied",shareTitle:"AIVO Invoice"}:{title:"Fatura",subtitle:"AIVO belge görüntüleyici",loading:"Fatura yükleniyor…",preparing:"Belgen hazırlanıyor.",bad:"Fatura açılamadı",badText:"Belge bağlantısı geçersiz veya kullanılamıyor.",download:"İndir",downloading:"İndiriliyor…",share:"Paylaş",copied:"Bağlantı kopyalandı",shareTitle:"AIVO Fatura"};
     document.documentElement.lang=lang;document.title=C.title+" · AIVO";
     title.textContent=C.title;subtitle.textContent=C.subtitle;loadingTitle.textContent=C.loading;loadingText.textContent=C.preparing;errorTitle.textContent=C.bad;errorText.textContent=C.badText;downloadBtn.textContent=C.download;shareBtn.textContent=C.share;
     function invoiceUrl(v){try{const u=new URL(v,"https://aivo.tr");if(u.origin!=="https://aivo.tr"||!u.pathname.startsWith("/api/invoices/"))return"";return u.href}catch(_){return""}}
@@ -53,7 +55,6 @@
     const inv=invoiceUrl(raw),safeRet=returnPath(ret);
     function pdfUrl(v){if(!v)return"";try{const u=new URL(v);const email=String(u.searchParams.get("email")||"").trim(),id=String(u.searchParams.get("id")||"").trim();if(!email||!id)return"";const pdf=new URL("/api/invoices/pdf","https://aivo.tr");pdf.searchParams.set("email",email);pdf.searchParams.set("id",id);pdf.searchParams.set("lang",lang);return pdf.href}catch(_){return""}}
     const pdf=pdfUrl(inv);
-    function filename(){try{const id=String(new URL(inv).searchParams.get("id")||"document").replace(/[^a-zA-Z0-9._-]+/g,"-").slice(0,80)||"document";return"aivo-invoice-"+id+".pdf"}catch(_){return"aivo-invoice.pdf"}}
     function goBack(){if(safeRet){location.href=safeRet;return}if(history.length>1){history.back();return}location.href="/studio.v2.html"}
     backBtn.addEventListener("click",goBack);closeBtn.addEventListener("click",goBack);
     function resize(){const available=Math.max(280,stage.clientWidth);const s=Math.min(1,available/1240);scale.style.transform="scale("+s+")";stage.style.height=Math.ceil(1754*s)+"px"}
@@ -65,73 +66,18 @@
     frame.src=inv;
     resize();
 
-    let pdfBlobPromise=null;
-    let preparedBlob=null;
-    let preparedFile=null;
-
-    function fetchPdfBlob(){
-      if(!pdfBlobPromise){
-        pdfBlobPromise=fetch(pdf,{method:"GET",credentials:"include",cache:"no-store",headers:{Accept:"application/pdf"}})
-          .then(function(response){if(!response.ok)throw new Error("invoice_pdf_failed_"+response.status);return response.blob()})
-          .then(function(blob){
-            const type=String(blob.type||"").toLowerCase();
-            if(type&&!type.includes("application/pdf"))throw new Error("invoice_pdf_invalid_type_"+type);
-            preparedBlob=blob;
-            preparedFile=new File([blob],filename(),{type:blob.type||"application/pdf"});
-            return blob;
-          })
-          .catch(function(err){pdfBlobPromise=null;preparedBlob=null;preparedFile=null;throw err});
-      }
-      return pdfBlobPromise;
-    }
-
-    function isSafariBrowser(){
-      const ua=String(navigator.userAgent||"");
-      return /Safari/i.test(ua)&&!/(Chrome|CriOS|Chromium|Edg|OPR|FxiOS)/i.test(ua);
-    }
-
-    function downloadPreparedPdf(){
-      if(!preparedBlob||!preparedFile)return false;
-
-      if(
-        isSafariBrowser()&&
-        navigator.canShare&&
-        navigator.share&&
-        navigator.canShare({files:[preparedFile]})
-      ){
-        navigator.share({files:[preparedFile],title:C.shareTitle}).catch(function(err){
-          if(err&&err.name==="AbortError")return;
-          console.error("[AIVO DESKTOP INVOICE SAFARI DOWNLOAD]",err);
-        });
-        return true;
-      }
-
-      const objectUrl=URL.createObjectURL(preparedBlob);
-      const anchor=document.createElement("a");
-      anchor.href=objectUrl;
-      anchor.download=filename();
-      anchor.rel="noopener";
-      anchor.style.position="fixed";
-      anchor.style.left="-10000px";
-      anchor.style.top="0";
-      document.body.appendChild(anchor);
-      anchor.click();
-
-      setTimeout(function(){
-        try{anchor.remove()}catch(_){}
-        try{URL.revokeObjectURL(objectUrl)}catch(_){}
-      },10000);
-      return true;
-    }
-
-    downloadBtn.disabled=true;
-    downloadBtn.textContent=C.preparingPdf;
-    fetchPdfBlob().then(function(){downloadBtn.disabled=false;downloadBtn.textContent=C.download}).catch(function(err){downloadBtn.disabled=true;downloadBtn.textContent=C.download;console.error("[AIVO DESKTOP INVOICE PREFETCH]",err)});
-
     downloadBtn.addEventListener("click",function(){
-      if(downloadBtn.disabled)return;
-      if(downloadPreparedPdf())return;
-      console.error("[AIVO DESKTOP INVOICE DOWNLOAD] PDF not prepared");
+      try{
+        const url=new URL(pdf);
+        url.searchParams.set("download","1");
+        url.searchParams.set("_ts",String(Date.now()));
+        downloadBtn.textContent=C.downloading;
+        downloadFrame.src=url.href;
+        setTimeout(function(){downloadBtn.textContent=C.download},2200);
+      }catch(err){
+        console.error("[AIVO DESKTOP INVOICE DOWNLOAD]",err);
+        downloadBtn.textContent=C.download;
+      }
     });
 
     shareBtn.addEventListener("click",function(){
