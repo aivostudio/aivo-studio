@@ -1,3 +1,33 @@
+(function AIVO_MOBILE_FAST_AUTH_REVEAL(){
+  try {
+    if (!/\/studio\.mobile\.html$/i.test(String(location.pathname || ""))) return;
+
+    var unified = {};
+    try {
+      unified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+    } catch (_) {
+      unified = {};
+    }
+
+    var loggedIn = localStorage.getItem("aivo_logged_in") === "1";
+    var unifiedLoggedIn = unified && unified.loggedIn === true;
+    var email = String(
+      (unified && unified.email) ||
+      localStorage.getItem("aivo_user_email") ||
+      ""
+    ).trim().toLowerCase();
+
+    if ((!loggedIn && !unifiedLoggedIn) || !email || email.indexOf("@") === -1) {
+      return;
+    }
+
+    var gateStyle = document.getElementById("aivo-auth-gate-style");
+    if (gateStyle) gateStyle.remove();
+
+    document.documentElement.style.visibility = "visible";
+  } catch (_) {}
+})();
+
 (function AIVO_MOBILE_REFRESH_ROUTE_PREBOOT(){
   try {
     if (!/\/studio\.mobile\.html$/i.test(String(location.pathname || ""))) return;
