@@ -1683,6 +1683,30 @@ try {
   }
 }
 try {
+  const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!adfilmRes.ok) {
+    throw new Error("mobile_adfilm_html_load_failed");
+  }
+
+  adfilmMount.innerHTML = await adfilmRes.text();
+
+  if (typeof window.aivoApplyI18n === "function") {
+    window.aivoApplyI18n(adfilmMount);
+  }
+
+  const adfilmScript = document.createElement("script");
+  adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
+  adfilmScript.defer = true;
+  document.body.appendChild(adfilmScript);
+} catch (err) {
+  if (adfilmMount) {
+    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+  }
+}
+try {
   const creditsRes = await fetch("/mobile/modules/mobile.credits.ios.html?v=1", {
     cache: "no-store"
   });
