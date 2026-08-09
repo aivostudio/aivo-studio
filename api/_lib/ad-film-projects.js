@@ -233,7 +233,7 @@ export function sanitizeProjectPatch(patch, user, projectId) {
       ),
       aspectRatio: enumValue(
         outputSource.aspectRatio,
-        ["9:16", "1:1", "16:9", "4:5"],
+        ["9:16", "1:1", "16:9", "4:5", "3:4", "4:3", "21:9"],
         "9:16"
       ),
       quality: enumValue(outputSource.quality, ["1080p", "2k"], "1080p"),
