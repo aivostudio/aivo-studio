@@ -1,3 +1,57 @@
+(function AIVO_MOBILE_REFRESH_ROUTE_PREBOOT(){
+  try {
+    if (!/\/studio\.mobile\.html$/i.test(String(location.pathname || ""))) return;
+
+    var hash = String(location.hash || "#home").toLowerCase();
+    var map = {
+      "#home": "mobileHomeMount",
+      "#music": "mobileMusicMount",
+      "#cover": "mobileCoverMount",
+      "#atmo": "mobileAtmoMount",
+      "#cartoon": "mobileCartoonMount",
+      "#photofx": "mobilePhotoFxMount",
+      "#video": "mobileVideoMount",
+      "#lipsync": "mobileLipsyncMount",
+      "#credits": "mobileCreditsMount",
+      "#tools": "mobileToolsMount",
+      "#account": "mobileAccountMount"
+    };
+
+    var targetId = map[hash];
+    if (!targetId) return;
+
+    var mountIds = [
+      "mobileHomeMount",
+      "mobileMusicMount",
+      "mobileCoverMount",
+      "mobileAtmoMount",
+      "mobileCartoonMount",
+      "mobilePhotoFxMount",
+      "mobileVideoMount",
+      "mobileLipsyncMount",
+      "mobileAdFilmMount",
+      "mobileCreditsMount",
+      "mobileToolsMount",
+      "mobileAccountMount",
+      "mobilePolicyMount"
+    ];
+
+    mountIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.hidden = id !== targetId;
+    });
+
+    var nav = document.querySelector('.bottom-nav a[href="' + hash + '"]');
+    if (nav) {
+      document.querySelectorAll(".bottom-nav a").forEach(function(item){
+        item.classList.toggle("active", item === nav);
+      });
+    }
+
+    document.documentElement.classList.remove("aivo-hash-routing-pending");
+  } catch (_) {}
+})();
+
 (function AIVO_MOBILE_WEB_I18N_BOOT(){
   try {
     if (!/\.mobile\.html$/i.test(String(location.pathname || ""))) return;
