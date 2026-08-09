@@ -80,12 +80,13 @@ export default async function handler(req, res) {
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      preferCSSPageSize: true,
+      preferCSSPageSize: false,
+      scale: 0.64,
       margin: {
-        top: "16mm",
-        right: "16mm",
-        bottom: "16mm",
-        left: "16mm",
+        top: "0mm",
+        right: "0mm",
+        bottom: "0mm",
+        left: "0mm",
       },
     });
 
