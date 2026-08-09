@@ -1932,6 +1932,7 @@
      success, toast and archive strings live in this last block.
      ========================================================= */
   Object.assign(DICTIONARY.tr, {
+    "tools.adfilm": "AI Reklam Filmi Oluştur",
     "adfilm.badge": "AIVO Mobile Studio",
     "adfilm.title": "AI Reklam Filmi",
     "adfilm.subtitle": "Markan, ürünün veya hizmetin için sahneli ve sesli reklam filmi oluştur.",
@@ -2411,6 +2412,7 @@
   });
 
   Object.assign(DICTIONARY.en, {
+    "tools.adfilm": "Create AI Commercial Film",
     "adfilm.badge": "AIVO Mobile Studio",
     "adfilm.title": "AI Commercial Film",
     "adfilm.subtitle": "Create a scene-based commercial with voice for your brand, product or service.",
