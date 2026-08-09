@@ -96,7 +96,7 @@ export default async function handler(req, res) {
     res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
     res.setHeader("Cache-Control", "no-store");
 
-    return res.status(200).send(pdfBuffer);
+    return res.status(200).send(Buffer.from(pdfBuffer));
   } catch (err) {
     return res.status(500).json({
       ok: false,
