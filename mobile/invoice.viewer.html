@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>AIVO Fatura</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070914;
+      --panel: rgba(18, 21, 38, 0.94);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,.68);
+      --accent-a: #8b5cf6;
+      --accent-b: #ec4899;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(124,58,237,.22), transparent 32%),
+        radial-gradient(circle at 90% 10%, rgba(236,72,153,.16), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      padding: calc(var(--safe-top) + 10px) 12px calc(var(--safe-bottom) + 92px);
+      overflow-x: hidden;
+    }
+
+    .viewer-shell {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .viewer-topbar {
+      position: sticky;
+      top: calc(var(--safe-top) + 6px);
+      z-index: 20;
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center;
+      min-height: 52px;
+      margin-bottom: 12px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(11, 14, 27, 0.84);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 18px 42px rgba(0,0,0,.28);
+    }
+
+    .viewer-title {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .viewer-title strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 950;
+      letter-spacing: -.02em;
+    }
+
+    .viewer-title span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .viewer-icon-btn {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 16px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font: inherit;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .viewer-stage {
+      position: relative;
+      width: 100%;
+      min-height: 64vh;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: #eef2f7;
+      box-shadow: 0 28px 70px rgba(0,0,0,.34);
+    }
+
+    .viewer-scale-wrap {
+      position: relative;
+      width: 1240px;
+      height: 1754px;
+      transform-origin: top left;
+    }
+
+    #invoiceFrame {
+      display: block;
+      width: 1240px;
+      height: 1754px;
+      border: 0;
+      background: #fff;
+    }
+
+    .viewer-loading,
+    .viewer-error {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(7,9,20,.96), rgba(11,14,27,.96));
+    }
+
+    .viewer-loading[hidden],
+    .viewer-error[hidden] { display: none; }
+
+    .viewer-state-card {
+      width: min(100%, 330px);
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .viewer-state-card strong {
+      display: block;
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .viewer-state-card p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
+    .viewer-actions {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(var(--safe-bottom) + 10px);
+      z-index: 30;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: min(calc(100% - 24px), 736px);
+      margin: 0 auto;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(11,14,27,.90);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.42);
+    }
+
+    .viewer-action {
+      min-height: 50px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 17px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 950;
+    }
+
+    .viewer-action:active,
+    .viewer-action.is-pressed {
+      transform: scale(.96);
+      filter: brightness(.72);
+      opacity: .82;
+    }
+
+    .viewer-action--primary {
+      border: 0;
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+      box-shadow: 0 0 28px rgba(236,72,153,.24);
+    }
+
+    @media (min-width: 760px) {
+      body { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="viewer-shell">
+    <header class="viewer-topbar">
+      <button class="viewer-icon-btn" id="backBtn" type="button" aria-label="Geri">‹</button>
+      <div class="viewer-title">
+        <strong id="viewerTitle">Fatura</strong>
+        <span id="viewerSubtitle">AIVO belge görüntüleyici</span>
+      </div>
+      <button class="viewer-icon-btn" id="closeBtn" type="button" aria-label="Kapat">×</button>
+    </header>
+
+    <section class="viewer-stage" id="viewerStage" aria-live="polite">
+      <div class="viewer-scale-wrap" id="scaleWrap">
+        <iframe id="invoiceFrame" title="AIVO Fatura" loading="eager"></iframe>
+      </div>
+
+      <div class="viewer-loading" id="loadingState">
+        <div class="viewer-state-card">
+          <strong id="loadingTitle">Fatura yükleniyor…</strong>
+          <p id="loadingText">Belgen hazırlanıyor.</p>
+        </div>
+      </div>
+
+      <div class="viewer-error" id="errorState" hidden>
+        <div class="viewer-state-card">
+          <strong id="errorTitle">Fatura açılamadı</strong>
+          <p id="errorText">Belge bağlantısı geçersiz veya kullanılamıyor.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="viewer-actions" aria-label="Fatura işlemleri">
+    <button class="viewer-action" id="downloadBtn" type="button">İndir</button>
+    <button class="viewer-action viewer-action--primary" id="shareBtn" type="button">Paylaş</button>
+  </nav>
+
+  <script>
+    (function(){
+      "use strict";
+
+      const params = new URLSearchParams(location.search);
+      const lang = String(params.get("lang") || "tr").toLowerCase() === "en" ? "en" : "tr";
+      const rawUrl = String(params.get("url") || "").trim();
+      const returnTo = String(params.get("return") || "").trim();
+
+      const copy = lang === "en"
+        ? {
+            title: "Invoice",
+            subtitle: "AIVO document viewer",
+            loadingTitle: "Loading invoice…",
+            loadingText: "Your document is being prepared.",
+            errorTitle: "Invoice could not be opened",
+            errorText: "The document link is invalid or unavailable.",
+            download: "Download",
+            share: "Share",
+            back: "Back",
+            close: "Close",
+            shareTitle: "AIVO Invoice"
+          }
+        : {
+            title: "Fatura",
+            subtitle: "AIVO belge görüntüleyici",
+            loadingTitle: "Fatura yükleniyor…",
+            loadingText: "Belgen hazırlanıyor.",
+            errorTitle: "Fatura açılamadı",
+            errorText: "Belge bağlantısı geçersiz veya kullanılamıyor.",
+            download: "İndir",
+            share: "Paylaş",
+            back: "Geri",
+            close: "Kapat",
+            shareTitle: "AIVO Fatura"
+          };
+
+      document.documentElement.lang = lang;
+      document.title = copy.title + " · AIVO";
+      document.getElementById("viewerTitle").textContent = copy.title;
+      document.getElementById("viewerSubtitle").textContent = copy.subtitle;
+      document.getElementById("loadingTitle").textContent = copy.loadingTitle;
+      document.getElementById("loadingText").textContent = copy.loadingText;
+      document.getElementById("errorTitle").textContent = copy.errorTitle;
+      document.getElementById("errorText").textContent = copy.errorText;
+      document.getElementById("downloadBtn").textContent = copy.download;
+      document.getElementById("shareBtn").textContent = copy.share;
+      document.getElementById("backBtn").setAttribute("aria-label", copy.back);
+      document.getElementById("closeBtn").setAttribute("aria-label", copy.close);
+
+      const frame = document.getElementById("invoiceFrame");
+      const stage = document.getElementById("viewerStage");
+      const scaleWrap = document.getElementById("scaleWrap");
+      const loadingState = document.getElementById("loadingState");
+      const errorState = document.getElementById("errorState");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const shareBtn = document.getElementById("shareBtn");
+
+      function bindPressFeedback(button){
+        const press = function(){
+          button.classList.add("is-pressed");
+        };
+
+        const release = function(){
+          setTimeout(function(){
+            button.classList.remove("is-pressed");
+          }, 130);
+        };
+
+        button.addEventListener("touchstart", press, { passive: true });
+        button.addEventListener("touchend", release, { passive: true });
+        button.addEventListener("touchcancel", release, { passive: true });
+        button.addEventListener("pointerdown", press, { passive: true });
+        button.addEventListener("pointerup", release, { passive: true });
+        button.addEventListener("pointercancel", release, { passive: true });
+      }
+
+      bindPressFeedback(downloadBtn);
+      bindPressFeedback(shareBtn);
+
+      function normalizeInvoiceUrl(value){
+        if (!value) return "";
+
+        try {
+          const url = new URL(value, "https://aivo.tr");
+          if (url.origin !== "https://aivo.tr") return "";
+          if (!url.pathname.startsWith("/api/invoices/")) return "";
+          return url.href;
+        } catch (_) {
+          return "";
+        }
+      }
+
+      const invoiceUrl = normalizeInvoiceUrl(rawUrl);
+
+      function buildPdfUrl(value){
+        if (!value) return "";
+
+        try {
+          const source = new URL(value, "https://aivo.tr");
+          const email = String(source.searchParams.get("email") || "").trim();
+          const id = String(source.searchParams.get("id") || "").trim();
+
+          if (!email || !id) return "";
+
+          const pdf = new URL("/api/invoices/pdf", "https://aivo.tr");
+          pdf.searchParams.set("email", email);
+          pdf.searchParams.set("id", id);
+          pdf.searchParams.set("lang", lang);
+          return pdf.href;
+        } catch (_) {
+          return "";
+        }
+      }
+
+      const pdfUrl = buildPdfUrl(invoiceUrl);
+      let pdfFilePromise = null;
+
+      function invoiceFileName(){
+        try {
+          const source = new URL(invoiceUrl);
+          const rawId = String(source.searchParams.get("id") || "document");
+          const safeId = rawId.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 80) || "document";
+          return "aivo-invoice-" + safeId + ".pdf";
+        } catch (_) {
+          return "aivo-invoice.pdf";
+        }
+      }
+
+      async function loadPdfFile(){
+        if (!pdfUrl) throw new Error("invoice_pdf_url_missing");
+
+        const response = await fetch(pdfUrl, {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Accept": "application/pdf"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error("invoice_pdf_failed_" + response.status);
+        }
+
+        const blob = await response.blob();
+        const type = String(blob.type || "").toLowerCase();
+
+        if (type && !type.includes("application/pdf")) {
+          throw new Error("invoice_pdf_invalid_type_" + type);
+        }
+
+        return new File([blob], invoiceFileName(), {
+          type: "application/pdf"
+        });
+      }
+
+      function fetchPdfFile(){
+        if (!pdfFilePromise) {
+          pdfFilePromise = loadPdfFile().catch(function(err){
+            pdfFilePromise = null;
+            throw err;
+          });
+        }
+        return pdfFilePromise;
+      }
+
+      function resizeInvoice(){
+        const available = Math.max(280, stage.clientWidth);
+        const scale = Math.min(1, available / 1240);
+        scaleWrap.style.transform = "scale(" + scale + ")";
+        stage.style.height = Math.ceil(1754 * scale) + "px";
+      }
+
+      function normalizeReturnPath(value){
+        if (!value) return "";
+        if (!value.startsWith("/") || value.startsWith("//")) return "";
+
+        try {
+          const url = new URL(value, "https://aivo.tr");
+          if (url.origin !== "https://aivo.tr") return "";
+          return url.pathname + url.search + url.hash;
+        } catch (_) {
+          return "";
+        }
+      }
+
+      const safeReturnTo = normalizeReturnPath(returnTo);
+
+      function goBack(){
+        if (safeReturnTo) {
+          location.href = safeReturnTo;
+          return;
+        }
+
+        if (history.length > 1) {
+          history.back();
+          return;
+        }
+
+        location.href = "/studio.mobile.html#account";
+      }
+
+      document.getElementById("backBtn").addEventListener("click", goBack);
+      document.getElementById("closeBtn").addEventListener("click", goBack);
+
+      window.addEventListener("resize", resizeInvoice, { passive: true });
+
+      if (!invoiceUrl) {
+        loadingState.hidden = true;
+        errorState.hidden = false;
+        downloadBtn.disabled = true;
+        shareBtn.disabled = true;
+        resizeInvoice();
+        return;
+      }
+
+      frame.addEventListener("load", function(){
+        loadingState.hidden = true;
+      });
+
+      frame.addEventListener("error", function(){
+        loadingState.hidden = true;
+        errorState.hidden = false;
+      });
+
+      fetchPdfFile().catch(function(err){
+        console.warn("[AIVO INVOICE VIEWER][PDF PREFETCH ERROR]", err);
+      });
+
+      frame.src = invoiceUrl;
+      resizeInvoice();
+
+      downloadBtn.addEventListener("click", async function(){
+        try {
+          const file = await fetchPdfFile();
+
+          if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            await navigator.share({
+              files: [file],
+              title: copy.shareTitle
+            });
+            return;
+          }
+
+          const objectUrl = URL.createObjectURL(file);
+          const a = document.createElement("a");
+          a.href = objectUrl;
+          a.download = file.name;
+          a.rel = "noopener";
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(function(){
+            try { a.remove(); } catch (_) {}
+            try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+          }, 1500);
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+          console.error("[AIVO INVOICE VIEWER][DOWNLOAD ERROR]", err);
+        }
+      });
+
+      shareBtn.addEventListener("click", async function(){
+        try {
+          const file = await fetchPdfFile();
+
+          if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+            await navigator.share({
+              files: [file],
+              title: copy.shareTitle
+            });
+            return;
+          }
+
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(pdfUrl);
+          }
+        } catch (err) {
+          if (err && err.name === "AbortError") return;
+          console.error("[AIVO INVOICE VIEWER][SHARE ERROR]", err);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
