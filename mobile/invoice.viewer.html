@@ -415,9 +415,24 @@
         stage.style.height = Math.ceil(1754 * scale) + "px";
       }
 
+      function normalizeReturnPath(value){
+        if (!value) return "";
+        if (!value.startsWith("/") || value.startsWith("//")) return "";
+
+        try {
+          const url = new URL(value, "https://aivo.tr");
+          if (url.origin !== "https://aivo.tr") return "";
+          return url.pathname + url.search + url.hash;
+        } catch (_) {
+          return "";
+        }
+      }
+
+      const safeReturnTo = normalizeReturnPath(returnTo);
+
       function goBack(){
-        if (returnTo) {
-          location.href = returnTo;
+        if (safeReturnTo) {
+          location.href = safeReturnTo;
           return;
         }
 
