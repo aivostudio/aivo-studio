@@ -33,6 +33,7 @@ export default async function handler(req, res) {
     const email = normEmail(req.query?.email);
     const id = safeStr(req.query?.id);
     const lang = normalizeLanguage(req.query?.lang);
+    const download = safeStr(req.query?.download) === "1";
 
     if (!email) {
       return res.status(400).json({ ok: false, error: "EMAIL_REQUIRED" });
@@ -111,9 +112,10 @@ export default async function handler(req, res) {
 
     const safeId = id.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 100) || "document";
     const filename = `aivo-invoice-${safeId}.pdf`;
+    const disposition = download ? "attachment" : "inline";
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    res.setHeader("Content-Disposition", `${disposition}; filename="${filename}"`);
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("X-AIVO-PDF-Render-Width", String(renderSize.width));
     res.setHeader("X-AIVO-PDF-Render-Height", String(renderSize.height));
