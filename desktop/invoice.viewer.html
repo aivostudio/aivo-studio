@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AIVO Fatura</title>
+  <style>
+    :root{color-scheme:dark;--bg:#070914;--line:rgba(255,255,255,.12);--text:#fff;--muted:rgba(255,255,255,.68);--a:#8b5cf6;--b:#ec4899}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:radial-gradient(circle at 10% 0%,rgba(124,58,237,.22),transparent 32%),radial-gradient(circle at 90% 10%,rgba(236,72,153,.16),transparent 28%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+    body{padding:12px 20px 96px;overflow-x:hidden}
+    .shell{width:min(100%,760px);margin:0 auto}
+    .topbar{position:sticky;top:8px;z-index:20;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;min-height:52px;margin-bottom:12px;padding:4px;border:1px solid var(--line);border-radius:22px;background:rgba(11,14,27,.84);backdrop-filter:blur(18px);box-shadow:0 18px 42px rgba(0,0,0,.28)}
+    .title{text-align:center}.title strong{display:block;font-size:15px;font-weight:950}.title span{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:800}
+    .icon{width:44px;height:44px;border:0;border-radius:16px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:20px;font-weight:900;cursor:pointer}
+    .stage{position:relative;width:100%;min-height:64vh;overflow:hidden;border:1px solid var(--line);border-radius:26px;background:#eef2f7;box-shadow:0 28px 70px rgba(0,0,0,.34)}
+    .scale{position:relative;width:1240px;height:1754px;transform-origin:top left}
+    iframe{display:block;width:1240px;height:1754px;border:0;background:#fff}
+    .state{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:28px;text-align:center;background:linear-gradient(180deg,rgba(7,9,20,.96),rgba(11,14,27,.96))}.state[hidden]{display:none}.state-card{width:min(100%,330px);padding:22px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.06)}.state-card strong{display:block;font-size:18px;font-weight:950}.state-card p{margin:8px 0 0;color:var(--muted);font-size:13px;font-weight:750;line-height:1.5}
+    .actions{position:fixed;left:20px;right:20px;bottom:12px;z-index:30;display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(calc(100% - 40px),736px);margin:0 auto;padding:10px;border:1px solid var(--line);border-radius:24px;background:rgba(11,14,27,.90);backdrop-filter:blur(22px);box-shadow:0 22px 60px rgba(0,0,0,.42)}
+    .action{min-height:50px;border:1px solid rgba(255,255,255,.12);border-radius:17px;background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:14px;font-weight:950;cursor:pointer;text-decoration:none;display:grid;place-items:center}.action:active{transform:scale(.98)}.primary{border:0;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 0 28px rgba(236,72,153,.24)}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <button class="icon" id="backBtn" type="button" aria-label="Geri">‹</button>
+      <div class="title"><strong id="title">Fatura</strong><span id="subtitle">AIVO belge görüntüleyici</span></div>
+      <button class="icon" id="closeBtn" type="button" aria-label="Kapat">×</button>
+    </header>
+    <section class="stage" id="stage">
+      <div class="scale" id="scale"><iframe id="frame" title="AIVO Fatura" loading="eager"></iframe></div>
+      <div class="state" id="loading"><div class="state-card"><strong id="loadingTitle">Fatura yükleniyor…</strong><p id="loadingText">Belgen hazırlanıyor.</p></div></div>
+      <div class="state" id="error" hidden><div class="state-card"><strong id="errorTitle">Fatura açılamadı</strong><p id="errorText">Belge bağlantısı geçersiz veya kullanılamıyor.</p></div></div>
+    </section>
+  </main>
+  <nav class="actions" aria-label="Fatura işlemleri">
+    <a class="action" id="downloadBtn" href="#" download>İndir</a>
+    <button class="action primary" id="shareBtn" type="button">Paylaş</button>
+  </nav>
+  <script>
+  (function(){
+    "use strict";
+    const p=new URLSearchParams(location.search);
+    const lang=String(p.get("lang")||"tr").toLowerCase()==="en"?"en":"tr";
+    const raw=String(p.get("url")||"").trim();
+    const ret=String(p.get("return")||"").trim();
+    const C=lang==="en"?{title:"Invoice",subtitle:"AIVO document viewer",loading:"Loading invoice…",preparing:"Your document is being prepared.",bad:"Invoice could not be opened",badText:"The document link is invalid or unavailable.",download:"Download",share:"Share",copied:"Link copied",shareTitle:"AIVO Invoice"}:{title:"Fatura",subtitle:"AIVO belge görüntüleyici",loading:"Fatura yükleniyor…",preparing:"Belgen hazırlanıyor.",bad:"Fatura açılamadı",badText:"Belge bağlantısı geçersiz veya kullanılamıyor.",download:"İndir",share:"Paylaş",copied:"Bağlantı kopyalandı",shareTitle:"AIVO Fatura"};
+    document.documentElement.lang=lang;document.title=C.title+" · AIVO";
+    title.textContent=C.title;subtitle.textContent=C.subtitle;loadingTitle.textContent=C.loading;loadingText.textContent=C.preparing;errorTitle.textContent=C.bad;errorText.textContent=C.badText;downloadBtn.textContent=C.download;shareBtn.textContent=C.share;
+    function invoiceUrl(v){try{const u=new URL(v,"https://aivo.tr");if(u.origin!=="https://aivo.tr"||!u.pathname.startsWith("/api/invoices/"))return"";return u.href}catch(_){return""}}
+    function returnPath(v){if(!v||!v.startsWith("/")||v.startsWith("//"))return"";try{const u=new URL(v,"https://aivo.tr");return u.origin==="https://aivo.tr"?u.pathname+u.search+u.hash:""}catch(_){return""}}
+    const inv=invoiceUrl(raw),safeRet=returnPath(ret);
+    function pdfUrl(v){if(!v)return"";try{const u=new URL(v);const email=String(u.searchParams.get("email")||"").trim(),id=String(u.searchParams.get("id")||"").trim();if(!email||!id)return"";const pdf=new URL("/api/invoices/pdf","https://aivo.tr");pdf.searchParams.set("email",email);pdf.searchParams.set("id",id);pdf.searchParams.set("lang",lang);return pdf.href}catch(_){return""}}
+    const pdf=pdfUrl(inv);
+    function filename(){try{const id=String(new URL(inv).searchParams.get("id")||"document").replace(/[^a-zA-Z0-9._-]+/g,"-").slice(0,80)||"document";return"aivo-invoice-"+id+".pdf"}catch(_){return"aivo-invoice.pdf"}}
+    function goBack(){if(safeRet){location.href=safeRet;return}if(history.length>1){history.back();return}location.href="/studio.v2.html"}
+    backBtn.addEventListener("click",goBack);closeBtn.addEventListener("click",goBack);
+    function resize(){const available=Math.max(280,stage.clientWidth);const s=Math.min(1,available/1240);scale.style.transform="scale("+s+")";stage.style.height=Math.ceil(1754*s)+"px"}
+    addEventListener("resize",resize,{passive:true});
+    if(!inv||!pdf){loading.hidden=true;error.hidden=false;downloadBtn.removeAttribute("href");shareBtn.disabled=true;resize();return}
+    frame.addEventListener("load",function(){loading.hidden=true});frame.addEventListener("error",function(){loading.hidden=true;error.hidden=false});frame.src=inv;resize();
+    downloadBtn.href=pdf;downloadBtn.download=filename();
+    shareBtn.addEventListener("click",function(){
+      if(navigator.share){
+        navigator.share({title:C.shareTitle,url:pdf}).catch(function(err){if(!err||err.name!=="AbortError")console.error("[AIVO DESKTOP INVOICE SHARE]",err)});
+        return;
+      }
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(pdf).then(function(){const old=shareBtn.textContent;shareBtn.textContent=C.copied;setTimeout(function(){shareBtn.textContent=old},1400)}).catch(function(){location.href=pdf});
+        return;
+      }
+      window.open(pdf,"_blank","noopener");
+    });
+  })();
+  </script>
+</body>
+</html>
