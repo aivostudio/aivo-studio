@@ -60,7 +60,7 @@
     addEventListener("resize",resize,{passive:true});
     if(!inv||!pdf){loading.hidden=true;error.hidden=false;downloadBtn.removeAttribute("href");shareBtn.disabled=true;resize();return}
     frame.addEventListener("load",function(){loading.hidden=true});frame.addEventListener("error",function(){loading.hidden=true;error.hidden=false});frame.src=inv;resize();
-    downloadBtn.href=pdf;downloadBtn.download=filename();
+    const downloadUrl=new URL(pdf);downloadUrl.searchParams.set("download","1");downloadBtn.href=downloadUrl.href;downloadBtn.download=filename();
     shareBtn.addEventListener("click",function(){
       if(navigator.share){
         navigator.share({title:C.shareTitle,url:pdf}).catch(function(err){if(!err||err.name!=="AbortError")console.error("[AIVO DESKTOP INVOICE SHARE]",err)});
