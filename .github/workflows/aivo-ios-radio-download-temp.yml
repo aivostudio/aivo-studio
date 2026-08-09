@@ -1,0 +1,61 @@
+name: AIVO iOS radio download patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-radio-download-temp
+    paths:
+      - .github/workflows/aivo-ios-radio-download-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ios-radio-download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-radio-download-temp
+          fetch-depth: 0
+
+      - name: Add iOS-safe radio download path
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("mobile/js/mobile.radio-ad.production.js")
+          text = path.read_text(encoding="utf-8")
+
+          old = '''  async function downloadFinal(projectId, finalId, finalFormat){\n    const response = await fetch('/api/radio-ad/final/download?projectId=' + encodeURIComponent(projectId) + '&finalId=' + encodeURIComponent(finalId),{credentials:'include',cache:'no-store'});\n    if (!response.ok) throw new Error('final_download_failed');\n    const blob = await response.blob();\n    const objectUrl = URL.createObjectURL(blob);\n    const link = document.createElement('a');\n    link.href = objectUrl;\n    link.download = 'AIVO-Radyo-Reklami.' + (clean(finalFormat).toLowerCase() === 'wav' ? 'wav' : 'mp3');\n    link.style.display = 'none';\n    document.body.appendChild(link);\n    link.click();\n    setTimeout(function(){ URL.revokeObjectURL(objectUrl); link.remove(); },1200);\n  }\n'''
+
+          new = '''  async function downloadFinal(projectId, finalId, finalFormat){\n    const response = await fetch('/api/radio-ad/final/download?projectId=' + encodeURIComponent(projectId) + '&finalId=' + encodeURIComponent(finalId),{credentials:'include',cache:'no-store'});\n    if (!response.ok) throw new Error('final_download_failed');\n\n    const blob = await response.blob();\n    const extension = clean(finalFormat).toLowerCase() === 'wav' ? 'wav' : 'mp3';\n    const filename = 'AIVO-Radyo-Reklami.' + extension;\n    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '') ||\n      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);\n\n    if (isIOS && typeof File === 'function' && navigator.share){\n      const file = new File([blob], filename, {\n        type: blob.type || (extension === 'wav' ? 'audio/wav' : 'audio/mpeg')\n      });\n      const canShareFile = !navigator.canShare || navigator.canShare({ files:[file] });\n\n      if (canShareFile){\n        await navigator.share({\n          files:[file],\n          title:'AIVO Radyo Reklamı'\n        });\n        return;\n      }\n    }\n\n    const objectUrl = URL.createObjectURL(blob);\n    const link = document.createElement('a');\n    link.href = objectUrl;\n    link.download = filename;\n    link.style.display = 'none';\n    document.body.appendChild(link);\n    link.click();\n    setTimeout(function(){ URL.revokeObjectURL(objectUrl); link.remove(); },1200);\n  }\n'''
+
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f"Expected exactly one downloadFinal block, found {count}")
+
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify radio-download-only diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "mobile/js/mobile.radio-ad.production.js"
+          grep -q "const isIOS = /iPad|iPhone|iPod/" mobile/js/mobile.radio-ad.production.js
+          grep -q "await navigator.share" mobile/js/mobile.radio-ad.production.js
+          grep -q "link.download = filename" mobile/js/mobile.radio-ad.production.js
+          git diff --unified=3 -- mobile/js/mobile.radio-ad.production.js
+
+      - name: Commit radio download patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add mobile/js/mobile.radio-ad.production.js
+          git commit -m "Make iOS radio download native-safe"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-radio-download-temp
