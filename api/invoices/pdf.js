@@ -79,6 +79,21 @@ export default async function handler(req, res) {
       throw new Error(`INVOICE_VIEW_FAILED_${status}`);
     }
 
+    await page.addStyleTag({
+      content: `
+        .invoice-badge,
+        .hero-panel,
+        .card,
+        .table-wrap,
+        .totals-card {
+          box-shadow: none !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          filter: none !important;
+        }
+      `,
+    });
+
     const renderSize = await page.evaluate(() => {
       const el = document.querySelector(".page") || document.documentElement;
       const rect = el.getBoundingClientRect();
