@@ -1,0 +1,65 @@
+name: AIVO iOS adfilm loader patch
+
+on:
+  push:
+    branches:
+      - fix/ios-adfilm-integration-20260809-loader-temp
+    paths:
+      - .github/workflows/aivo-ios-adfilm-loader-temp.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-ios-adfilm-loader:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout temp branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/ios-adfilm-integration-20260809-loader-temp
+          fetch-depth: 0
+
+      - name: Add adfilm module loader exactly once
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("studio.ios.html")
+          text = path.read_text(encoding="utf-8")
+
+          marker = 'const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1"'
+          if marker in text:
+              raise SystemExit("adfilm loader already exists")
+
+          anchor = '''} catch (err) {\n  if (lipsyncMount) {\n    lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';\n  }\n}\ntry {\n  const creditsRes = await fetch("/mobile/modules/mobile.credits.ios.html?v=1", {\n'''
+
+          replacement = '''} catch (err) {\n  if (lipsyncMount) {\n    lipsyncMount.innerHTML = '<div class="empty-card">Dudak Senkron Video modülü yüklenemedi.</div>';\n  }\n}\ntry {\n  const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {\n    cache: "no-store"\n  });\n\n  if (!adfilmRes.ok) {\n    throw new Error("mobile_adfilm_html_load_failed");\n  }\n\n  adfilmMount.innerHTML = await adfilmRes.text();\n\n  if (typeof window.aivoApplyI18n === "function") {\n    window.aivoApplyI18n(adfilmMount);\n  }\n\n  const adfilmScript = document.createElement("script");\n  adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";\n  adfilmScript.defer = true;\n  document.body.appendChild(adfilmScript);\n} catch (err) {\n  if (adfilmMount) {\n    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';\n  }\n}\ntry {\n  const creditsRes = await fetch("/mobile/modules/mobile.credits.ios.html?v=1", {\n'''
+
+          count = text.count(anchor)
+          if count != 1:
+              raise SystemExit(f"Expected exactly one lipsync-to-credits loader anchor, found {count}")
+
+          text = text.replace(anchor, replacement, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Verify loader-only diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "studio.ios.html"
+          grep -q 'const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1"' studio.ios.html
+          grep -q 'adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";' studio.ios.html
+          grep -q 'mobile_adfilm_html_load_failed' studio.ios.html
+          git diff --unified=3 -- studio.ios.html
+
+      - name: Commit loader patch
+        shell: bash
+        run: |
+          git config user.name "aivostudio"
+          git config user.email "aivostudioapp@gmail.com"
+          git add studio.ios.html
+          git commit -m "Load iOS adfilm module"
+          git push origin HEAD:fix/ios-adfilm-integration-20260809-loader-temp
