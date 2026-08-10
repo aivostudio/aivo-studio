@@ -12,7 +12,7 @@ import {
 
 const PRIMARY_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
 const FALLBACK_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
-const PIPELINE_VERSION = "radio-music-v1";
+const PIPELINE_VERSION = "radio-music-v2";
 const OUTPUT_FORMAT = "mp3";
 const OUTPUT_BITRATE = "320k";
 const NUM_INFERENCE_STEPS = 8;
@@ -78,16 +78,6 @@ function signature(prompt) {
     negativePrompt: prompt.negativePrompt,
   })).digest("hex").slice(0, 32);
 }
-function reusable(audio, expected, duration) {
-  const url = clean(audio?.url, 1800).toLowerCase().split("?")[0];
-  return !!(
-    audio?.url &&
-    audio.pipelineVersion === PIPELINE_VERSION &&
-    clean(audio.signature, 80) === expected &&
-    Number(audio.duration) === Number(duration) &&
-    (audio.contentType === "audio/mpeg" || url.endsWith(".mp3"))
-  );
-}
 
 export default async function handler(req, res) {
   try {
@@ -120,16 +110,6 @@ export default async function handler(req, res) {
     });
     const expectedSignature = signature(prompt);
 
-    if (reusable(music.audio, expectedSignature, duration)) {
-      return sendJson(res, 200, {
-        ok: true,
-        status: "COMPLETED",
-        reused: true,
-        audio: music.audio,
-        project,
-      });
-    }
-
     const active = project.musicGeneration;
     if (
       active &&
@@ -148,12 +128,14 @@ export default async function handler(req, res) {
     const key = falKey();
     if (!key) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
 
+    const seed = crypto.randomInt(1, 2147483647);
     const payload = {
       prompt: prompt.prompt,
       negative_prompt: prompt.negativePrompt,
       duration: prompt.duration,
       num_inference_steps: NUM_INFERENCE_STEPS,
       guidance_scale: GUIDANCE_SCALE,
+      seed,
       enable_prompt_expansion: false,
       enable_safety_checker: true,
       sync_mode: false,
@@ -186,6 +168,7 @@ export default async function handler(req, res) {
           fallbackUsed,
           pipelineVersion: PIPELINE_VERSION,
           signature: expectedSignature,
+          seed,
           meta: prompt,
         },
         final: null,
@@ -222,6 +205,7 @@ export default async function handler(req, res) {
         fallbackUsed,
         pipelineVersion: PIPELINE_VERSION,
         signature: expectedSignature,
+        seed,
         outputFormat: OUTPUT_FORMAT,
         bitrate: OUTPUT_BITRATE,
         meta: prompt,
