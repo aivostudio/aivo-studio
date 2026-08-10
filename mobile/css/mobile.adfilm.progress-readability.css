@@ -1,3 +1,10 @@
+@supports selector(body:has(#mobileAdFilmMount:not([hidden]))) {
+  body:has(#mobileAdFilmMount:not([hidden])) .topbar{
+    -webkit-backdrop-filter:none !important;
+    backdrop-filter:none !important;
+  }
+}
+
 .mobile-adfilm-production-progress{
   padding-left:7px;
   padding-right:7px;
