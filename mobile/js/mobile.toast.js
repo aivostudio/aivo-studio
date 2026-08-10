@@ -273,3 +273,89 @@ window.toastMsg = function(message, type){
 };
   window.AIVO_TOAST = window.mobileToast;
 })();
+
+(function AIVO_IOS_MUSIC_PUSH_DEEPLINK(){
+  if (window.__AIVO_IOS_MUSIC_PUSH_DEEPLINK__) return;
+  window.__AIVO_IOS_MUSIC_PUSH_DEEPLINK__ = true;
+
+  var bound = false;
+
+  function getPushPlugin(){
+    try {
+      return window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.PushNotifications
+        ? window.Capacitor.Plugins.PushNotifications
+        : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function getNotificationData(action){
+    try {
+      var notification = action && action.notification;
+      var data =
+        (notification && notification.data) ||
+        (action && action.data) ||
+        {};
+
+      return data && typeof data === "object" ? data : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function openMusicProductions(attempt){
+    var tries = Number(attempt || 0);
+    var musicTool = document.querySelector('[data-mobile-tool="music"]');
+    var productionsNav = document.querySelector('.bottom-nav a[href="#productions"]');
+
+    if (!musicTool || !productionsNav) {
+      if (tries < 40) {
+        setTimeout(function(){
+          openMusicProductions(tries + 1);
+        }, 250);
+      }
+      return;
+    }
+
+    musicTool.click();
+
+    setTimeout(function(){
+      var nav = document.querySelector('.bottom-nav a[href="#productions"]');
+      if (nav) nav.click();
+    }, 120);
+  }
+
+  function handlePushAction(action){
+    var data = getNotificationData(action);
+    var source = String(data.source || "").trim().toLowerCase();
+    var app = String(data.app || "").trim().toLowerCase();
+
+    if (source !== "aivo_generation_complete" || app !== "music") return;
+
+    openMusicProductions(0);
+  }
+
+  function bind(){
+    if (bound) return;
+
+    var PushNotifications = getPushPlugin();
+    if (!PushNotifications || typeof PushNotifications.addListener !== "function") {
+      setTimeout(bind, 400);
+      return;
+    }
+
+    bound = true;
+
+    PushNotifications.addListener(
+      "pushNotificationActionPerformed",
+      handlePushAction
+    );
+  }
+
+  document.addEventListener("deviceready", bind, false);
+  document.addEventListener("DOMContentLoaded", bind, false);
+  bind();
+})();
