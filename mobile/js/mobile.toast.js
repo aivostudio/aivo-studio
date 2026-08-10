@@ -272,3 +272,154 @@ window.toastMsg = function(message, type){
 };
   window.AIVO_TOAST = window.mobileToast;
 })();
+
+(function AIVO_IOS_FCM_WEB_BRIDGE_REGISTER(){
+  if (window.__AIVO_IOS_FCM_WEB_BRIDGE_REGISTER__) return;
+  window.__AIVO_IOS_FCM_WEB_BRIDGE_REGISTER__ = true;
+
+  const STORAGE_KEY = "aivo_ios_fcm_token";
+  let registerInFlight = false;
+  let lastRegisteredToken = "";
+
+  function getLang(){
+    try {
+      return String(
+        localStorage.getItem("aivo_mobile_lang") ||
+        localStorage.getItem("aivo_lang") ||
+        document.documentElement.lang ||
+        navigator.language ||
+        "tr"
+      );
+    } catch (_) {
+      return "tr";
+    }
+  }
+
+  function getStoredToken(){
+    try {
+      return String(localStorage.getItem(STORAGE_KEY) || "").trim();
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function storeToken(token){
+    try {
+      localStorage.setItem(STORAGE_KEY, token);
+    } catch (_) {}
+  }
+
+  function getTokenFromEvent(event){
+    const detail = event && event.detail;
+
+    if (detail && typeof detail === "object") {
+      return String(detail.token || "").trim();
+    }
+
+    if (typeof detail === "string") {
+      try {
+        const parsed = JSON.parse(detail);
+        if (parsed && parsed.token) {
+          return String(parsed.token).trim();
+        }
+      } catch (_) {}
+
+      return String(detail || "").trim();
+    }
+
+    return "";
+  }
+
+  async function registerToken(token, reason){
+    const value = String(token || "").trim();
+
+    if (!value || registerInFlight || value === lastRegisteredToken) {
+      return;
+    }
+
+    registerInFlight = true;
+
+    try {
+      const response = await fetch("/api/push/register", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          platform: "ios",
+          device_token: value,
+          permission_status: "granted",
+          app: "aivo",
+          lang: getLang(),
+          device_id: "ios-app",
+          meta: {
+            source: "native_fcm_bridge",
+            reason: reason || "unknown",
+            registered_at: new Date().toISOString()
+          }
+        })
+      });
+
+      if (!response.ok) {
+        if (response.status !== 401) {
+          const errorData = await response.json().catch(function(){
+            return null;
+          });
+
+          console.warn(
+            "[AIVO FCM] backend register rejected",
+            response.status,
+            errorData || ""
+          );
+        }
+        return;
+      }
+
+      lastRegisteredToken = value;
+      storeToken(value);
+      console.log("[AIVO FCM] FCM token registered to backend");
+    } catch (err) {
+      console.error("[AIVO FCM] backend register failed", err);
+    } finally {
+      registerInFlight = false;
+    }
+  }
+
+  function retryStoredToken(reason){
+    const token = getStoredToken();
+    if (!token) return;
+    registerToken(token, reason);
+  }
+
+  window.addEventListener("aivoFCMToken", function(event){
+    const token = getTokenFromEvent(event);
+    if (!token) return;
+
+    storeToken(token);
+    registerToken(token, "native_event");
+  });
+
+  document.addEventListener("aivo:auth-ready", function(){
+    retryStoredToken("auth_ready");
+  });
+
+  document.addEventListener("visibilitychange", function(){
+    if (!document.hidden) {
+      retryStoredToken("visibility");
+    }
+  });
+
+  window.addEventListener("pageshow", function(){
+    retryStoredToken("pageshow");
+  });
+
+  setTimeout(function(){
+    retryStoredToken("startup_2s");
+  }, 2000);
+
+  setTimeout(function(){
+    retryStoredToken("startup_5s");
+  }, 5000);
+})();
