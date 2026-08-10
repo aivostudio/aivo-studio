@@ -22,6 +22,45 @@
   letter-spacing:-.025em;
   font-weight:950 !important;
   text-align:center;
+  background:linear-gradient(90deg,#60eaff 0%,#a78bfa 24%,#f472ff 48%,#ec4899 72%,#60eaff 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent !important;
+  -webkit-text-fill-color:transparent;
+  transform-origin:center center;
+  will-change:transform,background-position,filter;
+  animation:
+    aivoAdFilmStageGradient 2.8s linear infinite,
+    aivoAdFilmStageHeartbeat 1.45s ease-in-out infinite;
+}
+
+@keyframes aivoAdFilmStageGradient{
+  0%{background-position:0% 50%;}
+  100%{background-position:300% 50%;}
+}
+
+@keyframes aivoAdFilmStageHeartbeat{
+  0%,100%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(244,114,255,0));
+  }
+  12%{
+    transform:scale(1.045);
+    filter:drop-shadow(0 0 9px rgba(244,114,255,.46));
+  }
+  24%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 3px rgba(96,234,255,.22));
+  }
+  36%{
+    transform:scale(1.028);
+    filter:drop-shadow(0 0 7px rgba(167,139,250,.36));
+  }
+  50%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(96,234,255,0));
+  }
 }
 
 #mobileAdFilmSection .mobile-adfilm-production-stage p{
