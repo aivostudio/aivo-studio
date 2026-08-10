@@ -310,6 +310,11 @@ window.toastMsg = function(message, type){
   }
 
   function getTokenFromEvent(event){
+    const directToken = event && event.token;
+    if (directToken) {
+      return String(directToken).trim();
+    }
+
     const detail = event && event.detail;
 
     if (detail && typeof detail === "object") {
