@@ -393,13 +393,32 @@
     });
   });
 
-  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
-    loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
-    loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
-    loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production", function(){
-      loadScript("/mobile/js/mobile.radio-ad.archive.js?v=1", "data-mobile-radio-ad-archive");
+  let radioBundleStarted = false;
+
+  function loadRadioBundle(){
+    if (radioBundleStarted) return;
+    radioBundleStarted = true;
+
+    loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
+      loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
+      loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
+      loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production", function(){
+        loadScript("/mobile/js/mobile.radio-ad.archive.js?v=1", "data-mobile-radio-ad-archive");
+      });
+      loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
+      loadScript("/mobile/js/mobile.radio-ad.ui-state.js?v=4", "data-mobile-radio-ad-ui-state");
     });
-    loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
-    loadScript("/mobile/js/mobile.radio-ad.ui-state.js?v=4", "data-mobile-radio-ad-ui-state");
-  });
+  }
+
+  const adFilmRoot = document.getElementById("mobileAdFilmSection");
+  const radioButton = adFilmRoot && adFilmRoot.querySelector('[data-mobile-adfilm-mode="radio"]');
+  const radioView = adFilmRoot && adFilmRoot.querySelector('[data-mobile-adfilm-view="radio"]');
+
+  if (radioButton && radioView) {
+    if (radioButton.classList.contains("is-active") || (!radioView.hidden && radioView.classList.contains("is-active"))) {
+      loadRadioBundle();
+    } else {
+      radioButton.addEventListener("click", loadRadioBundle, { once:true });
+    }
+  }
 })();
