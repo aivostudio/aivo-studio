@@ -47,34 +47,6 @@ function normalizeDuration(value){
   const requested=Number(value);
   return Number.isInteger(requested)&&requested>=5&&requested<=15?requested:null;
 }
-function isMobileOrIosClient(req){
-  const ua=clean(req?.headers?.["user-agent"],700).toLowerCase();
-  const mobileHint=clean(req?.headers?.["sec-ch-ua-mobile"],40).toLowerCase();
-  return mobileHint.includes("?1")||/iphone|ipad|ipod|android|mobile|capacitor|\bwv\b/.test(ua);
-}
-function mobileCommercialPrompt(basePrompt,project){
-  const creativeBrief=clean(project?.brief?.creativeBrief,700);
-  const additions=[
-    creativeBrief?`Creative direction: ${creativeBrief}.`:"",
-    "Treat this strictly as background advertising underscore, not as a standalone song.",
-    "Do not use verse-chorus song structure, lyrical phrasing, vocal-like lead melodies or a pop-song topline.",
-    "Keep the musical motif concise, supportive, brand-ready and easy to sit underneath professional narration without competing with the voice-over."
-  ].filter(Boolean);
-  return {
-    ...basePrompt,
-    prompt:[basePrompt.prompt,...additions].join(" "),
-    negativePrompt:[
-      basePrompt.negativePrompt,
-      "song form",
-      "verse chorus structure",
-      "lyrical phrasing",
-      "lead vocal-like melody",
-      "pop-song topline",
-      "music that competes with narration"
-    ].filter(Boolean).join(", "),
-    clientProfile:"mobile-ios-commercial-underscore-v1"
-  };
-}
 function profileSignature(prompt){
   return crypto.createHash("sha256").update(JSON.stringify({
     qualityVersion:QUALITY_VERSION,
@@ -95,7 +67,6 @@ function profileSignature(prompt){
     voiceEnabled:prompt.voiceEnabled,
     prompt:prompt.prompt,
     negativePrompt:prompt.negativePrompt,
-    clientProfile:prompt.clientProfile||"desktop-default",
   })).digest("hex").slice(0,32);
 }
 function reusableAudio(audio,signature,duration){
@@ -118,7 +89,6 @@ export default async function handler(req,res){
     const user=await resolveAdFilmUser(req);if(!user)return sendJson(res,401,{ok:false,error:"unauthorized"});
     const projectId=clean(req.body?.projectId,120);if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
     const project=await getOwnedProject(user,projectId);if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
-    const mobileClient=isMobileOrIosClient(req);
     const currentMusic=project.music||{};
     const requestedStyle=clean(req.body?.musicStyle,40)||currentMusic.style||"auto";
     const requestedEnergy=clean(req.body?.musicEnergy,40)||currentMusic.energy||"balanced";
@@ -135,14 +105,13 @@ export default async function handler(req,res){
       });
     }
 
-    const basePrompt=buildAdFilmMusicPrompt({
+    const prompt=buildAdFilmMusicPrompt({
       productName:project.brief?.productName,brandName:project.brief?.brandName,description:project.brief?.description,targetAudience:project.brief?.targetAudience,cta:project.brief?.cta,
       voiceStyle:project.narration?.voiceStyle,visualStyle:project.sceneStyle,duration:requestedDuration,musicStyle:requestedStyle,musicEnergy:requestedEnergy,voiceEnabled:project.narration?.enabled!==false
     });
-    const prompt=mobileClient?mobileCommercialPrompt(basePrompt,project):{...basePrompt,clientProfile:"desktop-default"};
     const signature=profileSignature(prompt);
 
-    if(!mobileClient&&reusableAudio(currentMusic.audio,signature,requestedDuration)){
+    if(reusableAudio(currentMusic.audio,signature,requestedDuration)){
       const reused=await saveProject(user,{...project,music:{...music,audio:currentMusic.audio}});
       return sendJson(res,200,{
         ok:true,
@@ -151,7 +120,6 @@ export default async function handler(req,res){
         requested_duration:requestedDuration,
         output_format:OUTPUT_FORMAT,
         signature,
-        client_profile:prompt.clientProfile,
         audio:currentMusic.audio,
         project:reused,
       });
@@ -171,7 +139,6 @@ export default async function handler(req,res){
       requested_duration:requestedDuration,
       output_format:OUTPUT_FORMAT,
       signature,
-      client_profile:prompt.clientProfile,
       generation:active,
       project,
     });
@@ -220,7 +187,6 @@ export default async function handler(req,res){
       output_format:OUTPUT_FORMAT,
       bitrate:OUTPUT_BITRATE,
       signature,
-      client_profile:prompt.clientProfile,
       generation:saved.musicGeneration,
       project:saved,
       fallback_used:fallbackUsed,
