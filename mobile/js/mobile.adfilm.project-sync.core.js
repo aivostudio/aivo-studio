@@ -81,6 +81,9 @@
     getProject: function(id){
       return request("/api/ad-film/project?id=" + encodeURIComponent(id), { method: "GET" });
     },
+    listProjects: function(){
+      return request("/api/ad-film/projects", { method: "GET" });
+    },
     updateProject: function(id, payload){
       return request("/api/ad-film/project?id=" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ project: payload }) });
     },
@@ -136,6 +139,51 @@
         localStorage.removeItem(LEGACY_PROJECT_KEY);
       }
     } catch (_) {}
+  }
+
+  function hasMeaningfulDraft(source){
+    if (!source || typeof source !== "object") return false;
+    const brief = source.brief || {};
+    const narration = source.narration || {};
+    const media = source.media || {};
+    const music = source.music || {};
+    return !!(
+      clean(brief.productName) ||
+      clean(brief.brandName) ||
+      clean(brief.description) ||
+      clean(brief.creativeBrief) ||
+      clean(brief.targetAudience) ||
+      clean(brief.cta) ||
+      clean(narration.text) ||
+      (Array.isArray(media.productImages) && media.productImages.length) ||
+      media.logo ||
+      media.extraMedia ||
+      media.musicTrack ||
+      (music.audio && clean(music.audio.url)) ||
+      (Array.isArray(source.outputs) && source.outputs.length)
+    );
+  }
+
+  async function recoverCloudProject(){
+    const listed = await api.listProjects();
+    const summaries = Array.isArray(listed && listed.projects) ? listed.projects : [];
+    if (!summaries.length) return null;
+
+    let fallback = null;
+    for (const summary of summaries.slice(0, 12)) {
+      const id = clean(summary && (summary.id || summary.projectId));
+      if (!id) continue;
+      try {
+        const result = await api.getProject(id);
+        const candidate = result && result.project;
+        if (!candidate) continue;
+        if (!fallback) fallback = candidate;
+        if (hasMeaningfulDraft(candidate)) return candidate;
+      } catch (error) {
+        if (error && error.status === 401) throw error;
+      }
+    }
+    return fallback;
   }
 
   function currentFormat(){
@@ -346,6 +394,26 @@
           setStatus(error.status === 0 ? "offline" : "error", "Kayıtlı proje açılamadı.");
           toast(error.status === 0 ? "warning" : "error", "Kayıtlı reklam taslağı açılamadı.", 4000);
         }
+      }
+    }
+
+    if (!nextProject) {
+      try {
+        setStatus("loading", "Kayıtlı reklam taslağı aranıyor...");
+        const recovered = await recoverCloudProject();
+        if (recovered) {
+          nextProject = recovered;
+          id = clean(recovered.id);
+          storeProjectId(id);
+          toast("success", "Kayıtlı reklam taslağın buluttan geri yüklendi.", 2800);
+        }
+      } catch (error) {
+        if (error.status === 401) {
+          setStatus("offline", "Oturum gerekli.");
+          toast("warning", "Devam etmek için AIVO hesabına giriş yapmalısın.", 4200);
+          return;
+        }
+        console.error("[MOBILE ADFILM] cloud recovery", error);
       }
     }
 
