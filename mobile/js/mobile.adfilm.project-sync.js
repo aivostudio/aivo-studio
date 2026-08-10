@@ -348,8 +348,7 @@
   window.__AIVO_MOBILE_ADFILM_PROJECT_SYNC_BUNDLE_V1__ = true;
 
   function loadStyle(href, attr){
-    const existing = document.querySelector('link[' + attr + ']');
-    if (existing) return;
+    if (document.querySelector('link[' + attr + ']')) return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = href;
@@ -387,7 +386,7 @@
 
   loadScript("/mobile/js/mobile.radio-ad.click-guard.js?v=1", "data-mobile-radio-ad-click-guard", function(){
     loadScript("/mobile/js/mobile.adfilm.aspect-guard.js?v=5", "data-mobile-adfilm-aspect-guard");
-    loadScript("/mobile/js/mobile.adfilm.project-sync.core.js?v=1", "data-mobile-adfilm-project-sync-core", function(){
+    loadScript("/mobile/js/mobile.adfilm.project-sync.core.js?v=2", "data-mobile-adfilm-project-sync-core", function(){
       loadScript("/mobile/js/mobile.adfilm.poll-safety.js?v=1", "data-mobile-adfilm-poll-safety", function(){
         loadScript("/mobile/js/mobile.adfilm.production.js?v=1", "data-mobile-adfilm-production-controller");
       });
