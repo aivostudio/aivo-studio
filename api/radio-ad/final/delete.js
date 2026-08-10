@@ -17,8 +17,8 @@ function clean(value, max = 4000) {
 
 export default async function handler(req, res) {
   try {
-    if (req.method !== "DELETE") {
-      res.setHeader("Allow", "DELETE");
+    if (!['DELETE', 'POST'].includes(req.method)) {
+      res.setHeader("Allow", "DELETE, POST");
       return sendJson(res, 405, { ok: false, error: "method_not_allowed" });
     }
 
