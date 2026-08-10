@@ -79,3 +79,71 @@
     });
   };
 })();
+
+(function AIVO_MOBILE_ADFILM_VIDEO_LAZY_SAFETY(){
+  "use strict";
+  if (window.__AIVO_MOBILE_ADFILM_VIDEO_LAZY_SAFETY_V1__) return;
+  window.__AIVO_MOBILE_ADFILM_VIDEO_LAZY_SAFETY_V1__ = true;
+
+  const root = document.getElementById("mobileAdFilmSection");
+  if (!root) return;
+
+  function parkVideo(video){
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (!video.closest("[data-mobile-adfilm-production]")) return;
+    if (video.dataset.aivoLazySrc) return;
+
+    const src = video.getAttribute("src");
+    if (!src) return;
+
+    video.dataset.aivoLazySrc = src;
+    video.preload = "none";
+    video.removeAttribute("src");
+    try { video.load(); } catch (_) {}
+  }
+
+  function scan(node){
+    if (!node || node.nodeType !== 1) return;
+    if (node.matches && node.matches("video")) parkVideo(node);
+    if (node.querySelectorAll) node.querySelectorAll("video").forEach(parkVideo);
+  }
+
+  function restoreVideo(video){
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (video.getAttribute("src")) return;
+    const src = video.dataset.aivoLazySrc;
+    if (!src) return;
+
+    video.src = src;
+    video.preload = "metadata";
+    try { video.load(); } catch (_) {}
+  }
+
+  scan(root);
+
+  const observer = new MutationObserver(function(records){
+    records.forEach(function(record){
+      Array.from(record.addedNodes || []).forEach(scan);
+    });
+  });
+
+  observer.observe(root, { subtree:true, childList:true });
+
+  root.addEventListener("click", function(event){
+    const action = event.target && event.target.closest
+      ? event.target.closest("[data-mobile-adfilm-output-action]")
+      : null;
+    if (!action) return;
+
+    const actionName = action.getAttribute("data-mobile-adfilm-output-action");
+    if (!["play", "sound", "fullscreen"].includes(actionName)) return;
+
+    const card = action.closest(".mobile-adfilm-production-card");
+    const video = card && card.querySelector("video[data-aivo-lazy-src]");
+    if (video) restoreVideo(video);
+  }, true);
+
+  window.addEventListener("pagehide", function(){
+    observer.disconnect();
+  }, { once:true });
+})();
