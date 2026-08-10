@@ -10,7 +10,7 @@ import {
   sendJson,
 } from "../../_lib/radio-ad-projects.js";
 
-const PIPELINE_VERSION = "radio-music-v1";
+const PIPELINE_VERSION = "radio-music-v2";
 const OUTPUT_FORMAT = "mp3";
 const OUTPUT_BITRATE = "320k";
 const MAX_BYTES = 80 * 1024 * 1024;
@@ -176,7 +176,7 @@ export default async function handler(req, res) {
     if (!body.length || body.length > MAX_BYTES) return sendJson(res, 413, { ok: false, error: "invalid_music_size" });
 
     const now = new Date().toISOString();
-    const objectKey = `${mediaPrefix(user, projectId)}music/generated-v1-${Date.now()}.mp3`;
+    const objectKey = `${mediaPrefix(user, projectId)}music/generated-v2-${Date.now()}.mp3`;
     const storedUrl = await putObject({
       key: objectKey,
       body,
@@ -193,6 +193,7 @@ export default async function handler(req, res) {
       engine: generation.model,
       pipelineVersion: PIPELINE_VERSION,
       signature: generation.signature,
+      seed: generation.seed || null,
       duration,
       outputFormat: OUTPUT_FORMAT,
       bitrate: generation.bitrate || OUTPUT_BITRATE,
