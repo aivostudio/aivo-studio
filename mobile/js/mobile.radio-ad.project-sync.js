@@ -47,6 +47,7 @@
   let saveTimer = null;
   let saveChain = Promise.resolve();
   let draftRevision = 0;
+  let formHydrated = false;
 
   function clean(value){
     return String(value == null ? "" : value).trim();
@@ -213,38 +214,56 @@
     }
   }
 
-  function applyProject(nextProject){
+  function mergeIncomingWithLiveForm(nextProject){
+    const live = collect();
+    return Object.assign({}, nextProject || {}, {
+      id: clean(nextProject && nextProject.id || projectId) || null,
+      narration: Object.assign({}, nextProject && nextProject.narration || {}, live.narration),
+      music: Object.assign({}, nextProject && nextProject.music || {}, live.music),
+      output: Object.assign({}, nextProject && nextProject.output || {}, live.output)
+    });
+  }
+
+  function applyProject(nextProject, options){
     if (!nextProject) return;
+
+    const forceHydrate = !!(options && options.hydrate);
+    const hydrateFields = forceHydrate || (!formHydrated && draftRevision === 0);
+    const resolvedProject = hydrateFields ? nextProject : mergeIncomingWithLiveForm(nextProject);
+
     applying = true;
     try{
-      project = nextProject;
-      projectId = clean(nextProject.id || projectId);
+      project = resolvedProject;
+      projectId = clean(resolvedProject.id || projectId);
       if (projectId) writeStorage(PROJECT_KEY, projectId);
 
-      const narration = nextProject.narration || {};
-      const music = nextProject.music || {};
-      const output = nextProject.output || {};
+      if (hydrateFields){
+        const narration = resolvedProject.narration || {};
+        const music = resolvedProject.music || {};
+        const output = resolvedProject.output || {};
 
-      setValue(fields.text, narration.text, "");
-      setValue(fields.language, narration.language, "tr");
-      setValue(fields.voice, narration.voice, "warm_female");
-      setValue(fields.voiceStyle, narration.voiceStyle, "warm");
-      setValue(fields.speed, narration.speed, "fast");
-      setValue(fields.flow, narration.flow, "natural");
-      setValue(fields.musicMode, music.mode, "ai");
-      setValue(fields.musicStyle, music.style, "auto");
-      setValue(fields.musicEnergy, music.energy, "balanced");
-      setValue(fields.duration, output.duration, "30");
-      setValue(fields.format, output.format, "mp3");
+        setValue(fields.text, narration.text, "");
+        setValue(fields.language, narration.language, "tr");
+        setValue(fields.voice, narration.voice, "warm_female");
+        setValue(fields.voiceStyle, narration.voiceStyle, "warm");
+        setValue(fields.speed, narration.speed, "fast");
+        setValue(fields.flow, narration.flow, "natural");
+        setValue(fields.musicMode, music.mode, "ai");
+        setValue(fields.musicStyle, music.style, "auto");
+        setValue(fields.musicEnergy, music.energy, "balanced");
+        setValue(fields.duration, output.duration, "30");
+        setValue(fields.format, output.format, "mp3");
+      }
 
+      formHydrated = true;
       root.dataset.radioAdProjectId = projectId;
-      window.AIVOMobileRadioAdProject = nextProject;
+      window.AIVOMobileRadioAdProject = resolvedProject;
       syncDerived();
-      writeLocalDraft(nextProject);
+      writeLocalDraft(resolvedProject);
 
       try{
         document.dispatchEvent(new CustomEvent("aivo:mobile-radioad-project-sync", {
-          detail: { project: nextProject, projectId: projectId }
+          detail: { project: resolvedProject, projectId: projectId }
         }));
       }catch(_){ }
     }finally{
@@ -271,6 +290,7 @@
   function persistLocalImmediately(){
     if (applying) return;
     draftRevision += 1;
+    formHydrated = true;
     const next = localPayload();
     project = next;
     writeLocalDraft(next);
@@ -328,11 +348,24 @@
     return data.project;
   }
 
+  async function syncLiveDraftToCloud(cloudProject){
+    projectId = clean(projectId || cloudProject && cloudProject.id);
+    if (projectId) writeStorage(PROJECT_KEY, projectId);
+    project = Object.assign({}, cloudProject || {}, localPayload(), { id:projectId || null });
+    root.dataset.radioAdProjectId = projectId;
+    window.AIVOMobileRadioAdProject = project;
+    writeLocalDraft(project);
+    syncDerived();
+    clearTimeout(saveTimer);
+    await save();
+    setStatus("saved", "Proje buluta bağlı.");
+  }
+
   async function bootstrap(){
     setStatus("connecting", "Radyo taslağı buluta bağlanıyor...");
 
     const localDraft = readLocalDraft();
-    if (localDraft) applyProject(localDraft);
+    if (localDraft) applyProject(localDraft, { hydrate:true });
 
     const bootstrapRevision = draftRevision;
     projectId = clean(readStorage(PROJECT_KEY));
@@ -368,16 +401,7 @@
     }
 
     if (draftRevision !== bootstrapRevision){
-      projectId = clean(projectId || cloudProject && cloudProject.id);
-      if (projectId) writeStorage(PROJECT_KEY, projectId);
-      project = Object.assign({}, cloudProject || {}, localPayload(), { id:projectId || null });
-      root.dataset.radioAdProjectId = projectId;
-      window.AIVOMobileRadioAdProject = project;
-      writeLocalDraft(project);
-      syncDerived();
-      clearTimeout(saveTimer);
-      await save();
-      setStatus("saved", "Proje buluta bağlı.");
+      await syncLiveDraftToCloud(cloudProject);
       return;
     }
 
@@ -398,7 +422,12 @@
       }
     }
 
-    applyProject(cloudProject);
+    if (draftRevision !== bootstrapRevision){
+      await syncLiveDraftToCloud(cloudProject);
+      return;
+    }
+
+    applyProject(cloudProject, { hydrate:true });
     setStatus("saved", "Proje buluta bağlı.");
   }
 
