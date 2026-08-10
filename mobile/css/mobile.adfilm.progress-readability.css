@@ -182,3 +182,20 @@
 [data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step::after{
   content:"05";
 }
+
+#mobileAdFilmSection .mobile-adfilm-music-fields{
+  grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr) !important;
+  gap:8px !important;
+}
+
+#mobileAdFilmSection .mobile-adfilm-music-field select{
+  min-width:0 !important;
+  padding-left:9px !important;
+  padding-right:18px !important;
+  font-size:10px !important;
+  letter-spacing:-.02em !important;
+}
+
+#mobileAdFilmSection #mobileAdFilmMusicStyle{
+  font-size:9.5px !important;
+}
