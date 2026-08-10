@@ -21,7 +21,7 @@
   ],
   "crons": [
     {
-      "path": "/api/cron/music-completions",
+      "path": "/api/cron/music-completions-v2",
       "schedule": "* * * * *"
     }
   ]
