@@ -280,6 +280,7 @@ window.toastMsg = function(message, type){
   const STORAGE_KEY = "aivo_ios_fcm_token";
   let registerInFlight = false;
   let lastRegisteredToken = "";
+  let lastRegisteredEmail = "";
 
   function getLang(){
     try {
@@ -292,6 +293,25 @@ window.toastMsg = function(message, type){
       );
     } catch (_) {
       return "tr";
+    }
+  }
+
+  function getEmail(){
+    try {
+      var unified = {};
+      try {
+        unified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+      } catch (_) {
+        unified = {};
+      }
+
+      return String(
+        (unified && unified.email) ||
+        localStorage.getItem("aivo_user_email") ||
+        ""
+      ).trim().toLowerCase();
+    } catch (_) {
+      return "";
     }
   }
 
@@ -337,8 +357,14 @@ window.toastMsg = function(message, type){
 
   async function registerToken(token, reason){
     const value = String(token || "").trim();
+    const email = getEmail();
 
-    if (!value || registerInFlight || value === lastRegisteredToken) {
+    if (
+      !value ||
+      !email ||
+      registerInFlight ||
+      (value === lastRegisteredToken && email === lastRegisteredEmail)
+    ) {
       return;
     }
 
@@ -353,6 +379,9 @@ window.toastMsg = function(message, type){
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
+          user_id: email,
+          user_uuid: email,
+          email: email,
           platform: "ios",
           device_token: value,
           permission_status: "granted",
@@ -383,6 +412,7 @@ window.toastMsg = function(message, type){
       }
 
       lastRegisteredToken = value;
+      lastRegisteredEmail = email;
       storeToken(value);
       console.log("[AIVO FCM] FCM token registered to backend");
     } catch (err) {
