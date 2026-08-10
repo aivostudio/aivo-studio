@@ -254,10 +254,14 @@
         if (!id || !projectId) return;
 
         try{
-          const data = await request(
-            "/api/radio-ad/final/delete?projectId=" + encodeURIComponent(projectId) + "&finalId=" + encodeURIComponent(id),
-            {method:"DELETE"}
-          );
+          const data = await request("/api/radio-ad/final/delete", {
+            method:"POST",
+            headers:{
+              "Content-Type":"application/json",
+              Accept:"application/json"
+            },
+            body:JSON.stringify({ projectId:projectId, finalId:id })
+          });
 
           const sync = window.AIVOMobileRadioAdProjectSync;
           const activeProjectId = clean(sync && typeof sync.getProjectId === "function" ? sync.getProjectId() : root.dataset.radioAdProjectId);
