@@ -81,6 +81,7 @@
 
   function syncController(){ return window.AIVOMobileRadioAdProjectSync || null; }
   function getProject(){
+    if (running && window.AIVOMobileRadioAdProject) return window.AIVOMobileRadioAdProject;
     const sync = syncController();
     return sync && typeof sync.getProject === "function" ? sync.getProject() : window.AIVOMobileRadioAdProject || null;
   }
@@ -90,6 +91,10 @@
   }
   function applyProject(project){
     if (!project) return;
+    if (running){
+      window.AIVOMobileRadioAdProject = project;
+      return;
+    }
     const sync = syncController();
     if (sync && typeof sync.applyProject === "function") sync.applyProject(project);
     else window.AIVOMobileRadioAdProject = project;
@@ -388,7 +393,6 @@
           const data = await request('/api/radio-ad/final/delete?projectId=' + encodeURIComponent(getProjectId()) + '&finalId=' + encodeURIComponent(id),{method:'DELETE'});
           if (data.project) applyProject(data.project);
           stopGalleryAudio();
-          renderArchive(data.project || getProject());
           notify('Radyo reklamı silindi.','success');
         }catch(_){ notify('Radyo reklamı silinemedi.','error'); }
       });
@@ -435,7 +439,6 @@
     production.hidden = false;
     startTimer();
     syncButton(project);
-    production.scrollIntoView({behavior:'smooth',block:'center'});
 
     try{
       const amount = await consumeCredit(id);
@@ -463,7 +466,6 @@
       if (finalData.project) applyProject(finalData.project);
       project = finalData.project || getProject();
       completeProduction();
-      renderArchive(project);
       notify('Radyo reklamınız hazır.','success');
     }catch(error){
       console.error('[MOBILE RADIO AD] production',error,error && error.data || '');
@@ -472,9 +474,22 @@
       failProduction(error);
       notify(errorMessage(error),'error');
     }finally{
+      const latestProject = window.AIVOMobileRadioAdProject || project || null;
       running = false;
+      if (latestProject){
+        const latestSync = syncController();
+        if (latestSync && typeof latestSync.applyProject === 'function') latestSync.applyProject(latestProject);
+        else window.AIVOMobileRadioAdProject = latestProject;
+      }
       syncButton(getProject());
       await refreshCredits(null);
+      try{
+        if (window.AIVOMobileRadioAdArchive && typeof window.AIVOMobileRadioAdArchive.refresh === 'function') {
+          await window.AIVOMobileRadioAdArchive.refresh();
+        }
+      }catch(error){
+        console.warn('[MOBILE RADIO AD] archive refresh after production', error);
+      }
     }
   }
 
@@ -483,12 +498,10 @@
     const project = event && event.detail && event.detail.project;
     if (!project) return;
     syncButton(project);
-    renderArchive(project);
   });
 
   window.addEventListener('pagehide',function(){ stopTimer(); stopGalleryAudio(); },{once:true});
 
   window.AIVOMobileRadioAdProduction = { run:run, renderArchive:renderArchive, syncButton:syncButton };
   syncButton(getProject());
-  renderArchive(getProject());
 })();
