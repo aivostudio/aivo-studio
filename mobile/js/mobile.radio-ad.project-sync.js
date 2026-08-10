@@ -38,6 +38,8 @@
   const actionSummary = action && action.querySelector(".mobile-adfilm-action-copy small");
   const actionButton = action && action.querySelector(".mobile-adfilm-create-button");
   const actionStatus = action && action.querySelector(".mobile-adfilm-action-status");
+  const settingsCard = view.querySelector('[data-mobile-radio-card="settings"]');
+  const narrationCard = view.querySelector('[data-mobile-radio-card="narration"]');
 
   let projectId = "";
   let project = null;
@@ -106,6 +108,16 @@
     if (!actionStatus) return;
     actionStatus.dataset.state = mode || "idle";
     actionStatus.textContent = text || "";
+  }
+
+  function arrangeRadioFlow(){
+    if (settingsCard && narrationCard && settingsCard.nextElementSibling !== narrationCard){
+      view.insertBefore(settingsCard, narrationCard);
+    }
+    const settingsStep = settingsCard && settingsCard.querySelector(".mobile-adfilm-step");
+    const narrationStep = narrationCard && narrationCard.querySelector(".mobile-adfilm-step");
+    if (settingsStep) settingsStep.textContent = "01";
+    if (narrationStep) narrationStep.textContent = "02";
   }
 
   function normalizeDuration(value){
@@ -313,7 +325,6 @@
       method: "POST",
       body: JSON.stringify({ project: seed || collect() })
     });
-    applyProject(data.project);
     return data.project;
   }
 
@@ -323,6 +334,7 @@
     const localDraft = readLocalDraft();
     if (localDraft) applyProject(localDraft);
 
+    const bootstrapRevision = draftRevision;
     projectId = clean(readStorage(PROJECT_KEY));
     let cloudProject = null;
 
@@ -346,12 +358,27 @@
     if (!cloudProject){
       try{
         cloudProject = await createProject(localDraft || collect());
-        projectId = clean(cloudProject.id);
+        projectId = clean(cloudProject && cloudProject.id);
+        if (projectId) writeStorage(PROJECT_KEY, projectId);
       }catch(error){
         console.error("[MOBILE RADIO AD] create project", error);
         setStatus("error", error.status === 401 ? "Devam etmek için AIVO hesabına giriş yapmalısın." : "Radyo taslağı oluşturulamadı.");
         return;
       }
+    }
+
+    if (draftRevision !== bootstrapRevision){
+      projectId = clean(projectId || cloudProject && cloudProject.id);
+      if (projectId) writeStorage(PROJECT_KEY, projectId);
+      project = Object.assign({}, cloudProject || {}, localPayload(), { id:projectId || null });
+      root.dataset.radioAdProjectId = projectId;
+      window.AIVOMobileRadioAdProject = project;
+      writeLocalDraft(project);
+      syncDerived();
+      clearTimeout(saveTimer);
+      await save();
+      setStatus("saved", "Proje buluta bağlı.");
+      return;
     }
 
     if (localDraft && localIsNewer(localDraft, cloudProject)){
@@ -399,6 +426,7 @@
     applyProject: applyProject
   };
 
+  arrangeRadioFlow();
   syncDerived();
   bootstrap();
 })();
