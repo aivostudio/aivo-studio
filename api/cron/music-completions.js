@@ -117,7 +117,7 @@ async function listCandidateJobs(sql) {
       and deleted_at is null
       and created_at >= now() - (${LOOKBACK_HOURS} * interval '1 hour')
       and coalesce(meta->>'completion_push_sent_at', '') = ''
-      and lower(coalesce(status, '')) in ('queued', 'processing', 'completed')
+      and lower(coalesce(status::text, '')) in ('queued', 'processing', 'completed')
     order by created_at asc
     limit ${MAX_JOBS_PER_RUN}
   `;
@@ -167,7 +167,7 @@ async function claimJob(sql, jobId, claimId) {
     where id = ${jobId}::uuid
       and lower(app) = 'music'
       and deleted_at is null
-      and lower(coalesce(status, '')) = 'completed'
+      and lower(coalesce(status::text, '')) = 'completed'
       and coalesce(meta->>'completion_push_sent_at', '') = ''
       and (
         coalesce(meta->>'completion_push_claimed_at', '') = ''
