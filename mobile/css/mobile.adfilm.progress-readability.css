@@ -1,60 +1,111 @@
 .mobile-adfilm-production-progress{
-  padding-left:11px;
-  padding-right:11px;
+  padding-left:7px;
+  padding-right:7px;
+  box-sizing:border-box;
 }
 
-.mobile-adfilm-production-stage{
-  width:calc(100% + 12px);
-  margin-left:-6px;
-  margin-right:-6px;
-  padding:18px 8px;
+#mobileAdFilmSection .mobile-adfilm-production-stage{
+  width:100% !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  padding:20px 16px 22px !important;
+  box-sizing:border-box !important;
 }
 
-.mobile-adfilm-production-stage b{
+#mobileAdFilmSection .mobile-adfilm-production-stage b{
   display:block;
   width:100%;
   max-width:none;
   padding:0;
-  font-size:22px;
-  line-height:1.24;
-  letter-spacing:-.02em;
+  font-size:24px !important;
+  line-height:1.18 !important;
+  letter-spacing:-.025em;
+  font-weight:950 !important;
+  text-align:center;
+  background:linear-gradient(90deg,#60eaff 0%,#a78bfa 24%,#f472ff 48%,#ec4899 72%,#60eaff 100%);
+  background-size:300% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent !important;
+  -webkit-text-fill-color:transparent;
+  transform-origin:center center;
+  will-change:transform,background-position,filter;
+  animation:
+    aivoAdFilmStageGradient 2.8s linear infinite,
+    aivoAdFilmStageHeartbeat 1.45s ease-in-out infinite;
 }
 
-.mobile-adfilm-production-stage p{
+@keyframes aivoAdFilmStageGradient{
+  0%{background-position:0% 50%;}
+  100%{background-position:300% 50%;}
+}
+
+@keyframes aivoAdFilmStageHeartbeat{
+  0%,100%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(244,114,255,0));
+  }
+  12%{
+    transform:scale(1.045);
+    filter:drop-shadow(0 0 9px rgba(244,114,255,.46));
+  }
+  24%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 3px rgba(96,234,255,.22));
+  }
+  36%{
+    transform:scale(1.028);
+    filter:drop-shadow(0 0 7px rgba(167,139,250,.36));
+  }
+  50%{
+    transform:scale(1);
+    filter:drop-shadow(0 0 0 rgba(96,234,255,0));
+  }
+}
+
+#mobileAdFilmSection .mobile-adfilm-production-stage p{
   display:block;
   width:100%;
   max-width:none;
-  margin:10px 0 0;
-  padding:0;
-  font-size:18px;
-  line-height:1.45;
+  margin:12px 0 0;
+  padding:0 4px;
+  font-size:20px !important;
+  line-height:1.38 !important;
+  letter-spacing:-.015em;
+  font-weight:850 !important;
+  text-align:center;
+  box-sizing:border-box;
+}
+
+#mobileAdFilmSection .mobile-adfilm-production-stage small{
+  display:block;
+  width:100%;
+  max-width:none;
+  margin-top:14px;
+  padding:0 4px;
+  font-size:19px !important;
+  line-height:1.32 !important;
   letter-spacing:-.01em;
-}
-
-.mobile-adfilm-production-stage small{
-  display:block;
-  width:100%;
-  max-width:none;
-  margin-top:12px;
-  padding:0;
-  font-size:17px;
-  line-height:1.35;
-  letter-spacing:-.01em;
+  font-weight:950 !important;
+  text-align:center;
+  box-sizing:border-box;
 }
 
 .mobile-adfilm-production-progress::after{
   content:"Tahmini süre: 720p 5 sn yaklaşık 8 dk · 1080p 15 sn yaklaşık 15 dk · 4K 15 sn yaklaşık 30 dk. Yoğunluğa göre değişebilir.";
   display:block;
+  width:100%;
   margin-top:14px;
   padding:15px 16px;
-  border-radius:16px;
-  border:1px solid rgba(167,139,250,.22);
-  background:rgba(4,7,18,.42);
+  border-radius:18px;
+  border:1px solid rgba(167,139,250,.28);
+  background:rgba(4,7,18,.48);
   color:rgba(255,255,255,.78);
   font-size:15px;
-  line-height:1.55;
-  font-weight:800;
+  line-height:1.48;
+  font-weight:850;
   text-align:left;
+  box-sizing:border-box;
 }
 
 .mobile-adfilm-production-progress[data-adfilm-progress-lang="en"]::after{
