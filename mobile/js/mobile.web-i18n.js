@@ -169,6 +169,18 @@
     if (afterTitle !== beforeTitle) document.title = afterTitle;
   }
 
+  function fixIndexAdFilmOrder(){
+    try {
+      if (!/\/index\.mobile\.html$/i.test(String(location.pathname || ""))) return;
+      var modules = document.querySelector(".modules");
+      if (!modules) return;
+      var lipsync = modules.querySelector('a[href="/studio.mobile.html#lipsync"]');
+      var adfilm = modules.querySelector('a[href="/studio.mobile.html#adfilm"]');
+      if (!lipsync || !adfilm || lipsync.nextElementSibling === adfilm) return;
+      modules.insertBefore(adfilm, lipsync.nextSibling);
+    } catch (_) {}
+  }
+
   function apply(root){
     try {
       if (typeof window.aivoApplyI18n === "function") window.aivoApplyI18n(root && root.querySelectorAll ? root : document);
@@ -243,6 +255,7 @@
   function refresh(){
     rebuild();
     apply(document);
+    fixIndexAdFilmOrder();
     wrapToasts();
     wrapShare();
     observe();
