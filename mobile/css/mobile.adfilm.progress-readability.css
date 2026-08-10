@@ -19,4 +19,111 @@
   line-height:1.2;
   letter-spacing:-.02em;
   font-weight:950;
-  text-wrap:balance
+  text-align:center;
+}
+
+.mobile-adfilm-production-stage p{
+  display:block;
+  width:100%;
+  max-width:none;
+  margin:10px 0 0;
+  padding:0 4px;
+  font-size:17px;
+  line-height:1.42;
+  letter-spacing:-.01em;
+  font-weight:800;
+  text-align:center;
+}
+
+.mobile-adfilm-production-stage small{
+  display:block;
+  width:100%;
+  max-width:none;
+  margin-top:12px;
+  padding:0 4px;
+  font-size:16px;
+  line-height:1.35;
+  letter-spacing:-.01em;
+  font-weight:900;
+  text-align:center;
+}
+
+.mobile-adfilm-production-progress::after{
+  content:"Tahmini süre: 720p 5 sn yaklaşık 8 dk · 1080p 15 sn yaklaşık 15 dk · 4K 15 sn yaklaşık 30 dk. Yoğunluğa göre değişebilir.";
+  display:block;
+  width:100%;
+  margin-top:14px;
+  padding:15px 16px;
+  border-radius:18px;
+  border:1px solid rgba(167,139,250,.28);
+  background:rgba(4,7,18,.48);
+  color:rgba(255,255,255,.78);
+  font-size:15px;
+  line-height:1.48;
+  font-weight:850;
+  text-align:left;
+}
+
+[data-mobile-adfilm-view="video"]{
+  display:flex;
+  flex-direction:column;
+}
+
+[data-mobile-adfilm-view="video"] > article:first-of-type{
+  order:1;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-design-card{
+  order:2;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-video-settings-card{
+  order:3;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card{
+  order:4;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card{
+  order:5;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-music-card{
+  order:6;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-quality-card{
+  order:7;
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-action-card{
+  order:8;
+}
+
+.mobile-adfilm-video-settings-card .mobile-adfilm-step,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card .mobile-adfilm-step,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step{
+  font-size:0;
+  letter-spacing:0;
+}
+
+.mobile-adfilm-video-settings-card .mobile-adfilm-step::after,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card .mobile-adfilm-step::after,
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step::after{
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.16em;
+}
+
+.mobile-adfilm-video-settings-card .mobile-adfilm-step::after{
+  content:"03";
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-reference-card .mobile-adfilm-step::after{
+  content:"04";
+}
+
+[data-mobile-adfilm-view="video"] > .mobile-adfilm-voice-card .mobile-adfilm-step::after{
+  content:"05";
+}
