@@ -42,6 +42,7 @@
       "#photofx": "mobilePhotoFxMount",
       "#video": "mobileVideoMount",
       "#lipsync": "mobileLipsyncMount",
+      "#adfilm": "mobileAdFilmMount",
       "#credits": "mobileCreditsMount",
       "#tools": "mobileToolsMount",
       "#account": "mobileAccountMount"
