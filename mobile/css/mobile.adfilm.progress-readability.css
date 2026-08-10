@@ -26,7 +26,7 @@
   max-width:none;
   margin:10px 0 0;
   padding:0;
-  font-size:17px;
+  font-size:18px;
   line-height:1.45;
   letter-spacing:-.01em;
 }
@@ -37,7 +37,7 @@
   max-width:none;
   margin-top:12px;
   padding:0;
-  font-size:16px;
+  font-size:17px;
   line-height:1.35;
   letter-spacing:-.01em;
 }
@@ -46,18 +46,17 @@
   content:"Tahmini süre: 720p 5 sn yaklaşık 8 dk · 1080p 15 sn yaklaşık 15 dk · 4K 15 sn yaklaşık 30 dk. Yoğunluğa göre değişebilir.";
   display:block;
   margin-top:14px;
-  padding:14px 15px;
+  padding:15px 16px;
   border-radius:16px;
   border:1px solid rgba(167,139,250,.22);
   background:rgba(4,7,18,.42);
   color:rgba(255,255,255,.78);
-  font-size:14.5px;
+  font-size:15px;
   line-height:1.55;
   font-weight:800;
   text-align:left;
 }
 
-html[lang^="en"] .mobile-adfilm-production-progress::after,
 .mobile-adfilm-production-progress[data-adfilm-progress-lang="en"]::after{
   content:"Estimated time: 720p 5 sec about 8 min · 1080p 15 sec about 15 min · 4K 15 sec about 30 min. May vary depending on system load.";
 }
