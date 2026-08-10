@@ -14,6 +14,63 @@
   document.addEventListener("aivo:language-change", syncToolLabel);
 })();
 
+(function bindMobileAdFilmProgressLocale(){
+  const root = document.getElementById("mobileAdFilmSection");
+  if (!root || root.__mobileAdFilmProgressLocaleBound) return;
+  root.__mobileAdFilmProgressLocaleBound = true;
+
+  function currentLang(){
+    let stored = "";
+    try { stored = localStorage.getItem("aivo_mobile_language") || ""; } catch (_) {}
+    const value = String(window.AIVO_LANG || stored || document.documentElement.lang || "tr").toLowerCase();
+    return value.indexOf("en") === 0 ? "en" : "tr";
+  }
+
+  function syncProgressLocale(){
+    const lang = currentLang();
+    const progress = root.querySelector("[data-mobile-adfilm-production-progress]");
+    if (progress) progress.setAttribute("data-adfilm-progress-lang", lang);
+
+    const time = root.querySelector("[data-mobile-adfilm-stage-time]");
+    if (!time) return;
+
+    const before = String(time.textContent || "");
+    let after = before;
+
+    if (lang === "en") {
+      after = after
+        .replace(/^Toplam geçen süre:/i, "Total elapsed time:")
+        .replace(/\b(\d+)\s*dk\b/gi, "$1 min")
+        .replace(/\b(\d+)\s*sn\b/gi, "$1 sec");
+    } else {
+      after = after
+        .replace(/^Total elapsed time:/i, "Toplam geçen süre:")
+        .replace(/\b(\d+)\s*min\b/gi, "$1 dk")
+        .replace(/\b(\d+)\s*sec\b/gi, "$1 sn");
+    }
+
+    if (after !== before) time.textContent = after;
+  }
+
+  syncProgressLocale();
+  document.addEventListener("aivo:language-change", function(){ setTimeout(syncProgressLocale, 0); });
+
+  const observer = new MutationObserver(function(records){
+    for (const record of records) {
+      const target = record.target && record.target.nodeType === 1
+        ? record.target
+        : record.target && record.target.parentElement;
+      if (target && target.closest && target.closest("[data-mobile-adfilm-production-progress]")) {
+        syncProgressLocale();
+        break;
+      }
+    }
+  });
+
+  observer.observe(root, { subtree:true, childList:true, characterData:true });
+  window.addEventListener("pagehide", function(){ observer.disconnect(); }, { once:true });
+})();
+
 (function(){
   const root = document.getElementById("mobileAdFilmSection");
   if (!root || root.__mobileAdFilmBound) return;
