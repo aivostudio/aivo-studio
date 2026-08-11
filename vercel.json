@@ -21,15 +21,15 @@
   ],
   "crons": [
     {
-      "path": "/api/cron/music-completions-v2",
+      "path": "/api/cron/music-completions-v3",
       "schedule": "* * * * *"
     },
     {
-      "path": "/api/cron/cover-completions",
+      "path": "/api/cron/cover-completions-v2",
       "schedule": "* * * * *"
     },
     {
-      "path": "/api/cron/atmo-completions",
+      "path": "/api/cron/atmo-completions-v2",
       "schedule": "* * * * *"
     }
   ]
