@@ -35,6 +35,10 @@
     {
       "path": "/api/cron/cartoon-completions",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/photofx-completions",
+      "schedule": "* * * * *"
     }
   ]
 }
