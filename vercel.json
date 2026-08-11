@@ -51,6 +51,10 @@
     {
       "path": "/api/cron/adfilm-video-completions",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/radioad-background",
+      "schedule": "* * * * *"
     }
   ]
 }
