@@ -1,0 +1,569 @@
+const admin = require("firebase-admin");
+const { neon } = require("@neondatabase/serverless");
+const { randomUUID } = require("node:crypto");
+const { kvGetJson } = require("../_kv");
+
+const MAX_JOBS_PER_RUN = 2;
+const CLAIM_TTL_MINUTES = 5;
+const CARTOON_PUSH_START_AT = "2026-08-11T10:20:00.000Z";
+
+function clean(value) {
+  return String(value || "").trim();
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function normalizeEmail(value) {
+  return clean(value).toLowerCase();
+}
+
+function normalizeLang(value) {
+  return clean(value).toLowerCase().startsWith("en") ? "en" : "tr";
+}
+
+function getConn() {
+  return (
+    process.env.POSTGRES_URL_NON_POOLING ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    ""
+  );
+}
+
+function isAuthorizedCron(req) {
+  const secret = clean(process.env.CRON_SECRET);
+  if (!secret) return { ok: false, error: "missing_cron_secret" };
+  if (clean(req.headers.authorization) !== `Bearer ${secret}`) {
+    return { ok: false, error: "unauthorized" };
+  }
+  return { ok: true };
+}
+
+function getOrigin(req) {
+  const proto = clean(req.headers["x-forwarded-proto"]).split(",")[0] || "https";
+  const host =
+    clean(req.headers["x-forwarded-host"]).split(",")[0] ||
+    clean(req.headers.host);
+
+  return host ? `${proto}://${host}` : "https://aivo.tr";
+}
+
+function getFirebaseApp() {
+  if (admin.apps.length) return admin.app();
+
+  const projectId = clean(process.env.FIREBASE_PROJECT_ID);
+  const clientEmail = clean(process.env.FIREBASE_CLIENT_EMAIL);
+  const privateKey = clean(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, "\n");
+
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error("missing_firebase_env");
+  }
+
+  return admin.initializeApp({
+    credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+  });
+}
+
+function modeOf(row) {
+  const metaMode = clean(row?.meta?.mode).toLowerCase();
+  if (metaMode) return metaMode;
+
+  const type = clean(row?.type).toLowerCase();
+  if (type === "studio_export") return "studio_export";
+
+  const kind = clean(row?.meta?.kind).toLowerCase();
+  if (kind === "cartoon_character") return "character";
+  if (kind === "cartoon_video") return "basic";
+
+  return "basic";
+}
+
+function pickImageUrl(row) {
+  const meta = row?.meta || {};
+  const outputs = Array.isArray(row?.outputs) ? row.outputs : [];
+
+  const image = outputs.find(
+    (item) =>
+      item &&
+      String(item.type || "").toLowerCase() === "image" &&
+      clean(item.url)
+  );
+
+  return clean(meta.final_image_url || image?.url);
+}
+
+function pickFinalizedVideoUrl(row) {
+  const meta = row?.meta || {};
+  const outputs = Array.isArray(row?.outputs) ? row.outputs : [];
+
+  const finalized = outputs.find(
+    (item) =>
+      item &&
+      String(item.type || "").toLowerCase() === "video" &&
+      (String(item.meta?.variant || "").toLowerCase() === "finalized" ||
+        item.meta?.is_final === true) &&
+      clean(item.url)
+  );
+
+  return clean(meta.final_video_url || finalized?.url);
+}
+
+function isReady(row) {
+  if (!row) return false;
+  if (clean(row.status).toLowerCase() !== "done") return false;
+
+  const mode = modeOf(row);
+
+  if (mode === "character") {
+    return !!pickImageUrl(row);
+  }
+
+  if (mode === "studio_export") {
+    return (
+      row?.meta?.studio_export_done === true &&
+      !!clean(row?.meta?.finalized_at) &&
+      !!pickFinalizedVideoUrl(row)
+    );
+  }
+
+  return !!clean(row?.meta?.finalized_at) && !!pickFinalizedVideoUrl(row);
+}
+
+async function listCandidateJobs(sql) {
+  const rows = await sql`
+    select
+      id::text as id,
+      user_id,
+      type,
+      status,
+      meta,
+      outputs,
+      created_at
+    from jobs
+    where lower(app) = 'cartoon'
+      and deleted_at is null
+      and created_at >= ${CARTOON_PUSH_START_AT}::timestamptz
+      and coalesce(meta->>'completion_push_sent_at', '') = ''
+      and lower(coalesce(status::text, '')) in ('queued', 'processing', 'done')
+    order by created_at asc
+    limit ${MAX_JOBS_PER_RUN}
+  `;
+
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function pollCartoonStatus(req, jobId) {
+  const response = await fetch(
+    `${getOrigin(req)}/api/jobs/status?job_id=${encodeURIComponent(jobId)}`,
+    {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+        "x-aivo-internal-source": "cartoon-completion-cron",
+      },
+      cache: "no-store",
+    }
+  );
+
+  const data = await response.json().catch(() => null);
+
+  return {
+    ok: response.ok && data?.ok !== false,
+    http_status: response.status,
+    data,
+  };
+}
+
+async function finalizeStudioExport(req, jobId) {
+  const response = await fetch(`${getOrigin(req)}/api/cartoon/studio/finalize`, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+      "x-aivo-internal-source": "cartoon-completion-cron",
+    },
+    body: JSON.stringify({ job_id: jobId }),
+    cache: "no-store",
+  });
+
+  const data = await response.json().catch(() => null);
+
+  return {
+    ok: response.ok && data?.ok !== false,
+    http_status: response.status,
+    data,
+  };
+}
+
+async function readJob(sql, jobId) {
+  const rows = await sql`
+    select
+      id::text as id,
+      user_id,
+      type,
+      status,
+      meta,
+      outputs,
+      created_at
+    from jobs
+    where id = ${jobId}::uuid
+      and lower(app) = 'cartoon'
+      and deleted_at is null
+    limit 1
+  `;
+
+  return rows?.[0] || null;
+}
+
+async function driveJob(req, row) {
+  const mode = modeOf(row);
+
+  if (mode === "studio_export") {
+    if (!isReady(row)) {
+      return finalizeStudioExport(req, row.id);
+    }
+    return { ok: true, http_status: 200, data: { skipped: true } };
+  }
+
+  if (!isReady(row)) {
+    return pollCartoonStatus(req, row.id);
+  }
+
+  return { ok: true, http_status: 200, data: { skipped: true } };
+}
+
+async function claimReadyJob(sql, jobId, claimId) {
+  const patch = {
+    completion_push_claimed_at: nowIso(),
+    completion_push_claim_id: claimId,
+  };
+
+  const rows = await sql`
+    update jobs
+    set
+      meta = coalesce(meta, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb,
+      updated_at = now()
+    where id = ${jobId}::uuid
+      and lower(app) = 'cartoon'
+      and deleted_at is null
+      and lower(coalesce(status::text, '')) = 'done'
+      and coalesce(meta->>'completion_push_sent_at', '') = ''
+      and (
+        coalesce(meta->>'completion_push_claimed_at', '') = ''
+        or (meta->>'completion_push_claimed_at')::timestamptz < now() - (${CLAIM_TTL_MINUTES} * interval '1 minute')
+      )
+    returning id::text as id, user_id, type, status, meta, outputs
+  `;
+
+  return rows?.[0] || null;
+}
+
+async function releaseClaim(sql, jobId, claimId, patch) {
+  const safePatch = patch && typeof patch === "object" ? patch : {};
+
+  await sql`
+    update jobs
+    set
+      meta = ((coalesce(meta, '{}'::jsonb) - 'completion_push_claimed_at') - 'completion_push_claim_id') || ${JSON.stringify(safePatch)}::jsonb,
+      updated_at = now()
+    where id = ${jobId}::uuid
+      and lower(app) = 'cartoon'
+      and meta->>'completion_push_claim_id' = ${claimId}
+  `;
+}
+
+async function findIosTokensForUser(userId) {
+  const target = normalizeEmail(userId);
+  if (!target || !target.includes("@")) return [];
+
+  const all = await kvGetJson("push:tokens:all");
+  const tokens = Array.isArray(all) ? all.map(clean).filter(Boolean) : [];
+  const matched = [];
+
+  for (const token of tokens) {
+    const record = await kvGetJson(`push:token:${token}`);
+    if (!record || typeof record !== "object") continue;
+
+    const platform = clean(record.platform).toLowerCase();
+    const permission = clean(record.permission_status).toLowerCase();
+    const revokedAt = clean(record.revoked_at);
+    const recordUser = normalizeEmail(
+      record.user_id || record.user_uuid || record.email
+    );
+
+    if (platform !== "ios") continue;
+    if (permission && permission !== "granted") continue;
+    if (revokedAt) continue;
+    if (recordUser !== target) continue;
+
+    matched.push({ token, lang: normalizeLang(record.lang) });
+  }
+
+  return matched;
+}
+
+function localizedCopy(lang, row) {
+  const mode = modeOf(row);
+  const sceneTitle = clean(row?.meta?.scene_title || row?.meta?.title);
+
+  if (lang === "en") {
+    if (mode === "character") {
+      return {
+        title: "Your character is ready",
+        body: "Your AI cartoon character is complete. Open AIVO to view it.",
+      };
+    }
+
+    if (mode === "story") {
+      return {
+        title: "Your story scene is ready",
+        body: sceneTitle
+          ? `${sceneTitle} is complete. Open AIVO to watch it.`
+          : "Your AI story scene is complete. Open AIVO to watch it.",
+      };
+    }
+
+    if (mode === "studio_export") {
+      return {
+        title: "Your montage video is ready",
+        body: "Your Cartoon Studio montage is complete. Open AIVO to watch it.",
+      };
+    }
+
+    return {
+      title: "Your cartoon video is ready",
+      body: "Your AI cartoon generation is complete. Open AIVO to watch it.",
+    };
+  }
+
+  if (mode === "character") {
+    return {
+      title: "Karakterin hazır",
+      body: "AI çizgifilm karakterin tamamlandı. Görmek için AIVO'yu aç.",
+    };
+  }
+
+  if (mode === "story") {
+    return {
+      title: "Hikaye sahnen hazır",
+      body: sceneTitle
+        ? `${sceneTitle} sahnesi tamamlandı. İzlemek için AIVO'yu aç.`
+        : "AI hikaye sahnen tamamlandı. İzlemek için AIVO'yu aç.",
+    };
+  }
+
+  if (mode === "studio_export") {
+    return {
+      title: "Montaj videon hazır",
+      body: "Çizgi Film Montaj Stüdyosu videon tamamlandı. İzlemek için AIVO'yu aç.",
+    };
+  }
+
+  return {
+    title: "Çizgi film videon hazır",
+    body: "AI çizgifilm üretimin tamamlandı. İzlemek için AIVO'yu aç.",
+  };
+}
+
+async function sendCartoonReadyPush(req, tokenRecord, row) {
+  getFirebaseApp();
+
+  const copy = localizedCopy(tokenRecord.lang, row);
+  const mode = modeOf(row);
+  const imageUrl = `${getOrigin(req)}/api/push/cartoon-icon`;
+  const outputImageUrl = mode === "character" ? pickImageUrl(row) : "";
+  const outputVideoUrl = mode === "character" ? "" : pickFinalizedVideoUrl(row);
+
+  return admin.messaging().send({
+    token: tokenRecord.token,
+    notification: {
+      title: copy.title,
+      body: copy.body,
+      imageUrl,
+    },
+    apns: {
+      payload: {
+        aps: {
+          sound: "default",
+          "mutable-content": 1,
+        },
+      },
+      fcmOptions: {
+        imageUrl,
+      },
+    },
+    data: {
+      source: "aivo_generation_complete",
+      app: "cartoon",
+      mode,
+      job_id: clean(row?.id),
+      scene_id: clean(row?.meta?.scene_id),
+      scene_title: clean(row?.meta?.scene_title || row?.meta?.title),
+      video_url: outputVideoUrl,
+      output_image_url: outputImageUrl,
+      imageUrl,
+      image: imageUrl,
+      click_action: "open_app",
+    },
+  });
+}
+
+module.exports = async function handler(req, res) {
+  try {
+    if (req.method !== "GET") {
+      res.setHeader("Allow", "GET");
+      return res.status(405).json({ ok: false, error: "method_not_allowed" });
+    }
+
+    const auth = isAuthorizedCron(req);
+    if (!auth.ok) {
+      return res.status(auth.error === "missing_cron_secret" ? 500 : 401).json({
+        ok: false,
+        error: auth.error,
+      });
+    }
+
+    const conn = getConn();
+    if (!conn) {
+      return res.status(500).json({ ok: false, error: "missing_db_env" });
+    }
+
+    const sql = neon(conn);
+    const candidates = await listCandidateJobs(sql);
+
+    const summary = {
+      checked: candidates.length,
+      ready: 0,
+      pushed: 0,
+      processing: 0,
+      failed: 0,
+      no_output: 0,
+      no_token: 0,
+      skipped: 0,
+    };
+
+    for (const candidate of candidates) {
+      let claimId = "";
+
+      try {
+        const driven = await driveJob(req, candidate);
+
+        if (!driven.ok && driven.http_status >= 500) {
+          summary.failed += 1;
+          continue;
+        }
+
+        const row = await readJob(sql, candidate.id);
+        if (!row) {
+          summary.skipped += 1;
+          continue;
+        }
+
+        const status = clean(row.status).toLowerCase();
+        if (status === "error" || status === "failed") {
+          summary.failed += 1;
+          continue;
+        }
+
+        if (!isReady(row)) {
+          summary.processing += 1;
+          continue;
+        }
+
+        const mode = modeOf(row);
+        const outputUrl = mode === "character" ? pickImageUrl(row) : pickFinalizedVideoUrl(row);
+
+        if (!outputUrl) {
+          summary.no_output += 1;
+          continue;
+        }
+
+        summary.ready += 1;
+        claimId = randomUUID();
+
+        const claimed = await claimReadyJob(sql, row.id, claimId);
+        if (!claimed) {
+          summary.skipped += 1;
+          continue;
+        }
+
+        const tokens = await findIosTokensForUser(claimed.user_id || row.user_id);
+
+        if (!tokens.length) {
+          summary.no_token += 1;
+          await releaseClaim(sql, row.id, claimId, {
+            completion_push_last_attempt_at: nowIso(),
+            completion_push_last_error: "no_registered_ios_token",
+          });
+          continue;
+        }
+
+        const results = [];
+
+        for (const tokenRecord of tokens) {
+          try {
+            const messageId = await sendCartoonReadyPush(req, tokenRecord, {
+              ...row,
+              type: claimed.type || row.type,
+              meta: claimed.meta || row.meta || {},
+              outputs: claimed.outputs || row.outputs || [],
+            });
+            results.push({ ok: true, message_id: messageId });
+          } catch (error) {
+            results.push({
+              ok: false,
+              error: clean(error?.message || error) || "send_failed",
+            });
+          }
+        }
+
+        const sent = results.filter((item) => item.ok).length;
+
+        if (sent > 0) {
+          summary.pushed += 1;
+          await releaseClaim(sql, row.id, claimId, {
+            completion_push_sent_at: nowIso(),
+            completion_push_channel: "fcm",
+            completion_push_platform: "ios",
+            completion_push_mode: mode,
+            completion_push_sent_count: sent,
+            completion_push_last_error: null,
+          });
+          continue;
+        }
+
+        summary.failed += 1;
+        await releaseClaim(sql, row.id, claimId, {
+          completion_push_last_attempt_at: nowIso(),
+          completion_push_last_error: results[0]?.error || "all_push_sends_failed",
+        });
+      } catch (error) {
+        summary.failed += 1;
+        console.error("[cartoon-completions] job failed", candidate?.id, error);
+
+        try {
+          if (claimId) {
+            await releaseClaim(sql, candidate.id, claimId, {
+              completion_push_last_attempt_at: nowIso(),
+              completion_push_last_error:
+                clean(error?.message || error) || "job_processing_failed",
+            });
+          }
+        } catch (_) {}
+      }
+    }
+
+    console.log("[cartoon-completions]", summary);
+    return res.status(200).json({ ok: true, ...summary });
+  } catch (error) {
+    console.error("[cartoon-completions] fatal", error);
+    return res.status(500).json({
+      ok: false,
+      error: "server_error",
+      message: clean(error?.message || error) || "unknown_error",
+    });
+  }
+};
