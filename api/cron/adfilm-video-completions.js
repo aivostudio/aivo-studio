@@ -150,25 +150,26 @@ function isFinalizedOutput(project, output) {
 }
 
 function pickFinalOutput(project) {
-  const outputs = Array.isArray(project?.outputs) ? project.outputs.filter(Boolean) : [];
-  const activeId = clean(project?.activeOutputId);
-  const generationId = clean(project?.generation?.outputId || project?.generation?.requestId);
+  const outputs = Array.isArray(project?.outputs)
+    ? project.outputs.filter(Boolean)
+    : [];
 
-  const ordered = [
-    outputs.find((item) => clean(item?.id) === activeId),
-    outputs.find((item) => clean(item?.id) === generationId),
-    ...outputs,
-  ].filter(Boolean);
+  const generationId = clean(
+    project?.generation?.outputId ||
+    project?.generation?.requestId
+  );
 
-  const seen = new Set();
-  for (const output of ordered) {
-    const id = clean(output?.id) || outputVideoUrl(output);
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    if (isFinalizedOutput(project, output)) return output;
-  }
+  if (!generationId) return null;
 
-  return null;
+  const currentOutput = outputs.find(
+    (item) => clean(item?.id) === generationId
+  );
+
+  if (!currentOutput) return null;
+
+  return isFinalizedOutput(project, currentOutput)
+    ? currentOutput
+    : null;
 }
 
 function isFinalReady(project) {
