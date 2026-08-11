@@ -41,11 +41,20 @@ function errorMessage(data, status) {
   if (detail && typeof detail === "object") return clean(JSON.stringify(detail), 900);
   return `Fal HTTP ${status}`;
 }
-async function submit(key, model, payload) {
+function getOrigin(req) {
+  const proto = clean(req.headers["x-forwarded-proto"], 40).split(",")[0] || "https";
+  const host =
+    clean(req.headers["x-forwarded-host"], 300).split(",")[0] ||
+    clean(req.headers.host, 300);
+  return host ? `${proto}://${host}` : "https://aivo.tr";
+}
+async function submit(key, model, payload, webhookUrl) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30000);
   try {
-    const response = await fetch(`https://queue.fal.run/${model}`, {
+    const url = new URL(`https://queue.fal.run/${model}`);
+    if (webhookUrl) url.searchParams.set("fal_webhook", webhookUrl);
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Key ${key}`,
@@ -129,6 +138,8 @@ export default async function handler(req, res) {
     if (!key) return sendJson(res, 500, { ok: false, error: "missing_fal_key" });
 
     const seed = crypto.randomInt(1, 2147483647);
+    const webhookToken = crypto.randomBytes(24).toString("hex");
+    const webhookUrl = `${getOrigin(req)}/api/radio-ad/music/webhook?projectId=${encodeURIComponent(projectId)}&token=${encodeURIComponent(webhookToken)}`;
     const payload = {
       prompt: prompt.prompt,
       negative_prompt: prompt.negativePrompt,
@@ -143,11 +154,11 @@ export default async function handler(req, res) {
       bitrate: OUTPUT_BITRATE,
     };
 
-    let attempt = await submit(key, PRIMARY_MODEL, payload);
+    let attempt = await submit(key, PRIMARY_MODEL, payload, webhookUrl);
     let fallbackUsed = false;
     if (!attempt.response.ok) {
       fallbackUsed = true;
-      attempt = await submit(key, FALLBACK_MODEL, payload);
+      attempt = await submit(key, FALLBACK_MODEL, payload, webhookUrl);
     }
     if (!attempt.response.ok) {
       const message = errorMessage(attempt.data, attempt.response.status);
@@ -169,6 +180,8 @@ export default async function handler(req, res) {
           pipelineVersion: PIPELINE_VERSION,
           signature: expectedSignature,
           seed,
+          webhookToken,
+          webhookUrl,
           meta: prompt,
         },
         final: null,
@@ -206,6 +219,8 @@ export default async function handler(req, res) {
         pipelineVersion: PIPELINE_VERSION,
         signature: expectedSignature,
         seed,
+        webhookToken,
+        webhookUrl,
         outputFormat: OUTPUT_FORMAT,
         bitrate: OUTPUT_BITRATE,
         meta: prompt,
@@ -220,6 +235,7 @@ export default async function handler(req, res) {
       generation: saved.musicGeneration,
       project: saved,
       fallback_used: fallbackUsed,
+      webhook_enabled: true,
     });
   } catch (error) {
     console.error("[radio-ad/music/create]", error);
