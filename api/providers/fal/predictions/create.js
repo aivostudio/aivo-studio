@@ -28,7 +28,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "missing_prompt" });
     }
 
+    // ------------------------------------------------------------
+    // Helpers
+    // ------------------------------------------------------------
     function looksTurkish(text) {
+      // Turkish-specific chars OR some common TR words (very light heuristic)
       if (/[çğıİöşüÇĞÖŞÜ]/.test(text)) return true;
       const t = ` ${text.toLowerCase()} `;
       const common = [
@@ -81,6 +85,7 @@ export default async function handler(req, res) {
     }
 
     async function translateWithGoogleGTX(trText) {
+      // Unofficial fallback (no key). If blocked in your env, it will just fail gracefully.
       const url =
         "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" +
         encodeURIComponent(trText);
@@ -89,6 +94,7 @@ export default async function handler(req, res) {
       const j = await r.json().catch(() => null);
       if (!r.ok || !j) return null;
 
+      // format: [[[translated, original, ...], ...], ...]
       const translated = Array.isArray(j?.[0])
         ? j[0].map((row) => (Array.isArray(row) ? row[0] : "")).join("")
         : "";
@@ -107,6 +113,7 @@ export default async function handler(req, res) {
         };
       }
 
+      // 1) OpenAI
       const viaOpenAI = await translateWithOpenAI(prompt);
       if (viaOpenAI) {
         return {
@@ -117,6 +124,7 @@ export default async function handler(req, res) {
         };
       }
 
+      // 2) Google GTX fallback
       const viaGTX = await translateWithGoogleGTX(prompt);
       if (viaGTX) {
         return {
@@ -127,6 +135,7 @@ export default async function handler(req, res) {
         };
       }
 
+      // 3) give up: send original
       return {
         prompt_original: prompt,
         prompt_sent: prompt,
@@ -135,8 +144,14 @@ export default async function handler(req, res) {
       };
     }
 
+    // ------------------------------------------------------------
+    // Translate (if needed)
+    // ------------------------------------------------------------
     const t = await maybeTranslatePrompt(promptRaw);
 
+    // ------------------------------------------------------------
+    // Model routing (NO arbitrary body.model)
+    // ------------------------------------------------------------
     const qualityRaw = String(input?.quality || "artist").toLowerCase();
     const quality = qualityRaw === "ultra" ? "ultra" : "artist";
 
@@ -151,31 +166,38 @@ export default async function handler(req, res) {
     };
 
     const model = MODEL_MAP[quality];
-    const ratio = String(input?.ratio || "").trim();
 
-    const image_size =
-      ratio === "16:9"
-        ? "landscape_16_9"
-        : ratio === "9:16"
-        ? "portrait_16_9"
-        : String(input?.image_size || "square_hd").trim();
+    // ------------------------------------------------------------
+    // Fal payload
+    // ------------------------------------------------------------
+   // ------------------------------------------------------------
+// Fal payload
+// ------------------------------------------------------------
+const ratio = String(input?.ratio || "").trim();
 
-    const falPayload =
-      quality === "ultra"
-        ? {
-            prompt: t.prompt_sent,
-            image_size,
-            guidance_scale: 7,
-            num_images: 1,
-            output_format: "jpeg",
-            safety_tolerance: "2",
-            enhance_prompt: false,
-            raw: true,
-          }
-        : {
-            prompt: t.prompt_sent,
-            image_size,
-          };
+const image_size =
+  ratio === "16:9"
+    ? "landscape_16_9"
+    : ratio === "9:16"
+    ? "portrait_16_9"
+    : String(input?.image_size || "square_hd").trim();
+
+const falPayload =
+  quality === "ultra"
+    ? {
+        prompt: t.prompt_sent,
+        image_size,
+        guidance_scale: 7,
+        num_images: 1,
+        output_format: "jpeg",
+        safety_tolerance: "2",
+        enhance_prompt: false,
+        raw: true,
+      }
+    : {
+        prompt: t.prompt_sent,
+        image_size,
+      };
 
     const falRes = await fetch(`https://fal.run/${model}`, {
       method: "POST",
@@ -206,6 +228,10 @@ export default async function handler(req, res) {
       });
     }
 
+    // ------------------------------------------------------------
+    // R2 COPY (CRITICAL)
+    // Fal URL -> R2 URL
+    // ------------------------------------------------------------
     const falUrl = data?.images?.[0]?.url || null;
 
     if (!falUrl) {
@@ -235,6 +261,10 @@ export default async function handler(req, res) {
       });
     }
 
+    // ------------------------------------------------------------
+    // DB Persist (same pattern as video)
+    // - Create a job row so /api/jobs/list?app=cover shows it in ALL browsers
+    // ------------------------------------------------------------
     const job_id = crypto.randomUUID();
     let db_debug = { tried: false, hasConn: false, inserted: false, error: null };
 
@@ -320,6 +350,9 @@ export default async function handler(req, res) {
       console.error("DB insert failed:", e);
     }
 
+    // ------------------------------------------------------------
+    // Response (IMPORTANT: output artık R2 URL olacak)
+    // ------------------------------------------------------------
     return res.status(200).json({
       ok: true,
       job_id,
