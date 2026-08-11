@@ -314,3 +314,68 @@ window.toastMsg = function(message, type){
   setTimeout(function(){ retryStoredToken("startup_2s"); }, 2000);
   setTimeout(function(){ retryStoredToken("startup_5s"); }, 5000);
 })();
+
+(function AIVO_IOS_ADFILM_BOOTSTRAP(){
+  if (window.__AIVO_IOS_ADFILM_BOOTSTRAP__) return;
+  if (!/\/studio\.ios\.html(?:$|[?#])/.test(window.location.pathname + window.location.search + window.location.hash)) return;
+  window.__AIVO_IOS_ADFILM_BOOTSTRAP__ = true;
+
+  async function boot(){
+    try {
+      let mount = document.getElementById("mobileAdFilmMount");
+
+      if (!mount) {
+        mount = document.createElement("div");
+        mount.id = "mobileAdFilmMount";
+        mount.hidden = true;
+        mount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yükleniyor...</div>';
+
+        const lipsyncMount = document.getElementById("mobileLipsyncMount");
+        const creditsMount = document.getElementById("mobileCreditsMount");
+
+        if (lipsyncMount) {
+          lipsyncMount.insertAdjacentElement("afterend", mount);
+        } else if (creditsMount && creditsMount.parentNode) {
+          creditsMount.parentNode.insertBefore(mount, creditsMount);
+        } else {
+          document.querySelector("main.mobile-shell")?.appendChild(mount);
+        }
+      }
+
+      const response = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("mobile_adfilm_html_load_failed");
+      }
+
+      mount.innerHTML = await response.text();
+
+      if (typeof window.aivoApplyI18n === "function") {
+        window.aivoApplyI18n(mount);
+      }
+
+      if (!document.querySelector('script[data-aivo-ios-adfilm-script]')) {
+        const script = document.createElement("script");
+        script.src = "/mobile/js/mobile.adfilm.js?v=1";
+        script.defer = true;
+        script.setAttribute("data-aivo-ios-adfilm-script", "1");
+        document.body.appendChild(script);
+      }
+    } catch (err) {
+      console.error("[AIVO iOS AdFilm] bootstrap failed", err);
+
+      const mount = document.getElementById("mobileAdFilmMount");
+      if (mount) {
+        mount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
