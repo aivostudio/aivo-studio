@@ -31,6 +31,10 @@
     {
       "path": "/api/cron/atmo-completions",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/cartoon-completions",
+      "schedule": "* * * * *"
     }
   ]
 }
