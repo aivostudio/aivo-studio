@@ -47,6 +47,10 @@
     {
       "path": "/api/cron/lipsync-completions",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/adfilm-video-completions",
+      "schedule": "* * * * *"
     }
   ]
 }
