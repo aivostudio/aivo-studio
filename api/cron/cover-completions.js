@@ -43,6 +43,15 @@ function isAuthorizedCron(req) {
   return { ok: true };
 }
 
+function getOrigin(req) {
+  const proto = clean(req.headers["x-forwarded-proto"]).split(",")[0] || "https";
+  const host =
+    clean(req.headers["x-forwarded-host"]).split(",")[0] ||
+    clean(req.headers.host);
+
+  return host ? `${proto}://${host}` : "https://aivo.tr";
+}
+
 function cleanSessionToken(raw) {
   let value = clean(raw);
   if (!value) return "";
@@ -161,12 +170,13 @@ async function claimReadyJob(sql, jobId, claimId) {
       and lower(app) = 'cover'
       and lower(coalesce(provider, '')) = 'fal'
       and deleted_at is null
+      and lower(coalesce(status::text, '')) = 'completed'
       and coalesce(meta->>'completion_push_sent_at', '') = ''
       and (
         coalesce(meta->>'completion_push_claimed_at', '') = ''
         or (meta->>'completion_push_claimed_at')::timestamptz < now() - (${CLAIM_TTL_MINUTES} * interval '1 minute')
       )
-    returning id::text as id, user_id, meta, outputs
+    returning id::text as id, user_id, status, meta, outputs
   `;
 
   return rows?.[0] || null;
@@ -228,20 +238,28 @@ function localizedCopy(lang) {
   };
 }
 
-async function sendCoverReadyPush(tokenRecord, row) {
+async function sendCoverReadyPush(req, tokenRecord, row) {
   getFirebaseApp();
   const copy = localizedCopy(tokenRecord.lang);
   const coverUrl = getCoverUrl(row);
+  const imageUrl = `${getOrigin(req)}/api/push/cover-icon`;
 
   return admin.messaging().send({
     token: tokenRecord.token,
     notification: {
       title: copy.title,
       body: copy.body,
+      imageUrl,
     },
     apns: {
       payload: {
-        aps: { sound: "default" },
+        aps: {
+          sound: "default",
+          "mutable-content": 1,
+        },
+      },
+      fcmOptions: {
+        imageUrl,
       },
     },
     data: {
@@ -249,6 +267,8 @@ async function sendCoverReadyPush(tokenRecord, row) {
       app: "cover",
       job_id: clean(row?.id),
       cover_url: coverUrl,
+      imageUrl,
+      image: imageUrl,
       click_action: "open_app",
     },
   });
@@ -304,7 +324,7 @@ module.exports = async function handler(req, res) {
         claimId = randomUUID();
 
         const claimed = await claimReadyJob(sql, row.id, claimId);
-        if (!claimed) {
+        if (!claimed || !getCoverUrl(claimed)) {
           summary.skipped += 1;
           continue;
         }
@@ -324,8 +344,9 @@ module.exports = async function handler(req, res) {
 
         for (const tokenRecord of tokens) {
           try {
-            const messageId = await sendCoverReadyPush(tokenRecord, {
+            const messageId = await sendCoverReadyPush(req, tokenRecord, {
               ...row,
+              status: claimed.status || row.status,
               meta: claimed.meta || row.meta || {},
               outputs: claimed.outputs || row.outputs || [],
             });
