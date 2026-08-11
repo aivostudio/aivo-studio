@@ -43,6 +43,10 @@
     {
       "path": "/api/cron/video-completions",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/lipsync-completions",
+      "schedule": "* * * * *"
     }
   ]
 }
