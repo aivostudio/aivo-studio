@@ -9,6 +9,7 @@ import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 import { putObject } from "../../_lib/r2.js";
+import { sendRadioAdReadyPush } from "../../_lib/radio-ad-push.js";
 import {
   getOwnedRadioProject,
   mediaPrefix,
@@ -262,6 +263,24 @@ export default async function handler(req, res) {
         pipelineVersion: PIPELINE_VERSION,
       },
     });
+
+    try {
+      const push = await sendRadioAdReadyPush(req, user, working);
+      console.log("[radio-ad/final/create] completion push", {
+        project_id: working.id,
+        final_id: final.id,
+        ok: push?.ok === true,
+        sent: Number(push?.sent || 0),
+        skipped: push?.skipped === true,
+        reason: push?.reason || null,
+      });
+    } catch (pushError) {
+      console.error("[radio-ad/final/create] completion push failed", {
+        project_id: working.id,
+        final_id: final.id,
+        error: clean(pushError?.message || pushError, 900),
+      });
+    }
 
     return sendJson(res, 200, {
       ok: true,
