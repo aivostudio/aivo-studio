@@ -207,20 +207,28 @@ function localizedCopy(lang) {
   };
 }
 
-async function sendMusicReadyPush(tokenRecord, row) {
+async function sendMusicReadyPush(req, tokenRecord, row) {
   getFirebaseApp();
   const copy = localizedCopy(tokenRecord.lang);
   const meta = row?.meta || {};
+  const imageUrl = `${getOrigin(req)}/api/push/music-icon`;
 
   return admin.messaging().send({
     token: tokenRecord.token,
     notification: {
       title: copy.title,
       body: copy.body,
+      imageUrl,
     },
     apns: {
       payload: {
-        aps: { sound: "default" },
+        aps: {
+          sound: "default",
+          "mutable-content": 1,
+        },
+      },
+      fcmOptions: {
+        imageUrl,
       },
     },
     data: {
@@ -228,6 +236,8 @@ async function sendMusicReadyPush(tokenRecord, row) {
       app: "music",
       job_id: clean(row?.id),
       internal_job_id: clean(meta.internal_job_id),
+      imageUrl,
+      image: imageUrl,
       click_action: "open_app",
     },
   });
@@ -303,7 +313,7 @@ module.exports = async function handler(req, res) {
 
         for (const tokenRecord of tokens) {
           try {
-            const messageId = await sendMusicReadyPush(tokenRecord, {
+            const messageId = await sendMusicReadyPush(req, tokenRecord, {
               ...row,
               meta: claimed.meta || row.meta || {},
             });
