@@ -337,7 +337,7 @@
         body:JSON.stringify({ projectId:id })
       });
       if (data.project) applyProject(data.project);
-      else if (data.audio) setReady(data.audio);
+      if (data.audio) setReady(data.audio);
       notify("Ses ön izlemesi hazır.", "success");
     }catch(error){
       console.error("[MOBILE RADIO AD] narration master", error);
