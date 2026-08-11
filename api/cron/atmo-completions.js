@@ -243,20 +243,28 @@ function localizedCopy(lang) {
   };
 }
 
-async function sendAtmoReadyPush(tokenRecord, row) {
+async function sendAtmoReadyPush(req, tokenRecord, row) {
   getFirebaseApp();
   const copy = localizedCopy(tokenRecord.lang);
   const videoUrl = pickVideoUrl(row);
+  const imageUrl = `${getOrigin(req)}/api/push/atmo-icon`;
 
   return admin.messaging().send({
     token: tokenRecord.token,
     notification: {
       title: copy.title,
       body: copy.body,
+      imageUrl,
     },
     apns: {
       payload: {
-        aps: { sound: "default" },
+        aps: {
+          sound: "default",
+          "mutable-content": 1,
+        },
+      },
+      fcmOptions: {
+        imageUrl,
       },
     },
     data: {
@@ -264,6 +272,8 @@ async function sendAtmoReadyPush(tokenRecord, row) {
       app: "atmo",
       job_id: clean(row?.id),
       video_url: videoUrl,
+      imageUrl,
+      image: imageUrl,
       click_action: "open_app",
     },
   });
@@ -366,7 +376,7 @@ module.exports = async function handler(req, res) {
 
         for (const tokenRecord of tokens) {
           try {
-            const messageId = await sendAtmoReadyPush(tokenRecord, {
+            const messageId = await sendAtmoReadyPush(req, tokenRecord, {
               ...row,
               meta: claimed.meta || row.meta || {},
               outputs: claimed.outputs || row.outputs || [],
