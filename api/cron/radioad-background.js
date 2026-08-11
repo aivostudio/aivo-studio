@@ -131,7 +131,9 @@ function isReadyForBackground(project) {
   if (!clean(project.id)) return false;
   if (!isRecentEnough(project)) return false;
   if (!isStaleEnoughForTakeover(project)) return false;
-  if (lower(project.status) !== "processing") return false;
+
+  const projectStatus = lower(project.status);
+  if (!["processing", "draft"].includes(projectStatus)) return false;
   if (clean(project?.final?.url)) return false;
 
   const finalStatus = lower(project?.finalGeneration?.status);
