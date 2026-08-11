@@ -25,13 +25,13 @@ module.exports = async function handler(req, res) {
             <stop offset="0.48" stop-color="#173f68"/>
             <stop offset="1" stop-color="#124b55"/>
           </linearGradient>
-          <linearGradient id="icon" x1="136" y1="126" x2="388" y2="388" gradientUnits="userSpaceOnUse">
+          <linearGradient id="icon" x1="128" y1="120" x2="390" y2="400" gradientUnits="userSpaceOnUse">
             <stop stop-color="#a78bfa"/>
             <stop offset="0.5" stop-color="#60a5fa"/>
             <stop offset="1" stop-color="#67e8f9"/>
           </linearGradient>
           <filter id="glow" x="-55%" y="-55%" width="210%" height="210%">
-            <feGaussianBlur stdDeviation="10" result="blur"/>
+            <feGaussianBlur stdDeviation="9" result="blur"/>
             <feMerge>
               <feMergeNode in="blur"/>
               <feMergeNode in="SourceGraphic"/>
@@ -39,14 +39,15 @@ module.exports = async function handler(req, res) {
           </filter>
         </defs>
 
-        <rect width="512" height="512" rx="128" fill="#090b17"/>
+        <rect width="512" height="512" fill="#090b17"/>
         <rect x="20" y="20" width="472" height="472" rx="112" fill="url(#bg)" stroke="#ffffff" stroke-opacity="0.15" stroke-width="4"/>
         <circle cx="150" cy="116" r="112" fill="#ffffff" fill-opacity="0.05"/>
 
         <g fill="none" stroke="url(#icon)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
-          <path d="M142 310c0-44 35-80 80-80 10-42 48-72 92-72 54 0 98 44 98 98 0 5 0 10-1 14 28 9 49 36 49 67 0 39-32 71-71 71H194c-46 0-84-37-84-83 0-6 1-11 2-17 8 1 19 2 30 2z"/>
-          <path d="M198 422h116"/>
-          <path d="M232 454h48"/>
+          <path d="M166 326H356C397 326 430 294 430 254C430 220 407 192 375 184C369 136 328 100 279 100C235 100 196 128 182 169C175 167 167 166 159 166C114 166 78 201 78 245C78 290 113 326 166 326Z"/>
+          <path d="M174 374H230"/>
+          <path d="M256 374H338"/>
+          <path d="M206 414H306"/>
         </g>
       </svg>
     `;
