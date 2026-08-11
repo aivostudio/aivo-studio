@@ -14,8 +14,8 @@ const kvGetJson = kv.kvGetJson;
 const PROJECT_MATCH = "adfilm:project:*";
 const SCAN_CURSOR_KEY = "push:cron:adfilm-video:scan-cursor";
 const MAX_PROJECTS_PER_RUN = 3;
-const MAX_SCAN_PAGES = 4;
-const SCAN_COUNT = 100;
+const MAX_SCAN_PAGES = 40;
+const SCAN_COUNT = 500;
 const CLAIM_TTL_SECONDS = 6 * 60;
 const SENT_TTL_SECONDS = 90 * 24 * 60 * 60;
 const AD_FILM_PUSH_START_AT = "2026-08-11T13:28:00.000Z";
@@ -192,21 +192,22 @@ function shouldTrackProject(project) {
 function normalizeScanResult(result) {
   if (Array.isArray(result)) {
     return {
-      cursor: Number(result[0]) || 0,
+      cursor: clean(result[0]) || "0",
       keys: Array.isArray(result[1]) ? result[1].map(clean).filter(Boolean) : [],
     };
   }
 
   if (result && typeof result === "object") {
+    const rawCursor = result.cursor ?? result[0];
     return {
-      cursor: Number(result.cursor ?? result[0]) || 0,
+      cursor: clean(rawCursor) || "0",
       keys: Array.isArray(result.keys ?? result[1])
         ? (result.keys ?? result[1]).map(clean).filter(Boolean)
         : [],
     };
   }
 
-  return { cursor: 0, keys: [] };
+  return { cursor: "0", keys: [] };
 }
 
 async function readProjects(redis, keys) {
@@ -233,7 +234,7 @@ async function readProjects(redis, keys) {
 }
 
 async function listCandidateProjects(redis) {
-  let cursor = Number(await redis.get(SCAN_CURSOR_KEY).catch(() => 0)) || 0;
+  let cursor = clean(await redis.get(SCAN_CURSOR_KEY).catch(() => "0")) || "0";
   const candidates = [];
 
   for (let page = 0; page < MAX_SCAN_PAGES; page += 1) {
@@ -252,10 +253,10 @@ async function listCandidateProjects(redis) {
       if (candidates.length >= MAX_PROJECTS_PER_RUN) break;
     }
 
-    if (candidates.length >= MAX_PROJECTS_PER_RUN || cursor === 0) break;
+    if (candidates.length >= MAX_PROJECTS_PER_RUN || cursor === "0") break;
   }
 
-  await redis.set(SCAN_CURSOR_KEY, String(cursor), { ex: 24 * 60 * 60 }).catch(() => null);
+  await redis.set(SCAN_CURSOR_KEY, cursor, { ex: 24 * 60 * 60 }).catch(() => null);
   return candidates;
 }
 
