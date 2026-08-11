@@ -184,3 +184,8 @@
   .mobile-adfilm-quality-button{min-height:54px;font-size:14px}
   .mobile-adfilm-quality-credit{min-height:54px;font-size:14px}
 }
+
+/* iOS AdFilm / Radio step number cleanup */
+.mobile-adfilm-step{
+  display:none !important;
+}
