@@ -94,44 +94,6 @@
     } catch (_) {}
   }
 
-  function confirmAdFilmDelete(){
-    return new Promise(function(resolve){
-      const previous = document.getElementById("aivoIosAdFilmDeleteConfirm");
-      if (previous) previous.remove();
-
-      const english = String(document.documentElement.lang || "").toLowerCase().startsWith("en");
-      const sheet = document.createElement("div");
-      sheet.id = "aivoIosAdFilmDeleteConfirm";
-      sheet.setAttribute("role", "dialog");
-      sheet.setAttribute("aria-modal", "true");
-      sheet.innerHTML = `
-        <div data-aivo-ios-adfilm-delete-cancel style="position:fixed;inset:0;z-index:10020;background:rgba(0,0,0,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);"></div>
-        <div style="position:fixed;left:16px;right:16px;bottom:92px;z-index:10021;border-radius:24px;padding:18px;background:linear-gradient(135deg,rgba(24,26,42,.99),rgba(17,19,32,.99));border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 70px rgba(0,0,0,.48);">
-          <strong style="display:block;color:#fff;font-size:18px;font-weight:900;">${english ? "Delete ad film?" : "Reklam filmi silinsin mi?"}</strong>
-          <span style="display:block;margin-top:7px;color:rgba(255,255,255,.68);font-size:13px;line-height:1.45;">${english ? "This action cannot be undone." : "Bu işlem geri alınamaz."}</span>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
-            <button type="button" data-aivo-ios-adfilm-delete-cancel style="min-height:46px;border-radius:15px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font-weight:900;">${english ? "Cancel" : "Vazgeç"}</button>
-            <button type="button" data-aivo-ios-adfilm-delete-confirm style="min-height:46px;border-radius:15px;border:0;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-weight:900;">${english ? "Delete" : "Sil"}</button>
-          </div>
-        </div>`;
-      document.body.appendChild(sheet);
-
-      let settled = false;
-      function finish(value){
-        if (settled) return;
-        settled = true;
-        try { sheet.remove(); } catch (_) {}
-        resolve(value);
-      }
-
-      sheet.querySelectorAll("[data-aivo-ios-adfilm-delete-cancel]").forEach(function(node){
-        node.addEventListener("click", function(){ finish(false); });
-      });
-      const confirmButton = sheet.querySelector("[data-aivo-ios-adfilm-delete-confirm]");
-      if (confirmButton) confirmButton.addEventListener("click", function(){ finish(true); });
-    });
-  }
-
   async function handleIosAdFilmDelete(event){
     const button = event.target && event.target.closest && event.target.closest('[data-mobile-adfilm-output-action="delete"]');
     if (!button) return;
@@ -146,9 +108,6 @@
     event.preventDefault();
     event.stopPropagation();
     if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
-
-    const confirmed = await confirmAdFilmDelete();
-    if (!confirmed) return;
 
     button.disabled = true;
     card.classList.add("is-deleting");
