@@ -113,15 +113,20 @@
     card.classList.add("is-deleting");
 
     try {
-      const response = await nativeFetch(
-        "/api/ad-film/seedance/result?projectId=" + encodeURIComponent(projectId) + "&outputId=" + encodeURIComponent(outputId),
-        {
-          method: "DELETE",
-          credentials: "include",
-          cache: "no-store",
-          headers: { accept: "application/json" }
-        }
-      );
+      const response = await nativeFetch("/api/ad-film/seedance/result", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({
+          projectId: projectId,
+          outputId: outputId,
+          action: "delete-output"
+        })
+      });
       const data = await response.json().catch(function(){ return {}; });
       if (!response.ok) throw new Error(clean(data && data.error) || "delete_failed");
 
