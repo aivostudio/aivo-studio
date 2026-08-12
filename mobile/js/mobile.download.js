@@ -184,6 +184,122 @@
     adFilmNarrationProgressObserver.observe(document.documentElement, { childList:true, subtree:true });
   }
 
+  function ensureAdFilmApprovalPulseStyle(){
+    if (document.getElementById("aivoIosAdFilmApprovalPulseStyle")) return;
+    const style = document.createElement("style");
+    style.id = "aivoIosAdFilmApprovalPulseStyle";
+    style.textContent = "@keyframes aivoIosAdFilmApprovalPulse{0%,100%{transform:scale(1);opacity:.76;box-shadow:0 0 0 0 rgba(52,211,153,.34),0 0 16px rgba(52,211,153,.24)}50%{transform:scale(1.035);opacity:1;box-shadow:0 0 0 9px rgba(52,211,153,0),0 0 34px rgba(52,211,153,.72)}}.mobile-adfilm-voice-approve.aivo-ios-approval-pulse{animation:aivoIosAdFilmApprovalPulse .58s ease-in-out infinite!important;will-change:transform,opacity,box-shadow}";
+    document.head.appendChild(style);
+  }
+
+  function adFilmNarrationState(root){
+    try {
+      const api = window.AIVOMobileAdFilmNarration;
+      if (api && typeof api.state === "function") return api.state();
+    } catch (_) {}
+
+    const code = String(root && root.dataset && root.dataset.adfilmNarrationGuardCode || "").trim();
+    const ready = String(root && root.dataset && root.dataset.adfilmNarrationGuard || "").trim() === "ready";
+    return { ready: ready, code: code, reason: "" };
+  }
+
+  function adFilmNarrationMessage(state){
+    const code = String(state && state.code || "").trim();
+    if (code === "mastering") return "Konuşma sesi hazırlanıyor. Tamamlanmasını bekle.";
+    if (code === "changed") return "Süre veya metin değişti. Konuşma sesini yeniden üret.";
+    if (code === "approval") return "Önce sesi onayla.";
+    return "Önce konuşma sesini üret.";
+  }
+
+  function notifyAdFilmNarration(message){
+    try {
+      if (window.mobileToast && typeof window.mobileToast.warning === "function") {
+        window.mobileToast.warning(message, { duration: 4200 });
+        return;
+      }
+      if (window.toast && typeof window.toast.warning === "function") {
+        window.toast.warning({ message: message, duration: 4200 });
+        return;
+      }
+      if (typeof window.showToast === "function") window.showToast(message, "warning");
+    } catch (_) {}
+  }
+
+  function adFilmVideoNodes(){
+    const root = document.getElementById("mobileAdFilmSection");
+    const view = root && root.querySelector('[data-mobile-adfilm-view="video"]');
+    const preview = view && view.querySelector("[data-mobile-adfilm-voice-preview]");
+    const approveButton = preview && preview.querySelector(".mobile-adfilm-voice-approve");
+    const filmButton = view && view.querySelector("[data-mobile-adfilm-action] .mobile-adfilm-create-button");
+    return { root: root, view: view, preview: preview, approveButton: approveButton, filmButton: filmButton };
+  }
+
+  function syncAdFilmApprovalUX(){
+    const nodes = adFilmVideoNodes();
+    if (!nodes.root || !nodes.preview || !nodes.approveButton || !nodes.filmButton) return false;
+
+    ensureAdFilmApprovalPulseStyle();
+    const state = adFilmNarrationState(nodes.root);
+    const producing = nodes.filmButton.classList.contains("is-producing") || nodes.filmButton.getAttribute("aria-busy") === "true";
+
+    if (!state.ready && !producing && nodes.filmButton.disabled) {
+      nodes.filmButton.disabled = false;
+    }
+
+    const shouldPulse = state.code === "approval" && !nodes.approveButton.disabled && !nodes.approveButton.classList.contains("is-approved");
+    nodes.approveButton.classList.toggle("aivo-ios-approval-pulse", shouldPulse);
+    return true;
+  }
+
+  let adFilmApprovalObserver = null;
+
+  function ensureAdFilmApprovalUX(){
+    const nodes = adFilmVideoNodes();
+    if (!nodes.root || !nodes.preview || !nodes.approveButton || !nodes.filmButton) return false;
+
+    syncAdFilmApprovalUX();
+    if (adFilmApprovalObserver) return true;
+
+    adFilmApprovalObserver = new MutationObserver(function(){
+      syncAdFilmApprovalUX();
+    });
+    adFilmApprovalObserver.observe(nodes.preview, {
+      attributes:true,
+      attributeFilter:["data-state"],
+      childList:true,
+      subtree:true
+    });
+    adFilmApprovalObserver.observe(nodes.approveButton, {
+      attributes:true,
+      attributeFilter:["disabled","class","aria-busy"]
+    });
+    adFilmApprovalObserver.observe(nodes.filmButton, {
+      attributes:true,
+      attributeFilter:["disabled","class","aria-busy"]
+    });
+    return true;
+  }
+
+  document.addEventListener("click", function(event){
+    const nodes = adFilmVideoNodes();
+    const button = event.target && event.target.closest && event.target.closest("[data-mobile-adfilm-view=\"video\"] [data-mobile-adfilm-action] .mobile-adfilm-create-button");
+    if (!button || !nodes.root || button !== nodes.filmButton) return;
+
+    const state = adFilmNarrationState(nodes.root);
+    if (state.ready) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+    notifyAdFilmNarration(adFilmNarrationMessage(state));
+    try {
+      nodes.preview.scrollIntoView({ behavior:"smooth", block:"center" });
+    } catch (_) {
+      try { nodes.preview.scrollIntoView(); } catch (__){ }
+    }
+  }, true);
+
   document.addEventListener("click", function(event){
     const button = event.target && event.target.closest && event.target.closest("[data-mobile-cartoon-character-act]");
     if (!button) return;
@@ -211,8 +327,16 @@
     }
   }, true);
 
-  document.addEventListener("aivo:adfilm-project-sync", ensureAdFilmNarrationProgress);
+  document.addEventListener("aivo:adfilm-project-sync", function(){
+    ensureAdFilmNarrationProgress();
+    ensureAdFilmApprovalUX();
+    setTimeout(syncAdFilmApprovalUX, 0);
+  });
+
   ensureAdFilmNarrationProgress();
+  ensureAdFilmApprovalUX();
+  setTimeout(syncAdFilmApprovalUX, 0);
+  setTimeout(syncAdFilmApprovalUX, 350);
 
   window.AivoMobileDownload = {
     download: download,
