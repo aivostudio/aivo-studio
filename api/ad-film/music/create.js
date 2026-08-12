@@ -10,8 +10,10 @@ import {
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
-const PRIMARY_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
-const FALLBACK_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
+const DESKTOP_PRIMARY_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
+const DESKTOP_FALLBACK_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
+const IOS_PRIMARY_MODEL = "fal-ai/stable-audio-3/small/music/text-to-audio";
+const IOS_FALLBACK_MODEL = "fal-ai/stable-audio-3/medium/text-to-audio";
 const QUALITY_VERSION = 4;
 const PROFILE_VERSION = 2;
 const OUTPUT_FORMAT = "mp3";
@@ -54,12 +56,12 @@ function isMobileOrIosClient(req){
   const mobileHint=clean(req?.headers?.["sec-ch-ua-mobile"],40).toLowerCase();
   return mobileHint.includes("?1")||/iphone|ipad|ipod|android|mobile|capacitor|\bwv\b/.test(ua);
 }
-function profileSignature(prompt){
+function profileSignature(prompt,primaryModel,fallbackModel){
   return crypto.createHash("sha256").update(JSON.stringify({
     qualityVersion:QUALITY_VERSION,
     profileVersion:PROFILE_VERSION,
-    primaryModel:PRIMARY_MODEL,
-    fallbackModel:FALLBACK_MODEL,
+    primaryModel,
+    fallbackModel,
     outputFormat:OUTPUT_FORMAT,
     outputBitrate:OUTPUT_BITRATE,
     numInferenceSteps:NUM_INFERENCE_STEPS,
@@ -97,6 +99,8 @@ export default async function handler(req,res){
     const projectId=clean(req.body?.projectId,120);if(!projectId)return sendJson(res,400,{ok:false,error:"missing_project_id"});
     const project=await getOwnedProject(user,projectId);if(!project)return sendJson(res,404,{ok:false,error:"project_not_found"});
     const mobileClient=isMobileOrIosClient(req);
+    const primaryModel=mobileClient?IOS_PRIMARY_MODEL:DESKTOP_PRIMARY_MODEL;
+    const fallbackModel=mobileClient?IOS_FALLBACK_MODEL:DESKTOP_FALLBACK_MODEL;
     const currentMusic=project.music||{};
     const requestedStyle=clean(req.body?.musicStyle,40)||currentMusic.style||"auto";
     const requestedEnergy=clean(req.body?.musicEnergy,40)||currentMusic.energy||"balanced";
@@ -117,7 +121,7 @@ export default async function handler(req,res){
       productName:project.brief?.productName,brandName:project.brief?.brandName,description:project.brief?.description,targetAudience:project.brief?.targetAudience,cta:project.brief?.cta,
       voiceStyle:project.narration?.voiceStyle,visualStyle:project.sceneStyle,duration:requestedDuration,musicStyle:requestedStyle,musicEnergy:requestedEnergy,voiceEnabled:project.narration?.enabled!==false
     });
-    const signature=profileSignature(prompt);
+    const signature=profileSignature(prompt,primaryModel,fallbackModel);
 
     if(!mobileClient&&reusableAudio(currentMusic.audio,signature,requestedDuration)){
       const reused=await saveProject(user,{...project,music:{...music,audio:currentMusic.audio}});
@@ -167,9 +171,9 @@ export default async function handler(req,res){
       bitrate:OUTPUT_BITRATE
     };
 
-    let attempt=await submit(key,PRIMARY_MODEL,payload);
+    let attempt=await submit(key,primaryModel,payload);
     let fallbackUsed=false;
-    if(!attempt.response.ok){fallbackUsed=true;attempt=await submit(key,FALLBACK_MODEL,payload)}
+    if(!attempt.response.ok){fallbackUsed=true;attempt=await submit(key,fallbackModel,payload)}
 
     const data=attempt.data;
     if(!attempt.response.ok){
