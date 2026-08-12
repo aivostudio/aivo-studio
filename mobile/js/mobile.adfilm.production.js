@@ -572,8 +572,8 @@
 
     const body = {
       projectId: id,
-      musicStyle: fieldValue("#mobileAdFilmMusicStyle") || "auto",
-      musicEnergy: fieldValue("#mobileAdFilmMusicEnergy") || "balanced",
+      musicStyle: "auto",
+      musicEnergy: "balanced",
       duration: Number(fieldValue("#mobileAdFilmDuration") || 10)
     };
     let result = await request("/api/ad-film/music/create", { method: "POST", body: JSON.stringify(body) }, 2);
