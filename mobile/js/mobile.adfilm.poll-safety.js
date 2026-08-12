@@ -106,6 +106,59 @@
     });
   }
 
+  function prepareAdFilmPreviews(scope){
+    const host = scope && scope.querySelectorAll ? scope : document;
+    host.querySelectorAll(".mobile-adfilm-production-card").forEach(function(card){
+      if (!card || card.classList.contains("is-loading")) return;
+      if (card.dataset.adfilmPreviewState === "loading" || card.dataset.adfilmPreviewState === "ready") return;
+
+      const video = card.querySelector("video");
+      const projectId = clean(card.getAttribute("data-mobile-adfilm-project")) || currentProjectId();
+      const outputId = clean(card.getAttribute("data-mobile-adfilm-output"));
+      const finalUrl = clean(video && (video.dataset.finalUrl || video.currentSrc || video.src));
+      if (!video || !projectId || !outputId || !finalUrl) return;
+
+      video.dataset.finalUrl = finalUrl;
+      card.dataset.adfilmPreviewState = "loading";
+
+      nativeFetch("/api/ad-film/seedance/preview", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({ projectId: projectId, outputId: outputId })
+      }).then(function(response){
+        return response.json().catch(function(){ return {}; }).then(function(data){
+          if (!response.ok || !clean(data && data.preview_url)) {
+            throw new Error(clean(data && (data.message || data.error)) || "preview_failed");
+          }
+          return data;
+        });
+      }).then(function(data){
+        const previewUrl = clean(data.preview_url);
+        if (!previewUrl || !video.isConnected) return;
+        video.dataset.previewUrl = previewUrl;
+        card.dataset.adfilmPreviewState = "ready";
+        if (video.paused) {
+          const currentTime = Number(video.currentTime || 0);
+          video.src = previewUrl;
+          video.load();
+          if (currentTime > 0) {
+            video.addEventListener("loadedmetadata", function restorePreviewTime(){
+              try { video.currentTime = currentTime; } catch (_) {}
+            }, { once: true });
+          }
+        }
+      }).catch(function(error){
+        card.dataset.adfilmPreviewState = "failed";
+        console.warn("[MOBILE ADFILM] preview prepare failed", error);
+      });
+    });
+  }
+
   function keepAdFilmLibraryOutOfCartoon(){
     const cartoonMount = document.getElementById("mobileCartoonMount");
     const adFilmMount = document.getElementById("mobileAdFilmMount");
@@ -122,7 +175,7 @@
 
     const card = button.closest(".mobile-adfilm-production-card");
     const video = card && card.querySelector("video");
-    const videoUrl = clean(video && (video.currentSrc || video.src));
+    const videoUrl = clean(video && (video.dataset.finalUrl || video.currentSrc || video.src));
     if (!card || !videoUrl) return;
 
     event.preventDefault();
@@ -145,6 +198,28 @@
       console.warn("[MOBILE ADFILM] share failed", error);
       notify("error", "Paylaşım açılamadı.");
     }
+  }
+
+  function preserveFinalDownloadSource(event){
+    const button = event.target && event.target.closest && event.target.closest('[data-mobile-adfilm-output-action="download"]');
+    if (!button) return;
+    const card = button.closest(".mobile-adfilm-production-card");
+    const video = card && card.querySelector("video");
+    const finalUrl = clean(video && video.dataset.finalUrl);
+    const previewUrl = clean(video && video.dataset.previewUrl);
+    if (!video || !finalUrl || !previewUrl || finalUrl === previewUrl) return;
+
+    try {
+      video.src = finalUrl;
+    } catch (_) { return; }
+
+    setTimeout(function(){
+      try {
+        if (!video.isConnected || !previewUrl) return;
+        video.src = previewUrl;
+        video.load();
+      } catch (_) {}
+    }, 0);
   }
 
   async function handleIosAdFilmDelete(event){
@@ -366,15 +441,20 @@
   };
 
   document.addEventListener("click", handleAdFilmShare, true);
+  document.addEventListener("click", preserveFinalDownloadSource, true);
   document.addEventListener("click", handleIosAdFilmDelete, true);
   normalizeAdFilmShareButtons(document);
+  prepareAdFilmPreviews(document);
   keepAdFilmLibraryOutOfCartoon();
 
   if (document.body) {
     const shareObserver = new MutationObserver(function(records){
       records.forEach(function(record){
         Array.from(record.addedNodes || []).forEach(function(node){
-          if (node && node.nodeType === 1) normalizeAdFilmShareButtons(node);
+          if (node && node.nodeType === 1) {
+            normalizeAdFilmShareButtons(node);
+            prepareAdFilmPreviews(node);
+          }
         });
       });
     });
@@ -392,10 +472,12 @@
   document.addEventListener("visibilitychange", function(){
     if (document.visibilityState !== "hidden") {
       setTimeout(resumeCompletionCheck, 80);
+      setTimeout(function(){ prepareAdFilmPreviews(document); }, 180);
     }
   });
 
   window.addEventListener("pageshow", function(){
     setTimeout(resumeCompletionCheck, 120);
+    setTimeout(function(){ prepareAdFilmPreviews(document); }, 220);
   });
 })();
