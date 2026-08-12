@@ -282,10 +282,13 @@
   }
 
   function outputUrl(item){ return clean(item && (item.videoUrl || item.video_url || item.url)); }
+  function previewUrl(item){ return clean(item && (item.previewUrl || item.preview_url)); }
   function posterUrl(item){ return clean(item && (item.posterUrl || item.poster_url)); }
 
   function readyCard(item, index){
-    const video = outputUrl(item);
+    const finalVideo = outputUrl(item);
+    const preview = previewUrl(item);
+    const video = preview || finalVideo;
     const poster = posterUrl(item);
     const title = clean(item && (item.title || item.projectTitle)) || outputTitle();
     const meta = clean(item && (item.completedAt || item.finalizedAt || item.createdAt));
@@ -294,7 +297,7 @@
     return `
       <article class="mobile-adfilm-production-card" data-mobile-adfilm-output="${esc(outputId)}" data-mobile-adfilm-project="${esc(itemProjectId)}">
         <div class="mobile-adfilm-production-media">
-          <video src="${esc(video)}"${poster ? ` poster="${esc(poster)}"` : ""} playsinline webkit-playsinline preload="metadata"></video>
+          <video src="${esc(video)}" data-final-url="${esc(finalVideo)}"${preview ? ` data-preview-url="${esc(preview)}"` : ""}${poster ? ` poster="${esc(poster)}"` : ""} playsinline webkit-playsinline preload="metadata"></video>
           <div class="mobile-adfilm-production-actions">
             <button type="button" data-mobile-adfilm-output-action="download" aria-label="Videoyu indir" title="Videoyu indir">↓</button>
             <button type="button" data-mobile-adfilm-output-action="open" aria-label="Videoyu aç" title="Videoyu aç">↗</button>
@@ -322,6 +325,7 @@
         id: source.generation.outputId || source.generation.requestId || "legacy-output",
         version: source.generation.version || 1,
         videoUrl: source.generation.videoUrl,
+        previewUrl: source.generation.previewUrl || source.generation.preview_url || "",
         posterUrl: source.generation.posterUrl || "",
         duration: source.generation.input && source.generation.input.duration || source.output && source.output.duration || "",
         aspectRatio: source.generation.input && source.generation.input.aspectRatio || source.output && source.output.aspectRatio || "",
@@ -392,16 +396,20 @@
       }
 
       libraryItems = [];
+      const expectedHydratedCount = Math.min(data.projects.length, 20);
+      const hydratedProjects = Array.isArray(data.hydratedProjects)
+        ? data.hydratedProjects.slice(0, 20)
+        : null;
 
-      if (Array.isArray(data.hydratedProjects) && data.hydratedProjects.length) {
+      if (hydratedProjects && hydratedProjects.length === expectedHydratedCount) {
         const summariesById = new Map();
 
-        data.projects.forEach(function(summary){
+        data.projects.slice(0, 20).forEach(function(summary){
           const pid = clean(summary && (summary.id || summary.projectId));
           if (pid) summariesById.set(pid, summary);
         });
 
-        data.hydratedProjects.slice(0, 20).forEach(function(project){
+        hydratedProjects.forEach(function(project){
           const pid = clean(project && project.id);
           if (!pid) return;
 
@@ -1038,6 +1046,7 @@
       const type = action.getAttribute("data-mobile-adfilm-output-action");
       const item = outputFromCard(card);
       const videoUrl = video.currentSrc || video.src;
+      const finalVideoUrl = outputUrl(item) || clean(video.dataset.finalUrl) || videoUrl;
 
       if (type === "play") {
         if (video.paused) {
@@ -1064,13 +1073,13 @@
       }
       if (type === "open") {
         try {
-          const opened = window.open(videoUrl, "_blank", "noopener,noreferrer");
-          if (!opened) location.href = videoUrl;
-        } catch (_) { location.href = videoUrl; }
+          const opened = window.open(finalVideoUrl, "_blank", "noopener,noreferrer");
+          if (!opened) location.href = finalVideoUrl;
+        } catch (_) { location.href = finalVideoUrl; }
         return;
       }
       if (type === "download") {
-        let directUrl = String(videoUrl || "").trim();
+        let directUrl = String(finalVideoUrl || "").trim();
         const filename = "aivo-reklam-filmi.mp4";
 
         directUrl = directUrl.includes("#")
@@ -1135,16 +1144,16 @@
       }
       if (type === "share") {
         try {
-          if (navigator.share) await navigator.share({ title: "AIVO Reklam Filmi", url: videoUrl });
+          if (navigator.share) await navigator.share({ title: "AIVO Reklam Filmi", url: finalVideoUrl });
           else if (navigator.clipboard) {
-            await navigator.clipboard.writeText(videoUrl);
+            await navigator.clipboard.writeText(finalVideoUrl);
             toast("success", "Video bağlantısı kopyalandı.", 2400);
           }
         } catch (_) {}
         return;
       }
       if (type === "report") {
-        openReportSheet(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")), projectId: clean(card.getAttribute("data-mobile-adfilm-project")), title: outputTitle() }, videoUrl);
+        openReportSheet(item || { id: clean(card.getAttribute("data-mobile-adfilm-output")), projectId: clean(card.getAttribute("data-mobile-adfilm-project")), title: outputTitle() }, finalVideoUrl);
         return;
       }
       if (type === "delete") {
