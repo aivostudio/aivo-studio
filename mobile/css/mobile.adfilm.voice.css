@@ -406,6 +406,13 @@
   clip-path:polygon(18% 8%,88% 50%,18% 92%);
 }
 
+.mobile-adfilm-voice-play.is-playing::before{
+  width:14px;
+  height:15px;
+  background:linear-gradient(to right,#fff 0 35%,transparent 35% 65%,#fff 65% 100%);
+  clip-path:none;
+}
+
 .mobile-adfilm-voice-player-main{
   min-width:0;
 }
