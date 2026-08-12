@@ -10,6 +10,7 @@ import { Readable } from "stream";
 import { pipeline } from "stream/promises";
 import ffmpegPath from "ffmpeg-static";
 import sharp from "sharp";
+import { createAdFilmFinalizePreview } from "../../_lib/ad-film-finalize-preview.js";
 import { putObject } from "../../_lib/r2.js";
 import {
   getOwnedProject,
@@ -139,6 +140,7 @@ function generationTarget(project) {
     version: Number.parseInt(generation.version, 10) || 1,
     sourceVideoUrl: source,
     videoUrl: source,
+    previewUrl: clean(generation.previewUrl, 4000) || null,
     posterUrl: clean(generation.posterUrl, 4000) || null,
     createdAt: generation.startedAt || project.updatedAt,
     completedAt: generation.completedAt || project.updatedAt,
@@ -360,6 +362,7 @@ export default async function handler(req, res) {
         projectId,
         outputId: target.id,
         video_url: target.videoUrl,
+        preview_url: target.previewUrl || null,
         poster_url: target.posterUrl || null,
         logo_applied: Boolean(logoUrl),
         narration_applied: Boolean(narrationUrl),
@@ -524,6 +527,19 @@ export default async function handler(req, res) {
       clearTimeout(uploadTimer);
     }
 
+    let previewUrl = "";
+    try {
+      previewUrl = await createAdFilmFinalizePreview({
+        inputPath: outputVideo,
+        user,
+        projectId,
+        outputId,
+        version,
+      });
+    } catch (previewError) {
+      console.warn("[ad-film/seedance/finalize-v2/preview]", clean(previewError?.message || previewError, 600));
+    }
+
     let posterUrl = "";
     if (posterReady) {
       const posterController = new AbortController();
@@ -553,6 +569,7 @@ export default async function handler(req, res) {
       version,
       sourceVideoUrl,
       videoUrl: finalUrl,
+      previewUrl: previewUrl || null,
       posterUrl: posterUrl || null,
       logoUrl: logoUrl || null,
       logoApplied: Boolean(logoUrl),
@@ -594,6 +611,7 @@ export default async function handler(req, res) {
         outputId: finalOutput.id,
         sourceVideoUrl,
         videoUrl: finalUrl,
+        previewUrl: previewUrl || null,
         posterUrl: posterUrl || null,
         logoUrl: logoUrl || null,
         logoApplied: Boolean(logoUrl),
@@ -625,6 +643,7 @@ export default async function handler(req, res) {
       projectId,
       outputId: finalOutput.id,
       video_url: finalUrl,
+      preview_url: previewUrl || null,
       poster_url: posterUrl || null,
       source_video_url: sourceVideoUrl,
       logo_url: logoUrl || null,
