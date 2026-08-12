@@ -17,6 +17,7 @@
   const preview = view.querySelector("[data-mobile-radio-preview]");
   const narrationCreateButton = preview && preview.querySelector(".mobile-adfilm-voice-create");
   const narrationStatus = preview && preview.querySelector(".mobile-adfilm-voice-preview-status");
+  const narrationProgressLine = preview && preview.querySelector(".mobile-adfilm-voice-preview-line");
 
   const CREDIT_PRICES = {
     mp3: { 10:10, 15:12, 30:20, 45:28, 60:36 },
@@ -24,6 +25,7 @@
   };
 
   let durationTouched = false;
+  let narrationProgressRaf = 0;
 
   function clean(value){
     return String(value == null ? "" : value).trim();
@@ -107,6 +109,80 @@
     }
   }
 
+  function narrationAudio(){
+    if (!preview) return null;
+    return preview.querySelector("[data-mobile-radio-narration-audio]");
+  }
+
+  function narrationProgressFill(){
+    if (!narrationProgressLine) return null;
+    let fill = narrationProgressLine.querySelector("[data-ios-radio-progress-fill]");
+    if (fill) return fill;
+
+    narrationProgressLine.style.position = "relative";
+    fill = document.createElement("span");
+    fill.setAttribute("data-ios-radio-progress-fill", "");
+    fill.setAttribute("aria-hidden", "true");
+    fill.style.cssText = "position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:inherit;background:linear-gradient(90deg,#8b5cf6,#ec4899);pointer-events:none;transition:width .08s linear;";
+    narrationProgressLine.appendChild(fill);
+    return fill;
+  }
+
+  function stopNarrationProgressRaf(){
+    if (!narrationProgressRaf) return;
+    cancelAnimationFrame(narrationProgressRaf);
+    narrationProgressRaf = 0;
+  }
+
+  function syncNarrationProgress(){
+    const audio = narrationAudio();
+    const fill = narrationProgressFill();
+    if (!audio || !fill) return;
+
+    const total = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    const current = Number.isFinite(audio.currentTime) && audio.currentTime > 0 ? audio.currentTime : 0;
+    const percent = total ? Math.max(0, Math.min(100, current / total * 100)) : 0;
+    fill.style.width = percent + "%";
+  }
+
+  function runNarrationProgressRaf(){
+    stopNarrationProgressRaf();
+
+    function frame(){
+      const audio = narrationAudio();
+      syncNarrationProgress();
+      if (audio && !audio.paused && !audio.ended) {
+        narrationProgressRaf = requestAnimationFrame(frame);
+      } else {
+        narrationProgressRaf = 0;
+      }
+    }
+
+    narrationProgressRaf = requestAnimationFrame(frame);
+  }
+
+  function bindNarrationProgress(){
+    const audio = narrationAudio();
+    if (!audio || audio.__aivoIosRadioProgressBound) return;
+    audio.__aivoIosRadioProgressBound = true;
+
+    narrationProgressFill();
+    audio.addEventListener("loadedmetadata", syncNarrationProgress);
+    audio.addEventListener("durationchange", syncNarrationProgress);
+    audio.addEventListener("timeupdate", syncNarrationProgress);
+    audio.addEventListener("play", runNarrationProgressRaf);
+    audio.addEventListener("pause", function(){
+      stopNarrationProgressRaf();
+      syncNarrationProgress();
+    });
+    audio.addEventListener("ended", function(){
+      stopNarrationProgressRaf();
+      syncNarrationProgress();
+    });
+
+    syncNarrationProgress();
+  }
+
   if (durationSelect){
     durationSelect.value = "10";
     durationSelect.addEventListener("change", function(){
@@ -128,10 +204,18 @@
     musicModeSelect.addEventListener("change", syncProductionPrice);
   }
 
-  document.addEventListener("aivo:mobile-radioad-project-sync", keepInitialDurationAtTen);
+  document.addEventListener("aivo:mobile-radioad-project-sync", function(){
+    keepInitialDurationAtTen();
+    bindNarrationProgress();
+    syncNarrationProgress();
+  });
 
   if (preview){
-    const narrationObserver = new MutationObserver(syncNarrationLoadingLabel);
+    const narrationObserver = new MutationObserver(function(){
+      syncNarrationLoadingLabel();
+      bindNarrationProgress();
+      syncNarrationProgress();
+    });
     narrationObserver.observe(preview, {
       attributes:true,
       attributeFilter:["data-state"],
@@ -143,4 +227,6 @@
 
   keepInitialDurationAtTen();
   syncNarrationLoadingLabel();
+  bindNarrationProgress();
+  syncNarrationProgress();
 })();
