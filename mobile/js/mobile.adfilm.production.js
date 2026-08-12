@@ -907,7 +907,7 @@
       } catch (error) {
         console.error("[MOBILE ADFILM][REPORT]", error);
         submit.disabled = false;
-        submit.textContent = "Raporu gönder";
+        submit.textContent = "Gönderiliyor...";
         toast("error", "Rapor gönderilemedi. Lütfen tekrar dene.", 3600);
       }
     });
@@ -1139,6 +1139,7 @@
   window.AIVOMobileAdFilmProduction = {
     start: start,
     hydrate: hydrate,
+    finish: function(source){ complete(source || currentProject()); },
     showLibrary: showLibrary,
     showEditor: showEditor,
     active: function(){ return busy; },
