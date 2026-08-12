@@ -8,7 +8,9 @@
 
   const PROJECT_KEY = "aivo_adfilm_active_project_id_v2";
   const LEGACY_PROJECT_KEY = "aivo_adfilm_active_project_id_v1";
-  const SAVE_DELAY = 650;
+  const TEXT_DRAFT_KEY = "aivo_adfilm_text_draft_v1";
+  const SAVE_DELAY = 1800;
+  const LOCAL_DRAFT_DELAY = 140;
 
   const statusNode = root.querySelector(".mobile-adfilm-action-status");
   const productName = root.querySelector("#mobileAdFilmProductName");
@@ -28,6 +30,7 @@
   let project = null;
   let projectId = "";
   let saveTimer = null;
+  let localDraftTimer = null;
   let saveChain = Promise.resolve();
   let applying = false;
   let dirty = false;
@@ -80,6 +83,9 @@
     },
     getProject: function(id){
       return request("/api/ad-film/project?id=" + encodeURIComponent(id), { method: "GET" });
+    },
+    listProjects: function(){
+      return request("/api/ad-film/projects", { method: "GET" });
     },
     updateProject: function(id, payload){
       return request("/api/ad-film/project?id=" + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify({ project: payload }) });
@@ -136,6 +142,69 @@
         localStorage.removeItem(LEGACY_PROJECT_KEY);
       }
     } catch (_) {}
+  }
+
+  function readTextDraft(){
+    try {
+      const raw = localStorage.getItem(TEXT_DRAFT_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function textDraftSnapshot(){
+    return {
+      projectId: clean(projectId || storedProjectId()),
+      productName: productName ? productName.value : "",
+      brandName: brandName ? brandName.value : "",
+      description: description ? description.value : "",
+      creativeBrief: creativeBrief ? creativeBrief.value : "",
+      narrationText: narrationText ? narrationText.value : "",
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function writeTextDraftNow(){
+    clearTimeout(localDraftTimer);
+    localDraftTimer = null;
+    try { localStorage.setItem(TEXT_DRAFT_KEY, JSON.stringify(textDraftSnapshot())); } catch (_) {}
+  }
+
+  function scheduleTextDraft(){
+    if (applying) return;
+    clearTimeout(localDraftTimer);
+    localDraftTimer = setTimeout(writeTextDraftNow, LOCAL_DRAFT_DELAY);
+  }
+
+  function draftIsNewer(draft, source){
+    if (!draft) return false;
+    const draftTime = Date.parse(draft.updatedAt || "");
+    const serverTime = Date.parse(source && source.updatedAt || "");
+    if (!Number.isFinite(draftTime)) return false;
+    if (!Number.isFinite(serverTime)) return true;
+    return draftTime > serverTime;
+  }
+
+  function mergeNewerTextDraft(source, draft){
+    if (!source || !draft) return source;
+    const draftProjectId = clean(draft.projectId);
+    if (draftProjectId && clean(source.id) !== draftProjectId) return source;
+    if (!draftIsNewer(draft, source)) return source;
+
+    return Object.assign({}, source, {
+      brief: Object.assign({}, source.brief || {}, {
+        productName: draft.productName == null ? (source.brief && source.brief.productName || "") : String(draft.productName),
+        brandName: draft.brandName == null ? (source.brief && source.brief.brandName || "") : String(draft.brandName),
+        description: draft.description == null ? (source.brief && source.brief.description || "") : String(draft.description),
+        creativeBrief: draft.creativeBrief == null ? (source.brief && source.brief.creativeBrief || "") : String(draft.creativeBrief)
+      }),
+      narration: Object.assign({}, source.narration || {}, {
+        text: draft.narrationText == null ? (source.narration && source.narration.text || "") : String(draft.narrationText)
+      })
+    });
   }
 
   function currentFormat(){
@@ -340,12 +409,16 @@
 
   function save(){
     if (applying || !projectId) return Promise.resolve(null);
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    writeTextDraftNow();
     const payload = collect();
     saveChain = saveChain.catch(function(){}).then(async function(){
       setStatus("saving", "Buluta kaydediliyor...");
       const result = await api.updateProject(projectId, payload);
       dirty = false;
       expose(result.project);
+      writeTextDraftNow();
       setStatus("saved", "Proje buluta kaydedildi.");
       return result.project;
     }).catch(function(error){
@@ -358,9 +431,19 @@
     return saveChain;
   }
 
+  async function latestServerProject(){
+    const listed = await api.listProjects();
+    const items = listed && Array.isArray(listed.projects) ? listed.projects : [];
+    const latest = items.find(function(item){ return item && clean(item.id); });
+    if (!latest) return null;
+    const result = await api.getProject(latest.id);
+    return result && result.project ? result.project : null;
+  }
+
   async function bootstrap(){
     setStatus("connecting", "Proje bağlantısı kuruluyor...");
-    let id = storedProjectId();
+    const localDraft = readTextDraft();
+    let id = storedProjectId() || clean(localDraft && localDraft.projectId);
     let nextProject = null;
 
     if (id) {
@@ -385,6 +468,23 @@
 
     if (!nextProject) {
       try {
+        nextProject = await latestServerProject();
+        if (nextProject) {
+          id = clean(nextProject.id);
+          storeProjectId(id);
+        }
+      } catch (error) {
+        if (error.status === 401) {
+          setStatus("offline", "Oturum gerekli.");
+          toast("warning", "Devam etmek için AIVO hesabına giriş yapmalısın.", 4200);
+          return;
+        }
+        console.warn("[MOBILE ADFILM] latest project restore", error);
+      }
+    }
+
+    if (!nextProject) {
+      try {
         const created = await api.createProject(collect());
         nextProject = created.project;
         id = clean(nextProject && nextProject.id);
@@ -397,16 +497,38 @@
       }
     }
 
-    project = nextProject;
     projectId = clean(nextProject.id);
     storeProjectId(projectId);
-    applyProject(nextProject);
-    setStatus("saved", "Proje buluta bağlı.");
+
+    const mergedProject = mergeNewerTextDraft(nextProject, localDraft);
+    const restoredLocalDraft = mergedProject !== nextProject;
+    project = mergedProject;
+    applyProject(mergedProject);
+    setStatus("saved", restoredLocalDraft ? "Yerel taslak geri yüklendi." : "Proje buluta bağlı.");
+
+    if (restoredLocalDraft) {
+      dirty = true;
+      setTimeout(function(){
+        if (!applying) save();
+        else queueSave(300);
+      }, 220);
+    } else {
+      writeTextDraftNow();
+    }
   }
 
   function bindAutoSave(){
     [productName, brandName, description, creativeBrief, narrationText].filter(Boolean).forEach(function(node){
-      node.addEventListener("input", function(){ queueSave(); });
+      node.addEventListener("input", function(){
+        if (applying) return;
+        scheduleTextDraft();
+        queueSave();
+      });
+      node.addEventListener("blur", function(){
+        if (applying) return;
+        writeTextDraftNow();
+        if (dirty) queueSave(80);
+      });
     });
 
     [voiceEnabled, voiceLanguage, voiceStyle, voiceSpeed, duration, musicStyle, musicEnergy].filter(Boolean).forEach(function(node){
@@ -422,6 +544,7 @@
     });
 
     window.addEventListener("pagehide", function(){
+      writeTextDraftNow();
       if (dirty) save();
     });
   }
