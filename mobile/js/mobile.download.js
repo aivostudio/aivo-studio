@@ -107,6 +107,83 @@
     document.body.appendChild(overlay);
   }
 
+  let adFilmNarrationProgressRaf = 0;
+  let adFilmNarrationProgressObserver = null;
+
+  function stopAdFilmNarrationProgress(){
+    if (!adFilmNarrationProgressRaf) return;
+    cancelAnimationFrame(adFilmNarrationProgressRaf);
+    adFilmNarrationProgressRaf = 0;
+  }
+
+  function syncAdFilmNarrationProgress(audio, line){
+    if (!audio || !line) return;
+    const legacyFill = line.querySelector("i");
+    if (legacyFill) legacyFill.style.display = "none";
+
+    const total = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    const current = Number.isFinite(audio.currentTime) && audio.currentTime > 0 ? audio.currentTime : 0;
+    const percent = total ? Math.max(0, Math.min(100, current / total * 100)) : 0;
+
+    line.style.background = "linear-gradient(90deg,#8b5cf6 0%,#ec4899 " + percent + "%,rgba(255,255,255,.08) " + percent + "%,rgba(255,255,255,.08) 100%)";
+  }
+
+  function runAdFilmNarrationProgress(audio, line){
+    stopAdFilmNarrationProgress();
+    function frame(){
+      syncAdFilmNarrationProgress(audio, line);
+      if (!audio.paused && !audio.ended) {
+        adFilmNarrationProgressRaf = requestAnimationFrame(frame);
+      } else {
+        adFilmNarrationProgressRaf = 0;
+      }
+    }
+    adFilmNarrationProgressRaf = requestAnimationFrame(frame);
+  }
+
+  function bindAdFilmNarrationProgress(){
+    const preview = document.querySelector("[data-mobile-adfilm-voice-preview]");
+    const line = preview && preview.querySelector(".mobile-adfilm-voice-preview-line");
+    const audio = preview && preview.querySelector("audio");
+    if (!preview || !line || !audio) return false;
+
+    syncAdFilmNarrationProgress(audio, line);
+    if (audio.__aivoAdFilmNarrationProgressBound) return true;
+    audio.__aivoAdFilmNarrationProgressBound = true;
+
+    ["loadedmetadata", "durationchange", "timeupdate"].forEach(function(name){
+      audio.addEventListener(name, function(){ syncAdFilmNarrationProgress(audio, line); });
+    });
+    audio.addEventListener("play", function(){ runAdFilmNarrationProgress(audio, line); });
+    audio.addEventListener("pause", function(){
+      stopAdFilmNarrationProgress();
+      syncAdFilmNarrationProgress(audio, line);
+    });
+    audio.addEventListener("ended", function(){
+      stopAdFilmNarrationProgress();
+      syncAdFilmNarrationProgress(audio, line);
+    });
+    return true;
+  }
+
+  function ensureAdFilmNarrationProgress(){
+    if (bindAdFilmNarrationProgress()) {
+      if (adFilmNarrationProgressObserver) {
+        adFilmNarrationProgressObserver.disconnect();
+        adFilmNarrationProgressObserver = null;
+      }
+      return;
+    }
+    if (adFilmNarrationProgressObserver || !document.documentElement) return;
+    adFilmNarrationProgressObserver = new MutationObserver(function(){
+      if (bindAdFilmNarrationProgress()) {
+        adFilmNarrationProgressObserver.disconnect();
+        adFilmNarrationProgressObserver = null;
+      }
+    });
+    adFilmNarrationProgressObserver.observe(document.documentElement, { childList:true, subtree:true });
+  }
+
   document.addEventListener("click", function(event){
     const button = event.target && event.target.closest && event.target.closest("[data-mobile-cartoon-character-act]");
     if (!button) return;
@@ -133,6 +210,9 @@
       });
     }
   }, true);
+
+  document.addEventListener("aivo:adfilm-project-sync", ensureAdFilmNarrationProgress);
+  ensureAdFilmNarrationProgress();
 
   window.AivoMobileDownload = {
     download: download,
