@@ -2,6 +2,7 @@
 export const config = { runtime: "nodejs" };
 export const maxDuration = 120;
 
+import crypto from "crypto";
 import fs from "fs";
 import os from "os";
 import path from "path";
@@ -9,15 +10,20 @@ import { spawn } from "child_process";
 import { Readable } from "stream";
 import { pipeline } from "stream/promises";
 import ffmpegPath from "ffmpeg-static";
+import kvModule from "../../_kv.js";
 import { putObject } from "../../_lib/r2.js";
 import {
   getOwnedProject,
   mediaPrefix,
   resolveAdFilmUser,
-  saveProject,
   sendJson,
 } from "../../_lib/ad-film-projects.js";
 
+const kv = kvModule?.default || kvModule || {};
+const { kvGetJson, kvSetJson } = kv;
+
+const PREVIEW_VERSION = 1;
+const PREVIEW_CACHE_TTL_SECONDS = 365 * 24 * 60 * 60;
 const DOWNLOAD_TIMEOUT_MS = 70000;
 const PREVIEW_TIMEOUT_MS = 90000;
 const UPLOAD_TIMEOUT_MS = 65000;
@@ -32,6 +38,39 @@ function safePart(value, fallback = "video") {
     .replace(/[^a-z0-9._-]+/gi, "-")
     .replace(/^-+|-+$/g, "");
   return next || fallback;
+}
+
+function sourceFingerprint(finalUrl) {
+  return crypto
+    .createHash("sha256")
+    .update(clean(finalUrl, 4000))
+    .digest("hex")
+    .slice(0, 20);
+}
+
+function previewCacheKey(user, projectId, outputId, fingerprint) {
+  return [
+    "adfilm",
+    "preview",
+    `v${PREVIEW_VERSION}`,
+    clean(user?.ownerHash, 80),
+    safePart(projectId, "project"),
+    safePart(outputId, "output"),
+    clean(fingerprint, 40),
+  ].join(":");
+}
+
+async function readPreviewCache(key) {
+  if (typeof kvGetJson !== "function") return null;
+  const cached = await kvGetJson(key).catch(() => null);
+  const previewUrl = clean(cached?.previewUrl, 4000);
+  return previewUrl ? { ...cached, previewUrl } : null;
+}
+
+async function writePreviewCache(key, value) {
+  if (typeof kvSetJson !== "function") return false;
+  await kvSetJson(key, value, { ex: PREVIEW_CACHE_TTL_SECONDS });
+  return true;
 }
 
 async function download(url, destination) {
@@ -221,7 +260,6 @@ export default async function handler(req, res) {
 
     const picked = pickTarget(project, requestedOutputId);
     const target = picked.target;
-    const outputs = picked.outputs;
 
     if (!target) {
       return sendJson(res, 409, { ok: false, error: "preview_source_missing" });
@@ -235,13 +273,38 @@ export default async function handler(req, res) {
       return sendJson(res, 409, { ok: false, error: "preview_source_missing" });
     }
 
+    const fingerprint = sourceFingerprint(finalUrl);
+    const cacheKey = previewCacheKey(user, projectId, outputId, fingerprint);
+
     if (existingPreviewUrl) {
+      await writePreviewCache(cacheKey, {
+        previewUrl: existingPreviewUrl,
+        videoUrl: finalUrl,
+        projectId,
+        outputId,
+        previewVersion: PREVIEW_VERSION,
+        cachedAt: new Date().toISOString(),
+      }).catch(() => false);
+
       return sendJson(res, 200, {
         ok: true,
         projectId,
         outputId,
         video_url: finalUrl,
         preview_url: existingPreviewUrl,
+        skipped: true,
+        project,
+      });
+    }
+
+    const cachedPreview = await readPreviewCache(cacheKey);
+    if (cachedPreview?.previewUrl) {
+      return sendJson(res, 200, {
+        ok: true,
+        projectId,
+        outputId,
+        video_url: finalUrl,
+        preview_url: cachedPreview.previewUrl,
         skipped: true,
         project,
       });
@@ -263,7 +326,7 @@ export default async function handler(req, res) {
     let previewUrl = "";
     try {
       previewUrl = await putObject({
-        key: `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId)}-preview-${Date.now()}.mp4`,
+        key: `${mediaPrefix(user, projectId)}outputs/seedance/${safePart(outputId)}-preview-v${PREVIEW_VERSION}-${fingerprint}.mp4`,
         body: fs.createReadStream(previewPath),
         contentLength: previewStat.size,
         abortSignal: uploadController.signal,
@@ -285,20 +348,11 @@ export default async function handler(req, res) {
       return sendJson(res, 404, { ok: false, error: "project_not_found" });
     }
 
-    const latestOutputs = Array.isArray(latestProject.outputs)
-      ? latestProject.outputs
-      : [];
-    const latestGeneration = latestProject.generation || {};
-    const latestGenerationOutputId = clean(
-      latestGeneration.outputId || latestGeneration.requestId,
-      240,
-    );
-    const latestOutput = latestOutputs.find(
-      (item) => clean(item?.id, 240) === outputId,
-    );
-    const latestGenerationMatches = latestGenerationOutputId === outputId;
+    const latestPicked = pickTarget(latestProject, outputId);
+    const latestTarget = latestPicked.target;
+    const latestFinalUrl = clean(latestTarget?.videoUrl);
 
-    if (!latestOutput && !latestGenerationMatches) {
+    if (!latestTarget || !latestFinalUrl || latestFinalUrl !== finalUrl) {
       return sendJson(res, 409, {
         ok: false,
         error: "preview_target_stale",
@@ -307,47 +361,35 @@ export default async function handler(req, res) {
       });
     }
 
-    const concurrentPreviewUrl = clean(
-      latestOutput?.previewUrl ||
-      latestOutput?.preview_url ||
-      (latestGenerationMatches ? latestGeneration.previewUrl : ""),
-    );
-
-    if (concurrentPreviewUrl) {
+    const concurrentPreview = await readPreviewCache(cacheKey);
+    if (concurrentPreview?.previewUrl) {
       return sendJson(res, 200, {
         ok: true,
         projectId,
         outputId,
-        video_url: clean(latestOutput?.videoUrl || latestGeneration.videoUrl || finalUrl),
-        preview_url: concurrentPreviewUrl,
+        video_url: latestFinalUrl,
+        preview_url: concurrentPreview.previewUrl,
         skipped: true,
         project: latestProject,
       });
     }
 
-    const nextOutputs = latestOutput
-      ? latestOutputs.map((item) =>
-          clean(item?.id, 240) === outputId
-            ? { ...item, previewUrl }
-            : item,
-        )
-      : [{ ...target, previewUrl }, ...latestOutputs].slice(0, 30);
-
-    const nextProject = await saveProject(user, {
-      ...latestProject,
-      outputs: nextOutputs,
-      generation: latestGenerationMatches
-        ? { ...latestGeneration, previewUrl }
-        : latestGeneration,
+    await writePreviewCache(cacheKey, {
+      previewUrl,
+      videoUrl: latestFinalUrl,
+      projectId,
+      outputId,
+      previewVersion: PREVIEW_VERSION,
+      cachedAt: new Date().toISOString(),
     });
 
     return sendJson(res, 200, {
       ok: true,
       projectId,
       outputId,
-      video_url: clean(latestOutput?.videoUrl || latestGeneration.videoUrl || finalUrl),
+      video_url: latestFinalUrl,
       preview_url: previewUrl,
-      project: nextProject,
+      project: latestProject,
     });
   } catch (error) {
     console.error("[ad-film/seedance/preview]", error);
