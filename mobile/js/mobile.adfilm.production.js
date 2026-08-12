@@ -907,7 +907,7 @@
       } catch (error) {
         console.error("[MOBILE ADFILM][REPORT]", error);
         submit.disabled = false;
-        submit.textContent = "Gönderiliyor...";
+        submit.textContent = "Raporu gönder";
         toast("error", "Rapor gönderilemedi. Lütfen tekrar dene.", 3600);
       }
     });
