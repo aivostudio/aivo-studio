@@ -57,6 +57,74 @@
     });
   }
 
+  function prepareLegacyAdFilmPreviews(scope){
+    const host = scope && scope.querySelectorAll ? scope : document;
+    const cards = [];
+
+    if (host.matches && host.matches(".mobile-adfilm-production-card")) cards.push(host);
+    host.querySelectorAll(".mobile-adfilm-production-card").forEach(function(card){ cards.push(card); });
+
+    cards.forEach(function(card){
+      if (!card || card.classList.contains("is-loading")) return;
+      if (card.dataset.adfilmPreviewState === "loading" || card.dataset.adfilmPreviewState === "ready") return;
+
+      const video = card.querySelector("video");
+      if (!video) return;
+
+      const existingPreviewUrl = clean(video.dataset.previewUrl);
+      if (existingPreviewUrl) {
+        card.dataset.adfilmPreviewState = "ready";
+        return;
+      }
+
+      const projectId = clean(card.getAttribute("data-mobile-adfilm-project"));
+      const outputId = clean(card.getAttribute("data-mobile-adfilm-output"));
+      const finalUrl = clean(video.dataset.finalUrl || video.currentSrc || video.src);
+      if (!projectId || !outputId || !finalUrl) return;
+
+      video.dataset.finalUrl = finalUrl;
+      card.dataset.adfilmPreviewState = "loading";
+
+      nativeFetch("/api/ad-film/seedance/preview", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          accept: "application/json"
+        },
+        body: JSON.stringify({ projectId: projectId, outputId: outputId })
+      }).then(function(response){
+        return response.json().catch(function(){ return {}; }).then(function(data){
+          if (!response.ok || !clean(data && data.preview_url)) {
+            throw new Error(clean(data && (data.message || data.error)) || "preview_failed");
+          }
+          return data;
+        });
+      }).then(function(data){
+        const previewUrl = clean(data.preview_url);
+        if (!previewUrl || !video.isConnected) return;
+
+        video.dataset.previewUrl = previewUrl;
+        card.dataset.adfilmPreviewState = "ready";
+
+        if (video.paused) {
+          const currentTime = Number(video.currentTime || 0);
+          video.src = previewUrl;
+          video.load();
+          if (currentTime > 0) {
+            video.addEventListener("loadedmetadata", function restorePreviewTime(){
+              try { video.currentTime = currentTime; } catch (_) {}
+            }, { once: true });
+          }
+        }
+      }).catch(function(error){
+        card.dataset.adfilmPreviewState = "failed";
+        console.warn("[MOBILE ADFILM] legacy preview prepare failed", error);
+      });
+    });
+  }
+
   async function handleAdFilmShare(event){
     const button = event.target && event.target.closest && event.target.closest('[data-mobile-adfilm-output-action="open"],[data-mobile-adfilm-output-action="share"]');
     if (!button) return;
@@ -137,12 +205,16 @@
 
   document.addEventListener("click", handleAdFilmShare, true);
   normalizeAdFilmShareButtons(document);
+  prepareLegacyAdFilmPreviews(document);
 
   if (document.body) {
     const shareObserver = new MutationObserver(function(records){
       records.forEach(function(record){
         Array.from(record.addedNodes || []).forEach(function(node){
-          if (node && node.nodeType === 1) normalizeAdFilmShareButtons(node);
+          if (node && node.nodeType === 1) {
+            normalizeAdFilmShareButtons(node);
+            prepareLegacyAdFilmPreviews(node);
+          }
         });
       });
     });
