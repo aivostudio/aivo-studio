@@ -3,9 +3,7 @@ const ALLOWED_DURATIONS = new Set([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
 const STYLE_PROMPTS = Object.freeze({
   pop: "modern polished commercial pop instrumental, catchy rhythm, bright memorable advertising feel",
   cinematic: "premium cinematic advertising soundtrack, confident dramatic pulse, polished brand-film character",
-  corporate: "clean uplifting corporate advertising instrumental, polished professional brand tone, confident modern pulse, presentation-ready commercial character",
   electronic: "modern electronic commercial instrumental, clean synth pulse, precise contemporary production",
-  acoustic: "warm organic acoustic advertising instrumental, tasteful guitar, piano and light percussion, approachable premium brand character, clean commercial pacing",
   classical: "elegant modern classical advertising instrumental, refined orchestral textures, premium timeless character",
   rnb: "smooth contemporary R&B advertising instrumental, tasteful groove, warm modern production",
   latin: "modern Latin commercial instrumental, rhythmic percussion, warm lively premium energy",
@@ -24,12 +22,8 @@ const STYLE_ALIASES = Object.freeze({
   pop: "pop",
   cinematic: "cinematic",
   sinematik: "cinematic",
-  corporate: "corporate",
-  kurumsal: "corporate",
   electronic: "electronic",
   elektronik: "electronic",
-  acoustic: "acoustic",
-  akustik: "acoustic",
   classical: "classical",
   klasik: "classical",
   "r&b": "rnb",
@@ -40,17 +34,11 @@ const STYLE_ALIASES = Object.freeze({
 const ENERGY_ALIASES = Object.freeze({
   calm: "calm",
   sakin: "calm",
-  soft: "calm",
-  yumuşak: "calm",
-  yumusak: "calm",
   balanced: "balanced",
   dengeli: "balanced",
   strong: "strong",
   güçlü: "strong",
   guclu: "strong",
-  high: "strong",
-  yüksek: "strong",
-  yuksek: "strong",
 });
 
 const VISUAL_STYLE_PROMPTS = Object.freeze({
