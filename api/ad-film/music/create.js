@@ -48,6 +48,8 @@ function normalizeDuration(value){
   return Number.isInteger(requested)&&requested>=5&&requested<=15?requested:null;
 }
 function isMobileOrIosClient(req){
+  const explicitClient=clean(req?.headers?.["x-aivo-adfilm-client"],80).toLowerCase();
+  if(["ios","mobile-ios","capacitor-ios"].includes(explicitClient))return true;
   const ua=clean(req?.headers?.["user-agent"],700).toLowerCase();
   const mobileHint=clean(req?.headers?.["sec-ch-ua-mobile"],40).toLowerCase();
   return mobileHint.includes("?1")||/iphone|ipad|ipod|android|mobile|capacitor|\bwv\b/.test(ua);
