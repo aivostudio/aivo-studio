@@ -5,8 +5,8 @@ import ffmpegPath from "ffmpeg-static";
 import { putObject } from "./r2.js";
 import { mediaPrefix } from "./ad-film-projects.js";
 
-const PREVIEW_TIMEOUT_MS = 60000;
-const UPLOAD_TIMEOUT_MS = 65000;
+const PREVIEW_TIMEOUT_MS = 20000;
+const UPLOAD_TIMEOUT_MS = 20000;
 
 function clean(value, max = 1600) {
   return String(value ?? "").trim().slice(0, max);
