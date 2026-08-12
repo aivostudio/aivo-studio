@@ -280,35 +280,72 @@ export default async function handler(req, res) {
 
     if (!previewUrl) throw new Error("preview_upload_missing_url");
 
-    const targetExistsInOutputs = outputs.some(
+    const latestProject = await getOwnedProject(user, projectId);
+    if (!latestProject) {
+      return sendJson(res, 404, { ok: false, error: "project_not_found" });
+    }
+
+    const latestOutputs = Array.isArray(latestProject.outputs)
+      ? latestProject.outputs
+      : [];
+    const latestGeneration = latestProject.generation || {};
+    const latestGenerationOutputId = clean(
+      latestGeneration.outputId || latestGeneration.requestId,
+      240,
+    );
+    const latestOutput = latestOutputs.find(
       (item) => clean(item?.id, 240) === outputId,
     );
+    const latestGenerationMatches = latestGenerationOutputId === outputId;
 
-    const nextOutputs = targetExistsInOutputs
-      ? outputs.map((item) =>
+    if (!latestOutput && !latestGenerationMatches) {
+      return sendJson(res, 409, {
+        ok: false,
+        error: "preview_target_stale",
+        projectId,
+        outputId,
+      });
+    }
+
+    const concurrentPreviewUrl = clean(
+      latestOutput?.previewUrl ||
+      latestOutput?.preview_url ||
+      (latestGenerationMatches ? latestGeneration.previewUrl : ""),
+    );
+
+    if (concurrentPreviewUrl) {
+      return sendJson(res, 200, {
+        ok: true,
+        projectId,
+        outputId,
+        video_url: clean(latestOutput?.videoUrl || latestGeneration.videoUrl || finalUrl),
+        preview_url: concurrentPreviewUrl,
+        skipped: true,
+        project: latestProject,
+      });
+    }
+
+    const nextOutputs = latestOutput
+      ? latestOutputs.map((item) =>
           clean(item?.id, 240) === outputId
             ? { ...item, previewUrl }
             : item,
         )
-      : [{ ...target, previewUrl }, ...outputs].slice(0, 30);
-
-    const generation = project.generation || {};
-    const generationOutputId = clean(generation.outputId || generation.requestId, 240);
+      : [{ ...target, previewUrl }, ...latestOutputs].slice(0, 30);
 
     const nextProject = await saveProject(user, {
-      ...project,
+      ...latestProject,
       outputs: nextOutputs,
-      generation:
-        generationOutputId === outputId
-          ? { ...generation, previewUrl }
-          : generation,
+      generation: latestGenerationMatches
+        ? { ...latestGeneration, previewUrl }
+        : latestGeneration,
     });
 
     return sendJson(res, 200, {
       ok: true,
       projectId,
       outputId,
-      video_url: finalUrl,
+      video_url: clean(latestOutput?.videoUrl || latestGeneration.videoUrl || finalUrl),
       preview_url: previewUrl,
       project: nextProject,
     });
