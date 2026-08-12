@@ -10,6 +10,11 @@
   if (!card) return;
 
   const MUSIC_MODE_KEY = "aivo_adfilm_music_mode_v1";
+  const legacyStyle = card.querySelector("#mobileAdFilmMusicStyle");
+  const legacyEnergy = card.querySelector("#mobileAdFilmMusicEnergy");
+
+  if (legacyStyle) legacyStyle.value = "auto";
+  if (legacyEnergy) legacyEnergy.value = "balanced";
 
   function clean(value){ return String(value == null ? "" : value).trim(); }
 
@@ -50,6 +55,62 @@
     const mode = clean(value).toLowerCase();
     return mode === "upload" || mode === "off" ? mode : "auto";
   }
+
+  card.innerHTML = `
+    <div class="mobile-adfilm-card-head">
+      <span class="mobile-adfilm-music-icon" aria-hidden="true"></span>
+      <div class="mobile-adfilm-card-copy">
+        <span class="mobile-adfilm-step">06</span>
+        <h4>Reklam Müziği</h4>
+        <p>Müziğin nasıl hazırlanacağını seç.</p>
+      </div>
+      <em class="mobile-adfilm-music-optional">İsteğe bağlı</em>
+    </div>
+
+    <div class="mobile-adfilm-music-modes" role="group" aria-label="Reklam müziği seçimi">
+      <button type="button" data-mobile-adfilm-music-mode="auto">AIVO müziği seçsin</button>
+      <button type="button" data-mobile-adfilm-music-mode="upload">Kendi müziğim / jingle'ım</button>
+      <button type="button" data-mobile-adfilm-music-mode="off">Müzik olmasın</button>
+    </div>
+
+    <section class="mobile-adfilm-music-panel" data-mobile-adfilm-music-panel="auto">
+      <div class="mobile-adfilm-music-engine">
+        <span>AIVO ürün bilgilerine göre reklam müziğini otomatik seçer ve video üretimi sırasında hazırlar.</span>
+        <b>AIVO Otomatik</b>
+      </div>
+    </section>
+
+    <section class="mobile-adfilm-music-panel" data-mobile-adfilm-music-panel="upload" hidden>
+      <label class="mobile-adfilm-music-upload" data-mobile-adfilm-music-picker>
+        <input id="mobileAdFilmMusicFile" type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg">
+        <span class="mobile-adfilm-music-upload-icon" aria-hidden="true"></span>
+        <span>
+          <b>Müzik veya jingle yükle</b>
+          <small>MP3, WAV, M4A, AAC veya OGG · En fazla 20 MB</small>
+        </span>
+      </label>
+
+      <div class="mobile-adfilm-music-file" data-mobile-adfilm-music-file-view hidden>
+        <div class="mobile-adfilm-music-file-head">
+          <span class="mobile-adfilm-music-file-note" aria-hidden="true"></span>
+          <div class="mobile-adfilm-music-file-copy">
+            <b data-mobile-adfilm-music-name></b>
+            <small data-mobile-adfilm-music-size></small>
+          </div>
+          <button class="mobile-adfilm-music-remove" type="button" aria-label="Müzik dosyasını kaldır">×</button>
+        </div>
+
+        <div class="mobile-adfilm-music-player">
+          <button class="mobile-adfilm-music-play" type="button" data-mobile-adfilm-music-play aria-label="Müziği oynat"></button>
+          <input class="mobile-adfilm-music-progress" type="range" min="0" max="1000" value="0" step="1" data-mobile-adfilm-music-progress aria-label="Müzik ilerleme çubuğu">
+          <span class="mobile-adfilm-music-time" data-mobile-adfilm-music-time>0:00 / 0:00</span>
+          <audio preload="metadata" data-mobile-adfilm-music-audio></audio>
+        </div>
+      </div>
+
+      <p class="mobile-adfilm-music-rights">Yüklediğin müziğin kullanım ve telif hakkına sahip olmalısın.</p>
+    </section>
+  `;
 
   const modeButtons = Array.from(card.querySelectorAll("[data-mobile-adfilm-music-mode]"));
   const panels = Array.from(card.querySelectorAll("[data-mobile-adfilm-music-panel]"));
