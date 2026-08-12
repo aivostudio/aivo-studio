@@ -23,13 +23,15 @@
     wav: { 10:13, 15:15, 30:25, 45:35, 60:45 }
   };
 
+  let durationTouched = false;
+
   function clean(value){
     return String(value == null ? "" : value).trim();
   }
 
   function duration(){
-    const value = Number(durationSelect && durationSelect.value || 30);
-    return [10,15,30,45,60].includes(value) ? value : 30;
+    const value = Number(durationSelect && durationSelect.value || 10);
+    return [10,15,30,45,60].includes(value) ? value : 10;
   }
 
   function format(){
@@ -43,7 +45,7 @@
 
   function musicLabel(){
     const mode = clean(musicModeSelect && musicModeSelect.value).toLowerCase();
-    if (mode === "off") return "Müziksiz";
+    if (mode === "off") return "Müziksüz";
     if (mode === "upload") return "Yüklenen müzik";
     return "AIVO müziği";
   }
@@ -85,6 +87,12 @@
     }catch(_){ }
   }
 
+  function keepInitialDurationAtTen(){
+    if (!durationSelect || durationTouched) return;
+    if (durationSelect.value !== "10") durationSelect.value = "10";
+    syncProductionPrice();
+  }
+
   function syncNarrationLoadingLabel(){
     if (!preview || !narrationCreateButton) return;
     if (preview.dataset.state !== "loading") return;
@@ -100,8 +108,15 @@
   }
 
   if (durationSelect){
-    durationSelect.addEventListener("change", syncProductionPrice);
-    durationSelect.addEventListener("input", syncProductionPrice);
+    durationSelect.value = "10";
+    durationSelect.addEventListener("change", function(){
+      durationTouched = true;
+      syncProductionPrice();
+    });
+    durationSelect.addEventListener("input", function(){
+      durationTouched = true;
+      syncProductionPrice();
+    });
   }
 
   if (formatSelect){
@@ -113,7 +128,7 @@
     musicModeSelect.addEventListener("change", syncProductionPrice);
   }
 
-  document.addEventListener("aivo:mobile-radioad-project-sync", syncProductionPrice);
+  document.addEventListener("aivo:mobile-radioad-project-sync", keepInitialDurationAtTen);
 
   if (preview){
     const narrationObserver = new MutationObserver(syncNarrationLoadingLabel);
@@ -126,6 +141,6 @@
     });
   }
 
-  syncProductionPrice();
+  keepInitialDurationAtTen();
   syncNarrationLoadingLabel();
 })();
