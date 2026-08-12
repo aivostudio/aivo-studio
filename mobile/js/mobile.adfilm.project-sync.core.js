@@ -179,6 +179,34 @@
     localDraftTimer = setTimeout(writeTextDraftNow, LOCAL_DRAFT_DELAY);
   }
 
+  function projectHasSavedText(source){
+    const brief = source && source.brief || {};
+    const narration = source && source.narration || {};
+    return !!(
+      clean(brief.productName) ||
+      clean(brief.brandName) ||
+      clean(brief.description) ||
+      clean(brief.creativeBrief) ||
+      clean(narration.text)
+    );
+  }
+
+  function draftHasSavedText(draft){
+    return !!draft && !!(
+      clean(draft.productName) ||
+      clean(draft.brandName) ||
+      clean(draft.description) ||
+      clean(draft.creativeBrief) ||
+      clean(draft.narrationText)
+    );
+  }
+
+  function draftMatchesProject(draft, source){
+    if (!draft || !source) return false;
+    const draftProjectId = clean(draft.projectId);
+    return !draftProjectId || draftProjectId === clean(source.id);
+  }
+
   function draftIsNewer(draft, source){
     if (!draft) return false;
     const draftTime = Date.parse(draft.updatedAt || "");
@@ -186,6 +214,10 @@
     if (!Number.isFinite(draftTime)) return false;
     if (!Number.isFinite(serverTime)) return true;
     return draftTime > serverTime;
+  }
+
+  function preferDraftText(value, fallback){
+    return clean(value) ? String(value) : String(fallback == null ? "" : fallback);
   }
 
   function mergeNewerTextDraft(source, draft){
@@ -196,13 +228,13 @@
 
     return Object.assign({}, source, {
       brief: Object.assign({}, source.brief || {}, {
-        productName: draft.productName == null ? (source.brief && source.brief.productName || "") : String(draft.productName),
-        brandName: draft.brandName == null ? (source.brief && source.brief.brandName || "") : String(draft.brandName),
-        description: draft.description == null ? (source.brief && source.brief.description || "") : String(draft.description),
-        creativeBrief: draft.creativeBrief == null ? (source.brief && source.brief.creativeBrief || "") : String(draft.creativeBrief)
+        productName: preferDraftText(draft.productName, source.brief && source.brief.productName),
+        brandName: preferDraftText(draft.brandName, source.brief && source.brief.brandName),
+        description: preferDraftText(draft.description, source.brief && source.brief.description),
+        creativeBrief: preferDraftText(draft.creativeBrief, source.brief && source.brief.creativeBrief)
       }),
       narration: Object.assign({}, source.narration || {}, {
-        text: draft.narrationText == null ? (source.narration && source.narration.text || "") : String(draft.narrationText)
+        text: preferDraftText(draft.narrationText, source.narration && source.narration.text)
       })
     });
   }
@@ -431,19 +463,36 @@
     return saveChain;
   }
 
-  async function latestServerProject(){
+  async function latestServerProject(skipId){
     const listed = await api.listProjects();
     const items = listed && Array.isArray(listed.projects) ? listed.projects : [];
-    const latest = items.find(function(item){ return item && clean(item.id); });
-    if (!latest) return null;
-    const result = await api.getProject(latest.id);
-    return result && result.project ? result.project : null;
+    const excluded = clean(skipId);
+    let fallback = null;
+
+    for (const item of items.slice(0, 12)) {
+      const candidateId = clean(item && (item.id || item.projectId));
+      if (!candidateId || candidateId === excluded) continue;
+      try {
+        const result = await api.getProject(candidateId);
+        const candidate = result && result.project ? result.project : null;
+        if (!candidate) continue;
+        if (!fallback) fallback = candidate;
+        if (projectHasSavedText(candidate)) return candidate;
+      } catch (error) {
+        if (error && error.status === 401) throw error;
+      }
+    }
+
+    return fallback;
   }
 
   async function bootstrap(){
     setStatus("connecting", "Proje bağlantısı kuruluyor...");
     const localDraft = readTextDraft();
-    let id = storedProjectId() || clean(localDraft && localDraft.projectId);
+    const localDraftProjectId = clean(localDraft && localDraft.projectId);
+    let id = draftHasSavedText(localDraft) && localDraftProjectId
+      ? localDraftProjectId
+      : storedProjectId() || localDraftProjectId;
     let nextProject = null;
 
     if (id) {
@@ -466,9 +515,28 @@
       }
     }
 
+    const matchingLocalDraft = nextProject && draftHasSavedText(localDraft) && draftMatchesProject(localDraft, nextProject);
+    if (nextProject && !projectHasSavedText(nextProject) && !matchingLocalDraft) {
+      try {
+        const recovered = await latestServerProject(nextProject.id);
+        if (recovered && projectHasSavedText(recovered)) {
+          nextProject = recovered;
+          id = clean(recovered.id);
+          storeProjectId(id);
+        }
+      } catch (error) {
+        if (error.status === 401) {
+          setStatus("offline", "Oturum gerekli.");
+          toast("warning", "Devam etmek için AIVO hesabına giriş yapmalısın.", 4200);
+          return;
+        }
+        console.warn("[MOBILE ADFILM] saved prompt recovery", error);
+      }
+    }
+
     if (!nextProject) {
       try {
-        nextProject = await latestServerProject();
+        nextProject = await latestServerProject("");
         if (nextProject) {
           id = clean(nextProject.id);
           storeProjectId(id);
