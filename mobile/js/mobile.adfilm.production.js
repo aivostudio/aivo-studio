@@ -377,24 +377,46 @@
       const data = await response.json().catch(function(){ return {}; });
       if (!response.ok || !Array.isArray(data.projects)) throw new Error(data.error || "projects_load_failed");
 
-      const settled = await Promise.allSettled(data.projects.slice(0, 20).map(async function(summary){
-        const pid = clean(summary && (summary.id || summary.projectId));
-        if (!pid) return [];
-        const projectResponse = await fetch("/api/ad-film/project?id=" + encodeURIComponent(pid), {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-          headers: { "accept": "application/json" }
-        });
-        const projectData = await projectResponse.json().catch(function(){ return {}; });
-        if (!projectResponse.ok || !projectData.project) return [];
-        return projectOutputs(projectData.project, summary);
-      }));
-
       libraryItems = [];
-      settled.forEach(function(result){
-        if (result.status === "fulfilled" && Array.isArray(result.value)) libraryItems = libraryItems.concat(result.value);
-      });
+      const expectedHydratedCount = Math.min(data.projects.length, 20);
+      const hydratedProjects = Array.isArray(data.hydratedProjects)
+        ? data.hydratedProjects.slice(0, 20)
+        : null;
+
+      if (hydratedProjects && hydratedProjects.length === expectedHydratedCount) {
+        const summariesById = new Map();
+        data.projects.slice(0, 20).forEach(function(summary){
+          const pid = clean(summary && (summary.id || summary.projectId));
+          if (pid) summariesById.set(pid, summary);
+        });
+
+        hydratedProjects.forEach(function(project){
+          const pid = clean(project && project.id);
+          const outputs = projectOutputs(project, summariesById.get(pid) || null);
+          if (outputs.length) libraryItems = libraryItems.concat(outputs);
+        });
+      } else {
+        const settled = await Promise.allSettled(data.projects.slice(0, 20).map(async function(summary){
+          const pid = clean(summary && (summary.id || summary.projectId));
+          if (!pid) return [];
+          const projectResponse = await fetch("/api/ad-film/project?id=" + encodeURIComponent(pid), {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store",
+            headers: { "accept": "application/json" }
+          });
+          const projectData = await projectResponse.json().catch(function(){ return {}; });
+          if (!projectResponse.ok || !projectData.project) return [];
+          return projectOutputs(projectData.project, summary);
+        }));
+
+        settled.forEach(function(result){
+          if (result.status === "fulfilled" && Array.isArray(result.value)) {
+            libraryItems = libraryItems.concat(result.value);
+          }
+        });
+      }
+
       libraryItems.sort(function(a, b){
         const aDate = clean(a && (a.completedAt || a.finalizedAt || a.createdAt));
         const bDate = clean(b && (b.completedAt || b.finalizedAt || b.createdAt));
