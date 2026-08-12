@@ -376,6 +376,7 @@
     libraryLoading = true;
     const list = listNode();
     if (list) list.innerHTML = '<div class="mobile-adfilm-production-empty">Reklam filmleri yükleniyor...</div>';
+
     try {
       const response = await fetch("/api/ad-film/projects", {
         method: "GET",
@@ -383,38 +384,95 @@
         cache: "no-store",
         headers: { "accept": "application/json" }
       });
-      const data = await response.json().catch(function(){ return {}; });
-      if (!response.ok || !Array.isArray(data.projects)) throw new Error(data.error || "projects_load_failed");
 
-      const settled = await Promise.allSettled(data.projects.slice(0, 20).map(async function(summary){
-        const pid = clean(summary && (summary.id || summary.projectId));
-        if (!pid) return [];
-        const projectResponse = await fetch("/api/ad-film/project?id=" + encodeURIComponent(pid), {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-          headers: { "accept": "application/json" }
-        });
-        const projectData = await projectResponse.json().catch(function(){ return {}; });
-        if (!projectResponse.ok || !projectData.project) return [];
-        return projectOutputs(projectData.project, summary);
-      }));
+      const data = await response.json().catch(function(){ return {}; });
+
+      if (!response.ok || !Array.isArray(data.projects)) {
+        throw new Error(data.error || "projects_load_failed");
+      }
 
       libraryItems = [];
-      settled.forEach(function(result){
-        if (result.status === "fulfilled" && Array.isArray(result.value)) libraryItems = libraryItems.concat(result.value);
-      });
+
+      if (Array.isArray(data.hydratedProjects) && data.hydratedProjects.length) {
+        const summariesById = new Map();
+
+        data.projects.forEach(function(summary){
+          const pid = clean(summary && (summary.id || summary.projectId));
+          if (pid) summariesById.set(pid, summary);
+        });
+
+        data.hydratedProjects.slice(0, 20).forEach(function(project){
+          const pid = clean(project && project.id);
+          if (!pid) return;
+
+          const outputs = projectOutputs(
+            project,
+            summariesById.get(pid) || null
+          );
+
+          if (Array.isArray(outputs) && outputs.length) {
+            libraryItems = libraryItems.concat(outputs);
+          }
+        });
+      } else {
+        const settled = await Promise.allSettled(
+          data.projects.slice(0, 20).map(async function(summary){
+            const pid = clean(summary && (summary.id || summary.projectId));
+            if (!pid) return [];
+
+            const projectResponse = await fetch(
+              "/api/ad-film/project?id=" + encodeURIComponent(pid),
+              {
+                method: "GET",
+                credentials: "include",
+                cache: "no-store",
+                headers: { "accept": "application/json" }
+              }
+            );
+
+            const projectData = await projectResponse.json().catch(function(){
+              return {};
+            });
+
+            if (!projectResponse.ok || !projectData.project) return [];
+
+            return projectOutputs(projectData.project, summary);
+          })
+        );
+
+        settled.forEach(function(result){
+          if (
+            result.status === "fulfilled" &&
+            Array.isArray(result.value)
+          ) {
+            libraryItems = libraryItems.concat(result.value);
+          }
+        });
+      }
+
       libraryItems.sort(function(a, b){
-        const aDate = clean(a && (a.completedAt || a.finalizedAt || a.createdAt));
-        const bDate = clean(b && (b.completedAt || b.finalizedAt || b.createdAt));
+        const aDate = clean(
+          a && (a.completedAt || a.finalizedAt || a.createdAt)
+        );
+        const bDate = clean(
+          b && (b.completedAt || b.finalizedAt || b.createdAt)
+        );
+
         return bDate.localeCompare(aDate);
       });
+
       renderOutputItems(libraryItems);
     } catch (error) {
       console.error("[MOBILE ADFILM][LIBRARY]", error);
+
       libraryItems = projectOutputs(currentProject());
       renderOutputItems(libraryItems);
-      toast("warning", "Reklam filmi geçmişi tamamen yüklenemedi.", 3600);
+
+      toast(
+        "warning",
+        "Reklam filmi geçmişi tamamen yüklenemedi.",
+        3600
+      );
     } finally {
       libraryLoading = false;
     }
