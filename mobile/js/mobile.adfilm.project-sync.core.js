@@ -250,12 +250,46 @@
   function applyProject(nextProject){
     if (!nextProject) return;
     expose(nextProject);
-    if (!formMostlyEmpty()) return;
 
-    applying = true;
     const brief = nextProject.brief || {};
     const narration = nextProject.narration || {};
     const music = nextProject.music || {};
+    const hydrateAll = formMostlyEmpty();
+
+    if (!hydrateAll) {
+      const shouldHydrateDescription =
+        !!description &&
+        !clean(description.value) &&
+        !!clean(brief.description);
+
+      const shouldHydrateCreativeBrief =
+        !!creativeBrief &&
+        !clean(creativeBrief.value) &&
+        !!clean(brief.creativeBrief);
+
+      if (!shouldHydrateDescription && !shouldHydrateCreativeBrief) return;
+
+      applying = true;
+
+      if (shouldHydrateDescription) {
+        description.value = brief.description;
+        description.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+
+      if (shouldHydrateCreativeBrief) {
+        creativeBrief.value = brief.creativeBrief;
+        creativeBrief.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+
+      setTimeout(function(){
+        applying = false;
+        expose(project);
+      }, 0);
+
+      return;
+    }
+
+    applying = true;
 
     if (productName) productName.value = brief.productName || "";
     if (brandName) brandName.value = brief.brandName || "";
