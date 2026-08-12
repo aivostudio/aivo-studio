@@ -153,7 +153,7 @@ export default async function handler(req, res) {
       });
     }
 
-    if (req.method === "POST" || req.method === "PATCH") {
+    if ((req.method === "POST" || req.method === "PATCH") && action !== "delete-output") {
       const selected = findOutput(outputs, requestedOutputId, requestedOutputVersion);
       if (!selected) return sendJson(res, 404, { ok: false, error: "output_not_found" });
       const saved = await saveProject(user, {
