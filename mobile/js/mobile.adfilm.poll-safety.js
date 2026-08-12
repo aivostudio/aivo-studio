@@ -80,6 +80,22 @@
     } catch (_) {}
   }
 
+  function completedProjectFromStatus(source, statusData){
+    const generation = Object.assign({}, source && source.generation || {}, statusData && statusData.generation || {});
+    const finalizationStatus = clean(generation && generation.finalization && generation.finalization.status).toLowerCase();
+    const mixVersion = Number(generation && generation.mixVersion || 0);
+    const videoUrl = clean(statusData && statusData.video_url || generation && generation.videoUrl);
+    if (finalizationStatus !== "completed" || mixVersion < 12 || !videoUrl) return null;
+
+    return Object.assign({}, source || {}, statusData && statusData.project || {}, {
+      id: clean(statusData && statusData.projectId) || clean(source && source.id),
+      status: "completed",
+      generation: generation,
+      outputs: Array.isArray(statusData && statusData.outputs) ? statusData.outputs : (source && source.outputs || []),
+      activeOutputId: clean(statusData && statusData.activeOutputId) || clean(source && source.activeOutputId) || clean(generation.outputId)
+    });
+  }
+
   async function resumeCompletionCheck(){
     if (document.visibilityState === "hidden") return;
     if (resumeCheckBusy) return;
@@ -114,6 +130,17 @@
       const status = clean(statusData.status).toUpperCase();
       if (status !== "COMPLETED" || !clean(statusData.video_url)) return;
 
+      const completedProject = completedProjectFromStatus(source, statusData);
+      if (completedProject) {
+        publishProject(completedProject);
+        try {
+          if (window.AIVOMobileAdFilmProduction && typeof window.AIVOMobileAdFilmProduction.finish === "function") {
+            window.AIVOMobileAdFilmProduction.finish(completedProject);
+          }
+        } catch (_) {}
+        return;
+      }
+
       const outputId = clean(
         statusData.activeOutputId ||
         statusData.generation && (statusData.generation.outputId || statusData.generation.requestId) ||
@@ -136,6 +163,11 @@
 
       if (finalizeResponse.ok && finalized && finalized.project) {
         publishProject(finalized.project);
+        try {
+          if (window.AIVOMobileAdFilmProduction && typeof window.AIVOMobileAdFilmProduction.finish === "function") {
+            window.AIVOMobileAdFilmProduction.finish(finalized.project);
+          }
+        } catch (_) {}
       }
     } catch (error) {
       console.warn("[MOBILE ADFILM] foreground completion check failed", error);
