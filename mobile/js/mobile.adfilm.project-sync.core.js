@@ -179,25 +179,18 @@
     localDraftTimer = setTimeout(writeTextDraftNow, LOCAL_DRAFT_DELAY);
   }
 
-  function projectHasSavedText(source){
+  function projectHasPromptText(source){
     const brief = source && source.brief || {};
-    const narration = source && source.narration || {};
     return !!(
-      clean(brief.productName) ||
-      clean(brief.brandName) ||
       clean(brief.description) ||
-      clean(brief.creativeBrief) ||
-      clean(narration.text)
+      clean(brief.creativeBrief)
     );
   }
 
-  function draftHasSavedText(draft){
+  function draftHasPromptText(draft){
     return !!draft && !!(
-      clean(draft.productName) ||
-      clean(draft.brandName) ||
       clean(draft.description) ||
-      clean(draft.creativeBrief) ||
-      clean(draft.narrationText)
+      clean(draft.creativeBrief)
     );
   }
 
@@ -224,7 +217,9 @@
     if (!source || !draft) return source;
     const draftProjectId = clean(draft.projectId);
     if (draftProjectId && clean(source.id) !== draftProjectId) return source;
-    if (!draftIsNewer(draft, source)) return source;
+
+    const recoverMissingPrompt = !projectHasPromptText(source) && draftHasPromptText(draft);
+    if (!recoverMissingPrompt && !draftIsNewer(draft, source)) return source;
 
     return Object.assign({}, source, {
       brief: Object.assign({}, source.brief || {}, {
@@ -469,7 +464,7 @@
     const excluded = clean(skipId);
     let fallback = null;
 
-    for (const item of items.slice(0, 12)) {
+    for (const item of items.slice(0, 50)) {
       const candidateId = clean(item && (item.id || item.projectId));
       if (!candidateId || candidateId === excluded) continue;
       try {
@@ -477,7 +472,7 @@
         const candidate = result && result.project ? result.project : null;
         if (!candidate) continue;
         if (!fallback) fallback = candidate;
-        if (projectHasSavedText(candidate)) return candidate;
+        if (projectHasPromptText(candidate)) return candidate;
       } catch (error) {
         if (error && error.status === 401) throw error;
       }
@@ -490,7 +485,7 @@
     setStatus("connecting", "Proje bağlantısı kuruluyor...");
     const localDraft = readTextDraft();
     const localDraftProjectId = clean(localDraft && localDraft.projectId);
-    let id = draftHasSavedText(localDraft) && localDraftProjectId
+    let id = draftHasPromptText(localDraft) && localDraftProjectId
       ? localDraftProjectId
       : storedProjectId() || localDraftProjectId;
     let nextProject = null;
@@ -515,11 +510,11 @@
       }
     }
 
-    const matchingLocalDraft = nextProject && draftHasSavedText(localDraft) && draftMatchesProject(localDraft, nextProject);
-    if (nextProject && !projectHasSavedText(nextProject) && !matchingLocalDraft) {
+    const matchingLocalDraft = nextProject && draftHasPromptText(localDraft) && draftMatchesProject(localDraft, nextProject);
+    if (nextProject && !projectHasPromptText(nextProject) && !matchingLocalDraft) {
       try {
         const recovered = await latestServerProject(nextProject.id);
-        if (recovered && projectHasSavedText(recovered)) {
+        if (recovered && projectHasPromptText(recovered)) {
           nextProject = recovered;
           id = clean(recovered.id);
           storeProjectId(id);
