@@ -1,5 +1,6 @@
 // api/ad-film/projects.js
 import {
+  getOwnedProject,
   listProjects,
   resolveAdFilmUser,
   sendJson,
@@ -16,7 +17,19 @@ export default async function handler(req, res) {
     if (!user) return sendJson(res, 401, { ok: false, error: "unauthorized" });
 
     const projects = await listProjects(user);
-    return sendJson(res, 200, { ok: true, projects });
+    const hydratedProjects = await Promise.all(
+      projects.slice(0, 20).map(async (summary) => {
+        const projectId = String(summary?.id || "").trim();
+        if (!projectId) return null;
+        return await getOwnedProject(user, projectId).catch(() => null);
+      })
+    );
+
+    return sendJson(res, 200, {
+      ok: true,
+      projects,
+      hydratedProjects: hydratedProjects.filter(Boolean),
+    });
   } catch (error) {
     console.error("[ad-film/projects]", error);
     return sendJson(res, 500, {
