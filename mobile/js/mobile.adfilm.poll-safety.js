@@ -148,6 +148,24 @@
     const url = typeof input === "string" ? input : input && input.url || "";
     const response = await nativeFetch(input, options);
 
+    if (url.indexOf("/api/ad-film/music/create") >= 0 && response.ok) {
+      const data = await response.clone().json().catch(function(){ return null; });
+      const status = clean(data && data.status).toUpperCase();
+      if (data && ["IN_QUEUE", "RUNNING"].includes(status)) {
+        return new Response(JSON.stringify(Object.assign({}, data, {
+          status: "DISABLED",
+          background_music_generation: true
+        })), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Cache-Control": "no-store"
+          }
+        });
+      }
+      return response;
+    }
+
     if (url.indexOf("/api/ad-film/seedance/status") < 0 || response.ok) {
       return response;
     }
