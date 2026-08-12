@@ -62,7 +62,7 @@
     if (!button) return;
     const card = button.closest(".mobile-adfilm-production-card");
     const video = card && card.querySelector("video");
-    const videoUrl = clean(video && (video.currentSrc || video.src));
+    const videoUrl = clean(video && (video.dataset.finalUrl || video.currentSrc || video.src));
     if (!card || !videoUrl) return;
 
     event.preventDefault();
