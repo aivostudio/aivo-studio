@@ -146,6 +146,15 @@
 
   window.fetch = async function(input, options){
     const url = typeof input === "string" ? input : input && input.url || "";
+
+    if (url.indexOf("/api/ad-film/music/create") >= 0) {
+      const nextOptions = Object.assign({}, options || {});
+      nextOptions.headers = Object.assign({}, nextOptions.headers || {}, {
+        "x-aivo-adfilm-client": "ios"
+      });
+      options = nextOptions;
+    }
+
     const response = await nativeFetch(input, options);
 
     if (url.indexOf("/api/ad-film/music/create") >= 0 && response.ok) {
