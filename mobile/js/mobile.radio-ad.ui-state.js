@@ -16,6 +16,7 @@
 
   const preview = view.querySelector("[data-mobile-radio-preview]");
   const narrationCreateButton = preview && preview.querySelector(".mobile-adfilm-voice-create");
+  const narrationApproveButton = preview && preview.querySelector(".mobile-adfilm-voice-approve");
   const narrationStatus = preview && preview.querySelector(".mobile-adfilm-voice-preview-status");
   const narrationProgressLine = preview && preview.querySelector(".mobile-adfilm-voice-preview-line");
 
@@ -29,6 +30,21 @@
 
   function clean(value){
     return String(value == null ? "" : value).trim();
+  }
+
+  function notify(message, type){
+    try{
+      const fn = window.toastSafe || window.showToast || window.toastMsg;
+      if (typeof fn === "function") fn(message, type || "info");
+    }catch(_){ }
+  }
+
+  function currentProject(){
+    try{
+      const sync = window.AIVOMobileRadioAdProjectSync;
+      if (sync && typeof sync.getProject === "function") return sync.getProject();
+    }catch(_){ }
+    return window.AIVOMobileRadioAdProject || null;
   }
 
   function duration(){
@@ -61,6 +77,55 @@
     if (wav) wav.textContent = "WAV · Kayıpsız · " + price("wav", seconds) + " Kredi";
   }
 
+  function narrationRequirement(){
+    const project = currentProject();
+    const audioData = project && project.narration && project.narration.audio;
+    const previewState = clean(preview && preview.dataset.state).toLowerCase();
+    const hasAudio = !!clean(audioData && (audioData.previewUrl || audioData.url));
+
+    if (previewState === "loading") return "loading";
+    if (previewState === "stale") return "regenerate";
+    if (!hasAudio) return "generate";
+    if (audioData.approved !== true) return "approve";
+    return "";
+  }
+
+  function syncBuildGuidance(){
+    if (!actionButton) return;
+    const requirement = narrationRequirement();
+    if (requirement && actionButton.disabled) actionButton.disabled = false;
+  }
+
+  function guideNarrationRequirement(requirement){
+    if (!requirement || !preview) return;
+
+    let message = "Önce konuşma sesini üret.";
+    let targetButton = narrationCreateButton;
+
+    if (requirement === "loading") {
+      message = "Konuşma sesi hazırlanıyor. Tamamlanmasını bekle.";
+    } else if (requirement === "regenerate") {
+      message = "Süre veya metin değişti. Konuşma sesini yeniden üret.";
+    } else if (requirement === "approve") {
+      message = "Önce sesi onayla.";
+      targetButton = narrationApproveButton;
+    }
+
+    notify(message, "warning");
+
+    try{
+      preview.scrollIntoView({ behavior:"smooth", block:"center" });
+    }catch(_){
+      try{ preview.scrollIntoView(); }catch(__){ }
+    }
+
+    if (targetButton){
+      setTimeout(function(){
+        try{ targetButton.focus({ preventScroll:true }); }catch(_){ }
+      }, 420);
+    }
+  }
+
   function syncProductionPrice(){
     const seconds = duration();
     const fmt = format();
@@ -87,6 +152,8 @@
         production.syncButton(project || null);
       }
     }catch(_){ }
+
+    setTimeout(syncBuildGuidance, 0);
   }
 
   function keepInitialDurationAtTen(){
@@ -183,15 +250,29 @@
     syncNarrationProgress();
   }
 
+  if (actionButton){
+    actionButton.addEventListener("click", function(event){
+      const requirement = narrationRequirement();
+      if (!requirement) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+      guideNarrationRequirement(requirement);
+    }, true);
+  }
+
   if (durationSelect){
     durationSelect.value = "10";
     durationSelect.addEventListener("change", function(){
       durationTouched = true;
       syncProductionPrice();
+      setTimeout(syncBuildGuidance, 0);
     });
     durationSelect.addEventListener("input", function(){
       durationTouched = true;
       syncProductionPrice();
+      setTimeout(syncBuildGuidance, 0);
     });
   }
 
@@ -208,6 +289,7 @@
     keepInitialDurationAtTen();
     bindNarrationProgress();
     syncNarrationProgress();
+    setTimeout(syncBuildGuidance, 0);
   });
 
   if (preview){
@@ -215,6 +297,7 @@
       syncNarrationLoadingLabel();
       bindNarrationProgress();
       syncNarrationProgress();
+      setTimeout(syncBuildGuidance, 0);
     });
     narrationObserver.observe(preview, {
       attributes:true,
@@ -229,4 +312,5 @@
   syncNarrationLoadingLabel();
   bindNarrationProgress();
   syncNarrationProgress();
+  setTimeout(syncBuildGuidance, 0);
 })();
