@@ -612,16 +612,33 @@ if (filmCreateButton) {
     });
   }
 
-  root.addEventListener("click", function(event){
-    const button = event.target.closest(".mobile-adfilm-create-button");
-    if (!button) return;
-    const check = syncFilmGuard();
-    if (check.ready) return;
-    event.preventDefault();
-    event.stopPropagation();
-    toast("warning", check.reason, 4300);
-    try { preview.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (_) {}
-  }, true);
+root.addEventListener("click", function(event){
+  const button = event.target.closest(".mobile-adfilm-create-button");
+  if (!button) return;
+
+  const check = syncFilmGuard();
+  if (check.ready) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  if (typeof event.stopImmediatePropagation === "function") {
+    event.stopImmediatePropagation();
+  }
+
+  toast("warning", check.reason, 4300);
+
+  const scrollTarget =
+    check.code === "approval" && approveButton && !approveButton.disabled
+      ? approveButton
+      : preview;
+
+  try {
+    scrollTarget.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  } catch (_) {}
+}, true);
 
   document.addEventListener("aivo:adfilm-project-sync", function(event){
     const nextProject = event && event.detail && event.detail.project;
