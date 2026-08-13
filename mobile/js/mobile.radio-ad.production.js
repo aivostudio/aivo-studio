@@ -390,7 +390,7 @@
         const id = card && card.getAttribute('data-mobile-radio-final-id');
         if (!id) return;
         try{
-          const data = await request('/api/radio-ad/final/delete?projectId=' + encodeURIComponent(getProjectId()) + '&finalId=' + encodeURIComponent(id),{method:'DELETE'});
+          const data = await request('/api/radio-ad/final/delete?projectId=' + encodeURIComponent(getProjectId()) + '&finalId=' + encodeURIComponent(id),{method:'POST'});
           if (data.project) applyProject(data.project);
           stopGalleryAudio();
           notify('Radyo reklamı silindi.','success');
