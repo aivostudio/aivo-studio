@@ -256,7 +256,7 @@
         try{
           const data = await request(
             "/api/radio-ad/final/delete?projectId=" + encodeURIComponent(projectId) + "&finalId=" + encodeURIComponent(id),
-            {method:"DELETE"}
+            {method:"POST"}
           );
 
           const sync = window.AIVOMobileRadioAdProjectSync;
