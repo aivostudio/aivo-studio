@@ -269,6 +269,10 @@ tasks.register("syncAivoWebAssets", Sync) {
     ensureToolCard();
     bindBottomNav();
 
+    if (String(window.location.hash || "").toLowerCase() === "#adfilm") {
+      window.setTimeout(showAdFilm, 0);
+    }
+
     let attempts = 0;
     const retry = window.setInterval(function(){
       attempts += 1;
@@ -291,6 +295,65 @@ tasks.register("syncAivoWebAssets", Sync) {
                 studioText.substring(0, firstCloseBody) + adfilmBootstrap + studioText.substring(firstCloseBody),
                 "UTF-8"
             )
+        }
+
+        def generatedIndexFiles = [
+            new File(aivoGeneratedPublicDir, "index.play.html"),
+            new File(aivoGeneratedPublicDir, "index.html")
+        ]
+
+        generatedIndexFiles.each { generatedIndex ->
+            if (!generatedIndex.exists()) {
+                throw new GradleException("Generated ${generatedIndex.name} was not found after Android asset sync.")
+            }
+
+            def indexText = generatedIndex.getText("UTF-8")
+            def adfilmIndexHref = 'href="studio.play.html#adfilm"'
+
+            if (!indexText.contains(adfilmIndexHref)) {
+                def cartoonCard = '''  <a class="mod-card" href="studio.play.html#cartoon">
+    <span class="tool-icon tool-icon-cartoon" aria-hidden="true"></span>
+    <div>
+      <b data-i18n="index.module.cartoonTitle">AI Çocuk Çizgifilm</b>
+      <span data-i18n="index.module.cartoonSub">Karakter ve sahne fikrini mobilde çizgifilme dönüştür.</span>
+    </div>
+  </a>'''
+
+                def adfilmCard = '''  <a class="mod-card" href="studio.play.html#adfilm">
+    <span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span>
+    <div>
+      <b>AI Reklam Filmi Oluştur</b>
+      <span>Markan, ürünün veya hizmetin için sesli, sahne bazlı reklam filmi oluştur.</span>
+    </div>
+  </a>'''
+
+                if (!indexText.contains(cartoonCard)) {
+                    throw new GradleException("Android AdFilm index card could not find the cartoon card insertion point in ${generatedIndex.name}.")
+                }
+
+                indexText = indexText.replace(cartoonCard, cartoonCard + "\n\n" + adfilmCard)
+            }
+
+            if (!indexText.contains(".tool-icon.tool-icon-adfilm::before{")) {
+                def styleClose = "</style>"
+                def firstStyleClose = indexText.indexOf(styleClose)
+
+                if (firstStyleClose < 0) {
+                    throw new GradleException("Android AdFilm index icon could not find </style> in ${generatedIndex.name}.")
+                }
+
+                def adfilmIconStyle = '''
+    .tool-icon.tool-icon-adfilm::before{
+      background:linear-gradient(135deg,#f472ff,#d99568 52%,#60eaff);
+      -webkit-mask:center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5.5' width='17' height='13' rx='2.2'/%3E%3Cpath d='M9 9.2v5.6l5-2.8-5-2.8z' fill='%23000' stroke='none'/%3E%3Cpath d='M7 3.5h10'/%3E%3C/svg%3E");
+      mask:center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.05' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5.5' width='17' height='13' rx='2.2'/%3E%3Cpath d='M9 9.2v5.6l5-2.8-5-2.8z' fill='%23000' stroke='none'/%3E%3Cpath d='M7 3.5h10'/%3E%3C/svg%3E");
+    }
+'''
+
+                indexText = indexText.substring(0, firstStyleClose) + adfilmIconStyle + indexText.substring(firstStyleClose)
+            }
+
+            generatedIndex.setText(indexText, "UTF-8")
         }
     }
 }
