@@ -1793,6 +1793,8 @@ function ensureAdFilmLoaded(){
   return adfilmLoadPromise;
 }
 
+ensureAdFilmLoaded().catch(function(){});
+
 try {
   const creditsRes = await fetch("/mobile/modules/mobile.credits.play.html?v=2", {
     cache: "no-store"
