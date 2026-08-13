@@ -164,7 +164,7 @@ const productImages = Array.isArray(mediaSource.productImages)
   ? mediaSource.productImages
       .map((item) => sanitizeMediaItem(item, prefix, "product-image"))
       .filter(Boolean)
-      .slice(0, 9)
+    .slice(0, 6)
   : undefined;
   const logo =
     mediaSource.logo === null
