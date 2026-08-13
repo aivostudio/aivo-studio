@@ -31,7 +31,7 @@
   Object.keys(inputs).forEach(function(group){ if (inputs[group]) groupByInput.set(inputs[group], group); });
 
   const state = { primary: [], angles: [], scene: [], logo: [] };
-  const MANIFEST_PREFIX = "aivo_mobile_adfilm_reference_manifest_v1:";
+ const MANIFEST_PREFIX = "aivo_mobile_adfilm_reference_manifest_v2:";
   let activeProjectId = "";
   let sequence = 0;
   let uploadChain = Promise.resolve();
@@ -259,7 +259,7 @@
     const source = sync.project();
     if (!source) return null;
     const media = Object.assign({}, source.media || {});
-    media.productImages = orderedEntries().filter(function(entry){ return !!entry.remote; }).slice(0, 6).map(remoteAsset).filter(Boolean);
+   media.productImages = orderedEntries().filter(function(entry){ return !!entry.remote; }).slice(0, 9).map(remoteAsset).filter(Boolean);
     media.logo = currentLogoAsset();
     source.media = media;
     window.AIVOAdFilmServerMedia = media;
@@ -387,10 +387,10 @@
       });
     } else {
       const media = project && project.media || {};
-      const products = Array.isArray(media.productImages) ? media.productImages.slice(0, 6) : [];
-      if (products[0]) state.primary = [entryFromRemote(products[0], "primary", products[0].key)].filter(Boolean);
-      products.slice(1, 4).forEach(function(asset){ const entry = entryFromRemote(asset, "angles", asset.key); if (entry) state.angles.push(entry); });
-      products.slice(4, 6).forEach(function(asset){ const entry = entryFromRemote(asset, "scene", asset.key); if (entry) state.scene.push(entry); });
+     const products = Array.isArray(media.productImages) ? media.productImages.slice(0, 9) : [];
+if (products[0]) state.primary = [entryFromRemote(products[0], "primary", products[0].key)].filter(Boolean);
+products.slice(1, 4).forEach(function(asset){ const entry = entryFromRemote(asset, "angles", asset.key); if (entry) state.angles.push(entry); });
+products.slice(4, 9).forEach(function(asset){ const entry = entryFromRemote(asset, "scene", asset.key); if (entry) state.scene.push(entry); });
       if (media.logo) state.logo = [entryFromRemote(media.logo, "logo", media.logo.key)].filter(Boolean);
       writeManifest();
     }
