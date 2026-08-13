@@ -3060,11 +3060,19 @@ if (tool === "atmo") {
   window.scrollTo({ top: 0, behavior: "smooth" });
   return;
 }
-
   if (tool === "lipsync") {
     activeMobileModule = "lipsync";
     homeMount.hidden = true;
     showLipsync();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (tool === "adfilm") {
+    activeMobileModule = "adfilm";
+    homeMount.hidden = true;
+    showAdFilm();
     setActiveNav(toolsNav);
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
