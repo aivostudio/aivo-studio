@@ -309,30 +309,42 @@
   document.addEventListener("aivo:mobile-radioad-project-sync", function(){ setTimeout(refresh, 0); });
   window.addEventListener("pageshow", function(){ setTimeout(refresh, 0); });
 
-  if (document.body) {
-    observer = new MutationObserver(function(records){
-      records.forEach(function(record){
-        if (record.type === "characterData") {
-          if (inScope(record.target)) translateTextNode(record.target);
+const adFilmRuntimeRoot = document.getElementById("mobileAdFilmSection");
+
+if (adFilmRuntimeRoot) {
+  observer = new MutationObserver(function(records){
+    records.forEach(function(record){
+      if (record.type === "characterData") {
+        translateTextNode(record.target);
+        return;
+      }
+
+      if (record.type === "attributes") {
+        translateAttribute(record.target, record.attributeName);
+        return;
+      }
+
+      Array.from(record.addedNodes || []).forEach(function(node){
+        if (node.nodeType === 3) {
+          translateTextNode(node);
           return;
         }
-        if (record.type === "attributes") {
-          if (inScope(record.target)) translateAttribute(record.target, record.attributeName);
-          return;
-        }
-        Array.from(record.addedNodes || []).forEach(function(node){
-          if (node.nodeType === 3) {
-            if (inScope(node)) translateTextNode(node);
-            return;
-          }
-          if (node.nodeType !== 1) return;
-          if (inScope(node) || (node.matches && node.matches(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR))) applyRuntimeI18n(node);
-          else if (node.querySelector && node.querySelector(ROOT_SELECTOR + "," + REPORT_SELECTOR + "," + CREDIT_SELECTOR)) applyRuntimeI18n(node);
-        });
+
+        if (node.nodeType !== 1) return;
+
+        applyRuntimeI18n(node);
       });
     });
-    observer.observe(document.body, { subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:ATTRIBUTES });
-  }
+  });
+
+  observer.observe(adFilmRuntimeRoot, {
+    subtree:true,
+    childList:true,
+    characterData:true,
+    attributes:true,
+    attributeFilter:ATTRIBUTES
+  });
+}
 
   window.addEventListener("pagehide", function(){
     if (observer) observer.disconnect();
