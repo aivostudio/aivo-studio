@@ -589,10 +589,76 @@ if (filmCreateButton) {
     });
   }
 
-  ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended"].forEach(function(name){
-    audio.addEventListener(name, syncPlayer);
+(function bindSmoothNarrationProgress(){
+  let progressRaf = 0;
+
+  function stopSmoothProgress(){
+    if (!progressRaf) return;
+    cancelAnimationFrame(progressRaf);
+    progressRaf = 0;
+  }
+
+  function syncSmoothProgress(){
+    const total =
+      Number.isFinite(audio.duration) && audio.duration > 0
+        ? audio.duration
+        : 0;
+
+    const current =
+      Number.isFinite(audio.currentTime) && audio.currentTime > 0
+        ? audio.currentTime
+        : 0;
+
+    const percent = total
+      ? Math.max(0, Math.min(100, current / total * 100))
+      : 0;
+
+    if (progressFill) {
+      progressFill.style.display = "none";
+    }
+
+    if (progressLine) {
+      progressLine.style.background =
+        "linear-gradient(90deg," +
+        "#8b5cf6 0%," +
+        "#ec4899 " + percent + "%," +
+        "rgba(255,255,255,.08) " + percent + "%," +
+        "rgba(255,255,255,.08) 100%)";
+    }
+
+    syncPlayer();
+  }
+
+  function frame(){
+    syncSmoothProgress();
+
+    if (!audio.paused && !audio.ended) {
+      progressRaf = requestAnimationFrame(frame);
+    } else {
+      progressRaf = 0;
+    }
+  }
+
+  ["loadedmetadata", "durationchange", "timeupdate"].forEach(function(name){
+    audio.addEventListener(name, syncSmoothProgress);
   });
 
+  audio.addEventListener("play", function(){
+    stopSmoothProgress();
+    syncSmoothProgress();
+    progressRaf = requestAnimationFrame(frame);
+  });
+
+  audio.addEventListener("pause", function(){
+    stopSmoothProgress();
+    syncSmoothProgress();
+  });
+
+  audio.addEventListener("ended", function(){
+    stopSmoothProgress();
+    syncSmoothProgress();
+  });
+})();
   narrationText.addEventListener("input", function(){
     render(project());
   });
