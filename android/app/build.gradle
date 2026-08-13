@@ -146,15 +146,11 @@ tasks.register("syncAivoWebAssets", Sync) {
     card.className = "mobile-tool-card";
     card.type = "button";
     card.setAttribute("data-mobile-tool", "adfilm");
-    card.innerHTML = '<span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span><b data-i18n="tools.adfilm">AI Reklam Filmi Oluştur</b>';
+    card.innerHTML = '<span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span><b>AI Reklam Filmi Oluştur</b>';
 
     const lipsyncCard = grid.querySelector('[data-mobile-tool="lipsync"]');
     if (lipsyncCard) lipsyncCard.insertAdjacentElement("afterend", card);
     else grid.appendChild(card);
-
-    if (typeof window.aivoApplyI18n === "function") {
-      try { window.aivoApplyI18n(card); } catch (_) {}
-    }
 
     card.addEventListener("click", function(event){
       event.preventDefault();
