@@ -160,13 +160,12 @@ export function sanitizeProjectPatch(patch, user, projectId) {
   const outputSource = source.output || {};
   const mediaSource = source.media || {};
 
-  const productImages = Array.isArray(mediaSource.productImages)
-    ? mediaSource.productImages
-        .map((item) => sanitizeMediaItem(item, prefix, "product-image"))
-        .filter(Boolean)
-        .slice(0, 6)
-    : undefined;
-
+const productImages = Array.isArray(mediaSource.productImages)
+  ? mediaSource.productImages
+      .map((item) => sanitizeMediaItem(item, prefix, "product-image"))
+      .filter(Boolean)
+      .slice(0, 9)
+  : undefined;
   const logo =
     mediaSource.logo === null
       ? null
