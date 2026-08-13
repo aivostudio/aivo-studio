@@ -115,6 +115,41 @@ tasks.register("syncAivoWebAssets", Sync) {
     if (mount) mount.hidden = true;
   }
 
+  function openAdFilmLibraryWhenReady(){
+    let attempts = 0;
+
+    function open(){
+      if (typeof window.mobileAdFilmShowLibrary === "function") {
+        window.mobileAdFilmShowLibrary();
+        return;
+      }
+
+      attempts += 1;
+      if (attempts < 100) {
+        window.setTimeout(open, 50);
+      }
+    }
+
+    open();
+  }
+
+  function guardAdFilmProductions(event){
+    const productions = event.target && event.target.closest
+      ? event.target.closest('.bottom-nav a[href="#productions"]')
+      : null;
+
+    if (!productions) return;
+
+    const mount = document.getElementById("mobileAdFilmMount");
+    if (!mount || mount.hidden) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    openAdFilmLibraryWhenReady();
+  }
+
   function bindBottomNav(){
     document.querySelectorAll(".bottom-nav a").forEach(function(item){
       if (item.__aivoAdFilmCompatBound) return;
@@ -134,6 +169,7 @@ tasks.register("syncAivoWebAssets", Sync) {
   }
 
   function boot(){
+    document.addEventListener("click", guardAdFilmProductions, true);
     bindBottomNav();
 
     if (openHashRoute()) return;
