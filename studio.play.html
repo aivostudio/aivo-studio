@@ -2215,6 +2215,21 @@ function showLipsync(){
     if (lipsyncResults) lipsyncResults.hidden = true;
   }
 }
+    function showAdFilm(){
+  homeMount.hidden = true;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
+}
 
 if (homeNav) {
   homeNav.addEventListener("click", function(e){
