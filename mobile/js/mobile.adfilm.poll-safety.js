@@ -58,118 +58,6 @@
     });
   }
 
-  function parkAndroidPlayVideos(scope){
-    if (!isAndroidPlayStudio) return;
-
-    const host = scope && scope.querySelectorAll ? scope : document;
-    const videos = [];
-
-    if (host.matches && host.matches(".mobile-adfilm-production-card video")) {
-      videos.push(host);
-    }
-
-    host.querySelectorAll(".mobile-adfilm-production-card video").forEach(function(video){
-      videos.push(video);
-    });
-
-    videos.forEach(function(video){
-      if (!video || video.dataset.aivoPlayVideoActive === "1") return;
-
-      const source = clean(
-        video.getAttribute("src") ||
-        video.currentSrc ||
-        video.dataset.previewUrl ||
-        video.dataset.finalUrl
-      );
-
-      if (source && !video.dataset.aivoPlayVideoSrc) {
-        video.dataset.aivoPlayVideoSrc = source;
-      }
-
-      try { video.pause(); } catch (_) {}
-      video.preload = "none";
-
-      if (video.hasAttribute("src")) {
-        video.removeAttribute("src");
-        try { video.load(); } catch (_) {}
-      }
-    });
-  }
-
-  async function ensureAndroidPlayPreview(card, video){
-    const existingPreview = clean(video && video.dataset.previewUrl);
-    if (existingPreview) return existingPreview;
-
-    if (!card || !video) return "";
-    if (card.dataset.adfilmPreviewState === "loading") return "";
-
-    const projectId = clean(card.getAttribute("data-mobile-adfilm-project"));
-    const outputId = clean(card.getAttribute("data-mobile-adfilm-output"));
-    const finalUrl = clean(video.dataset.finalUrl || video.dataset.aivoPlayVideoSrc || video.currentSrc || video.src);
-    if (!projectId || !outputId || !finalUrl) return finalUrl;
-
-    card.dataset.adfilmPreviewState = "loading";
-
-    try {
-      const response = await nativeFetch("/api/ad-film/seedance/preview", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          accept: "application/json"
-        },
-        body: JSON.stringify({ projectId: projectId, outputId: outputId })
-      });
-
-      const data = await response.json().catch(function(){ return {}; });
-      const previewUrl = clean(data && data.preview_url);
-
-      if (!response.ok || !previewUrl) {
-        throw new Error(clean(data && (data.message || data.error)) || "preview_failed");
-      }
-
-      video.dataset.previewUrl = previewUrl;
-      video.dataset.aivoPlayVideoSrc = previewUrl;
-      card.dataset.adfilmPreviewState = "ready";
-      return previewUrl;
-    } catch (error) {
-      card.dataset.adfilmPreviewState = "failed";
-      console.warn("[MOBILE ADFILM] on-demand preview failed", error);
-      return finalUrl;
-    }
-  }
-
-  async function activateAndroidPlayVideo(event){
-    if (!isAndroidPlayStudio) return;
-
-    const button = event.target && event.target.closest
-      ? event.target.closest('[data-mobile-adfilm-output-action="play"]')
-      : null;
-
-    if (!button) return;
-
-    const card = button.closest(".mobile-adfilm-production-card");
-    const video = card && card.querySelector("video");
-    if (!video || clean(video.getAttribute("src"))) return;
-
-    button.disabled = true;
-    button.setAttribute("aria-busy", "true");
-
-    try {
-      const source = await ensureAndroidPlayPreview(card, video);
-      if (!source || !video.isConnected) return;
-
-      video.dataset.aivoPlayVideoActive = "1";
-      video.src = source;
-      video.preload = "metadata";
-      try { video.load(); } catch (_) {}
-    } finally {
-      button.disabled = false;
-      button.removeAttribute("aria-busy");
-    }
-  }
-
   function prepareLegacyAdFilmPreviews(scope){
     if (isAndroidPlayStudio) return;
 
@@ -318,10 +206,8 @@
     });
   };
 
-  document.addEventListener("click", activateAndroidPlayVideo, true);
   document.addEventListener("click", handleAdFilmShare, true);
   normalizeAdFilmShareButtons(document);
-  parkAndroidPlayVideos(document);
   prepareLegacyAdFilmPreviews(document);
 
 const adFilmObserverRoot = document.getElementById("mobileAdFilmSection");
@@ -332,7 +218,6 @@ if (adFilmObserverRoot) {
       Array.from(record.addedNodes || []).forEach(function(node){
         if (node && node.nodeType === 1) {
           normalizeAdFilmShareButtons(node);
-          parkAndroidPlayVideos(node);
           prepareLegacyAdFilmPreviews(node);
         }
       });
