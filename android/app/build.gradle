@@ -70,6 +70,232 @@ tasks.register("syncAivoWebAssets", Sync) {
   "webDir": "www"
 }
 '''
+
+        def generatedStudioPlay = new File(aivoGeneratedPublicDir, "studio.play.html")
+        if (!generatedStudioPlay.exists()) {
+            throw new GradleException("Generated studio.play.html was not found after Android asset sync.")
+        }
+
+        def studioText = generatedStudioPlay.getText("UTF-8")
+        def adfilmMarker = "AIVO_PLAY_ADFILM_BOOTSTRAP"
+        def closeBody = "</body>"
+
+        if (!studioText.contains(adfilmMarker)) {
+            def firstCloseBody = studioText.indexOf(closeBody)
+            def lastCloseBody = studioText.lastIndexOf(closeBody)
+
+            if (firstCloseBody < 0 || firstCloseBody != lastCloseBody) {
+                throw new GradleException("Android AdFilm bootstrap expected exactly one </body> in studio.play.html.")
+            }
+
+            def adfilmBootstrap = '''
+<script>
+(function AIVO_PLAY_ADFILM_BOOTSTRAP(){
+  "use strict";
+  if (window.__AIVO_PLAY_ADFILM_BOOTSTRAP__) return;
+  window.__AIVO_PLAY_ADFILM_BOOTSTRAP__ = true;
+
+  const MOUNT_ID = "mobileAdFilmMount";
+  const MODULE_URL = "/mobile/modules/mobile.adfilm.html?v=1";
+  const SCRIPT_URL = "/mobile/js/mobile.adfilm.js?v=1";
+  const STYLE_URL = "/mobile/css/mobile.adfilm.css?v=1";
+
+  let modulePromise = null;
+
+  function ensureBaseStyle(){
+    if (document.querySelector('link[data-aivo-play-adfilm-style]')) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = STYLE_URL;
+    link.setAttribute("data-aivo-play-adfilm-style", "");
+    document.head.appendChild(link);
+  }
+
+  function ensureMount(){
+    let mount = document.getElementById(MOUNT_ID);
+    if (mount) return mount;
+
+    mount = document.createElement("div");
+    mount.id = MOUNT_ID;
+    mount.hidden = true;
+    mount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yükleniyor...</div>';
+
+    const lipsyncMount = document.getElementById("mobileLipsyncMount");
+    if (lipsyncMount && lipsyncMount.parentNode) {
+      lipsyncMount.insertAdjacentElement("afterend", mount);
+      return mount;
+    }
+
+    const shell = document.querySelector(".mobile-shell");
+    const bottomNav = shell && shell.querySelector(".bottom-nav");
+    if (shell) {
+      if (bottomNav) shell.insertBefore(mount, bottomNav);
+      else shell.appendChild(mount);
+    }
+
+    return mount;
+  }
+
+  function ensureToolCard(){
+    const toolsMount = document.getElementById("mobileToolsMount");
+    const grid = toolsMount && toolsMount.querySelector(".mobile-tools-grid");
+    if (!grid) return false;
+    if (grid.querySelector('[data-mobile-tool="adfilm"]')) return true;
+
+    const card = document.createElement("button");
+    card.className = "mobile-tool-card";
+    card.type = "button";
+    card.setAttribute("data-mobile-tool", "adfilm");
+    card.innerHTML = '<span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span><b data-i18n="tools.adfilm">AI Reklam Filmi Oluştur</b>';
+
+    const lipsyncCard = grid.querySelector('[data-mobile-tool="lipsync"]');
+    if (lipsyncCard) lipsyncCard.insertAdjacentElement("afterend", card);
+    else grid.appendChild(card);
+
+    if (typeof window.aivoApplyI18n === "function") {
+      try { window.aivoApplyI18n(card); } catch (_) {}
+    }
+
+    card.addEventListener("click", function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      showAdFilm();
+    });
+
+    return true;
+  }
+
+  function loadAdFilmModule(){
+    if (modulePromise) return modulePromise;
+
+    const mount = ensureMount();
+    ensureBaseStyle();
+
+    modulePromise = fetch(MODULE_URL, { cache: "no-store" })
+      .then(function(response){
+        if (!response.ok) throw new Error("mobile_adfilm_html_load_failed");
+        return response.text();
+      })
+      .then(function(html){
+        mount.innerHTML = html;
+
+        if (typeof window.aivoApplyI18n === "function") {
+          try { window.aivoApplyI18n(mount); } catch (_) {}
+        }
+
+        return new Promise(function(resolve, reject){
+          const existing = document.querySelector('script[data-aivo-play-adfilm-script]');
+          if (existing) {
+            if (existing.dataset.loaded === "1") resolve();
+            else {
+              existing.addEventListener("load", resolve, { once: true });
+              existing.addEventListener("error", reject, { once: true });
+            }
+            return;
+          }
+
+          const script = document.createElement("script");
+          script.src = SCRIPT_URL;
+          script.defer = true;
+          script.setAttribute("data-aivo-play-adfilm-script", "");
+          script.addEventListener("load", function(){
+            script.dataset.loaded = "1";
+            resolve();
+          }, { once: true });
+          script.addEventListener("error", reject, { once: true });
+          document.body.appendChild(script);
+        });
+      })
+      .catch(function(error){
+        modulePromise = null;
+        mount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+        console.error("[AIVO PLAY ADFILM] module load failed", error);
+        throw error;
+      });
+
+    return modulePromise;
+  }
+
+  function hideAllStudioMounts(){
+    [
+      "mobileHomeMount",
+      "mobileMusicMount",
+      "mobileCoverMount",
+      "mobileAtmoMount",
+      "mobileCartoonMount",
+      "mobilePhotoFxMount",
+      "mobileVideoMount",
+      "mobileLipsyncMount",
+      "mobileCreditsMount",
+      "mobileToolsMount",
+      "mobileAccountMount",
+      "mobilePolicyMount"
+    ].forEach(function(id){
+      const element = document.getElementById(id);
+      if (element) element.hidden = true;
+    });
+  }
+
+  function setToolsNavActive(){
+    document.querySelectorAll(".bottom-nav a").forEach(function(item){
+      item.classList.remove("active");
+    });
+    const toolsNav = document.querySelector('.bottom-nav a[href="#tools"]');
+    if (toolsNav) toolsNav.classList.add("active");
+  }
+
+  function showAdFilm(){
+    const mount = ensureMount();
+    hideAllStudioMounts();
+    mount.hidden = false;
+    setToolsNavActive();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    loadAdFilmModule().catch(function(){});
+  }
+
+  function hideAdFilm(){
+    const mount = document.getElementById(MOUNT_ID);
+    if (mount) mount.hidden = true;
+  }
+
+  function bindBottomNav(){
+    document.querySelectorAll(".bottom-nav a").forEach(function(item){
+      if (item.__aivoAdFilmHideBound) return;
+      item.__aivoAdFilmHideBound = true;
+      item.addEventListener("click", hideAdFilm, true);
+    });
+  }
+
+  function boot(){
+    ensureBaseStyle();
+    ensureMount();
+    ensureToolCard();
+    bindBottomNav();
+
+    let attempts = 0;
+    const retry = window.setInterval(function(){
+      attempts += 1;
+      const cardReady = ensureToolCard();
+      bindBottomNav();
+      if (cardReady || attempts >= 20) window.clearInterval(retry);
+    }, 250);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+</script>
+'''
+
+            generatedStudioPlay.setText(
+                studioText.substring(0, firstCloseBody) + adfilmBootstrap + studioText.substring(firstCloseBody),
+                "UTF-8"
+            )
+        }
     }
 }
 
