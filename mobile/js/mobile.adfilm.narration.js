@@ -234,16 +234,44 @@
     return { ready: true, code: "ready", reason: "" };
   }
 
-  function syncFilmGuard(){
-    const check = narrationState();
-    root.dataset.adfilmNarrationGuard = check.ready ? "ready" : "blocked";
-    root.dataset.adfilmNarrationGuardCode = check.code;
-    if (filmCreateButton) {
-      filmCreateButton.dataset.audioApprovalGuard = check.ready ? "ready" : "blocked";
-      filmCreateButton.title = check.ready ? "" : check.reason;
+function syncFilmGuard(){
+  const check = narrationState();
+  root.dataset.adfilmNarrationGuard = check.ready ? "ready" : "blocked";
+  root.dataset.adfilmNarrationGuardCode = check.code;
+
+  if (filmCreateButton) {
+    filmCreateButton.dataset.audioApprovalGuard = check.ready ? "ready" : "blocked";
+    filmCreateButton.title = check.ready ? "" : check.reason;
+
+    const producing =
+      filmCreateButton.classList.contains("is-producing") ||
+      filmCreateButton.getAttribute("aria-busy") === "true";
+
+    if (!check.ready && !producing && filmCreateButton.disabled) {
+      filmCreateButton.disabled = false;
     }
-    return check;
   }
+
+  return check;
+}
+
+if (filmCreateButton) {
+  const filmGuardObserver = new MutationObserver(function(){
+    const check = narrationState();
+    const producing =
+      filmCreateButton.classList.contains("is-producing") ||
+      filmCreateButton.getAttribute("aria-busy") === "true";
+
+    if (!check.ready && !producing && filmCreateButton.disabled) {
+      filmCreateButton.disabled = false;
+    }
+  });
+
+  filmGuardObserver.observe(filmCreateButton, {
+    attributes: true,
+    attributeFilter: ["disabled", "class", "aria-busy"]
+  });
+}
 
   function render(source){
     source = source || project() || {};
