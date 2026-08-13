@@ -4,6 +4,7 @@
   window.__AIVO_MOBILE_ADFILM_POLL_SAFETY_V1__ = true;
 
   const nativeFetch = window.fetch.bind(window);
+  const isAndroidPlayStudio = /\/studio\.play\.html$/i.test(String(window.location.pathname || ""));
 
   function clean(value){
     return String(value == null ? "" : value).trim();
@@ -58,6 +59,8 @@
   }
 
   function prepareLegacyAdFilmPreviews(scope){
+    if (isAndroidPlayStudio) return;
+
     const host = scope && scope.querySelectorAll ? scope : document;
     const cards = [];
 
