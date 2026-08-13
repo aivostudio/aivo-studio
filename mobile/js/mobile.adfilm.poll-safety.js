@@ -58,6 +58,71 @@
     });
   }
 
+  function parkAndroidPlayVideos(scope){
+    if (!isAndroidPlayStudio) return;
+
+    const host = scope && scope.querySelectorAll ? scope : document;
+    const videos = [];
+
+    if (host.matches && host.matches(".mobile-adfilm-production-card video")) {
+      videos.push(host);
+    }
+
+    host.querySelectorAll(".mobile-adfilm-production-card video").forEach(function(video){
+      videos.push(video);
+    });
+
+    videos.forEach(function(video){
+      if (!video || video.dataset.aivoPlayVideoActive === "1") return;
+
+      const source = clean(
+        video.getAttribute("src") ||
+        video.currentSrc ||
+        video.dataset.previewUrl ||
+        video.dataset.finalUrl
+      );
+
+      if (source && !video.dataset.aivoPlayVideoSrc) {
+        video.dataset.aivoPlayVideoSrc = source;
+      }
+
+      try { video.pause(); } catch (_) {}
+      video.preload = "none";
+
+      if (video.hasAttribute("src")) {
+        video.removeAttribute("src");
+        try { video.load(); } catch (_) {}
+      }
+    });
+  }
+
+  function activateAndroidPlayVideo(event){
+    if (!isAndroidPlayStudio) return;
+
+    const button = event.target && event.target.closest
+      ? event.target.closest('[data-mobile-adfilm-output-action="play"]')
+      : null;
+
+    if (!button) return;
+
+    const card = button.closest(".mobile-adfilm-production-card");
+    const video = card && card.querySelector("video");
+    if (!video || clean(video.getAttribute("src"))) return;
+
+    const source = clean(
+      video.dataset.aivoPlayVideoSrc ||
+      video.dataset.previewUrl ||
+      video.dataset.finalUrl
+    );
+
+    if (!source) return;
+
+    video.dataset.aivoPlayVideoActive = "1";
+    video.src = source;
+    video.preload = "metadata";
+    try { video.load(); } catch (_) {}
+  }
+
   function prepareLegacyAdFilmPreviews(scope){
     if (isAndroidPlayStudio) return;
 
@@ -206,8 +271,10 @@
     });
   };
 
+  document.addEventListener("click", activateAndroidPlayVideo, true);
   document.addEventListener("click", handleAdFilmShare, true);
   normalizeAdFilmShareButtons(document);
+  parkAndroidPlayVideos(document);
   prepareLegacyAdFilmPreviews(document);
 
 const adFilmObserverRoot = document.getElementById("mobileAdFilmSection");
@@ -218,6 +285,7 @@ if (adFilmObserverRoot) {
       Array.from(record.addedNodes || []).forEach(function(node){
         if (node && node.nodeType === 1) {
           normalizeAdFilmShareButtons(node);
+          parkAndroidPlayVideos(node);
           prepareLegacyAdFilmPreviews(node);
         }
       });
