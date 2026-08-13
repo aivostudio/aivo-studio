@@ -508,6 +508,24 @@
   cursor:not-allowed;
 }
 
+@keyframes aivoAndroidRadioApprovalPulse{
+  0%,100%{
+    transform:scale(1);
+    opacity:.78;
+    box-shadow:0 0 0 0 rgba(52,211,153,.34),0 0 16px rgba(52,211,153,.24);
+  }
+  50%{
+    transform:scale(1.035);
+    opacity:1;
+    box-shadow:0 0 0 9px rgba(52,211,153,0),0 0 34px rgba(52,211,153,.72);
+  }
+}
+
+[data-mobile-adfilm-view="radio"] [data-mobile-radio-preview][data-state="ready"] .mobile-adfilm-voice-approve:not(:disabled):not(.is-approved){
+  animation:aivoAndroidRadioApprovalPulse .58s ease-in-out infinite!important;
+  will-change:transform,opacity,box-shadow;
+}
+
 @media (max-width:360px){
   .mobile-adfilm-voice-grid{
     grid-template-columns:1fr;
