@@ -406,6 +406,23 @@
   clip-path:polygon(18% 8%,88% 50%,18% 92%);
 }
 
+.mobile-adfilm-voice-play.is-playing::before{
+  width:15px;
+  height:15px;
+  clip-path:none;
+  -webkit-clip-path:none;
+  background:linear-gradient(
+    90deg,
+    #fff 0 34%,
+    transparent 34% 66%,
+    #fff 66% 100%
+  );
+}
+
+.mobile-adfilm-voice-play.is-playing{
+  opacity:1;
+}
+
 .mobile-adfilm-voice-player-main{
   min-width:0;
 }
