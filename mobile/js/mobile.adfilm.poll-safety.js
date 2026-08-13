@@ -124,8 +124,6 @@
   }
 
   function prepareLegacyAdFilmPreviews(scope){
-    if (isAndroidPlayStudio) return;
-
     const host = scope && scope.querySelectorAll ? scope : document;
     const cards = [];
 
