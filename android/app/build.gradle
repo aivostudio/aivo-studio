@@ -80,6 +80,20 @@ tasks.register("syncAivoWebAssets", Sync) {
         def closeHead = "</head>"
         def closeBody = "</body>"
 
+        def fastNavMarker = "(function AIVO_PLAY_FAST_BOTTOM_NAV(){"
+        if (studioText.contains(fastNavMarker)) {
+            def fastNavFunctionStart = studioText.indexOf(fastNavMarker)
+            def fastNavScriptStart = studioText.lastIndexOf("<script>", fastNavFunctionStart)
+            def fastNavScriptEnd = studioText.indexOf("</script>", fastNavFunctionStart)
+
+            if (fastNavScriptStart < 0 || fastNavScriptEnd < 0) {
+                throw new GradleException("Android Play fast bottom nav block could not be isolated safely.")
+            }
+
+            fastNavScriptEnd += "</script>".length()
+            studioText = studioText.substring(0, fastNavScriptStart) + studioText.substring(fastNavScriptEnd)
+        }
+
         if (!studioText.contains('/mobile/css/mobile.adfilm.css?v=1')) {
             def firstCloseHead = studioText.indexOf(closeHead)
             if (firstCloseHead < 0) {
