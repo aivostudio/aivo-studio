@@ -207,17 +207,27 @@
   normalizeAdFilmShareButtons(document);
   prepareLegacyAdFilmPreviews(document);
 
-  if (document.body) {
-    const shareObserver = new MutationObserver(function(records){
-      records.forEach(function(record){
-        Array.from(record.addedNodes || []).forEach(function(node){
-          if (node && node.nodeType === 1) {
-            normalizeAdFilmShareButtons(node);
-            prepareLegacyAdFilmPreviews(node);
-          }
-        });
+const adFilmObserverRoot = document.getElementById("mobileAdFilmSection");
+
+if (adFilmObserverRoot) {
+  const shareObserver = new MutationObserver(function(records){
+    records.forEach(function(record){
+      Array.from(record.addedNodes || []).forEach(function(node){
+        if (node && node.nodeType === 1) {
+          normalizeAdFilmShareButtons(node);
+          prepareLegacyAdFilmPreviews(node);
+        }
       });
     });
-    shareObserver.observe(document.body, { childList: true, subtree: true });
-  }
+  });
+
+  shareObserver.observe(adFilmObserverRoot, {
+    childList: true,
+    subtree: true
+  });
+
+  window.addEventListener("pagehide", function(){
+    shareObserver.disconnect();
+  }, { once: true });
+}
 })();
