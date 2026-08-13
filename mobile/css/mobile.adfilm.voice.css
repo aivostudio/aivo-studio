@@ -538,7 +538,8 @@
   }
 }
 
-[data-mobile-adfilm-view="radio"] [data-mobile-radio-preview][data-state="ready"] .mobile-adfilm-voice-approve:not(:disabled):not(.is-approved){
+[data-mobile-adfilm-view="radio"] [data-mobile-radio-preview][data-state="ready"] .mobile-adfilm-voice-approve:not(:disabled):not(.is-approved),
+[data-mobile-adfilm-view="video"] [data-mobile-adfilm-voice-preview][data-state="ready"] .mobile-adfilm-voice-approve:not(:disabled):not(.is-approved){
   animation:aivoAndroidRadioApprovalPulse .58s ease-in-out infinite!important;
   will-change:transform,opacity,box-shadow;
 }
