@@ -313,6 +313,18 @@ tasks.register("syncAivoWebAssets", Sync) {
             generatedAdFilmProduction.setText(adfilmProductionText, "UTF-8")
         }
 
+        def adfilmProjectsEndpointOld = 'fetch("/api/ad-film/projects", {'
+        def adfilmProjectsEndpointCompact = 'fetch("/api/ad-film/projects?compact=1", {'
+
+        if (!adfilmProductionText.contains(adfilmProjectsEndpointOld) && !adfilmProductionText.contains(adfilmProjectsEndpointCompact)) {
+            throw new GradleException("Android AdFilm compact projects endpoint could not find the expected production request.")
+        }
+
+        if (adfilmProductionText.contains(adfilmProjectsEndpointOld)) {
+            adfilmProductionText = adfilmProductionText.replace(adfilmProjectsEndpointOld, adfilmProjectsEndpointCompact)
+            generatedAdFilmProduction.setText(adfilmProductionText, "UTF-8")
+        }
+
         def generatedIndexFiles = [
             new File(aivoGeneratedPublicDir, "index.play.html"),
             new File(aivoGeneratedPublicDir, "index.html")
