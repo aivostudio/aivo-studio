@@ -38,6 +38,8 @@
   let operation = "";
   let pollToken = 0;
   let playPending = false;
+  let forcePlaying = false;
+  let playerFrame = 0;
 
   const audio = document.createElement("audio");
   audio.preload = "auto";
@@ -189,14 +191,37 @@
       progressLine.style.background = "linear-gradient(90deg,#8b5cf6 0%,#ec4899 " + percent + "%,rgba(255,255,255,.08) " + percent + "%,rgba(255,255,255,.08) 100%)";
     }
     if (playButton){
-      const playing = !audio.paused && !audio.ended && !!currentAudioUrl;
+      const playing = forcePlaying || (!audio.paused && !audio.ended && !!currentAudioUrl);
       playButton.classList.toggle("is-playing", playing);
       playButton.setAttribute("aria-label", playing ? "Sesi duraklat" : "Sesi oynat");
     }
   }
 
+  function stopPlayerVisualLoop(resetPlaying){
+    if (playerFrame){
+      cancelAnimationFrame(playerFrame);
+      playerFrame = 0;
+    }
+    if (resetPlaying) forcePlaying = false;
+  }
+
+  function startPlayerVisualLoop(){
+    stopPlayerVisualLoop(false);
+    function tick(){
+      syncPlayer();
+      if (!forcePlaying || !currentAudioUrl || audio.ended){
+        stopPlayerVisualLoop(true);
+        syncPlayer();
+        return;
+      }
+      playerFrame = requestAnimationFrame(tick);
+    }
+    playerFrame = requestAnimationFrame(tick);
+  }
+
   function stopAudio(){
     setPlayPending(false);
+    stopPlayerVisualLoop(true);
     audio.pause();
     try{ audio.currentTime = 0; }catch(_){ }
     syncPlayer();
@@ -564,8 +589,11 @@
   if (playButton){
     playButton.addEventListener("click", function(){
       if (!currentAudioUrl || playPending) return;
-      if (!audio.paused && !audio.ended){
+      if (forcePlaying || (!audio.paused && !audio.ended)){
+        forcePlaying = false;
+        stopPlayerVisualLoop(true);
         audio.pause();
+        syncPlayer();
         return;
       }
 
@@ -573,15 +601,22 @@
       const playPromise = audio.play();
       if (playPromise && typeof playPromise.then === "function"){
         playPromise.then(function(){
+          forcePlaying = true;
           setPlayPending(false);
+          startPlayerVisualLoop();
           syncPlayer();
         }).catch(function(error){
+          forcePlaying = false;
+          stopPlayerVisualLoop(true);
           setPlayPending(false);
           console.error("[MOBILE RADIO AD] narration play", error);
           notify("Ses oynatılamadı.", "error");
         });
       }else{
+        forcePlaying = true;
         setPlayPending(false);
+        startPlayerVisualLoop();
+        syncPlayer();
       }
     });
   }
@@ -597,14 +632,36 @@
   }
 
   audio.addEventListener("loadedmetadata", syncPlayer);
-  audio.addEventListener("canplay", function(){ syncPlayer(); });
-  audio.addEventListener("playing", function(){ setPlayPending(false); syncPlayer(); });
-  audio.addEventListener("waiting", function(){ if (currentAudioUrl) setPlayPending(true); });
+  audio.addEventListener("canplay", syncPlayer);
+  audio.addEventListener("playing", function(){
+    forcePlaying = true;
+    setPlayPending(false);
+    startPlayerVisualLoop();
+    syncPlayer();
+  });
+  audio.addEventListener("waiting", function(){
+    if (currentAudioUrl) setPlayPending(true);
+    syncPlayer();
+  });
   audio.addEventListener("durationchange", syncPlayer);
   audio.addEventListener("timeupdate", syncPlayer);
-  audio.addEventListener("play", syncPlayer);
-  audio.addEventListener("pause", function(){ setPlayPending(false); syncPlayer(); });
-  audio.addEventListener("ended", function(){ setPlayPending(false); syncPlayer(); });
+  audio.addEventListener("play", function(){
+    forcePlaying = true;
+    startPlayerVisualLoop();
+    syncPlayer();
+  });
+  audio.addEventListener("pause", function(){
+    forcePlaying = false;
+    stopPlayerVisualLoop(true);
+    setPlayPending(false);
+    syncPlayer();
+  });
+  audio.addEventListener("ended", function(){
+    forcePlaying = false;
+    stopPlayerVisualLoop(true);
+    setPlayPending(false);
+    syncPlayer();
+  });
 
   Object.keys(fields).forEach(function(key){
     const node = fields[key];
@@ -616,6 +673,10 @@
     const project = event && event.detail && event.detail.project;
     if (project) renderProject(project);
   });
+
+  window.addEventListener("pagehide", function(){
+    stopPlayerVisualLoop(true);
+  }, { once:true });
 
   window.AIVOMobileRadioAdNarration = {
     create: createNarration,
