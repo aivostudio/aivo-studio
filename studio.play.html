@@ -883,17 +883,34 @@ body {
     var st = document.getElementById("aivo-auth-gate-style");
     if (st) st.remove();
 
-  document.documentElement.style.visibility = "visible";
+    function revealStudioChrome(){
+      document.documentElement.style.visibility = "visible";
 
-if (document.body) {
-  document.body.style.opacity = "1";
-} else {
-  document.addEventListener("DOMContentLoaded", function(){
-    document.body.style.opacity = "1";
-  }, { once: true });
-}
+      if (document.body) {
+        document.body.style.opacity = "1";
+      }
 
- document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+      var creditActions = document.querySelector(".topbar-credit-actions");
+      if (creditActions) {
+        creditActions.hidden = false;
+        creditActions.removeAttribute("hidden");
+        creditActions.style.display = "flex";
+        creditActions.style.visibility = "visible";
+        creditActions.style.opacity = "1";
+      }
+
+      document.documentElement.classList.remove(
+        "aivo-start-productions",
+        "aivo-start-tools",
+        "aivo-start-account"
+      );
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", revealStudioChrome, { once: true });
+    } else {
+      revealStudioChrome();
+    }
 
 try {
   document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
