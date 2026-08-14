@@ -402,6 +402,16 @@ products.slice(4, 9).forEach(function(asset){ const entry = entryFromRemote(asse
   function handleProject(project){
     const id = clean(project && project.id || projectId());
     if (!id) return;
+
+    const incomingMedia = project && project.media || {};
+    const incomingProducts = Array.isArray(incomingMedia.productImages) ? incomingMedia.productImages : [];
+    const incomingRemoteCount = incomingProducts.length + (incomingMedia.logo ? 1 : 0);
+    const localRemoteCount = orderedEntries().filter(function(entry){ return !!entry.remote; }).length + (state.logo[0] && state.logo[0].remote ? 1 : 0);
+
+    if (activeProjectId === id && localRemoteCount > 0 && incomingRemoteCount < localRemoteCount) {
+      return;
+    }
+
     restoreFromManifestOrProject(id, project || window.AIVOAdFilmActiveProject || {});
     if (Object.keys(state).some(function(group){ return state[group].some(function(entry){ return entry.file && !entry.remote; }); })) queueUpload();
   }
