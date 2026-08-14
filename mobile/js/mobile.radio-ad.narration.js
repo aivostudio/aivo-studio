@@ -37,9 +37,12 @@
   let currentAudioUrl = "";
   let operation = "";
   let pollToken = 0;
+  let playPending = false;
 
   const audio = document.createElement("audio");
-  audio.preload = "metadata";
+  audio.preload = "auto";
+  audio.setAttribute("playsinline", "");
+  audio.setAttribute("webkit-playsinline", "");
   audio.setAttribute("data-mobile-radio-narration-audio", "");
   audio.hidden = true;
   preview.appendChild(audio);
@@ -128,7 +131,7 @@
       voiceStyle: clean(fields.voiceStyle && fields.voiceStyle.value) || "warm",
       speed: clean(fields.speed && fields.speed.value) || "fast",
       flow: clean(fields.flow && fields.flow.value) || "natural",
-      duration: Number(fields.duration && fields.duration.value) || 30
+      duration: Number(fields.duration && fields.duration.value) || 10
     };
   }
 
@@ -170,6 +173,13 @@
     return Math.floor(seconds / 60) + ":" + String(Math.floor(seconds % 60)).padStart(2, "0");
   }
 
+  function setPlayPending(pending){
+    playPending = !!pending;
+    if (!playButton) return;
+    playButton.classList.toggle("is-loading", playPending);
+    playButton.setAttribute("aria-busy", playPending ? "true" : "false");
+  }
+
   function syncPlayer(){
     const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
     const current = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
@@ -186,6 +196,7 @@
   }
 
   function stopAudio(){
+    setPlayPending(false);
     audio.pause();
     try{ audio.currentTime = 0; }catch(_){ }
     syncPlayer();
@@ -207,6 +218,7 @@
     if (nextUrl === currentAudioUrl) return;
     stopAudio();
     currentAudioUrl = nextUrl;
+    audio.preload = "auto";
     audio.src = nextUrl;
     audio.load();
   }
@@ -551,9 +563,26 @@
 
   if (playButton){
     playButton.addEventListener("click", function(){
-      if (!currentAudioUrl) return;
-      if (audio.paused || audio.ended) audio.play().catch(function(){ notify("Ses oynatılamadı.", "error"); });
-      else audio.pause();
+      if (!currentAudioUrl || playPending) return;
+      if (!audio.paused && !audio.ended){
+        audio.pause();
+        return;
+      }
+
+      setPlayPending(true);
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.then === "function"){
+        playPromise.then(function(){
+          setPlayPending(false);
+          syncPlayer();
+        }).catch(function(error){
+          setPlayPending(false);
+          console.error("[MOBILE RADIO AD] narration play", error);
+          notify("Ses oynatılamadı.", "error");
+        });
+      }else{
+        setPlayPending(false);
+      }
     });
   }
 
@@ -568,11 +597,14 @@
   }
 
   audio.addEventListener("loadedmetadata", syncPlayer);
+  audio.addEventListener("canplay", function(){ syncPlayer(); });
+  audio.addEventListener("playing", function(){ setPlayPending(false); syncPlayer(); });
+  audio.addEventListener("waiting", function(){ if (currentAudioUrl) setPlayPending(true); });
   audio.addEventListener("durationchange", syncPlayer);
   audio.addEventListener("timeupdate", syncPlayer);
   audio.addEventListener("play", syncPlayer);
-  audio.addEventListener("pause", syncPlayer);
-  audio.addEventListener("ended", syncPlayer);
+  audio.addEventListener("pause", function(){ setPlayPending(false); syncPlayer(); });
+  audio.addEventListener("ended", function(){ setPlayPending(false); syncPlayer(); });
 
   Object.keys(fields).forEach(function(key){
     const node = fields[key];
