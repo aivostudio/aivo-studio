@@ -104,56 +104,6 @@ tasks.register("syncAivoWebAssets", Sync) {
             studioText = studioText.substring(0, firstCloseHead) + adfilmStyle + studioText.substring(firstCloseHead)
         }
 
-        def blockingAdFilmPreload = '''try {
-  const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
-    cache: "no-store"
-  });
-
-  if (!adfilmRes.ok) {
-    throw new Error("mobile_adfilm_html_load_failed");
-  }
-
-  adfilmMount.innerHTML = await adfilmRes.text();
-
-  const adfilmScript = document.createElement("script");
-  adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
-  adfilmScript.defer = true;
-  document.body.appendChild(adfilmScript);
-} catch (err) {
-  if (adfilmMount) {
-    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
-  }
-}
-'''
-
-        def nonBlockingAdFilmPreload = '''(async function preloadAdFilmInBackground(){
-  try {
-    const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
-      cache: "no-store"
-    });
-
-    if (!adfilmRes.ok) {
-      throw new Error("mobile_adfilm_html_load_failed");
-    }
-
-    adfilmMount.innerHTML = await adfilmRes.text();
-
-    const adfilmScript = document.createElement("script");
-    adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
-    adfilmScript.defer = true;
-    document.body.appendChild(adfilmScript);
-  } catch (err) {
-    if (adfilmMount) {
-      adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
-    }
-  }
-})();
-'''
-
-        if (studioText.contains(blockingAdFilmPreload)) {
-            studioText = studioText.replace(blockingAdFilmPreload, nonBlockingAdFilmPreload)
-        }
-
         def compatMarker = "AIVO_PLAY_ADFILM_COMPAT"
         if (!studioText.contains(compatMarker)) {
             def firstCloseBody = studioText.indexOf(closeBody)
@@ -268,6 +218,119 @@ tasks.register("syncAivoWebAssets", Sync) {
         }
 
         generatedStudioPlay.setText(studioText, "UTF-8")
+
+        def generatedAdFilmProduction = new File(aivoGeneratedPublicDir, "mobile/js/mobile.adfilm.production.js")
+        if (!generatedAdFilmProduction.exists()) {
+            throw new GradleException("Generated mobile.adfilm.production.js was not found after Android asset sync.")
+        }
+
+        def adfilmProductionText = generatedAdFilmProduction.getText("UTF-8")
+        def adfilmLibraryFanoutOld = '''      const expectedHydratedCount = Math.min(data.projects.length, 20);
+      const hydratedProjects = Array.isArray(data.hydratedProjects)
+        ? data.hydratedProjects.slice(0, 20)
+        : null;
+
+      if (hydratedProjects && hydratedProjects.length === expectedHydratedCount) {
+        const summariesById = new Map();
+
+        data.projects.slice(0, 20).forEach(function(summary){
+          const pid = clean(summary && (summary.id || summary.projectId));
+          if (pid) summariesById.set(pid, summary);
+        });
+
+        hydratedProjects.forEach(function(project){
+          const pid = clean(project && project.id);
+          if (!pid) return;
+
+          const outputs = projectOutputs(
+            project,
+            summariesById.get(pid) || null
+          );
+
+          if (Array.isArray(outputs) && outputs.length) {
+            libraryItems = libraryItems.concat(outputs);
+          }
+        });
+      } else {
+        const settled = await Promise.allSettled(
+          data.projects.slice(0, 20).map(async function(summary){
+            const pid = clean(summary && (summary.id || summary.projectId));
+            if (!pid) return [];
+
+            const projectResponse = await fetch(
+              "/api/ad-film/project?id=" + encodeURIComponent(pid),
+              {
+                method: "GET",
+                credentials: "include",
+                cache: "no-store",
+                headers: { "accept": "application/json" }
+              }
+            );
+
+            const projectData = await projectResponse.json().catch(function(){
+              return {};
+            });
+
+            if (!projectResponse.ok || !projectData.project) return [];
+
+            return projectOutputs(projectData.project, summary);
+          })
+        );
+
+        settled.forEach(function(result){
+          if (
+            result.status === "fulfilled" &&
+            Array.isArray(result.value)
+          ) {
+            libraryItems = libraryItems.concat(result.value);
+          }
+        });
+      }'''
+
+        def adfilmLibraryFanoutNew = '''      const hydratedProjects = Array.isArray(data.hydratedProjects)
+        ? data.hydratedProjects.slice(0, 20)
+        : [];
+      const summariesById = new Map();
+
+      data.projects.slice(0, 20).forEach(function(summary){
+        const pid = clean(summary && (summary.id || summary.projectId));
+        if (pid) summariesById.set(pid, summary);
+      });
+
+      hydratedProjects.forEach(function(project){
+        const pid = clean(project && project.id);
+        if (!pid) return;
+
+        const outputs = projectOutputs(
+          project,
+          summariesById.get(pid) || null
+        );
+
+        if (Array.isArray(outputs) && outputs.length) {
+          libraryItems = libraryItems.concat(outputs);
+        }
+      });'''
+
+        if (!adfilmProductionText.contains(adfilmLibraryFanoutOld) && !adfilmProductionText.contains(adfilmLibraryFanoutNew)) {
+            throw new GradleException("Android AdFilm library optimization could not find the expected production block.")
+        }
+
+        if (adfilmProductionText.contains(adfilmLibraryFanoutOld)) {
+            adfilmProductionText = adfilmProductionText.replace(adfilmLibraryFanoutOld, adfilmLibraryFanoutNew)
+            generatedAdFilmProduction.setText(adfilmProductionText, "UTF-8")
+        }
+
+        def adfilmProjectsEndpointOld = 'fetch("/api/ad-film/projects", {'
+        def adfilmProjectsEndpointCompact = 'fetch("/api/ad-film/projects?compact=1", {'
+
+        if (!adfilmProductionText.contains(adfilmProjectsEndpointOld) && !adfilmProductionText.contains(adfilmProjectsEndpointCompact)) {
+            throw new GradleException("Android AdFilm compact projects endpoint could not find the expected production request.")
+        }
+
+        if (adfilmProductionText.contains(adfilmProjectsEndpointOld)) {
+            adfilmProductionText = adfilmProductionText.replace(adfilmProjectsEndpointOld, adfilmProjectsEndpointCompact)
+            generatedAdFilmProduction.setText(adfilmProductionText, "UTF-8")
+        }
 
         def generatedIndexFiles = [
             new File(aivoGeneratedPublicDir, "index.play.html"),
