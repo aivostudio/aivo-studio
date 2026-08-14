@@ -794,12 +794,20 @@
     if (mount) mount.hidden = false;
     if (panel) panel.hidden = true;
     const productionSection = section();
-    productionSection.hidden = false;
     progressNode().hidden = !busy;
     setLibraryNav();
     window.scrollTo({ top: 0, behavior: "smooth" });
-    if (busy) renderLoadingCard();
-    else await loadLibraryOutputs();
+
+    if (busy) {
+      renderLoadingCard();
+      productionSection.hidden = false;
+      return;
+    }
+
+    const list = listNode();
+    if (list) list.innerHTML = '<div class="mobile-adfilm-production-empty">Reklam filmleri yükleniyor...</div>';
+    productionSection.hidden = false;
+    await loadLibraryOutputs();
   }
 
   function complete(source){
