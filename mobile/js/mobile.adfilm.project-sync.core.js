@@ -249,8 +249,17 @@
 
   function applyProject(nextProject){
     if (!nextProject) return;
-    expose(nextProject);
-    if (!formMostlyEmpty()) return;
+
+    project = nextProject;
+    projectId = clean(nextProject.id) || projectId;
+    root.dataset.adfilmProjectId = projectId;
+    window.AIVOAdFilmActiveProject = nextProject;
+    window.AIVOAdFilmServerMedia = nextProject.media || {};
+
+    if (!formMostlyEmpty()) {
+      expose(nextProject);
+      return;
+    }
 
     applying = true;
     const brief = nextProject.brief || {};
@@ -259,42 +268,46 @@
 
     if (productName) productName.value = brief.productName || "";
     if (brandName) brandName.value = brief.brandName || "";
-    if (description) {
-      description.value = brief.description || "";
-      description.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    if (creativeBrief) {
-      creativeBrief.value = brief.creativeBrief || "";
-      creativeBrief.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    if (voiceEnabled && typeof narration.enabled === "boolean") {
-      voiceEnabled.checked = narration.enabled;
-      voiceEnabled.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-    setValue(voiceLanguage, narration.language || "tr", "change");
-    setValue(voiceStyle, narration.voiceStyle || "warm", "change");
-    setValue(voiceSpeed, narration.speed || "balanced", "change");
-    if (narrationText) {
-      narrationText.value = narration.text || "";
-      narrationText.dispatchEvent(new Event("input", { bubbles: true }));
-    }
+    if (description) description.value = brief.description || "";
+    if (creativeBrief) creativeBrief.value = brief.creativeBrief || "";
+    if (voiceEnabled && typeof narration.enabled === "boolean") voiceEnabled.checked = narration.enabled;
+    if (voiceLanguage) voiceLanguage.value = narration.language || "tr";
+    if (voiceStyle) voiceStyle.value = narration.voiceStyle || "warm";
+    if (voiceSpeed) voiceSpeed.value = narration.speed || "balanced";
+    if (narrationText) narrationText.value = narration.text || "";
 
-    if (music.mode) {
-      const button = root.querySelector('[data-mobile-adfilm-music-mode="' + music.mode + '"]');
-      if (button) button.click();
-    }
+    const descriptionCount = root.querySelector("#mobileAdFilmDescriptionCount");
+    const creativeBriefCount = root.querySelector("#mobileAdFilmCreativeBriefCount");
+    const narrationCount = root.querySelector("#mobileAdFilmNarrationCount");
+    if (descriptionCount) descriptionCount.textContent = String(description ? description.value.length : 0);
+    if (creativeBriefCount) creativeBriefCount.textContent = String(creativeBrief ? creativeBrief.value.length : 0);
+    if (narrationCount) narrationCount.textContent = String(narrationText ? narrationText.value.length : 0);
+
+    const voiceState = root.querySelector("#mobileAdFilmVoiceState");
+    const voiceBody = root.querySelector("#mobileAdFilmVoiceBody");
+    if (voiceState && voiceEnabled) voiceState.textContent = voiceEnabled.checked ? "Açık" : "Kapalı";
+    if (voiceBody && voiceEnabled) voiceBody.classList.toggle("is-disabled", !voiceEnabled.checked);
+
+    const musicMode = clean(music.mode) === "upload" || clean(music.mode) === "off" ? clean(music.mode) : "auto";
+    root.dataset.adfilmMusicMode = musicMode;
+    root.querySelectorAll("[data-mobile-adfilm-music-mode]").forEach(function(button){
+      button.classList.toggle("is-active", button.getAttribute("data-mobile-adfilm-music-mode") === musicMode);
+    });
+    root.querySelectorAll("[data-mobile-adfilm-music-panel]").forEach(function(panel){
+      panel.hidden = panel.getAttribute("data-mobile-adfilm-music-panel") !== musicMode;
+    });
+    try { localStorage.setItem("aivo_adfilm_music_mode_v1", musicMode); } catch (_) {}
+
     if (musicStyle && music.style && Array.from(musicStyle.options).some(function(option){ return option.value === music.style; })) {
-      setValue(musicStyle, music.style, "change");
+      musicStyle.value = music.style;
     }
     const mobileEnergy = music.energy === "calm" ? "soft" : music.energy === "strong" ? "strong" : "balanced";
     if (musicEnergy && Array.from(musicEnergy.options).some(function(option){ return option.value === mobileEnergy; })) {
-      setValue(musicEnergy, mobileEnergy, "change");
+      musicEnergy.value = mobileEnergy;
     }
 
-    setTimeout(function(){
-      applying = false;
-      expose(project);
-    }, 0);
+    applying = false;
+    expose(nextProject);
   }
 
   function queueSave(delay){
