@@ -392,6 +392,20 @@
     });
   }
 
+  function bindEditorReset(){
+    document.addEventListener("click", function(event){
+      const adfilmTool = event.target && event.target.closest
+        ? event.target.closest('[data-mobile-tool="adfilm"]')
+        : null;
+
+      if (!adfilmTool) return;
+
+      if (typeof window.mobileAdFilmShowEditor === "function") {
+        window.mobileAdFilmShowEditor();
+      }
+    }, true);
+  }
+
   window.AIVOMobileAdFilmProjectSync = {
     api: api,
     project: function(){ return project; },
@@ -402,6 +416,7 @@
   };
 
   bindAutoSave();
+  bindEditorReset();
   bootstrap();
 })();
 
