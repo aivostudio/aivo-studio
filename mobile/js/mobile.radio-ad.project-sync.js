@@ -122,8 +122,8 @@
   }
 
   function normalizeDuration(value){
-    const duration = Number(value) || 30;
-    return [10,15,30,45,60].includes(duration) ? duration : 30;
+    const duration = Number(value) || 10;
+    return [10,15,30,45,60].includes(duration) ? duration : 10;
   }
 
   function normalizeFormat(value){
@@ -251,7 +251,7 @@
         setValue(fields.musicMode, music.mode, "ai");
         setValue(fields.musicStyle, music.style, "auto");
         setValue(fields.musicEnergy, music.energy, "balanced");
-        setValue(fields.duration, output.duration, "30");
+        setValue(fields.duration, output.duration, "10");
         setValue(fields.format, output.format, "mp3");
       }
 
