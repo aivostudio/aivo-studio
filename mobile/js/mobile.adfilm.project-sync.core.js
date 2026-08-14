@@ -384,7 +384,7 @@
     });
 
     root.addEventListener("click", function(event){
-      if (event.target.closest("[data-mobile-adfilm-format],[data-mobile-adfilm-music-mode]")) queueSave(180);
+      if (event.target.closest("[data-mobile-adfilm-format]")) queueSave(180);
     });
 
     window.addEventListener("pagehide", function(){
