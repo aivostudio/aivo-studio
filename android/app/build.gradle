@@ -340,6 +340,42 @@ tasks.register("syncAivoWebAssets", Sync) {
 
         generatedStudioPlay.setText(studioText, "UTF-8")
 
+        def generatedAdFilmProduction = new File(
+            aivoGeneratedPublicDir,
+            "mobile/js/mobile.adfilm.production.js"
+        )
+
+        if (!generatedAdFilmProduction.exists()) {
+            throw new GradleException("Generated mobile.adfilm.production.js was not found after Android asset sync.")
+        }
+
+        def productionText = generatedAdFilmProduction.getText("UTF-8")
+        def oldHydrate = '''  function hydrate(source){
+    source = source || currentProject();
+    if (!busy) {
+      if (libraryOnly) loadLibraryOutputs();
+      else renderOutputs(source);
+    }
+    syncButton();
+    resumeIfNeeded(source);
+  }'''
+        def newHydrate = '''  function hydrate(source){
+    source = source || currentProject();
+    if (!busy && !libraryOnly) {
+      renderOutputs(source);
+    }
+    syncButton();
+    resumeIfNeeded(source);
+  }'''
+
+        if (productionText.contains(oldHydrate)) {
+            productionText = productionText.replace(oldHydrate, newHydrate)
+        } else if (!productionText.contains(newHydrate)) {
+            throw new GradleException("Android AdFilm production hydrate block could not be patched safely.")
+        }
+
+        generatedAdFilmProduction.setText(productionText, "UTF-8")
+
         def generatedIndexFiles = [
             new File(aivoGeneratedPublicDir, "index.play.html"),
             new File(aivoGeneratedPublicDir, "index.html")
