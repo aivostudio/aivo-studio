@@ -129,19 +129,26 @@ tasks.register("syncAivoWebAssets", Sync) {
     if (mount) mount.hidden = true;
   }
 
+  let adFilmLibraryOpenPending = false;
+
   function openAdFilmLibraryWhenReady(){
-    let attempts = 0;
+    if (adFilmLibraryOpenPending) return;
+    adFilmLibraryOpenPending = true;
 
     function open(){
+      const mount = document.getElementById("mobileAdFilmMount");
+      if (!mount || mount.hidden) {
+        adFilmLibraryOpenPending = false;
+        return;
+      }
+
       if (typeof window.mobileAdFilmShowLibrary === "function") {
+        adFilmLibraryOpenPending = false;
         window.mobileAdFilmShowLibrary();
         return;
       }
 
-      attempts += 1;
-      if (attempts < 100) {
-        window.setTimeout(open, 50);
-      }
+      window.setTimeout(open, 50);
     }
 
     open();
