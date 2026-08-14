@@ -340,6 +340,100 @@ tasks.register("syncAivoWebAssets", Sync) {
 
         generatedStudioPlay.setText(studioText, "UTF-8")
 
+        def generatedReferences = new File(
+            aivoGeneratedPublicDir,
+            "mobile/js/mobile.adfilm.references.js"
+        )
+
+        if (!generatedReferences.exists()) {
+            throw new GradleException("Generated mobile.adfilm.references.js was not found after Android asset sync.")
+        }
+
+        def referencesText = generatedReferences.getText("UTF-8")
+        def oldRestore = '''  function restoreFromManifestOrProject(id, project){
+    if (!id || restoring) return;
+    if (activeProjectId === id && referenceCount() + state.logo.length > 0) return;
+    restoring = true;
+    clearState();
+    activeProjectId = id;
+
+    const manifest = readManifest(id);
+    if (manifest && manifest.groups) {
+      Object.keys(state).forEach(function(group){
+        const list = Array.isArray(manifest.groups[group]) ? manifest.groups[group].slice(0, config[group].limit) : [];
+        state[group] = list.map(function(asset){ return entryFromRemote(asset, group, asset.fingerprint); }).filter(Boolean);
+      });
+    } else {
+      const media = project && project.media || {};
+     const products = Array.isArray(media.productImages) ? media.productImages.slice(0, 9) : [];
+if (products[0]) state.primary = [entryFromRemote(products[0], "primary", products[0].key)].filter(Boolean);
+products.slice(1, 4).forEach(function(asset){ const entry = entryFromRemote(asset, "angles", asset.key); if (entry) state.angles.push(entry); });
+products.slice(4, 9).forEach(function(asset){ const entry = entryFromRemote(asset, "scene", asset.key); if (entry) state.scene.push(entry); });
+      if (media.logo) state.logo = [entryFromRemote(media.logo, "logo", media.logo.key)].filter(Boolean);
+      writeManifest();
+    }
+
+    restoring = false;
+    render();
+  }'''
+        def newRestore = '''  function restoreFromManifestOrProject(id, project){
+    if (!id || restoring) return;
+
+    const hasServerMedia = !!(
+      project &&
+      Object.prototype.hasOwnProperty.call(project, "media")
+    );
+    const media = hasServerMedia ? (project.media || {}) : null;
+    const serverProducts = media && Array.isArray(media.productImages)
+      ? media.productImages.slice(0, 9)
+      : [];
+    const serverLogo = media && media.logo ? media.logo : null;
+    const serverSignature = hasServerMedia
+      ? serverProducts.map(function(asset){ return clean(asset && asset.key); }).join("|") + "::" + clean(serverLogo && serverLogo.key)
+      : "";
+    const localSignature = orderedEntries().filter(function(entry){ return !!entry.remote; }).map(function(entry){ return clean(entry.remote && entry.remote.key); }).join("|") + "::" + clean(state.logo[0] && state.logo[0].remote && state.logo[0].remote.key);
+    const hasPendingLocal = Object.keys(state).some(function(group){
+      return state[group].some(function(entry){ return !!entry.file && !entry.remote; });
+    });
+
+    if (activeProjectId === id) {
+      if (hasPendingLocal) return;
+      if (hasServerMedia && serverSignature === localSignature) return;
+      if (!hasServerMedia && referenceCount() + state.logo.length > 0) return;
+    }
+
+    restoring = true;
+    clearState();
+    activeProjectId = id;
+
+    if (hasServerMedia) {
+      if (serverProducts[0]) state.primary = [entryFromRemote(serverProducts[0], "primary", serverProducts[0].key)].filter(Boolean);
+      serverProducts.slice(1, 4).forEach(function(asset){ const entry = entryFromRemote(asset, "angles", asset.key); if (entry) state.angles.push(entry); });
+      serverProducts.slice(4, 9).forEach(function(asset){ const entry = entryFromRemote(asset, "scene", asset.key); if (entry) state.scene.push(entry); });
+      if (serverLogo) state.logo = [entryFromRemote(serverLogo, "logo", serverLogo.key)].filter(Boolean);
+      writeManifest();
+    } else {
+      const manifest = readManifest(id);
+      if (manifest && manifest.groups) {
+        Object.keys(state).forEach(function(group){
+          const list = Array.isArray(manifest.groups[group]) ? manifest.groups[group].slice(0, config[group].limit) : [];
+          state[group] = list.map(function(asset){ return entryFromRemote(asset, group, asset.fingerprint); }).filter(Boolean);
+        });
+      }
+    }
+
+    restoring = false;
+    render();
+  }'''
+
+        if (referencesText.contains(oldRestore)) {
+            referencesText = referencesText.replace(oldRestore, newRestore)
+        } else if (!referencesText.contains(newRestore)) {
+            throw new GradleException("Android AdFilm reference restore block could not be patched safely.")
+        }
+
+        generatedReferences.setText(referencesText, "UTF-8")
+
         def generatedIndexFiles = [
             new File(aivoGeneratedPublicDir, "index.play.html"),
             new File(aivoGeneratedPublicDir, "index.html")
