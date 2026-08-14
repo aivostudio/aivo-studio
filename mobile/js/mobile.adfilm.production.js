@@ -1027,10 +1027,20 @@
     if (!window.confirm("Bu hazır reklam filmini silmek istiyor musun? Bu işlem geri alınamaz.")) return;
     if (card) card.classList.add("is-deleting");
     try {
-      const url = "/api/ad-film/seedance/result?projectId=" + encodeURIComponent(pid) + "&outputId=" + encodeURIComponent(outputId);
-      const response = await fetch(url, { method: "DELETE", credentials: "include", cache: "no-store" });
+      const response = await fetch("/api/ad-film/seedance/result", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: { "content-type": "application/json", "accept": "application/json" },
+        body: JSON.stringify({
+          action: "delete-output",
+          projectId: pid,
+          outputId: outputId,
+          outputVersion: Number(item && item.version || 0) || undefined
+        })
+      });
       const data = await response.json().catch(function(){ return {}; });
-      if (!response.ok) throw new Error(data.error || "delete_failed");
+      if (!response.ok || !data.ok) throw new Error(data.error || "delete_failed");
 
       libraryItems = libraryItems.filter(function(output){
         return !(clean(output && output.projectId) === pid && clean(output && output.id) === outputId);
