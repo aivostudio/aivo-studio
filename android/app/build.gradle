@@ -180,6 +180,14 @@ tasks.register("syncAivoWebAssets", Sync) {
   if (window.__AIVO_PLAY_ADFILM_COMPAT__) return;
   window.__AIVO_PLAY_ADFILM_COMPAT__ = true;
 
+  function markTiming(label, detail){
+    try {
+      if (window.__AIVO_PLAY_TIMING__ && typeof window.__AIVO_PLAY_TIMING__.mark === "function") {
+        window.__AIVO_PLAY_TIMING__.mark(label, detail || null);
+      }
+    } catch (_) {}
+  }
+
   function hideAdFilmForNavigation(event){
     const link = event.currentTarget;
     const href = String(link && link.getAttribute("href") || "").toLowerCase();
@@ -190,10 +198,60 @@ tasks.register("syncAivoWebAssets", Sync) {
   }
 
   let adFilmLibraryOpenPending = false;
+  let adFilmProductionObserver = null;
+
+  function ensureAdFilmProductionController(){
+    if (typeof window.mobileAdFilmShowLibrary === "function") return true;
+
+    const root = document.getElementById("mobileAdFilmSection");
+    if (!root) return false;
+
+    let script = document.querySelector('script[data-mobile-adfilm-production-controller]');
+    if (script) return true;
+
+    markTiming("PRODUCTION_EARLY_LOAD_START");
+
+    script = document.createElement("script");
+    script.src = "/mobile/js/mobile.adfilm.production.js?v=1";
+    script.setAttribute("data-mobile-adfilm-production-controller", "");
+
+    script.addEventListener("load", function(){
+      script.dataset.loaded = "1";
+      markTiming("MOBILE_ADFILM_SHOW_LIBRARY_READY", {
+        type: typeof window.mobileAdFilmShowLibrary
+      });
+    }, { once:true });
+
+    script.addEventListener("error", function(){
+      markTiming("PRODUCTION_EARLY_LOAD_ERROR");
+    }, { once:true });
+
+    document.head.appendChild(script);
+    return true;
+  }
+
+  function watchAdFilmProductionController(){
+    if (ensureAdFilmProductionController()) return;
+
+    const mount = document.getElementById("mobileAdFilmMount");
+    if (!mount || adFilmProductionObserver) return;
+
+    adFilmProductionObserver = new MutationObserver(function(){
+      if (!ensureAdFilmProductionController()) return;
+      adFilmProductionObserver.disconnect();
+      adFilmProductionObserver = null;
+    });
+
+    adFilmProductionObserver.observe(mount, {
+      childList: true,
+      subtree: true
+    });
+  }
 
   function openAdFilmLibraryWhenReady(){
     if (adFilmLibraryOpenPending) return;
     adFilmLibraryOpenPending = true;
+    ensureAdFilmProductionController();
 
     function open(){
       const mount = document.getElementById("mobileAdFilmMount");
@@ -246,12 +304,14 @@ tasks.register("syncAivoWebAssets", Sync) {
     if (!card) return false;
 
     card.click();
+    watchAdFilmProductionController();
     return true;
   }
 
   function boot(){
     document.addEventListener("click", guardAdFilmProductions, true);
     bindBottomNav();
+    watchAdFilmProductionController();
 
     if (openHashRoute()) return;
 
@@ -259,6 +319,7 @@ tasks.register("syncAivoWebAssets", Sync) {
     const retry = window.setInterval(function(){
       attempts += 1;
       bindBottomNav();
+      watchAdFilmProductionController();
       if (openHashRoute() || attempts >= 20) {
         window.clearInterval(retry);
       }
