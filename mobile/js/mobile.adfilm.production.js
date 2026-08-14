@@ -46,34 +46,6 @@
       .replaceAll("'", "&#39;");
   }
 
-  function activateVideo(video){
-    if (!video) return "";
-    const activeSource = clean(video.getAttribute("src") || video.currentSrc);
-    if (activeSource) return activeSource;
-    const source = clean(video.dataset.src || video.dataset.previewUrl || video.dataset.finalUrl);
-    if (!source) return "";
-    video.src = source;
-    video.preload = "metadata";
-    try { video.load(); } catch (_) {}
-    return source;
-  }
-
-  function releaseVideo(video){
-    if (!video) return;
-    try { video.pause(); } catch (_) {}
-    try {
-      video.removeAttribute("src");
-      video.preload = "none";
-      video.load();
-    } catch (_) {}
-    const card = video.closest && video.closest(".mobile-adfilm-production-card");
-    if (card) card.classList.remove("is-playing");
-  }
-
-  function releaseLibraryMedia(){
-    root.querySelectorAll(".mobile-adfilm-production-card video").forEach(releaseVideo);
-  }
-
   function ensureStyle(){
     if (document.querySelector('link[data-mobile-adfilm-production-style]')) return;
     const link = document.createElement("link");
@@ -325,7 +297,7 @@
     return `
       <article class="mobile-adfilm-production-card" data-mobile-adfilm-output="${esc(outputId)}" data-mobile-adfilm-project="${esc(itemProjectId)}">
         <div class="mobile-adfilm-production-media">
-          <video data-src="${esc(video)}" data-final-url="${esc(finalVideo)}"${preview ? ` data-preview-url="${esc(preview)}"` : ""}${poster ? ` poster="${esc(poster)}"` : ""} playsinline webkit-playsinline preload="none"></video>
+          <video src="${esc(video)}" data-final-url="${esc(finalVideo)}"${preview ? ` data-preview-url="${esc(preview)}"` : ""}${poster ? ` poster="${esc(poster)}"` : ""} playsinline webkit-playsinline preload="metadata"></video>
           <div class="mobile-adfilm-production-actions">
             <button type="button" data-mobile-adfilm-output-action="download" aria-label="Videoyu indir" title="Videoyu indir">↓</button>
             <button type="button" data-mobile-adfilm-output-action="open" aria-label="Videoyu aç" title="Videoyu aç">↗</button>
@@ -778,7 +750,6 @@
   function showEditor(){
     libraryOnly = false;
     root.dataset.adfilmLibraryOnly = "0";
-    releaseLibraryMedia();
     if (panel) panel.hidden = false;
     const productionSection = section();
     productionSection.hidden = !busy;
@@ -1089,13 +1060,7 @@
 
       if (type === "play") {
         if (video.paused) {
-          root.querySelectorAll(".mobile-adfilm-production-card video").forEach(function(other){
-            if (other !== video) releaseVideo(other);
-          });
-          if (!activateVideo(video)) {
-            toast("error", "Video kaynağı bulunamadı.", 2800);
-            return;
-          }
+          root.querySelectorAll(".mobile-adfilm-production-card video").forEach(function(other){ if (other !== video) other.pause(); });
           video.play().catch(function(){});
           card.classList.add("is-playing");
         } else {
@@ -1250,7 +1215,6 @@
   });
 
   window.addEventListener("pagehide", function(){
-    releaseLibraryMedia();
     stopElapsed();
     clearTimeout(pollTimer);
   });
