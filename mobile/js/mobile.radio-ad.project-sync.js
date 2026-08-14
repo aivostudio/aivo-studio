@@ -229,7 +229,13 @@
 
     const forceHydrate = !!(options && options.hydrate);
     const hydrateFields = forceHydrate || (!formHydrated && draftRevision === 0);
-    const resolvedProject = hydrateFields ? nextProject : mergeIncomingWithLiveForm(nextProject);
+    let resolvedProject = hydrateFields ? nextProject : mergeIncomingWithLiveForm(nextProject);
+
+    if (forceHydrate){
+      resolvedProject = Object.assign({}, resolvedProject, {
+        output: Object.assign({}, resolvedProject.output || {}, { duration:10 })
+      });
+    }
 
     applying = true;
     try{
