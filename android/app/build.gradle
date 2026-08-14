@@ -80,6 +80,66 @@ tasks.register("syncAivoWebAssets", Sync) {
         def closeHead = "</head>"
         def closeBody = "</body>"
 
+        def timingMarker = "AIVO_PLAY_TIMING_DIAGNOSTIC"
+        if (!studioText.contains(timingMarker)) {
+            def firstHeadOpen = studioText.indexOf("<head>")
+            if (firstHeadOpen < 0) {
+                throw new GradleException("Android timing diagnostic could not find <head> in studio.play.html.")
+            }
+
+            firstHeadOpen += "<head>".length()
+
+            def timingDiagnostic = '''
+<script>
+(function AIVO_PLAY_TIMING_DIAGNOSTIC(){
+  if (window.__AIVO_PLAY_TIMING_DIAGNOSTIC__) return;
+  window.__AIVO_PLAY_TIMING_DIAGNOSTIC__ = true;
+
+  const startedAt = performance.now();
+
+  window.__AIVO_PLAY_TIMING__ = {
+    startedAt: startedAt,
+    events: [],
+    mark: function(label, detail){
+      const now = performance.now();
+      const elapsed = now - startedAt;
+      const event = {
+        label: label,
+        now: Number(now.toFixed(1)),
+        elapsed: Number(elapsed.toFixed(1)),
+        timestamp: Date.now(),
+        detail: detail || null
+      };
+
+      this.events.push(event);
+
+      console.log(
+        "[AIVO_TIMING] " +
+        label +
+        " +" +
+        elapsed.toFixed(1) +
+        "ms @" +
+        now.toFixed(1) +
+        "ms",
+        detail || ""
+      );
+
+      return event;
+    }
+  };
+
+  window.__AIVO_PLAY_TIMING__.mark("STUDIO_BOOT_START");
+
+  document.addEventListener("DOMContentLoaded", function(){
+    window.__AIVO_PLAY_TIMING__.mark("DOM_CONTENT_LOADED");
+  }, { once: true });
+})();
+</script>
+'''
+
+            studioText = studioText.substring(0, firstHeadOpen) + timingDiagnostic + studioText.substring(firstHeadOpen)
+        }
+
         def fastNavMarker = "(function AIVO_PLAY_FAST_BOTTOM_NAV(){"
         if (studioText.contains(fastNavMarker)) {
             def fastNavFunctionStart = studioText.indexOf(fastNavMarker)
