@@ -417,8 +417,8 @@ if (adFilmRuntimeRoot) {
     const existing = document.querySelector('link[' + attr + ']');
     if (existing) return;
     const link = document.createElement("link");
-    link.href = href;
     link.rel = "stylesheet";
+    link.href = href;
     link.setAttribute(attr, "");
     document.head.appendChild(link);
   }
