@@ -104,6 +104,56 @@ tasks.register("syncAivoWebAssets", Sync) {
             studioText = studioText.substring(0, firstCloseHead) + adfilmStyle + studioText.substring(firstCloseHead)
         }
 
+        def blockingAdFilmPreload = '''try {
+  const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!adfilmRes.ok) {
+    throw new Error("mobile_adfilm_html_load_failed");
+  }
+
+  adfilmMount.innerHTML = await adfilmRes.text();
+
+  const adfilmScript = document.createElement("script");
+  adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
+  adfilmScript.defer = true;
+  document.body.appendChild(adfilmScript);
+} catch (err) {
+  if (adfilmMount) {
+    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+  }
+}
+'''
+
+        def nonBlockingAdFilmPreload = '''(async function preloadAdFilmInBackground(){
+  try {
+    const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!adfilmRes.ok) {
+      throw new Error("mobile_adfilm_html_load_failed");
+    }
+
+    adfilmMount.innerHTML = await adfilmRes.text();
+
+    const adfilmScript = document.createElement("script");
+    adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
+    adfilmScript.defer = true;
+    document.body.appendChild(adfilmScript);
+  } catch (err) {
+    if (adfilmMount) {
+      adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+    }
+  }
+})();
+'''
+
+        if (studioText.contains(blockingAdFilmPreload)) {
+            studioText = studioText.replace(blockingAdFilmPreload, nonBlockingAdFilmPreload)
+        }
+
         def compatMarker = "AIVO_PLAY_ADFILM_COMPAT"
         if (!studioText.contains(compatMarker)) {
             def firstCloseBody = studioText.indexOf(closeBody)
