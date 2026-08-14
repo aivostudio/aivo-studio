@@ -333,8 +333,6 @@
 
 @media(max-width:390px){
   .mobile-adfilm-music-card{padding:14px 13px}
-  .mobile-adfilm-music-modes{grid-template-columns:1fr}
-  .mobile-adfilm-music-fields{grid-template-columns:1fr}
 
   .mobile-adfilm-music-player{
     grid-template-columns:38px minmax(0,1fr);
