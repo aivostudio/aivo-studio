@@ -38,8 +38,8 @@
   }
 
   function duration(){
-    const value = Number(durationSelect && durationSelect.value || 30);
-    return [10,15,30,45,60].includes(value) ? value : 30;
+    const value = Number(durationSelect && durationSelect.value || 10);
+    return [10,15,30,45,60].includes(value) ? value : 10;
   }
 
   function format(){
