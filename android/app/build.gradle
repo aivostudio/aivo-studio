@@ -368,6 +368,35 @@ tasks.register("syncAivoWebAssets", Sync) {
 
         generatedMusic.setText(musicText, "UTF-8")
 
+        def generatedAdFilmProjectSync = new File(
+            aivoGeneratedPublicDir,
+            "mobile/js/mobile.adfilm.project-sync.js"
+        )
+
+        if (!generatedAdFilmProjectSync.exists()) {
+            throw new GradleException("Generated mobile.adfilm.project-sync.js was not found after Android asset sync.")
+        }
+
+        def adFilmProjectSyncText = generatedAdFilmProjectSync.getText("UTF-8")
+        def oldRuntimeObserverGuard = '''if (adFilmRuntimeRoot) {'''
+        def newRuntimeObserverGuard = '''if (false && adFilmRuntimeRoot) {'''
+        def oldProjectSyncRefresh = '''  document.addEventListener("aivo:adfilm-project-sync", function(){ setTimeout(refresh, 0); });'''
+        def newProjectSyncRefresh = '''  // Android Play diagnostic: skip project-sync-triggered full i18n refresh.'''
+
+        if (adFilmProjectSyncText.contains(oldRuntimeObserverGuard)) {
+            adFilmProjectSyncText = adFilmProjectSyncText.replace(oldRuntimeObserverGuard, newRuntimeObserverGuard)
+        } else if (!adFilmProjectSyncText.contains(newRuntimeObserverGuard)) {
+            throw new GradleException("Android AdFilm runtime observer guard could not be patched safely.")
+        }
+
+        if (adFilmProjectSyncText.contains(oldProjectSyncRefresh)) {
+            adFilmProjectSyncText = adFilmProjectSyncText.replace(oldProjectSyncRefresh, newProjectSyncRefresh)
+        } else if (!adFilmProjectSyncText.contains(newProjectSyncRefresh)) {
+            throw new GradleException("Android AdFilm project-sync refresh listener could not be patched safely.")
+        }
+
+        generatedAdFilmProjectSync.setText(adFilmProjectSyncText, "UTF-8")
+
         def generatedReferences = new File(
             aivoGeneratedPublicDir,
             "mobile/js/mobile.adfilm.references.js"
