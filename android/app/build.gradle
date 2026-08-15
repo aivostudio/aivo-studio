@@ -282,8 +282,6 @@ tasks.register("syncAivoWebAssets", Sync) {
     const mount = document.getElementById("mobileAdFilmMount");
     if (!mount || mount.hidden) return;
 
-    if (typeof window.mobileAdFilmShowLibrary === "function") return;
-
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
