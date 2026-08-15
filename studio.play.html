@@ -612,7 +612,7 @@ html.aivo-start-cartoon .hero,
 html.aivo-start-credits #mobileHomeMount,
 html.aivo-start-music #mobileHomeMount,
 html.aivo-start-cover #mobileHomeMount,
-html.aivo-start-photofx #mobileHomeMount,
+html.aivo-start-photofx #mobilePhotoFxMount,
 html.aivo-start-video #mobileHomeMount,
 html.aivo-start-lipsync #mobileHomeMount,
 html.aivo-start-atmo #mobileHomeMount,
@@ -1734,25 +1734,67 @@ try {
     lipsyncMount.innerHTML = '<div class="empty-card" data-i18n="empty.lipsyncLoadFailed">Lip sync video module could not be loaded.</div>';
   }
 }
-try {
-  const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
-    cache: "no-store"
+
+let adfilmLoadPromise = null;
+
+function ensureAdFilmLoaded(){
+  if (!adfilmMount) {
+    return Promise.reject(new Error("mobile_adfilm_mount_missing"));
+  }
+
+  if (adfilmMount.dataset.aivoAdfilmLoaded === "1") {
+    return Promise.resolve();
+  }
+
+  if (adfilmLoadPromise) {
+    return adfilmLoadPromise;
+  }
+
+  adfilmLoadPromise = (async function(){
+    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yükleniyor...</div>';
+
+    const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!adfilmRes.ok) {
+      throw new Error("mobile_adfilm_html_load_failed");
+    }
+
+    adfilmMount.innerHTML = await adfilmRes.text();
+
+    if (typeof window.aivoApplyI18n === "function") {
+      window.aivoApplyI18n(adfilmMount);
+    }
+
+    const existingScript = document.querySelector('script[data-aivo-mobile-adfilm-script="1"]');
+
+    if (!existingScript) {
+      await new Promise(function(resolve, reject){
+        const adfilmScript = document.createElement("script");
+        adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
+        adfilmScript.defer = true;
+        adfilmScript.setAttribute("data-aivo-mobile-adfilm-script", "1");
+        adfilmScript.addEventListener("load", resolve, { once: true });
+        adfilmScript.addEventListener("error", function(){
+          reject(new Error("mobile_adfilm_js_load_failed"));
+        }, { once: true });
+        document.body.appendChild(adfilmScript);
+      });
+    }
+
+    adfilmMount.dataset.aivoAdfilmLoaded = "1";
+  })().catch(function(err){
+    adfilmLoadPromise = null;
+
+    if (adfilmMount) {
+      adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+    }
+
+    throw err;
   });
 
-  if (!adfilmRes.ok) {
-    throw new Error("mobile_adfilm_html_load_failed");
-  }
-
-  adfilmMount.innerHTML = await adfilmRes.text();
-
-  const adfilmScript = document.createElement("script");
-  adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
-  adfilmScript.defer = true;
-  document.body.appendChild(adfilmScript);
-} catch (err) {
-  if (adfilmMount) {
-    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
-  }
+  return adfilmLoadPromise;
 }
 
 try {
@@ -3083,9 +3125,11 @@ if (tool === "atmo") {
 
   if (tool === "adfilm") {
     activeMobileModule = "adfilm";
+    homeMount.hidden = true;
     showAdFilm();
     setActiveNav(toolsNav);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    ensureAdFilmLoaded().catch(function(){});
     return;
   }
 });
