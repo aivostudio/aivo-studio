@@ -40,6 +40,12 @@ public class MainActivity extends BridgeActivity {
   private final Map<String, ProductDetails> productDetailsMap = new HashMap<>();
 
 private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult, purchases) -> {
+  android.util.Log.e(
+    "AivoPlayBilling",
+    "purchasesUpdated code=" + billingResult.getResponseCode() +
+    " message=" + billingResult.getDebugMessage()
+  );
+
   if (
     billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK &&
     purchases != null
@@ -161,7 +167,13 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
       @Override
       public void onBillingSetupFinished(BillingResult billingResult) {
-            if (
+        android.util.Log.e(
+          "AivoPlayBilling",
+          "setup code=" + billingResult.getResponseCode() +
+          " message=" + billingResult.getDebugMessage()
+        );
+
+        if (
           billingResult.getResponseCode() ==
           BillingClient.BillingResponseCode.OK
         ) {
@@ -171,7 +183,9 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
       }
 
       @Override
-      public void onBillingServiceDisconnected() {}
+      public void onBillingServiceDisconnected() {
+        android.util.Log.e("AivoPlayBilling", "service disconnected");
+      }
     });
 
     getBridge()
@@ -228,6 +242,12 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
     billingClient.queryProductDetailsAsync(
       params,
       (billingResult, queryProductDetailsResult) -> {
+        android.util.Log.e(
+          "AivoPlayBilling",
+          "queryProducts code=" + billingResult.getResponseCode() +
+          " message=" + billingResult.getDebugMessage() +
+          " count=" + queryProductDetailsResult.getProductDetailsList().size()
+        );
 
         if (
           billingResult.getResponseCode() !=
@@ -276,6 +296,7 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
     return "";
   }
+
   private void startPurchase(String plan) {
 
     runOnUiThread(() -> {
@@ -284,6 +305,12 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
 
       ProductDetails productDetails =
         productDetailsMap.get(productId);
+
+      android.util.Log.e(
+        "AivoPlayBilling",
+        "startPurchase productId=" + productId +
+        " ready=" + (productDetails != null)
+      );
 
       if (productDetails == null) {
 
@@ -315,9 +342,15 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
           )
           .build();
 
-      billingClient.launchBillingFlow(
+      BillingResult launchResult = billingClient.launchBillingFlow(
         this,
         billingFlowParams
+      );
+
+      android.util.Log.e(
+        "AivoPlayBilling",
+        "launch code=" + launchResult.getResponseCode() +
+        " message=" + launchResult.getDebugMessage()
       );
     });
   }
@@ -374,7 +407,8 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
       }
     );
   }
-    private void consumeExistingPurchases() {
+
+  private void consumeExistingPurchases() {
     QueryPurchasesParams params =
       QueryPurchasesParams
         .newBuilder()
@@ -439,7 +473,8 @@ private final PurchasesUpdatedListener purchasesUpdatedListener = (billingResult
         .evaluateJavascript(js, null);
     });
   }
-    private String guessAivoDownloadFileName(String downloadUrl, String contentDisposition, String mimetype) {
+
+  private String guessAivoDownloadFileName(String downloadUrl, String contentDisposition, String mimetype) {
     String lowerUrl = String.valueOf(downloadUrl).toLowerCase();
     String lowerType = String.valueOf(mimetype).toLowerCase();
 
