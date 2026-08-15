@@ -938,9 +938,8 @@
 
   function hydrate(source){
     source = source || currentProject();
-    if (!busy) {
-      if (libraryOnly) loadLibraryOutputs();
-      else renderOutputs(source);
+    if (!busy && !libraryOnly) {
+      renderOutputs(source);
     }
     syncButton();
     resumeIfNeeded(source);
