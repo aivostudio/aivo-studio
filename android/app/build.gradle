@@ -340,6 +340,34 @@ tasks.register("syncAivoWebAssets", Sync) {
 
         generatedStudioPlay.setText(studioText, "UTF-8")
 
+        def generatedMusic = new File(
+            aivoGeneratedPublicDir,
+            "mobile/js/mobile.music.js"
+        )
+
+        if (!generatedMusic.exists()) {
+            throw new GradleException("Generated mobile.music.js was not found after Android asset sync.")
+        }
+
+        def musicText = generatedMusic.getText("UTF-8")
+        def oldMusicProductionsListener = '''  productionsNavEl.addEventListener("click", function(e){
+    e.preventDefault();
+    showMobileSection("productions");'''
+        def newMusicProductionsListener = '''  productionsNavEl.addEventListener("click", function(e){
+    const musicMount = document.getElementById("mobileMusicMount");
+    if (!musicMount || musicMount.hidden) return;
+
+    e.preventDefault();
+    showMobileSection("productions");'''
+
+        if (musicText.contains(oldMusicProductionsListener)) {
+            musicText = musicText.replace(oldMusicProductionsListener, newMusicProductionsListener)
+        } else if (!musicText.contains(newMusicProductionsListener)) {
+            throw new GradleException("Android music productions guard could not be patched safely.")
+        }
+
+        generatedMusic.setText(musicText, "UTF-8")
+
         def generatedReferences = new File(
             aivoGeneratedPublicDir,
             "mobile/js/mobile.adfilm.references.js"
