@@ -247,7 +247,6 @@ tasks.register("syncAivoWebAssets", Sync) {
       subtree: true
     });
   }
-
   function openAdFilmLibraryWhenReady(){
     if (adFilmLibraryOpenPending) return;
     adFilmLibraryOpenPending = true;
@@ -433,6 +432,29 @@ tasks.register("syncAivoWebAssets", Sync) {
 
         generatedAdFilmProjectSync.setText(adFilmProjectSyncText, "UTF-8")
 
+        def generatedAdFilmProduction = new File(
+            aivoGeneratedPublicDir,
+            "mobile/js/mobile.adfilm.production.js"
+        )
+
+        if (!generatedAdFilmProduction.exists()) {
+            throw new GradleException("Generated mobile.adfilm.production.js was not found after Android asset sync.")
+        }
+
+        def adFilmProductionText = generatedAdFilmProduction.getText("UTF-8")
+        def oldProductionInputListener = '''    ["input", "change"].forEach(function(name){
+      root.addEventListener(name, function(){ setTimeout(syncButton, 0); });
+    });'''
+        def newProductionInputListener = '''    root.addEventListener("change", function(){ setTimeout(syncButton, 0); });'''
+
+        if (adFilmProductionText.contains(oldProductionInputListener)) {
+            adFilmProductionText = adFilmProductionText.replace(oldProductionInputListener, newProductionInputListener)
+        } else if (!adFilmProductionText.contains(newProductionInputListener)) {
+            throw new GradleException("Android AdFilm production input listener could not be patched safely.")
+        }
+
+        generatedAdFilmProduction.setText(adFilmProductionText, "UTF-8")
+
         def generatedReferences = new File(
             aivoGeneratedPublicDir,
             "mobile/js/mobile.adfilm.references.js"
@@ -498,7 +520,6 @@ products.slice(4, 9).forEach(function(asset){ const entry = entryFromRemote(asse
     restoring = true;
     clearState();
     activeProjectId = id;
-
     if (hasServerMedia) {
       if (serverProducts[0]) state.primary = [entryFromRemote(serverProducts[0], "primary", serverProducts[0].key)].filter(Boolean);
       serverProducts.slice(1, 4).forEach(function(asset){ const entry = entryFromRemote(asset, "angles", asset.key); if (entry) state.angles.push(entry); });
