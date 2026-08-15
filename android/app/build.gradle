@@ -382,6 +382,36 @@ tasks.register("syncAivoWebAssets", Sync) {
         def newRuntimeObserverGuard = '''if (false && adFilmRuntimeRoot) {'''
         def oldProjectSyncRefresh = '''  document.addEventListener("aivo:adfilm-project-sync", function(){ setTimeout(refresh, 0); });'''
         def newProjectSyncRefresh = '''  // Android Play diagnostic: skip project-sync-triggered full i18n refresh.'''
+        def oldRadioRuntime = '''  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
+    loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
+    loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
+    loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production", function(){
+      loadScript("/mobile/js/mobile.radio-ad.archive.js?v=1", "data-mobile-radio-ad-archive");
+    });
+    loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
+    loadScript("/mobile/js/mobile.radio-ad.ui-state.js?v=4", "data-mobile-radio-ad-ui-state");
+  });'''
+        def newRadioRuntime = '''  let radioRuntimeStarted = false;
+
+  function loadRadioRuntime(){
+    if (radioRuntimeStarted) return;
+    radioRuntimeStarted = true;
+
+    loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
+      loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
+      loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
+      loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production", function(){
+        loadScript("/mobile/js/mobile.radio-ad.archive.js?v=1", "data-mobile-radio-ad-archive");
+      });
+      loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
+      loadScript("/mobile/js/mobile.radio-ad.ui-state.js?v=4", "data-mobile-radio-ad-ui-state");
+    });
+  }
+
+  const radioModeButton = document.querySelector('#mobileAdFilmSection [data-mobile-adfilm-mode="radio"]');
+  if (radioModeButton) {
+    radioModeButton.addEventListener("click", loadRadioRuntime, { once:true });
+  }'''
 
         if (adFilmProjectSyncText.contains(oldRuntimeObserverGuard)) {
             adFilmProjectSyncText = adFilmProjectSyncText.replace(oldRuntimeObserverGuard, newRuntimeObserverGuard)
@@ -393,6 +423,12 @@ tasks.register("syncAivoWebAssets", Sync) {
             adFilmProjectSyncText = adFilmProjectSyncText.replace(oldProjectSyncRefresh, newProjectSyncRefresh)
         } else if (!adFilmProjectSyncText.contains(newProjectSyncRefresh)) {
             throw new GradleException("Android AdFilm project-sync refresh listener could not be patched safely.")
+        }
+
+        if (adFilmProjectSyncText.contains(oldRadioRuntime)) {
+            adFilmProjectSyncText = adFilmProjectSyncText.replace(oldRadioRuntime, newRadioRuntime)
+        } else if (!adFilmProjectSyncText.contains(newRadioRuntime)) {
+            throw new GradleException("Android radio runtime lazy-load block could not be patched safely.")
         }
 
         generatedAdFilmProjectSync.setText(adFilmProjectSyncText, "UTF-8")
