@@ -8,8 +8,8 @@ android {
         applicationId "tr.aivo.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 27
-        versionName "1.0.23"
+        versionCode 28
+        versionName "1.0.24"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         aaptOptions {
