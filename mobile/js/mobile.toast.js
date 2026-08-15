@@ -96,6 +96,95 @@
   } catch (_) {}
 })();
 
+(function AIVO_PLAY_CARTOON_CHARACTER_ACTIONS(){
+  try {
+    if (!/\/studio\.play\.html$/i.test(String(location.pathname || ""))) return;
+    if (window.__AIVO_PLAY_CARTOON_CHARACTER_ACTIONS__) return;
+    window.__AIVO_PLAY_CARTOON_CHARACTER_ACTIONS__ = true;
+
+    function escapeAttribute(value){
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function openCharacterPreview(imageUrl){
+      var existing = document.getElementById("aivoPlayCartoonCharacterPreview");
+      if (existing) existing.remove();
+
+      var overlay = document.createElement("div");
+      overlay.id = "aivoPlayCartoonCharacterPreview";
+      overlay.setAttribute("role", "dialog");
+      overlay.setAttribute("aria-modal", "true");
+      overlay.style.cssText = "position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(5,7,16,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);";
+      overlay.innerHTML = '<button type="button" data-cartoon-preview-close aria-label="Kapat" style="position:absolute;top:max(18px,env(safe-area-inset-top));right:18px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(20,22,36,.88);color:#fff;font-size:28px;line-height:1;">×</button>' +
+        '<img src="' + escapeAttribute(imageUrl) + '" alt="Karakter önizleme" style="display:block;max-width:94vw;max-height:82vh;width:auto;height:auto;object-fit:contain;border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.5);">';
+
+      function closePreview(){
+        overlay.remove();
+      }
+
+      overlay.addEventListener("click", function(event){
+        var closeButton = event.target && event.target.closest
+          ? event.target.closest("[data-cartoon-preview-close]")
+          : null;
+        if (event.target === overlay || closeButton) closePreview();
+      });
+
+      document.body.appendChild(overlay);
+    }
+
+    function downloadCharacter(imageUrl){
+      var filename = "aivo-cizgifilm-karakter.jpg";
+      var proxyUrl =
+        "/api/media/proxy?url=" +
+        encodeURIComponent(String(imageUrl || "")) +
+        "&filename=" +
+        encodeURIComponent(filename);
+
+      var link = document.createElement("a");
+      link.href = proxyUrl;
+      link.download = filename;
+      link.rel = "noopener";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(function(){
+        try { link.remove(); } catch (_) {}
+      }, 1500);
+    }
+
+    document.addEventListener("click", function(event){
+      var button = event.target && event.target.closest
+        ? event.target.closest("[data-mobile-cartoon-character-act]")
+        : null;
+      if (!button) return;
+
+      var action = String(button.getAttribute("data-mobile-cartoon-character-act") || "").trim();
+      if (action !== "preview" && action !== "download") return;
+
+      var imageUrl = String(button.getAttribute("data-character-url") || "").trim();
+      if (!imageUrl) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      if (action === "preview") {
+        openCharacterPreview(imageUrl);
+        return;
+      }
+
+      downloadCharacter(imageUrl);
+    }, true);
+  } catch (_) {}
+})();
+
 (function(){
   if (window.__AIVO_MOBILE_TOAST__) return;
   window.__AIVO_MOBILE_TOAST__ = true;
