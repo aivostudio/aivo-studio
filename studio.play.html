@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="/mobile/css/mobile.photofx.css?v=1">
  <link rel="stylesheet" href="/mobile/css/mobile.video.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.lipsync.css?v=1">
+  <link rel="stylesheet" href="/mobile/css/mobile.adfilm.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.account.css?v=1">
  <link rel="stylesheet" href="/mobile/css/mobile.invoices.css?v=1">
   <link rel="stylesheet" href="/mobile/css/mobile.credits.css?v=1">
@@ -1047,6 +1048,10 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   <div class="empty-card" data-i18n="empty.lipsyncLoading">Loading lip sync video module.</div>
 </div>
 
+<div id="mobileAdFilmMount" hidden>
+  <div class="empty-card">Reklam Filmi modülü yükleniyor...</div>
+</div>
+
 <div id="mobileCreditsMount" hidden>
   <div class="empty-card" data-i18n="empty.creditsLoading">Loading credits section.</div>
 </div>
@@ -1086,6 +1091,11 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
     <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">
       <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
       <b data-i18n="tools.lipsync">AI Lip Sync Video</b>
+    </button>
+
+    <button class="mobile-tool-card" type="button" data-mobile-tool="adfilm">
+      <span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span>
+      <b>AI Reklam Filmi Oluştur</b>
     </button>
   </div>
 </div>
@@ -1417,6 +1427,7 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
       "mobilePhotoFxMount",
        "mobileVideoMount",
       "mobileLipsyncMount",
+      "mobileAdFilmMount",
       "mobileCreditsMount",
       "mobileToolsMount",
       "mobileAccountMount",
@@ -1499,6 +1510,7 @@ let cartoonMount = document.getElementById("mobileCartoonMount");
 let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
+let adfilmMount = document.getElementById("mobileAdFilmMount");
 let creditsMount = document.getElementById("mobileCreditsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
@@ -1722,6 +1734,26 @@ try {
     lipsyncMount.innerHTML = '<div class="empty-card" data-i18n="empty.lipsyncLoadFailed">Lip sync video module could not be loaded.</div>';
   }
 }
+try {
+  const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+    cache: "no-store"
+  });
+
+  if (!adfilmRes.ok) {
+    throw new Error("mobile_adfilm_html_load_failed");
+  }
+
+  adfilmMount.innerHTML = await adfilmRes.text();
+
+  const adfilmScript = document.createElement("script");
+  adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
+  adfilmScript.defer = true;
+  document.body.appendChild(adfilmScript);
+} catch (err) {
+  if (adfilmMount) {
+    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+  }
+}
 
 try {
   const creditsRes = await fetch("/mobile/modules/mobile.credits.play.html?v=2", {
@@ -1874,6 +1906,7 @@ document.body.appendChild(contactScript);
       if (photofxMount) photofxMount.hidden = true;
       if (videoMount) videoMount.hidden = true;
       if (lipsyncMount) lipsyncMount.hidden = true;
+      if (adfilmMount) adfilmMount.hidden = true;
       if (toolsMount) toolsMount.hidden = true;
       if (accountMount) accountMount.hidden = true;
       if (policyMount) policyMount.hidden = true;
@@ -1986,6 +2019,7 @@ setTimeout(normalizeTopCreditButton, 1200);
 
 document.querySelectorAll(".bottom-nav a").forEach(function(navItem){
   navItem.addEventListener("click", function(){
+    if (adfilmMount) adfilmMount.hidden = true;
 document.documentElement.classList.remove(
   "aivo-start-productions",
   "aivo-start-tools",
@@ -2184,6 +2218,22 @@ function showLipsync(){
     if (lipsyncTitle) lipsyncTitle.hidden = true;
     if (lipsyncResults) lipsyncResults.hidden = true;
   }
+}
+
+function showAdFilm(){
+  homeMount.hidden = true;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
 }
 
 if (homeNav) {
@@ -2404,6 +2454,7 @@ if (toolsNav) {
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = false;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2432,6 +2483,7 @@ if (toolsNav) {
     if (photofxMount) photofxMount.hidden = true;
     if (videoMount) videoMount.hidden = true;
     if (lipsyncMount) lipsyncMount.hidden = true;
+    if (adfilmMount) adfilmMount.hidden = true;
 
     if (toolsMount) toolsMount.hidden = true;
     if (accountMount) accountMount.hidden = true;
@@ -2458,6 +2510,7 @@ if (accountNav) {
     if (photofxMount) photofxMount.hidden = true;
     if (videoMount) videoMount.hidden = true;
     if (lipsyncMount) lipsyncMount.hidden = true;
+    if (adfilmMount) adfilmMount.hidden = true;
     if (toolsMount) toolsMount.hidden = true;
     if (creditsMount) creditsMount.hidden = true;
     if (policyMount) policyMount.hidden = true;
@@ -2525,6 +2578,7 @@ if (accountNav) {
   if (photofxMount) photofxMount.hidden = true;
   if (videoMount) videoMount.hidden = true;
   if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = true;
   if (toolsMount) toolsMount.hidden = true;
   if (creditsMount) creditsMount.hidden = true;
   if (accountMount) accountMount.hidden = true;
@@ -2933,6 +2987,8 @@ document.addEventListener("click", function(e){
 
   const tool = btn.getAttribute("data-mobile-tool");
 
+  if (adfilmMount) adfilmMount.hidden = true;
+
   if (tool === "music") {
     activeMobileModule = "music";
     homeMount.hidden = true;
@@ -3020,6 +3076,14 @@ if (tool === "atmo") {
     activeMobileModule = "lipsync";
     homeMount.hidden = true;
     showLipsync();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (tool === "adfilm") {
+    activeMobileModule = "adfilm";
+    showAdFilm();
     setActiveNav(toolsNav);
     window.scrollTo({ top: 0, behavior: "smooth" });
     return;
