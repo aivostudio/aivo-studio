@@ -455,6 +455,35 @@ tasks.register("syncAivoWebAssets", Sync) {
 
         generatedAdFilmProduction.setText(adFilmProductionText, "UTF-8")
 
+        def generatedRadioNarration = new File(
+            aivoGeneratedPublicDir,
+            "mobile/js/mobile.radio-ad.narration.js"
+        )
+
+        if (!generatedRadioNarration.exists()) {
+            throw new GradleException("Generated mobile.radio-ad.narration.js was not found after Android asset sync.")
+        }
+
+        def radioNarrationText = generatedRadioNarration.getText("UTF-8")
+        def oldRadioNarrationFieldListener = '''  Object.keys(fields).forEach(function(key){
+    const node = fields[key];
+    if (!node) return;
+    node.addEventListener(node.tagName === "TEXTAREA" ? "input" : "change", syncDraftState);
+  });'''
+        def newRadioNarrationFieldListener = '''  Object.keys(fields).forEach(function(key){
+    const node = fields[key];
+    if (!node) return;
+    node.addEventListener("change", syncDraftState);
+  });'''
+
+        if (radioNarrationText.contains(oldRadioNarrationFieldListener)) {
+            radioNarrationText = radioNarrationText.replace(oldRadioNarrationFieldListener, newRadioNarrationFieldListener)
+        } else if (!radioNarrationText.contains(newRadioNarrationFieldListener)) {
+            throw new GradleException("Android radio narration field listener could not be patched safely.")
+        }
+
+        generatedRadioNarration.setText(radioNarrationText, "UTF-8")
+
         def generatedReferences = new File(
             aivoGeneratedPublicDir,
             "mobile/js/mobile.adfilm.references.js"
