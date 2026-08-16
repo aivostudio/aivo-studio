@@ -36,7 +36,7 @@ export const VOICES = Object.freeze({
   clear_female: { primary: "Sarah", fallback: "Zephyr" },
 });
 
-const DURATIONS = new Set([10, 15, 30, 45, 60]);
+const DURATIONS = new Set([10, 15, 20, 30, 45, 60]);
 const STYLES = new Set(["warm", "energetic", "premium", "natural"]);
 const SPEEDS = new Set(["slow", "balanced", "fast"]);
 const FLOWS = new Set(["natural", "balanced", "emphatic"]);
