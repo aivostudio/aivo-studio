@@ -10,8 +10,8 @@
   var CREDIT_APP='radioad';
   var CREDIT_ACTION='studio_radio_ad_generate';
   var CREDIT_PRICES={
-    mp3:{10:10,15:12,30:20,45:28,60:36},
-    wav:{10:13,15:15,30:25,45:35,60:45}
+    mp3:{10:10,15:12,20:15,30:20,45:28,60:36},
+    wav:{10:13,15:15,20:18,30:25,45:35,60:45}
   };
   var running=false;
   var currentRun=null;
@@ -35,7 +35,7 @@
   function stageNodes(panel){return{box:q(panel,'[data-radio-production]'),count:q(panel,'[data-radio-stage-count]'),title:q(panel,'[data-radio-stage-title]'),description:q(panel,'[data-radio-stage-description]'),time:q(panel,'[data-radio-stage-time]'),steps:qa(panel,'[data-radio-stage-steps] span'),button:q(panel,'[data-radio-build]')}}
   function placeFinalAfterProduction(panel){var production=q(panel,'[data-radio-production]');var final=q(panel,'.adfilm-radio-final');var card=final&&final.closest('.adfilm-radio-card');if(!production||!card||production.nextElementSibling===card)return;production.insertAdjacentElement('afterend',card)}
   function removePreviewDownload(panel){var preview=q(panel,'.radio-preview');if(!preview)return;var buttons=qa(preview,'.radio-preview__player .radio-icon-btn:not(.is-danger)');if(buttons.length>1)buttons[1].remove()}
-  function normalizeDuration(value){var duration=Number(value)||10;return[10,15,30,45,60].indexOf(duration)>=0?duration:10}
+  function normalizeDuration(value){var duration=Number(value)||10;return[10,15,20,30,45,60].indexOf(duration)>=0?duration:10}
   function normalizeFormat(value){return clean(value).toLowerCase()==='wav'?'wav':'mp3'}
   function creditAmount(duration,format){var normalizedDuration=normalizeDuration(duration);var normalizedFormat=normalizeFormat(format);return Number(CREDIT_PRICES[normalizedFormat][normalizedDuration]||0)}
   function creditQuote(panel){var duration=normalizeDuration(selected(panel,'duration','10'));var format=normalizeFormat(selected(panel,'outputFormat','mp3'));return{duration:duration,format:format,amount:creditAmount(duration,format)}}
