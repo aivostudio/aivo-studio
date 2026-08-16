@@ -1,5 +1,5 @@
 // Radio-specific Stable Audio prompt builder.
-const ALLOWED_DURATIONS = new Set([10, 15, 30, 45, 60]);
+const ALLOWED_DURATIONS = new Set([10, 15, 20, 30, 45, 60]);
 
 const STYLE_PROMPTS = Object.freeze({
   cinematic: "premium cinematic radio-ad music bed, confident pulse, polished brand character, modern trailer restraint",
