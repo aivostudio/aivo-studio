@@ -12,7 +12,7 @@ const PROJECT_PREFIX = "radioad:project:";
 const USER_INDEX_PREFIX = "radioad:user:";
 const MAX_PROJECTS_PER_USER = 50;
 
-export const RADIO_DURATIONS = Object.freeze([10, 15, 30, 45, 60]);
+export const RADIO_DURATIONS = Object.freeze([10, 15, 20, 30, 45, 60]);
 export const RADIO_LANGUAGES = Object.freeze([
   "tr", "en", "de", "fr", "es", "it", "pt", "ar", "ru", "nl",
   "pl", "uk", "hi", "id", "ms", "ja", "ko", "zh", "vi", "th",
