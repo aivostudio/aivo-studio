@@ -160,7 +160,7 @@ export default async function handler(req, res) {
     }
 
     const duration = Number(project.output?.duration || 10);
-    if (![10, 15, 30, 45, 60].includes(duration)) {
+    if (![10, 15, 20, 30, 45, 60].includes(duration)) {
       return sendJson(res, 400, { ok: false, error: "invalid_duration" });
     }
 
