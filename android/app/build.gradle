@@ -38,6 +38,54 @@ android {
     }
 }
 
+def aivoRepoRoot = rootProject.projectDir.parentFile
+def aivoGeneratedAssetsDir = file("${projectDir}/src/main/assets")
+def aivoGeneratedPublicDir = file("${aivoGeneratedAssetsDir}/public")
+
+tasks.register("syncAivoWebAssets", Sync) {
+    into aivoGeneratedPublicDir
+
+    from(aivoRepoRoot) {
+        include "mobile/**"
+        include "css/**"
+        include "aivo-logo.png"
+        include "apple-touch-icon.png"
+        include "favicon.ico"
+        include "forgot.play.html"
+        include "index.play.html"
+        include "login.play.html"
+        include "studio.play.html"
+    }
+
+    from(aivoRepoRoot) {
+        include "index.play.html"
+        rename { "index.html" }
+    }
+
+    doLast {
+        aivoGeneratedAssetsDir.mkdirs()
+        new File(aivoGeneratedAssetsDir, "capacitor.config.json").text = '''{
+  "appId": "tr.aivo.app",
+  "appName": "AIVO Studio",
+  "webDir": "www"
+}
+'''
+
+        def generatedIndex = new File(aivoGeneratedPublicDir, "index.html")
+        def generatedStudio = new File(aivoGeneratedPublicDir, "studio.play.html")
+
+        if (!generatedIndex.exists()) {
+            throw new GradleException("Generated index.html was not found after Android asset sync.")
+        }
+
+        if (!generatedStudio.exists()) {
+            throw new GradleException("Generated studio.play.html was not found after Android asset sync.")
+        }
+    }
+}
+
+preBuild.dependsOn(tasks.named("syncAivoWebAssets"))
+
 repositories {
     flatDir {
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
