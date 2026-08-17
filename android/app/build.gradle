@@ -392,43 +392,6 @@ tasks.register("syncAivoWebAssets", Sync) {
   });'''
         def newRadioRuntime = '''  let radioRuntimeStarted = false;
   let radioArchiveStarted = false;
-  let radioTimingStartedAt = 0;
-
-  function radioTiming(label, detail){
-    const now = performance.now();
-    const elapsed = radioTimingStartedAt ? now - radioTimingStartedAt : 0;
-    console.log("[AIVO_RADIO_TIMING] " + label + " +" + elapsed.toFixed(1) + "ms", detail || "");
-  }
-
-  function watchRadioScript(attr, label){
-    const script = document.querySelector('script[' + attr + ']');
-    if (!script) {
-      radioTiming(label + "_MISSING");
-      return;
-    }
-
-    if (script.dataset.loaded === "1") {
-      radioTiming(label + "_ALREADY_LOADED");
-      return;
-    }
-
-    script.addEventListener("load", function(){ radioTiming(label + "_LOADED"); }, { once:true });
-    script.addEventListener("error", function(){ radioTiming(label + "_ERROR"); }, { once:true });
-  }
-
-  function startRadioLongTaskObserver(){
-    if (typeof PerformanceObserver !== "function") return;
-
-    try {
-      const observer = new PerformanceObserver(function(list){
-        list.getEntries().forEach(function(entry){
-          radioTiming("LONG_TASK", { duration:Number(entry.duration.toFixed(1)) });
-        });
-      });
-      observer.observe({ entryTypes:["longtask"] });
-      window.setTimeout(function(){ observer.disconnect(); }, 5000);
-    } catch (_) {}
-  }
 
   function loadRadioArchive(){
     if (radioArchiveStarted) return;
@@ -457,34 +420,13 @@ tasks.register("syncAivoWebAssets", Sync) {
   function loadRadioRuntime(){
     if (radioRuntimeStarted) return;
     radioRuntimeStarted = true;
-    radioTimingStartedAt = performance.now();
-    radioTiming("RADIO_CLICK");
-    startRadioLongTaskObserver();
-
-    window.requestAnimationFrame(function(){
-      window.requestAnimationFrame(function(){
-        radioTiming("RADIO_FIRST_PAINT");
-      });
-    });
 
     loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
-      radioTiming("PROJECT_SYNC_LOADED");
-
       loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
-      watchRadioScript("data-mobile-radio-ad-narration", "NARRATION");
-
       loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
-      watchRadioScript("data-mobile-radio-ad-music", "MUSIC");
-
       loadScript("/mobile/js/mobile.radio-ad.production.js?v=1", "data-mobile-radio-ad-production");
-      watchRadioScript("data-mobile-radio-ad-production", "PRODUCTION");
-
       loadScript("/mobile/js/mobile.radio-ad.credit-label.js?v=1", "data-mobile-radio-ad-credit-label");
-      watchRadioScript("data-mobile-radio-ad-credit-label", "CREDIT_LABEL");
-
       loadScript("/mobile/js/mobile.radio-ad.ui-state.js?v=4", "data-mobile-radio-ad-ui-state");
-      watchRadioScript("data-mobile-radio-ad-ui-state", "UI_STATE");
-
       watchRadioArchive();
     });
   }
