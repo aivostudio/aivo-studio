@@ -81,6 +81,18 @@ tasks.register("syncAivoWebAssets", Sync) {
         if (!generatedStudio.exists()) {
             throw new GradleException("Generated studio.play.html was not found after Android asset sync.")
         }
+
+        def studioText = generatedStudio.getText("UTF-8")
+        if (!studioText.contains('/mobile/css/mobile.adfilm.css?v=1')) {
+            def closeHead = studioText.indexOf("</head>")
+            if (closeHead < 0) {
+                throw new GradleException("Android AdFilm style could not find </head> in studio.play.html.")
+            }
+
+            def adfilmStyle = '  <link rel="stylesheet" href="/mobile/css/mobile.adfilm.css?v=1">\n'
+            studioText = studioText.substring(0, closeHead) + adfilmStyle + studioText.substring(closeHead)
+            generatedStudio.setText(studioText, "UTF-8")
+        }
     }
 }
 
