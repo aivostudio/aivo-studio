@@ -1,0 +1,37 @@
+name: Android Meta Build Check
+
+on:
+  push:
+    branches:
+      - android-meta-sdk
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-meta-build-check.yml'
+  workflow_dispatch:
+
+jobs:
+  assemble-debug:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+          cache-dependency-path: android/**/*.gradle*
+
+      - name: Install Capacitor Android build dependency
+        run: npm install --no-save @capacitor/android@8.0.2 @capacitor/core@8.0.2
+
+      - name: Make Gradle executable
+        working-directory: android
+        run: chmod +x gradlew
+
+      - name: Assemble debug
+        working-directory: android
+        run: ./gradlew :app:assembleDebug --stacktrace
