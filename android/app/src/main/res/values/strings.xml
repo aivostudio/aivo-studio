@@ -4,4 +4,6 @@
     <string name="title_activity_main">AIVO</string>
     <string name="package_name">tr.aivo.app</string>
     <string name="custom_url_scheme">tr.aivo.app</string>
+    <string name="facebook_app_id">1400349028780380</string>
+    <string name="facebook_client_token">913bd3edd080504ac81145cebf07843d</string>
 </resources>
