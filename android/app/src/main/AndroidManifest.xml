@@ -29,6 +29,10 @@
             android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
             android:value="true" />
 
+        <meta-data
+            android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled"
+            android:value="true" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
