@@ -797,7 +797,6 @@ body {
   position:relative;
 }
 
-
   .mobile-credits-pack-card.is-popular{
   padding-top:18px;
 }
@@ -1047,6 +1046,10 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
   <div class="empty-card" data-i18n="empty.lipsyncLoading">Loading lip sync video module.</div>
 </div>
 
+<div id="mobileAdFilmMount" hidden>
+  <div class="empty-card">Reklam Filmi modülü yükleniyor...</div>
+</div>
+
 <div id="mobileCreditsMount" hidden>
   <div class="empty-card" data-i18n="empty.creditsLoading">Loading credits section.</div>
 </div>
@@ -1083,11 +1086,16 @@ if (hash === "#music") document.documentElement.classList.add("aivo-start-music"
       <b data-i18n="tools.video">AI Image to Video</b>
     </button>
 
-    <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">
-      <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
-      <b data-i18n="tools.lipsync">AI Lip Sync Video</b>
-    </button>
-  </div>
+  <button class="mobile-tool-card" type="button" data-mobile-tool="lipsync">
+  <span class="tool-icon tool-icon-lipsync" aria-hidden="true"></span>
+  <b data-i18n="tools.lipsync">AI Lip Sync Video</b>
+</button>
+
+<button class="mobile-tool-card" type="button" data-mobile-tool="adfilm">
+  <span class="tool-icon tool-icon-adfilm" aria-hidden="true"></span>
+  <b>AI Reklam Filmi Oluştur</b>
+</button>
+</div>
 </div>
 
 <div id="mobilePolicyMount" hidden>
@@ -1499,6 +1507,7 @@ let cartoonMount = document.getElementById("mobileCartoonMount");
 let photofxMount = document.getElementById("mobilePhotoFxMount");
 let videoMount = document.getElementById("mobileVideoMount");
 let lipsyncMount = document.getElementById("mobileLipsyncMount");
+let adfilmMount = document.getElementById("mobileAdFilmMount");
 let creditsMount = document.getElementById("mobileCreditsMount");
 let accountMount = document.getElementById("mobileAccountMount");
  let policyMount = document.getElementById("mobilePolicyMount");
@@ -1586,7 +1595,6 @@ if (typeof window.aivoApplyI18n === "function") {
       const coverRes = await fetch("/mobile/modules/mobile.cover.html?v=1", {
         cache: "no-store"
       });
-
       if (!coverRes.ok) {
         throw new Error("mobile_cover_html_load_failed");
       }
@@ -1721,6 +1729,68 @@ try {
   if (lipsyncMount) {
     lipsyncMount.innerHTML = '<div class="empty-card" data-i18n="empty.lipsyncLoadFailed">Lip sync video module could not be loaded.</div>';
   }
+}
+
+let adfilmLoadPromise = null;
+
+function ensureAdFilmLoaded(){
+  if (!adfilmMount) {
+    return Promise.reject(new Error("mobile_adfilm_mount_missing"));
+  }
+
+  if (adfilmMount.dataset.aivoAdfilmLoaded === "1") {
+    return Promise.resolve();
+  }
+
+  if (adfilmLoadPromise) {
+    return adfilmLoadPromise;
+  }
+
+  adfilmLoadPromise = (async function(){
+    adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yükleniyor...</div>';
+
+    const adfilmRes = await fetch("/mobile/modules/mobile.adfilm.html?v=1", {
+      cache: "no-store"
+    });
+
+    if (!adfilmRes.ok) {
+      throw new Error("mobile_adfilm_html_load_failed");
+    }
+
+    adfilmMount.innerHTML = await adfilmRes.text();
+
+    if (typeof window.aivoApplyI18n === "function") {
+      window.aivoApplyI18n(adfilmMount);
+    }
+
+    const existingScript = document.querySelector('script[data-aivo-mobile-adfilm-script="1"]');
+
+    if (!existingScript) {
+      await new Promise(function(resolve, reject){
+        const adfilmScript = document.createElement("script");
+        adfilmScript.src = "/mobile/js/mobile.adfilm.js?v=1";
+        adfilmScript.defer = true;
+        adfilmScript.setAttribute("data-aivo-mobile-adfilm-script", "1");
+        adfilmScript.addEventListener("load", resolve, { once: true });
+        adfilmScript.addEventListener("error", function(){
+          reject(new Error("mobile_adfilm_js_load_failed"));
+        }, { once: true });
+        document.body.appendChild(adfilmScript);
+      });
+    }
+
+    adfilmMount.dataset.aivoAdfilmLoaded = "1";
+  })().catch(function(err){
+    adfilmLoadPromise = null;
+
+    if (adfilmMount) {
+      adfilmMount.innerHTML = '<div class="empty-card">Reklam Filmi modülü yüklenemedi.</div>';
+    }
+
+    throw err;
+  });
+
+  return adfilmLoadPromise;
 }
 
 try {
@@ -2184,6 +2254,21 @@ function showLipsync(){
     if (lipsyncTitle) lipsyncTitle.hidden = true;
     if (lipsyncResults) lipsyncResults.hidden = true;
   }
+}
+    function showAdFilm(){
+  homeMount.hidden = true;
+  musicMount.hidden = true;
+  coverMount.hidden = true;
+  atmoMount.hidden = true;
+  if (cartoonMount) cartoonMount.hidden = true;
+  if (photofxMount) photofxMount.hidden = true;
+  if (videoMount) videoMount.hidden = true;
+  if (lipsyncMount) lipsyncMount.hidden = true;
+  if (adfilmMount) adfilmMount.hidden = false;
+  if (toolsMount) toolsMount.hidden = true;
+  if (creditsMount) creditsMount.hidden = true;
+  if (accountMount) accountMount.hidden = true;
+  if (policyMount) policyMount.hidden = true;
 }
 
 if (homeNav) {
@@ -3015,13 +3100,22 @@ if (tool === "atmo") {
   window.scrollTo({ top: 0, behavior: "smooth" });
   return;
 }
-
   if (tool === "lipsync") {
     activeMobileModule = "lipsync";
     homeMount.hidden = true;
     showLipsync();
     setActiveNav(toolsNav);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (tool === "adfilm") {
+    activeMobileModule = "adfilm";
+    homeMount.hidden = true;
+    showAdFilm();
+    setActiveNav(toolsNav);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    ensureAdFilmLoaded().catch(function(){});
     return;
   }
 });
