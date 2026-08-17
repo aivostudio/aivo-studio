@@ -381,8 +381,6 @@ tasks.register("syncAivoWebAssets", Sync) {
         def newRuntimeObserverGuard = '''if (false && adFilmRuntimeRoot) {'''
         def oldProjectSyncRefresh = '''  document.addEventListener("aivo:adfilm-project-sync", function(){ setTimeout(refresh, 0); });'''
         def newProjectSyncRefresh = '''  // Android Play diagnostic: skip project-sync-triggered full i18n refresh.'''
-        def oldRadioProjectSyncRefresh = '''  document.addEventListener("aivo:mobile-radioad-project-sync", function(){ setTimeout(refresh, 0); });'''
-        def newRadioProjectSyncRefresh = '''  // Android Play performance: skip radio project-sync-triggered full i18n refresh.'''
         def oldRadioRuntime = '''  loadScript("/mobile/js/mobile.radio-ad.project-sync.js?v=2", "data-mobile-radio-ad-project-sync", function(){
     loadScript("/mobile/js/mobile.radio-ad.narration.js?v=1", "data-mobile-radio-ad-narration");
     loadScript("/mobile/js/mobile.radio-ad.music.js?v=1", "data-mobile-radio-ad-music");
@@ -448,12 +446,6 @@ tasks.register("syncAivoWebAssets", Sync) {
             adFilmProjectSyncText = adFilmProjectSyncText.replace(oldProjectSyncRefresh, newProjectSyncRefresh)
         } else if (!adFilmProjectSyncText.contains(newProjectSyncRefresh)) {
             throw new GradleException("Android AdFilm project-sync refresh listener could not be patched safely.")
-        }
-
-        if (adFilmProjectSyncText.contains(oldRadioProjectSyncRefresh)) {
-            adFilmProjectSyncText = adFilmProjectSyncText.replace(oldRadioProjectSyncRefresh, newRadioProjectSyncRefresh)
-        } else if (!adFilmProjectSyncText.contains(newRadioProjectSyncRefresh)) {
-            throw new GradleException("Android radio project-sync refresh listener could not be patched safely.")
         }
 
         if (adFilmProjectSyncText.contains(oldRadioRuntime)) {

@@ -405,70 +405,42 @@
   bootstrap();
 })();
 
-(function AIVO_MOBILE_ADFILM_SECONDARY_RUNTIME(){
-  "use strict";
-  if (window.__AIVO_MOBILE_ADFILM_SECONDARY_RUNTIME_V1__) return;
-  window.__AIVO_MOBILE_ADFILM_SECONDARY_RUNTIME_V1__ = true;
+(function loadMobileAdFilmNarration(){
+  if (window.__AIVO_MOBILE_ADFILM_NARRATION_LOADER__) return;
+  window.__AIVO_MOBILE_ADFILM_NARRATION_LOADER__ = true;
+  if (document.querySelector('script[data-mobile-adfilm-narration]')) return;
+  const script = document.createElement("script");
+  script.src = "/mobile/js/mobile.adfilm.narration.js?v=1";
+  script.defer = true;
+  script.setAttribute("data-mobile-adfilm-narration", "");
+  document.body.appendChild(script);
+})();
 
-  function loadNarration(){
-    if (window.__AIVO_MOBILE_ADFILM_NARRATION_LOADER__) return;
-    window.__AIVO_MOBILE_ADFILM_NARRATION_LOADER__ = true;
-    if (document.querySelector('script[data-mobile-adfilm-narration]')) return;
-    const script = document.createElement("script");
-    script.src = "/mobile/js/mobile.adfilm.narration.js?v=1";
-    script.defer = true;
-    script.setAttribute("data-mobile-adfilm-narration", "");
-    document.body.appendChild(script);
-  }
+(function loadMobileAdFilmReferences(){
+  if (window.__AIVO_MOBILE_ADFILM_REFERENCES_LOADER__) return;
+  window.__AIVO_MOBILE_ADFILM_REFERENCES_LOADER__ = true;
+  if (document.querySelector('script[data-mobile-adfilm-references]')) return;
+  const script = document.createElement("script");
+  script.src = "/mobile/js/mobile.adfilm.references.js?v=1";
+  script.defer = true;
+  script.setAttribute("data-mobile-adfilm-references", "");
+  document.body.appendChild(script);
+})();
 
-  function loadReferences(){
-    if (window.__AIVO_MOBILE_ADFILM_REFERENCES_LOADER__) return;
-    window.__AIVO_MOBILE_ADFILM_REFERENCES_LOADER__ = true;
-    if (document.querySelector('script[data-mobile-adfilm-references]')) return;
-    const script = document.createElement("script");
-    script.src = "/mobile/js/mobile.adfilm.references.js?v=1";
-    script.defer = true;
-    script.setAttribute("data-mobile-adfilm-references", "");
-    document.body.appendChild(script);
+(function loadMobileAdFilmMusicApi(){
+  if (window.__AIVO_MOBILE_ADFILM_MUSIC_API_LOADER__) return;
+  window.__AIVO_MOBILE_ADFILM_MUSIC_API_LOADER__ = true;
+  if (!document.querySelector('link[data-mobile-adfilm-music-api-style]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "/mobile/css/mobile.adfilm.music-api.css?v=1";
+    link.setAttribute("data-mobile-adfilm-music-api-style", "");
+    document.head.appendChild(link);
   }
-
-  function loadMusicApi(){
-    if (window.__AIVO_MOBILE_ADFILM_MUSIC_API_LOADER__) return;
-    window.__AIVO_MOBILE_ADFILM_MUSIC_API_LOADER__ = true;
-    if (!document.querySelector('link[data-mobile-adfilm-music-api-style]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "/mobile/css/mobile.adfilm.music-api.css?v=1";
-      link.setAttribute("data-mobile-adfilm-music-api-style", "");
-      document.head.appendChild(link);
-    }
-    if (document.querySelector('script[data-mobile-adfilm-music-api]')) return;
-    const script = document.createElement("script");
-    script.src = "/mobile/js/mobile.adfilm.music-api.js?v=1";
-    script.defer = true;
-    script.setAttribute("data-mobile-adfilm-music-api", "");
-    document.body.appendChild(script);
-  }
-
-  function scheduleIdle(callback, timeout){
-    if (typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(callback, { timeout: timeout });
-      return;
-    }
-    window.setTimeout(callback, Math.min(timeout, 120));
-  }
-
-  function afterFirstPaint(){
-    scheduleIdle(loadNarration, 220);
-    window.setTimeout(function(){ scheduleIdle(loadReferences, 320); }, 60);
-    window.setTimeout(function(){ scheduleIdle(loadMusicApi, 420); }, 120);
-  }
-
-  if (typeof window.requestAnimationFrame === "function") {
-    window.requestAnimationFrame(function(){
-      window.requestAnimationFrame(afterFirstPaint);
-    });
-  } else {
-    window.setTimeout(afterFirstPaint, 0);
-  }
+  if (document.querySelector('script[data-mobile-adfilm-music-api]')) return;
+  const script = document.createElement("script");
+  script.src = "/mobile/js/mobile.adfilm.music-api.js?v=1";
+  script.defer = true;
+  script.setAttribute("data-mobile-adfilm-music-api", "");
+  document.body.appendChild(script);
 })();
