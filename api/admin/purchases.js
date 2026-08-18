@@ -86,6 +86,7 @@ function normalizeInvoice(raw, email) {
     session_id: safeText(item.session_id)
   };
 }
+
 async function scanKeys(redis, pattern) {
   let cursor = "0";
   const found = [];
@@ -108,40 +109,38 @@ async function readInvoices(redis, key) {
   const type = await redis.type(key);
   const email = key.replace("invoices:", "");
 
-if (type === "list") {
-  const rows = await redis.lrange(key, 0, 200);
-  const items = [];
+  if (type === "list") {
+    const rows = await redis.lrange(key, 0, 200);
+    const items = [];
 
-  for (const row of Array.isArray(rows) ? rows : []) {
-    try {
-      const parsed = typeof row === "string" ? JSON.parse(row) : row;
-      items.push(normalizeInvoice(parsed, email));
-    } catch (_) {}
+    for (const row of Array.isArray(rows) ? rows : []) {
+      try {
+        const parsed = typeof row === "string" ? JSON.parse(row) : row;
+        items.push(normalizeInvoice(parsed, email));
+      } catch (_) {}
+    }
+
+    return items;
   }
 
-  return items;
-}
+  if (type === "string") {
+    const raw = await redis.get(key);
+    let arr = [];
 
-if (type === "string") {
-  const raw = await redis.get(key);
-  let arr = [];
-
-  try {
-    if (typeof raw === "string") {
-      arr = JSON.parse(raw || "[]");
-    } else if (Array.isArray(raw)) {
-      arr = raw;
-    } else if (raw && typeof raw === "object") {
-      arr = [raw];
-    } else {
+    try {
+      if (typeof raw === "string") {
+        arr = JSON.parse(raw || "[]");
+      } else if (Array.isArray(raw)) {
+        arr = raw;
+      } else if (raw && typeof raw === "object") {
+        arr = [raw];
+      }
+    } catch (_) {
       arr = [];
     }
-  } catch (_) {
-    arr = [];
-  }
 
-  return (Array.isArray(arr) ? arr : []).map((i) => normalizeInvoice(i, email));
-}
+    return (Array.isArray(arr) ? arr : []).map((i) => normalizeInvoice(i, email));
+  }
 
   return [];
 }
@@ -190,10 +189,7 @@ function normalizeGooglePlayBilling(raw, key) {
 
 async function readGooglePlayBilling(redis, key) {
   const type = await redis.type(key);
-
-  if (type !== "string") {
-    return null;
-  }
+  if (type !== "string") return null;
 
   const raw = await redis.get(key);
   let parsed = null;
@@ -204,15 +200,62 @@ async function readGooglePlayBilling(redis, key) {
     parsed = null;
   }
 
-  if (!parsed || typeof parsed !== "object") {
-    return null;
-  }
+  if (!parsed || typeof parsed !== "object") return null;
 
   const item = normalizeGooglePlayBilling(parsed, key);
+  if (!item.order_id || !item.order_id.startsWith("GPA.")) return null;
 
-  if (!item.order_id || !item.order_id.startsWith("GPA.")) {
-    return null;
+  return item;
+}
+
+function normalizeIosPurchase(raw, key) {
+  const item = raw && typeof raw === "object" ? raw : {};
+  const parts = String(key || "").split(":");
+
+  const email = safeText(parts[1]);
+  const productId = safeText(item.productId || parts[2]);
+  const credits = safeInt(item.creditsAdded) || safeInt(item.credits);
+  const transactionId = safeText(item.transactionId || item.transaction_id);
+
+  let pack = "";
+  if (productId === "tr.aivo.credits.25" || credits === 25) pack = "baslangic";
+  else if (productId === "tr.aivo.credits.100" || credits === 100) pack = "standart";
+  else if (productId === "tr.aivo.credits.200" || credits === 200) pack = "pro";
+  else if (productId === "tr.aivo.credits.500" || credits === 500) pack = "studyo";
+
+  return {
+    id: transactionId || safeText(key),
+    email,
+    provider: "apple_iap",
+    status: "paid",
+    credits,
+    pack,
+    amount: 0,
+    currency: "",
+    order_id: transactionId,
+    created_at: safeText(item.processedAt || item.purchaseDate),
+    product_id: productId,
+    verification_mode: safeText(item.verificationMode)
+  };
+}
+
+async function readIosPurchase(redis, key) {
+  const type = await redis.type(key);
+  if (type !== "string") return null;
+
+  const raw = await redis.get(key);
+  let parsed = null;
+
+  try {
+    parsed = typeof raw === "string" ? JSON.parse(raw || "{}") : raw;
+  } catch (_) {
+    parsed = null;
   }
+
+  if (!parsed || typeof parsed !== "object") return null;
+
+  const item = normalizeIosPurchase(parsed, key);
+  if (!item.order_id || !item.product_id || !item.credits) return null;
 
   return item;
 }
@@ -230,10 +273,11 @@ module.exports = async function handler(req, res) {
 
     const keys = await scanKeys(redis, "invoices:*");
     const googlePlayKeys = await scanKeys(redis, "google_play_billing:*");
+    const iosPurchaseKeys = await scanKeys(redis, "ios_iap:*:tr.aivo.credits.*:tx:*");
 
     const items = [];
 
-     for (const key of keys) {
+    for (const key of keys) {
       const invoices = await readInvoices(redis, key);
 
       for (const inv of invoices) {
@@ -255,7 +299,6 @@ module.exports = async function handler(req, res) {
 
     for (const key of googlePlayKeys) {
       const playItem = await readGooglePlayBilling(redis, key);
-
       if (!playItem) continue;
 
       items.push({
@@ -271,6 +314,30 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    const seenIosTransactions = new Set();
+
+    for (const key of iosPurchaseKeys) {
+      const iosItem = await readIosPurchase(redis, key);
+      if (!iosItem) continue;
+      if (seenIosTransactions.has(iosItem.order_id)) continue;
+
+      seenIosTransactions.add(iosItem.order_id);
+
+      items.push({
+        id: iosItem.id,
+        email: iosItem.email,
+        provider: iosItem.provider,
+        credits: iosItem.credits,
+        pack: iosItem.pack,
+        amount: iosItem.amount,
+        currency: iosItem.currency,
+        order_id: iosItem.order_id,
+        created_at: iosItem.created_at,
+        product_id: iosItem.product_id,
+        verification_mode: iosItem.verification_mode
+      });
+    }
+
     items.sort((a, b) => {
       return (b.created_at || "").localeCompare(a.created_at || "");
     });
@@ -280,7 +347,6 @@ module.exports = async function handler(req, res) {
       total: items.length,
       items
     });
-
   } catch (e) {
     return safeJson(res, 500, {
       ok: false,
