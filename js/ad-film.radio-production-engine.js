@@ -133,18 +133,13 @@
 
   async function downloadFinal(activeProject,finalId,format){
     var url='/api/radio-ad/final/download?projectId='+encodeURIComponent(activeProject)+'&finalId='+encodeURIComponent(finalId);
-    var response=await fetch(url,{method:'GET',credentials:'include',cache:'no-store'});
-    if(!response.ok)throw new Error('final_download_failed');
-    var blob=await response.blob();
-    var objectUrl=URL.createObjectURL(blob);
     var link=document.createElement('a');
-    link.href=objectUrl;
-    link.download='AIVO-Radyo-Reklami.'+(clean(format).toLowerCase()==='wav'?'wav':'mp3');
+    link.href=url;
     link.rel='noopener';
     link.style.display='none';
     document.body.appendChild(link);
     link.click();
-    setTimeout(function(){URL.revokeObjectURL(objectUrl);link.remove()},1200);
+    setTimeout(function(){link.remove()},1200);
   }
 
   function archiveItems(project){
