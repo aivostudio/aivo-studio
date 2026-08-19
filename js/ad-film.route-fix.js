@@ -103,6 +103,27 @@
     if(location.hash!=="#adfilm")location.hash="adfilm";
   }
 
+  function trackAdFilmTraffic(){
+    if(window.__AIVO_ADFILM_TRAFFIC_HIT__)return;
+    window.__AIVO_ADFILM_TRAFFIC_HIT__=true;
+
+    try{
+      fetch("/api/traffic/hit",{
+        method:"POST",
+        credentials:"include",
+        cache:"no-store",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          page:"/studio.v2.html#adfilm",
+          platform:"desktop_web",
+          source:"studio_adfilm",
+          visibilityState:document.visibilityState||"unknown",
+          referrer:document.referrer||""
+        })
+      }).catch(function(){});
+    }catch(_){ }
+  }
+
   document.addEventListener("click",function(event){
     var button=event.target&&event.target.closest&&event.target.closest("[data-adfilm-open]");
     if(!button)return;
@@ -113,7 +134,10 @@
   },true);
 
   document.addEventListener("aivo:module-mounted",function(event){
-    if(event&&event.detail&&event.detail.key==="adfilm")repairMissingDynamicParts(420);
+    if(event&&event.detail&&event.detail.key==="adfilm"){
+      trackAdFilmTraffic();
+      repairMissingDynamicParts(420);
+    }
   });
 
   window.AIVOOpenAdFilm=openAdFilm;
