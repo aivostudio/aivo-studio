@@ -958,3 +958,70 @@ tr:has(.pill-online){
     opacity:1;
   }
 }
+
+/* =========================
+   TRAFFIC STATS READABILITY
+   ========================= */
+
+#cardTrafficStats{
+  padding: 24px 28px;
+}
+
+#cardTrafficStats h3{
+  margin: 0 0 14px;
+  font-size: 24px;
+  letter-spacing: .1px;
+}
+
+#cardTrafficStats .muted{
+  font-size: 16px;
+}
+
+#trafficTodayHits,
+#trafficTodayUnique,
+#trafficTotal{
+  font-size: 36px !important;
+}
+
+#trafficLast7,
+#trafficTopPages{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 18px 22px;
+  font-size: 18px;
+  line-height: 1.55;
+  letter-spacing: .015em;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+#trafficTopPages{
+  min-height: 260px;
+}
+
+@media (max-width: 900px){
+  #cardTrafficStats{
+    padding: 18px;
+  }
+
+  #cardTrafficStats h3{
+    font-size: 21px;
+  }
+
+  #cardTrafficStats .muted{
+    font-size: 14px;
+  }
+
+  #trafficTodayHits,
+  #trafficTodayUnique,
+  #trafficTotal{
+    font-size: 32px !important;
+  }
+
+  #trafficLast7,
+  #trafficTopPages{
+    padding: 16px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+}
