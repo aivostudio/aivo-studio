@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  const CORE_SRC = "./admin-core.js?v=20260819-push-image-upload-1";
+  const CORE_SRC = "./admin-core.js?v=20260819-push-image-upload-2";
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
   const ALLOWED_IMAGE_TYPES = new Set([
     "image/jpeg",
@@ -60,6 +60,8 @@
   function injectPushImageUploader() {
     const urlInput = document.getElementById("pushImageUrl");
     if (!urlInput || document.getElementById("pushImageUploadControls")) return;
+
+    let localPreviewUrl = "";
 
     const wrap = createElement("div", {
       id: "pushImageUploadControls",
@@ -117,39 +119,106 @@
       }
     }, "JPG, PNG veya WebP seçebilirsin. Maksimum 5 MB.");
 
+    const previewCard = createElement("div", {
+      id: "pushImagePreviewCard",
+      style: {
+        display: "none",
+        gridTemplateColumns: "180px minmax(0, 1fr)",
+        gap: "14px",
+        alignItems: "center",
+        maxWidth: "620px",
+        padding: "12px",
+        borderRadius: "16px",
+        border: "1px solid rgba(255,255,255,.10)",
+        background: "rgba(7,12,20,.55)"
+      }
+    });
+
     const preview = createElement("img", {
       id: "pushImagePreview",
       alt: "Push bildirim görseli önizlemesi",
       style: {
-        display: "none",
+        display: "block",
         width: "180px",
+        height: "130px",
         maxWidth: "100%",
-        maxHeight: "180px",
         objectFit: "cover",
-        borderRadius: "14px",
+        borderRadius: "12px",
         border: "1px solid rgba(255,255,255,.10)",
         background: "#0b0f17"
       }
     });
+
+    const previewInfo = createElement("div", {
+      style: {
+        display: "grid",
+        gap: "6px",
+        minWidth: "0"
+      }
+    });
+
+    const previewTitle = createElement("strong", {
+      id: "pushImagePreviewTitle",
+      style: { fontSize: "13px" }
+    }, "Seçilen görsel");
+
+    const previewName = createElement("span", {
+      id: "pushImagePreviewName",
+      className: "muted",
+      style: {
+        fontSize: "12px",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, "-");
+
+    const previewMeta = createElement("span", {
+      id: "pushImagePreviewMeta",
+      className: "muted",
+      style: { fontSize: "12px" }
+    }, "");
+
+    previewInfo.appendChild(previewTitle);
+    previewInfo.appendChild(previewName);
+    previewInfo.appendChild(previewMeta);
+    previewCard.appendChild(preview);
+    previewCard.appendChild(previewInfo);
 
     actionRow.appendChild(fileInput);
     actionRow.appendChild(uploadButton);
     actionRow.appendChild(clearButton);
     actionRow.appendChild(status);
     wrap.appendChild(actionRow);
-    wrap.appendChild(preview);
+    wrap.appendChild(previewCard);
 
     urlInput.insertAdjacentElement("afterend", wrap);
 
-    function setPreview(url) {
+    function revokeLocalPreview() {
+      if (localPreviewUrl) {
+        try { URL.revokeObjectURL(localPreviewUrl); } catch (_) {}
+        localPreviewUrl = "";
+      }
+    }
+
+    function hidePreview() {
+      revokeLocalPreview();
+      preview.removeAttribute("src");
+      previewCard.style.display = "none";
+      previewName.textContent = "-";
+      previewMeta.textContent = "";
+    }
+
+    function showPreview(url, name, meta) {
       const cleanUrl = String(url || "").trim();
       if (!cleanUrl) {
-        preview.removeAttribute("src");
-        preview.style.display = "none";
+        hidePreview();
         return;
       }
       preview.src = cleanUrl;
-      preview.style.display = "block";
+      previewName.textContent = String(name || "Görsel");
+      previewMeta.textContent = String(meta || "");
+      previewCard.style.display = "grid";
     }
 
     uploadButton.addEventListener("click", function () {
@@ -159,13 +228,15 @@
     clearButton.addEventListener("click", function () {
       fileInput.value = "";
       urlInput.value = "";
-      setPreview("");
+      hidePreview();
       status.textContent = "Görsel kaldırıldı.";
       urlInput.dispatchEvent(new Event("input", { bubbles: true }));
     });
 
     urlInput.addEventListener("change", function () {
-      setPreview(urlInput.value);
+      const value = String(urlInput.value || "").trim();
+      if (value) showPreview(value, "URL ile seçilen görsel", "Push bildirimi için kullanılacak görsel");
+      else hidePreview();
     });
 
     fileInput.addEventListener("change", async function () {
@@ -174,15 +245,22 @@
 
       if (!ALLOWED_IMAGE_TYPES.has(String(file.type || "").toLowerCase())) {
         fileInput.value = "";
+        hidePreview();
         status.textContent = "Hata: Sadece JPG, PNG veya WebP yükleyebilirsin.";
         return;
       }
 
       if (file.size > MAX_IMAGE_BYTES) {
         fileInput.value = "";
+        hidePreview();
         status.textContent = "Hata: Görsel 5 MB'dan küçük olmalı.";
         return;
       }
+
+      revokeLocalPreview();
+      localPreviewUrl = URL.createObjectURL(file);
+      const sizeKb = Math.max(1, Math.round(file.size / 1024));
+      showPreview(localPreviewUrl, file.name || "Seçilen görsel", sizeKb + " KB • yükleme bekleniyor");
 
       uploadButton.disabled = true;
       clearButton.disabled = true;
@@ -221,10 +299,12 @@
         urlInput.value = String(presign.public_url);
         urlInput.dispatchEvent(new Event("input", { bubbles: true }));
         urlInput.dispatchEvent(new Event("change", { bubbles: true }));
-        setPreview(presign.public_url);
+        revokeLocalPreview();
+        showPreview(presign.public_url, file.name || "Yüklenen görsel", sizeKb + " KB • yükleme tamamlandı");
         status.textContent = "✅ Görsel yüklendi. URL otomatik eklendi.";
       } catch (err) {
         console.error("Push image upload failed:", err);
+        previewMeta.textContent = sizeKb + " KB • yükleme başarısız";
         status.textContent = "Hata: Görsel yüklenemedi. " + String(err && err.message ? err.message : err);
       } finally {
         uploadButton.disabled = false;
