@@ -3,6 +3,54 @@
   if (!root || root.__mobileAdFilmBound) return;
   root.__mobileAdFilmBound = true;
 
+  let adfilmTrafficActive = false;
+
+  function mobileAdFilmTrafficMeta(){
+    const path = String(window.location.pathname || "/studio.mobile.html");
+    const lower = path.toLowerCase();
+
+    if (lower.includes("studio.ios.html")) {
+      return { platform: "ios_app", source: "ios_adfilm", page: path + "#adfilm" };
+    }
+
+    if (lower.includes("studio.play.html")) {
+      return { platform: "android_app", source: "play_adfilm", page: path + "#adfilm" };
+    }
+
+    return { platform: "mobile_web", source: "mobile_adfilm", page: path + "#adfilm" };
+  }
+
+  function syncMobileAdFilmTraffic(){
+    const active = String(window.location.hash || "").toLowerCase() === "#adfilm";
+
+    if (active && !adfilmTrafficActive) {
+      const meta = mobileAdFilmTrafficMeta();
+
+      try {
+        fetch("/api/traffic/hit", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            platform: meta.platform,
+            source: meta.source,
+            visibilityState: document.visibilityState || "unknown",
+            referrer: document.referrer || "",
+            page: meta.page
+          })
+        }).catch(function(){});
+      } catch (_) {}
+    }
+
+    adfilmTrafficActive = active;
+  }
+
+  window.addEventListener("hashchange", syncMobileAdFilmTraffic);
+  setTimeout(syncMobileAdFilmTraffic, 0);
+
   const modeButtons = Array.from(root.querySelectorAll("[data-mobile-adfilm-mode]"));
   const views = Array.from(root.querySelectorAll("[data-mobile-adfilm-view]"));
   const description = root.querySelector("#mobileAdFilmDescription");
