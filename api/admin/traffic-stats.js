@@ -172,7 +172,8 @@ function classifySource(item) {
   if (!referrer) return "Direct / uygulama içi / referrer yok";
 
   try {
-    const host = new URL(referrer).hostname.replace(/^www\./i, "").toLowerCase();
+    const url = new URL(referrer);
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
 
     if (host === "l.instagram.com" || host.endsWith("instagram.com")) return "Instagram";
     if (host === "l.facebook.com" || host === "lm.facebook.com" || host.endsWith("facebook.com")) return "Facebook";
@@ -181,7 +182,26 @@ function classifySource(item) {
     if (host === "t.co" || host === "x.com" || host.endsWith("twitter.com")) return "X / Twitter";
     if (host.endsWith("bing.com")) return "Bing";
     if (host.endsWith("yandex.com") || host.endsWith("yandex.com.tr")) return "Yandex";
-    if (host.endsWith("aivo.tr")) return "AIVO iç yönlendirme";
+
+    if (host.endsWith("aivo.tr")) {
+      const utmSource = String(url.searchParams.get("utm_source") || "").toLowerCase();
+
+      if (/instagram|\big\b/.test(utmSource)) return "Instagram (UTM)";
+      if (/facebook|\bfb\b|meta/.test(utmSource)) return "Facebook / Meta (UTM)";
+      if (/google|adwords/.test(utmSource)) return "Google Ads (UTM)";
+      if (/youtube/.test(utmSource)) return "YouTube (UTM)";
+      if (/tiktok/.test(utmSource)) return "TikTok (UTM)";
+      if (/twitter|\bx\b/.test(utmSource)) return "X / Twitter (UTM)";
+
+      if (url.searchParams.get("gclid") || url.searchParams.get("gbraid") || url.searchParams.get("wbraid")) {
+        return "Google Ads";
+      }
+
+      if (url.searchParams.get("fbclid")) return "Meta / Facebook-Instagram";
+      if (url.searchParams.get("ttclid")) return "TikTok";
+
+      return "AIVO yönlendirme / gerçek kaynak bilinmiyor";
+    }
 
     return host || "Referrer var / tanımsız";
   } catch (_) {
