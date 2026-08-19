@@ -45,7 +45,7 @@
         </provider>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".UpdateGateActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:configChanges="orientation|screenSize|keyboardHidden|keyboard|navigation|uiMode"
