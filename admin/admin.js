@@ -313,6 +313,38 @@
     });
   }
 
+  function installIosSalesEmptyDayFix() {
+    const status = document.getElementById("iosSalesStatus");
+    const units = document.getElementById("iosSalesUnits");
+    const customerTotal = document.getElementById("iosSalesCustomerTotal");
+    const proceedsTotal = document.getElementById("iosSalesProceedsTotal");
+
+    if (!status || status.__aivoIosEmptyDayFix) return;
+    status.__aivoIosEmptyDayFix = true;
+
+    function sync() {
+      const text = String(status.textContent || "").trim();
+      if (!text.includes("/ Son iOS satışları")) return;
+
+      const dayLabel = text.split("/")[0].trim();
+
+      if (units) units.textContent = "Satış yok";
+      if (customerTotal) customerTotal.textContent = "0,00 TRY";
+      if (proceedsTotal) proceedsTotal.textContent = "0,00 TRY";
+
+      status.textContent = dayLabel + " / Satış yok";
+    }
+
+    const observer = new MutationObserver(sync);
+    observer.observe(status, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+
+    sync();
+  }
+
   onDomReady(async function () {
     try {
       await loadAdminCore();
@@ -322,5 +354,6 @@
     }
 
     injectPushImageUploader();
+    installIosSalesEmptyDayFix();
   });
 })();
