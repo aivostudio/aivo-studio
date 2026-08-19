@@ -10,6 +10,7 @@ android {
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
     implementation project(':capacitor-push-notifications')
+    implementation 'com.google.android.play:app-update:2.1.0'
 }
 
 
