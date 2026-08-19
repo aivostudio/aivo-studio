@@ -1,10 +1,7 @@
 // api/r2/presign-put.js
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import crypto from "crypto";
-import { createRequire } from "module";
-
-const require = createRequire(import.meta.url);
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const crypto = require("crypto");
 const { enforceMediaPolicy, mediaPolicyError } = require("../_lib/media-policy.js");
 
 function safeName(name = "upload") {
@@ -72,7 +69,7 @@ function getAllowedSet(app, kind) {
   return new Set([...ALLOWED_IMAGE, ...ALLOWED_AUDIO]);
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ ok: false, error: "method_not_allowed" });
@@ -187,4 +184,4 @@ export default async function handler(req, res) {
     console.error("presign-put error:", err);
     return res.status(500).json({ ok: false, error: "server_error" });
   }
-}
+};
