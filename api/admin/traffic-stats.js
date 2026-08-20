@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       "ZREVRANGE",
       `traffic:day:${today}:pages`,
       "0",
-      "9",
+      "7",
       "WITHSCORES"
     ]);
 
@@ -56,9 +56,15 @@ export default async function handler(req, res) {
     const topPages = [];
 
     for (let i = 0; i < rawPages.length; i += 2) {
+      const rawPage = String(rawPages[i] || "/");
+      const hits = Number(rawPages[i + 1] || 0);
+
+      if (hits <= 0) continue;
+
       topPages.push({
-        page: rawPages[i],
-        hits: Number(rawPages[i + 1] || 0)
+        page: decoratePage(rawPage),
+        raw_page: rawPage,
+        hits
       });
     }
 
@@ -97,28 +103,6 @@ export default async function handler(req, res) {
     const sourceSummary = sortedSummary(sourceCounts, 10);
     const deviceSummary = sortedSummary(deviceCounts, 10);
 
-    if (sourceSummary.length) {
-      topPages.push({ page: "──────── KAYNAK / REFERRER ────────", hits: 0 });
-
-      sourceSummary.forEach((item) => {
-        topPages.push({
-          page: `Kaynak: ${item.label}`,
-          hits: item.hits
-        });
-      });
-    }
-
-    if (deviceSummary.length) {
-      topPages.push({ page: "──────── CİHAZ / BROWSER ────────", hits: 0 });
-
-      deviceSummary.forEach((item) => {
-        topPages.push({
-          page: `Cihaz: ${item.label}`,
-          hits: item.hits
-        });
-      });
-    }
-
     return res.status(200).json({
       ok: true,
       today: {
@@ -149,6 +133,33 @@ export default async function handler(req, res) {
       deviceSummary: []
     });
   }
+}
+
+function decoratePage(pageValue) {
+  const page = String(pageValue || "/");
+  const lower = page.toLowerCase();
+
+  if (lower.includes("index.ios") || lower.includes("studio.ios")) {
+    return `🍎 ${page}`;
+  }
+
+  if (lower.includes("studio.play")) {
+    return `🤖 ${page}`;
+  }
+
+  if (lower.includes("mobile")) {
+    return `📱 ${page}`;
+  }
+
+  if (lower.includes("studio")) {
+    return `✨ ${page}`;
+  }
+
+  if (page === "/" || lower.includes("index.html")) {
+    return `🌐 ${page}`;
+  }
+
+  return `• ${page}`;
 }
 
 function sortedSummary(map, limit) {
