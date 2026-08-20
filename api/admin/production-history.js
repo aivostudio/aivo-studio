@@ -107,6 +107,8 @@ function mapModuleLabel(app, type) {
   if (text.includes("lipsync") || text.includes("lip sync") || text.includes("dudak")) return "AI Dudak Senkron";
   if (text.includes("photofx") || text.includes("photo fx") || text.includes("foto efekt")) return "AI Foto Efekt Video Clip";
   if (text.includes("cartoon") || text.includes("çizgifilm") || text.includes("cizgifilm")) return "AI Çocuk Çizgifilm";
+  if (text.includes("radioad") || text.includes("radio ad") || text.includes("radyo reklam")) return "AI Radyo Reklamı";
+  if (text.includes("adfilm") || text.includes("ad film") || text.includes("reklam filmi")) return "AI Reklam Videosu";
   if (text.includes("video") || text.includes("runway")) return "AI Resimden Video Üret";
 
   return safeText(app) || "Bilinmeyen Modül";
