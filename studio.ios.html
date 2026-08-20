@@ -1522,10 +1522,23 @@ if (typeof window.aivoApplyI18n === "function") {
   }
 }, 250);
 
-      const musicScript = document.createElement("script");
-     musicScript.src = "/mobile/js/mobile.music.js?v=5102436";
-      musicScript.defer = true;
-      document.body.appendChild(musicScript);
+    const musicScript = document.createElement("script");
+musicScript.src = "/mobile/js/mobile.music.js?v=5102436";
+musicScript.defer = true;
+
+musicScript.addEventListener("load", function(){
+  if (String(window.location.hash || "") === "#productions") {
+    const productionsNav = document.querySelector(
+      '.bottom-nav a[href="#productions"]'
+    );
+
+    if (productionsNav) {
+      productionsNav.click();
+    }
+  }
+}, { once: true });
+
+document.body.appendChild(musicScript);
     } catch (err) {
       musicMount.innerHTML = '<div class="empty-card">Müzik modülü yüklenemedi.</div>';
     }
