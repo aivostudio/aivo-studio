@@ -813,7 +813,7 @@ html.aivo-ios-leaving body{
 </p>
 
 <div class="cta-row">
-<a class="btn btn-primary" href="/login.ios.html?returnTo=%2Fstudio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
+<a class="btn btn-primary" href="/studio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
   <a class="btn btn-ghost" id="mobilePricingCta" href="#mobilePricing" data-i18n="index.viewPrices">Fiyatları Gör</a>
 </div>
       <div class="video-card">
@@ -1252,7 +1252,7 @@ try {
     fetch("/api/traffic/hit", {
       method: "POST",
       credentials: "include",
-      cache: "no-store",
+      cache:"no-store",
       headers: {
         "Content-Type": "application/json"
       },
@@ -1313,7 +1313,7 @@ try {
 
   fetch("/api/auth/me", {
     credentials: "include",
-    cache: "no-store"
+    cache:"no-store"
   })
   .then(function(res){
     if (!res.ok) {
@@ -1338,7 +1338,7 @@ try {
 
     return fetch("/api/credits/get", {
       credentials: "include",
-      cache: "no-store"
+      cache:"no-store"
     });
   })
   .then(function(res){
@@ -1443,7 +1443,7 @@ document.addEventListener("aivo:language-change", applyPrices);
     try {
       const res = await fetch("/api/auth/me", {
         credentials: "include",
-        cache: "no-store",
+        cache:"no-store",
         headers: {
           "Accept": "application/json"
         }
