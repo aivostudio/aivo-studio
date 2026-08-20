@@ -71,7 +71,8 @@ function buildBuckets() {
     "cartoon:story": createBucket("cartoon:story", "AI Çocuk Çizgifilm — Hikaye Modu"),
     "cartoon:studio_export": createBucket("cartoon:studio_export", "AI Çocuk Çizgifilm — Montaj Stüdyosu"),
     photofx: createBucket("photofx", "AI Foto Efekt Video Clip"),
-    video: createBucket("video", "AI Resimden Video Üret")
+    video: createBucket("video", "AI Resimden Video Üret"),
+    adfilm: createBucket("adfilm", "AI Reklam Filmi")
   };
 }
 
@@ -97,12 +98,17 @@ function resolveModuleKey(appInput, actionInput, reasonInput) {
   if (includesAny(text, ["atmo", "atmosfer", "atmosphere"])) {
     return "atmo";
   }
+
   if (includesAny(text, ["lipsync", "lip sync", "dudak", "dudak senkron"])) {
-  return "lipsync";
-}
+    return "lipsync";
+  }
 
   if (includesAny(text, ["photofx", "photo fx", "foto efekt", "photo_effect", "photo-effect"])) {
     return "photofx";
+  }
+
+  if (includesAny(text, ["adfilm", "ad film", "reklam filmi", "studio_adfilm_generate"])) {
+    return "adfilm";
   }
 
   if (
@@ -190,7 +196,8 @@ function aggregateRows(rows) {
     buckets["cartoon:story"],
     buckets["cartoon:studio_export"],
     buckets.photofx,
-    buckets.video
+    buckets.video,
+    buckets.adfilm
   ];
 
   return {
