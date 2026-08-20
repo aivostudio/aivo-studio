@@ -345,6 +345,34 @@
     sync();
   }
 
+  function installTrafficSoftPinkStyle() {
+    if (document.getElementById("aivoTrafficSoftPinkStyle")) return;
+
+    const style = document.createElement("style");
+    style.id = "aivoTrafficSoftPinkStyle";
+    style.textContent = `
+      #cardTrafficStats > div:nth-of-type(2) > div,
+      #trafficLast7,
+      #trafficTopPages {
+        background:
+          linear-gradient(180deg, rgba(255, 168, 196, .055), rgba(255, 138, 177, .026)),
+          rgba(255,255,255,.018) !important;
+        border-color: rgba(255, 182, 207, .13) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.035),
+          0 10px 28px rgba(255, 105, 155, .025);
+      }
+
+      #cardTrafficStats > div:nth-of-type(2) > div:hover,
+      #trafficLast7:hover,
+      #trafficTopPages:hover {
+        border-color: rgba(255, 182, 207, .18) !important;
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
   onDomReady(async function () {
     try {
       await loadAdminCore();
@@ -355,5 +383,6 @@
 
     injectPushImageUploader();
     installIosSalesEmptyDayFix();
+    installTrafficSoftPinkStyle();
   });
 })();
