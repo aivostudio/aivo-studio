@@ -1,7 +1,9 @@
-name: Restore Studio V2
+name: One-time iOS Studio Auth Patch
 
 on:
   push:
+    branches:
+      - fix-ios-studio-entry-auth-20260820
     paths:
       - '.github/workflows/restore-studio-v2.yml'
 
@@ -9,32 +11,221 @@ permissions:
   contents: write
 
 jobs:
-  restore:
+  patch-ios-auth:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout safety branch
         uses: actions/checkout@v4
         with:
+          ref: fix-ios-studio-entry-auth-20260820
           fetch-depth: 0
 
-      - name: Restore full studio page and bump loader cache
+      - name: Patch iOS routing and Studio gate only
         shell: bash
         run: |
-          git show 196d35ae909db756d0114b78effb2c38adfe8d41:studio.v2.html > studio.v2.html
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('studio.v2.html')
-          text = path.read_text()
-          text = text.replace('/toast.compat.js?v=1', '/toast.compat.js?v=2')
-          path.write_text(text)
-          PY
+          node <<'NODE'
+          const fs = require('fs');
 
-      - name: Commit restored page
+          function assert(condition, message) {
+            if (!condition) throw new Error(message);
+          }
+
+          const indexPath = 'index.ios.html';
+          let index = fs.readFileSync(indexPath, 'utf8');
+          const oldCta = '<a class="btn btn-primary" href="/login.ios.html?returnTo=%2Fstudio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>';
+          const newCta = '<a class="btn btn-primary" href="/studio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>';
+          assert(index.split(oldCta).length === 2, 'Expected exactly one restored iOS Studio CTA');
+          index = index.replace(oldCta, newCta);
+
+          const indexGuardStart = '<script>\n(function AIVO_IOS_INDEX_AUTH_LINK_GUARD(){';
+          const indexGuardEnd = '\n</body>';
+          const guardStartPos = index.indexOf(indexGuardStart);
+          const guardEndPos = index.indexOf(indexGuardEnd, guardStartPos);
+          assert(guardStartPos !== -1, 'iOS index auth link guard start marker not found');
+          assert(guardEndPos !== -1 && guardEndPos > guardStartPos, 'iOS index auth link guard end marker not found');
+          const removedGuard = index.slice(guardStartPos, guardEndPos);
+          assert(removedGuard.includes('AIVO_IOS_INDEX_AUTH_LINK_GUARD'), 'Unexpected iOS index guard range');
+          assert(removedGuard.includes('window.location.href ='), 'Unexpected iOS index guard content');
+          index = index.slice(0, guardStartPos) + index.slice(guardEndPos);
+          fs.writeFileSync(indexPath, index, 'utf8');
+
+          const studioPath = 'studio.ios.html';
+          let studio = fs.readFileSync(studioPath, 'utf8');
+          const gateStartMarker = '<style id="aivo-auth-gate-style">';
+          const nextBlockMarker = '<script>\n(function AIVO_MOBILE_START_ROUTE(){';
+          const gateStart = studio.indexOf(gateStartMarker);
+          const gateEnd = studio.indexOf(nextBlockMarker, gateStart);
+          assert(gateStart !== -1, 'iOS Studio auth gate start marker not found');
+          assert(gateEnd !== -1 && gateEnd > gateStart, 'iOS Studio auth gate end marker not found');
+          const oldGate = studio.slice(gateStart, gateEnd);
+          assert(oldGate.includes('AIVO_IOS_STUDIO_HARD_GATE'), 'Unexpected iOS Studio gate range');
+          assert(oldGate.includes('for (let i = 0; i < 12; i++)'), 'Expected old iOS retry gate was not found');
+
+          const newGate = `<style id="aivo-auth-gate-style">
+  html {
+    visibility: hidden;
+    background:#070914 !important;
+  }
+</style>
+
+<script>
+(function AIVO_IOS_STUDIO_HARD_GATE(){
+  if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
+  window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
+
+  var MAX_ATTEMPTS = 6;
+  var REQUEST_TIMEOUT_MS = 4500;
+  var RETRY_DELAYS = [150, 250, 400, 650, 900];
+
+  function getLoginUrl(){
+    var returnTo = "/studio.ios.html" + (window.location.hash || "");
+    return "/login.ios.html?returnTo=" + encodeURIComponent(returnTo);
+  }
+
+  function goIndexLogin(){
+    location.replace(getLoginUrl());
+  }
+
+  function sleep(ms){
+    return new Promise(function(resolve){ setTimeout(resolve, ms); });
+  }
+
+  function firstNonEmpty(){
+    for (var i = 0; i < arguments.length; i++) {
+      var value = arguments[i];
+      if (value != null && String(value).trim()) return String(value).trim();
+    }
+    return "";
+  }
+
+  function emailToName(email){
+    var normalized = String(email || "").trim().toLowerCase();
+    if (!normalized || normalized.indexOf("@") === -1) return "";
+    return normalized.split("@")[0].trim();
+  }
+
+  function scopedKey(baseKey, email){
+    var normalized = String(email || "").trim().toLowerCase();
+    if (!normalized) return baseKey;
+    return baseKey + ":" + normalized;
+  }
+
+  function showStudio(me){
+    var user = me && (me.user || me);
+    var nextEmail = String((user && user.email) || "").trim().toLowerCase();
+    if (!nextEmail || nextEmail.indexOf("@") === -1) return false;
+
+    try {
+      var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
+      var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
+      if (prevEmail && prevEmail !== nextEmail) {
+        localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
+        localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
+      }
+
+      var firstName = firstNonEmpty(user && user.first_name, user && user.firstName, user && user.name, emailToName(nextEmail), "Kullanıcı");
+      var surname = firstNonEmpty(user && user.last_name, user && user.lastName, user && user.surname, "");
+      var fullName = firstNonEmpty(firstName && surname ? (firstName + " " + surname) : "", firstName, "Kullanıcı");
+
+      localStorage.setItem("aivo_logged_in", "1");
+      localStorage.setItem("aivo_user_email", nextEmail);
+      localStorage.setItem("aivo_profile_name", "");
+      localStorage.setItem("aivo_profile_surname", "");
+      localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
+        loggedIn: true,
+        email: nextEmail,
+        name: firstName,
+        first_name: firstName,
+        surname: surname,
+        last_name: surname,
+        full_name: fullName,
+        ts: Date.now()
+      }));
+      localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
+      localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
+    } catch (e) {}
+
+    var st = document.getElementById("aivo-auth-gate-style");
+    if (st) st.remove();
+    document.documentElement.style.visibility = "visible";
+    document.body.style.opacity = "1";
+    document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
+
+    try { document.dispatchEvent(new CustomEvent("aivo:auth-ready", { detail: { me: me } })); } catch (e) {}
+    try { window.dispatchEvent(new Event("aivo:credits:refresh")); } catch (e) {}
+    try { if (typeof loadCredits === "function") loadCredits(); } catch (e) {}
+    return true;
+  }
+
+  async function checkSessionOnce(){
+    var ctrl = new AbortController();
+    var timer = setTimeout(function(){ try { ctrl.abort(); } catch (e) {} }, REQUEST_TIMEOUT_MS);
+    try {
+      var response = await fetch("/api/auth/me", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { "Accept": "application/json" },
+        signal: ctrl.signal
+      });
+      if (response.status === 401 || response.status === 403) return { state: "unauthorized", me: null };
+      if (!response.ok) return { state: "retry", me: null };
+
+      var me = await response.json().catch(function(){ return null; });
+      var user = me && (me.user || me);
+      var email = String((user && user.email) || "").trim().toLowerCase();
+      if (!email || email.indexOf("@") === -1) return { state: "retry", me: null };
+      return { state: "authenticated", me: me };
+    } catch (e) {
+      return { state: "retry", me: null };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function boot(){
+    var unauthorizedHits = 0;
+    for (var attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      var result = await checkSessionOnce();
+      if (result.state === "authenticated") {
+        if (showStudio(result.me)) return;
+      } else if (result.state === "unauthorized") {
+        unauthorizedHits += 1;
+        if (unauthorizedHits >= 2) { goIndexLogin(); return; }
+        await sleep(180);
+        continue;
+      } else {
+        unauthorizedHits = 0;
+      }
+      if (attempt < MAX_ATTEMPTS - 1) await sleep(RETRY_DELAYS[attempt] || 1000);
+    }
+    goIndexLogin();
+  }
+
+  boot();
+})();
+</script>
+
+`;
+
+          studio = studio.slice(0, gateStart) + newGate + studio.slice(gateEnd);
+          fs.writeFileSync(studioPath, studio, 'utf8');
+
+          const finalIndex = fs.readFileSync(indexPath, 'utf8');
+          const finalStudio = fs.readFileSync(studioPath, 'utf8');
+          assert(finalIndex.includes(newCta), 'Direct iOS Studio CTA missing after patch');
+          assert(!finalIndex.includes('AIVO_IOS_INDEX_AUTH_LINK_GUARD'), 'Duplicate iOS index auth guard still present');
+          assert(finalStudio.includes('var MAX_ATTEMPTS = 6;'), 'Hardened iOS Studio gate missing');
+          assert(finalStudio.includes('return { state: "unauthorized", me: null };'), '401/403 handling missing');
+          assert(!finalStudio.includes('for (let i = 0; i < 12; i++)'), 'Old iOS retry loop still present');
+          NODE
+
+      - name: Commit only patched iOS HTML files
         shell: bash
         run: |
           git config user.name 'aivostudio-bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add studio.v2.html
-          git diff --cached --quiet && exit 0
-          git commit -m 'Restore full studio page and refresh ad film loader'
-          git push
+          git add index.ios.html studio.ios.html
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m 'Align iOS Studio entry auth with mobile flow'
+          git push origin HEAD:fix-ios-studio-entry-auth-20260820
