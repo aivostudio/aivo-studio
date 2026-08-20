@@ -594,8 +594,8 @@ font-size:12px;
 
 #mobileAppBottomNav .nav-icon::before{
   content:"";
-  width:24px;
-  height:24px;
+  width:24px !important;
+  height:24px !important;
   display:block;
   background:linear-gradient(135deg,#a78bfa,#60eaff);
   filter:drop-shadow(0 0 9px rgba(139,92,246,.68));
@@ -1252,7 +1252,7 @@ try {
     fetch("/api/traffic/hit", {
       method: "POST",
       credentials: "include",
-      cache:"no-store",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json"
       },
@@ -1313,7 +1313,7 @@ try {
 
   fetch("/api/auth/me", {
     credentials: "include",
-    cache:"no-store"
+    cache: "no-store"
   })
   .then(function(res){
     if (!res.ok) {
@@ -1338,7 +1338,7 @@ try {
 
     return fetch("/api/credits/get", {
       credentials: "include",
-      cache:"no-store"
+      cache: "no-store"
     });
   })
   .then(function(res){
@@ -1423,41 +1423,6 @@ try {
 setTimeout(applyPrices, 0);
 setTimeout(applyPrices, 250);
 document.addEventListener("aivo:language-change", applyPrices);
-})();
-</script>
-<script>
-(function AIVO_IOS_INDEX_AUTH_LINK_GUARD(){
-  document.addEventListener("click", async function(event){
-    const link = event.target && event.target.closest
-      ? event.target.closest('a[href^="/studio.ios.html"]')
-      : null;
-
-    if (!link) return;
-
-    const href = link.getAttribute("href") || "/studio.ios.html";
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-    try {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache:"no-store",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-      if (res.ok) {
-        window.location.href = href;
-        return;
-      }
-    } catch (err) {}
-
-    window.location.href =
-      "/login.ios.html?returnTo=" + encodeURIComponent(href);
-  }, true);
 })();
 </script>
 </body>
