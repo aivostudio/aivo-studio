@@ -594,8 +594,8 @@ font-size:12px;
 
 #mobileAppBottomNav .nav-icon::before{
   content:"";
-  width:24px;
-  height:24px;
+  width:24px !important;
+  height:24px !important;
   display:block;
   background:linear-gradient(135deg,#a78bfa,#60eaff);
   filter:drop-shadow(0 0 9px rgba(139,92,246,.68));
@@ -813,7 +813,7 @@ html.aivo-ios-leaving body{
 </p>
 
 <div class="cta-row">
-<a class="btn btn-primary" href="/login.ios.html?returnTo=%2Fstudio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
+<a class="btn btn-primary" href="/studio.ios.html" data-i18n="index.enterStudio">Studio’ya Gir →</a>
   <a class="btn btn-ghost" id="mobilePricingCta" href="#mobilePricing" data-i18n="index.viewPrices">Fiyatları Gör</a>
 </div>
       <div class="video-card">
@@ -1423,41 +1423,6 @@ try {
 setTimeout(applyPrices, 0);
 setTimeout(applyPrices, 250);
 document.addEventListener("aivo:language-change", applyPrices);
-})();
-</script>
-<script>
-(function AIVO_IOS_INDEX_AUTH_LINK_GUARD(){
-  document.addEventListener("click", async function(event){
-    const link = event.target && event.target.closest
-      ? event.target.closest('a[href^="/studio.ios.html"]')
-      : null;
-
-    if (!link) return;
-
-    const href = link.getAttribute("href") || "/studio.ios.html";
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-    try {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/json"
-        }
-      });
-
-      if (res.ok) {
-        window.location.href = href;
-        return;
-      }
-    } catch (err) {}
-
-    window.location.href =
-      "/login.ios.html?returnTo=" + encodeURIComponent(href);
-  }, true);
 })();
 </script>
 </body>
