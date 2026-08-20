@@ -1252,7 +1252,7 @@ try {
     fetch("/api/traffic/hit", {
       method: "POST",
       credentials: "include",
-      cache:"no-store",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json"
       },
@@ -1313,7 +1313,7 @@ try {
 
   fetch("/api/auth/me", {
     credentials: "include",
-    cache:"no-store"
+    cache: "no-store"
   })
   .then(function(res){
     if (!res.ok) {
@@ -1338,7 +1338,7 @@ try {
 
     return fetch("/api/credits/get", {
       credentials: "include",
-      cache:"no-store"
+      cache: "no-store"
     });
   })
   .then(function(res){
@@ -1443,7 +1443,7 @@ document.addEventListener("aivo:language-change", applyPrices);
     try {
       const res = await fetch("/api/auth/me", {
         credentials: "include",
-        cache:"no-store",
+        cache: "no-store",
         headers: {
           "Accept": "application/json"
         }
