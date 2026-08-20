@@ -833,8 +833,13 @@ body {
   </style>
 
 <style id="aivo-auth-gate-style">
-  html {
-    visibility: hidden;
+  html{
+    visibility:visible;
+    background:#070914 !important;
+  }
+
+  body{
+    opacity:1 !important;
     background:#070914 !important;
   }
 </style>
@@ -844,99 +849,21 @@ body {
   if (window.__AIVO_IOS_STUDIO_HARD_GATE__) return;
   window.__AIVO_IOS_STUDIO_HARD_GATE__ = true;
 
-  var MAX_ATTEMPTS = 6;
-  var REQUEST_TIMEOUT_MS = 4500;
-  var RETRY_DELAYS = [150, 250, 400, 650, 900];
-
   function getLoginUrl(){
-    var returnTo = "/studio.ios.html" + (window.location.hash || "");
-    return "/login.ios.html?returnTo=" + encodeURIComponent(returnTo);
-  }
-
-  function goIndexLogin(){
-    location.replace(getLoginUrl());
-  }
-
-  function sleep(ms){
-    return new Promise(function(resolve){
-      setTimeout(resolve, ms);
-    });
-  }
-
-  function firstNonEmpty(){
-    for (var i = 0; i < arguments.length; i++) {
-      var value = arguments[i];
-      if (value != null && String(value).trim()) return String(value).trim();
-    }
-    return "";
-  }
-
-  function emailToName(email){
-    var normalized = String(email || "").trim().toLowerCase();
-    if (!normalized || normalized.indexOf("@") === -1) return "";
-    return normalized.split("@")[0].trim();
-  }
-
-  function scopedKey(baseKey, email){
-    var normalized = String(email || "").trim().toLowerCase();
-    if (!normalized) return baseKey;
-    return baseKey + ":" + normalized;
+    return "/login.ios.html?returnTo=" + encodeURIComponent("/studio.ios.html" + (window.location.hash || ""));
   }
 
   function showStudio(me){
-    var user = me && (me.user || me);
-    var nextEmail = String((user && user.email) || "").trim().toLowerCase();
-
-    if (!nextEmail || nextEmail.indexOf("@") === -1) {
-      return false;
-    }
-
     try {
-      var prevUnified = JSON.parse(localStorage.getItem("aivo_auth_unified_v1") || "{}");
-      var prevEmail = String((prevUnified && prevUnified.email) || "").trim().toLowerCase();
-
-      if (prevEmail && prevEmail !== nextEmail) {
-        localStorage.removeItem(scopedKey("aivo_profile_name", prevEmail));
-        localStorage.removeItem(scopedKey("aivo_profile_surname", prevEmail));
-      }
-
-      var firstName = firstNonEmpty(
-        user && user.first_name,
-        user && user.firstName,
-        user && user.name,
-        emailToName(nextEmail),
-        "Kullanıcı"
-      );
-
-      var surname = firstNonEmpty(
-        user && user.last_name,
-        user && user.lastName,
-        user && user.surname,
-        ""
-      );
-
-      var fullName = firstNonEmpty(
-        firstName && surname ? (firstName + " " + surname) : "",
-        firstName,
-        "Kullanıcı"
-      );
+      var nextEmail = String((me && me.email) || (me && me.user && me.user.email) || "").trim().toLowerCase();
 
       localStorage.setItem("aivo_logged_in", "1");
       localStorage.setItem("aivo_user_email", nextEmail);
-      localStorage.setItem("aivo_profile_name", "");
-      localStorage.setItem("aivo_profile_surname", "");
       localStorage.setItem("aivo_auth_unified_v1", JSON.stringify({
         loggedIn: true,
         email: nextEmail,
-        name: firstName,
-        first_name: firstName,
-        surname: surname,
-        last_name: surname,
-        full_name: fullName,
         ts: Date.now()
       }));
-      localStorage.setItem(scopedKey("aivo_profile_name", nextEmail), firstName);
-      localStorage.setItem(scopedKey("aivo_profile_surname", nextEmail), surname);
     } catch (e) {}
 
     var st = document.getElementById("aivo-auth-gate-style");
@@ -944,97 +871,59 @@ body {
 
     document.documentElement.style.visibility = "visible";
     document.body.style.opacity = "1";
-    document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
-    try {
-      document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
-        detail: { me: me }
-      }));
-    } catch (e) {}
+ document.querySelector(".topbar-credit-actions")?.removeAttribute("hidden");
 
-    try {
-      window.dispatchEvent(new Event("aivo:credits:refresh"));
-    } catch (e) {}
+try {
+  document.dispatchEvent(new CustomEvent("aivo:auth-ready", {
+    detail: { me: me }
+  }));
+} catch (e) {}
 
-    try {
-      if (typeof loadCredits === "function") {
-        loadCredits();
-      }
-    } catch (e) {}
+try {
+  window.dispatchEvent(new Event("aivo:credits:refresh"));
+} catch (e) {}
 
-    return true;
+try {
+  if (typeof loadCredits === "function") {
+    loadCredits();
+  }
+} catch (e) {}
   }
 
   async function checkSessionOnce(){
-    var ctrl = new AbortController();
-    var timer = setTimeout(function(){
-      try { ctrl.abort(); } catch (e) {}
-    }, REQUEST_TIMEOUT_MS);
-
-    try {
-      var response = await fetch("/api/auth/me", {
-        credentials: "include",
-        cache: "no-store",
-        headers: {
-          "Accept": "application/json"
-        },
-        signal: ctrl.signal
-      });
-
-      if (response.status === 401 || response.status === 403) {
-        return { state: "unauthorized", me: null };
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+      cache: "no-store",
+      headers: {
+        "Accept": "application/json"
       }
+    });
 
-      if (!response.ok) {
-        return { state: "retry", me: null };
-      }
+    if (!res.ok) return null;
 
-      var me = await response.json().catch(function(){
-        return null;
-      });
-      var user = me && (me.user || me);
-      var email = String((user && user.email) || "").trim().toLowerCase();
-
-      if (!email || email.indexOf("@") === -1) {
-        return { state: "retry", me: null };
-      }
-
-      return { state: "authenticated", me: me };
-    } catch (e) {
-      return { state: "retry", me: null };
-    } finally {
-      clearTimeout(timer);
-    }
+    return await res.json().catch(function(){
+      return null;
+    });
   }
 
   async function boot(){
-    var unauthorizedHits = 0;
+for (let i = 0; i < 12; i++) {
+      try {
+        const me = await checkSessionOnce();
 
-    for (var attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      var result = await checkSessionOnce();
-
-      if (result.state === "authenticated") {
-        if (showStudio(result.me)) return;
-      } else if (result.state === "unauthorized") {
-        unauthorizedHits += 1;
-
-        if (unauthorizedHits >= 2) {
-          goIndexLogin();
+        if (me && (me.email || (me.user && me.user.email))) {
+          showStudio(me);
           return;
         }
+      } catch (err) {}
 
-        await sleep(180);
-        continue;
-      } else {
-        unauthorizedHits = 0;
-      }
-
-      if (attempt < MAX_ATTEMPTS - 1) {
-        await sleep(RETRY_DELAYS[attempt] || 1000);
-      }
+      await new Promise(function(resolve){
+    setTimeout(resolve, 500);
+      });
     }
 
-    goIndexLogin();
+    location.replace(getLoginUrl());
   }
 
   boot();
