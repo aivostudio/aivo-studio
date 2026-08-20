@@ -2585,11 +2585,11 @@ return;
   e.preventDefault();
 
   try {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store"
-    });
+ await fetch("/api/auth/logout-ios", {
+  method: "POST",
+  credentials: "include",
+  cache: "no-store"
+});
   } catch (err) {}
 
     try {
