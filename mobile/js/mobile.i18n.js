@@ -1009,7 +1009,7 @@
       "index.heroTitle.before": "AIVO Studio",
       "index.heroTitle.grad": "in your pocket.",
       "index.heroSub": "Start creating music, cover art, video and cartoons on mobile. Write your idea and let AIVO prepare the generation for you.",
-      "index.enterStudio": "Enter Studio →",
+    "index.enterStudio": "Start Free →",
       "index.viewPrices": "View Prices",
       "index.videoTitle": "Image to Video Clip",
       "index.videoSub": "Turn your image into a moving video scene",
