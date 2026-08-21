@@ -55,6 +55,7 @@ tasks.register("syncAivoWebAssets", Sync) {
         include "index.play.html"
         include "login.play.html"
         include "studio.play.html"
+        include "media/**"
     }
 
     from(aivoRepoRoot) {
