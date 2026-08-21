@@ -313,26 +313,134 @@
     });
   }
 
-  function installIosSalesEmptyDayFix() {
+  function installIosSalesDailyReportFix() {
     const status = document.getElementById("iosSalesStatus");
     const units = document.getElementById("iosSalesUnits");
     const customerTotal = document.getElementById("iosSalesCustomerTotal");
     const proceedsTotal = document.getElementById("iosSalesProceedsTotal");
+    const tbody = document.getElementById("iosSalesTbody");
+    const out = document.getElementById("iosSalesOut");
 
-    if (!status || status.__aivoIosEmptyDayFix) return;
-    status.__aivoIosEmptyDayFix = true;
+    if (!status || status.__aivoIosDailyReportFix) return;
+    status.__aivoIosDailyReportFix = true;
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function money(value) {
+      return Number(value || 0).toLocaleString("tr-TR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function groupMoney(rows, amountKey, currencyKey) {
+      const totals = new Map();
+
+      rows.forEach(function (row) {
+        const qty = Number(row.Units || 0);
+        const amount = Number(row[amountKey] || 0);
+        const currency = String(row[currencyKey] || "TRY").trim() || "TRY";
+        totals.set(currency, (totals.get(currency) || 0) + amount * qty);
+      });
+
+      if (!totals.size) return "0,00 TRY";
+
+      return Array.from(totals.entries())
+        .map(function (entry) {
+          return money(entry[1]) + " " + entry[0];
+        })
+        .join(" + ");
+    }
+
+    function parsePayload() {
+      try {
+        const raw = String(out && out.textContent ? out.textContent : "").trim();
+        return raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function paidRowsFrom(payload) {
+      const rows = payload && Array.isArray(payload.rows) ? payload.rows : [];
+      return rows.filter(function (row) {
+        const customerPrice = Number(row["Customer Price"] || 0);
+        const developerProceeds = Number(row["Developer Proceeds"] || 0);
+        return customerPrice > 0 || developerProceeds > 0;
+      });
+    }
+
+    function renderTable(rows, emptyText) {
+      if (!tbody) return;
+
+      if (!rows.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="muted" style="padding:12px;">
+              ${escapeHtml(emptyText)}
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(function (row) {
+        return `
+          <tr>
+            <td style="padding:8px 10px;">${escapeHtml(row.SKU || row.Title || "-")}</td>
+            <td style="padding:8px 10px;">${Number(row.Units || 0)}</td>
+            <td style="padding:8px 10px;">${escapeHtml(money(row["Customer Price"]) + " " + String(row["Customer Currency"] || "TRY"))}</td>
+            <td style="padding:8px 10px;">${escapeHtml(money(row["Developer Proceeds"]) + " " + String(row["Currency of Proceeds"] || "TRY"))}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row["Customer Currency"] || row["Currency of Proceeds"] || "-")}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row["Country Code"] || "-")}</td>
+            <td style="padding:8px 10px;">${escapeHtml(row.Device || "-")}</td>
+          </tr>
+        `;
+      }).join("");
+    }
 
     function sync() {
       const text = String(status.textContent || "").trim();
-      if (!text.includes("/ Son iOS satışları")) return;
+      if (!text.startsWith("Gün:")) return;
 
-      const dayLabel = text.split("/")[0].trim();
+      const payload = parsePayload();
+      if (!payload || !payload.ok) return;
 
-      if (units) units.textContent = "Satış yok";
-      if (customerTotal) customerTotal.textContent = "0,00 TRY";
-      if (proceedsTotal) proceedsTotal.textContent = "0,00 TRY";
+      const date = String(payload.date || "-");
+      const reportReady = payload.report_ready !== false;
+      const rows = paidRowsFrom(payload);
+      const totalUnits = rows.reduce(function (sum, row) {
+        return sum + Number(row.Units || 0);
+      }, 0);
 
-      status.textContent = dayLabel + " / Satış yok";
+      if (units) units.textContent = String(totalUnits);
+      if (customerTotal) customerTotal.textContent = groupMoney(rows, "Customer Price", "Customer Currency");
+      if (proceedsTotal) proceedsTotal.textContent = groupMoney(rows, "Developer Proceeds", "Currency of Proceeds");
+
+      if (!reportReady) {
+        renderTable([], "Apple günlük satış raporu henüz hazır değil.");
+        const next = `Gün: ${date} / Apple günlük raporu henüz hazır değil`;
+        if (status.textContent !== next) status.textContent = next;
+        return;
+      }
+
+      if (!rows.length) {
+        renderTable([], "Seçilen gün için iOS satış adedi: 0.");
+        const next = `Gün: ${date} / Satış: 0`;
+        if (status.textContent !== next) status.textContent = next;
+        return;
+      }
+
+      renderTable(rows, "");
+      const next = `Gün: ${date} / Satış: ${totalUnits}`;
+      if (status.textContent !== next) status.textContent = next;
     }
 
     const observer = new MutationObserver(sync);
@@ -382,7 +490,7 @@
     }
 
     injectPushImageUploader();
-    installIosSalesEmptyDayFix();
+    installIosSalesDailyReportFix();
     installTrafficSoftPinkStyle();
   });
 })();
