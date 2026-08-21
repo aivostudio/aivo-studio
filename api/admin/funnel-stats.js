@@ -90,6 +90,77 @@ function parseUsersList(value) {
   return Array.isArray(raw) ? raw : [];
 }
 
+async function countRegistrations(date) {
+  const kv = kvMod?.default || kvMod || {};
+  const redis = kv.getRedis?.() || kv.redis || null;
+  const kvGetJson = kv.kvGetJson;
+
+  if (!redis || typeof kvGetJson !== "function") {
+    const usersResponse = await restKv(["GET", "users:list"]).catch(() => null);
+    const users = parseUsersList(usersResponse);
+    return users.filter((user) => {
+      const created = user?.createdAt ?? user?.created ?? null;
+      return dayFromValue(created) === date;
+    }).length;
+  }
+
+  const byEmail = new Map();
+
+  function addUser(user, fallbackEmail) {
+    if (!user || typeof user !== "object") return;
+
+    const email = safeText(user.email || fallbackEmail).toLowerCase();
+    if (!email || !email.includes("@")) return;
+
+    const prev = byEmail.get(email) || {};
+    byEmail.set(email, {
+      ...prev,
+      ...user,
+      email,
+      createdAt: user.createdAt || user.created || prev.createdAt || prev.created || null,
+      created: user.created || prev.created || null
+    });
+  }
+
+  const list = await kvGetJson("users:list").catch(() => []);
+  if (Array.isArray(list)) {
+    for (const user of list) addUser(user, "");
+  }
+
+  async function scanPattern(pattern) {
+    let cursor = "0";
+
+    do {
+      const reply = await redis.scan(cursor, { match: pattern, count: 1000 });
+      cursor = String(reply?.[0] ?? reply?.cursor ?? "0");
+
+      const keys =
+        Array.isArray(reply?.[1]) ? reply[1] :
+        Array.isArray(reply?.keys) ? reply.keys :
+        [];
+
+      for (const key of keys) {
+        const user = await kvGetJson(key).catch(() => null);
+        if (!user) continue;
+
+        const fallbackEmail = String(key || "")
+          .replace(/^user:/, "")
+          .replace(/^users:/, "");
+
+        addUser(user, fallbackEmail);
+      }
+    } while (cursor !== "0" && byEmail.size < 10000);
+  }
+
+  await scanPattern("user:*");
+  await scanPattern("users:*");
+
+  return Array.from(byEmail.values()).filter((user) => {
+    const created = user?.createdAt ?? user?.created ?? null;
+    return dayFromValue(created) === date;
+  }).length;
+}
+
 async function countWebPaidOrders(date) {
   const kv = kvMod?.default || kvMod || {};
   const redis = kv.getRedis?.() || kv.redis || null;
@@ -203,12 +274,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    const usersResponse = await restKv(["GET", "users:list"]).catch(() => null);
-    const users = parseUsersList(usersResponse);
-    const registrations = users.filter((user) => {
-      const created = user?.createdAt ?? user?.created ?? null;
-      return dayFromValue(created) === date;
-    }).length;
+    const registrations = await countRegistrations(date).catch(() => 0);
 
     let productionJobs = 0;
     let producers = 0;
