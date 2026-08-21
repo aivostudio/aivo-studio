@@ -8,10 +8,12 @@
   try {
     var ua = navigator.userAgent || "";
     if (location.search.indexOf("playDebug=1") !== -1) return;
+
     var isCapacitor =
       !!window.Capacitor ||
       ua.indexOf("Capacitor") !== -1 ||
-      location.protocol === "capacitor:";
+      location.protocol === "capacitor:" ||
+      location.hostname === "localhost";
 
     if (isCapacitor) return;
 
@@ -1239,20 +1241,39 @@ try {
   });
 })();
 </script>
-  <script>
+<script>
 (function AIVO_PLAY_INDEX_TRAFFIC_HIT(){
   try {
-    fetch("/api/traffic/hit", {
+    const capHttp =
+      window.Capacitor &&
+      window.Capacitor.Plugins &&
+      window.Capacitor.Plugins.CapacitorHttp;
+
+    const payload = {
+      source: "play",
+      page: "/index.play.html"
+    };
+
+    if (capHttp && typeof capHttp.post === "function") {
+      capHttp.post({
+        url: "https://aivo.tr/api/traffic/hit",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        data: payload
+      }).catch(function(){});
+
+      return;
+    }
+
+    fetch("https://aivo.tr/api/traffic/hit", {
       method: "POST",
       credentials: "include",
       cache: "no-store",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        source: "play",
-        page: "/index.play.html"
-      })
+      body: JSON.stringify(payload)
     }).catch(function(){});
   } catch (err) {}
 })();
