@@ -49,7 +49,7 @@
       "index.heroTitle.before": "AIVO Studio",
       "index.heroTitle.grad": "cebinde.",
       "index.heroSub": "Müzik, kapak, video ve çizgifilm üretimini mobilde başlat. Fikrini yaz, AIVO üretimi senin için hazırlasın.",
-      "index.enterStudio": "Studio’ya Gir →",
+     "index.enterStudio": "Ücretsiz Başla →",
       "index.viewPrices": "Fiyatları Gör",
       "index.videoTitle": "Görselden Video Klip",
       "index.videoSub": "Görselini hareketli klip sahnesine dönüştür",
