@@ -42,6 +42,15 @@
     });
   }
 
+  function loadFunnelWidget() {
+    if (document.querySelector('script[data-aivo-funnel="1"]')) return;
+    const script = document.createElement("script");
+    script.src = "./funnel.js?v=20260821-1";
+    script.async = true;
+    script.dataset.aivoFunnel = "1";
+    document.head.appendChild(script);
+  }
+
   function createElement(tag, attrs, text) {
     const el = document.createElement(tag);
     Object.keys(attrs || {}).forEach(function (key) {
@@ -492,5 +501,6 @@
     injectPushImageUploader();
     installIosSalesDailyReportFix();
     installTrafficSoftPinkStyle();
+    loadFunnelWidget();
   });
 })();
