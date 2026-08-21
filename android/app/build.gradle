@@ -55,16 +55,34 @@ tasks.register("syncAivoWebAssets", Sync) {
         include "index.play.html"
         include "login.play.html"
         include "studio.play.html"
-        include "media/**"
-    }
+      }
 
     from(aivoRepoRoot) {
         include "index.play.html"
         rename { "index.html" }
     }
 
-    doLast {
-        aivoGeneratedAssetsDir.mkdirs()
+  doLast {
+    aivoGeneratedAssetsDir.mkdirs()
+
+    def generatedMobileHome = new File(
+        aivoGeneratedPublicDir,
+        "mobile/modules/mobile.home.html"
+    )
+
+    if (!generatedMobileHome.exists()) {
+        throw new GradleException(
+            "Generated mobile.home.html was not found after Android asset sync."
+        )
+    }
+
+    def mobileHomeText = generatedMobileHome.getText("UTF-8")
+
+    mobileHomeText = mobileHomeText
+        .replace('href="/media/', 'href="https://aivo.tr/media/')
+        .replace('src="/media/', 'src="https://aivo.tr/media/')
+
+    generatedMobileHome.setText(mobileHomeText, "UTF-8")
         new File(aivoGeneratedAssetsDir, "capacitor.config.json").text = '''{
   "appId": "tr.aivo.app",
   "appName": "AIVO Studio",
