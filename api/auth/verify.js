@@ -5,6 +5,8 @@ import kvMod from "../_kv.js";
 const kv = kvMod?.default || kvMod || {};
 const kvGetJson = kv.kvGetJson;
 const kvSetJson = kv.kvSetJson;
+const kvGet = kv.kvGet;
+const kvSet = kv.kvSet;
 const kvDel =
   kv.kvDel || kv.kvDelKey || kv.kvDelSafe || kv.kvDelJson || null;
 
@@ -176,10 +178,21 @@ export default async function handler(req, res) {
 
     Object.keys(next).forEach((k) => next[k] === undefined && delete next[k]);
 
-    await kvSetJson(`user:${verifiedEmail}`, next);
+  await kvSetJson(`user:${verifiedEmail}`, next);
 
-    // verify tokenı temizle
-    await delSafe(verifyKey);
+try {
+  const creditsKey = `credits:${verifiedEmail}`;
+  const currentCredits = await kvGet(creditsKey).catch(() => null);
+
+  if (currentCredits == null) {
+    await kvSet(creditsKey, 2);
+  }
+} catch (err) {
+  console.error("[WELCOME_CREDIT_FAIL]", err);
+}
+
+// verify tokenı temizle
+await delSafe(verifyKey);
 
     // ✅ Verify success redirect
     const from = req.query?.from ? String(req.query.from).trim().toLowerCase() : "";
