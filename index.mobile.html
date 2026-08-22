@@ -207,19 +207,22 @@
 .welcome-credit{
   display:block;
   margin-top:8px;
-  color:#fff;
   font-weight:900;
-  animation:welcomePulse 1.6s ease-in-out infinite;
+  animation:welcomeColor 3.2s ease-in-out infinite;
 }
 
-@keyframes welcomePulse{
+@keyframes welcomeColor{
   0%,100%{
-    opacity:.65;
-    text-shadow:0 0 0 rgba(236,72,153,0);
+    color:#a78bfa;
+    text-shadow:0 0 12px rgba(167,139,250,.45);
   }
-  50%{
-    opacity:1;
-    text-shadow:0 0 16px rgba(236,72,153,.65);
+  33%{
+    color:#38bdf8;
+    text-shadow:0 0 16px rgba(56,189,248,.55);
+  }
+  66%{
+    color:#f472b6;
+    text-shadow:0 0 16px rgba(244,114,182,.55);
   }
 }
 
