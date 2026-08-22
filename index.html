@@ -29,14 +29,26 @@
 
       if (!isHome) return;
 
-      var ua = navigator.userAgent || "";
-     var isMobile =
+   var ua = navigator.userAgent || "";
+
+var isNativeIOS =
+  (!!window.Capacitor ||
+   !!window.webkit?.messageHandlers?.bridge ||
+   ua.indexOf("Capacitor") !== -1) &&
+  /iPhone|iPod|iPad/i.test(ua);
+
+if (isNativeIOS) {
+  window.location.replace("/index.ios.html");
+  return;
+}
+
+var isMobile =
   /Android|iPhone|iPod|iPad|IEMobile|Opera Mini/i.test(ua) ||
   (navigator.maxTouchPoints > 1 && window.innerWidth <= 1180);
 
-      if (!isMobile) return;
+if (!isMobile) return;
 
-      window.location.replace("/index.mobile.html");
+window.location.replace("/index.mobile.html");
     } catch (err) {}
   })();
   </script>
