@@ -254,13 +254,35 @@ font-size:12px;
       color:transparent;
     }
 
-    .sub{
+ .sub{
   margin:0;
   color:rgba(255,255,255,.76);
   font-weight:700;
   line-height:1.48;
   font-size:14px;
   max-width:320px;
+}
+
+.welcome-credit{
+  display:block;
+  margin-top:8px;
+  font-weight:900;
+  animation:welcomeColor 3.2s ease-in-out infinite;
+}
+
+@keyframes welcomeColor{
+  0%,100%{
+    color:#a78bfa;
+    text-shadow:0 0 12px rgba(167,139,250,.45);
+  }
+  33%{
+    color:#38bdf8;
+    text-shadow:0 0 16px rgba(56,189,248,.55);
+  }
+  66%{
+    color:#f472b6;
+    text-shadow:0 0 16px rgba(244,114,182,.55);
+  }
 }
 
  .cta-row{
@@ -808,8 +830,9 @@ html.aivo-ios-leaving body{
   <span class="grad" data-i18n="index.heroTitle.grad">cebinde.</span>
 </h1>
 
-<p class="sub" data-i18n="index.heroSub">
-  Müzik, kapak, video ve çizgifilm üretimini mobilde başlat. Fikrini yaz, AIVO üretimi senin için hazırlasın.
+<p class="sub">
+  Müzik, kapak, video, video klip, çizgifilm ve reklam filmi üretimini mobilde başlat.
+  <span class="welcome-credit">🎁 Yeni üyelere 2 kredi hediye • İlk müzik üretimin ücretsiz</span>
 </p>
 
 <div class="cta-row">
