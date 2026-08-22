@@ -195,13 +195,32 @@
       color:transparent;
     }
 
-    .sub{
+.sub{
   margin:0;
   color:rgba(255,255,255,.76);
   font-weight:700;
   line-height:1.48;
   font-size:14px;
   max-width:320px;
+}
+
+.welcome-credit{
+  display:block;
+  margin-top:8px;
+  color:#fff;
+  font-weight:900;
+  animation:welcomePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes welcomePulse{
+  0%,100%{
+    opacity:.65;
+    text-shadow:0 0 0 rgba(236,72,153,0);
+  }
+  50%{
+    opacity:1;
+    text-shadow:0 0 16px rgba(236,72,153,.65);
+  }
 }
 
  .cta-row{
@@ -744,10 +763,10 @@
       <h1>
         AIVO Studio <span class="grad">cebinde.</span>
       </h1>
-
-      <p class="sub">
-        Müzik, kapak, video ve çizgifilm üretimini mobilde başlat. Fikrini yaz, AIVO üretimi senin için hazırlasın.
-      </p>
+<p class="sub">
+  Müzik, kapak, video, video klip, çizgifilm ve reklam filmi üretimini mobilde başlat.
+  <span class="welcome-credit">🎁 Yeni üyelere 2 kredi hediye • İlk müzik üretimin ücretsiz</span>
+</p>
 
       <div class="cta-row">
  <a class="btn btn-primary" href="/studio.mobile.html">Ücretsiz Başla →</a>
